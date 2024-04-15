@@ -6971,6 +6971,10 @@ tbody {
     }
   }
 
+  .table-cell-dark{
+    color: #ffffff;
+  }
+
   .table-cell-hover-background {
     background-color: #F8F9FA;
     padding: 0rem;
@@ -6987,6 +6991,7 @@ tbody {
     background-color: #242f3c;
     padding: 0rem;
     max-width: 230px;
+    color: #ffffff;
 
     input.form-control {
       border: none;
@@ -6997,12 +7002,12 @@ tbody {
 
   .table-editable-parent-cell {
     max-width: 230px;
-    background-color: var(--indigo2);
+    background-color: var(--indigo2) !important;
     cursor: pointer;
     padding: 0rem;
 
     .form-control {
-      background-color: var(--indigo2);
+      background-color: var(--indigo2) !important;
       border: none;
       padding: 0;
       border-radius: 0px;
@@ -10850,7 +10855,7 @@ tbody {
     width: 100% !important;
     height: 100% !important;
     background: #1c252f !important;
-    border: 0.4px solid white !important;
+    border: 1px solid #374150 !important;
     font-size: 14px !important;
     font-weight: 400;
     color: white;
@@ -10888,7 +10893,7 @@ tbody {
   border-style: solid;
   border-radius: 0px;
   background: #1c252f !important;
-  border: 0.4px solid white !important;
+  border: 1px solid #374150 !important;
   font-size: 14px !important;
   font-weight: 400;
   color: white;

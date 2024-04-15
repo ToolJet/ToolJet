@@ -1,9 +1,9 @@
 ---
 id: use-server-side-pagination
-title: Using server side pagination for efficient data handling in tables
+title: Using Server Side Pagination in Tables
 ---
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingBottom:'24px'}}>
 
 In this guide we will learn how to use server side pagination in table component. This will be helpful if you have a large data set and you want to load data in chunks. This will also help you to improve the performance of your application. This guide will be helpful if you are using data sources like MySQL, PostgreSQL, MSSQL, MongoDB, etc. in which you can use `limit` and `offset` to fetch data in chunks. We have also included an example to load data from Google Sheets in chunks.
 
@@ -11,7 +11,7 @@ In this guide we will learn how to use server side pagination in table component
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Loading data from PostgreSQL in chunks
+### Loading Data from PostgreSQL in Chunks
 
 - Let's say you have a table `users` in your PostgreSQL database and you want to load data from this table in chunks. You can use `limit` and `offset` to fetch data in chunks. Here is the SQL query to fetch data in chunks:
   ```sql title="PostgreSQL query"
@@ -29,9 +29,6 @@ In this guide we will learn how to use server side pagination in table component
   
   3. `OFFSET {{(components.table1.pageIndex-1)*100}}`: The `OFFSET` clause determines where to start fetching rows from the result set. In this case, the offset value is calculated based on the `pageIndex`(exposed variable) in the Table component. The formula `(components.table1.pageIndex-1)*100` calculates the starting row number for the current page. Since the index is 1-based, we subtract 1 from `pageIndex` to convert it to a 0-based index. Then we multiply it by 100 to get the offset for the current page. For example, if `pageIndex` is 1, the offset will be 0, which means it will fetch rows from the first 100 rows. If `pageIndex` is 2, the offset will be 100, which means it will fetch rows from rows 101 to 200, and so on.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 - Create a new query that will return the count of the records on the `users` table in postgresql db. This query will be used to calculate the total number of pages in the Table component. Here is the SQL query to fetch the count of records:
   
@@ -46,7 +43,9 @@ In this guide we will learn how to use server side pagination in table component
 
 </div>
 
-### Edit the Table component
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Edit the Table Component
 
 **Now, let's edit the properties of the Table component:**
 
@@ -86,4 +85,6 @@ Now, whenever the page is changed, the query will be executed, and the data will
 
   <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/server-side/change.gif" alt="Table data" />
+  </div>
+
   </div>

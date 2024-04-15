@@ -31,7 +31,7 @@ When connecting to a Google Sheets datasource, you can choose between two permis
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/sheetconnect.gif" alt="Google Sheet" />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/sheetconnect-v2.png" alt="Google Sheet" />
 
 </div>
 
@@ -41,11 +41,11 @@ To perform operations on a Google Sheet, click the `+Add` button in the query ma
 
 Using Google sheets data source you can perform several operations from your applications like:
 
-  1. **[Read data from a sheet](/docs/data-sources/google.sheets#read-data-from-a-sheet)**
-  2. **[Append data to a sheet](/docs/data-sources/google.sheets#append-data-to-a-sheet)**
-  3. **[Update single row of a sheet](/docs/data-sources/google.sheets#update-single-row-of-a-sheet)**
-  4. **[Delete row from a sheet](/docs/data-sources/google.sheets#delete-row-from-a-sheet)**
-  5. **[Get spreadsheet info](/docs/data-sources/google.sheets#get-spreadsheet-info)**
+1. **[Read data from a sheet](/docs/data-sources/google.sheets#read-data-from-a-sheet)**
+2. **[Append data to a sheet](/docs/data-sources/google.sheets#append-data-to-a-sheet)**
+3. **[Update single row of a sheet](/docs/data-sources/google.sheets#update-single-row-of-a-sheet)**
+4. **[Delete row from a sheet](/docs/data-sources/google.sheets#delete-row-from-a-sheet)**
+5. **[Get spreadsheet info](/docs/data-sources/google.sheets#get-spreadsheet-info)**
 
 <div style={{textAlign: 'center'}}>
 
@@ -57,11 +57,11 @@ Using Google sheets data source you can perform several operations from your app
 
 This operation allows you to retrieve the table data from a spreadsheet in the form of a JSON object.
 
-| Fields      | description |
-| ----------- | ----------- |
+| Fields         | description                                                                                                                                                                                                                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Spreadsheet ID | Entering the spreadsheet ID is required and can be obtained from the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` represents the spreadsheet ID. |
-| Range | This is optional. You can specify the range of cells in this field. If left empty, it will select the range `A1:Z500`. |
-| Sheet | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet. |
+| Range          | This is optional. You can specify the range of cells in this field. If left empty, it will select the range `A1:Z500`.                                                                                                                                                                                   |
+| Sheet          | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet.                                                                                                                                                                          |
 
 <div style={{textAlign: 'center'}}>
 
@@ -73,11 +73,11 @@ This operation allows you to retrieve the table data from a spreadsheet in the f
 
 Add additional rows to a table by using the append operation.
 
-| Fields      | description |
-| ----------- | ----------- |
+| Fields         | description                                                                                                                                                                                                                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Spreadsheet ID | Entering the spreadsheet ID is required and can be obtained from the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` represents the spreadsheet ID. |
-| Sheet | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet. |
-| Rows  | To input row data, use the JSON array format where each object represents a single row. Here's an example: **`[ {"name":"John", "email":"John@tooljet.com"},{...},{...} ]`**. Within each object, the `key` corresponds to the **column name**, and the `value` represents the **cell data**.|
+| Sheet          | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet.                                                                                                                                                                          |
+| Rows           | To input row data, use the JSON array format where each object represents a single row. Here's an example: **`[ {"name":"John", "email":"John@tooljet.com"},{...},{...} ]`**. Within each object, the `key` corresponds to the **column name**, and the `value` represents the **cell data**.            |
 
 <div style={{textAlign: 'center'}}>
 
@@ -89,15 +89,15 @@ Add additional rows to a table by using the append operation.
 
 This operation allows you to update existing data in a sheet.
 
-| Fields      | description |
-| ----------- | ----------- |
-| Spreadsheet ID | Entering the spreadsheet ID is required and can be obtained from the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` represents the spreadsheet ID. |
-| Range | This is optional. You can specify the range of cells in this field. If left empty, it will select the range `A1:Z500`. |
-| Sheet | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet. |
-| Where | Specify the column name, such as `id`, to identify the row you want to update. |
-| Operator | Select the `===` operator to perform an equality check. |
-| Value | Enter the desired value for the `id`, which you want to update. |
-| Rows | Enter the row data in the following format: **`{{({id: components.textinput4.value, company: components.textinput1.value, position: components.textinput2.value, url: components.textinput3.value, 'date-applied': components.datepicker1.value, status: components.dropdown1.value})}}`**. This example shows how to structure the row data, where each key represents a column name and its corresponding value is retrieved from the associated component. |
+| Fields         | description                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spreadsheet ID | Entering the spreadsheet ID is required and can be obtained from the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` represents the spreadsheet ID.                                                                                                                                                      |
+| Range          | This is optional. You can specify the range of cells in this field. If left empty, it will select the range `A1:Z500`.                                                                                                                                                                                                                                                                                                                                        |
+| Sheet          | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet.                                                                                                                                                                                                                                                                                                                               |
+| Where          | Specify the column name, such as `id`, to identify the row you want to update.                                                                                                                                                                                                                                                                                                                                                                                |
+| Operator       | Select the `===` operator to perform an equality check.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Value          | Enter the desired value for the `id`, which you want to update.                                                                                                                                                                                                                                                                                                                                                                                               |
+| Rows           | Enter the row data in the following format: **`{{({id: components.textinput4.value, company: components.textinput1.value, position: components.textinput2.value, url: components.textinput3.value, 'date-applied': components.datepicker1.value, status: components.dropdown1.value})}}`**. This example shows how to structure the row data, where each key represents a column name and its corresponding value is retrieved from the associated component. |
 
 <div style={{textAlign: 'center'}}>
 
@@ -109,11 +109,11 @@ This operation allows you to update existing data in a sheet.
 
 This operation allows you to delete a specific row from the sheet.
 
-| Fields      | description |
-| ----------- | ----------- |
-| Spreadsheet ID | Entering the spreadsheet ID is mandatory. You can find the spreadsheet ID in the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=23456`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` is the spreadsheet ID. |
-| GID | The GID is located at the end of the spreadsheet URL. In the provided example, the GID is `23456`. |
-| Delete Row Number | Simply enter the row number that you wish to delete. |
+| Fields            | description                                                                                                                                                                                                                                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spreadsheet ID    | Entering the spreadsheet ID is mandatory. You can find the spreadsheet ID in the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=23456`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` is the spreadsheet ID. |
+| GID               | The GID is located at the end of the spreadsheet URL. In the provided example, the GID is `23456`.                                                                                                                                                                                                               |
+| Delete Row Number | Simply enter the row number that you wish to delete.                                                                                                                                                                                                                                                             |
 
 <div style={{textAlign: 'center'}}>
 
