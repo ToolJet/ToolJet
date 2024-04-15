@@ -23,7 +23,6 @@ function withWorkspaceRouting(WrappedComponent) {
     return <WrappedComponent {...props} workspaceId={workspaceId} navigate={navigate} />;
   };
 }
-
 class RawManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -261,12 +260,18 @@ class RawManageOrgVarsComponent extends React.Component {
   render() {
     const { isLoading, addingVar, variables, isManageVarDrawerOpen } = this.state;
 
-    const renderDeprecationText = (
-      <div className="text-muted">
-        Workspace variables will no longer be supported after April 30, 2024. To maintain optimal performance, please
-        make the switch to Workspace constants
-      </div>
-    );
+    const renderDeprecationText =
+      variables?.length > 0 ? (
+        <div class="text-muted">
+          Workspace variables will no longer be supported after April 30, 2024. To maintain optimal performance, please
+          make the switch to Workspace constants
+        </div>
+      ) : (
+        <div className="text-muted">
+          Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use Workspace constant
+          instead.
+        </div>
+      );
 
     return (
       <div className="wrapper org-variables-page animation-fade">

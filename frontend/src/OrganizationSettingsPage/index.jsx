@@ -10,7 +10,6 @@ import { licenseService } from '../_services/license.service';
 import { LicenseBanner } from '@/LicenseBanner';
 import Skeleton from 'react-loading-skeleton';
 import { getWorkspaceId } from '@/_helpers/utils';
-import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -72,7 +71,7 @@ export function OrganizationSettings(props) {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
     });
-    updateSidebarNAV('Users');
+    admin ? updateSidebarNAV('Users') : updateSidebarNAV('Workspace variables');
 
     () => subscription.unsubsciption();
     // eslint-disable-next-line react-hooks/exhaustive-deps

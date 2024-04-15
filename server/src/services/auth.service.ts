@@ -54,6 +54,7 @@ import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AuthService {
@@ -287,7 +288,7 @@ export class AuthService {
     if (existingUser?.invitationToken) {
       this.emailService
         .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-        .catch((err) => console.error(err));
+        .catch((err) => console.error('Error while sending welcome mail', err));
       return;
     }
   }
@@ -301,7 +302,7 @@ export class AuthService {
     if (existingUser?.invitationToken) {
       this.emailService
         .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-        .catch((err) => console.error(err));
+        .catch((err) => console.error('Error while sending welcome mail', err));
       throw new NotAcceptableException(
         'The user is already registered. Please check your inbox for the activation link'
       );
@@ -347,7 +348,7 @@ export class AuthService {
       await this.organizationUsersService.create(user, organization, true, manager);
       this.emailService
         .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
-        .catch((err) => console.error(err));
+        .catch((err) => console.error('Error while sending welcome mail', err));
       await this.auditLoggerService.perform(
         {
           userId: user.id,
@@ -370,7 +371,9 @@ export class AuthService {
     }
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
-    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
+    this.emailService
+      .sendPasswordResetEmail(email, forgotPasswordToken, user.firstName)
+      .catch((err) => console.error('Error while sending password reset mail', err));
   }
 
   async resetPassword(token: string, password: string) {
@@ -433,6 +436,16 @@ export class AuthService {
       );
       await this.organizationUsersService.create(user, organization, false, manager);
       if (requestedTrial) await this.activateTrial(new TrialUserDto(userCreateDto));
+      await this.instanceSettingsService.updateSystemParams({
+        [INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION]: false,
+        [INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP]: false,
+      });
+      await this.instanceSettingsService.updateParams([
+        {
+          key: 'ALLOW_PERSONAL_WORKSPACE',
+          value: false,
+        },
+      ]);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 

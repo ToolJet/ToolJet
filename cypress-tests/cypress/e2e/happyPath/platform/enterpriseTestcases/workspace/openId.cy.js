@@ -7,6 +7,9 @@ import {
   allowPersonalWorkspace,
   WorkspaceInvitationLink,
   enableDefaultSSO,
+  disableSSO,
+  setSignupStatus,
+  deleteOrganisationSSO
 } from "Support/utils/eeCommon";
 import { commonSelectors } from "Selectors/common";
 import {
@@ -31,22 +34,18 @@ describe("Verify OIDC user onboarding", () => {
     cy.visit("/my-workspace");
     cy.intercept("GET", "api/library_apps").as("apps");
     cy.wait(2000);
+    SSO.defaultSSO(true);
   });
 
   it("Verify user onboarding using workspace OIDC", () => {
+    deleteOrganisationSSO("My workspace", ["openid"]);
     common.navigateToManageSSO();
-    SSO.disableDefaultSSO();
-    SSO.disableSignUp();
-
+    SSO.defaultSSO(false);
+    setSignupStatus(false);
     cy.wait(1000);
+
     cy.get(ssoEeSelector.oidc).click();
-
-    cy.get(ssoEeSelector.oidcToggle).then(($el) => {
-      if (!$el.is(":checked")) {
-        cy.get(ssoEeSelector.oidcToggle).check();
-      }
-    });
-
+    cy.get(ssoEeSelector.oidcToggle).click()
     cy.clearAndType(ssoEeSelector.nameInput, "Tooljet OIDC");
     cy.clearAndType(
       ssoEeSelector.clientIdInput,
@@ -60,13 +59,15 @@ describe("Verify OIDC user onboarding", () => {
       ssoEeSelector.WellKnownUrlInput,
       Cypress.env("SSO_OPENID_WELL_KNOWN_URL")
     );
-    cy.get(commonEeSelectors.saveButton).click();
+    cy.get(commonEeSelectors.saveButton).eq(1).click();
+    cy.get('[data-cy="enable-button"]').click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       ssoText.toggleUpdateToast("OpenID")
     );
 
-    SSO.visitWorkspaceLoginPage();
+    cy.logoutApi();
+    cy.visit("/login/my-workspace");
     cy.get(ssoEeSelector.oidcSSOText).verifyVisibleElement(
       "have.text",
       "Sign in with Tooljet OIDC"
@@ -80,11 +81,10 @@ describe("Verify OIDC user onboarding", () => {
     );
 
     cy.apiLogin();
-    cy.visit("/my-workspace");
-    cy.wait(1000);
-    SSO.enableSignUp();
+    setSignupStatus(true);
+    cy.logoutApi();
 
-    SSO.visitWorkspaceLoginPage();
+    cy.visit("/login/my-workspace");
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".superadmin-button").click();
 
@@ -113,7 +113,8 @@ describe("Verify OIDC user onboarding", () => {
   });
 
   it("Verify invited user onboarding using instance level OIDC", () => {
-    enableDefaultSSO();
+    setSignupStatus(true);
+
     if (envVar === "Enterprise") {
       allowPersonalWorkspace();
     }
@@ -140,17 +141,11 @@ describe("Verify OIDC user onboarding", () => {
     cy.apiLogin();
     cy.visit("/my-workspace");
     cy.wait(1000);
-    SSO.disableSignUp();
+    setSignupStatus(false);
 
     common.navigateToManageUsers();
-    cy.wait(1000);
-    cy.get("body").then(($el) => {
-      if (!$el.text().includes("userthree@tooljet.com", { timeout: 2000 })) {
-        inviteUser("user", "userthree@tooljet.com");
-      } else {
-        WorkspaceInvitationLink("userthree@tooljet.com");
-      }
-    });
+    cy.wait(500);
+    inviteUser("user", "userthree@tooljet.com");
     cy.wait(2000);
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-four-button").click();
@@ -166,7 +161,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.visit("/my-workspace");
     cy.wait(1000);
 
-    SSO.enableSignUp();
+    setSignupStatus(true);
     WorkspaceInvitationLink("userthree@tooljet.com");
     cy.wait(2000);
     cy.get(ssoEeSelector.oidcSSOText).realClick();
@@ -211,9 +206,10 @@ describe("Verify OIDC user onboarding", () => {
       cy.get(commonEeSelectors.instanceSettingIcon).click();
       cy.clearAndType(commonSelectors.inputUserSearch, "admin@tooljet.com");
 
-      cy.get(
-        instanceSettingsSelector.userStatus("admin")
-      ).verifyVisibleElement("have.text", usersText.activeStatus);
+      cy.get(instanceSettingsSelector.userStatus("admin")).verifyVisibleElement(
+        "have.text",
+        usersText.activeStatus
+      );
 
       cy.logoutApi();
       cy.visit("/");
@@ -223,7 +219,7 @@ describe("Verify OIDC user onboarding", () => {
   }
 
   it("Verify archived user login using OIDC", () => {
-    enableDefaultSSO();
+    setSignupStatus(true);
     if (envVar === "Enterprise") {
       allowPersonalWorkspace(false);
     }

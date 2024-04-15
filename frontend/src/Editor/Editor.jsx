@@ -223,7 +223,6 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     updateState({ isLoading: true });
-    (app.creation_mode === 'GIT' || app.creationMode === 'GIT') && onEditorFreeze(true);
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = {
       ...currentSession?.current_user,
@@ -768,6 +767,10 @@ const EditorComponent = (props) => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
+    //Freeze the app
+    const { should_freeze_editor } = data;
+    onEditorFreeze(should_freeze_editor);
+
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
       const releasedId = data.current_version_id || data.currentVersionId;
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
@@ -835,9 +838,6 @@ const EditorComponent = (props) => {
       },
     });
 
-    if (data.creationMode === 'GIT') {
-      onEditorFreeze(true);
-    }
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
@@ -916,7 +916,6 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-      if (appData.creationMode !== 'GIT') onEditorFreeze(false);
       setAppVersionPromoted(false);
       useCurrentStateStore.getState().actions.setCurrentState({});
       useCurrentStateStore.getState().actions.setEditorReady(false);

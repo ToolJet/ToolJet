@@ -8,6 +8,9 @@ import {
   openInstanceSettings,
   openUserActionMenu,
   addNewUserEE,
+  defaultInstanceSettings,
+  updateInstanceSettings,
+  PasswordToggle
 } from "Support/utils/eeCommon";
 import { updateWorkspaceName } from "Support/utils/userPermissions";
 import { usersSelector } from "Selectors/manageUsers";
@@ -39,6 +42,7 @@ describe(
   () => {
     it("Verify elements of the instance settings page", () => {
       cy.defaultWorkspaceLogin();
+      defaultInstanceSettings();
       allowPersonalWorkspace();
       openInstanceSettings();
       cy.get(instanceSettingsSelector.allUsersTab).realClick();
@@ -256,6 +260,7 @@ describe(
     });
 
     it("Verify invite user, Archive, Archive All functionality", () => {
+      defaultInstanceSettings();
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
 
@@ -417,7 +422,7 @@ describe(
 
     it("Verify user sign up, archive and unarchive functionality", () => {
       cy.defaultWorkspaceLogin();
-      allowPersonalWorkspace();
+      defaultInstanceSettings(true);
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
       data.workspaceName = `${fake.companyName}-workspace`;
@@ -430,6 +435,7 @@ describe(
       common.logout();
 
       cy.defaultWorkspaceLogin();
+      updateInstanceSettings("ENABLE_SIGNUP", "false");
       openInstanceSettings();
       cy.clearAndType(commonSelectors.inputUserSearch, data.email);
       cy.get(
@@ -516,25 +522,26 @@ describe(
       data.email = fake.email.toLowerCase();
 
       cy.defaultWorkspaceLogin();
-      allowPersonalWorkspace();
+      defaultInstanceSettings(true);
 
       openInstanceSettings();
       cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).uncheck();
+      cy.get(commonEeSelectors.saveButton).click();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        "Enable personal workspace to enable sign up"
+      );
+      updateInstanceSettings("ENABLE_SIGNUP", "false");
       cy.get(instanceSettingsSelector.allowWorkspaceToggle)
         .eq(0)
-        .then(($el) => {
-          if ($el.is(":checked")) {
-            cy.get(instanceSettingsSelector.allowWorkspaceToggle)
-              .eq(0)
-              .uncheck();
-            cy.get(commonEeSelectors.saveButton).click();
-            cy.verifyToastMessage(
-              commonSelectors.toastMessage,
-              "Instance settings have been updated"
-            );
-          }
-        });
+        .uncheck();
+      cy.get(commonEeSelectors.saveButton).click();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        "Instance settings have been updated"
+      );
+
       cy.logoutApi();
       cy.visit("/");
       cy.get(commonSelectors.createAnAccountLink).should("not.exist");
@@ -578,7 +585,8 @@ describe(
 
     it("Verify superadmin privilages", () => {
       cy.defaultWorkspaceLogin();
-      allowPersonalWorkspace();
+      PasswordToggle()
+      defaultInstanceSettings(true);
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
       data.workspaceName = `${fake.companyName}-workspace`;
@@ -599,13 +607,13 @@ describe(
 
       cy.login(data.email, "password");
       common.navigateToManageSSO();
+      cy.wait(500)
       cy.get(ssoSelector.passwordEnableToggle).uncheck();
-      cy.get(commonSelectors.buttonSelector("Yes")).click();
+      cy.get(commonSelectors.confirmationButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         ssoText.passwordDisabledToast
       );
-      cy.get(commonEeSelectors.saveButton).click();
 
       common.logout();
       cy.login(data.email, "password");

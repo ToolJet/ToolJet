@@ -35,7 +35,7 @@ function ModalContent({ node, darkMode, onClose }) {
 
   const renderNode =
     node.type === 'query' ? (
-      <QueryNode data={node.data} id={node.id} />
+      <QueryNode data={node.data} id={node.id} selectedNode={node} />
     ) : (
       <div className="if-condition-modal-content d-flex justify-content-center">
         <span className="title">If condition</span>

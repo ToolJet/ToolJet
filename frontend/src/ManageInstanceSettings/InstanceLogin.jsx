@@ -23,6 +23,7 @@ class InstanceLogin extends React.Component {
       isAnySSOEnabled: false,
       ssoOptions: [],
       featureAccess: {},
+      isAllowPersonalWorkspaceEnabled: window.public_config?.ALLOW_PERSONAL_WORKSPACE === 'true',
     };
     this.copyFunction = this.copyFunction.bind(this);
   }
@@ -177,8 +178,8 @@ class InstanceLogin extends React.Component {
         toast.info('No changes to save', { position: 'top-center' });
       }
     } catch (error) {
-      toast.error(error.message || 'An error occurred', { position: 'top-center' });
-      this.setState({ options: { ...this.state.initialOptions } });
+      toast.error(error.error || 'An error occurred', { position: 'top-center' });
+      await this.setInstanceLoginConfigs();
     } finally {
       this.setState({ isSaving: false });
     }
@@ -223,8 +224,15 @@ class InstanceLogin extends React.Component {
 
   render() {
     const { t, darkMode } = this.props;
-    const { options, isSaving, showDisablingPasswordConfirmation, isAnySSOEnabled, ssoOptions, featureAccess } =
-      this.state;
+    const {
+      options,
+      isSaving,
+      showDisablingPasswordConfirmation,
+      isAnySSOEnabled,
+      ssoOptions,
+      featureAccess,
+      isAllowPersonalWorkspaceEnabled,
+    } = this.state;
     const flexContainerStyle = {
       display: 'flex',
       flexDirection: 'row',
@@ -293,18 +301,25 @@ class InstanceLogin extends React.Component {
                       </div>
                     </div>
                     <div className="form-group mb-3">
-                      <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          onChange={() => this.handleCheckboxChange('enableSignUp')}
-                          checked={options?.enableSignUp === true}
-                          data-cy="enable-sign-up-toggle"
-                        />
-                        <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
-                          {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
+                      <ToolTip
+                        message="Enable personal workspace to enable sign up"
+                        placement="left"
+                        show={!isAllowPersonalWorkspaceEnabled}
+                      >
+                        <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            onChange={() => this.handleCheckboxChange('enableSignUp')}
+                            checked={options?.enableSignUp === true}
+                            disabled={!isAllowPersonalWorkspaceEnabled}
+                            data-cy="enable-sign-up-toggle"
+                          />
+                          <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
+                            {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
+                          </label>
                         </label>
-                      </label>
+                      </ToolTip>
                       <div className="help-text danger-text-login">
                         <div data-cy="enable-sign-up-helper-text">
                           Users will be able to sign up without being invited

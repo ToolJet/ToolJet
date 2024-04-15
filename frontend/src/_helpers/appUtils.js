@@ -12,7 +12,7 @@ import {
   isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isArray } from 'lodash';
+import _, { isArray, isEmpty } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -168,7 +168,8 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-async function executeRunPycode(_ref, code, query, isPreview, mode, currentState) {
+const evaluatePythonCode = async (options) => {
+  const { _ref, query, mode, currentState, isPreview, code, queryResult } = options;
   let pyodide;
   try {
     pyodide = await loadPyodide();
@@ -180,17 +181,13 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
       },
     };
   }
+  const log = (line) => console.log({ line });
+  let result = {};
 
-  function log(line) {
-    console.log({ line });
-  }
+  try {
+    const appStateVars = currentState['variables'] ?? {};
 
-  const evaluatePythonCode = async (pyodide) => {
-    let result = {};
-
-    try {
-      const appStateVars = currentState['variables'] ?? {};
-
+    if (!isEmpty(query) && !isEmpty(_ref)) {
       const actions = generateAppActions(_ref, query.id, mode, isPreview);
 
       for (const key of Object.keys(currentState.queries)) {
@@ -212,121 +209,51 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
         };
       }
 
-      await pyodide.globals.set('components', currentState['components']);
-      await pyodide.globals.set('queries', currentState['queries']);
-      await pyodide.globals.set('tj_globals', currentState['globals']);
-      await pyodide.globals.set('client', currentState['client']);
-      await pyodide.globals.set('server', currentState['server']);
-      await pyodide.globals.set('constants', currentState['constants']);
-      await pyodide.globals.set('parameters', currentState['parameters']);
-      await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
-
-      await pyodide.loadPackagesFromImports(code);
-
-      await pyodide.loadPackage('micropip', log);
-
-      let pyresult = await pyodide.runPythonAsync(code);
-      result = await pyresult;
-    } catch (err) {
-      console.error(err);
-
-      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
-      const error = err.message.split(errorType + ': ')[1];
-      const errorMessage = `${errorType} : ${error}`;
-
-      result = {};
-
-      result = {
-        status: 'failed',
-        message: errorMessage,
-        description: {
-          code: query?.options?.code,
-          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
-        },
-      };
     }
 
-    return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
-  };
+    await pyodide.globals.set('components', currentState['components']);
+    await pyodide.globals.set('queries', currentState['queries']);
+    await pyodide.globals.set('tj_globals', currentState['globals']);
+    await pyodide.globals.set('client', currentState['client']);
+    await pyodide.globals.set('server', currentState['server']);
+    await pyodide.globals.set('constants', currentState['constants']);
+    await pyodide.globals.set('page', currentState['page']);
+    await pyodide.globals.set('parameters', currentState['parameters']);
+    await pyodide.globals.set('variables', appStateVars);
+    if (queryResult) await pyodide.globals.set('data', queryResult);
 
-  return { data: await evaluatePythonCode(pyodide, code) };
-}
+    await pyodide.loadPackagesFromImports(code);
+    await pyodide.loadPackage('micropip', log);
 
-async function exceutePycode(payload, code, currentState, query, mode) {
-  let pyodide;
-  try {
-    pyodide = await loadPyodide();
-  } catch (errorMessage) {
-    return {
-      data: {
-        status: 'failed',
-        message: errorMessage,
+    let pyresult = await pyodide.runPythonAsync(code);
+    result = await pyresult;
+  } catch (err) {
+    console.error(err);
+
+    const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+    const error = err.message.split(errorType + ': ')[1];
+    const errorMessage = `${errorType} : ${error}`;
+
+    result = {
+      status: 'failed',
+      message: errorMessage,
+      description: {
+        code: query?.options?.code,
+        error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
       },
     };
   }
 
-  const evaluatePython = async (pyodide) => {
-    let result = {};
-    try {
-      //remove the comments from the code
-      let codeWithoutComments = code.replace(/#.*$/gm, '');
-      codeWithoutComments = codeWithoutComments.replace(/^\s+/g, '');
-      const _code = codeWithoutComments.replace('return ', '');
-      currentState['variables'] = currentState['variables'] ?? {};
-      const _currentState = JSON.stringify(currentState);
+  return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
+};
 
-      let execFunction = await pyodide.runPython(`
-        from pyodide.ffi import to_js
-        import json
-        def exec_code(payload, _currentState):
-          data = json.loads(payload)
-          currentState = json.loads(_currentState)
-          components = currentState['components']
-          queries = currentState['queries']
-          globals = currentState['globals']
-          variables = currentState['variables']
-          client = currentState['client']
-          server = currentState['server']
-          constants = currentState['constants']
-          page = currentState['page']
-          code_to_execute = ${_code}
+async function executeRunPycode(_ref, code, query, isPreview, mode, currentState) {
+  return { data: await evaluatePythonCode({ _ref, code, query, isPreview, mode, currentState }) };
+}
 
-          try:
-            res = to_js(json.dumps(code_to_execute))
-            # convert dictionary to js object
-            return res
-          except Exception as e:
-            print(e)
-            return {"error": str(e)}
-
-        exec_code
-    `);
-      const _data = JSON.stringify(payload);
-      result = execFunction(_data, _currentState);
-      return JSON.parse(result);
-    } catch (err) {
-      console.error(err);
-
-      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
-      const error = err.message.split(errorType + ': ')[1];
-      const errorMessage = `${errorType} : ${error}`;
-      result = {};
-      if (mode === 'edit') toast.error(errorMessage);
-
-      result = {
-        status: 'failed',
-        message: errorMessage,
-        description: {
-          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
-        },
-      };
-    }
-
-    return result;
-  };
-
-  return await evaluatePython(pyodide, code);
+async function exceutePycode(queryResult, code, currentState, query, mode) {
+  return await evaluatePythonCode({ queryResult, code, query, mode, currentState });
 }
 
 export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {

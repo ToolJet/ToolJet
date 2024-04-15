@@ -60,6 +60,6 @@ export const ssoText = {
   disablePasswordHelperText:
     "Disable password login only if your SSO is configured otherwise you will get locked out",
   toggleUpdateToast: (toggle) => {
-    return `${toggle} configuration updated \n successfully`
+    return `Saved ${toggle} SSO configurations`
   }
 };
