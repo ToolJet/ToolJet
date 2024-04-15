@@ -3,38 +3,27 @@ id: marketplace-plugin-textract
 title: Amazon Textract
 ---
 
-ToolJet can connect to Amazon Textract to extract text and data from scanned documents, forms, and tables. Textract can process documents of various formats, including PDF, JPEG/JPG, and PNG.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/textract.gif" alt="Marketplace: Amazon Textract" />
-
-</div>
-
-:::note
-Before following this guide, it is recommended to check the following doc: **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
-:::
-
+ToolJet integrates with Amazon Textract to facilitate the extraction of text and data from various document types, such as scanned documents, forms, and tables. Supported document formats include PDF, JPEG/JPG, and PNG.
 
 ## Connection
 
-For connecting to Amazon Textract, following credentials are required:
+To connect ToolJet with Amazon Textract, you will need the following credentials:
 - **Access key**
 - **Secret key**
 - **Region**
 
 :::caution
 - Access to the S3 bucket is dependent on the permissions granted to the IAM role added for the connection.
-- Only single page documents are supported. if there is a multipage PDF you can convert it to single page using available online tools.
+- Only single page documents are supported. For multi-page PDFs, consider converting them to single-page formats with online tools.
 :::
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/creds.png" alt="Marketplace: Amazon Textract" />
+<img className="screenshot-full" src="/img/marketplace/plugins/textract/credentials.png" alt="Amazon Textract Configuration" />
 
 </div>
 
-## Supported queries
+## Supported Queries
 
 - **[Analyze Document](#analyze-document)**
 - **[Analyze document stored in AWS S3](#analyze-document-stored-in-aws-s3)**
@@ -45,39 +34,27 @@ The data returned by the queries is in **JSON** format and may include additiona
 
 ### Analyze Document
 
-This operation let's you to analyze the document by providing the document data in **base64** format.
+This operation lets you analyze the document using the document data in **base64** format.
 
-#### Required parameters: 
+#### Required Parameters: 
 
-- **Document**: Provide the document data in base64 scheme. Components like filepicker can be used to pick the document from local system and retrieve the base64 data dynamically using exposed variables. ex: **{{components.filepicker1.file[0].base64Data}}**
-- **Data Output**: Select one or more type of data output of the document. The 4 types of data outputs are: 
-  1. **Forms**: Extracted data and text from forms, including field keys and values.
-  2. **Tables**: Extracted table data, including column and row headers and cell contents.
-  3. **Queries**: Extracted data from databases and other structured data sources.
-  4. **Signature Detection**: Identification and extraction of signatures and signature blocks from documents.
+- **Document**: Supply the document data in base64 format. File Picker component can be used here to pick the document from the local system and retrieve the base64 data dynamically using exposed variables. Example: **{{components.filepicker1.file[0].base64Data}}**.
+- **Data Output**: Choose the desired data output types for the document analysis. Options include: 
+  1. **Forms**: Extract key and value pairs from forms.
+  2. **Tables**: Extract data from tables, including headers and cell content.
+  3. **Queries**: Extract data from databases and other structured sources.
+  4. **Signature Detection**: Identify and extract signatures.
 
-<div style={{textAlign: 'center'}}>
+### Analyze Document Stored in AWS S3
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/doc.png" alt="Marketplace: Amazon Textract" />
+This operation let's you analyze the document stored in your AWS S3 buckets by providing the **bucket** and **object** name.
 
-</div>
+#### Required Parameters: 
 
-### Analyze document stored in AWS S3
-
-This operation let's you to analyze the document stored in your AWS S3 buckets by providing the **bucket** and **object** name.
-
-#### Required parameters: 
-
-- **Bucket**: Name of the S3 bucket that has the document stored
-- **Key**: Object name(document name) that needs to be extracted
-- **Data Output**: Select one or more type of data output of the document. The 4 types of data outputs are: 
-  1. **Forms**: Extracted data and text from forms, including field keys and values.
-  2. **Tables**: Extracted table data, including column and row headers and cell contents.
-  3. **Queries**: Extracted data from databases and other structured data sources.
-  4. **Signature Detection**: Identification and extraction of signatures and signature blocks from documents.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/s3.png" alt="Marketplace: Amazon Textract" />
-
-</div>
+- **Bucket**: Specify the S3 bucket containing the document.
+- **Key**: Provide the name of the document (object) to be analyzed.
+- **Data Output**: Select one or more type of data output of the document. Options include: 
+  1. **Forms**: Extract key and value pairs from forms.
+  2. **Tables**: Extract data from tables, including headers and cell content.
+  3. **Queries**: Extract data from databases and other structured sources.
+  4. **Signature Detection**: Identify and extract signatures.

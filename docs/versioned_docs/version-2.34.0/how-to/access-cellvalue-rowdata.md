@@ -2,8 +2,13 @@
 id: access-cellvalue-rowdata
 title: Dynamically Change Cell Colors in Table
 ---
+<div style={{paddingBottom:'24px'}}>
 
 This guide shows how to change the text color and background color of certain cells in a Table component based on specific conditions.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 1. Start by Creating a New Application and Setting up the Data Source
 - Create a new app and add a **[Table](/docs/widgets/table)** component to the canvas.
@@ -15,6 +20,10 @@ https://fakestoreapi.com/products
 ``` 
 - To view the data that your query will return, click on the **Preview** button. Click on the **Run** button to execute the query and retrieve the data. 
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## 2. Display Data on the Table
 
 - Hide the Query Panel and click on the Table component to open its properties panel on the right.
@@ -23,8 +32,12 @@ https://fakestoreapi.com/products
 {{queries.restapi1.data}}
 ```
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/change-text-color/table-with-data.png" alt="Table Component With Data" />
+    <img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/change-text-color/table-with-data.png" alt="Table Component With Data" />
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 3. Change Text Color Based on Cell Value
 
@@ -43,6 +56,10 @@ Now, if the cell value is `electronics`, the text color will be red; otherwise, 
 
 <i>You can use also Hex color codes for more color options.</i>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## 4. Change Text Color Using Row Data
 
 - Under Cell Background Color for the `symbol` column, paste the below code: 
@@ -60,3 +77,5 @@ Now if the value in the price column is lesser than 100, the cell background col
 </div>
 
 You can use the above methods to change the text and background colors of a cell dynamically.
+
+</div>

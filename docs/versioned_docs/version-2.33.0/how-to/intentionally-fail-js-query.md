@@ -2,8 +2,11 @@
 id: intentionally-fail-js-query
 title: Intentionally Throwing an Error in RunJS for Debugging
 ---
+<div style={{paddingBottom:'24px'}}>
 
 In this step-by-step guide, we'll walk you through the process of creating a RunJS query that intentionally throws an error for debugging purposes.
+
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
