@@ -962,6 +962,7 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
+    const isAllColumnsEditable = this.props.component.component.definition.properties.isAllColumnsEditable?.value;
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -971,7 +972,7 @@ class TableComponent extends React.Component {
       newColumns[index].isEditable = '{{false}}';
     }
 
-    if (item === 'columnType' && value !== 'link') {
+    if (item === 'columnType' && value !== 'link' && resolveReferences(isAllColumnsEditable)) {
       newColumns[index].isEditable = this.props.component.component.definition.properties.isAllColumnsEditable?.value;
     }
 
@@ -993,10 +994,10 @@ class TableComponent extends React.Component {
         resolveReferences(value) &&
         !resolveReferences(this.props.component.component.definition.properties.isAllColumnsEditable?.value)
       ) {
-        const isAllColumnsEditable = newColumns
+        const _isAllColumnsEditable = newColumns
           .filter((column) => column.columnType !== 'link')
           .every((column) => resolveReferences(column.isEditable));
-        if (isAllColumnsEditable) {
+        if (_isAllColumnsEditable) {
           this.props.paramUpdated({ name: 'isAllColumnsEditable' }, 'value', value, 'properties');
         }
       }
