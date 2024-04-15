@@ -7,7 +7,9 @@ title: Overview
 
 Components are used to build the UI of the applications. They can be dragged onto the canvas from the Component Library and can be modified from the Properties Panel without needing to write any code. **[Event Handlers](/docs/widgets/overview#component-event-handlers)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/category/actions-reference)**.
 
-## Adding components
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Adding Components
 
 Components can be dragged and dropped from the Component Library(from the right side on app builder) on to the canvas. Components can be moved by simply click and hold, and can be resized from edges or borders.
 
@@ -17,7 +19,11 @@ Components can be dragged and dropped from the Component Library(from the right 
 
 </div>
 
-### Select multiple components
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Select Multiple Components
 
 For moving the **multiple components** at once, simply **shift+click**, to select multiple components. Once grouped, the components can be moved on the canvas while maintaining their relative positions.
 
@@ -39,15 +45,23 @@ You can also create a selection triangle and move multiple components together b
 You can also use many other **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** in ToolJet to copy, cut, paste components to the canvas.
 :::
 
-## Component properties
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Component Properties
 
 Each Component can be modified and styled from the Properties Panel such as the **data** field, a toggle for **disabling** the component, or stylings like a **background color**. Properties can be modified directly or programmatically by using **[Bindings](#bindings)**, which enables you to write JavaScript code.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/props.png" alt="Components: Overview" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/overview/props.png" alt="Components: Overview" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Component Event Handlers
 
@@ -63,9 +77,13 @@ Event handlers for components have the following properties:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/isvalid.png" alt="Event Handler" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/overview/isvalid.png" alt="Event Handler" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Using Run only if
 
@@ -98,6 +116,10 @@ or
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Bindings
 
 Bindings allow you to get dynamic data into the components. Anything inside of **`{{}}`** is evaluated as a JavaScript expression in ToolJet.
@@ -120,3 +142,5 @@ or
 :::tip
 Check out the How-to guides like **[changing color of text in table column](/docs/how-to/access-cellvalue-rowdata)**, **[Enable/Disable a component using JavaScript](/docs/how-to/access-currentuser)**, and **[more](/docs/category/how-to)**.
 :::
+
+</div>
