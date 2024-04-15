@@ -491,6 +491,7 @@ export default function generateColumnsData({
                     isEditable={isEditable}
                     isFocused={isMultiSelectColumnFocused}
                     setIsFocused={setIsMultiSelectColumnFocused}
+                    cellRowIndex={cell?.row?.index}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

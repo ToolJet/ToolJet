@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
@@ -26,14 +26,15 @@ export const CustomSelect = ({
   isEditable,
   isFocused,
   setIsFocused,
+  cellRowIndex,
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null); // Ref for the input search box
-
+  const isCellRowIndexFocused = useMemo(() => isFocused === cellRowIndex, [isFocused, cellRowIndex]);
   useEffect(() => {
     const handleDocumentClick = (event) => {
       if (!containerRef.current?.contains(event.target)) {
-        setIsFocused(false);
+        setIsFocused('');
       }
     };
 
@@ -46,10 +47,10 @@ export const CustomSelect = ({
 
   useEffect(() => {
     // Focus the input search box when the menu list is open and the component is focused
-    if (isFocused && inputRef.current) {
+    if (isCellRowIndexFocused && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isFocused]);
+  }, [isCellRowIndexFocused]);
 
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
@@ -106,13 +107,12 @@ export const CustomSelect = ({
       MultiValueContainer: CustomMultiValueContainer,
     }),
   };
-
   const defaultValue = defaultOptionsList.length >= 1 ? defaultOptionsList[defaultOptionsList.length - 1] : null;
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={isMulti && !isFocused ? getOverlay(value, containerWidth, darkMode) : <div></div>}
-      trigger={isMulti && !isFocused && ['hover']}
+      overlay={isMulti && !isCellRowIndexFocused ? getOverlay(value, containerWidth, darkMode) : <div></div>}
+      trigger={isMulti && !isCellRowIndexFocused && ['hover']}
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
@@ -126,7 +126,7 @@ export const CustomSelect = ({
           value={value}
           onFocus={() => {
             setTimeout(() => {
-              setIsFocused(true);
+              setIsFocused(cellRowIndex);
             }, 10);
           }}
           onChange={(value) => {
@@ -140,8 +140,8 @@ export const CustomSelect = ({
           hideSelectedOptions={false}
           isClearable={false}
           clearIndicator={false}
-          menuIsOpen={isFocused}
-          isFocused={isFocused}
+          menuIsOpen={isCellRowIndexFocused}
+          isFocused={isCellRowIndexFocused}
         />
       </div>
     </OverlayTrigger>
