@@ -219,6 +219,7 @@ const sidebars = {
       'label': 'Data Sources',
       'items': [
         'data-sources/overview',
+        'data-sources/sample-data-sources',
         {
           'type': 'category',
           'label': 'Datasources library',
