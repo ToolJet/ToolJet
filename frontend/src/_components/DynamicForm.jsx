@@ -211,6 +211,7 @@ const DynamicForm = ({
     className,
     controller,
     encrypted,
+    editorType = 'basic',
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -343,7 +344,7 @@ const DynamicForm = ({
         };
       case 'codehinter':
         return {
-          type: height.split('px')[0] > 100 ? 'multiline' : 'basic',
+          type: editorType,
           currentState,
           initialValue: options[key]
             ? typeof options[key] === 'string'

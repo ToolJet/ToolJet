@@ -14,6 +14,7 @@ import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
+import { PreviewBox } from './PreviewBox';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -37,6 +38,7 @@ const MultiLineCodeEditor = (props) => {
     hideSuggestion,
     suggestions: hints,
     portalProps,
+    showPreview,
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
@@ -86,6 +88,16 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
+    const lastTypedWord = context.state.doc.text.map((element) => element.trim()).join(' ')[context.pos - 1];
+
+    const lastWordRegex = /([.\w]+)$/;
+
+    let lastWord = lastTypedWord ? lastWordRegex.exec(context.state.doc.text) : '';
+
+    if (lastWord === null) {
+      lastWord = [''];
+    }
+
     const lasttWord = context.state.doc.text
       .map((element) => element.trim())
       .join(' ')
@@ -122,9 +134,9 @@ const MultiLineCodeEditor = (props) => {
     const appHints = hints['appHints'];
 
     let autoSuggestionList = appHints.filter((suggestion) => {
-      if (currentWord.length === 0) return true;
+      const find = lastWord[0] || lastWord[1] || '';
 
-      return suggestion.hint.includes(currentWord);
+      return suggestion.hint.includes(find);
     });
 
     const suggestions = generateHints([...JSLangHints, ...autoSuggestionList, ...suggestionList]).map((hint) => {
@@ -227,6 +239,17 @@ const MultiLineCodeEditor = (props) => {
                 indentWithTab={true}
               />
             </div>
+            {showPreview && (
+              <div className="multiline-previewbox-wrapper">
+                <PreviewBox
+                  currentValue={currentValue}
+                  validationSchema={null}
+                  setErrorStateActive={() => null}
+                  componentId={null}
+                  setErrorMessage={() => null}
+                />
+              </div>
+            )}
           </ErrorBoundary>
         </CodeHinter.Portal>
       </div>
