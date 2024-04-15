@@ -68,8 +68,8 @@ export class TooljetDbService {
         return await this.addColumn(organizationId, params);
       case 'drop_column':
         return await this.dropColumn(organizationId, params);
-      case 'rename_table':
-        return await this.renameTable(organizationId, params);
+      case 'edit_table':
+        return await this.editTable(organizationId, params);
       case 'join_tables':
         return await this.joinTable(organizationId, params);
       case 'edit_column':
@@ -92,49 +92,63 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    return await this.tooljetDbManager.query(
-      `
-    SELECT
-      c.COLUMN_NAME,
-      c.DATA_TYPE,
-      CASE
-          WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN c.Column_default
-          WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
-          ELSE c.Column_default
-      END AS Column_default,
-      c.character_maximum_length,
-      c.numeric_precision,
-      JSON_BUILD_OBJECT(
-          'is_not_null',
-          CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
-          'is_primary_key',
-          CASE WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN true ELSE false END
-      ) AS constraints_type,
-      CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
-   FROM
-      INFORMATION_SCHEMA.COLUMNS c
-  LEFT JOIN (
-      SELECT
-          ku.TABLE_CATALOG,
-          ku.TABLE_SCHEMA,
-          ku.TABLE_NAME,
-          ku.COLUMN_NAME,
-          tc.CONSTRAINT_TYPE
-      FROM
-          INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-      INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-  ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
-      AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
-      AND c.TABLE_NAME = pk.TABLE_NAME
-      AND c.COLUMN_NAME = pk.COLUMN_NAME
-  WHERE
-      c.TABLE_NAME = '${internalTable.id}'
-  ORDER BY
-      c.TABLE_SCHEMA,
-      c.TABLE_NAME,
-      c.ORDINAL_POSITION;
-  `
-    );
+    return await this.tooljetDbManager.query(`
+    SELECT c.COLUMN_NAME,
+        c.DATA_TYPE,
+        CASE
+            WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
+            ELSE c.Column_default
+        END AS Column_default,
+        c.character_maximum_length,
+        c.numeric_precision,
+        JSON_BUILD_OBJECT(
+            'is_not_null',
+            CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
+            'is_primary_key',
+            CASE WHEN pk.is_primary = true THEN true ELSE false END,
+            'is_unique',
+            CASE WHEN uk.is_unique = true THEN true ELSE false END
+        ) AS constraints_type,
+        CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
+    FROM INFORMATION_SCHEMA.COLUMNS c
+    LEFT JOIN (
+          SELECT
+            ku.TABLE_CATALOG,
+            ku.TABLE_SCHEMA,
+            ku.TABLE_NAME,
+            ku.COLUMN_NAME,
+            tc.CONSTRAINT_TYPE,
+            CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN true else false END AS is_primary
+        FROM
+            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+          where tc.constraint_type = 'PRIMARY KEY'
+    ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
+        AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
+        AND c.TABLE_NAME = pk.TABLE_NAME
+        AND c.COLUMN_NAME = pk.COLUMN_NAME
+    LEFT JOIN (
+          SELECT
+            ku.TABLE_CATALOG,
+            ku.TABLE_SCHEMA,
+            ku.TABLE_NAME,
+            ku.COLUMN_NAME,
+            tc.CONSTRAINT_TYPE,
+            CASE WHEN tc.constraint_type = 'UNIQUE' THEN true else false END AS is_unique
+        FROM
+            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+          where tc.constraint_type = 'UNIQUE'
+    ) as uk ON c.TABLE_CATALOG = uk.TABLE_CATALOG
+        AND c.TABLE_SCHEMA = uk.TABLE_SCHEMA
+        AND c.TABLE_NAME = uk.TABLE_NAME
+        AND c.COLUMN_NAME = uk.COLUMN_NAME
+    WHERE c.TABLE_NAME = '${internalTable.id}'
+    ORDER BY
+        c.TABLE_SCHEMA,
+        c.TABLE_NAME,
+        c.ORDINAL_POSITION;
+    `);
   }
 
   private async viewTables(organizationId: string) {
@@ -151,25 +165,13 @@ export class TooljetDbService {
   }
 
   private async createTable(organizationId: string, params) {
-    let primaryKeyExist = false;
+    const primaryKeyColumnList = params.columns
+      .filter((column) => column.constraints_type.is_primary_key)
+      .map((column) => column.column_name);
 
-    // primary keys are only supported as serial type
-    params.columns = params.columns.map((column) => {
-      if (column?.constraints_type?.is_primary_key ?? false) {
-        primaryKeyExist = true;
-        return { ...column, data_type: 'serial', column_default: null };
-      }
-      return column;
-    });
+    if (isEmpty(primaryKeyColumnList)) throw new BadRequestException('Primary key is mandatory');
 
-    if (!primaryKeyExist) {
-      throw new BadRequestException();
-    }
-
-    const {
-      table_name: tableName,
-      // columns: [column, ...restColumns],
-    } = params;
+    const { table_name: tableName } = params;
 
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
@@ -189,21 +191,25 @@ export class TooljetDbService {
       await tjdbQueryRunner.createTable(
         new Table({
           name: internalTable.id,
-          columns: this.prepareColumnListForCreateTable(params?.columns),
+          columns: this.prepareColumnListForCreateTable(params.columns),
         })
       );
+
+      await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
       await tjdbQueryRunner.release();
+
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.rollbackTransaction();
       await queryRunner.release();
       await tjdbQueryRunner.release();
+
       throw err;
     }
   }
@@ -239,8 +245,8 @@ export class TooljetDbService {
     }
   }
 
-  private async renameTable(organizationId: string, params) {
-    const { table_name: tableName, new_table_name: newTableName } = params;
+  private async editTable(organizationId: string, params) {
+    const { table_name: tableName, columns } = params;
 
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
@@ -248,13 +254,122 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    const newInternalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName: newTableName },
-    });
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (newInternalTable) throw new BadRequestException('Table name already exists: ' + newTableName);
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
 
-    await this.manager.update(InternalTable, { id: internalTable.id }, { tableName: newTableName });
+    try {
+      const updatedPrimaryKeys = [];
+      const columnstoBeUpdated = [];
+      const columnsToBeInserted = [];
+      const columnsToBeDeleted = [];
+
+      columns.forEach((column) => {
+        const { old_column = {}, new_column = {} } = column;
+
+        // Filter Primary Key column
+        if (!isEmpty(new_column) && new_column?.constraints_type.is_primary_key) {
+          updatedPrimaryKeys.push(
+            new TableColumn({
+              name: new_column.column_name,
+              type: new_column.data_type,
+            })
+          );
+        }
+
+        // Columns to be deleted
+        if (!isEmpty(old_column) && isEmpty(new_column)) {
+          if (old_column.column_name) columnsToBeDeleted.push(old_column.column_name);
+        }
+
+        // New columns to be inserted
+        if (isEmpty(old_column) && !isEmpty(new_column)) {
+          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
+          columnsToBeInserted.push(
+            new TableColumn({
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+            })
+          );
+        }
+
+        // Columns to be updated
+        if (!isEmpty(old_column) && !isEmpty(new_column)) {
+          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
+          columnstoBeUpdated.push({
+            oldColumn: new TableColumn({
+              name: old_column.column_name,
+              type: old_column.data_type,
+              ...(old_column?.column_default &&
+                old_column.data_type !== 'serial' && {
+                  default:
+                    old_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(old_column.column_default)
+                      : old_column.column_default,
+                }),
+              isNullable: !old_column?.constraints_type.is_not_null,
+              isUnique: old_column?.constraints_type.is_unique,
+            }),
+            newColumn: new TableColumn({
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+            }),
+          });
+        }
+      });
+
+      if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
+
+      if (!isEmpty(updatedPrimaryKeys)) await tjdbQueryRunner.dropPrimaryKey(internalTable.id);
+      if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(internalTable.id, columnsToBeDeleted);
+      if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(internalTable.id, columnsToBeInserted);
+      if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(internalTable.id, columnstoBeUpdated);
+      if (!isEmpty(updatedPrimaryKeys)) await tjdbQueryRunner.updatePrimaryKeys(internalTable.id, updatedPrimaryKeys);
+
+      if (params.new_table_name) {
+        const { new_table_name } = params;
+        const newInternalTable = await queryRunner.manager.findOne(InternalTable, {
+          where: { organizationId, tableName: new_table_name },
+        });
+
+        if (newInternalTable) throw new BadRequestException('Table name already exists: ' + new_table_name);
+        await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: new_table_name });
+      }
+
+      await tjdbQueryRunner.commitTransaction();
+      await queryRunner.commitTransaction();
+      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
+      await queryRunner.release();
+    } catch (error) {
+      await tjdbQueryRunner.rollbackTransaction();
+      await queryRunner.rollbackTransaction();
+      await tjdbQueryRunner.release();
+      await queryRunner.release();
+      throw error;
+    }
   }
 
   private async addColumn(organizationId: string, params) {
@@ -281,8 +396,9 @@ export class TooljetDbService {
                 ? this.addQuotesIfString(column['column_default'])
                 : column['column_default'],
           }),
-          ...(column?.constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
-          ...(column?.constraints_type?.is_primary_key ? { isPrimary: true } : {}),
+          isNullable: !column?.constraints_type.is_not_null || false,
+          isUnique: column?.constraints_type.is_unique || false,
+          ...(column?.constraints_type.is_primary_key && { isPrimary: true }),
         })
       );
       await tjdbQueryRunnner.commitTransaction();
@@ -476,7 +592,6 @@ export class TooljetDbService {
 
   private async editColumn(organizationId: string, params) {
     const { table_name: tableName, column } = params;
-    const { constraints_type = {} } = column;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
@@ -501,7 +616,9 @@ export class TooljetDbService {
                 ? this.addQuotesIfString(column['column_default'])
                 : column['column_default'],
           }),
-          ...(constraints_type?.is_not_null ? { isNullable: false } : { isNullable: true }),
+          isNullable: !column?.constraints_type.is_not_null || false,
+          isUnique: column?.constraints_type.is_unique || false,
+          isPrimary: column?.constraints_type.is_primary_key || false,
         })
       );
 
@@ -519,7 +636,8 @@ export class TooljetDbService {
         Object.entries(internalTableInfo).forEach(([key, value]) => {
           customErrorMessage = customErrorMessage.replace(key, value as string);
         });
-        throw new HttpException(customErrorMessage, 422);
+        error.message = customErrorMessage;
+        // throw new HttpException(customErrorMessage, 422);
       }
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
@@ -530,6 +648,7 @@ export class TooljetDbService {
   private prepareColumnListForCreateTable(columns) {
     const columnList = columns.map((column) => {
       const { column_name, data_type, column_default = undefined, constraints_type = {} } = column;
+      const is_primary_key_column = constraints_type?.is_primary_key || false;
 
       return {
         name: column_name,
@@ -537,8 +656,8 @@ export class TooljetDbService {
         ...(column_default && {
           default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
         }),
-        ...(constraints_type?.is_not_null ?? false ? { isNullable: false } : { isNullable: true }),
-        ...(constraints_type?.is_primary_key && { isPrimary: true }),
+        isNullable: constraints_type?.is_not_null ? false : true,
+        isUnique: constraints_type?.is_unique && !is_primary_key_column ? true : false,
       };
     });
     return columnList;

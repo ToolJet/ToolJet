@@ -37,7 +37,6 @@ const Header = ({
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
   const {
-    columns,
     totalRecords,
     sortFilters,
     setSortFilters,
