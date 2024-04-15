@@ -28,7 +28,7 @@ This method enables the creation of a sample application with a pre-configured c
 </div>
 
 
-### **2. Connect the sample data source to a newly created application.**
+### **2. Connect the Sample Data Source to a Newly Created Application.**
 
 This method allows you to add a sample data source to an existing application that is in an empty state (i.e., has no pre-existing components)
 
@@ -43,13 +43,13 @@ This method allows you to add a sample data source to an existing application th
 </div>
 
 
-### **3. Connect the sample data source to an existing application.**
+### **3. Connect the Sample Data Source to an Existing Application.**
 
 This method allows you to connect the sample data source to an existing application from the query panel.
 
-  1. Open the query panel of the application you want to connect to the sample data source.
-  2. Go to the **Query panel**, and click on the **+Add** button to add a new query, and select **Sample Data Source**
-  3. This will create a new empty query. 
+  1. Open the **Query Panel** of the application you want to connect to the **Sample Data Source**.
+  2. In the **Query Panel**, click on the **+Add** button to add a new query, and select **Sample Data Source**.
+  3. This will create a new empty query. You can now write your SQL query to retrieved data from the sample data source.
 
 
 
