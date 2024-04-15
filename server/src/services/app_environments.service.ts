@@ -29,8 +29,10 @@ export class AppEnvironmentService {
         where: { id: editingVersionId },
       });
       const editorEnvironment = await manager.findOne(AppEnvironment, { id: editorVersion.currentEnvironmentId });
-      const { shouldRenderPromoteButton, shouldRenderReleaseButton } =
-        this.calculateButtonVisibility(editorEnvironment);
+      const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility(
+        false,
+        editorEnvironment
+      );
       const response: AppEnvironmentResponse = {
         editorVersion,
         editorEnvironment,
@@ -42,10 +44,14 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  calculateButtonVisibility(appVersionEnvironment?: AppEnvironment) {
+  calculateButtonVisibility(isMultiEnvironmentEnabled: boolean, appVersionEnvironment?: AppEnvironment) {
     /* Further conditions can handle from here */
-    const shouldRenderPromoteButton = false;
-    const shouldRenderReleaseButton = true;
+    if (!isMultiEnvironmentEnabled) {
+      return { shouldRenderPromoteButton: false, shouldRenderReleaseButton: true };
+    }
+    const isCurrentVersionInProduction = appVersionEnvironment?.isDefault;
+    const shouldRenderPromoteButton = !isCurrentVersionInProduction;
+    const shouldRenderReleaseButton = isCurrentVersionInProduction;
     return { shouldRenderPromoteButton, shouldRenderReleaseButton };
   }
 
@@ -82,7 +88,7 @@ export class AppEnvironmentService {
 
           const multiEnvironmentsNotAvailable = !editorEnvironmentId;
           if (multiEnvironmentsNotAvailable) {
-            const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility();
+            const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility(false);
             appEnvironmentResponse.shouldRenderPromoteButton = shouldRenderPromoteButton;
             appEnvironmentResponse.shouldRenderReleaseButton = shouldRenderReleaseButton;
             if (isUserDeletedTheCurrentVersion) {
