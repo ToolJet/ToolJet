@@ -5,7 +5,7 @@ title: Sample Data Sources
 
 # Sample Data Source in ToolJet
 
-ToolJet includes a built-in PostgreSQL sample data source that lets you familiarize yourself with its features and components before connecting your own data. This shared database contains example tables and data for hands-on experimentation. The sample data source is a shared PostgreSQL connection available across all workspaces and applications. This means any changes or updates made to the data will be reflected in real-time for all users, regardless of the application or workspace. If are are using ToolJet Cloud, the sample data resets daily at midnight. However, if you are using a self-hosted version of ToolJet, no reset will occur.
+ToolJet includes a built-in PostgreSQL sample data source that allows you to familiarize yourself with its features and components before connecting your own data. This shared database contains example tables and data for hands-on experimentation. The sample data source is a shared PostgreSQL connection available across all workspaces and applications. This means any changes or updates made to the data will be reflected in real-time for all users, regardless of the application or workspace. If are using ToolJet Cloud, the sample data resets daily at midnight. However, if you are using a self-hosted version of ToolJet, the data will not be reset.
 
   <img className="screenshot-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
 
@@ -52,8 +52,8 @@ This method allows you to add the sample data source to an existing application 
 This method allows you to connect the sample data source to an existing application from the query panel.
 
   1. Open the query panel of the application you want to connect to the sample data source.
-  2. C- Go to the **Query panel**, and click on the **+Add** button to add a new query, and select **Sample Data Source**
-  3. This will create a new emppty query. 
+  2. Go to the **Query panel**, and click on the **+Add** button to add a new query, and select **Sample Data Source**
+  3. This will create a new empty query. 
 
 
 
