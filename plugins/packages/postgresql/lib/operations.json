@@ -28,7 +28,8 @@
         "key": "query",
         "type": "codehinter",
         "description": "Enter query",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "gui": {
@@ -73,6 +74,7 @@
           "type": "codehinter",
           "description": "Enter records",
           "height": "150px",
+          "editorType": "extendedSingleLine",
           "placeholder": "{{ [ ] }}"
         }
       }
