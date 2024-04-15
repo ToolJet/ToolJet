@@ -72,7 +72,7 @@ const RowForm = ({ onCreate, onClose }) => {
     newActiveTabs[index] = tabData;
     setActiveTab(newActiveTabs);
     const newInputValues = [...inputValues];
-    const actualDefaultVal = defaultValue;
+    const actualDefaultVal = defaultValue === 'true' ? true : false;
     if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
       newInputValues[index] = { value: defaultValue, checkboxValue: defaultValue, disabled: true };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
