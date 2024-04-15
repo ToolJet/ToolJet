@@ -176,7 +176,7 @@ class SSOConfiguration extends React.Component {
     const isEnabledKey = `${key}Enabled`;
     const enabledStatus = !this.state[isEnabledKey];
 
-    if (enabledStatus === false) {
+    if (!enabledStatus) {
       try {
         await this.handleToggleSSOOption(key);
         toast.success(
@@ -238,7 +238,7 @@ class SSOConfiguration extends React.Component {
 
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
-    const isEnabled = this.state[isEnabledKey];
+    const isEnabled = this.state[isEnabledKey] || false;
 
     return (
       <div

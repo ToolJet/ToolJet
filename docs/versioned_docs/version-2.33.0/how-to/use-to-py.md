@@ -1,9 +1,14 @@
 ---
 id: use-to-py-function-in-runpy
-title: "Utilize the to_py() Function in RunPy: Translating JavaScript Objects to Python"
+title: "Translating JavaScript Objects to Python in RunPy"
 ---
+<div style={{paddingBottom:'24px'}}>
 
 This guide demonstrates the utilization of the `to_py()` function in RunPy queries for converting JavaScript objects into their corresponding Python representations.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## The to_py() Function
 
@@ -12,6 +17,10 @@ The **to_py()** function within the **Pyodide** library serves as the counterpar
 Similar to **to_js()**, **to_py()** facilitates the mapping and conversion of data types between JavaScript and Python. It effectively converts JavaScript objects, arrays, and other data structures into their Python counterparts.
 
 **Note**: Refer to the **[RunPy](/docs/data-sources/run-py)** documentation for a more in-depth understanding.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Using the to_py() Function
 
@@ -41,6 +50,10 @@ By leveraging to_py(), JavaScript objects can seamlessly transition into Python 
 
 Both **to_js()** and **to_py()** functions offer a convenient means to exchange data between Python and JavaScript in Pyodide, enabling the utilization of both languages' strengths in a unified environment.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Why the Use of to_py() is Essential?
 
 When previewing results in a RunPy query, discrepancies between the JSON and Raw tabs may arise due to the conversion and display mechanisms in Pyodide. By default, **Python dictionaries** are converted to **JavaScript Map objects** in Pyodide, ensuring compatibility between the two languages.
@@ -53,4 +66,6 @@ To maintain consistency between JSON and Raw representations, the **to_js()** fu
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/to_py/topy.gif" alt="Print data from multiple tabs" />
+</div>
+
 </div>
