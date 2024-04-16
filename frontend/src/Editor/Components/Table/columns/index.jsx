@@ -132,8 +132,6 @@ export default function generateColumnsData({
         cellTextColor = '',
         contentWrap = true,
         autoHeight = true,
-        isMultiSelectColumnFocused,
-        setIsMultiSelectColumnFocused,
       }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
@@ -149,7 +147,6 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
         cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
-
         switch (columnType) {
           case 'string':
           case undefined:
@@ -489,9 +486,6 @@ export default function generateColumnsData({
                     }
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
-                    isFocused={isMultiSelectColumnFocused}
-                    setIsFocused={setIsMultiSelectColumnFocused}
-                    cellRowIndex={cell?.row?.index}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

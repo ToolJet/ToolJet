@@ -9,6 +9,7 @@ import Popover from 'react-bootstrap/Popover';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { resolveReferences } from '@/_helpers/utils';
+import { unset } from 'lodash';
 export const OptionsList = ({
   column,
   props,
@@ -89,24 +90,32 @@ export const OptionsList = ({
       const options = column.options;
       options[optionIndex][property] = value;
       column.options = options;
+      const isValueTruthy = !!resolveReferences(value, currentState);
 
       // This block is responsible for updating list of defaultOptions when makeDefaultOption prop is updated
       if (property === 'makeDefaultOption') {
-        const isValueTruthy = !!resolveReferences(value, currentState);
-        const defaultOptionsList = column?.defaultOptionsList ?? [];
-        const indexOfOptionInList = defaultOptionsList.findIndex((option) => {
-          if (option.value === options[optionIndex].value && option.label === options[optionIndex].label) {
-            return option;
+        if (column.columnType === 'select') {
+          // Disable all other default options except the one selected
+          column.options.forEach((option) => unset(option, 'makeDefaultOption'));
+          column.options[optionIndex][property] = value;
+          if (isValueTruthy) {
+            column.defaultOptionsList = [column.options[optionIndex]];
           }
-        });
-        if (indexOfOptionInList === -1 && isValueTruthy) {
-          defaultOptionsList.push(options[optionIndex]);
+        } else {
+          const defaultOptionsList = column?.defaultOptionsList ?? [];
+          const indexOfOptionInList = defaultOptionsList.findIndex((option) => {
+            if (option.value === options[optionIndex].value && option.label === options[optionIndex].label) {
+              return option;
+            }
+          });
+          if (indexOfOptionInList === -1 && isValueTruthy) {
+            defaultOptionsList.push(options[optionIndex]);
+          }
+          if (indexOfOptionInList !== -1 && !isValueTruthy) {
+            defaultOptionsList.splice(indexOfOptionInList, 1);
+          }
+          column.defaultOptionsList = defaultOptionsList;
         }
-        if (indexOfOptionInList !== -1 && !isValueTruthy) {
-          defaultOptionsList.splice(indexOfOptionInList, 1);
-        }
-
-        column.defaultOptionsList = defaultOptionsList;
       }
 
       const newColumns = columns.value;

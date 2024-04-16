@@ -5,7 +5,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import _ from 'lodash';
+import { isArray, isEmpty, isString } from 'lodash';
 const { MenuList } = components;
 
 export const CustomSelect = ({
@@ -24,17 +24,14 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
-  isFocused,
-  setIsFocused,
-  cellRowIndex,
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null); // Ref for the input search box
-  const isCellRowIndexFocused = useMemo(() => isFocused === cellRowIndex, [isFocused, cellRowIndex]);
+  const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     const handleDocumentClick = (event) => {
       if (isMulti && !containerRef.current?.contains(event.target)) {
-        setIsFocused('');
+        setIsFocused(false);
       }
     };
 
@@ -47,10 +44,10 @@ export const CustomSelect = ({
 
   useEffect(() => {
     // Focus the input search box when the menu list is open and the component is focused
-    if (isCellRowIndexFocused && inputRef.current) {
+    if (isFocused && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isCellRowIndexFocused]);
+  }, [isFocused]);
 
   const customStyles = {
     ...defaultStyles(darkMode, '100%'),
@@ -107,9 +104,36 @@ export const CustomSelect = ({
       MultiValueContainer: CustomMultiValueContainer,
     }),
   };
-  const defaultValue = defaultOptionsList.length >= 1 ? defaultOptionsList[defaultOptionsList.length - 1] : null;
+  const defaultValue = useMemo(() => {
+    if (defaultOptionsList.length >= 1) {
+      return !isMulti ? defaultOptionsList[defaultOptionsList.length - 1] : defaultOptionsList;
+    }
+  }, [isMulti, defaultOptionsList]);
 
-  const calculateIfPopoverRequired = (value, containerSize) => {
+  const _value = useMemo(() => {
+    // Return null to show default value
+    if (isEmpty(value)) {
+      return null;
+    }
+    if (isMulti && options?.length && value?.length) {
+      if (isArray(value)) {
+        return options?.filter((option) =>
+          value?.find((val) => {
+            if (val.hasOwnProperty('value')) {
+              return option.value === val.value;
+            } else return option.value === val;
+          })
+        );
+      } else {
+        return []; // Return empty array to not show default value in case of wrong value to be set
+      }
+    } else {
+      // Condition for single select
+      return options?.find((option) => option.value === value) || [];
+    }
+  }, [options, value, isMulti]);
+
+  const calculateIfPopoverRequired = (value, containerWidth) => {
     let totalWidth = 0;
 
     // Calculate total width of all span elements
@@ -117,14 +141,16 @@ export const CustomSelect = ({
       const valueWidth = option.label.length * 12 * 0.6 + 4 * 2; // Assuming font-size: 12px and gap of 4px on both sides
       totalWidth += valueWidth;
     });
-    return totalWidth > containerSize;
+    return totalWidth > containerWidth;
   };
 
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={isMulti && !isCellRowIndexFocused ? getOverlay(value, containerWidth, darkMode) : <div></div>}
-      trigger={isMulti && !isCellRowIndexFocused && calculateIfPopoverRequired(value, containerWidth - 40) && ['hover']} //container width -24 -16 gives that select container size
+      overlay={
+        isMulti && !isFocused ? getOverlay(_value ? _value : defaultValue, containerWidth, darkMode) : <div></div>
+      }
+      trigger={isMulti && !isFocused && ['hover'] && calculateIfPopoverRequired(value, containerWidth)}
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
@@ -135,13 +161,10 @@ export const CustomSelect = ({
           isDisabled={disabled}
           className={className}
           components={customComponents}
-          value={value}
-          onFocus={() => {
-            setTimeout(() => {
-              setIsFocused(cellRowIndex);
-            }, 10);
-          }}
+          value={_value}
+          onMenuInputFocus={() => setIsFocused(true)}
           onChange={(value) => {
+            setIsFocused(false);
             onChange(value);
           }}
           useCustomStyles={true}
@@ -152,10 +175,10 @@ export const CustomSelect = ({
           hideSelectedOptions={false}
           isClearable={false}
           clearIndicator={false}
-          {...(isMulti && {
-            menuIsOpen: isCellRowIndexFocused,
-            isFocused: isCellRowIndexFocused,
-          })}
+          {...{
+            menuIsOpen: isFocused || undefined,
+            isFocused: isFocused || undefined,
+          }}
         />
       </div>
     </OverlayTrigger>
@@ -248,6 +271,14 @@ const CustomMultiValueContainer = (props) => {
 };
 
 const getOverlay = (value, containerWidth, darkMode) => {
+  const getLabel = (option) => {
+    if (option?.hasOwnProperty('label')) {
+      return option.label;
+    } else if (isString(option)) {
+      return option;
+    } else return '';
+  };
+
   return Array.isArray(value) ? (
     <div
       style={{
@@ -266,9 +297,9 @@ const getOverlay = (value, containerWidth, darkMode) => {
               color: 'var(--text-primary)',
               fontSize: '12px',
             }}
-            key={option.label}
+            key={getLabel(option)}
           >
-            {option.label}
+            {getLabel(option)}
           </span>
         );
       })}
