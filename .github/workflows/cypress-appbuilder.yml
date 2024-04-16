@@ -127,7 +127,8 @@ jobs:
       - name: Get Cypress summary
         id: get-summary
         run: |
-          summary=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${{ job.job_id }}/logs?archived=true | grep -oP 'Cypress Test Results.*</details>')
+          cypress_output=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${{ job.job_id }}/logs?archived=true)
+          summary=$(echo "$cypress_output" | awk '/(Run Finished)/{flag=1; next} /Spec Ran/{flag=0} flag')
           echo "::set-env name=CYPRESS_SUMMARY::$summary"
 
       - name: Set job summary
@@ -144,6 +145,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: 'Cypress Test Summary:\n' + '${{ env.CYPRESS_SUMMARY }}'
+            })
             })
 
   Cypress-App-builder-Subpath:
