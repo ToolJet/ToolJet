@@ -1142,6 +1142,7 @@ class TableComponent extends React.Component {
                     <div className="w-100" {...droppableProps} ref={innerRef}>
                       {columns.value.map((item, index) => {
                         const resolvedItemName = resolveReferences(item.name, this.state.currentState);
+                        const isEditable = resolveReferences(item.isEditable, this.state.currentState);
                         return (
                           <Draggable key={item.id} draggableId={item.id} index={index}>
                             {(provided, snapshot) => (
@@ -1165,7 +1166,7 @@ class TableComponent extends React.Component {
                                       secondaryText={capitalize(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
                                       enableActionsMenu
-                                      isEditable={item.isEditable === '{{true}}'}
+                                      isEditable={isEditable}
                                       onMenuOptionClick={(listItem, menuOptionLabel) => {
                                         if (menuOptionLabel === 'Delete')
                                           this.removeColumn(index, `${item.name}-${index}`);
