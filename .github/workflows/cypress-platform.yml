@@ -89,6 +89,7 @@ jobs:
           npm cache clean --force
           npm install
           npm install --prefix server
+          npm i @css-inline/css-inline --prefix server
           npm install --prefix frontend
           npm run build:plugins
 
