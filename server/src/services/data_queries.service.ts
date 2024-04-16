@@ -406,12 +406,31 @@ export class DataQueriesService {
   async parseSourceOptions(options: any, organization_id: string, environmentId: string): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
+    const variablesMatcher = /(%%.+?%%)/g;
+    const constantMatcher = /{{constants\..+?}}/g;
 
     for (const key of Object.keys(options)) {
       const currentOption = options[key]?.['value'];
-      const variablesMatcher = /(%%.+?%%)/g;
+
+      //! request options are nested arrays with constants and variables
+      if (Array.isArray(currentOption)) {
+        for (let i = 0; i < currentOption.length; i++) {
+          const curr = currentOption[i];
+
+          if (Array.isArray(curr)) {
+            for (let j = 0; j < curr.length; j++) {
+              const inner = curr[j];
+
+              if (constantMatcher.test(inner)) {
+                const resolved = await this.resolveConstants(inner, organization_id, environmentId);
+                curr[j] = resolved;
+              }
+            }
+          }
+        }
+      }
+
       const matched = variablesMatcher.exec(currentOption);
-      const constantMatcher = /{{constants\..+?}}/g;
       if (matched) {
         const resolved = await this.resolveVariable(currentOption, organization_id);
 
