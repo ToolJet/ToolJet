@@ -30,7 +30,7 @@ export const useEnvironmentsAndVersionsStore = create(
               appVersionEnvironment: response.appVersionEnvironment,
               shouldRenderPromoteButton: response.shouldRenderPromoteButton,
               shouldRenderReleaseButton: response.shouldRenderReleaseButton,
-              environments: [response.editorEnvironment],
+              environments: response.environments,
               versionsPromotedToEnvironment: [response.editorVersion],
             }));
           } catch (error) {

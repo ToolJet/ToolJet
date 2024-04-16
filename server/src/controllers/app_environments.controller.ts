@@ -25,7 +25,7 @@ export class AppEnvironmentsController {
      init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
      Should not use for any other purpose. 
     */
-    return await this.appEnvironmentServices.init(editingVersionId);
+    return await this.appEnvironmentServices.init(editingVersionId, user.organizationId);
   }
 
   @UseGuards(JwtAuthGuard)

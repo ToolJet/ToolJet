@@ -14,6 +14,7 @@ export interface AppEnvironmentResponse {
   appVersionEnvironment: AppEnvironment;
   shouldRenderPromoteButton: boolean;
   shouldRenderReleaseButton: boolean;
+  environments: AppEnvironment[];
 }
 
 export enum AppEnvironmentActions {
@@ -22,13 +23,19 @@ export enum AppEnvironmentActions {
 
 @Injectable()
 export class AppEnvironmentService {
-  async init(editingVersionId: string, manager?: EntityManager): Promise<AppEnvironmentResponse> {
+  async init(
+    editingVersionId: string,
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<AppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
         select: ['id', 'name', 'currentEnvironmentId'],
         where: { id: editingVersionId },
       });
-      const editorEnvironment = await manager.findOne(AppEnvironment, { id: editorVersion.currentEnvironmentId });
+      const environments = await manager.find(AppEnvironment, { organizationId });
+      console.log('inside-init', environments);
+      const editorEnvironment = environments.find((env) => env.id === editorVersion.currentEnvironmentId);
       const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility(
         false,
         editorEnvironment
@@ -39,6 +46,7 @@ export class AppEnvironmentService {
         appVersionEnvironment: editorEnvironment,
         shouldRenderPromoteButton,
         shouldRenderReleaseButton,
+        environments,
       };
       return response;
     }, manager);
