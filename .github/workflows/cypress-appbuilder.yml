@@ -1,8 +1,10 @@
 name: Cypress App-Builder
 
 on:
+  push:
+    branches: [develop, main]
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled, unlabeled, closed, opened, synchronize,]
 
   workflow_dispatch:
 
@@ -108,6 +110,7 @@ jobs:
           dir: "./cypress-tests"
 
       - name: App builder
+        id: cypress
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
@@ -125,7 +128,11 @@ jobs:
         id: get-summary
         run: |
           summary=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${{ env.CYPRESS_JOB_ID }}/logs?archived=true | grep -oP 'Cypress Test Results.*</details>')
-          echo "::set-output name=summary::$summary"
+          echo "::set-env name=CYPRESS_SUMMARY::$summary"
+
+      - name: Set job summary
+        if: always()
+        run: echo "${{ env.CYPRESS_SUMMARY }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Adding comment to PR 
         uses: actions/github-script@v5
@@ -136,7 +143,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Cypress Test Summary:\n' + '${{ steps.get-summary.outputs.summary }}'
+              body: 'Cypress Test Summary:\n' + '${{ env.CYPRESS_SUMMARY }}'
             })
 
   Cypress-App-builder-Subpath:
