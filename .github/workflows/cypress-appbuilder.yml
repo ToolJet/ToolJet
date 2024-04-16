@@ -117,6 +117,24 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
+      - name: Get Cypress summary
+        id: get-summary
+        run: |
+          summary=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${{ env.CYPRESS_JOB_ID }}/logs?archived=true | grep -oP 'Cypress Test Results.*</details>')
+          echo "::set-output name=summary::$summary"
+
+      - name: Adding comment to PR 
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Cypress Test Summary:\n' + '${{ steps.get-summary.outputs.summary }}'
+            })
+
   Cypress-App-builder-Subpath:
     runs-on: ubuntu-22.04
 
