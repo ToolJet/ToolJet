@@ -1,7 +1,7 @@
 import { getWorkspaceId } from '@/_helpers/utils';
 import urlJoin from 'url-join';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Select, { components } from 'react-select';
 
 export function UserGroupsSelect(props) {
@@ -9,10 +9,10 @@ export function UserGroupsSelect(props) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   //Will be used when workspace routing settings have been merged
-  const Menu = (props) => {
+  const Menu = useCallback(({ children, ...rest }) => {
     return (
-      <components.Menu {...props}>
-        {props.children}
+      <components.Menu {...rest}>
+        {children}
         <div className="add-group-btn">
           <ButtonSolid
             onClick={() =>
@@ -37,7 +37,7 @@ export function UserGroupsSelect(props) {
         </div>
       </components.Menu>
     );
-  };
+  }, []);
 
   const InputOption = ({ getStyles, Icon, isDisabled, isFocused, isSelected, children, innerProps, ...rest }) => {
     const [isActive, setIsActive] = useState(false);
@@ -99,6 +99,10 @@ export function UserGroupsSelect(props) {
         margin: '0px 10px',
       },
     }),
+    menuList: (base) => ({
+      ...base,
+      maxHeight: '270px',
+    }),
     multiValue: (base) => ({
       ...base,
       borderRadius: '6px',
@@ -108,6 +112,12 @@ export function UserGroupsSelect(props) {
         padding: '0px 6px 1px 3px',
         color: 'var(--slate11)',
       },
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      display: '-webkit-box !important',
+      overflow: 'auto !important',
+      flexWrap: 'unset !important',
     }),
     multiValueRemove: (base, state) => ({
       ...base,

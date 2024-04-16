@@ -125,7 +125,7 @@ export const manageUsersElements = () => {
 
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
   cy.get(usersSelector.buttonDownloadTemplate).click();
-  cy.wait(4000);
+  cy.wait(4000)
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");

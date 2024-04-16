@@ -12,6 +12,7 @@ import { catchDbException } from 'src/helpers/utils.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { AppBase } from 'src/entities/app_base.entity';
 
 @Injectable()
 export class FoldersService {
@@ -129,7 +130,13 @@ export class FoldersService {
       .getCount();
   }
 
-  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string, type = 'front-end'): Promise<App[]> {
+  async getAppsFor(
+    user: User,
+    folder: Folder,
+    page: number,
+    searchKey: string,
+    type = 'front-end'
+  ): Promise<AppBase[]> {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -152,7 +159,7 @@ export class FoldersService {
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
-    const viewableAppsInFolder = await createQueryBuilder(App, 'apps')
+    const viewableAppsInFolder = await createQueryBuilder(AppBase, 'apps')
       .innerJoin(
         '(' + viewableAppsQb.getQuery() + ')',
         'viewable_apps_join',

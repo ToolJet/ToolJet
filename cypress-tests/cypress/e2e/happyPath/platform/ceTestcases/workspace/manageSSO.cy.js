@@ -15,8 +15,8 @@ describe("Manage SSO for multi workspace", () => {
   });
   it("Should verify General settings page elements", () => {
     SSO.resetDomain();
-    SSO.setSignupStatus(false)
-    SSO.defaultSSO(true)
+    SSO.setSignupStatus(false);
+    SSO.defaultSSO(true);
 
     common.navigateToManageSSO();
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {

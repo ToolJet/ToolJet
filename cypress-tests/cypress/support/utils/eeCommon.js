@@ -601,3 +601,21 @@ export const deleteOrganisationSSO = (workspaceName, services) => {
   });
 };
 
+export const passwordToggle = (enable) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "PATCH",
+        url: "http://localhost:3000/api/organizations/configs",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: { "type": "form", "enabled": false },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  });
+};

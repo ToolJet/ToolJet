@@ -21,6 +21,7 @@ handlebars.registerHelper('highlightMentionedUser', function (comment) {
   const regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
 });
+handlebars.registerHelper('eq', (a, b) => a == b);
 
 handlebars.registerHelper('eq', (a, b) => a == b);
 
@@ -154,7 +155,7 @@ export class EmailService {
     organizationId?: string
   ) {
     await this.init(organizationId);
-    const subject = `Welcome to ${organizationName || 'ToolJet'}`;
+    const subject = `Welcome to ${this.WHITE_LABEL_TEXT || 'ToolJet'}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken);
     const templateData = {
       name: name || '',
