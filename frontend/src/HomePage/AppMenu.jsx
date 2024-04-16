@@ -71,6 +71,10 @@ export const AppMenu = function AppMenu({
                         onClick={() => openAppActionModal('remove-app-from-folder')}
                       />
                     )}
+                  </>
+                )}
+                {canUpdateApp && canCreateApp && (
+                  <>
                     <Field
                       text={t('homePage.appCard.cloneApp', 'Clone app')}
                       onClick={() => openAppActionModal('clone-app')}
