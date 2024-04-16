@@ -124,18 +124,24 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-      - name: Get last job HTML URL
-        id: get-html-url
+      - name: Get last job markdown URL
+        id: get-markdown-url
         run: |
-          html_url=$(curl -sL https://api.github.com/repos/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs | jq -r '.jobs[-1].html_url')
-          echo "::set-output name=HTML_URL::$html_url"
+          markdown_url=$(curl -sL https://api.github.com/repos/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs | jq -r '.jobs[-1].html_url')
+          echo "::set-output name=MARKDOWN_URL::$markdown_url"
+
+      - name: Get summary_raw URL
+        id: get-summary-url
+        run: |
+          markdown_url="${{ steps.get-markdown-url.outputs.MARKDOWN_URL }}"
+          job_id=$(basename "$markdown_url")
+          summary_raw_url="https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw"
+          echo "::set-output name=SUMMARY_RAW_URL::$summary_raw_url"
 
       - name: Get Cypress summary
         id: get-summary
         run: |
-          html_url="${{ steps.get-html-url.outputs.HTML_URL }}"
-          job_id=$(basename "$html_url")
-          summary_raw=$(curl -sL "https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${job_id}/logs?archived=true" | grep -oP 'Cypress Test Results.*</details>')
+          summary_raw=$(curl -sL "${{ steps.get-summary-url.outputs.SUMMARY_RAW_URL }}")
           echo "::set-output name=CYPRESS_SUMMARY::$summary_raw"
 
       - name: Adding comment to PR 
