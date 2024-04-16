@@ -773,7 +773,7 @@ class HomePageComponent extends React.Component {
                       data-cy="create-new-app-button"
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
-                      {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                      {this.props.t('homePage.header.createNewApplication', 'Create an app')}
                     </Button>
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position new-app-dropdown">
@@ -789,7 +789,7 @@ class HomePageComponent extends React.Component {
                         data-cy="import-option-label"
                         onChange={this.readAndImport}
                       >
-                        {this.props.t('homePage.header.import', 'Import')}
+                        {this.props.t('homePage.header.import', 'Import from device')}
                         <input
                           type="file"
                           accept=".json"
