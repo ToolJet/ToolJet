@@ -124,13 +124,11 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-      - name: Get Job Summary URL
-        id: get-summary-url
+      - name: Get Job Summary
+        id: exp
         uses: pl-strflt/job-summary-url-action@v1
-        with:
-          repository: ToolJet/ToolJet
-          run_id: ${{ github.run_id }}
-          job: ${{ github.job }}
+      - run: echo '${{ steps.exp.outputs.job_summary_url }}'
+        shell: bash
 
       - name: Get Cypress summary
         id: get-summary
