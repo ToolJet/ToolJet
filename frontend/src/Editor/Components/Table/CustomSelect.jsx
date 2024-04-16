@@ -150,7 +150,7 @@ export const CustomSelect = ({
       overlay={
         isMulti && !isFocused ? getOverlay(_value ? _value : defaultValue, containerWidth, darkMode) : <div></div>
       }
-      trigger={isMulti && !isFocused && ['hover'] && calculateIfPopoverRequired(value, containerWidth)}
+      trigger={isMulti && !isFocused && calculateIfPopoverRequired(_value, containerWidth - 40) && ['hover']} //container width -24 -16 gives that select container size
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
