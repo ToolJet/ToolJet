@@ -33,12 +33,14 @@ const Text = ({
   });
   const { isValid, validationError } = validationData;
   const ref = useRef();
+  const nonEditableCellValueRef = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [contentEditable, setContentEditable] = useState(false);
   const cellStyles = {
     color: cellTextColor ?? 'inherit',
   };
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (hovered) {
@@ -66,6 +68,7 @@ const Text = ({
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
+        setIsEditing(false);
         if (isEditable && cellValue !== e.target.textContent) {
           const div = e.target;
           let content = div.innerHTML;
@@ -82,7 +85,8 @@ const Text = ({
         }
       }}
       onFocus={(e) => {
-        setShowOverlay(false);
+        setIsEditing(true);
+        // setShowOverlay(false);
         e.stopPropagation();
       }}
       onClick={(e) => {
@@ -98,7 +102,7 @@ const Text = ({
       )}`}
       style={cellStyles}
     >
-      {cellValue}
+      <span ref={nonEditableCellValueRef}>{cellValue}</span>
     </div>
   );
 
@@ -120,7 +124,9 @@ const Text = ({
       </div>
     );
   };
-  const _showOverlay = ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight;
+  const _showOverlay = isEditable
+    ? ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight
+    : ref.current && ref.current?.parentElement?.clientWidth < nonEditableCellValueRef.current?.clientWidth;
 
   return (
     <>
@@ -129,9 +135,14 @@ const Text = ({
         overlay={_showOverlay ? getOverlay() : <div></div>}
         trigger={_showOverlay && ['hover']}
         rootClose={true}
-        show={_showOverlay && showOverlay}
+        show={_showOverlay && showOverlay && !isEditing}
       >
-        <div className="h-100 d-flex justify-content-center flex-column position-relative">
+        <div
+          className={`h-100 d-flex ${
+            _showOverlay && isEditable ? '' : 'justify-content-center'
+          } flex-column position-relative bla`}
+          style={{ ...(isEditing && { zIndex: 2 }) }}
+        >
           <div
             onMouseMove={() => {
               if (!hovered) setHovered(true);
