@@ -272,7 +272,7 @@ We are ready with the labels, let's place the input components next to the label
 |:----------------|:-------------------|:-----------------|
 | Text Input      | taskNameInput      | Development      |
 | Number Input    | taskDurationInput  | 1         |
-| Date Picker     | taskDateInput      | {{moment().format("DD/MM/YYYY")}}|
+| Date Picker     | taskDateInput      | `{{moment().format("DD/MM/YYYY")}}`|
 | Textarea        | taskDescriptionInput| Creating a modal component |
 
 <div style={{textAlign: 'center'}}>
