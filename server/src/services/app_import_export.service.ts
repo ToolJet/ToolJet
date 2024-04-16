@@ -102,6 +102,7 @@ export class AppImportExportService {
           .where('data_sources.appVersionId IN(:...versionId)', {
             versionId: appVersions.map((v) => v.id),
           })
+          .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
           .orderBy('data_sources.created_at', 'ASC')
           .getMany());
 
