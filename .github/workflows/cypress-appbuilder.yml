@@ -144,7 +144,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Job Summary URL: ' + '${{ steps.get-summary-url.outputs.job_summary_url }}'
+              body: 'Job Summary URL: ' + '${{ steps.get-summary-url.outputs.job_summary_url }} and ${{ steps.exp.outputs.job_summary_url }}'
             })
 
   Cypress-App-builder-Subpath:
