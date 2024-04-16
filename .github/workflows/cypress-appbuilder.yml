@@ -127,15 +127,12 @@ jobs:
       - name: Get Cypress summary
         id: get-summary
         run: |
-          cypress_output=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${{ job.job_id }}/logs?archived=true)
-          summary=$(echo "$cypress_output" | awk '/(Run Finished)/{flag=1; next} /Spec Ran/{flag=0} flag')
-          echo "::set-env name=CYPRESS_SUMMARY::$summary"
-
-      - name: Set job summary
-        if: always()
-        run: echo "${{ env.CYPRESS_SUMMARY }}" >> $GITHUB_STEP_SUMMARY
+          job_id=$(curl -sL https://api.github.com/repos/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs | jq -r '.jobs[-1].id')
+          summary_raw=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw)
+          echo "::set-output name=CYPRESS_SUMMARY::$summary_raw"
 
       - name: Adding comment to PR 
+        if: always()
         uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
@@ -144,8 +141,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Cypress Test Summary:\n' + '${{ env.CYPRESS_SUMMARY }}'
-            })
+              body: 'Cypress Test Summary:\n' + '${{ steps.get-summary.outputs.CYPRESS_SUMMARY }}'
             })
 
   Cypress-App-builder-Subpath:
