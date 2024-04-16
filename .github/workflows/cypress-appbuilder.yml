@@ -13,7 +13,7 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main') && github.run_number || github.ref }}
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/checkout-')) && github.run_number || github.ref }}
   cancel-in-progress: true
 
 jobs:
