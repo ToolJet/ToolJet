@@ -295,11 +295,11 @@ Rename the query to *addLog*, select **Create row** as Operations and use the be
 
 | Column Name    | Keys                | 
 | :-------------- | :------------------------ |
-| employee       | {{globals.currentUser.email}}  |
-| taskname       | {{components.taskNameInput.value}}  |
-| duration       | {{components.taskDurationInput.value}}  |
-| dateoftask       | {{components.taskDateInput.value}}  |
-| taskdescription       | {{components.taskDescriptionInput.value}}  |
+| employee       | `{{globals.currentUser.email}}`  |
+| taskname       | `{{components.taskNameInput.value}}`  |
+| duration       | `{{components.taskDurationInput.value}}`  |
+| dateoftask       | `{{components.taskDateInput.value}}`  |
+| taskdescription       | `{{components.taskDescriptionInput.value}}`  |
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/add-log-config.png" alt="Configuration for the addLog query" />
