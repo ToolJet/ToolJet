@@ -137,6 +137,8 @@ jobs:
           job_id=$(basename "$markdown_url")
           summary_raw_url="https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw"
           echo "::set-output name=SUMMARY_RAW_URL::$summary_raw_url"
+          echo "Summary Raw URL: $summary_raw_url"
+          echo "Job ID: $job_id"
 
       - name: Get Cypress summary
         id: get-summary
