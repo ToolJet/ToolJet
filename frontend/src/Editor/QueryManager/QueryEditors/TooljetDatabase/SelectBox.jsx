@@ -20,6 +20,7 @@ function DataSourceSelect({
   selected,
   emptyError,
   highlightSelected,
+  foreignKeyAccess = false,
 }) {
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
@@ -39,7 +40,7 @@ function DataSourceSelect({
       <Select
         onChange={(option) => handleChangeDataSource(option)}
         classNames={{
-          menu: () => 'tj-scrollbar',
+          menu: () => (foreignKeyAccess ? 'tj-scrollbar tjdb-dashboard-scrollbar' : 'tj-scrollbar'),
         }}
         ref={selectRef}
         controlShouldRenderValue={false}

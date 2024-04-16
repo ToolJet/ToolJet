@@ -337,6 +337,11 @@
 
   }
 
+  .foreignKey-hover {
+    border: 1px solid var(--slate9) !important;
+    background-color: var(--slate6) !important;
+  }
+
 }
 
 .column-schema-container::-webkit-scrollbar {
@@ -454,6 +459,7 @@
     }
   }
 }
+
 .tooltip-table-edit-column {
   inset: auto auto 0px -183px !important
 }
@@ -499,11 +505,6 @@
       color: var(--text-primary);
     }
   }
-}
-
-.foreignKey-hover {
-  border: 1px solid var(--slate9) !important;
-  background-color: var(--slate6) !important;
 }
 
 .primary-key-tooltip {

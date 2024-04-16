@@ -6,7 +6,7 @@ import ForeignKeyRelation from './ForeignKeyRelation';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns }) => {
+const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns, tableName }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
   const [indexHoveredColumn, setIndexHoveredColumn] = useState(null);
 
@@ -94,7 +94,13 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns }) => {
           </ButtonSolid>
         </div>
 
-        <ForeignKeyRelation onMouseHoverFunction={onMouseHover} setIndexHoveredColumn={setIndexHoveredColumn} />
+        <ForeignKeyRelation
+          onMouseHoverFunction={onMouseHover}
+          setIndexHoveredColumn={setIndexHoveredColumn}
+          tableName={tableName}
+          columns={columns}
+          isEditMode={isEditMode}
+        />
       </div>
     </div>
   );

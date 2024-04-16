@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import SourceKeyRelation from './TableKeyRelations';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 
-const ForeignKeyTableForm = () => {
+const ForeignKeyTableForm = ({ tableName, columns, isEditMode }) => {
   return (
     <div className="foreignKeyRelation-form-container">
       <div className="card-header">
@@ -10,7 +10,7 @@ const ForeignKeyTableForm = () => {
           Create foreign key relation
         </h3>
       </div>
-      <SourceKeyRelation />
+      <SourceKeyRelation tableName={tableName} columns={columns} isEditMode={isEditMode} />
       <DrawerFooter
         fetching={false}
         isEditMode={false}

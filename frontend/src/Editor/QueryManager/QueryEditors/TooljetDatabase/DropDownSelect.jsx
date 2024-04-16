@@ -24,6 +24,7 @@ const DropDownSelect = ({
   showPlaceHolder = false,
   highlightSelected = true,
   buttonClasses = '',
+  foreignKeyAccess = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -107,8 +108,8 @@ const DropDownSelect = ({
           id={popoverId.current}
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{
-            width: '244px',
-            maxWidth: '246px',
+            width: foreignKeyAccess ? '355px' : '244px',
+            maxWidth: foreignKeyAccess ? '355px' : '246px',
             overflow: 'hidden',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }}
@@ -127,6 +128,7 @@ const DropDownSelect = ({
             addBtnLabel={addBtnLabel}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
+            foreignKeyAccess={foreignKeyAccess}
           />
         </Popover>
       }
@@ -147,11 +149,11 @@ const DropDownSelect = ({
             {
               'justify-content-start': !shouldCenterAlignText,
               'justify-content-centre': shouldCenterAlignText,
+              'border-1 tdb-dropdown-btn-foreignKeyAccess': foreignKeyAccess,
+              'border-0 tdb-dropdown-btn': !foreignKeyAccess,
             },
-            'tdb-dropdown-btn',
             'gap-0',
             'w-100',
-            'border-0',
             'rounded-0',
             'position-relative',
             'font-weight-normal',
