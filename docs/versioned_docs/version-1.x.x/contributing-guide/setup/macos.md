@@ -11,9 +11,9 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
 1. Set up the environment
 
     1.1 Install Homebrew
-    ```bash
-    /bin/bash -c "(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    ```/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     ```
+
     1.2 Install Node.js ( version: v14.17.3 ) and npm (version: v7.20.0)
     ```bash
     brew install nvm
@@ -100,7 +100,7 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     cd ./frontend && npm start
     ```
 
-    The client will start on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
+    The client will start on the port 8082, you can access the client by visiting:  [http://localhost:8082](http://localhost:8082)
 
 9. Create login credentials
 

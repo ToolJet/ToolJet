@@ -248,7 +248,7 @@ export class AuthService {
     if (existingUser?.invitationToken) {
       this.emailService
         .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-        .catch((err) => console.error(err));
+        .catch((err) => console.error('Error while sending welcome mail', err));
       return;
     }
   }
@@ -370,7 +370,7 @@ export class AuthService {
         }
         this.emailService
           .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
-          .catch((err) => console.error(err));
+          .catch((err) => console.error('Error while sending welcome mail', err));
         return {};
       }
     }, manager);
@@ -528,7 +528,7 @@ export class AuthService {
         } else {
           this.emailService
             .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-            .catch((err) => console.error(err));
+            .catch((err) => console.error('Error while sending welcome mail', err));
           throw new NotAcceptableException(errorMessage);
         }
         break;
@@ -674,7 +674,9 @@ export class AuthService {
     }
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
-    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
+    this.emailService
+      .sendPasswordResetEmail(email, forgotPasswordToken, user.firstName)
+      .catch((err) => console.error('Error while sending password reset mail', err));
   }
 
   async resetPassword(token: string, password: string) {

@@ -60,6 +60,7 @@ const ConstantTable = ({
                       <span
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}
                         data-tooltip-id="tooltip-for-org-constant-cell"
+                        className="tj-text"
                       >
                         {String(constant.name).length > 30
                           ? String(constant.name).substring(0, 30) + '...'
