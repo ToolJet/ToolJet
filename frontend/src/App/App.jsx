@@ -33,6 +33,10 @@ import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
 import { AuthRoute } from '@/Routes/AuthRoute';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { ManageGroupPermissions } from '@/ManageGroupPermissions';
+import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
+import { ManageOrgVars } from '@/ManageOrgVars';
 
 const AppWrapper = (props) => {
   return (
@@ -258,7 +262,36 @@ class AppComponent extends React.Component {
                     <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </AdminRoute>
                 }
-              />
+              >
+                <Route
+                  path="users"
+                  element={
+                    <AdminRoute>
+                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-login"
+                  element={
+                    <AdminRoute>
+                      <OrganizationLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="groups"
+                  element={
+                    <AdminRoute>
+                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-variables"
+                  element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+              </Route>
               <Route
                 exact
                 path="/:workspaceId/settings"
