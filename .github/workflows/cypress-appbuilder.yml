@@ -10,6 +10,10 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main') && github.run_number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Cypress-App-Builder:
     runs-on: ubuntu-22.04
