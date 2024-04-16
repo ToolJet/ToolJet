@@ -151,7 +151,8 @@ function TableSchema({
                     }));
                     const prevColumns = { ...columnDetails };
                     prevColumns[index].data_type = value ? value.value : null;
-                    prevColumns[index].column_default = value.value === 'serial' ? 'Auto-generated' : null;
+                    isEditMode &&
+                      (prevColumns[index].column_default = value.value === 'serial' ? 'Auto-generated' : null);
                     prevColumns[index].dataTypeDetails = value;
                     const columnConstraints = prevColumns[index]?.constraints_type ?? {};
                     columnConstraints.is_not_null =
