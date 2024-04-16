@@ -33,6 +33,7 @@ const Text = ({
   });
   const { isValid, validationError } = validationData;
   const ref = useRef();
+  const nonEditableCellValueRef = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [contentEditable, setContentEditable] = useState(false);
@@ -98,7 +99,7 @@ const Text = ({
       )}`}
       style={cellStyles}
     >
-      {cellValue}
+      <span ref={nonEditableCellValueRef}>{cellValue}</span>
     </div>
   );
 
@@ -120,7 +121,9 @@ const Text = ({
       </div>
     );
   };
-  const _showOverlay = ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight;
+  const _showOverlay = isEditable
+    ? ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight
+    : ref.current && ref.current?.parentElement?.clientWidth < nonEditableCellValueRef.current?.clientWidth;
 
   return (
     <>
@@ -131,7 +134,11 @@ const Text = ({
         rootClose={true}
         show={_showOverlay && showOverlay}
       >
-        <div className="h-100 d-flex justify-content-center flex-column position-relative">
+        <div
+          className={`h-100 d-flex ${
+            _showOverlay && isEditable ? '' : 'justify-content-center'
+          } flex-column position-relative`}
+        >
           <div
             onMouseMove={() => {
               if (!hovered) setHovered(true);
