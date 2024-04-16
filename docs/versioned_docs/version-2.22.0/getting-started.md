@@ -19,18 +19,7 @@ Once the data sources are connected, ToolJet can run **queries** on these data s
 
 <img src="/img/v2-beta/getting_started/intro.webp" alt="Getting started Demo app" width="100%" height="100%" loading="eager" />
 
-<!-- Why ToolJet section is commented out.
 
-## Why ToolJet
-
-When you're building an internal tool, there are a lot of tools and frameworks available. But with ToolJet, you can save developers' hours by allowing them to build full-stack business applications in minutes.
-
-- **Open-Source**: ToolJet is Open-Source, you can go through the ToolJet codebase on **[GitHub](https://github.com/ToolJet/ToolJet)** or you can **deploy ToolJet on your infrastructure**.
-- **Full-stack platform**: ToolJet has a **[built-in database](/docs/tooljet-database)**, **[External datasources](/docs/data-sources/airtable)**, and a frontend builder so you can build a full-stack app right inside it. ToolJet comes with Custom Component for importing your own **react components** and the ability to write custom **JavaScript** and **Python** code.
-- **Extensible**: Didn't find the **component** or **datasource** that fit your application's requirements? You can always build your own **component** and **datasource** using our **plugin development kit**.
-- **Powerful Apps**: With ToolJet, developers can quickly build powerful custom internal tools for their Support, Operations and Sales teams. Build CRUD apps, Dashboards, Admin Panels, CRMs and much more.
-
--->
 
 ## How ToolJet works
 
