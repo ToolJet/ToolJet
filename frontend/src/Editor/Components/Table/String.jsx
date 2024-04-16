@@ -40,6 +40,7 @@ const String = ({
   const ref = React.useRef(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (hovered) {
@@ -64,6 +65,7 @@ const String = ({
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
+        setIsEditing(false);
         if (cellValue !== e.target.textContent) {
           handleCellValueChange(cell.row.index, column.key || column.name, e.target.textContent, cell.row.original);
         }
@@ -75,7 +77,10 @@ const String = ({
           }
         }
       }}
-      onFocus={(e) => e.stopPropagation()}
+      onFocus={(e) => {
+        setIsEditing(true);
+        e.stopPropagation();
+      }}
     >
       <span>{cellValue}</span>
     </div>
@@ -100,18 +105,18 @@ const String = ({
     );
   };
   const _showOverlay = ref?.current && ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth;
-  if (!isEditable) {
-    return (
-      <div
-        className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-          horizontalAlignment
-        )}`}
-        style={cellStyles}
-      >
-        {cellValue}
-      </div>
-    );
-  }
+  // if (!isEditable) {
+  //   return (
+  //     <div
+  //       className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+  //         horizontalAlignment
+  //       )}`}
+  //       style={cellStyles}
+  //     >
+  //       <span>{cellValue}</span>
+  //     </div>
+  //   );
+  // }
   return (
     <>
       <OverlayTrigger
@@ -119,19 +124,35 @@ const String = ({
         overlay={_showOverlay ? getOverlay() : <div></div>}
         trigger={_showOverlay && ['hover']}
         rootClose={true}
-        show={_showOverlay && showOverlay}
+        show={_showOverlay && showOverlay && !isEditing}
       >
-        <div className="h-100 d-flex flex-column justify-content-center position-relative">
+        {!isEditable ? (
           <div
+            className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+              horizontalAlignment
+            )}`}
+            style={cellStyles}
             onMouseMove={() => {
               if (!hovered) setHovered(true);
             }}
             onMouseOut={() => setHovered(false)}
+            ref={ref}
           >
-            {_renderString()}
+            <span>{cellValue}</span>
           </div>
-          <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
-        </div>
+        ) : (
+          <div className="h-100 d-flex flex-column justify-content-center position-relative">
+            <div
+              onMouseMove={() => {
+                if (!hovered) setHovered(true);
+              }}
+              onMouseOut={() => setHovered(false)}
+            >
+              {_renderString()}
+            </div>
+            <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+          </div>
+        )}
       </OverlayTrigger>
     </>
   );
