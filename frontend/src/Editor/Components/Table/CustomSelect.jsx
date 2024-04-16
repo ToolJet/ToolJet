@@ -108,11 +108,23 @@ export const CustomSelect = ({
     }),
   };
   const defaultValue = defaultOptionsList.length >= 1 ? defaultOptionsList[defaultOptionsList.length - 1] : null;
+
+  const calculateIfPopoverRequired = (value, containerSize) => {
+    let totalWidth = 0;
+
+    // Calculate total width of all span elements
+    value?.forEach((option) => {
+      const valueWidth = option.label.length * 12 * 0.6 + 4 * 2; // Assuming font-size: 12px and gap of 4px on both sides
+      totalWidth += valueWidth;
+    });
+    return totalWidth > containerSize;
+  };
+
   return (
     <OverlayTrigger
       placement="bottom"
       overlay={isMulti && !isCellRowIndexFocused ? getOverlay(value, containerWidth, darkMode) : <div></div>}
-      trigger={isMulti && !isCellRowIndexFocused && ['hover']}
+      trigger={isMulti && !isCellRowIndexFocused && calculateIfPopoverRequired(value, containerWidth - 40) && ['hover']} //container width -24 -16 gives that select container size
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
@@ -220,7 +232,6 @@ const MultiValueRemove = (props) => {
   const { innerProps } = props;
   return <div {...innerProps} />;
 };
-
 const CustomMultiValueContainer = (props) => {
   return (
     <div
