@@ -576,7 +576,7 @@ export const Container = ({
       componentData.parent = parent ? parent : null;
 
       return {
-        ...copyOfBoxes,
+        ...boxesObj,
         [id]: {
           ...copyOfBoxes[id],
           component: componentData,
