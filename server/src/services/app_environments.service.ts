@@ -8,13 +8,17 @@ import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
+interface ExtendedEnvironment extends AppEnvironment {
+  appVersionsCount?: number;
+}
+
 export interface AppEnvironmentResponse {
   editorVersion: Partial<AppVersion>;
   editorEnvironment: AppEnvironment;
   appVersionEnvironment: AppEnvironment;
   shouldRenderPromoteButton: boolean;
   shouldRenderReleaseButton: boolean;
-  environments: AppEnvironment[];
+  environments: ExtendedEnvironment[];
 }
 
 export enum AppEnvironmentActions {
@@ -30,11 +34,10 @@ export class AppEnvironmentService {
   ): Promise<AppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
-        select: ['id', 'name', 'currentEnvironmentId'],
+        select: ['id', 'name', 'currentEnvironmentId', 'appId'],
         where: { id: editingVersionId },
       });
-      const environments = await manager.find(AppEnvironment, { organizationId });
-      console.log('inside-init', environments);
+      const environments: ExtendedEnvironment[] = await this.getAll(organizationId, manager, editorVersion.appId);
       const editorEnvironment = environments.find((env) => env.id === editorVersion.currentEnvironmentId);
       const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility(
         false,
@@ -55,7 +58,10 @@ export class AppEnvironmentService {
   calculateButtonVisibility(isMultiEnvironmentEnabled: boolean, appVersionEnvironment?: AppEnvironment) {
     /* Further conditions can handle from here */
     if (!isMultiEnvironmentEnabled) {
-      return { shouldRenderPromoteButton: false, shouldRenderReleaseButton: true };
+      return {
+        shouldRenderPromoteButton: false,
+        shouldRenderReleaseButton: true,
+      };
     }
     const isCurrentVersionInProduction = appVersionEnvironment?.isDefault;
     const shouldRenderPromoteButton = !isCurrentVersionInProduction;
@@ -174,7 +180,10 @@ export class AppEnvironmentService {
   ): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const condition: FindOneOptions<AppEnvironment> = {
-        where: { organizationId, ...(id ? { id } : !priorityCheck && { isDefault: true }) },
+        where: {
+          organizationId,
+          ...(id ? { id } : !priorityCheck && { isDefault: true }),
+        },
         ...(priorityCheck && { order: { priority: 'ASC' } }),
       };
       return await manager.findOneOrFail(AppEnvironment, condition);
@@ -187,7 +196,9 @@ export class AppEnvironmentService {
       if (!environmentId) {
         envId = (await this.get(organizationId, null, false, manager)).id;
       }
-      return await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } });
+      return await manager.findOneOrFail(DataSourceOptions, {
+        where: { environmentId: envId, dataSourceId },
+      });
     });
   }
 
@@ -213,7 +224,7 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getAll(organizationId: string, manager?: EntityManager, appId?: string): Promise<AppEnvironment[]> {
+  async getAll(organizationId: string, manager?: EntityManager, appId?: string): Promise<ExtendedEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const appEnvironments = await manager.find(AppEnvironment, {
         where: {
@@ -229,7 +240,9 @@ export class AppEnvironmentService {
         for (const appEnvironment of appEnvironments) {
           const count = await manager.count(AppVersion, {
             where: {
-              ...(appEnvironment.priority !== 1 && { currentEnvironmentId: appEnvironment.id }),
+              ...(appEnvironment.priority !== 1 && {
+                currentEnvironmentId: appEnvironment.id,
+              }),
               appId,
             },
           });
@@ -374,7 +387,11 @@ export class AppEnvironmentService {
         envId = (await this.get(organizationId, environmentId, false, manager)).id;
       }
 
-      const constantId = (await manager.findOne(OrganizationConstant, { where: { constantName, organizationId } })).id;
+      const constantId = (
+        await manager.findOne(OrganizationConstant, {
+          where: { constantName, organizationId },
+        })
+      ).id;
 
       return await manager.findOneOrFail(OrgEnvironmentConstantValue, {
         where: { organizationConstantId: constantId, environmentId: envId },
