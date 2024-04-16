@@ -127,7 +127,7 @@ jobs:
       - name: Get Cypress summary
         id: get-summary
         run: |
-          summary=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${{ env.CYPRESS_JOB_ID }}/logs?archived=true | grep -oP 'Cypress Test Results.*</details>')
+          summary=$(curl -sL https://github.com/ToolJet/ToolJet/actions/runs/${{ github.run_id }}/jobs/${{ job.job_id }}/logs?archived=true | grep -oP 'Cypress Test Results.*</details>')
           echo "::set-env name=CYPRESS_SUMMARY::$summary"
 
       - name: Set job summary
