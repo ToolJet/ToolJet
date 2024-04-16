@@ -48,24 +48,6 @@ import { ImportExportResourcesModule } from './modules/import_export_resources/i
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
-const port = +process.env.SMTP_PORT || 587;
-const transport =
-  process.env.NODE_ENV === 'development'
-    ? {
-        host: 'localhost',
-        ignoreTLS: true,
-        secure: false,
-      }
-    : {
-        host: process.env.SMTP_DOMAIN,
-        port: port,
-        secure: port == 465,
-        auth: {
-          user: process.env.SMTP_USERNAME,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      };
-
 const imports = [
   ScheduleModule.forRoot(),
   ConfigModule.forRoot({
@@ -99,7 +81,22 @@ const imports = [
     },
   }),
   MailerModule.forRoot({
-    transport: transport,
+    transport:
+      process.env.NODE_ENV === 'development'
+        ? {
+            host: 'localhost',
+            ignoreTLS: true,
+            secure: false,
+          }
+        : {
+            host: process.env.SMTP_DOMAIN,
+            port: +process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_SSL === 'true',
+            auth: {
+              user: process.env.SMTP_USERNAME,
+              pass: process.env.SMTP_PASSWORD,
+            },
+          },
     preview: process.env.NODE_ENV === 'development',
     template: {
       dir: join(__dirname, 'mails'),
