@@ -13,7 +13,7 @@ import { EventManager } from '../../EventManager';
 import { withTranslation } from 'react-i18next';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import List from '@/ToolJetUI/List/List';
-import { capitalize, has } from 'lodash';
+import { capitalize, has, unset } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
@@ -376,6 +376,10 @@ class TableComponent extends React.Component {
         parseDateFormat: 'DD/MM/YYYY',
         isDateSelectionEnabled: true,
       };
+    }
+    if (item === 'columnType' && (value === 'select' || value === 'newMultiSelect')) {
+      column?.options?.length > 0 && column.options.forEach((option) => unset(option, 'makeDefaultOption'));
+      column.defaultOptionsList = [];
     }
     column[item] = value;
     const newColumns = columns.value;

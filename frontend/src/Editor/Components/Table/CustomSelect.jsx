@@ -112,10 +112,10 @@ export const CustomSelect = ({
 
   const _value = useMemo(() => {
     // Return null to show default value
-    if (isEmpty(value)) {
+    if (!value) {
       return null;
     }
-    if (isMulti && options?.length && value?.length) {
+    if (isMulti && value?.length) {
       if (isArray(value)) {
         return options?.filter((option) =>
           value?.find((val) => {
@@ -132,12 +132,15 @@ export const CustomSelect = ({
       return options?.find((option) => option.value === value) || [];
     }
   }, [options, value, isMulti]);
-
   return (
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && !isFocused ? getOverlay(_value ? _value : defaultValue, containerWidth, darkMode) : <div></div>
+        isMulti && _value?.length && !isFocused ? (
+          getOverlay(_value ? _value : defaultValue, containerWidth, darkMode)
+        ) : (
+          <div></div>
+        )
       }
       trigger={isMulti && !isFocused && ['hover']}
       rootClose={true}
