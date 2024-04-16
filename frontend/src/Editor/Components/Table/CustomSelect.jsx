@@ -5,7 +5,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { isArray, isEmpty } from 'lodash';
+import { isArray, isEmpty, isString } from 'lodash';
 const { MenuList } = components;
 
 export const CustomSelect = ({
@@ -136,7 +136,9 @@ export const CustomSelect = ({
   return (
     <OverlayTrigger
       placement="bottom"
-      overlay={isMulti && !isFocused ? getOverlay(value, containerWidth, darkMode) : <div></div>}
+      overlay={
+        isMulti && !isFocused ? getOverlay(_value ? _value : defaultValue, containerWidth, darkMode) : <div></div>
+      }
       trigger={isMulti && !isFocused && ['hover']}
       rootClose={true}
     >
@@ -259,6 +261,14 @@ const CustomMultiValueContainer = (props) => {
 };
 
 const getOverlay = (value, containerWidth, darkMode) => {
+  const getLabel = (option) => {
+    if (option?.hasOwnProperty('label')) {
+      return option.label;
+    } else if (isString(option)) {
+      return option;
+    } else return '';
+  };
+
   return Array.isArray(value) ? (
     <div
       style={{
@@ -277,9 +287,9 @@ const getOverlay = (value, containerWidth, darkMode) => {
               color: 'var(--text-primary)',
               fontSize: '12px',
             }}
-            key={option || option?.label}
+            key={getLabel(option)}
           >
-            {option || option?.label}
+            {getLabel(option)}
           </span>
         );
       })}
