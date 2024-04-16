@@ -130,11 +130,9 @@ jobs:
       - run: echo '${{ steps.exp.outputs.job_summary_url }}'
         shell: bash
 
-      - name: Get Cypress summary
-        id: get-summary
-        run: |
-          summary_raw=$(curl -sL "${{ steps.get-summary-url.outputs.job_summary_raw_url }}")
-          echo "::set-output name=CYPRESS_SUMMARY::$summary_raw"
+      - name: Display Job Summary URL
+        if: always()
+        run: echo '${{ steps.get-summary-url.outputs.job_summary_url }}'
 
       - name: Adding comment to PR 
         if: always()
@@ -146,7 +144,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Cypress Test Summary:\n' + '${{ steps.get-summary.outputs.CYPRESS_SUMMARY }}'
+              body: 'Job Summary URL: ' + '${{ steps.get-summary-url.outputs.job_summary_url }}'
             })
 
   Cypress-App-builder-Subpath:
