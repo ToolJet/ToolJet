@@ -15,7 +15,7 @@ If you rather want to try out ToolJet locally with docker, you can follow the st
 
 ## Prerequisites
 
-Make sure you have the latest version of `docker` and `docker-compose` installed.
+Make sure you have the latest version of `docker` and `docker compose` installed.
 
 [Official docker installation guide](https://docs.docker.com/desktop/)
 
@@ -27,8 +27,8 @@ We recommend:
 docker --version
 Docker version 19.03.12, build 48a66213fe
 
-docker-compose --version
-docker-compose version 1.26.2, build eefe0d31
+docker compose --version
+docker compose version 1.26.2, build eefe0d31
 ```
 
 ## Setting up
@@ -94,20 +94,20 @@ Please find more information [here](https://docs.docker.com/desktop/windows/wsl/
 4. Build docker images
 
    ```bash
-   docker-compose build
-   docker-compose run --rm  plugins npm run build:plugins
+   docker compose build
+   docker compose run --rm  plugins npm run build:plugins
    ```
 
 5. Run ToolJet
 
    ```bash
-   docker-compose up
+   docker compose up
    ```
    ToolJet should now be served locally at `http://localhost:8082`.
 
 8. To shut down the containers,
    ```bash
-   docker-compose stop
+   docker compose stop
    ```
 
 ## Making changes to the codebase
@@ -116,9 +116,9 @@ If you make any changes to the codebase/pull the latest changes from upstream, t
 
 Caveat:
 
-1. If the changes include database migrations or new npm package additions in the package.json, you would need to restart the ToolJet server container by running `docker-compose restart server`.
+1. If the changes include database migrations or new npm package additions in the package.json, you would need to restart the ToolJet server container by running `docker compose restart server`.
 
-2. If you need to add a new binary or system library to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker-compose build server`. Once that completes you can start everything normally with `docker-compose up`.
+2. If you need to add a new binary or system library to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker compose build server`. Once that completes you can start everything normally with `docker compose up`.
 
 Example:
 Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:
@@ -150,7 +150,7 @@ RUN ["chmod", "755", "entrypoint.sh"]
 
 ```
 
-Once you've updated the Dockerfile, rebuild the image by running `docker-compose build server`. After building the new image, start the services by running `docker-compose up`.
+Once you've updated the Dockerfile, rebuild the image by running `docker compose build server`. After building the new image, start the services by running `docker compose up`.
 
 ## Running tests
 
@@ -159,24 +159,24 @@ Test config picks up config from `.env.test` file at the root of the project.
 Run the following command to create and migrate data for test db
 
 ```bash
-docker-compose run --rm -e NODE_ENV=test server npm run db:create
-docker-compose run --rm -e NODE_ENV=test server npm run db:migrate
+docker compose run --rm -e NODE_ENV=test server npm run db:create
+docker compose run --rm -e NODE_ENV=test server npm run db:migrate
 ```
 
 To run the unit tests
 ```bash
-docker-compose run --rm server npm run --prefix server test
+docker compose run --rm server npm run --prefix server test
 ```
 
 To run e2e tests
 ```bash
-docker-compose run --rm server npm run --prefix server test:e2e
+docker compose run --rm server npm run --prefix server test:e2e
 ```
 
 To run a specific unit test
 
 ```bash
-docker-compose run --rm server npm --prefix server run test <path-to-file>
+docker compose run --rm server npm --prefix server run test <path-to-file>
 ```
 
 ## Troubleshooting
