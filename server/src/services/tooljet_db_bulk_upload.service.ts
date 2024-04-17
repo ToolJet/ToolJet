@@ -125,11 +125,9 @@ export class TooljetDbBulkUploadService {
       return columnDetails && columnDetails.keytype !== 'PRIMARY KEY' && columnDetails.data_type === 'integer';
     });
 
-    console.log('Excluded Columns: ', excludedColumns);
-
     const insertQueries = rowsToInsert.map((row, index) => {
       const filteredRow = Object.fromEntries(Object.entries(row).filter(([key, _]) => !excludedColumns.includes(key)));
-      console.log('Filtered Row: ', filteredRow);
+
       return {
         text: `INSERT INTO "${internalTableId}" (${Object.keys(filteredRow).join(', ')}) VALUES (${Object.values(
           filteredRow
@@ -171,8 +169,6 @@ export class TooljetDbBulkUploadService {
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
 
-        // console.log("Column Details: ",columnDetails)
-
         const { keytype, data_type } = columnDetails;
 
         if (keytype === 'PRIMARY KEY' && data_type !== 'serial') {
@@ -184,9 +180,6 @@ export class TooljetDbBulkUploadService {
             );
           }
         }
-        // if(keytype === "PRIMARY KEY" && data_type === "serial"){
-        //   if(!row[columnInCsv])
-        // }
 
         result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
         return result;
