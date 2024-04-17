@@ -14,9 +14,7 @@ For this guide, we are going to use one of the existing templates on ToolJet: **
 
 ## Create an App Using Templates
 
-:::info using Templates
-On ToolJet Dashboard, Click on the down arrow on the right of the **New App** button, from the dropdown choose the **Choose from template** option. 
-:::
+- On ToolJet Dashboard, Click on the down arrow on the right of the **New App** button, from the dropdown choose the **Choose from template** option. Select **AWS S3 file explorer** and click on the **Create application from template**.
 
 
 <div style={{textAlign: 'left'}}>
@@ -25,7 +23,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
 </div>  
 
-- Go to the **Data sources** on the left-sidebar, you'll find that the **AWS S3 data source** is already added. All you need to do is update the datasource **credentials**.
+- Go to the **Data sources** on the left-sidebar, you'll find that the **AWS S3 data source** is already added. All you need to do is update the data source credentials.
 
 :::tip
 Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more about connnection and choosing your preferred authentication method.
@@ -43,7 +41,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
 ## Get the Buckets
 
-- Once the data source is connected successfully, go to the query manager and **Run** the **getBuckets** query. The operation selected in the getBuckets query is **List Buckets** which will fetch an array of all the buckets.
+- Once the data source is connected successfully, go to the query manager and **Run** the *getBuckets* query. The operation selected in the *getBuckets* query is **List buckets**, which will fetch an array of all the buckets.
 
   <div style={{textAlign: 'center'}}>
 
@@ -51,7 +49,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
   </div>
 
-- Running the **getBuckets** query will load all the buckets in the left table in the app.
+- Running the *getBuckets* query will load all the buckets in the left table in the app.
 
 
 
@@ -67,7 +65,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
 ## Get the Objects Inside the Bucket
 
-- To fetch the data inside a selected a bucket, select the **bucket** from the buckets table, go to the query manager and choose the **getObjects** query. Choose the relevant data source in the **Data Source** section and for the **Operation** parameter, choose `List objects in a bucket` options from the dropdown. Replace the **Bucket** parameter with the following code: `{{components.table2.selectedRow.Name}}` and click on the **Run** to list all the files from the selected bucket on the table.
+- To fetch the data inside a bucket, select the bucket from the buckets table, go to the query manager and choose the *getObjects* query. Choose the relevant data source in the **Data Source** section and for the **Operation** parameter, choose `List objects in a bucket` options from the dropdown. Replace the **Bucket** parameter with the following code: `{{components.table2.selectedRow.Name}}` and click on the **Run** to list all the files from the selected bucket on the table.
 
 
 
@@ -83,7 +81,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
 ## Get the Signed URL for Downlaod
 
-The object owner can optionally share objects with others by creating a presigned URL, using their own security credentials, to grant time-limited permission to download the objects. For creating a presigned URL, in the **query panel** replace the parameters with the following:
+The object owner can optionally share objects with others by creating a presigned URL, using their own security credentials, to grant time-limited permission to download the objects. For creating a presigned URL, in the query panel replace the parameters with the following:
 
 - **Data Source**: Use the relevant data source.
 - **Operation**: Choose `Signed url for download` from the dropdown.
@@ -105,9 +103,9 @@ After setting up the parameters, click **Run** to run the query, and the URL can
 
 ## Upload Objects to the Bucket
 
-The **Upload Object** operation allows users to select a bucket and then upload their chosen data into that bucket. To upload objects in a bucket, follow the steps below:
+The `Upload Object` operation allows users to select a bucket and then upload their chosen data into that bucket. To upload objects in a bucket, follow the steps below:
 
-- In the **query panel** navigate to **uploadObject** query.
+- In the query panel navigate to *uploadObject* query.
 - Choose your relevant data source in the **Data Source** section.
 - In the **Operation** section, choose `Upload Object` from the dropdown.
 - In the **Bucket** section, copy the code: `{{components.table2.selectedRow.Name}}`, to choose a bucket dynamically.
@@ -116,10 +114,10 @@ The **Upload Object** operation allows users to select a bucket and then upload 
 - In the **Upload data** section, copy: `{{components.filepicker1.file[0].dataURL}}`.
 
 To make sure the image is uploaded successfully, we can create a new event from the **Events** section.
-- Under the **Events** section, click on **New event handler**.
-- From the **Event** dropdown, choose `Query Success`.
-- From the **Action** dropdown, choose `Show Alert`.
-- The **Message** can be of your choice, in this example lets write the message as: `Image uploaded successfully`.
+- Under the `Events` section, click on **New event handler**.
+- From the `Event` dropdown, choose `Query Success`.
+- From the `Action` dropdown, choose `Show Alert`.
+- The `Message` can be of your choice, in this example lets write the message as: `Image uploaded successfully`.
 
 Once the query has been created, choose the desired bucket and click on **Upload file** button in the app and upload your desired file in your bucket.
 
