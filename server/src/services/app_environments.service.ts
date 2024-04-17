@@ -4,7 +4,7 @@ import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.hel
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
-import { EntityManager, FindOneOptions, In, DeleteResult, MoreThanOrEqual } from 'typeorm';
+import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
@@ -70,23 +70,24 @@ export class AppEnvironmentService {
     return { shouldRenderPromoteButton, shouldRenderReleaseButton };
   }
 
-  getSelectedVersion(selectedEnvironmentId: string, manager?: EntityManager): Promise<any> {
+  getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any> {
     const newVersionQuery = `
     SELECT name, id, current_environment_id
     FROM app_versions
     WHERE current_environment_id IN (
         SELECT id
         FROM app_environments
-        WHERE priority => (
+        WHERE priority >= (
             SELECT priority
             FROM app_environments
             WHERE id = $1
         )
     )
+    AND app_id = $2
     ORDER BY updated_at DESC
     LIMIT 1;
     `;
-    return manager.query(newVersionQuery, [selectedEnvironmentId]);
+    return manager.query(newVersionQuery, [selectedEnvironmentId, appId]);
   }
 
   async processActions(action: string, actionParameters: AppEnvironmentActionParametersDto) {
@@ -146,7 +147,7 @@ export class AppEnvironmentService {
             `;
             const selectedEnvironmentResponse = await manager.query(newEnvironmentQuery, [editorEnvironmentId]);
             const selectedEnvironment = selectedEnvironmentResponse[0];
-            const selectedVersion = await this.getSelectedVersion(selectedEnvironment.id, manager);
+            const selectedVersion = await this.getSelectedVersion(selectedEnvironment.id, appId, manager);
             appEnvironmentResponse.editorEnvironment = selectedEnvironment;
             appEnvironmentResponse.editorVersion = selectedVersion;
             /* Add extra things to respons */
@@ -156,7 +157,7 @@ export class AppEnvironmentService {
             });
             /* User deleted current editor version. Client needs new editor version */
             if (selectedEnvironment) {
-              const selectedVersion = await this.getSelectedVersion(editorEnvironmentId, manager);
+              const selectedVersion = await this.getSelectedVersion(editorEnvironmentId, appId, manager);
               const appVersionEnvironment = await manager.findOneOrFail(AppEnvironment, {
                 where: { id: selectedVersion.current_environment_id },
               });
@@ -169,26 +170,7 @@ export class AppEnvironmentService {
         }
         case AppEnvironmentActions.ENVIROMENT_CHANGED: {
           const appEnvironmentResponse: Partial<AppEnvironmentResponse> = {};
-          const editorEnvironment = await manager.findOneOrFail(AppEnvironment, {
-            select: ['priority', 'organizationId'],
-            where: { id: editorEnvironmentId },
-          });
-          const nextEnvironmentIds = await manager.find(AppEnvironment, {
-            select: ['id'],
-            where: {
-              priority: MoreThanOrEqual(editorEnvironment.priority),
-              organizationId: editorEnvironment.organizationId,
-            },
-          });
-          const nextEnvironmentIdsArray = nextEnvironmentIds.map((env) => env.id);
-          const editorVersion = await manager.findOneOrFail(AppVersion, {
-            where: {
-              appId,
-              currentEnvironmentId: In(nextEnvironmentIdsArray),
-            },
-            order: { updatedAt: 'DESC' },
-          });
-          appEnvironmentResponse.editorVersion = editorVersion;
+          appEnvironmentResponse.editorVersion = await this.getSelectedVersion(editorEnvironmentId, appId, manager);
           return appEnvironmentResponse;
         }
         default:
