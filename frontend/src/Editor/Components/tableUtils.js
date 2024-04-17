@@ -1,4 +1,4 @@
-import { validateWidget } from '../../_helpers/utils';
+import { validateWidget, validateDates } from '@/_helpers/utils';
 
 export const isRowInValid = (cell, currentState, changeSet) => {
   const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
@@ -47,6 +47,35 @@ export const isRowInValid = (cell, currentState, changeSet) => {
       };
     }
   }
+
+  if (cell.column.columnType === 'datepicker') {
+    validationData = {
+      ...validateDates({
+        validationObject: {
+          minDate: {
+            value: cell.column.minDate,
+          },
+          maxDate: {
+            value: cell.column.maxDate,
+          },
+          minTime: {
+            value: cell.column.minTime,
+          },
+          maxTime: {
+            value: cell.column.maxTime,
+          },
+          parseDateFormat: {
+            value: cell.column.parseDateFormat,
+          },
+        },
+        widgetValue: cellValue,
+        currentState,
+        customResolveObjects: { cellValue },
+      }),
+    };
+  }
+
+  console.log('cell----', cell, validationData);
 
   return validationData.isValid === false;
 };
