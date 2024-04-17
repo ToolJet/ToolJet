@@ -18,22 +18,7 @@ When you create a new application, the empty state will guide you on the next st
 
 You can connect to the sample data source in three different ways, depending on your requirements:
 
-### 1. Create a Sample Application Using the Sample Data Source.
-
-This method enables the creation of a sample application with a pre-configured connection to the sample data source. The data will be already visualized on the application's canvas upon creation.
-
-   1. Navigate to the Data Sources page within the dashboard's left-hand sidebar.
-   2. Under the **DATA SOURCES ADDED** section in the sidebar, you will find the **Sample Data Source (postgres)**. This is a default data source and cannot be deleted.
-   3. Select **Sample Data Source (postgres)**. You can click on the **Test Connection** button to test your connection to your sample database.
-   4. Click **Create sample application** to generate the new application. This application automatically includes the sample data source.
-   5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/create-sample-app.gif" alt="Create Sample App" />
-</div>
-
-
-### 2. Connect the Sample Data Source to a Newly Created Application.
+### 1. Connect the Sample Data Source to a Newly Created Application.
 
 This method allows you to add a sample data source to an existing application that is in an empty state (i.e., has no pre-existing components)
 
@@ -48,7 +33,7 @@ This method allows you to add a sample data source to an existing application th
 </div>
 
 
-### 3. Connect the Sample Data Source to an Existing Application.
+### 2. Connect the Sample Data Source to an Existing Application.
 
 This method allows you to connect the sample data source to an existing application from the query panel.
 
@@ -60,6 +45,21 @@ This method allows you to connect the sample data source to an existing applicat
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager.gif" alt="Connect via query manager" />
+</div>
+
+
+### 3. Create a Sample Application Using the Sample Data Source.
+
+This method enables the creation of a sample application with a pre-configured connection to the sample data source. The data will be already visualized on the application's canvas upon creation.
+
+   1. Navigate to the Data Sources page within the dashboard's left-hand sidebar.
+   2. Under the **DATA SOURCES ADDED** section in the sidebar, you will find the **Sample Data Source (postgres)**. This is a default data source and cannot be deleted.
+   3. Select **Sample Data Source (postgres)**. You can click on the **Test Connection** button to test your connection to your sample database.
+   4. Click **Create sample application** to generate the new application. This application automatically includes the sample data source.
+   5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/create-sample-app.gif" alt="Create Sample App" />
 </div>
 
  ## Sample Data Source Schema
