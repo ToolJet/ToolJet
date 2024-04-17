@@ -26,7 +26,7 @@ export class LibraryAppsController {
     return newApp;
   }
 
-  @Get('sample_app')
+  @Get('sample-app')
   @UseGuards(JwtAuthGuard)
   async createSampleApp(@User() user) {
     return await this.libraryAppCreationService.createSampleApp(user);

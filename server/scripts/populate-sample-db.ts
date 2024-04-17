@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Client } from 'pg';
-import * as xlsx from 'xlsx';
-import * as Papa from 'papaparse';
+import { buildAndValidateDatabaseConfig } from './database-config-utils';
+
 // PostgreSQL connection configuration
-function createPGconnetion(envVars): Client {
+function createPGconnection(envVars): Client {
   return new Client({
     user: envVars.SAMPLE_PG_DB_USER,
     host: envVars.SAMPLE_PG_DB_HOST,
@@ -14,45 +14,69 @@ function createPGconnetion(envVars): Client {
   });
 }
 
-const folderPath = path.join(__dirname, '../src/assets/sample-data-excel');
+const folderPath = path.join(__dirname, '../src/assets/sample-data-json-files');
 // Replace 'your_table_name' with the desired table name in your PostgreSQL database
 // Read Excel file
 
-export async function populateSampleData(envVars) {
-  const client = createPGconnetion(envVars);
-  try {
-    fs.readdir(folderPath, async (err, files) => {
+async function connectToPostgreSQL(client) {
+  return new Promise<void>((resolve, reject) => {
+    client.connect((err) => {
       if (err) {
-        console.error('Error reading directory:', err);
-        return;
+        console.error('Error connecting to PostgreSQL:', err);
+        reject(err); // Reject the promise if there's an error
+      } else {
+        console.log('Connected to PostgreSQL');
+        resolve(); // Resolve the promise if connected successfully
       }
-      client.connect();
-      const filesToRead = fs.readdirSync(folderPath).filter((file) => !file.startsWith('.'));
-      for (const file of filesToRead) {
-        const filePath = path.join(folderPath, file);
-
-        const workbook = xlsx.readFile(filePath);
-
-        for (const sheetName of workbook.SheetNames) {
-          const worksheet = workbook.Sheets[sheetName];
-          const data = xlsx.utils.sheet_to_csv(worksheet);
-          const parsedData = Papa.parse(data, { header: true, delimiter: ',', dynamicTyping: true });
-          const tableName = `${file}_${sheetName}`.replace(/[^\w]/g, '').replace(/\s+/g, '_').toLowerCase();
-
-          //Drop table it exist
-          await dropTable(client, tableName);
-
-          // Create table query
-          await createTable(client, tableName, parsedData);
-
-          //insert data to table
-          await insertData(client, tableName, parsedData.data);
-        }
-      }
-      client.end();
     });
+  });
+}
+
+export async function populateSampleData(envVars) {
+  const client = createPGconnection(envVars);
+
+  try {
+    //Checking postgres connection
+    await connectToPostgreSQL(client);
+
+    // Read files from the folder asynchronously
+    const files = await fs.promises.readdir(folderPath);
+    console.log(files);
+
+    for (const file of files) {
+      console.log(file);
+
+      if (file.startsWith('.')) continue; // Skip hidden files
+
+      const filePath = path.join(folderPath, file);
+
+      // Read file contents asynchronously
+      const jsonString = await fs.promises.readFile(filePath, 'utf-8');
+
+      const parsedData = JSON.parse(jsonString);
+
+      const tableName = file
+        .replace(/\.json$/, '')
+        .replace(/[^\w]/g, '')
+        .replace(/\s+/g, '_')
+        .toLowerCase();
+
+      // Drop table if it exists
+      await dropTable(client, tableName);
+
+      // Create table query
+      await createTable(client, tableName, parsedData);
+
+      // Insert data into the table
+      await insertData(client, tableName, parsedData);
+
+      console.log(`Data populated for table: ${tableName}`);
+    }
   } catch (error) {
-    console.error(error);
+    console.error('Error populating sample data:', error);
+  } finally {
+    // Close the database connection
+    await client.end();
   }
 }
 
@@ -66,17 +90,17 @@ async function dropTable(client: Client, tableName) {
 async function createTable(client, tableName, parsedData) {
   let createTableQuery = `CREATE TABLE IF NOT EXISTS ${tableName} (`;
 
-  Object.keys(parsedData.data[0]).forEach((header) => {
+  Object.keys(parsedData[0]).forEach((header) => {
     const columnName = header;
-    const columnValues = parsedData.data.map((row) => row[header]);
+    const columnValues = parsedData.map((row) => row[header]);
     let dataType;
 
     // Analyze the data to determine the appropriate data type
-    if (columnValues.every((value) => typeof value === 'string' && value.length <= 255)) {
+    if (columnValues.every((value) => typeof value === 'string' && (value === null || value.length <= 255))) {
       dataType = 'VARCHAR';
-    } else if (columnValues.every((value) => typeof value === 'number')) {
+    } else if (columnValues.every((value) => typeof value === 'number' || value === null)) {
       dataType = 'NUMERIC';
-    } else if (columnValues.every((value) => value instanceof Date || !isNaN(Date.parse(value)))) {
+    } else if (columnValues.every((value) => value instanceof Date || value === null || !isNaN(Date.parse(value)))) {
       dataType = 'DATE';
     } else {
       dataType = 'VARCHAR(255)'; // Default to VARCHAR if data type is uncertain
@@ -93,8 +117,16 @@ async function createTable(client, tableName, parsedData) {
   createTableQuery = createTableQuery.slice(0, -2); // Remove the last comma
   createTableQuery += ' );';
 
+  console.log('creating table');
   await client.query(createTableQuery);
 }
+
+export async function runPopulateScript() {
+  const { value: envVars, error } = buildAndValidateDatabaseConfig();
+  if (error) return;
+  populateSampleData(envVars);
+}
+
 // Insert data into PostgreSQL table
 async function insertData(client: Client, tableName: string, data) {
   const keys = Object.keys(data[0]);
@@ -131,3 +163,40 @@ async function insertData(client: Client, tableName: string, data) {
 
   await client.query(insertQuery);
 }
+
+// PLEASE DON'T DELETE COMMENTED FUNCTION - this function is for creating json from excel sheet
+/*
+export async function populateJsonSampleDataToFiles() {
+  try {
+    fs.readdir(folderPath, async (err, files) => {
+      if (err) {
+        console.error('Error reading directory:', err);
+        return;
+      }
+      const filesToRead = fs.readdirSync(folderPath).filter((file) => !file.startsWith('.'));
+      for (const file of filesToRead) {
+        const workbook = xlsx.readFile(filePath);
+        for (const sheetName of workbook.SheetNames) {
+          const worksheet = workbook.Sheets[sheetName];
+          const data = xlsx.utils.sheet_to_csv(worksheet);
+          const parsedData = Papa.parse(data, { header: true, delimiter: ',', dynamicTyping: true });
+          const tableName = `${file}_${sheetName}`.replace(/[^\w]/g, '').replace(/\s+/g, '_').toLowerCase();
+          const jsonfolderPath = path.join(__dirname, '../src/assets/sample-data-json-files');
+          const jsonFilePath = path.join(jsonfolderPath, `${tableName}.json`);
+
+          // Write parsed data to a JSON file
+          fs.writeFile(jsonFilePath, JSON.stringify(parsedData.data), (err) => {
+            if (err) {
+              console.error('Error writing JSON file:', err);
+            } else {
+              console.log(`JSON file saved: ${jsonFilePath}`);
+            }
+          });
+        }
+      }
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+*/

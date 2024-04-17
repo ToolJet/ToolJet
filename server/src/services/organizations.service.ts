@@ -18,6 +18,7 @@ import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
 import { GroupPermissionsService } from './group_permissions.service';
 import { OrganizationUsersService } from './organization_users.service';
+import { DataSourcesService } from './data_sources.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
@@ -33,7 +34,9 @@ import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
-import { SampleDBService } from './sample_db.service';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { DataSource } from 'src/entities/data_source.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 
 const MAX_ROW_COUNT = 500;
 
@@ -76,13 +79,13 @@ export class OrganizationsService {
     @InjectRepository(SSOConfigs)
     private ssoConfigRepository: Repository<SSOConfigs>,
     private usersService: UsersService,
+    private dataSourceService: DataSourcesService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
     private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
-    private configService: ConfigService,
-    private sampleDBService: SampleDBService
+    private configService: ConfigService
   ) {}
 
   async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
@@ -112,7 +115,7 @@ export class OrganizationsService {
         manager
       );
 
-      await this.sampleDBService.createSampleDB(organization.id, manager);
+      await this.createSampleDB(organization.id, manager);
 
       if (user) {
         await this.organizationUserService.create(user, organization, false, manager);
@@ -834,5 +837,74 @@ export class OrganizationsService {
     });
     if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
     return;
+  }
+
+  async createSampleDB(organizationId, manager: EntityManager) {
+    const config = {
+      name: 'Sample Data Source',
+      kind: 'postgresql',
+      type: DataSourceTypes.SAMPLE,
+      scope: DataSourceScopes.GLOBAL,
+      organization_id: organizationId,
+    };
+    const options = [
+      {
+        key: 'host',
+        value: this.configService.get<string>('PG_HOST'),
+        encrypted: true,
+      },
+      {
+        key: 'port',
+        value: this.configService.get<string>('PG_PORT'),
+        encrypted: true,
+      },
+      {
+        key: 'database',
+        value: 'sample_db',
+      },
+      {
+        key: 'username',
+        value: this.configService.get<string>('PG_USER'),
+        encrypted: true,
+      },
+      {
+        key: 'password',
+        value: this.configService.get<string>('PG_PASS'),
+        encrypted: true,
+      },
+      {
+        key: 'ssl_enabled',
+        value: false,
+        encrypted: true,
+      },
+      { key: 'ssl_certificate', value: 'none', encrypted: false },
+    ];
+    const insertQueryText = `INSERT INTO "data_sources" (${Object.keys(config).join(', ')}) VALUES (${Object.values(
+      config
+    ).map((_, index) => `$${index + 1}`)}) RETURNING "id", "type", "scope", "created_at", "updated_at"`;
+    const insertValues = Object.values(config);
+
+    const dataSourceList = await manager.query(insertQueryText, insertValues);
+    const dataSource: DataSource = dataSourceList[0];
+
+    const allEnvs: AppEnvironment[] = await await manager.query(
+      `
+          SELECT *
+          FROM app_environments
+          WHERE organization_id = $1
+          AND enabled = true
+          ORDER BY priority ASC
+        `,
+      [organizationId]
+    );
+
+    await Promise.all(
+      allEnvs?.map(async (env) => {
+        const parsedOptions = await this.dataSourceService.parseOptionsForCreate(options);
+        const insertQuery = `INSERT INTO "data_source_options" ( environment_id , data_source_id, options ) VALUES ( $1 , $2 , $3)`;
+        const values = [env.id, dataSource.id, parsedOptions];
+        await manager.query(insertQuery, values);
+      })
+    );
   }
 }

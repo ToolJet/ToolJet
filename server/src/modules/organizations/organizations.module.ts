@@ -35,7 +35,6 @@ import { MetaModule } from '../meta/meta.module';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
-import { SampleDBService } from '@services/sample_db.service';
 
 @Module({
   imports: [
@@ -83,7 +82,6 @@ import { SampleDBService } from '@services/sample_db.service';
     MetadataService,
     AppEnvironmentService,
     SessionService,
-    SampleDBService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
   exports: [OrganizationsService],

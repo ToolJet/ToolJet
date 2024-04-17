@@ -29,7 +29,6 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { Plugin } from 'src/entities/plugin.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
-import { SampleDBService } from '@services/sample_db.service';
 
 @Module({
   imports: [
@@ -54,7 +53,6 @@ import { SampleDBService } from '@services/sample_db.service';
   ],
   providers: [
     DataSourcesService,
-    SampleDBService,
     CredentialsService,
     EncryptionService,
     AppsService,

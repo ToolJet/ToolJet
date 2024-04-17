@@ -36,7 +36,6 @@ import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
-import { SampleDBService } from '@services/sample_db.service';
 
 @Module({
   imports: [
@@ -81,7 +80,6 @@ import { SampleDBService } from '@services/sample_db.service';
     GroupPermissionsService,
     EncryptionService,
     DataSourcesService,
-    SampleDBService,
     CredentialsService,
     AppEnvironmentService,
     MetadataService,
