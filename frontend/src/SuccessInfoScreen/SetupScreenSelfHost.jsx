@@ -48,7 +48,10 @@ function SetupScreenSelfHost({ darkMode }) {
             <p data-cy="setup-card-sub-header">Let’s set up your workspace to get started with ToolJet</p>
             <ButtonSolid
               className="sh-setup-button"
-              onClick={() => setShowSelfHostOboarding(true)}
+              onClick={() => {
+                setShowSelfHostOboarding(true);
+                window.open('https://www.tooljet.com/thank-you', '_blank');
+              }}
               data-cy="setup-tooljet-button"
             >
               <span>Set up ToolJet</span>
