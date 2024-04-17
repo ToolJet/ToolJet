@@ -83,7 +83,7 @@ export class TooljetDbBulkUploadService {
     await pipeline(passThrough, csvStream);
 
     await this.tooljetDbManager.transaction(async (tooljetDbManager) => {
-      await this.bulkInsertRows(tooljetDbManager, rowsToInsert, internalTableId);
+      await this.bulkInsertRows(tooljetDbManager, rowsToInsert, internalTableId, internalTableColumnSchema);
       await this.bulkUpdateRows(tooljetDbManager, rowsToUpdate, internalTableId);
     });
 
@@ -112,18 +112,31 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  async bulkInsertRows(tooljetDbManager: EntityManager, rowsToInsert: unknown[], internalTableId: string) {
+  async bulkInsertRows(
+    tooljetDbManager: EntityManager,
+    rowsToInsert: unknown[],
+    internalTableId: string,
+    internalTableColumnSchema: TableColumnSchema[]
+  ) {
     if (isEmpty(rowsToInsert)) return;
 
-    const insertQueries = rowsToInsert.map((row, index) => {
-      return {
-        text: `INSERT INTO "${internalTableId}" (${Object.keys(row).join(', ')}) VALUES (${Object.values(row).map(
-          (_, index) => `$${index + 1}`
-        )})`,
-        values: Object.values(row),
-      };
+    const excludedColumns = Object.keys(rowsToInsert[0]).filter((column) => {
+      const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === column);
+      return columnDetails && columnDetails.keytype !== 'PRIMARY KEY' && columnDetails.data_type === 'integer';
     });
 
+    console.log('Excluded Columns: ', excludedColumns);
+
+    const insertQueries = rowsToInsert.map((row, index) => {
+      const filteredRow = Object.fromEntries(Object.entries(row).filter(([key, _]) => !excludedColumns.includes(key)));
+      console.log('Filtered Row: ', filteredRow);
+      return {
+        text: `INSERT INTO "${internalTableId}" (${Object.keys(filteredRow).join(', ')}) VALUES (${Object.values(
+          filteredRow
+        ).map((_, index) => `$${index + 1}`)})`,
+        values: Object.values(filteredRow),
+      };
+    });
     for (const insertQuery of insertQueries) {
       await tooljetDbManager.query(insertQuery.text, insertQuery.values);
     }
@@ -157,6 +170,24 @@ export class TooljetDbBulkUploadService {
       const columnsInCsv = Object.keys(row);
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
+
+        // console.log("Column Details: ",columnDetails)
+
+        const { keytype, data_type } = columnDetails;
+
+        if (keytype === 'PRIMARY KEY' && data_type !== 'serial') {
+          if (!row[columnInCsv]) {
+            throw new BadRequestException(
+              `Primary key value cannot be empty, Row - ${rowsProcessed + 1} is empty for Column - ${
+                columnDetails.column_name
+              }`
+            );
+          }
+        }
+        // if(keytype === "PRIMARY KEY" && data_type === "serial"){
+        //   if(!row[columnInCsv])
+        // }
+
         result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
         return result;
       }, {});
