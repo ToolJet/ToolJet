@@ -61,8 +61,8 @@ Following actions of modal component can be controlled using the component speci
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| open | Control the opening and closing of the modal componennt via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
-| close | Control the closing of the modal componennt via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |
+| open | Control the opening and closing of the modal component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
+| close | Control the closing of the modal component via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |
 
 </div>
 

@@ -118,7 +118,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 |:----------- |:----------- |:-------|
 | checked | This variable holds the value of all the checked items on the tree select component. | Access the value dynamically using JS: `{{components.treeselect1.checked[1]}}`|
 | expanded | This variable holds the value of expanded items on the tree select component.|  Access the value dynamically using JS: `{{components.treeselect1.expanded[0]}}`|
-| checkedPathArray | This variable holds the path of the checked items in differet arrays. | Access the value dynamically using JS: `{{components.treeselect1.checkedPathArray[1][1]}}`|
+| checkedPathArray | This variable holds the path of the checked items in different arrays. | Access the value dynamically using JS: `{{components.treeselect1.checkedPathArray[1][1]}}`|
 | checkedPathStrings | This variable holds the path of the checked items in strings separated by a dash(-).| Access the value dynamically using JS: `{{components.treeselect1.checkedPathStrings[2]}}`|
 
 </div>

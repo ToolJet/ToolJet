@@ -15,7 +15,7 @@ Link widget allows you to add a hyperlink and navigate to the external URL.
 |:----------- |:----------- |:-------------- |
 | Link target | This property sets the URL where the user needs to be taken on clicking the link | example: `https://dev.to/tooljet` or `{{queries.xyz.data.url}}` | 
 | Link text | This property sets the text for the link widget  | example: `Click here` or `Open webpage` | 
-| Target type | This property specifies the link to be opened in the same tab or new tab on clickinh the link | Options: `New Tab` & `Same Tab` |
+| Target type | This property specifies the link to be opened in the same tab or new tab on clicking the link | Options: `New Tab` & `Same Tab` |
 
 </div>
 

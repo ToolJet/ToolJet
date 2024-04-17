@@ -40,7 +40,7 @@ For comprehensive information on all available **Actions**, refer to the [Action
 `await components.multiselect1.clearSelections()` <br/>
 `await components.multiselect1.deselectOption(2)`
 
-Following actions of multselect component can be controlled using the component specific actions(CSA):
+Following actions of multiselect component can be controlled using the component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:-------- |

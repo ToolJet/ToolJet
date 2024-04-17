@@ -16,7 +16,7 @@ The Datepicker widget allows users to select a single value for date and time fr
 | Format | This value acts as placeholder for the date picker widget, if any value is not provided then the default value will be used from the picker. The default value needs to be a `String` with respect to the `format` field. Ex: If format is set to `MM/YYYY` then provide default value as `04/2022` |
 | Enable time selection? | Toggle on or off to enable the time selection. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 | Enable date selection? | Toggle on or off to enable the date selection. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Disabled dates | We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of`Strings` |
+| Disabled dates | We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of `Strings` |
 
 Example for disabling the 9th of January:
 ```js
