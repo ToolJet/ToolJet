@@ -100,7 +100,7 @@ You can find your past invoices in the subscriptions overview card. Here's how t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/licensing/invoice-history.png" alt="Invoice History" />
+<img className="screenshot-full" src="/img/licensing/invoice-history.gif" alt="Invoice History" />
 
 </div>
 
