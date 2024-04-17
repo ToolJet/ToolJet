@@ -4,7 +4,7 @@ import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.hel
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
-import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
+import { EntityManager, FindOneOptions, In, DeleteResult, MoreThanOrEqual } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
@@ -23,6 +23,7 @@ export interface AppEnvironmentResponse {
 
 export enum AppEnvironmentActions {
   VERSION_DELETED = 'version_deleted',
+  ENVIROMENT_CHANGED = 'environment_changed',
 }
 
 @Injectable()
@@ -164,7 +165,31 @@ export class AppEnvironmentService {
               appEnvironmentResponse.appVersionEnvironment = appVersionEnvironment;
             }
           }
-          break;
+          return appEnvironmentResponse;
+        }
+        case AppEnvironmentActions.ENVIROMENT_CHANGED: {
+          const appEnvironmentResponse: Partial<AppEnvironmentResponse> = {};
+          const editorEnvironment = await manager.findOneOrFail(AppEnvironment, {
+            select: ['priority', 'organizationId'],
+            where: { id: editorEnvironmentId },
+          });
+          const nextEnvironmentIds = await manager.find(AppEnvironment, {
+            select: ['id'],
+            where: {
+              priority: MoreThanOrEqual(editorEnvironment.priority),
+              organizationId: editorEnvironment.organizationId,
+            },
+          });
+          const nextEnvironmentIdsArray = nextEnvironmentIds.map((env) => env.id);
+          const editorVersion = await manager.findOneOrFail(AppVersion, {
+            where: {
+              appId,
+              currentEnvironmentId: In(nextEnvironmentIdsArray),
+            },
+            order: { updatedAt: 'DESC' },
+          });
+          appEnvironmentResponse.editorVersion = editorVersion;
+          return appEnvironmentResponse;
         }
         default:
           break;
