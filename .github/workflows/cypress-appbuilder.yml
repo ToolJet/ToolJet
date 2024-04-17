@@ -132,6 +132,16 @@ jobs:
           echo '${{ steps.exp.outputs.job_summary_raw_url}}'
         shell: bash
 
+      - name: testing summary
+        uses: LouisBrunner/checks-action@v2.0.0
+        if: always()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Test XYZ
+          conclusion: ${{ job.status }}
+          output: |
+            {"summary":"${{ steps.test.outputs.summary }}"}
+
       - name: Adding comment to PR 
         if: always()
         uses: actions/github-script@v5
