@@ -164,6 +164,7 @@ const evaluatePythonCode = async (options) => {
     await pyodide.globals.set('client', currentState['client']);
     await pyodide.globals.set('server', currentState['server']);
     await pyodide.globals.set('constants', currentState['constants']);
+    await pyodide.globals.set('page', currentState['page']);
     await pyodide.globals.set('parameters', currentState['parameters']);
     await pyodide.globals.set('variables', appStateVars);
     if (queryResult) await pyodide.globals.set('data', queryResult);
