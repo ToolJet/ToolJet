@@ -124,17 +124,18 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-      - name: Get Job Summary
-        id: exp
-        uses: pl-strflt/job-summary-url-action@v1
-      - run: |
-          echo '${{ steps.exp.outputs.job_summary_url }}'
-          echo '${{ steps.exp.outputs.job_summary_raw_url}}'
-        shell: bash
+      # - name: Get Job Summary
+      #   id: exp
+      #   uses: pl-strflt/job-summary-url-action@v1
+      # - run: |
+      #     echo '${{ steps.exp.outputs.job_summary_url }}'
+      #     echo '${{ steps.exp.outputs.job_summary_raw_url}}'
+      #   shell: bash
 
       - name: testing summary
         uses: LouisBrunner/checks-action@v2.0.0
         if: always()
+        id: summary
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Test XYZ
@@ -152,7 +153,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Cypress appbuilder summary URL: ${{ steps.exp.outputs.job_summary_url }} and ${{ steps.exp.outputs.job_summary_raw_url}}'
+              body: '`Summary: ${summary}'
             })
 
   Cypress-App-builder-Subpath:
