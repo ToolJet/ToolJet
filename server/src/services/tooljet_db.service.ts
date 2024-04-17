@@ -24,6 +24,14 @@ export type TableColumnSchema = {
   keytype: string | null;
 };
 
+export type ForeignKeyDetails = {
+  column_names: Array<string>;
+  referenced_table_name: string;
+  referenced_column_names: Array<string>;
+  on_delete: string;
+  on_update: string;
+};
+
 export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
 
 // Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
@@ -79,7 +87,10 @@ export class TooljetDbService {
     }
   }
 
-  private async viewTable(organizationId: string, params): Promise<TableColumnSchema[]> {
+  private async viewTable(
+    organizationId: string,
+    params
+  ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[] }> {
     const { table_name: tableName, id: id } = params;
 
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -92,7 +103,58 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    return await this.tooljetDbManager.query(`
+    let foreign_keys = await this.tooljetDbManager.query(`
+      select
+        pgc.confrelid::regclass as referenced_table_name, 
+        pgc.conname as constraint_name,
+        ARRAY(SELECT attname FROM pg_attribute WHERE attrelid = pgc.conrelid AND attnum = any(pgc.conkey)) AS column_names,
+        ARRAY(select attname from pg_attribute where attrelid = pgc.confrelid and attnum = any(pgc.confkey)) as referenced_column_names,
+        case pgc.confupdtype 
+              WHEN 'a' THEN 'NO ACTION'
+              WHEN 'r' THEN 'RESTRICT'
+              WHEN 'c' THEN 'CASCADE'
+              WHEN 'n' THEN 'SET NULL'
+              WHEN 'd' THEN 'SET DEFAULT'
+              ELSE NULL
+        end as on_update,
+        case pgc.confdeltype 
+          when 'a' then 'NO ACTION'
+          when 'r' then 'RESTRICT'
+          when 'c' then 'CASCADE'
+          when 'n' then 'SET NULL'
+          when 'd' then 'SET DEFAULT'
+        end as on_delete
+      from pg_constraint as pgc 
+      where pgc.conrelid = '${internalTable.id}'::regclass and pgc.contype = 'f'
+    `);
+
+    // Transforming the Query response
+    const refrenced_table_list = [];
+    foreign_keys = foreign_keys.map((foreign_key_detail) => {
+      const { referenced_table_name, column_names, referenced_column_names } = foreign_key_detail;
+      refrenced_table_list.push(referenced_table_name.slice(1, -1));
+      return {
+        ...foreign_key_detail,
+        referenced_table_name: referenced_table_name.slice(1, -1),
+        column_names: column_names.slice(1, -1).split(','),
+        referenced_column_names: referenced_column_names.slice(1, -1).split(','),
+      };
+    });
+
+    const referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+      refrenced_table_list,
+      organizationId,
+      'TABLEID'
+    );
+
+    foreign_keys = foreign_keys.map((foreign_key_detail) => {
+      return {
+        ...foreign_key_detail,
+        referenced_table_name: referenced_tables_info[foreign_key_detail.referenced_table_name],
+      };
+    });
+
+    const columns = await this.tooljetDbManager.query(`
     SELECT c.COLUMN_NAME,
         c.DATA_TYPE,
         CASE
@@ -149,6 +211,11 @@ export class TooljetDbService {
         c.TABLE_NAME,
         c.ORDINAL_POSITION;
     `);
+
+    return {
+      foreign_keys,
+      columns,
+    };
   }
 
   private async viewTables(organizationId: string) {
@@ -176,7 +243,11 @@ export class TooljetDbService {
     let referenced_tables_info = {};
     if (foreign_keys.length) {
       const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
-      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(referenced_table_list, organizationId);
+      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+        referenced_table_list,
+        organizationId,
+        'TABLENAME'
+      );
     }
 
     const queryRunner = this.manager.connection.createQueryRunner();
@@ -695,11 +766,17 @@ export class TooljetDbService {
     return foreignKeyList;
   }
 
-  private async fetchAndCheckIfValidForeignKeyTables(referenced_table_list, organisation_id) {
+  // Method to check : Tables mentioned in Foreignkey is valid or not ( based on 'type' of input logic differs)
+  private async fetchAndCheckIfValidForeignKeyTables(
+    referenced_table_list,
+    organisation_id,
+    type: 'TABLEID' | 'TABLENAME'
+  ) {
     const valid_referenced_table_details = await this.manager.find(InternalTable, {
       where: {
         organizationId: organisation_id,
-        tableName: In(referenced_table_list),
+        ...(type === 'TABLENAME' && { tableName: In(referenced_table_list) }),
+        ...(type === 'TABLEID' && { id: In(referenced_table_list) }),
       },
       select: ['tableName', 'id'],
     });
@@ -707,6 +784,10 @@ export class TooljetDbService {
     const referenced_tables_info = {};
     const validReferencedTableSet = new Set(
       valid_referenced_table_details.map((referenced_table_detail) => {
+        if (type === 'TABLEID') {
+          referenced_tables_info[referenced_table_detail.id] = referenced_table_detail.tableName;
+          return referenced_table_detail.id;
+        }
         referenced_tables_info[referenced_table_detail.tableName] = referenced_table_detail.id;
         return referenced_table_detail.tableName;
       })
@@ -720,9 +801,11 @@ export class TooljetDbService {
     });
 
     if (!is_all_tables_exist) {
-      throw new BadRequestException(
-        `Tables: ${invalid_tables.join(',')} - used for Foreign key reference was not found`
-      );
+      const errorMessage =
+        type === 'TABLEID'
+          ? 'Some tables used in Foreign key was not found'
+          : `Tables: ${invalid_tables.join(',')} - used for Foreign key reference was not found`;
+      throw new BadRequestException(errorMessage);
     }
     return referenced_tables_info;
   }

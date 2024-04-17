@@ -20,8 +20,16 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
   const [fetching, setFetching] = useState(false);
   const [isNotNull, setIsNotNull] = useState(nullValue);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(uniqueConstraintValue);
-  const { organizationId, selectedTable, handleRefetchQuery, queryFilters, pageCount, pageSize, sortFilters } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    selectedTable,
+    handleRefetchQuery,
+    queryFilters,
+    pageCount,
+    pageSize,
+    sortFilters,
+    setForeignKeys,
+  } = useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
   const [defaultValueLength] = useState(defaultValue?.length);
 
@@ -105,9 +113,10 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
         return;
       }
 
-      if (data?.result?.length > 0) {
+      const { foreign_keys = [] } = data?.result || {};
+      if (data?.result?.columns?.length > 0) {
         setColumns(
-          data?.result.map(({ column_name, data_type, ...rest }) => ({
+          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
             dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
@@ -115,6 +124,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           }))
         );
       }
+      if (foreign_keys.length) setForeignKeys([...foreign_keys]);
     });
     handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     toast.success(`Column edited successfully`);

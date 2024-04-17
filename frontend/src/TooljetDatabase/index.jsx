@@ -40,6 +40,8 @@ export const TooljetDatabaseContext = createContext({
   pageSize: 50,
   setPageSize: () => {},
   handleRefetchQuery: () => {},
+  foreignKeys: [],
+  setForeignKeys: () => [],
 });
 
 export const TooljetDatabase = (props) => {
@@ -60,6 +62,8 @@ export const TooljetDatabase = (props) => {
   const [queryFilters, setQueryFilters] = useState({});
   const [sortFilters, setSortFilters] = useState({});
   const [collapseSidebar, setCollapseSidebar] = useState(false);
+
+  const [foreignKeys, setForeignKeys] = useState([]);
 
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
@@ -120,6 +124,8 @@ export const TooljetDatabase = (props) => {
       handleRefetchQuery,
       loadingState,
       setLoadingState,
+      foreignKeys,
+      setForeignKeys,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [

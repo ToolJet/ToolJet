@@ -12,7 +12,7 @@ import { getColumnDataType } from '../constants';
 
 function SourceKeyRelation({ tableName, columns, isEditMode }) {
   const [targetColumn, setTargetColumn] = useState({});
-  const { tables, organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const { tables, organizationId, selectedTable, setForeignKeys } = useContext(TooljetDatabaseContext);
   const sourceTable = [
     {
       name: tableName,
@@ -44,9 +44,10 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
         return;
       }
 
-      if (data?.result?.length > 0) {
+      const { foreign_keys = [] } = data?.result || {};
+      if (data?.result?.columns?.length > 0) {
         setTargetColumn(
-          data?.result.map(({ column_name, data_type, ...rest }) => ({
+          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
             dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
@@ -54,6 +55,7 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
           }))
         );
       }
+      if (foreign_keys.length) setForeignKeys([...foreign_keys]);
     });
   };
 

@@ -22,6 +22,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     handleRefetchQuery,
     pageSize,
     setColumns,
+    setForeignKeys,
   } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -108,9 +109,10 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         return;
       }
 
-      if (data?.result?.length > 0) {
+      const { foreign_keys = [] } = data?.result || {};
+      if (data?.result?.columns?.length > 0) {
         setColumns(
-          data?.result.map(({ column_name, data_type, ...rest }) => ({
+          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
             dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
@@ -118,6 +120,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           }))
         );
       }
+      if (foreign_keys.length) setForeignKeys([...foreign_keys]);
     });
     handleRefetchQuery({}, {}, 1, pageSize);
     setPageCount(1);

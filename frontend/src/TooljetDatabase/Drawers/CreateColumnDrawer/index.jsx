@@ -7,7 +7,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { getColumnDataType } from '../../constants';
 
 const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen, rows }) => {
-  const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize } =
+  const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize, setForeignKeys } =
     useContext(TooljetDatabaseContext);
 
   return (
@@ -20,10 +20,10 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                 toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
                 return;
               }
-
-              if (data?.result?.length > 0) {
+              const { foreign_keys = [] } = data?.result || {};
+              if (data?.result?.columns?.length > 0) {
                 setColumns(
-                  data?.result.map(({ column_name, data_type, ...rest }) => ({
+                  data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
                     Header: column_name,
                     accessor: column_name,
                     dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
@@ -31,6 +31,8 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                   }))
                 );
               }
+
+              if (foreign_keys.length) setForeignKeys([...foreign_keys]);
             });
             handleRefetchQuery({}, {}, 1, pageSize);
             setPageCount(1);
