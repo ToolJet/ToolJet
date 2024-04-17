@@ -6,8 +6,9 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import EditIcon from '../Icons/EditColumn.svg';
+import _, { isEmpty } from 'lodash';
 
-function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn }) {
+function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn, tableName, columns, isEditMode }) {
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
   return (
     <>
@@ -44,6 +45,7 @@ function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn }) {
             size="sm"
             style={{ fontSize: '14px' }}
             onClick={() => setIsForeignKeyDraweOpen(true)}
+            disabled={isEmpty(tableName)}
           >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp; Add relation
@@ -57,7 +59,7 @@ function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn }) {
         drawerStyle={{ width: '500px' }}
         isForeignKeyRelation={true}
       >
-        <ForeignKeyTableForm />
+        <ForeignKeyTableForm tableName={tableName} columns={columns} isEditMode={isEditMode} />
       </Drawer>
     </>
   );

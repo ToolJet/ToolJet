@@ -9,6 +9,7 @@ import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
+import { serialDataType } from '../constants';
 
 const TableForm = ({
   selectedTable = {},
@@ -17,6 +18,7 @@ const TableForm = ({
       column_name: 'id',
       data_type: 'serial',
       constraints_type: { is_primary_key: true, is_not_null: true, is_unique: true },
+      dataTypeDetails: serialDataType,
     },
   },
   selectedTableData = {},
@@ -275,7 +277,13 @@ const TableForm = ({
             </div>
           </div>
         </div>
-        <CreateColumnsForm columns={columns} setColumns={setColumns} isEditMode={isEditMode} editColumns={columns} />
+        <CreateColumnsForm
+          columns={columns}
+          setColumns={setColumns}
+          isEditMode={isEditMode}
+          editColumns={columns}
+          tableName={tableName}
+        />
       </div>
       <DrawerFooter
         fetching={fetching}

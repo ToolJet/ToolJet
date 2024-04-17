@@ -19,7 +19,7 @@ function TableSchema({
   setColumnSelection,
   handleDelete,
   isEditMode,
-  isActiveForeignKey,
+  isActiveForeignKey = false,
   indexHover,
   editColumns,
 }) {
@@ -130,13 +130,20 @@ function TableSchema({
                 // disabled={columns[index]?.constraints_type?.is_primary_key === true}
               />
             </div>
-            <div className="foreign-key-relation">
-              {isActiveForeignKey ? (
-                <ForeignKeyActive width="13" height="13" />
-              ) : (
-                <ForeignKeyRelation width="13" height="13" />
-              )}
-            </div>
+
+            <ToolTip
+              message={isActiveForeignKey ? 'Foreign key relation' : 'No foreign key relation'}
+              placement="top"
+              tooltipClassName="tootip-table"
+            >
+              <div className="foreign-key-relation">
+                {isActiveForeignKey ? (
+                  <ForeignKeyActive width="13" height="13" />
+                ) : (
+                  <ForeignKeyRelation width="13" height="13" />
+                )}
+              </div>
+            </ToolTip>
 
             <ToolTip
               message="Primary key data type cannot be modified"
