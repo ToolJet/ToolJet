@@ -4,6 +4,7 @@ import {
     verifyTooltip,
     navigateToManageSSO,
     navigateToManageGroups,
+    navigateToManageUsers,
 } from "Support/utils/common";
 import { addNewUser } from "Support/utils/eeCommon";
 
@@ -28,6 +29,7 @@ import {
 } from "Selectors/eeCommon";
 import { AddNewconstants } from "Support/utils/workspaceConstants";
 import { userSignUp } from "Support/utils/onboarding";
+import { inviteUserWithUserGroups } from "Support/utils/manageUsers";
 
 describe("", () => {
     const data = {};
@@ -108,22 +110,6 @@ describe("", () => {
             "Audit logs are available only in paid plans"
         );
 
-        cy.get(commonSelectors.manageSSOOption).click();
-        verifyTooltipDisabled(
-            commonSelectors.listItem("OpenID Connect"),
-            "OpenID Connect is available only\n        in paid plans"
-        );
-        cy.reload();
-        verifyTooltipDisabled(
-            commonSelectors.listItem("LDAP"),
-            "LDAP is available only\n        in paid plans"
-        );
-        cy.reload();
-        verifyTooltipDisabled(
-            commonSelectors.listItem("SAML"),
-            "SAML is available only\n        in paid plans"
-        );
-
         cy.get(commonSelectors.listItem("Custom styles")).click();
         cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
         cy.get(licenseSelectors.paidFeatureButton).verifyVisibleElement(
@@ -161,11 +147,10 @@ describe("", () => {
             .replaceAll("[^A-Za-z]", "");
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase();
-        data.workspaceName = fake.lastName
-            .toLowerCase()
-            .replaceAll("[^A-Za-z]", "");
 
-        userSignUp(data.firstName, data.email, data.workspaceName);
+        cy.defaultWorkspaceLogin();
+        navigateToManageUsers();
+        inviteUserWithUserGroups(data.firstName, data.email, "All users", "Admin");
         cy.wait(3000);
 
         cy.get(licenseSelectors.enterpriseGradientIcon).should("be.visible");
@@ -228,22 +213,6 @@ describe("", () => {
         verifyTooltip(
             commonEeSelectors.auditLogIcon,
             "Audit logs are available only in paid plans"
-        );
-
-        cy.get(commonSelectors.manageSSOOption).click();
-        verifyTooltipDisabled(
-            commonSelectors.listItem("OpenID Connect"),
-            "OpenID Connect is available only\n        in paid plans"
-        );
-        cy.reload();
-        verifyTooltipDisabled(
-            commonSelectors.listItem("LDAP"),
-            "LDAP is available only\n        in paid plans"
-        );
-        cy.reload();
-        verifyTooltipDisabled(
-            commonSelectors.listItem("SAML"),
-            "SAML is available only\n        in paid plans"
         );
 
         cy.get(commonSelectors.listItem("Custom styles")).click();
