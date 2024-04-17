@@ -618,19 +618,25 @@ export default function generateColumnsData({
             const validationData = validateDates({
               validationObject: {
                 minDate: {
-                  value: column.minDate,
+                  value: isDateSelectionEnabled ? column.minDate : undefined,
                 },
                 maxDate: {
-                  value: column.maxDate,
+                  value: isDateSelectionEnabled ? column.maxDate : undefined,
                 },
                 minTime: {
-                  value: column.minTime,
+                  value: isTimeChecked ? column.minTime : undefined,
                 },
                 maxTime: {
-                  value: column.maxTime,
+                  value: isTimeChecked ? column.minTime : undefined,
                 },
                 parseDateFormat: {
                   value: column.parseDateFormat,
+                },
+                isTwentyFourHrFormatEnabled: {
+                  value: isTwentyFourHrFormatEnabled,
+                },
+                customRule: {
+                  value: column.customRule,
                 },
               },
               widgetValue: cellValue,

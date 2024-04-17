@@ -420,10 +420,13 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
   const validationTimeFormat = validationObject?.timeFormat?.value || 'HH:mm';
   const customRule = validationObject?.customRule?.value;
   const parsedDateFormat = validationObject?.parseDateFormat?.value;
+  const isTwentyFourHrFormatEnabled = validationObject?.isTwentyFourHrFormatEnabled?.value ?? false;
   const _widgetDateValue = moment(widgetValue, parsedDateFormat);
-  const _widgetTimeValue = moment(widgetValue, getDateTimeFormat(parsedDateFormat, true, true)).format(
-    validationTimeFormat
-  );
+  const _widgetTimeValue = moment(
+    widgetValue,
+    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled)
+  ).format(validationTimeFormat);
+
   const resolvedMinDate = resolveWidgetFieldValue(
     validationObject?.minDate?.value,
     currentState,
@@ -494,7 +497,6 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
   if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
-
   return {
     isValid,
     validationError,
