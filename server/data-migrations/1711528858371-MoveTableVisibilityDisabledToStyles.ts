@@ -44,6 +44,14 @@ export class MoveTableVisibilityDisabledToStyles1711528858371 implements Migrati
         delete generalStyles?.boxShadow;
       }
 
+      if (properties?.data?.value === undefined) {
+        properties.data = {
+          ...properties?.data,
+          value:
+            "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
+        };
+      }
+
       await entityManager.update(Component, component.id, {
         properties,
         styles,
