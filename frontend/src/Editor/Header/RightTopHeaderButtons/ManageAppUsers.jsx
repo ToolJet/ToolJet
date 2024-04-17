@@ -23,7 +23,6 @@ class ManageAppUsersComponent extends React.Component {
     this.state = {
       showModal: false,
       appId: null,
-      isLoading: true,
       isSlugVerificationInProgress: false,
       addingUser: false,
       newUser: {},
@@ -51,25 +50,8 @@ class ManageAppUsersComponent extends React.Component {
 
   componentDidMount() {
     const appId = this.props.appId;
-    this.fetchAppUsers(appId);
     this.setState({ appId });
   }
-
-  fetchAppUsers = (appId) => {
-    appsService
-      .getAppUsers(appId)
-      .then((data) =>
-        this.setState({
-          users: data.users,
-          isLoading: false,
-        })
-      )
-      .catch((error) => {
-        this.setState({ isLoading: false });
-        const errorMessage = error?.message || 'Something went wrong';
-        toast.error(errorMessage);
-      });
-  };
 
   hideModal = () => {
     this.setState({
@@ -95,7 +77,6 @@ class ManageAppUsersComponent extends React.Component {
       .then(() => {
         this.setState({ addingUser: false, newUser: {} });
         toast.success('Added user successfully');
-        this.fetchAppUsers(this.state.appId);
       })
       .catch(({ error }) => {
         this.setState({ addingUser: false });
@@ -190,7 +171,7 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
+    const { appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
@@ -238,11 +219,7 @@ class ManageAppUsersComponent extends React.Component {
               </span>
             </Modal.Header>
             <Modal.Body>
-              {isLoading ? (
-                <div style={{ width: '100%' }} className="p-5">
-                  <Skeleton count={5} />
-                </div>
-              ) : (
+              {
                 <div class="shareable-link-container">
                   <div className="make-public mb-3">
                     <div className="form-check form-switch d-flex align-items-center">
@@ -402,7 +379,7 @@ class ManageAppUsersComponent extends React.Component {
                     </div>
                   )}
                 </div>
-              )}
+              }
             </Modal.Body>
 
             <Modal.Footer className="manage-app-users-footer">
