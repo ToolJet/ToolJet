@@ -44,7 +44,7 @@ export class MoveTableVisibilityDisabledToStyles1711528858371 implements Migrati
         delete generalStyles?.boxShadow;
       }
 
-      if (properties?.data?.value === undefined) {
+      if (properties && properties?.data?.value === undefined) {
         properties.data = {
           ...properties?.data,
           value:
