@@ -24,5 +24,5 @@ function templateManifests() {
 
 function createSampleApp() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/library_apps/sample_app`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/library_apps/sample-app`, requestOptions).then(handleResponse);
 }

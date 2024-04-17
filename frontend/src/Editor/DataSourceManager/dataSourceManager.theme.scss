@@ -19,13 +19,22 @@
         justify-content: center;
         display: flex;
 
-        p{
+        .dark{
+                color: white !important;
+            }
+
+        .p{
             // color: var(--);
             font-size: 12px;
             font-weight: 400;
             text-align: center;
             color: $color-light-slate-11;
+
+
+            
         }
+
+        
     }
 
     .create-btn-cont{

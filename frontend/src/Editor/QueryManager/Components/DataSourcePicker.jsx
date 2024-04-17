@@ -121,7 +121,7 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
               <p>
                 This is a shared resource and may show varying data due to real-time updates. It&apos;s reset daily for
                 some consistency, but please note it&apos;s designed for user exploration, not production use.&nbsp;
-                <a href={docLink} target="_blank" rel="noopener noreferrer" className="opn-git-btn">
+                <a onClick={handleAddClick} target="_blank" rel="noopener noreferrer" className="opn-git-btn">
                   Explore available data sources
                 </a>{' '}
                 <SolidIcon name="open" width={'8'} height={'8'} viewBox={'0 0 10 10'} />

@@ -89,7 +89,6 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
             disabled={isSampleDb}
             className="ds-delete-btn"
             onClick={() => onDelete(dataSource)}
-            title={isSampleDb ? 'Sample data source\ncannot be deleted' : 'Delete'}
             data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
           >
             <div>

@@ -535,24 +535,25 @@ class DataSourceManagerComponent extends React.Component {
     );
   };
 
-  createSampleApp = async () => {
+  createSampleApp = () => {
     let _self = this;
     _self.setState({ creatingApp: true });
-    try {
-      const data = await libraryAppService.createSampleApp();
-      const workspaceId = getWorkspaceId();
-      window.open(`/${workspaceId}/apps/${data.app[0].id}`, '_blank');
-      toast.success('App created successfully!');
-      _self.setState({ creatingApp: false });
-      return true;
-    } catch (errorResponse) {
-      _self.setState({ creatingApp: false });
-      if (errorResponse.statusCode === 409) {
-        return false;
-      } else {
-        throw errorResponse;
-      }
-    }
+    libraryAppService
+      .createSampleApp()
+      .then((data) => {
+        const workspaceId = getWorkspaceId();
+        window.open(`/${workspaceId}/apps/${data.app[0].id}`, '_blank');
+        toast.success('App created successfully!');
+        _self.setState({ creatingApp: false });
+      })
+      .catch((errorResponse) => {
+        _self.setState({ creatingApp: false });
+        if (errorResponse.statusCode === 409) {
+          return false;
+        } else {
+          throw errorResponse;
+        }
+      });
   };
 
   renderSampleDBModal = () => {
@@ -565,8 +566,8 @@ class DataSourceManagerComponent extends React.Component {
           </div>
           <div className="col-md-1">PostgreSQL</div>
         </div>
-        <div className="sample-db-description">
-          <p>
+        <div className={'sample-db-description'}>
+          <p className={`p ${this.props.darkMode ? 'dark' : ''}`}>
             This PostgreSQL data source is a shared resource and may show varying data
             <br /> due to real-time updates. It&apos;s reset daily for some consistency, but please note <br />
             it&apos;s designed for user exploration, not production use.
