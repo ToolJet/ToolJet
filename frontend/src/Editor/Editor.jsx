@@ -389,19 +389,6 @@ const EditorComponent = (props) => {
     return editorRef;
   };
 
-  const fetchApps = async (page) => {
-    const { apps } = await appService.getAll(page);
-
-    updateState({
-      apps: apps.map((app) => ({
-        id: app.id,
-        name: app.name,
-        slug: app.slug,
-        current_version_id: app.current_version_id,
-      })),
-    });
-  };
-
   const fetchOrgEnvironmentVariables = () => {
     orgEnvironmentVariableService.getVariables().then((data) => {
       const client_variables = {};
@@ -506,7 +493,6 @@ const EditorComponent = (props) => {
     useResolveStore.getState().actions.updateJSHints();
 
     await fetchApp(props.params.pageHandle, true);
-    await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchOrgEnvironmentConstants();
     initComponentVersioning();

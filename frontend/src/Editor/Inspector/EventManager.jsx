@@ -25,6 +25,7 @@ import CodeHinter from '../CodeEditor';
 import { diff } from 'deep-object-diff';
 import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { appService } from '@/_services';
 
 export const EventManager = ({
   sourceId,
@@ -70,7 +71,7 @@ export const EventManager = ({
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
 
-  const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
+  const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler, updateState } =
     useAppDataActions();
 
   const currentEvents = allAppEvents?.filter((event) => {
@@ -234,7 +235,23 @@ export const EventManager = ({
     return defaultParams;
   }
 
-  function getAllApps() {
+  const fetchApps = async (page) => {
+    const { apps } = await appService.getAll(page);
+
+    updateState({
+      apps: apps.map((app) => ({
+        id: app.id,
+        name: app.name,
+        slug: app.slug,
+        current_version_id: app.current_version_id,
+      })),
+    });
+
+    return apps;
+  };
+
+  async function getAllApps() {
+    const apps = await fetchApps(0);
     let appsOptionsList = [];
     apps
       .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
