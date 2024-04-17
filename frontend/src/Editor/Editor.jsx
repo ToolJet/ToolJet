@@ -261,6 +261,8 @@ const EditorComponent = (props) => {
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
+      useCurrentStateStore.getState().actions.setEditorReady(false);
+      useResolveStore.getState().actions.resetStore();
       prevAppDefinition.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
