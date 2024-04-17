@@ -87,7 +87,8 @@ export class AppEnvironmentService {
     ORDER BY updated_at DESC
     LIMIT 1;
     `;
-    return manager.query(newVersionQuery, [selectedEnvironmentId, appId]);
+    const result = manager.query(newVersionQuery, [selectedEnvironmentId, appId]);
+    return result[0];
   }
 
   async processActions(action: string, actionParameters: AppEnvironmentActionParametersDto) {
