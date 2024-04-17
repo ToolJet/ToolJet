@@ -49,7 +49,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) 
     if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
   });
 
-  const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences);
+  const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences, input);
   return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
 };
 
@@ -63,7 +63,7 @@ function orderSuggestions(suggestions, validationType) {
   return [...matchingSuggestions, ...otherSuggestions];
 }
 
-export const generateHints = (hints, totalReferences = 1) => {
+export const generateHints = (hints, totalReferences = 1, input) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
@@ -97,7 +97,7 @@ export const generateHints = (hints, totalReferences = 1) => {
         }
 
         if (totalReferences > 0 && completion.type !== 'js_methods') {
-          let queryInput = view.state.doc.toString();
+          let queryInput = input;
           const currentWord = queryInput.split('{{').pop().split('}}')[0];
           pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
 
