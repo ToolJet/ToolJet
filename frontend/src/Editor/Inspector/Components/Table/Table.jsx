@@ -1144,7 +1144,7 @@ class TableComponent extends React.Component {
           <div className="row g-2">
             <div>{actions.value.map((action, index) => this.renderActionButton(action, index))}</div>
             {actions.value.length === 0 && (
-              <NoListItem text={'There are no action buttons'} dataCy={`-action-button`} />
+              <NoListItem text={'No action buttons'} dataCy={`-action-button`} />
             )}
             <AddNewButton dataCy="button-add-new-action-button" onClick={this.addNewAction} className="mt-0">
               New action button

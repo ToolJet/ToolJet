@@ -17,10 +17,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Sync repo
+        uses: actions/checkout@v3
+
+      - name: Check if PR is from the same repo
+        id: check_repo
+        run: echo "::set-output name=is_fork::$(if [[ '${{ github.event.pull_request.head.repo.full_name }}' != '${{ github.event.pull_request.base.repo.full_name }}' ]]; then echo true; else echo false; fi)"
+
+      - name: Fetch the remote branch if it's a forked PR
+        if: steps.check_repo.outputs.is_fork == 'true'
+        run: |
+          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
+          git checkout ${{ env.BRANCH_NAME }}
+
       - name: Checkout
+        if: steps.check_repo.outputs.is_fork == 'false'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.18.2
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -29,11 +49,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
           aws-region: us-east-2
 
-      - name:  Build marketplace plugins
+      - name: Install and build dependencies
         run: |
-          cd markertplace
-          npm install && npm run build --workspaces
-          AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js
+          cd marketplace && npm install && npm run build --workspaces
+      
+      - name: Build marketplace plugins 
+        run: |
+          cd marketplace && AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js
 
       - name: Comment deployment URL
         uses: actions/github-script@v5
