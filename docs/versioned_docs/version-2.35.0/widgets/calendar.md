@@ -164,12 +164,12 @@ Determines whether to display a popover whenever an event is clicked. Click on `
 
 ## Events
 
-| <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"200px"}}> Description </div> | 
-|: ---------- | :---------- | 
-| **On Event Selected**       | This event is fired when the user clicks on a calendar event. Last selected event is exposed as `selectedEvent`. | 
-| **on Slot Selected**       | This event is fired when the user either clicks on an calendar slot(empty cell or empty space of a cell with event) or when they click and drag to select multiple slots.  Last selected slot(s) are exposed as `selectedSlots`. | 
-| **On Date Navigate**     | This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar. The corresponding date to which the user navigated, will be exposed as `currentDate`.. | 
-| **On View Change** | This event is fired when a different view is selected by the user. The current view is exposed as `currentView`. | 
+| Event | Description |
+|:-----:|:-----------:|
+| **On Event Selected** | This event is fired when the user clicks on a calendar event. Last selected event is exposed as `selectedEvent`. |
+| **on Slot Selected** | This event is fired when the user either clicks on an calendar slot(empty cell or empty space of a cell with event) or when they click and drag to select multiple slots. Last selected slot(s) are exposed as `selectedSlots`. |
+| **On Date Navigate** | This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar. The corresponding date to which the user navigated, will be exposed as `currentDate`. |
+| **On View Change** | This event is fired when a different view is selected by the user. The current view is exposed as `currentView`. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -222,11 +222,11 @@ A Tooltip is often used to specify extra information about something when the us
 
 ## Styles
 
-| <div style={{ width:"150px"}}> Style </div> | <div style={{ width:"150px"}}> Description </div> | 
-|:---------------|:------------|:---------------|
-|  **Visibility**   | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |  
-|  **Cell Size in Views Classified by Resource**     | When `resources` are specified, the calendar could take up quite a lot of horizontal space, making the horizontal scroll bar of calendar having to be relied upon all the time. | 
-| **Header Date Format on Week View** | This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the **momentjs** standard of date formatting. By default, its set to `DD MMM`. |
+| Style | Description |
+|:-----:|:-----------:|
+| **Visibility** | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+| **Cell Size in Views Classified by Resource** | When `resources` are specified, the calendar could take up quite a lot of horizontal space, making the horizontal scroll bar of calendar having to be relied upon all the time. |
+| **Header Date Format on Week View** | This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the momentjs standard of date formatting. By default, its set to `DD MMM`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
