@@ -1348,3 +1348,7 @@
     padding: 0px 10px 0px 10px !important;
   }
 }
+
+.is-invalid.content-editing ~ .invalid-feedback {
+  padding: 0px 12px 8px;;
+}

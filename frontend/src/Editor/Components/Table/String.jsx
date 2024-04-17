@@ -50,6 +50,12 @@ const String = ({
     }
   }, [hovered]);
 
+  useEffect(() => {
+    if (!isEditable && isEditing) {
+      setIsEditing(false);
+    }
+  }, [isEditable]);
+
   const _renderString = () => (
     <div
       ref={ref}
@@ -62,6 +68,8 @@ const String = ({
         outline: 'none',
         border: 'none',
         background: 'inherit',
+        position: 'relative',
+        height: '100%',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
@@ -82,7 +90,7 @@ const String = ({
         e.stopPropagation();
       }}
     >
-      <span>{cellValue}</span>
+      {isEditing ? cellValue : <span>{cellValue}</span>}
     </div>
   );
 
@@ -147,6 +155,7 @@ const String = ({
                 if (!hovered) setHovered(true);
               }}
               onMouseOut={() => setHovered(false)}
+              className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
             >
               {_renderString()}
             </div>
