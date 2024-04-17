@@ -164,11 +164,11 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setFirstTimeFocus(false);
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
     setTimeout(() => {
+      setFirstTimeFocus(false);
       if (!error || currentValue == '') {
         const _value = currentValue;
         onBlurUpdate(_value);
