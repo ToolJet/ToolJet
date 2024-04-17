@@ -13,6 +13,7 @@ const String = ({
   containerWidth,
   cell,
   horizontalAlignment,
+  isMaxRowHeightAuto,
 }) => {
   const validationData = validateWidget({
     validationObject: {
@@ -70,6 +71,7 @@ const String = ({
         background: 'inherit',
         position: 'relative',
         height: '100%',
+        // ...(isMaxRowHeightAuto && { position: 'static' }),
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
@@ -159,7 +161,7 @@ const String = ({
             >
               {_renderString()}
             </div>
-            <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+            <div className={`${isValid ? '' : 'invalid-feedback text-truncate'} `}>{validationError}</div>
           </div>
         )}
       </OverlayTrigger>
