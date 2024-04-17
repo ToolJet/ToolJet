@@ -18,6 +18,32 @@ export default class Salesforce implements QueryService {
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
     const client_secret = source_options.client_secret.value;
-    return `https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=${client_id}&redirect_uri=${redirectUri}&state=YOUR_STATE`;
+    const oauth2 = new jsforce.OAuth2({
+      clientId: client_id,
+      clientSecret: client_secret,
+      redirectUri: redirectUri,
+    });
+    const authorizationUrl = oauth2.getAuthorizationUrl({
+      scope: 'full',
+    });
+    return authorizationUrl;
+  }
+  async accessDetailsFrom(authCode: string, source_options): Promise<object> {
+    const client_id = source_options.client_id.value;
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const redirectUri = `${fullUrl}oauth2/authorize`;
+    const client_secret = source_options.client_secret.value;
+    const oauth2 = new jsforce.OAuth2({
+      clientId: client_id,
+      clientSecret: client_secret,
+      redirectUri: redirectUri,
+    });
+    const conn = new jsforce.Connection({ oauth2: oauth2 });
+    const response = await conn.authorize(authCode);
+    const authDetails = [];
+    authDetails.push(['response', response]);
+    return authDetails;
   }
 }

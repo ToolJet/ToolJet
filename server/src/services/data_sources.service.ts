@@ -1,4 +1,3 @@
-import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm';
@@ -364,8 +363,10 @@ export class DataSourcesService {
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
       const provider = findOption(options, 'provider')['value'];
       const authCode = findOption(options, 'code')['value'];
+      const plugin_id = findOption(options, 'plugin_id')['value'];
+      const queryService = await this.pluginsHelper.getService(plugin_id, provider);
 
-      const queryService = new allPlugins[provider]();
+      //const queryService = new allPlugins[provider]();
       const accessDetails = await queryService.accessDetailsFrom(authCode, options);
 
       for (const row of accessDetails) {

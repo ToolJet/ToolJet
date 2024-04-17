@@ -15,7 +15,7 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving, select
     { value: 'v2', label: 'v2' },
   ];
   function authSalesforce() {
-    const provider = selectedDataSource?.kind;
+    const provider = 'salesforce';
     const plugin_id = selectedDataSource?.plugin?.id;
     const source_options = options;
     setAuthStatus('waiting_for_url');
@@ -24,26 +24,39 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving, select
       .fetchOauth2BaseUrl(provider, plugin_id, source_options)
       .then((data) => {
         console.log('options', source_options);
-        console.log('data from Oauth', data);
+        console.log('data from Oauth', data.url);
+        console.log('selectedDataSource.kind', selectedDataSource.kind);
+        localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+        optionchanged('provider', provider).then(() => {
+          optionchanged('oauth2', true);
+          optionchanged('plugin_id', plugin_id);
+        });
+        setAuthStatus('waiting_for_token');
+        window.open(data.url);
       })
       .catch(({ error }) => {
         toast.error(error);
         setAuthStatus(null);
       });
   }
+  function saveDataSource() {
+    console.log('selectedDS', selectedDataSource);
+    optionchanged('code', localStorage.getItem('OAuthCode')).then(() => {
+      createDataSource();
+    });
+  }
 
   return (
     <div>
       <div>
-        <label className="form-label mt-3">API Version</label>
+        <label className="form-label text-muted mt-3">API version</label>
         <Select
-          width="100%"
-          type="select"
-          className="form-control"
           options={selectOptions}
-          onChange={(e) => optionchanged('api_version', e.target.value)}
-          value={options?.api_version?.value ?? ''}
-        ></Select>
+          value={options?.api_version?.value}
+          onChange={(value) => optionchanged('api_version', value)}
+          width={'100%'}
+          useMenuPortal={false}
+        />
       </div>
       <div>
         <label className="form-label mt-3">Client ID</label>
@@ -65,6 +78,7 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving, select
           value={options?.client_secret?.value ?? ''}
           placeholder="Client Secret"
           workspaceConstants={workspaceConstants}
+          encrypted={true}
         />
       </div>
       <div>
@@ -79,7 +93,27 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving, select
       </div>
       <div className="row mt-3">
         <center>
-          <Button onClick={() => authSalesforce()}>{t('slack.connectSalesforce', 'Connect to Salesforce')}</Button>
+          {authStatus === 'waiting_for_token' && (
+            <div>
+              <Button
+                className={`m2 ${isSaving ? ' loading' : ''}`}
+                disabled={isSaving}
+                onClick={() => saveDataSource()}
+              >
+                {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+              </Button>
+            </div>
+          )}
+
+          {(!authStatus || authStatus === 'waiting_for_url') && (
+            <Button
+              className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
+              disabled={isSaving}
+              onClick={() => authSalesforce()}
+            >
+              {t('slack.connectSalesforce', 'Connect to Salesforce')}
+            </Button>
+          )}
         </center>
       </div>
     </div>

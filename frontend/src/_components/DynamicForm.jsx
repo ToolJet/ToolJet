@@ -155,6 +155,8 @@ const DynamicForm = ({
         return OpenApi;
       case 'react-component-zendesk':
         return Zendesk;
+      case 'react-component-salesforce':
+        return Salesforce;
       default:
         return <div>Type is invalid</div>;
     }

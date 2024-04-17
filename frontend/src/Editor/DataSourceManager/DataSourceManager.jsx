@@ -193,7 +193,8 @@ class DataSourceManagerComponent extends React.Component {
   createDataSource = () => {
     const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
       this.state;
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets'];
+    console.log('selectedDataSource from DatasourceManager', selectedDataSource);
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
