@@ -70,7 +70,7 @@ export class AppEnvironmentService {
     return { shouldRenderPromoteButton, shouldRenderReleaseButton };
   }
 
-  getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any> {
+  async getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any> {
     const newVersionQuery = `
     SELECT name, id, current_environment_id
     FROM app_versions
@@ -87,7 +87,7 @@ export class AppEnvironmentService {
     ORDER BY updated_at DESC
     LIMIT 1;
     `;
-    const result = manager.query(newVersionQuery, [selectedEnvironmentId, appId]);
+    const result = await manager.query(newVersionQuery, [selectedEnvironmentId, appId]);
     return result[0];
   }
 
