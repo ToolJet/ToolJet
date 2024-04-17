@@ -86,8 +86,32 @@ export function onComponentOptionsChanged(component, options) {
     let componentData = components[componentName];
     componentData = componentData || {};
 
+    const shouldUpdateResolvedRefsOfHints = [];
+
     for (const option of options) {
       componentData[option[0]] = option[1];
+
+      const path = `components.${componentName}.${option[0]}`;
+
+      if (!_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
+        const lookUpTable = useResolveStore.getState().lookupTable;
+
+        const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
+
+        if (typeof existingRef === 'function') return;
+
+        const shouldUpdateRef = existingRef !== componentData[option[0]];
+
+        if (shouldUpdateRef) {
+          shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
+        }
+      }
+    }
+
+    if (shouldUpdateResolvedRefsOfHints.length > 0) {
+      handleLowPriorityWork(() => {
+        useResolveStore.getState().actions.updateResolvedRefsOfHints(shouldUpdateResolvedRefsOfHints);
+      });
     }
 
     useCurrentStateStore.getState().actions.setCurrentState({

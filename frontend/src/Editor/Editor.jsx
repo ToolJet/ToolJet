@@ -1371,8 +1371,6 @@ const EditorComponent = (props) => {
     _appDefinition.pages[currentPageId].components = newComponents;
 
     appDefinitionChanged(_appDefinition, { containerChanges: true, widgetMovedWithKeyboard: true });
-    // console.log('arpit::', { componentsIds });
-    // updateComponentsNeedsUpdateOnNextRender(componentsIds);
   };
 
   const copyComponents = () =>
