@@ -14,11 +14,11 @@ export const Map = function Map({
   onComponentClick,
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  onEvent,
   styles,
   setExposedVariable,
   dataCy,
   properties,
+  fireEvent,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const { polygonPoints = [], defaultMarkers = [] } = properties;
@@ -70,7 +70,7 @@ export const Map = function Map({
     newMarkers.push({ lat, lng });
     setMarkers(newMarkers);
 
-    onComponentOptionChanged(component, 'markers', newMarkers).then(() => onEvent('onCreateMarker', { component }));
+    onComponentOptionChanged(component, 'markers', newMarkers).then(() => fireEvent('onCreateMarker'));
   }
 
   function addMapUrlToJson(centerJson) {
@@ -92,7 +92,7 @@ export const Map = function Map({
     onComponentOptionsChanged(component, [
       ['bounds', bounds],
       ['center', addMapUrlToJson(newCenter)],
-    ]).then(() => onEvent('onBoundsChange', { component }));
+    ]).then(() => fireEvent('onBoundsChange'));
   }
 
   useEffect(() => {
@@ -110,9 +110,7 @@ export const Map = function Map({
   });
 
   function handleMarkerClick(index) {
-    onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() =>
-      onEvent('onMarkerClick', { component })
-    );
+    onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() => fireEvent('onMarkerClick'));
   }
 
   function onPlaceChanged() {
@@ -186,7 +184,7 @@ export const Map = function Map({
             <Polygon
               path={polygonPoints}
               onClick={() => {
-                onEvent('onPolygonClick', { component });
+                fireEvent('onPolygonClick');
               }}
               options={{
                 strokeColor: '#4d72fa',
