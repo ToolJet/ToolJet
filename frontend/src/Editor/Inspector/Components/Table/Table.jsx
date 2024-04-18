@@ -368,15 +368,6 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     let column = columns.value[index];
-    if (item === 'columnType' && value === 'datepicker') {
-      column = {
-        ...column,
-        isTimeChecked: false,
-        dateFormat: 'DD/MM/YYYY',
-        parseDateFormat: 'DD/MM/YYYY',
-        isDateSelectionEnabled: true,
-      };
-    }
     if (item === 'columnType' && (value === 'select' || value === 'newMultiSelect')) {
       column?.options?.length > 0 && column.options.forEach((option) => unset(option, 'makeDefaultOption'));
       column.defaultOptionsList = [];

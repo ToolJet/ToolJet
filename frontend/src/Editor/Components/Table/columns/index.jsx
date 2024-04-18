@@ -74,14 +74,10 @@ export default function generateColumnsData({
       }
     }
     if (columnType === 'datepicker') {
-      // Preserve existing properties
-      column = {
-        ...column,
-        isTimeChecked: column.isTimeChecked !== undefined ? column.isTimeChecked : column.isTimeChecked ?? false,
-        dateFormat: column.dateFormat || 'DD/MM/YYYY',
-        parseDateFormat: column.parseDateFormat ?? column.dateFormat, //backwards compatibility
-        isDateSelectionEnabled: column.isDateSelectionEnabled ?? true,
-      };
+      column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
+      column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
+      column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
+      column.isDateSelectionEnabled = column.isDateSelectionEnabled ?? true;
 
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
@@ -152,10 +148,6 @@ export default function generateColumnsData({
           case undefined:
           case 'default': {
             const cellTextColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
-            // const cellStyles = {
-            //   color: textColor ?? '',
-            //   // overflow: 'hidden',
-            // };
             return (
               <String
                 isEditable={isEditable}
