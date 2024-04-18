@@ -15,7 +15,7 @@ import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
 import { Modal } from '@/Editor/Components/Modal';
 import { Chart } from '@/Editor/Components/Chart';
-import { Map } from '@/Editor/Components/Map/Map';
+import { Map as MapComponent } from '@/Editor/Components/Map/Map';
 import { QrScanner } from '@/Editor/Components/QrScanner/QrScanner';
 import { ToggleSwitch } from '@/Editor/Components/Toggle';
 import { RadioButton } from '@/Editor/Components/RadioButton';
@@ -85,7 +85,7 @@ export const AllComponents = {
   Multiselect,
   Modal,
   Chart,
-  Map,
+  Map: MapComponent,
   QrScanner,
   ToggleSwitch,
   RadioButton,
