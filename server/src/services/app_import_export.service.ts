@@ -95,13 +95,14 @@ export class AppImportExportService {
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
-      let dataSources =
+      const legacyLocalDataSources =
         appVersions?.length &&
         (await manager
           .createQueryBuilder(DataSource, 'data_sources')
           .where('data_sources.appVersionId IN(:...versionId)', {
             versionId: appVersions.map((v) => v.id),
           })
+          .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
           .orderBy('data_sources.created_at', 'ASC')
           .getMany());
 
@@ -127,7 +128,7 @@ export class AppImportExportService {
 
       const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
 
-      dataSources = [...dataSources, ...globalDataSources];
+      const dataSources = [...legacyLocalDataSources, ...globalDataSources];
 
       if (dataSources?.length) {
         dataQueries = await manager
