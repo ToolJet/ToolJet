@@ -85,7 +85,7 @@ export const Datepicker = function Datepicker({
   isDateSelectionEnabled,
   isTwentyFourHrFormatEnabled,
   disabledDates,
-  unixTimestamp,
+  unixTimestamp = 'seconds',
   parseInUnixTimestamp,
   cellStyles,
   darkMode,
