@@ -100,15 +100,14 @@ const Header = ({
         return;
       }
 
-      const { processed_rows: processedRows, rows_inserted: rowsInserted, rows_updated: rowsUpdated } = data.result;
-      const toastMessage =
-        `${pluralize(rowsInserted, 'new row')} added, ` + `${pluralize(rowsUpdated, 'row')} updated.`;
+      const { processed_rows: processedRows } = data.result;
+      const toastMessage = `${pluralize(processedRows, 'row')} processed`;
 
       toast.success(toastMessage, {
         position: 'top-center',
       });
 
-      setUploadResult({ processedRows, rowsInserted, rowsUpdated });
+      setUploadResult({ processedRows });
     } catch (error) {
       toast.error(error.errors, { position: 'top-center' });
       setIsBulkUploading(false);
