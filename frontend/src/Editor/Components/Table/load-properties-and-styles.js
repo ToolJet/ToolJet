@@ -7,7 +7,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const enableNextButton = properties.enableNextButton ?? true;
   const enablePrevButton = properties.enablePrevButton ?? true;
 
-  const totalRecords = properties.totalRecords ?? '';
+  const totalRecords = properties.totalRecords ?? 10;
   const enabledSort = properties?.enabledSort ?? true;
   const hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
 

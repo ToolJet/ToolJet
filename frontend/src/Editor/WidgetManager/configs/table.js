@@ -436,7 +436,7 @@ export const tableConfig = {
       serverSidePagination: { value: '{{false}}' },
       enableNextButton: { value: '{{true}}' },
       enablePrevButton: { value: '{{true}}' },
-      totalRecords: { value: '' },
+      totalRecords: { value: 10 },
       enablePagination: { value: '{{true}}' },
       serverSideSort: { value: '{{false}}' },
       serverSideFilter: { value: '{{false}}' },
