@@ -13,6 +13,7 @@ function SetupScreenSelfHost({ darkMode }) {
     const keyDownHandler = (event) => {
       if (event.key === 'Enter') {
         setShowSelfHostOboarding(true);
+        window.open('https://www.tooljet.com/thank-you', '_blank');
       }
     };
     document.addEventListener('keydown', keyDownHandler);
