@@ -8,7 +8,13 @@ import ForeignKeyTableForm from './ForeignKeyTableForm';
 import EditIcon from '../Icons/EditColumn.svg';
 import _, { isEmpty } from 'lodash';
 
-function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn, tableName, columns, isEditMode }) {
+function ForeignKeyRelation({
+  onMouseHoverFunction = () => {},
+  setIndexHoveredColumn = () => {},
+  tableName,
+  columns,
+  isEditMode,
+}) {
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
   return (
     <>
@@ -53,6 +59,7 @@ function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn, table
         position="right"
         drawerStyle={{ width: '500px' }}
         isForeignKeyRelation={true}
+        onClose={() => setIsForeignKeyDraweOpen(false)}
       >
         <ForeignKeyTableForm
           tableName={tableName}
