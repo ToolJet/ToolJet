@@ -201,11 +201,11 @@
       height: 100%;
     }
 
-    &.isEditable {
-      &:not(:focus-within):hover {
-        background: linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)),
-      }
+
+    &:not(:focus-within):hover {
+      background: linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)),
     }
+
 
     display: flex !important;
 
@@ -903,6 +903,12 @@
             display: flex;
             align-items: center;
           }
+
+          .react-select__value-container--is-multi {
+            flex-flow: wrap;
+            gap: 6px;
+            max-height: 100%;
+          }
         }
 
         .react-select__indicators {
@@ -1355,5 +1361,9 @@
 
 .is-invalid.content-editing~.invalid-feedback {
   padding: 0px 12px 8px;
-  ;
+}
+
+.table.table-striped> :not(caption)>*>* {
+  border-bottom: 0;
+  /* Remove border bottom if .table-striped class is present */
 }

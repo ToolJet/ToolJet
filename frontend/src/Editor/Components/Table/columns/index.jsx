@@ -32,7 +32,6 @@ export default function generateColumnsData({
   t,
   darkMode,
   tableColumnEvents,
-  isMaxRowHeightAuto,
 }) {
   return columnProperties.map((column) => {
     if (!column) return;
@@ -75,14 +74,10 @@ export default function generateColumnsData({
       }
     }
     if (columnType === 'datepicker') {
-      // Preserve existing properties
-      column = {
-        ...column,
-        isTimeChecked: column.isTimeChecked !== undefined ? column.isTimeChecked : column.isTimeChecked ?? false,
-        dateFormat: column.dateFormat || 'DD/MM/YYYY',
-        parseDateFormat: column.parseDateFormat ?? column.dateFormat, //backwards compatibility
-        isDateSelectionEnabled: column.isDateSelectionEnabled ?? true,
-      };
+      column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
+      column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
+      column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
+      column.isDateSelectionEnabled = column.isDateSelectionEnabled ?? true;
 
       sortType = (firstDate, secondDate) => {
         const columnKey = column.key || column.name;
@@ -133,6 +128,7 @@ export default function generateColumnsData({
         cellTextColor = '',
         contentWrap = true,
         autoHeight = true,
+        isMaxRowHeightAuto,
       }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
@@ -153,10 +149,6 @@ export default function generateColumnsData({
           case undefined:
           case 'default': {
             const cellTextColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
-            // const cellStyles = {
-            //   color: textColor ?? '',
-            //   // overflow: 'hidden',
-            // };
             return (
               <String
                 isEditable={isEditable}
@@ -443,7 +435,6 @@ export default function generateColumnsData({
             });
 
             const { isValid, validationError } = validationData;
-
             return (
               <div
                 className="h-100 d-flex align-items-center flex-column justify-content-center"
@@ -488,6 +479,7 @@ export default function generateColumnsData({
                     }
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
+                    showPopoverIfOverflow={!contentWrap || (contentWrap && !isMaxRowHeightAuto)}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
