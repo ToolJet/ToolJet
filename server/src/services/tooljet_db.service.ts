@@ -8,6 +8,7 @@ import {
   Table,
   TableColumn,
   TypeORMError,
+  TableForeignKey,
 } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
@@ -271,7 +272,7 @@ export class TooljetDbService {
           name: internalTable.id,
           columns: this.prepareColumnListForCreateTable(params.columns),
           ...(foreign_keys.length && {
-            foreignKeys: this.prepareForeignKeyDetails(foreign_keys, referenced_tables_info),
+            foreignKeys: this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info),
           }),
         })
       );
@@ -454,12 +455,22 @@ export class TooljetDbService {
   }
 
   private async addColumn(organizationId: string, params) {
-    const { table_name: tableName, column } = params;
+    const { table_name: tableName, column, foreign_keys } = params;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+
+    let referenced_tables_info = {};
+    if (foreign_keys.length) {
+      const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+        referenced_table_list,
+        organizationId,
+        'TABLENAME'
+      );
+    }
 
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunnner.connect();
@@ -482,6 +493,14 @@ export class TooljetDbService {
           ...(column?.constraints_type.is_primary_key && { isPrimary: true }),
         })
       );
+
+      if (foreign_keys.length) {
+        const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+          (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+        );
+        await tjdbQueryRunnner.createForeignKeys(internalTable.id, foreignKeys);
+      }
+
       await tjdbQueryRunnner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunnner.release();
@@ -744,7 +763,7 @@ export class TooljetDbService {
     return columnList;
   }
 
-  private prepareForeignKeyDetails(foreign_keys, referenced_tables_info) {
+  private prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info) {
     if (!foreign_keys.length) return [];
     const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
       const {
