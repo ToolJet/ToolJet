@@ -169,9 +169,14 @@ export class TooljetDbBulkUploadService {
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
 
-        const { keytype, data_type } = columnDetails;
+        const { keytype, data_type, column_default } = columnDetails;
 
-        if (keytype === 'PRIMARY KEY' && data_type !== 'serial') {
+        if (
+          keytype === 'PRIMARY KEY' &&
+          data_type !== 'integer' &&
+          column_default &&
+          !column_default.includes('nextval(')
+        ) {
           if (!row[columnInCsv]) {
             throw new BadRequestException(
               `Primary key value cannot be empty, Row - ${rowsProcessed + 1} is empty for Column - ${
