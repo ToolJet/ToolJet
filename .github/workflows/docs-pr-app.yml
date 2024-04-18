@@ -40,11 +40,11 @@ jobs:
               },
               {
                 "key": "NODE_VERSION",
-                "value": "16.18.1"
+                "value": "18.18.2"
               },
               {
                 "key": "NPM_VERSION",
-                "value": "8.19.2"
+                "value": "9.8.1"
               },
               {
                 "key": "GTM",
