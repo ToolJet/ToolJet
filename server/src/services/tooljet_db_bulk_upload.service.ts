@@ -40,37 +40,36 @@ export class TooljetDbBulkUploadService {
     internalTableId: string,
     internalTableColumnSchema: TableColumnSchema[],
     fileBuffer: Buffer
-  ): Promise<{ processedRows: number; rowsInserted: number; rowsUpdated: number }> {
+  ): Promise<{ processedRows: number }> {
+    const rowsToUpsert = [];
+    const passThrough = new PassThrough();
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
       strictColumnHandling: true,
       discardUnmappedColumns: true,
     });
-    const rowsToInsert = [];
-    const rowsToUpdate = [];
-    const idstoUpdate = new Set();
+    const primaryKeyColumns = internalTableColumnSchema
+      .filter((colDetails) => colDetails.keytype === 'PRIMARY KEY')
+      .map((colDetails) => colDetails.column_name);
+    const primaryKeyValuesToUpsert = new Set();
     let rowsProcessed = 0;
-
-    const passThrough = new PassThrough();
 
     csvStream
       .on('headers', (headers) => this.validateHeadersAsColumnSubset(internalTableColumnSchema, headers, csvStream))
       .transform((row) => this.validateAndParseColumnDataType(internalTableColumnSchema, row, rowsProcessed, csvStream))
       .on('data', (row) => {
         rowsProcessed++;
-        if (row.id) {
-          if (idstoUpdate.has(row.id)) {
-            throw new BadRequestException(`Duplicate 'id' value found on row[${rowsProcessed + 1}]: ${row.id}`);
-          }
 
-          idstoUpdate.add(row.id);
-          rowsToUpdate.push(row);
-        } else {
-          // TODO: Revise logic for primary key instead of hardcoded id column
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id, ...rowWithoutId } = row;
-          rowsToInsert.push(rowWithoutId);
+        const primaryKeyValuesIdentifier = Object.entries(row)
+          .filter(([columnName, _]) => primaryKeyColumns.includes(columnName))
+          .map(([_, value]) => value)
+          .join('-');
+
+        if (primaryKeyValuesToUpsert.has(primaryKeyValuesIdentifier)) {
+          throw new BadRequestException(`Duplicate primary key found on row[${rowsProcessed + 1}]`);
         }
+        primaryKeyValuesToUpsert.add(primaryKeyValuesIdentifier);
+        rowsToUpsert.push(row);
       })
       .on('error', (error) => {
         csvStream.destroy();
@@ -83,61 +82,56 @@ export class TooljetDbBulkUploadService {
     await pipeline(passThrough, csvStream);
 
     await this.tooljetDbManager.transaction(async (tooljetDbManager) => {
-      await this.bulkInsertRows(tooljetDbManager, rowsToInsert, internalTableId, internalTableColumnSchema);
-      await this.bulkUpdateRows(tooljetDbManager, rowsToUpdate, internalTableId);
+      await this.bulkUpsertRows(tooljetDbManager, rowsToUpsert, internalTableId, internalTableColumnSchema);
     });
 
-    return { processedRows: rowsProcessed, rowsInserted: rowsToInsert.length, rowsUpdated: rowsToUpdate.length };
+    return { processedRows: rowsProcessed };
   }
 
-  async bulkUpdateRows(tooljetDbManager: EntityManager, rowsToUpdate: unknown[], internalTableId: string) {
-    if (isEmpty(rowsToUpdate)) return;
-
-    const updateQueries = rowsToUpdate.map((row) => {
-      const columnNames = Object.keys(rowsToUpdate[0]);
-      const setClauses = columnNames
-        .map((column) => {
-          return `${column} = $${columnNames.indexOf(column) + 1}`;
-        })
-        .join(', ');
-
-      return {
-        text: `UPDATE "${internalTableId}" SET ${setClauses} WHERE id = $${columnNames.indexOf('id') + 1}`,
-        values: columnNames.map((column) => row[column]),
-      };
-    });
-
-    for (const updateQuery of updateQueries) {
-      await tooljetDbManager.query(updateQuery.text, updateQuery.values);
-    }
-  }
-
-  async bulkInsertRows(
+  async bulkUpsertRows(
     tooljetDbManager: EntityManager,
-    rowsToInsert: unknown[],
+    rowsToUpsert: unknown[],
     internalTableId: string,
     internalTableColumnSchema: TableColumnSchema[]
   ) {
-    if (isEmpty(rowsToInsert)) return;
+    if (isEmpty(rowsToUpsert)) return;
 
-    const excludedColumns = Object.keys(rowsToInsert[0]).filter((column) => {
-      const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === column);
-      return columnDetails && columnDetails.keytype !== 'PRIMARY KEY' && columnDetails.data_type === 'integer';
-    });
+    const primaryKeyColumns = internalTableColumnSchema
+      .filter((colDetails) => colDetails.keytype === 'PRIMARY KEY')
+      .map((colDetails) => colDetails.column_name);
 
-    const insertQueries = rowsToInsert.map((row, index) => {
-      const filteredRow = Object.fromEntries(Object.entries(row).filter(([key, _]) => !excludedColumns.includes(key)));
+    const valueSets = [];
+    let placeholders = [];
+    let rowIndex = 1;
+    for (const row of rowsToUpsert) {
+      // Filter out null primary keys if they have default values set (e.g., auto-incremented IDs)
+      const rowColumns = Object.keys(row).filter((col) => row[col] !== null || !primaryKeyColumns.includes(col));
+      const rowData = rowColumns.map((col) => row[col]);
+      const rowPlaceholders = rowData.map((_, idx) => `$${rowIndex + idx}`).join(', ');
 
-      return {
-        text: `INSERT INTO "${internalTableId}" (${Object.keys(filteredRow).join(', ')}) VALUES (${Object.values(
-          filteredRow
-        ).map((_, index) => `$${index + 1}`)})`,
-        values: Object.values(filteredRow),
-      };
-    });
-    for (const insertQuery of insertQueries) {
-      await tooljetDbManager.query(insertQuery.text, insertQuery.values);
+      valueSets.push(`(${rowPlaceholders})`);
+      placeholders = placeholders.concat(rowData);
+      rowIndex += rowData.length;
     }
+
+    // Columns for insert should exclude primary keys that might be null
+    const insertColumns = Object.keys(rowsToUpsert[0]).filter(
+      (col) => rowsToUpsert.some((row) => row[col] !== null) || !primaryKeyColumns.includes(col)
+    );
+
+    const onConflictUpdate = insertColumns
+      .filter((col) => !primaryKeyColumns.includes(col))
+      .map((col) => `"${col}" = EXCLUDED."${col}"`)
+      .join(', ');
+
+    const queryText = `
+    INSERT INTO "${internalTableId}" ("${insertColumns.join('", "')}")
+    VALUES ${valueSets.join(', ')}
+    ON CONFLICT (${primaryKeyColumns.join(', ')})
+    DO UPDATE SET ${onConflictUpdate}
+  `;
+
+    await tooljetDbManager.query(queryText, placeholders);
   }
 
   async validateHeadersAsColumnSubset(
@@ -168,23 +162,11 @@ export class TooljetDbBulkUploadService {
       const columnsInCsv = Object.keys(row);
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
+        const { keytype, column_default } = columnDetails;
+        const primaryKeyHasNoDefaultValue = keytype === 'PRIMARY KEY' && isEmpty(column_default);
 
-        const { keytype, data_type, column_default } = columnDetails;
-
-        if (
-          keytype === 'PRIMARY KEY' &&
-          data_type !== 'integer' &&
-          column_default &&
-          !column_default.includes('nextval(')
-        ) {
-          if (!row[columnInCsv]) {
-            throw new BadRequestException(
-              `Primary key value cannot be empty, Row - ${rowsProcessed + 1} is empty for Column - ${
-                columnDetails.column_name
-              }`
-            );
-          }
-        }
+        if (primaryKeyHasNoDefaultValue && isEmpty(row[columnInCsv]))
+          throw `Primary key required for column ${columnDetails.column_name}`;
 
         result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
         return result;
@@ -192,7 +174,7 @@ export class TooljetDbBulkUploadService {
 
       return transformedRow;
     } catch (error) {
-      csvStream.emit('error', `Data type error at row[${rowsProcessed + 1}]: ${error}`);
+      csvStream.emit('error', `Error at row[${rowsProcessed + 1}]: ${error}`);
     }
   }
 
