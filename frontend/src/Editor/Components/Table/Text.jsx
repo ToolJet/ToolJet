@@ -149,10 +149,11 @@ const Text = ({
             }}
             onMouseLeave={() => setHovered(false)}
             ref={ref}
+            className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
           >
             {!isEditable ? _renderNonEditableData() : _renderTextArea()}
           </div>
-          <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+          {isEditable && <div className={isValid ? '' : 'invalid-feedback text-truncate'}>{validationError}</div>}
         </div>
       </OverlayTrigger>
     </>
