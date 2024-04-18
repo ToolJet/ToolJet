@@ -1392,7 +1392,7 @@ export function Table({
                 if (contentWrap) {
                   cellMaxHeight = isMaxRowHeightAuto
                     ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState);
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
                   rowProps.style.maxHeight = cellMaxHeight;
                 } else {
                   cellMaxHeight = cellSize === 'condensed' ? 40 : 46;
