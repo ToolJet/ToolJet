@@ -27,9 +27,9 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('/export')
   async export(@User() user, @Body() exportResourcesDto: ExportResourcesDto) {
-    const ability = await this.appsAbilityFactory.appsActions(user);
+    const ability = await this.appsAbilityFactory.appsActions(user, exportResourcesDto?.app?.[0]?.id);
 
-    if (!ability.can('createApp', App)) {
+    if (!ability.can('exportApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const result = await this.importExportResourcesService.export(user, exportResourcesDto);

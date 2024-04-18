@@ -9,6 +9,7 @@ type Actions =
   | 'authorizeOauthForSource'
   | 'cloneApp'
   | 'importApp'
+  | 'exportApp'
   | 'createApp'
   | 'createDataSource'
   | 'createQuery'
@@ -61,6 +62,7 @@ export class AppsAbilityFactory {
       can('importApp', App);
       if (canUpdateApp) {
         can('cloneApp', App, { organizationId: user.organizationId });
+        can('exportApp', App, { organizationId: user.organizationId });
       }
     }
 
