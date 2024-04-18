@@ -40,6 +40,7 @@ const Text = ({
   const cellStyles = {
     color: cellTextColor ?? 'inherit',
   };
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (hovered) {
@@ -67,6 +68,7 @@ const Text = ({
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
+        setIsEditing(false);
         if (isEditable && cellValue !== e.target.textContent) {
           const div = e.target;
           let content = div.innerHTML;
@@ -83,7 +85,8 @@ const Text = ({
         }
       }}
       onFocus={(e) => {
-        setShowOverlay(false);
+        setIsEditing(true);
+        // setShowOverlay(false);
         e.stopPropagation();
       }}
       onClick={(e) => {
@@ -132,23 +135,25 @@ const Text = ({
         overlay={_showOverlay ? getOverlay() : <div></div>}
         trigger={_showOverlay && ['hover']}
         rootClose={true}
-        show={_showOverlay && showOverlay}
+        show={_showOverlay && showOverlay && !isEditing}
       >
         <div
           className={`h-100 d-flex ${
             _showOverlay && isEditable ? '' : 'justify-content-center'
-          } flex-column position-relative`}
+          } flex-column position-relative bla`}
+          style={{ ...(isEditing && { zIndex: 2 }) }}
         >
           <div
             onMouseMove={() => {
               if (!hovered) setHovered(true);
             }}
-            onMouseOut={() => setHovered(false)}
+            onMouseLeave={() => setHovered(false)}
             ref={ref}
+            className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
           >
             {!isEditable ? _renderNonEditableData() : _renderTextArea()}
           </div>
-          <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+          {isEditable && <div className={isValid ? '' : 'invalid-feedback text-truncate'}>{validationError}</div>}
         </div>
       </OverlayTrigger>
     </>

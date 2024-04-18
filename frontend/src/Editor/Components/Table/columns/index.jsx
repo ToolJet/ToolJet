@@ -32,6 +32,7 @@ export default function generateColumnsData({
   t,
   darkMode,
   tableColumnEvents,
+  isMaxRowHeightAuto,
 }) {
   return columnProperties.map((column) => {
     if (!column) return;
@@ -168,6 +169,7 @@ export default function generateColumnsData({
                 currentState={currentState}
                 containerWidth={width}
                 cell={cell}
+                isMaxRowHeightAuto={isMaxRowHeightAuto}
               />
             );
 
@@ -385,7 +387,7 @@ export default function generateColumnsData({
                       ></SolidIcon>
                     </div>
                   </div>
-                  <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
+                  <div className={isValid ? '' : 'invalid-feedback  text-truncate'}>{validationError}</div>
                 </div>
               );
             }
@@ -618,19 +620,28 @@ export default function generateColumnsData({
             const validationData = validateDates({
               validationObject: {
                 minDate: {
-                  value: column.minDate,
+                  value: isDateSelectionEnabled ? column.minDate : undefined,
                 },
                 maxDate: {
-                  value: column.maxDate,
+                  value: isDateSelectionEnabled ? column.maxDate : undefined,
                 },
                 minTime: {
-                  value: column.minTime,
+                  value: isTimeChecked ? column.minTime : undefined,
                 },
                 maxTime: {
-                  value: column.maxTime,
+                  value: isTimeChecked ? column.maxTime : undefined,
                 },
                 parseDateFormat: {
                   value: column.parseDateFormat,
+                },
+                isTwentyFourHrFormatEnabled: {
+                  value: isTwentyFourHrFormatEnabled,
+                },
+                isDateSelectionEnabled: {
+                  value: isDateSelectionEnabled,
+                },
+                customRule: {
+                  value: column.customRule,
                 },
               },
               widgetValue: cellValue,
@@ -664,7 +675,9 @@ export default function generateColumnsData({
                   cellStyles={cellStyles}
                   darkMode={darkMode}
                 />
-                {isEditable && <div className={isValid ? '' : 'invalid-feedback d-block'}>{validationError}</div>}
+                {isEditable && (
+                  <div className={isValid ? '' : 'invalid-feedback d-block  text-truncate'}>{validationError}</div>
+                )}
               </div>
             );
           }

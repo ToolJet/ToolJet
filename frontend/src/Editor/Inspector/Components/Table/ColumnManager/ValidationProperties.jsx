@@ -5,6 +5,7 @@ import ReactDatePicker from 'react-datepicker';
 import moment from 'moment';
 import Timepicker from '@/ToolJetUI/Timepicker/Timepicker';
 import CustomDatePickerHeader from '@/Editor/Components/Table/CustomDatePickerHeader';
+import { resolveReferences } from '../../../../../_helpers/utils';
 
 const getDate = (date, format) => {
   const dateMomentInstance = date && moment(date, format);
@@ -104,8 +105,8 @@ export const ValidationProperties = ({
           },
         ];
       case 'datepicker': {
-        const isTimeChecked = column?.isTimeChecked;
-        const properties = [];
+        const isTimeChecked = resolveReferences(column?.isTimeChecked);
+        let properties = [];
         properties.push([
           {
             property: 'minDate',

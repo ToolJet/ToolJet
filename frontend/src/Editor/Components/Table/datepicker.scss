@@ -93,7 +93,7 @@
 
 .react-datepicker__day--selected {
     border-radius: 8px;
-    background-color: #4368E3;
+    background-color: var(--primary-brand) !important;
     color: var(--surfaces-surface-01) !important
 }
 
@@ -115,7 +115,7 @@
 }
 
 .react-datepicker__day--today {
-    border: 1px solid #4368E3;
+    border: 1px solid var(--primary-brand);
     border-radius: 8px;
     background-color: var(--surfaces-surface-01);
 }
@@ -285,7 +285,6 @@ select:focus {
     background: inherit;
     text-align: left;
     width: 100%;
-    padding-right: 40px;
 }
 
 .table-dark {
@@ -395,4 +394,19 @@ select:focus {
 
 .react-datepicker__day--outside-month {
     color: var(--text-disabled);
+}
+
+.react-datepicker__day--excluded {
+    color: var(--text-disabled);
+    pointer-events: none;
+}
+
+td {
+    &.isEditable {
+        &:hover, &:focus-within {
+            .table-column-datepicker-input {
+              padding-right: 40px;
+            }
+          }
+    }
 }

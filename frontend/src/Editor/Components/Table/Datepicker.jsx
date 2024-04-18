@@ -16,7 +16,7 @@ const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnl
         onBlur={(e) => {
           e.stopPropagation();
         }}
-        className={cx('table-column-datepicker-input', {
+        className={cx('table-column-datepicker-input text-truncate', {
           'pointer-events-none': readOnly,
         })}
         value={value}
@@ -38,8 +38,16 @@ const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnl
   );
 });
 
-export const getDateTimeFormat = (dateDisplayFormat, isTimeChecked, isTwentyFourHrFormatEnabled) => {
+export const getDateTimeFormat = (
+  dateDisplayFormat,
+  isTimeChecked,
+  isTwentyFourHrFormatEnabled,
+  isDateSelectionEnabled
+) => {
   const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
+  if (isTimeChecked && !isDateSelectionEnabled) {
+    return timeFormat;
+  }
   return isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 };
 
@@ -77,7 +85,7 @@ export const Datepicker = function Datepicker({
   isDateSelectionEnabled,
   isTwentyFourHrFormatEnabled,
   disabledDates,
-  unixTimestamp,
+  unixTimestamp = 'seconds',
   parseInUnixTimestamp,
   cellStyles,
   darkMode,
@@ -87,9 +95,18 @@ export const Datepicker = function Datepicker({
   const pickerRef = React.useRef();
 
   const handleDateChange = (date) => {
+    let value = date;
+    if (parseInUnixTimestamp && unixTimestamp) {
+      value = moment(date).unix();
+    }
     const _date = getDate({
-      value: date,
-      parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
+      value,
+      parseDateFormat: getDateTimeFormat(
+        parseDateFormat,
+        isTimeChecked,
+        isTwentyFourHrFormatEnabled,
+        isDateSelectionEnabled
+      ),
       dateDisplayFormat,
       timeZoneValue,
       timeZoneDisplay,
@@ -98,13 +115,22 @@ export const Datepicker = function Datepicker({
       isTimeChecked,
     });
     setDate(_date);
-    onChange(computeDateString(_date));
+    if (parseInUnixTimestamp && unixTimestamp) {
+      onChange(moment(_date).unix());
+    } else {
+      onChange(computeDateString(_date));
+    }
   };
 
   useEffect(() => {
     const date = getDate({
       value,
-      parseDateFormat: getDateTimeFormat(parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled),
+      parseDateFormat: getDateTimeFormat(
+        parseDateFormat,
+        isTimeChecked,
+        isTwentyFourHrFormatEnabled,
+        isDateSelectionEnabled
+      ),
       dateDisplayFormat,
       timeZoneValue,
       timeZoneDisplay,
@@ -122,33 +148,26 @@ export const Datepicker = function Datepicker({
       timeZoneDisplay,
       unixTimestamp,
       isTimeChecked,
-      isTwentyFourHrFormatEnabled
+      isTwentyFourHrFormatEnabled,
+      parseInUnixTimestamp
     ),
   ]);
 
   const dateInputRef = useRef(null); // Create a ref
 
-  const computeDateString = (value) => {
-    const _date = getDate({
-      value,
-      parseDateFormat,
-      dateDisplayFormat,
-      timeZoneValue,
-      timeZoneDisplay,
-      unixTimestamp,
-      parseInUnixTimestamp,
-      isTimeChecked,
-    });
+  const computeDateString = (_date) => {
     if (!isDateSelectionEnabled && !isTimeChecked) return '';
 
     const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
     const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 
-    if (isDateSelectionEnabled && isTimeChecked && timeZoneDisplay) {
-      return moment.tz(_date, timeZoneDisplay).format(selectedDateFormat);
-    }
-
     if (isDateSelectionEnabled) {
+      if (isTimeChecked && parseInUnixTimestamp && unixTimestamp) {
+        return moment.tz(_date, timeZoneDisplay).format(selectedDateFormat);
+      }
+      if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
+        return moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
+      }
       return moment(_date).format(selectedDateFormat);
     }
 
@@ -197,6 +216,7 @@ export const Datepicker = function Datepicker({
         readOnly={readOnly}
         popperProps={{ strategy: 'fixed' }}
         timeIntervals={15}
+        timeFormat={isTwentyFourHrFormatEnabled ? 'HH:mm' : 'h:mm aa'}
       />
     </div>
   );
