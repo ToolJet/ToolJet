@@ -11982,6 +11982,22 @@ tbody {
 
 .tjdb-dashboard-scrollbar {
   width: 355px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
 }
 
 .tj-scrollbar {

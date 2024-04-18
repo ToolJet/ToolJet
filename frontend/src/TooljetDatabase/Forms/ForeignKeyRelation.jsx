@@ -24,11 +24,7 @@ function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn, table
           </p>
         </div>
 
-        <div
-          className="foreignKey-details"
-          onMouseOver={() => onMouseHoverFunction('Name')}
-          onMouseLeave={() => setIndexHoveredColumn(null)}
-        >
+        <div className="foreignKey-details" onClick={() => onMouseHoverFunction('Name')}>
           <span className="foreignKey-text">Name</span>
           <div className="foreign-key-relation">
             <ForeignKeyRelationIcon width="13" height="13" />
@@ -54,12 +50,16 @@ function ForeignKeyRelation({ onMouseHoverFunction, setIndexHoveredColumn, table
       </div>
       <Drawer
         isOpen={isForeignKeyDraweOpen}
-        onClose={() => setIsForeignKeyDraweOpen(false)}
         position="right"
         drawerStyle={{ width: '500px' }}
         isForeignKeyRelation={true}
       >
-        <ForeignKeyTableForm tableName={tableName} columns={columns} isEditMode={isEditMode} />
+        <ForeignKeyTableForm
+          tableName={tableName}
+          columns={columns}
+          isEditMode={isEditMode}
+          onClose={() => setIsForeignKeyDraweOpen(false)}
+        />
       </Drawer>
     </>
   );

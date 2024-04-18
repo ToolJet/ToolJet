@@ -4,8 +4,10 @@ import { isEmpty } from 'lodash';
 import { authenticationService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Search from '@/_ui/Icon/solidIcons/Search';
+import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 import { Form } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import cx from 'classnames';
 
 function DataSourceSelect({
   darkMode,
@@ -21,6 +23,10 @@ function DataSourceSelect({
   emptyError,
   highlightSelected,
   foreignKeyAccess = false,
+  showRedirection = false,
+  columnInfoForTable,
+  showColumnInfo = false,
+  showDescription = false,
 }) {
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
@@ -55,19 +61,19 @@ function DataSourceSelect({
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: 'flex-start',
+                    justifyContent: showRedirection || showDescription ? 'space-between' : 'flex-start',
                     alignItems: 'center',
                   }}
                   className="dd-select-option"
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      // width: '20px',
-                    }}
-                  >
-                    {isMulti && (
+                  {isMulti && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        // width: '20px',
+                      }}
+                    >
                       <Form.Check // prettier-ignore
                         type={'checkbox'}
                         id={props.value}
@@ -75,8 +81,8 @@ function DataSourceSelect({
                         checked={props.isSelected}
                         // label={`default ${type}`}
                       />
-                    )}
-                  </div>
+                    </div>
+                  )}
                   {props?.data?.icon &&
                     (isValidElement(props.data.icon) ? (
                       props.data.icon
@@ -89,7 +95,31 @@ function DataSourceSelect({
                         viewBox=""
                       />
                     ))}
-                  <span className={`${props?.data?.icon ? 'ms-1 ' : ''}flex-grow-1`}>{children}</span>
+
+                  <span
+                    className={cx({
+                      'ms-1 ': props?.data?.icon,
+                      'flex-grow-1': !showDescription,
+                    })}
+                  >
+                    {children}
+                    {foreignKeyAccess && showDescription && (
+                      <span className="action-description">{props.data.label}</span>
+                    )}
+                  </span>
+
+                  {foreignKeyAccess && showRedirection && props.isFocused && (
+                    <Maximize
+                      width={16}
+                      style={{
+                        ...(props.isSelected &&
+                          highlightSelected && {
+                            marginRight: '10px',
+                            marginTop: '3px',
+                          }),
+                      }}
+                    />
+                  )}
                   {props.isSelected && highlightSelected && (
                     <SolidIcon
                       fill="var(--indigo9)"
@@ -104,7 +134,17 @@ function DataSourceSelect({
           },
           // }),
           MenuList: useCallback(
-            (props) => <MenuList {...props} onAdd={onAdd} addBtnLabel={addBtnLabel} emptyError={emptyError} />,
+            (props) => (
+              <MenuList
+                {...props}
+                onAdd={onAdd}
+                addBtnLabel={addBtnLabel}
+                emptyError={emptyError}
+                foreignKeyAccess={foreignKeyAccess}
+                columnInfoForTable={columnInfoForTable}
+                showColumnInfo={showColumnInfo}
+              />
+            ),
             [onAdd, addBtnLabel, emptyError]
           ),
           IndicatorSeparator: () => null,
@@ -234,7 +274,19 @@ function DataSourceSelect({
   );
 }
 
-const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, emptyError, options, ...props }) => {
+const MenuList = ({
+  children,
+  getStyles,
+  innerRef,
+  onAdd,
+  addBtnLabel,
+  emptyError,
+  foreignKeyAccess,
+  columnInfoForTable,
+  showColumnInfo,
+  options,
+  ...props
+}) => {
   const menuListStyles = getStyles('menuList', props);
   const { admin } = authenticationService.currentSessionValue;
   if (admin) {
@@ -245,6 +297,7 @@ const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, emptyErro
 
   return (
     <>
+      {!isEmpty(options) && showColumnInfo && columnInfoForTable}
       {isEmpty(options) && emptyError ? (
         emptyError
       ) : (
@@ -253,7 +306,12 @@ const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, emptyErro
         </div>
       )}
       {onAdd && (
-        <div className="p-2 mt-2 border-slate3-top">
+        <div
+          className={cx('mt-2 border-slate3-top', {
+            'tj-foreignKey p-1': foreignKeyAccess,
+            'p-2': !foreignKeyAccess,
+          })}
+        >
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={onAdd}>
             + {addBtnLabel || 'Add new'}
           </ButtonSolid>

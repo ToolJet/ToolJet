@@ -8,6 +8,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Tick from '../Icons/Tick.svg';
+import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
+import EditIcon from '../Icons/EditColumn.svg';
 import './styles.scss';
 
 const ColumnForm = ({ onCreate, onClose, rows }) => {
@@ -17,6 +19,7 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const [isNotNull, setIsNotNull] = useState(false);
+  const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
@@ -183,6 +186,39 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
               Default value is required to populate this field in existing rows as NOT NULL constraint is added
             </span>
           ) : null}
+        </div>
+
+        <div className="row mb-3">
+          <div className="col-1">
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={isForeignKey}
+                onChange={(e) => {
+                  setIsForeignKey(e.target.checked);
+                }}
+                disabled={dataType?.value === 'serial'}
+              />
+            </label>
+          </div>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500">Foreign Key relation</p>
+            {!isForeignKey ? (
+              <p className="fw-400 secondary-text">Add foreign key to check referral integrity</p>
+            ) : (
+              <div className="foreignKey-details" onClick={() => {}}>
+                <span className="foreignKey-text">Name</span>
+                <div className="foreign-key-relation">
+                  <ForeignKeyRelationIcon width="13" height="13" />
+                </div>
+                <span className="foreignKey-text">table2.column4</span>
+                <div className="editForeignkey" onClick={() => {}}>
+                  <EditIcon width="17" height="18" />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="row mb-3">

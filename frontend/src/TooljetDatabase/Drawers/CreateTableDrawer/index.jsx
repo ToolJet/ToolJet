@@ -29,7 +29,7 @@ export default function CreateTableDrawer() {
         isOpen={isCreateTableDrawerOpen}
         onClose={() => setIsCreateTableDrawerOpen(false)}
         position="right"
-        drawerStyle={{ width: '630px' }}
+        drawerStyle={{ width: '640px' }}
       >
         <CreateTableForm
           onCreate={(tableInfo) => {

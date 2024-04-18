@@ -51,9 +51,9 @@
   width: 100px !important;
 }
 
-.css-1xc3v61-indicatorContainer {
-  padding: 8px 8px 8px 0px !important;
-}
+// .css-1xc3v61-indicatorContainer {
+//   padding: 8px 8px 8px 0px !important;
+// }
 
 .dataType-dropdown-label {
   margin-left: 8px;
@@ -425,38 +425,39 @@
     border-radius: 6px !important;
     margin-top: 10px !important;
   }
+}
 
-  .foreignKey-details {
+// common css for two form components
+.foreignKey-details {
+  display: flex;
+  align-items: center;
+  border-radius: 16px;
+  background-color: var(--slate6);
+  border: 1px solid var(--slate7);
+  padding: 4px 12px 4px 12px;
+  width: 200px;
+  gap: 8px;
+  margin-top: 10px !important;
+  cursor: pointer;
+  position: relative;
+
+  span {
+    font-size: 12px;
+    font-weight: 500;
+    color: #687076;
+  }
+
+  .editForeignkey {
+    background-color: var(--slate3) !important;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    position: absolute;
+    right: 0;
+    height: 27px;
+    width: 30px;
     display: flex;
     align-items: center;
-    border-radius: 16px;
-    background-color: var(--slate6);
-    border: 1px solid var(--slate7);
-    padding: 4px 12px 4px 12px;
-    width: 200px;
-    gap: 8px;
-    margin-top: 10px !important;
-    cursor: pointer;
-    position: relative;
-
-    span {
-      font-size: 12px;
-      font-weight: 500;
-      color: #687076;
-    }
-
-    .editForeignkey {
-      background-color: var(--slate3) !important;
-      border-top-right-radius: 16px;
-      border-bottom-right-radius: 16px;
-      position: absolute;
-      right: 0;
-      height: 27px;
-      width: 30px;
-      display: flex;
-      align-items: center;
-      padding-left: 4px;
-    }
+    padding-left: 4px;
   }
 }
 
@@ -480,11 +481,23 @@
 }
 
 .foreignKeyRelation-form-container {
-  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between !important;
+  height: 100%;
 
   .relations-container {
     padding: 12px 24px !important;
-    height: 100% !important;
+
+    .single-foreign-key {
+      padding: 6px 12px 6px 12px;
+      background: var(--Button-default-secondary-00-default, #F0F4FF);
+      border: 2px solid var(--Button-default-secondary-04-border, #AEC0F5);
+      border-radius: 100px;
+      margin-left: 10px;
+      font-size: 10px;
+      color: var(--button-default-secondary-03-text-icon-secondary, #3E63DD);
+    }
 
     .source-title {
       font-size: 12px !important;
@@ -509,4 +522,14 @@
 
 .primary-key-tooltip {
   inset: -5px auto 0px 0px !important;
+}
+
+.columnInfoForTable {
+  background: var(--slate2) !important;
+  border: 1px solid var(--slate5);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--slate11) !important;
+  padding: 8px;
+  gap: 10px;
 }

@@ -25,6 +25,10 @@ const DropDownSelect = ({
   highlightSelected = true,
   buttonClasses = '',
   foreignKeyAccess = false,
+  showRedirection = false,
+  columnInfoForTable,
+  showColumnInfo = false,
+  showDescription = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -129,6 +133,10 @@ const DropDownSelect = ({
             emptyError={emptyError}
             highlightSelected={highlightSelected}
             foreignKeyAccess={foreignKeyAccess}
+            showRedirection={showRedirection}
+            columnInfoForTable={columnInfoForTable}
+            showColumnInfo={showColumnInfo}
+            showDescription={showDescription}
           />
         </Popover>
       }

@@ -188,7 +188,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isOpen={isEditTableDrawerOpen}
         onClose={() => setIsEditTableDrawerOpen(false)}
         position="right"
-        drawerStyle={{ width: '630px' }}
+        drawerStyle={{ width: '640px' }}
       >
         <EditTableForm
           selectedColumns={formColumns}

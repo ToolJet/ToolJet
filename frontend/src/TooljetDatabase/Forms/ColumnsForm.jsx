@@ -21,6 +21,9 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns, tableName }
     const index = Object.values(columns).findIndex((obj) => Object.values(obj).includes(char));
     if (isNameAvailable === true) {
       setIndexHoveredColumn(index);
+      setTimeout(() => {
+        setIndexHoveredColumn(null);
+      }, 3000);
     } else {
       setIndexHoveredColumn(null);
     }
