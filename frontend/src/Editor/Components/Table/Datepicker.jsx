@@ -161,11 +161,13 @@ export const Datepicker = function Datepicker({
     const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
     const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 
-    if (isDateSelectionEnabled && isTimeChecked && timeZoneDisplay) {
-      return moment.tz(_date, timeZoneDisplay).format(selectedDateFormat);
-    }
-
     if (isDateSelectionEnabled) {
+      if (isTimeChecked && parseInUnixTimestamp && unixTimestamp) {
+        return moment.tz(_date, timeZoneDisplay).format(selectedDateFormat);
+      }
+      if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
+        return moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
+      }
       return moment(_date).format(selectedDateFormat);
     }
 

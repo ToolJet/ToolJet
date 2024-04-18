@@ -627,13 +627,16 @@ export default function generateColumnsData({
                   value: isTimeChecked ? column.minTime : undefined,
                 },
                 maxTime: {
-                  value: isTimeChecked ? column.minTime : undefined,
+                  value: isTimeChecked ? column.maxTime : undefined,
                 },
                 parseDateFormat: {
                   value: column.parseDateFormat,
                 },
                 isTwentyFourHrFormatEnabled: {
                   value: isTwentyFourHrFormatEnabled,
+                },
+                isDateSelectionEnabled: {
+                  value: isDateSelectionEnabled,
                 },
                 customRule: {
                   value: column.customRule,

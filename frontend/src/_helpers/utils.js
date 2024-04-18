@@ -421,10 +421,11 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
   const customRule = validationObject?.customRule?.value;
   const parsedDateFormat = validationObject?.parseDateFormat?.value;
   const isTwentyFourHrFormatEnabled = validationObject?.isTwentyFourHrFormatEnabled?.value ?? false;
+  const isDateSelectionEnabled = validationObject?.isDateSelectionEnabled?.value ?? true;
   const _widgetDateValue = moment(widgetValue, parsedDateFormat);
   const _widgetTimeValue = moment(
     widgetValue,
-    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled)
+    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled, isDateSelectionEnabled)
   ).format(validationTimeFormat);
 
   const resolvedMinDate = resolveWidgetFieldValue(
