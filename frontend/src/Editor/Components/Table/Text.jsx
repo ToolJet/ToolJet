@@ -147,7 +147,7 @@ const Text = ({
             onMouseMove={() => {
               if (!hovered) setHovered(true);
             }}
-            onMouseOut={() => setHovered(false)}
+            onMouseLeave={() => setHovered(false)}
             ref={ref}
           >
             {!isEditable ? _renderNonEditableData() : _renderTextArea()}

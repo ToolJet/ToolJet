@@ -143,7 +143,9 @@ const String = ({
             onMouseMove={() => {
               if (!hovered) setHovered(true);
             }}
-            onMouseOut={() => setHovered(false)}
+            onMouseLeave={() => {
+              setHovered(false);
+            }}
             ref={ref}
           >
             <span>{cellValue}</span>
@@ -154,7 +156,7 @@ const String = ({
               onMouseMove={() => {
                 if (!hovered) setHovered(true);
               }}
-              onMouseOut={() => setHovered(false)}
+              onMouseLeave={() => setHovered(false)}
               className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
             >
               {_renderString()}
