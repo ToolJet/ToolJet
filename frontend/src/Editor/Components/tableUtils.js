@@ -75,7 +75,5 @@ export const isRowInValid = (cell, currentState, changeSet) => {
     };
   }
 
-  console.log('cell----', cell, validationData);
-
   return validationData.isValid === false;
 };

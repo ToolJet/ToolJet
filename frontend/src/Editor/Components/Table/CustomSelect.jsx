@@ -8,6 +8,11 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isArray, isEmpty, isString } from 'lodash';
 const { MenuList } = components;
 
+const SCALING_FACTOR = 0.6;
+const FONT_SIZE = 12;
+const PADDING = 12;
+const MARGIN = 10; // including left and right side
+
 export const CustomSelect = ({
   options,
   value,
@@ -138,7 +143,7 @@ export const CustomSelect = ({
 
     // Calculate total width of all span elements
     value?.forEach((option) => {
-      const valueWidth = option.label.length * 12 * 0.6 + 4 * 2; // Assuming font-size: 12px and gap of 4px on both sides
+      const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + PADDING + MARGIN;
       totalWidth += valueWidth;
     });
     return totalWidth > containerWidth;
@@ -148,13 +153,17 @@ export const CustomSelect = ({
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && _value?.length && !isFocused ? (
+        isMulti && (_value?.length || defaultValue?.length) && !isFocused ? (
           getOverlay(_value ? _value : defaultValue, containerWidth, darkMode)
         ) : (
           <div></div>
         )
       }
-      trigger={isMulti && !isFocused && calculateIfPopoverRequired(_value, containerWidth - 40) && ['hover']} //container width -24 -16 gives that select container size
+      trigger={
+        isMulti &&
+        !isFocused &&
+        calculateIfPopoverRequired(_value ? _value : defaultValue, containerWidth - 40) && ['hover', 'focus']
+      } //container width -24 -16 gives that select container size
       rootClose={true}
     >
       <div className="w-100 h-100 d-flex align-items-center">
