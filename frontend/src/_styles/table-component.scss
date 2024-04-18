@@ -1352,3 +1352,7 @@
 .is-invalid.content-editing ~ .invalid-feedback {
   padding: 0px 12px 8px;;
 }
+
+.table.table-striped > :not(caption) > * > * {
+  border-bottom: 0; /* Remove border bottom if .table-striped class is present */
+}
