@@ -22,7 +22,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
   );
   const { showDarkModeToggle } = useEditorStore(
     (state) => ({
-      showDarkModeToggle: state.appMode === 'auto',
+      showDarkModeToggle: state.appMode === 'auto' || !state.appMode,
     }),
     shallow
   );
