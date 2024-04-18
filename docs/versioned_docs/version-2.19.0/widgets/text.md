@@ -58,7 +58,7 @@ Use this toggle to show or hide the component in the mobile view. You can dynami
 | Background Color | Sets the background color of the component. | Hex color code/choose a color using the color picker |
 | Text Color |  Sets the color of the text. |Hex color code/choose a color using the color picker |
 | Align Text | Sets the alignment of the text. | left, right, center, justified |
-| Visibility | Controls the visibility of the component. If set to {{false}}, the component will not be visible after the app is deployed.	| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed.	| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
 | Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
 
 ## General
