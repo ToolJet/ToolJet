@@ -701,7 +701,6 @@ const EditorComponent = (props) => {
       .getState()
       .modules[moduleName].useAppVersionStore.getState()
       .actions.updateEditingVersion(data.editing_version);
-    onAppModeChange(data.editing_version?.global_settings?.app_mode);
 
     if (!releasedVersionId || !versionSwitched) {
       useSuperStore
@@ -743,6 +742,7 @@ const EditorComponent = (props) => {
     };
 
     setCurrentPageId(homePageId);
+    onAppModeChange(appJson?.globalSettings?.appMode);
 
     useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
