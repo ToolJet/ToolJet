@@ -204,7 +204,8 @@ export const Inspector = ({
     if (
       component.component.component === 'Table' &&
       param.name === 'contentWrap' &&
-      !resolveReferences(value, currentState)
+      !resolveReferences(value, currentState) &&
+      newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
     ) {
       const updatedColumns = newDefinition.properties.columns.value.map((item) => {
         return item.columnType === 'image' ? { ...item, height: '' } : item; // Create a new object for image columns
