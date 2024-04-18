@@ -48,15 +48,15 @@ Check the **component specific actions** available for this component **[here](/
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.value}}`). |
-| label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.label}}`). |
-| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isValid}}`). |
-| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isMandatory}}`). |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isLoading}}`). |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isVisible}}`). |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isDisabled}}`). |
+| Variable | Description | How To Access |
+|:--------:|:-----------:|:------------:|
+| <div style={{ width:"100px"}}> value </div> | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.value}}`).|
+| <div style={{ width:"100px"}}> label </div> | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.label}}`).|
+| <div style={{ width:"100px"}}> isValid </div> | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isValid}}`).|
+| <div style={{ width:"100px"}}> isMandatory </div> | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isMandatory}}`).|
+| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isLoading}}`).|
+| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isVisible}}`).|
+| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isDisabled}}`).|
 
 ## Validation
 
