@@ -212,10 +212,12 @@ export const useResolveStore = create(
       },
 
       addEntitiesToMap: (entities) => {
+        if (!Array.isArray(entities) || entities.length === 0) return;
+
         const { referenceMapper } = get();
 
         entities.forEach((entity) => {
-          if (!referenceMapper.has(entity.id)) {
+          if (entity?.id && !referenceMapper.has(entity.id)) {
             referenceMapper.set(entity.id, entity.name);
           }
         });
