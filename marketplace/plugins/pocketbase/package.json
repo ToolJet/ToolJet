@@ -1,5 +1,5 @@
 {
-  "name": "@tooljet-plugins/aws-lambda",
+  "name": "@tooljet-marketplace/pocketbase",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,10 +17,11 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@aws-sdk/client-lambda": "3.461.0",
     "@tooljet-marketplace/common": "^1.0.0",
-    "aws-sdk": "^2.1507.0",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2"
+    "pocketbase": "^0.21.1"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.34.0",
+    "typescript": "^4.7.4"
   }
 }
