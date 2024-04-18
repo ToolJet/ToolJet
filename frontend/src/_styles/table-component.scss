@@ -903,6 +903,11 @@
             display: flex;
             align-items: center;
           }
+          .react-select__value-container--is-multi{
+            flex-flow: wrap ;
+            gap: 6px;
+            max-height: 100%;
+          }
         }
 
         .react-select__indicators {

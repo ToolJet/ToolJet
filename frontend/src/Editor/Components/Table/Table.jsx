@@ -1389,11 +1389,10 @@ export function Table({
                 rowProps.style.minHeight = cellSize === 'condensed' ? '39px' : '45px'; // 1px is removed to accomodate 1px border-bottom
                 let cellMaxHeight;
                 let cellHeight;
-                console.log('contentWrap', contentWrap, isMaxRowHeightAuto);
                 if (contentWrap) {
                   cellMaxHeight = isMaxRowHeightAuto
                     ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState);
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
                   rowProps.style.maxHeight = cellMaxHeight;
                 } else {
                   cellMaxHeight = cellSize === 'condensed' ? 40 : 46;
