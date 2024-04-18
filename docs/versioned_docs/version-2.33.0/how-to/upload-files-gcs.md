@@ -1,15 +1,18 @@
 ---
 id: upload-files-gcs
-title: Upload files using GCS
+title: Upload Files Using GCS
 ---
-
-# Upload files using GCS
+<div style={{paddingBottom:'24px'}}>
 
 In this guide, we are going to create an interface to upload PDFs to Google Cloud Storage.
 
 Before adding the new data source we will need to have a private key for our GCS bucket and make sure the key has the appropriate rights.
 
-## Setting up Google Cloud Storage data source
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Setting up Google Cloud Storage Data Source
 
 1. Go to the data source manager on the left-sidebar and click on the `+` button.
 2. Add a new GCS data source from the  **APIs** section in modal that pops up.
@@ -22,7 +25,11 @@ Before adding the new data source we will need to have a private key for our GCS
 
 </div>
 
-## Adding a file picker
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Adding a File Picker
 
 1. Drag and drop the **file picker** widget on the canvas
 2. Configure the file picker:
@@ -44,13 +51,17 @@ Before adding the new data source we will need to have a private key for our GCS
  To accept any/all file type(s), set `Accept file types` to an empty value.
 :::
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 ![ToolJet - How To - Upload files using GCS](/img/how-to/upload-files-gcs/config-filepicker.png)
 
 </div>
 
-## Creating a query
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Creating a Query
 
 1. Click on the `+` button of the query manager at the bottom panel of the editor and select the GCS data source
 2. Select **Upload file** operation and enter the required parameters:
@@ -61,7 +72,11 @@ Before adding the new data source we will need to have a private key for our GCS
 - Encoding: `base64`
 3. Click on **Save** to create the query
 
-## Running the query
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Running the Query
 1. Add a **button** that will fire the query to upload the file
 2. Edit the properties of the button and add a **event handler** to **Run the query** on **On-Click** event.
 3. Click on **Button** to fire the query, this will upload the pdf file that you selected earlier through the file picker and will upload it on the GCS.
@@ -69,5 +84,7 @@ Before adding the new data source we will need to have a private key for our GCS
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - How To - Upload files using GCS](/img/how-to/upload-files-gcs/final-result.png)
+
+</div>
 
 </div>
