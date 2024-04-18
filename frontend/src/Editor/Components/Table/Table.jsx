@@ -1296,15 +1296,17 @@ export function Table({
                                           `}
                                       >
                                         <div>
-                                          {column.columnType !== 'selector' && isEditable && (
-                                            <SolidIcon
-                                              name="editable"
-                                              width="16px"
-                                              height="16px"
-                                              fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                                              vievBox="0 0 16 16"
-                                            />
-                                          )}
+                                          {column.columnType !== 'selector' &&
+                                            column.columnType !== 'image' &&
+                                            isEditable && (
+                                              <SolidIcon
+                                                name="editable"
+                                                width="16px"
+                                                height="16px"
+                                                fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                                                vievBox="0 0 16 16"
+                                              />
+                                            )}
                                         </div>
                                         <div
                                           data-cy={`column-header-${String(column.exportValue)
@@ -1393,7 +1395,7 @@ export function Table({
                 if (contentWrap) {
                   cellMaxHeight = isMaxRowHeightAuto
                     ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState);
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
                   rowProps.style.maxHeight = cellMaxHeight;
                 } else {
                   cellMaxHeight = cellSize === 'condensed' ? 40 : 46;

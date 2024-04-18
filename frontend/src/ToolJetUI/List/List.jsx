@@ -59,7 +59,7 @@ function ListItem({
             {primaryText}
             <span className="list-item-secondary-text">{secondaryText}</span>
 
-            {isEditable && (
+            {isEditable && columnType !== 'image' && (
               <span style={{ marginLeft: '8px' }}>
                 <Edit width={16} />
               </span>

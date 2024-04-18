@@ -328,7 +328,7 @@ export const widgets = [
         },
       },
       maxRowHeightValue: {
-        type: 'numberInput',
+        type: 'tableRowHeightInput',
         showLabel: false,
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
