@@ -7,6 +7,7 @@ import { OrganizationConstant } from 'src/entities/organization_constants.entity
 import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
+import { App } from 'src/entities/app.entity';
 
 interface ExtendedEnvironment extends AppEnvironment {
   appVersionsCount?: number;
@@ -40,9 +41,12 @@ export class AppEnvironmentService {
       });
       const environments: ExtendedEnvironment[] = await this.getAll(organizationId, manager, editorVersion.appId);
       const editorEnvironment = environments.find((env) => env.id === editorVersion.currentEnvironmentId);
-      const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility(
+      const { shouldRenderPromoteButton, shouldRenderReleaseButton } = await this.calculateButtonVisibility(
         false,
-        editorEnvironment
+        editorEnvironment,
+        editorVersion.appId,
+        editorVersion.id,
+        manager
       );
       const response: AppEnvironmentResponse = {
         editorVersion,
@@ -56,7 +60,13 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  calculateButtonVisibility(isMultiEnvironmentEnabled: boolean, appVersionEnvironment?: AppEnvironment) {
+  async calculateButtonVisibility(
+    isMultiEnvironmentEnabled: boolean,
+    appVersionEnvironment?: AppEnvironment,
+    appId?: string,
+    versionId?: string,
+    manager?: EntityManager
+  ) {
     /* Further conditions can handle from here */
     if (!isMultiEnvironmentEnabled) {
       return {
@@ -64,9 +74,14 @@ export class AppEnvironmentService {
         shouldRenderReleaseButton: true,
       };
     }
+    const appDetails = await manager.findOneOrFail(App, {
+      select: ['id', 'currentVersionId'],
+      where: { id: appId },
+    });
+    const isVersionReleased = appDetails.currentVersionId === versionId;
     const isCurrentVersionInProduction = appVersionEnvironment?.isDefault;
-    const shouldRenderPromoteButton = !isCurrentVersionInProduction;
-    const shouldRenderReleaseButton = isCurrentVersionInProduction;
+    const shouldRenderPromoteButton = !isCurrentVersionInProduction && !isVersionReleased;
+    const shouldRenderReleaseButton = isCurrentVersionInProduction || isVersionReleased;
     return { shouldRenderPromoteButton, shouldRenderReleaseButton };
   }
 
@@ -105,7 +120,9 @@ export class AppEnvironmentService {
 
           const multiEnvironmentsNotAvailable = !editorEnvironmentId;
           if (multiEnvironmentsNotAvailable) {
-            const { shouldRenderPromoteButton, shouldRenderReleaseButton } = this.calculateButtonVisibility(false);
+            const { shouldRenderPromoteButton, shouldRenderReleaseButton } = await this.calculateButtonVisibility(
+              false
+            );
             appEnvironmentResponse.shouldRenderPromoteButton = shouldRenderPromoteButton;
             appEnvironmentResponse.shouldRenderReleaseButton = shouldRenderReleaseButton;
             if (isUserDeletedTheCurrentVersion) {
