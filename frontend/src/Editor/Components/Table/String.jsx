@@ -61,7 +61,7 @@ const String = ({
     <div
       ref={ref}
       contentEditable={true}
-      className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input ${
+      className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
         darkMode ? ' textarea-dark-theme' : ''
       }`}
       style={{
@@ -159,7 +159,7 @@ const String = ({
                 if (!hovered) setHovered(true);
               }}
               onMouseLeave={() => setHovered(false)}
-              className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
+              className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
             >
               {_renderString()}
             </div>
