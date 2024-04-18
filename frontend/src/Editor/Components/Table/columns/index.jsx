@@ -32,7 +32,6 @@ export default function generateColumnsData({
   t,
   darkMode,
   tableColumnEvents,
-  isMaxRowHeightAuto,
 }) {
   return columnProperties.map((column) => {
     if (!column) return;
@@ -129,6 +128,7 @@ export default function generateColumnsData({
         cellTextColor = '',
         contentWrap = true,
         autoHeight = true,
+        isMaxRowHeightAuto,
       }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
@@ -435,7 +435,6 @@ export default function generateColumnsData({
             });
 
             const { isValid, validationError } = validationData;
-
             return (
               <div
                 className="h-100 d-flex align-items-center flex-column justify-content-center"
@@ -480,6 +479,7 @@ export default function generateColumnsData({
                     }
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
+                    showPopoverIfOverflow={!contentWrap || (contentWrap && !isMaxRowHeightAuto)}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

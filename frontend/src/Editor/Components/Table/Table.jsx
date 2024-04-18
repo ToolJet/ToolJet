@@ -429,7 +429,6 @@ export function Table({
     t,
     darkMode,
     tableColumnEvents: tableColumnEvents,
-    isMaxRowHeightAuto: maxRowHeight === 'auto',
   });
 
   columnData = useMemo(
@@ -1581,6 +1580,7 @@ export function Table({
                                 cellTextColor,
                                 contentWrap,
                                 autoHeight,
+                                isMaxRowHeightAuto,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}

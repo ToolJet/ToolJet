@@ -5,7 +5,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { isArray, isEmpty, isString } from 'lodash';
+import { isArray, isString } from 'lodash';
 const { MenuList } = components;
 
 const SCALING_FACTOR = 0.6;
@@ -29,6 +29,7 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
+  showPopoverIfOverflow,
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null); // Ref for the input search box
@@ -153,7 +154,7 @@ export const CustomSelect = ({
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && (_value?.length || defaultValue?.length) && !isFocused ? (
+        isMulti && showPopoverIfOverflow && (_value?.length || defaultValue?.length) && !isFocused ? (
           getOverlay(_value ? _value : defaultValue, containerWidth, darkMode)
         ) : (
           <div></div>
@@ -162,6 +163,7 @@ export const CustomSelect = ({
       trigger={
         isMulti &&
         !isFocused &&
+        showPopoverIfOverflow &&
         calculateIfPopoverRequired(_value ? _value : defaultValue, containerWidth - 40) && ['hover', 'focus']
       } //container width -24 -16 gives that select container size
       rootClose={true}
