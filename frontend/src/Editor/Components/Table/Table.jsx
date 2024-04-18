@@ -54,6 +54,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { isRowInValid } from '../tableUtils';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -428,6 +429,7 @@ export function Table({
     t,
     darkMode,
     tableColumnEvents: tableColumnEvents,
+    isMaxRowHeightAuto: maxRowHeight === 'auto',
   });
 
   columnData = useMemo(
@@ -1385,13 +1387,24 @@ export function Table({
                 const contentWrap = resolveReferences(contentWrapProperty, currentState);
                 const isMaxRowHeightAuto = maxRowHeight === 'auto';
                 rowProps.style.minHeight = cellSize === 'condensed' ? '39px' : '45px'; // 1px is removed to accomodate 1px border-bottom
+                let cellMaxHeight;
+                let cellHeight;
+                console.log('contentWrap', contentWrap, isMaxRowHeightAuto);
                 if (contentWrap) {
-                  rowProps.style.maxHeight = isMaxRowHeightAuto
+                  cellMaxHeight = isMaxRowHeightAuto
                     ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
+                    : resolveReferences(maxRowHeightValue, currentState);
+                  rowProps.style.maxHeight = cellMaxHeight;
                 } else {
-                  rowProps.style.maxHeight = cellSize === 'condensed' ? '40px' : '46px';
-                  rowProps.style.height = cellSize === 'condensed' ? '40px' : '46px';
+                  cellMaxHeight = cellSize === 'condensed' ? 40 : 46;
+                  cellHeight = cellSize === 'condensed' ? 40 : 46;
+                  rowProps.style.maxHeight = cellMaxHeight + 'px';
+                  rowProps.style.height = cellHeight + 'px';
+                }
+                const showInvalidError = row.cells.some((cell) => isRowInValid(cell, currentState, changeSet));
+                if (showInvalidError) {
+                  rowProps.style.maxHeight = 'fit-content';
+                  rowProps.style.height = '';
                 }
                 return (
                   <tr
@@ -1698,7 +1711,7 @@ export function Table({
                   )
                 ))}
             </div>
-            <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
+            <div className={`col d-flex e h-100 ${loadingState && 'w-100'}`}>
               {enablePagination && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
