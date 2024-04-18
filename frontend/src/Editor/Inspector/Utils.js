@@ -2,7 +2,6 @@ import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
 import { resolveReferences } from '@/_helpers/utils';
-import { cond } from 'lodash';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
