@@ -334,10 +334,16 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
         },
         accordian: 'Data',
-        conditionallyRender: {
-          key: 'maxRowHeight',
-          value: 'custom',
-        },
+        conditionallyRender: [
+          {
+            key: 'maxRowHeight',
+            value: 'custom',
+          },
+          {
+            key: 'contentWrap',
+            value: true,
+          },
+        ],
       },
       actionButtonRadius: {
         type: 'numberInput',
