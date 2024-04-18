@@ -7,6 +7,8 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
+import Drawer from '@/_ui/Drawer';
+import ForeignKeyTableForm from './ForeignKeyTableForm';
 import Tick from '../Icons/Tick.svg';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
@@ -21,8 +23,21 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
   const [isNotNull, setIsNotNull] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(false);
+  const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
+
+  const columns = {
+    column_name: columnName,
+    data_type: dataType?.value,
+    constraints_type: {
+      is_not_null: isNotNull,
+      is_primary_key: false,
+      is_unique: isUniqueConstraint,
+    },
+    dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
+    column_default: defaultValue,
+  };
 
   const darkDisabledBackground = '#1f2936';
   const lightDisabledBackground = '#f4f6fa';
@@ -197,8 +212,9 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
                 checked={isForeignKey}
                 onChange={(e) => {
                   setIsForeignKey(e.target.checked);
+                  setIsForeignKeyDraweOpen(e.target.checked);
                 }}
-                disabled={dataType?.value === 'serial'}
+                disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
               />
             </label>
           </div>
@@ -220,6 +236,21 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
             )}
           </div>
         </div>
+
+        <Drawer
+          isOpen={isForeignKeyDraweOpen}
+          position="right"
+          drawerStyle={{ width: '500px' }}
+          isForeignKeyRelation={true}
+          onClose={() => setIsForeignKeyDraweOpen(false)}
+        >
+          <ForeignKeyTableForm
+            tableName={selectedTable.table_name}
+            columns={columns}
+            onClose={() => setIsForeignKeyDraweOpen(false)}
+            isEditColumn={true}
+          />
+        </Drawer>
 
         <div className="row mb-3">
           <div className="col-1">

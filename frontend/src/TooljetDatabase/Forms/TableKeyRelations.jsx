@@ -11,8 +11,8 @@ import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import { dataTypes, getColumnDataType } from '../constants';
 
-function SourceKeyRelation({ tableName, columns, isEditMode }) {
-  const [targetColumn, setTargetColumn] = useState({});
+function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
+  const [targetColumn, setTargetColumn] = useState([]);
   const { tables, organizationId, selectedTable, setForeignKeys } = useContext(TooljetDatabaseContext);
   const [selectedSourceColumn, setSelectedSourceColumn] = useState({});
 
@@ -25,15 +25,25 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
     },
   ];
 
-  const sourceColumns = Object.values(columns).map((item) => {
-    return {
-      name: item?.column_name,
-      label: item?.column_name,
-      icon: item?.dataTypeDetails[0]?.icon ?? item?.dataTypeDetails?.icon,
-      value: item?.column_name,
-      dataType: item?.data_type,
-    };
-  });
+  const sourceColumns = isEditColumn
+    ? [
+        {
+          name: columns?.column_name,
+          label: columns?.column_name,
+          icon: columns?.dataTypeDetails?.icon ?? columns?.dataTypeDetails[0]?.icon,
+          value: columns?.column_name,
+          dataType: columns?.data_type,
+        },
+      ]
+    : Object.values(columns).map((item) => {
+        return {
+          name: item?.column_name,
+          label: item?.column_name,
+          icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
+          value: item?.column_name,
+          dataType: item?.data_type,
+        };
+      });
 
   const tableList = tables.map((item) => {
     return {
@@ -80,7 +90,7 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
       const { foreign_keys = [] } = data?.result || {};
       if (data?.result?.columns?.length > 0) {
         setTargetColumn(
-          data?.result.columns.map((item) => ({
+          data?.result?.columns.map((item) => ({
             name: item.column_name,
             label: item.column_name,
             icon: dataTypes.filter((obj) => obj.value === item.data_type)[0].icon,
@@ -94,9 +104,11 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
   };
 
   const targetTableColumns =
-    targetColumn.length > 0 && targetColumn?.filter((item) => selectedSourceColumn.dataType === item.dataType);
-
-  console.log('first', targetColumn);
+    targetColumn.length > 0 && !isEditColumn
+      ? targetColumn?.filter((item) => selectedSourceColumn.dataType === item.dataType)
+      : isEditColumn && targetColumn.length > 0
+      ? targetColumn?.filter((item) => sourceColumns[0].dataType === item.dataType)
+      : [];
 
   return (
     <div className="relations-container">
@@ -124,6 +136,9 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
           setTargetColumn={setTargetColumn}
           selectedSourceColumn={selectedSourceColumn}
           updateSelectedSourceColumns={setSelectedSourceColumn}
+          isEditColumn={isEditColumn}
+          defaultValue={isEditColumn ? sourceColumns[0] : []}
+          onAdd={true}
         />
       </div>
       <div className="target mt-4">
@@ -145,6 +160,7 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
           handleSelectColumn={handleSelectColumn}
           showColumnInfo={true}
           showRedirection={true}
+          onAdd={true}
         />
       </div>
       <div className="actions mt-4">
