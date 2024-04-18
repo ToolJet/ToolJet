@@ -1,6 +1,6 @@
 ---
 id: use-to-py-function-in-runpy
-title: "Utilize the to_py() Function in RunPy: Translating JavaScript Objects to Python"
+title: "Translating JavaScript Objects to Python in RunPy"
 ---
 
 This guide demonstrates the utilization of the `to_py()` function in RunPy queries for converting JavaScript objects into their corresponding Python representations.

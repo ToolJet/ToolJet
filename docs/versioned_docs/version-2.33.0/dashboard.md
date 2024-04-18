@@ -9,17 +9,17 @@ Furthermore, the dashboard serves as a gateway to various essential sections, su
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/dashboardoptions.png" alt="App menu options"/>
+<img className="screenshot-full" src="/img/dashboard/dashboardoptions-v2.png" alt="App menu options"/>
 
 </div>
 
 ## Workspace Manager
 
-The workspace manager is located on the bottom left corner of the dashboard. Clicking on the workspace manager will open a dropdown menu with a list of all the workspaces you are a part of. You can switch between workspaces by clicking on the workspace name from the dropdown menu.
+The workspace manager is located on the bottom left corner of the dashboard. Clicking on the workspace manager will open a dropdown menu listing all the workspaces you belong to. You can switch between workspaces by clicking on the workspace name from the dropdown menu.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/workspacemenu.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/workspacemenu-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -39,7 +39,7 @@ Previously, the workspace slug was an automatically generated workspace ID, like
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newworkmodal.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/new-workspace-modal-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -49,11 +49,11 @@ Similar to the `Add new workspace` button, clicking on the `Edit workspace` butt
 
 ## Create a new app
 
-To create a new app, click on the `Create new app` button on the top left corner of the dashboard. Clicking on this button will open a modal where you can enter the name of the app and then click on the `+ Create app` button to create a new app. 
+To create a new app, click on the `Create new app` button on the top left corner of the dashboard. Clicking on this button will open a modal where you can enter the name of the app and then click on the `+ Create app` button to create a new app.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newappmodal.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/new-app-modal-v2.png" alt="Dashboard"/>
 
 </div>
 <br/>
@@ -69,39 +69,40 @@ This option will open a modal with a list of pre-built templates. You can choose
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/choosefromtemplate.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/choosefromtemplate-v2.gif" alt="Dashboard"/>
 
 </div>
 
 ### Import
 
-This option will open a file picker to import a JSON file. This JSON file should be the app exported from ToolJet.
+This option will open a file picker to import a JSON file. This JSON file should contain the app data exported from ToolJet.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/import.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/import-app-v2.gif" alt="Dashboard"/>
 
 </div>
 
-### Importing app connected to marketplace plugins
+### Importing an app connected to Marketplace plugins
 
-When importing an app with marketplace plugins, the marketplace plugin should be installed in the tooljet workspace where the app is being imported. If the marketplace plugin is not installed, the app will be imported without the queries for that plugin. 
+When importing an app with Marketplace plugins, the Marketplace plugin should be installed in the ToolJet workspace where the app is being imported. If the Marketplace plugin is not installed, the app will be imported without the queries for that plugin.
 
-#### When marketplace plugin is installed
+#### When Marketplace plugin is installed
 
-If marketplace plugin is installed in the tooljet workspace where the app is being imported, the queries connected to the marketplace plugin will be available in the imported application. The queries will be linked to the data source with the same name if it is already present. If the data source is not present, a new data source will be created of that marketplace plugin and linked to the queries.
+If Marketplace plugin is installed in the ToolJet workspace where the app is being imported, the queries connected to the Marketplace plugin will be available in the imported application. The queries will be linked to the data source with the same name if it is already present. If the data source is not present, a new data source will be created of that Marketplace plugin and linked to the queries.
 
-#### When marketplace plugin is not installed
+#### When Marketplace plugin is not installed
 
-If you have an app with a query linked to a marketplace plugin, and you import that app in a tooljet workspace where the marketplace plugin is not installed as the data source, the queries will be not be available in the imported application.
+If you have an app with a query linked to a Marketplace plugin, and you import that app in a ToolJet workspace where the Marketplace plugin is not installed as the data source, the queries will be not be available in the imported application.
 
-### Importing app connected to tooljet table
+### Importing app connected to ToolJet table
 
-When the app(JSON file) that includes the table schema is imported, and the table is not present in the tooljet database of the workspace where the app is being imported, a new table will be created in the tooljet database with the same name as the table in the imported app. 
+When the app(JSON file) that includes the table schema is imported, and the table is not present in the ToolJet database of the workspace where the app is being imported, a new table will be created in the ToolJet database with the same name as the table in the imported app.
 
 If the table with the same name is already present in the workspace, the new table will be created with the name `<table name>_<unix timestamp>`. Example: `<tablename>_1627980000`.
 
 ## Folders
+
 ### Create a new folder
 
 Folders can be created to organize your apps. To create a new folder, click on the `+` button on the left drawer of the dashboard. Clicking on this button will open a modal, enter the name of the folder and click on the `Create Folder` button to create a new folder.
@@ -115,7 +116,7 @@ A folder can be **deleted** or **renamed**. To delete or rename a folder, click 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newfolder.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/newfolder-v2.gif" alt="Dashboard"/>
 
 </div>
 
@@ -125,7 +126,7 @@ Folders can be searched by clicking on the search icon on the left drawer of the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/search.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/search-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -135,11 +136,11 @@ The folder's URL slug is generated automatically from its name, providing direct
 
 To get the URL of a specific folder, the user will have to select that folder and then copy the URL from the address bar of the browser. The copied URL can be used to share with other users of the workspace.
 
-Example: If the name of the folder is `customer support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=customer%20support`.
+Example: If the name of the folder is `Customer Support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=Customer%20Support`.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/appurl.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/app-url-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -149,14 +150,15 @@ The dashboard displays all the apps created in the workspace as cards. These car
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/appcard.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/appcard-v2.png" alt="Dashboard"/>
 
 </div>
 
 ## App menu
 
-The app menu is located on the top right corner of the app card. Clicking on the app menu will open a dropdown menu with a list of options. These options are:
+The app menu is located on the top right corner of the app card. Clicking on the app menu will open a dropdown menu containing various options. These options are:
 
+- **[Rename app](#rename-app)**
 - **[Change Icon](#change-icon)**
 - **[Add to folder](#add-to-folder)**
 - **[Clone app](#clone-app)**
@@ -165,7 +167,17 @@ The app menu is located on the top right corner of the app card. Clicking on the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/appmenu.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/app-menu-v2.gif" alt="Dashboard"/>
+
+</div>
+
+### Rename app
+
+This option will open a modal that will allow you to rename your app.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/dashboard/rename-app.png" alt="Dashboard"/>
 
 </div>
 
@@ -175,7 +187,7 @@ This option will open a modal with a list of icons. You can choose any icon from
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/changeicon.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/change-icon-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -185,35 +197,35 @@ This option will open a modal with a list of folders. You can choose any folder 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/addtofolder.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/add-to-folder-v2.png" alt="Dashboard"/>
 
 </div>
 
 ### Clone app
 
-Selecting this option will immediately open the cloned app in the app builder with the same configuration as the original app. The new app will be named as `<original app name>` followed by unix timestamp. Example: `<original app name> 1627980000`.
+Selecting this option will open a modal where you can enter the desired name for the cloned app. After providing the desired name, click on the Clone app button. This will immediately open the cloned app in the app builder with the same configuration as the original app.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/cloneapp.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/clone-app-v2.gif" alt="Dashboard"/>
 
 </div>
 
 ### Export app
 
-This option will download a JSON file of the application. This JSON file can be [imported](#import) to ToolJet to create a new app. The exported app will include all the queries connected to global data sources including the data source created from Marketplace plugins.
+This option downloads a JSON file containing the application data. This JSON file can be [imported](#import) to ToolJet to create a new app. The exported app will include all the queries connected to global data sources including the data source created from Marketplace plugins.
 
 This option allows you to select a specific version of the app to export or export all the versions of the app. To export a specific version of the app, select a version from the list of available versions in the modal and click on the `Export selected version` and to export all the versions of the app, click on the `Export All` button.
 
 #### Export ToolJet table schema
 
-Selecting this option will include the schema of the tooljet table connected to that application in the exported JSON file. This option is available for all the apps on ToolJet however only the apps with a tooljet table connected(includes tjdb query) will have the schema included in the exported JSON file. 
+Selecting this option will include the schema of the ToolJet table connected to that application in the exported JSON file. This option is available for all the apps on ToolJet however only the apps with a ToolJet table connected(includes tjdb query) will have the schema included in the exported JSON file.
 
 This JSON file can be used to [import](#importing-app-connected-to-tooljet-table) the application to ToolJet along with the table schema that was connected to the application.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/exportapp.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/export-app-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -223,7 +235,7 @@ This option will open a confirmation modal to delete the app. Click on the `Dele
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/deleteapp.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/delete-app-v2.png" alt="Dashboard"/>
 
 </div>
 
@@ -233,16 +245,16 @@ Apps can be searched by clicking on the search bar on the center of the dashboar
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/searchapp.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/search-app-v2.png" alt="Dashboard"/>
 
 </div>
 
 ## Current ToolJet Version
 
-The current version of ToolJet is displayed on the top right corner of the dashboard. 
+The current version of ToolJet is displayed on the top right corner of the dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/currentversion.png" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/current-version-v2.png" alt="Dashboard"/>
 
 </div>

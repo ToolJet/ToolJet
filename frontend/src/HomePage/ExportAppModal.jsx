@@ -6,12 +6,12 @@ import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_components/AppButton';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
-  const currentVersion = app?.editing_version;
   const [versions, setVersions] = useState(undefined);
   const [tables, setTables] = useState(undefined);
   const [allTables, setAllTables] = useState(undefined);
-  const [versionId, setVersionId] = useState(currentVersion?.id);
+  const [versionId, setVersionId] = useState(undefined);
   const [exportTjDb, setExportTjDb] = useState(true);
+  const [currentVersion, setCurrentVersion] = useState(undefined);
 
   useEffect(() => {
     async function fetchAppVersions() {
@@ -19,6 +19,11 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const fetchVersions = await appsService.getVersions(app.id);
         const { versions } = fetchVersions;
         setVersions(versions);
+        const currentEditingVersion = versions?.filter((version) => version?.isCurrentEditingVersion)[0];
+        if (currentEditingVersion) {
+          setCurrentVersion(currentEditingVersion);
+          setVersionId(currentEditingVersion?.id);
+        }
       } catch (error) {
         toast.error('Could not fetch the versions.', {
           position: 'top-center',
@@ -26,8 +31,13 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         closeModal();
       }
     }
+    fetchAppVersions();
+  }, [app, closeModal]);
+
+  useEffect(() => {
     async function fetchAppTables() {
       try {
+        if (!versionId) return;
         const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
         const { tables } = fetchTables;
         const tbl = await appsService.getAppByVersion(app.id, versionId); // this is used to get particular App by version
@@ -62,7 +72,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         closeModal();
       }
     }
-    fetchAppVersions();
     fetchAppTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [versionId]);

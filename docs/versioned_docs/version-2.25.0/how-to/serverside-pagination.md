@@ -1,6 +1,6 @@
 ---
 id: use-server-side-pagination
-title: Using server side pagination for efficient data handling in tables
+title: Using Server Side Pagination in Tables
 ---
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

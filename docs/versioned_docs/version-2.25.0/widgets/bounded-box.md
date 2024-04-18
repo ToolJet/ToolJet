@@ -25,7 +25,7 @@ A **bounded box** is an infinitely customizable image annotation component that 
 
 | **Property** | **Description** | **Expected value** |
 | :----------- | :----------- | :----------------- |
-| **Image URL** | The URL or image data to show it on the component. | Get the image URL dynamically from database: **{{queries.queryname.data[0].url}}** or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/) |
+| **Image URL** | The URL or image data to show it on the component. | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/) |
 | **Default value** | The data that will load the default bounded boxes over the image when the app is loaded. | Array of objects. Check the [Default value](#default-value) data properties |
 | **Selector** | The bounded box support selection using rectangle or point. | Click **Fx** to set the value `RECTANGLE` or `POINT` |
 | **List of labels** | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}` |
