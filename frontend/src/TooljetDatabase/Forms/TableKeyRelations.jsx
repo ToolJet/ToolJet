@@ -80,7 +80,7 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
       const { foreign_keys = [] } = data?.result || {};
       if (data?.result?.columns?.length > 0) {
         setTargetColumn(
-          data?.result.map((item) => ({
+          data?.result.columns.map((item) => ({
             name: item.column_name,
             label: item.column_name,
             icon: dataTypes.filter((obj) => obj.value === item.data_type)[0].icon,
@@ -95,6 +95,8 @@ function SourceKeyRelation({ tableName, columns, isEditMode }) {
 
   const targetTableColumns =
     targetColumn.length > 0 && targetColumn?.filter((item) => selectedSourceColumn.dataType === item.dataType);
+
+  console.log('first', targetColumn);
 
   return (
     <div className="relations-container">
