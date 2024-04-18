@@ -4,7 +4,7 @@ title: Text Input
 ---
 # Text Input
 
-The Text Input component allows users to enter a single line of text. It can be used as a standalone component or in Form fields. In this document, we'll go through all the configuration options for the **Text Input** component. 
+The **Text Input** component allows users to enter a single line of text. It can be used as a standalone component or in Form fields. In this document, we'll go through all the configuration options for the **Text Input** component. 
 
 ## Properties
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
@@ -18,7 +18,7 @@ The Text Input component allows users to enter a single line of text. It can be 
 | Event            | Description  | 
 |:-----------------|:---------------------------------------------|
 | **On change**    | Triggers whenever the user types something in the text input.                                 |
-| **On enter pressed** | Triggers whenever the user presses the enter key on the keyboard after entering text in the text input component. |
+| **On enter pressed** | Triggers whenever the user presses the enter key on the keyboard after entering text in the Text Input component. |
 | **On focus**     | Triggers whenever the user clicks inside the text input field.                                |
 | **On blur**      | Triggers whenever the user clicks outside the text input field.                               |
 

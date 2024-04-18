@@ -26,7 +26,7 @@ To enable the vertical scroll on the container, drag and place any component to 
 
 ## Loading State
 
-To activate the loader on the container component, access its properties and dynamically adjust the **Loading State** property by clicking the **Fx** button. You can set it to either `{{true}}` or `{{false}}`.
+To activate the loader on the Container component, access its properties and dynamically adjust the **Loading State** property by clicking the **Fx** button. You can set it to either `{{true}}` or `{{false}}`.
 
 For instance, if you wish to display the loader on the container when the query named `restapi1` is in progress, set the **Loading State** value to `{{queries.restapi1.isLoading}}`.
 

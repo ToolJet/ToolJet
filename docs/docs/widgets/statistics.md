@@ -5,7 +5,7 @@ title: Statistics
 
 # Statistics
 
-Statistics can be used to display different statistical information.
+**Statistics** can be used to display different statistical information.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

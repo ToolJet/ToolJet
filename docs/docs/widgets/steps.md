@@ -4,7 +4,7 @@ title: Steps
 ---
 # Steps
 
-Steps are used to guide users through complex processes, making them easier and more intuitive.
+**Steps** are used to guide users through complex processes, making them easier and more intuitive.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

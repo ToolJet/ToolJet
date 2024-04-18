@@ -4,7 +4,7 @@ title: Calendar
 ---
 # Calendar
 
-Calendar widget comes with the following features:  
+**Calendar** widget comes with the following features:  
 - **Day, month and week level views**
 - **Events**
 - **Resource scheduling**
@@ -181,7 +181,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the calendar component.
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the Calendar component.
 
 </div>
 
@@ -191,8 +191,8 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | Variables      | Description |
 | ----------- | ----------- |
-| selectedEvent | This variable stores information about the event that has been chosen on the calendar component. This object comprises keys like **title**, **start**, **end**, **allDay**, and **color**, and they can be accessed dynamically through JS using the following syntax: `{{components.calendar1.selectedEvent.title}}` or `{{components.calendar1.selectedEvent.start}}` |
-| selectedSlots | The variable selectedSlots contains the values of the slots chosen on the calendar component. This object comprises keys like **slots**, **start**, **end**, **resourceId**, and **action**, and they can be accessed dynamically through JS using the following syntax: {{components.calendar1.selectedSlots.slots[0]}} or {{components.calendar1.selectedSlots.end}}. |
+| selectedEvent | This variable stores information about the event that has been chosen on the Calendar component. This object comprises keys like **title**, **start**, **end**, **allDay**, and **color**, and they can be accessed dynamically through JS using the following syntax: `{{components.calendar1.selectedEvent.title}}` or `{{components.calendar1.selectedEvent.start}}` |
+| selectedSlots | The variable selectedSlots contains the values of the slots chosen on the Calendar component. This object comprises keys like **slots**, **start**, **end**, **resourceId**, and **action**, and they can be accessed dynamically through JS using the following syntax: {{components.calendar1.selectedSlots.slots[0]}} or {{components.calendar1.selectedSlots.end}}. |
 | currentView | The currentView variable holds the type of view currently set on the calendar. The value updates when the user changes the view from the calendar header. Types of views supported: `month`, `week`, and `day`. The value can be accessed using `{{components.calendar1.currentView}}` |
 | currentDate | The currentDate variable holds the current date data. The date returned by the variable is in the `MM-DD-YYYY HH:mm:ss A Z` format. The value can be accessed using `{{components.calendar1.currentDate}}`| 
 

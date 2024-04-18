@@ -4,10 +4,10 @@ title: Checkbox
 ---
 # Checkbox
 
-Checkbox widget can be used for allowing the users to make a binary choice, e.g,. unselected or selected.
+**Checkbox** widget can be used for allowing the users to make a binary choice, e.g,. unselected or selected.
 
 :::info
-The checkbox widget consists of a single checkbox input.
+The Checkbox widget consists of a single checkbox input.
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -17,7 +17,7 @@ The checkbox widget consists of a single checkbox input.
 | <div style={{ width:"100px"}}> Property </div>     | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
 | Label | The text is to be used as the label for the checkbox. This field expects a `String` input. |
-| Default status | Sets the default status (enabled or disabled) of the checkbox widget when the app is loaded. By default, the checkbox component is set to `{{false}}`/disabled. |
+| Default status | Sets the default status (enabled or disabled) of the Checkbox widget when the app is loaded. By default, the Checkbox component is set to `{{false}}`/disabled. |
 
 </div>
 
@@ -25,7 +25,7 @@ The checkbox widget consists of a single checkbox input.
 
 ## Events
 
-To add an event to a checkbox component, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
+To add an event to a Checkbox component, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
 
 | <div style={{ width:"100px"}}> Events </div>     | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
@@ -42,7 +42,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 ## Component Specific Actions (CSA)
 
-Following actions of checkbox component can be controlled using the component specific actions(CSA):
+Following actions of Checkbox component can be controlled using the component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions   </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:---------|

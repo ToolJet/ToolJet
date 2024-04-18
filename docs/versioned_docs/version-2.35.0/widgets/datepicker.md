@@ -1,10 +1,10 @@
 ---
 id: datepicker
-title: Datepicker
+title: Date Picker
 ---
-# Datepicker
+# Date Picker
 
-The Datepicker widget allows users to select a single value for date and time from a pre-determined set.
+The **Date Picker** widget allows users to select a single value for date and time from a pre-determined set.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -57,7 +57,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- | :---------- |
-| value | This variable holds the date selected on the component, the date value will be returned according to the format set in the datepicker properties. | Access the value dynamically using JS: `{{components.datepicker1.value}}`|
+| value | This variable holds the date selected on the component, the date value will be returned according to the format set in the Date Picker properties. | Access the value dynamically using JS: `{{components.datepicker1.value}}`|
 
 </div>
 

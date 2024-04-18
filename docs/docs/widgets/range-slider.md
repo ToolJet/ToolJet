@@ -4,7 +4,7 @@ title: Range Slider
 ---
 # Range Slider
 
-Range sliders are widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
+The **Range Slider** widget is widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
 
 :::tip
 Range Sliders have "Two handles" option which allows user to select within a range.

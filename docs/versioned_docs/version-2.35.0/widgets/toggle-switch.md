@@ -4,9 +4,9 @@ title: Toggle Switch
 ---
 # Toggle Switch
 
-The toggle switch widget allows the user to change a setting between two states.
+The **Toggle Switch** widget allows the user to change a setting between two states.
 
-The Toggle switch widget should be used if we want to make a binary choice, such as turning something **on or off** or **enable or disable**.
+The **Toggle Switch** widget should be used if we want to make a binary choice, such as turning something **on or off** or **enable or disable**.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
