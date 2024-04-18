@@ -13,14 +13,16 @@ function SetupScreenSelfHost({ darkMode }) {
     const keyDownHandler = (event) => {
       if (event.key === 'Enter') {
         setShowSelfHostOboarding(true);
-        window.open('https://www.tooljet.com/thank-you', '_blank');
+        if (!showSelfHostOboarding) {
+          window.open('https://www.tooljet.com/thank-you', '_blank');
+        }
       }
     };
     document.addEventListener('keydown', keyDownHandler);
     return () => {
       document.removeEventListener('keydown', keyDownHandler);
     };
-  }, []);
+  }, [showSelfHostOboarding]);
 
   return (
     <div className="sh-setup-screen-wrapper">
