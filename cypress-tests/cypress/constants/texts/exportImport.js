@@ -18,7 +18,7 @@ export const exportAppModalText = {
 };
 
 export const importText = {
-  importOption: "Import",
+  importOption: "Import from device",
   couldNotImportAppToastMessage: `Could not import: SyntaxError: Unexpected token`,
   appImportedToastMessage: "App imported successfully.",
 };
