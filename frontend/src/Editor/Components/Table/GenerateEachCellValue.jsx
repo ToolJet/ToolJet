@@ -43,7 +43,10 @@ export default function GenerateEachCellValue({
     }
   }, [hovered]);
 
-  const _showOverlay = ref?.current && ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth;
+  const _showOverlay =
+    ref?.current &&
+    (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
+      ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
 
   const handleCellClick = () => {
     setIsNullCellClicked(true);

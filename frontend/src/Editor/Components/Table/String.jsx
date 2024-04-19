@@ -121,19 +121,12 @@ const String = ({
       </div>
     );
   };
-  const _showOverlay = ref?.current && ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth;
-  // if (!isEditable) {
-  //   return (
-  //     <div
-  //       className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-  //         horizontalAlignment
-  //       )}`}
-  //       style={cellStyles}
-  //     >
-  //       <span>{cellValue}</span>
-  //     </div>
-  //   );
-  // }
+
+  const _showOverlay =
+    ref?.current &&
+    (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
+      ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
+
   return (
     <>
       <OverlayTrigger
