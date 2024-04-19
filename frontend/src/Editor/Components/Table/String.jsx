@@ -58,7 +58,6 @@ const String = ({
     }
   }, [isEditable]);
 
-  console.log('test---', isMaxRowHeightAuto, maxRowHeightValue, cellSize);
   const _renderString = () => (
     <div
       ref={ref}
