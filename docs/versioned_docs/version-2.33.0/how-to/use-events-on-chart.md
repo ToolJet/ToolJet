@@ -19,7 +19,7 @@ This guide will use the Custom Component to create a chart using a third-party l
 - Open the App Builder and add a Custom Component to the page. 
 - Click on the Custom Component to open the Properties panel.
 
-Note: If you are not familiar with the Custom Component, please read the [Custom Component](/docs/widgets/custom-component/) doc.
+Note: If you are not familiar with the Custom Component, please read the [Custom Component](/docs/widgets/custom-component/) documentation.
 
 </div>
 
@@ -139,7 +139,7 @@ import createPlotlyComponent from 'https://cdn.skypack.dev/react-plotly.js/facto
 
 
 - Create a function component called `MyCustomComponent`. This component will render the chart. The `createPlotlyComponent` function is used to create a Plotly component. 
-- Then, a function called `barOnClick` is created that will be called when the user clicks on the bar. This function will display an alert message. 
+- A function called `barOnClick` is created that will be called when the user clicks on the bar. This function will display an alert message. 
 
 ```js
 const MyCustomComponent = ({data, updateData, runQuery}) => { // function component
