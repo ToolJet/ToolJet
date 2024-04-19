@@ -172,11 +172,12 @@ export function Table({
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
   const [hoverAdded, setHoverAdded] = useState(false);
   const [generatedColumn, setGeneratedColumn] = useState([]);
+  const [isCellValueChanged, setIsCellValueChanged] = useState(false);
+
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
-
   const [resizingColumnId, setResizingColumnId] = useState(null);
 
   const prevDataFromProps = useRef();
@@ -232,6 +233,8 @@ export function Table({
 
   function handleExistingRowCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
+    setIsCellValueChanged(true);
+
     const dataUpdates = tableDetails.dataUpdates || [];
     const clonedTableData = _.cloneDeep(tableData);
 
@@ -269,6 +272,7 @@ export function Table({
   }, [JSON.stringify(tableDetails)]);
 
   function handleNewRowCellValueChange(index, key, value, rowData) {
+    setIsCellValueChanged(true);
     const changeSet = copyOfTableDetails.current.addNewRowsDetails.newRowsChangeSet || {};
     const dataUpdates = copyOfTableDetails.current.addNewRowsDetails.newRowsDataUpdates || {};
     let obj = changeSet ? changeSet[index] || {} : {};
@@ -1540,6 +1544,9 @@ export function Table({
                               cellTextColor={cellTextColor}
                               cell={cell}
                               currentState={currentState}
+                              isCellValueChanged={isCellValueChanged}
+                              setIsCellValueChanged={setIsCellValueChanged}
+                              darkMode={darkMode}
                             />
                           </div>
                         </td>
@@ -1617,6 +1624,7 @@ export function Table({
                       variant="primary"
                       className={`tj-text-xsm`}
                       onClick={() => {
+                        setIsCellValueChanged(false);
                         onEvent('onBulkUpdate', tableEvents, { component }).then(() => {
                           handleChangesSaved();
                         });
@@ -1635,6 +1643,7 @@ export function Table({
                       variant="tertiary"
                       className={`tj-text-xsm`}
                       onClick={() => {
+                        setIsCellValueChanged(false);
                         handleChangesDiscarded();
                       }}
                       data-cy={`table-button-discard-changes`}
