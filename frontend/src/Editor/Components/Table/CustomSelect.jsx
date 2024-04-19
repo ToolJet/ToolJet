@@ -29,7 +29,7 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
-  showPopoverIfOverflow,
+  isMaxRowHeightAuto,
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null); // Ref for the input search box
@@ -142,19 +142,26 @@ export const CustomSelect = ({
   const calculateIfPopoverRequired = (value, containerWidth) => {
     let totalWidth = 0;
 
-    // Calculate total width of all span elements
-    value?.forEach((option) => {
+    // // Calculate total width of all span elements
+    for (const option of value) {
       const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + PADDING + MARGIN;
-      totalWidth += valueWidth;
-    });
-    return totalWidth > containerWidth;
+      // Check if max row height is auto and then if any of the options width exceeds container width, return true
+      if (isMaxRowHeightAuto) {
+        if (valueWidth > containerWidth) {
+          return true;
+        }
+      } else {
+        totalWidth += valueWidth + 4; // Adding 4px to be safe
+      }
+    }
+    return totalWidth > containerWidth; // Return based on total width comparison
   };
 
   return (
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && showPopoverIfOverflow && (_value?.length || defaultValue?.length) && !isFocused ? (
+        isMulti && (_value?.length || defaultValue?.length) && !isFocused ? (
           getOverlay(_value ? _value : defaultValue, containerWidth, darkMode)
         ) : (
           <div></div>
@@ -163,7 +170,6 @@ export const CustomSelect = ({
       trigger={
         isMulti &&
         !isFocused &&
-        showPopoverIfOverflow &&
         calculateIfPopoverRequired(_value ? _value : defaultValue, containerWidth - 40) && ['hover', 'focus']
       } //container width -24 -16 gives that select container size
       rootClose={true}

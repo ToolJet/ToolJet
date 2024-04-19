@@ -479,7 +479,7 @@ export default function generateColumnsData({
                     }
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
-                    showPopoverIfOverflow={!contentWrap || (contentWrap && !isMaxRowHeightAuto)}
+                    isMaxRowHeightAuto={contentWrap && isMaxRowHeightAuto}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
