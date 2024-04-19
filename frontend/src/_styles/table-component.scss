@@ -690,7 +690,10 @@
   background-color: var(--slate2);
   --tblr-table-accent-bg: var(--slate2);
 }
-
+.table-striped>tbody>tr:nth-of-type(even):hover{
+  background-color: var(--interactive-overlays-fill-hover) !important;
+  --tblr-table-accent-bg: var(--interactive-overlays-fill-hover) !important;
+}
 .resizing-column {
   background-color: var(--slate4, #ECEEF0) !important;
   border-right: 4px solid var(--slate5, #E6E8EB) !important;
