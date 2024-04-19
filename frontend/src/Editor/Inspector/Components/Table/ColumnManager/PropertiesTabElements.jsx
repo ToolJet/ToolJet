@@ -199,7 +199,7 @@ export const PropertiesTabElements = ({
           </div>
 
           <div className="border  mx-3" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-            <div style={{ background: 'var(--slate3)', padding: '6px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
               <ProgramaticallyHandleProperties
                 label="Link target"
                 currentState={currentState}
