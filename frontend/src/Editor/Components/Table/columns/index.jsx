@@ -32,6 +32,8 @@ export default function generateColumnsData({
   t,
   darkMode,
   tableColumnEvents,
+  cellSize,
+  maxRowHeightValue,
 }) {
   return columnProperties.map((column) => {
     if (!column) return;
@@ -162,6 +164,8 @@ export default function generateColumnsData({
                 containerWidth={width}
                 cell={cell}
                 isMaxRowHeightAuto={isMaxRowHeightAuto}
+                cellSize={cellSize}
+                maxRowHeightValue={maxRowHeightValue}
               />
             );
 

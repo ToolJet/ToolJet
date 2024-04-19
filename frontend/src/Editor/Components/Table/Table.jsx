@@ -140,6 +140,7 @@ export function Table({
     boxShadow,
     maxRowHeightValue,
     borderColor,
+    isMaxRowHeightAuto,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
@@ -429,6 +430,9 @@ export function Table({
     t,
     darkMode,
     tableColumnEvents: tableColumnEvents,
+    cellSize: cellSize,
+    maxRowHeightValue: maxRowHeightValue,
+    isMaxRowHeightAuto: isMaxRowHeightAuto,
   });
 
   columnData = useMemo(

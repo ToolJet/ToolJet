@@ -14,6 +14,8 @@ const String = ({
   cell,
   horizontalAlignment,
   isMaxRowHeightAuto,
+  cellSize,
+  maxRowHeightValue,
 }) => {
   const validationData = validateWidget({
     validationObject: {
@@ -42,7 +44,6 @@ const String = ({
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
   useEffect(() => {
     if (hovered) {
       setShowOverlay(true);
@@ -56,7 +57,6 @@ const String = ({
       setIsEditing(false);
     }
   }, [isEditable]);
-
   const _renderString = () => (
     <div
       ref={ref}
@@ -71,7 +71,13 @@ const String = ({
         background: 'inherit',
         position: 'relative',
         height: '100%',
-        // ...(isMaxRowHeightAuto && { position: 'static' }),
+        maxHeight: isMaxRowHeightAuto
+          ? 'auto'
+          : maxRowHeightValue
+          ? maxRowHeightValue
+          : cellSize === 'condensed'
+          ? '39px'
+          : '45px',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
