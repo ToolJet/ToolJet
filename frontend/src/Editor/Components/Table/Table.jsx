@@ -141,6 +141,7 @@ export function Table({
     boxShadow,
     maxRowHeightValue,
     borderColor,
+    isMaxRowHeightAuto,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
@@ -439,6 +440,9 @@ export function Table({
     t,
     darkMode,
     tableColumnEvents: tableColumnEvents,
+    cellSize: cellSize,
+    maxRowHeightValue: maxRowHeightValue,
+    isMaxRowHeightAuto: isMaxRowHeightAuto,
   });
 
   columnData = useMemo(
@@ -1306,15 +1310,17 @@ export function Table({
                                           `}
                                       >
                                         <div>
-                                          {column.columnType !== 'selector' && isEditable && (
-                                            <SolidIcon
-                                              name="editable"
-                                              width="16px"
-                                              height="16px"
-                                              fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                                              vievBox="0 0 16 16"
-                                            />
-                                          )}
+                                          {column.columnType !== 'selector' &&
+                                            column.columnType !== 'image' &&
+                                            isEditable && (
+                                              <SolidIcon
+                                                name="editable"
+                                                width="16px"
+                                                height="16px"
+                                                fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                                                vievBox="0 0 16 16"
+                                              />
+                                            )}
                                         </div>
                                         <div
                                           data-cy={`column-header-${String(column.exportValue)

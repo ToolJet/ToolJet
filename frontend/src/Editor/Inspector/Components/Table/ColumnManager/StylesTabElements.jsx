@@ -71,32 +71,6 @@ export const StylesTabElements = ({
               componentName={getPopoverFieldSource(column.columnType, 'borderRadius')}
             />
           </div>
-          <div data-cy={`input-and-label-width`} className="field px-3">
-            <label className="form-label">{t('widget.Table.width', 'Width')}</label>
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column.width}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={''}
-              onChange={(value) => onColumnItemChange(index, 'width', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'width')}
-            />
-          </div>
-          <div data-cy={`input-and-label-height`} className="field px-3">
-            <label className="form-label">{t('widget.Table.height', 'Height')}</label>
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column.height}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={''}
-              onChange={(value) => onColumnItemChange(index, 'height', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'height')}
-            />
-          </div>
           <div data-cy={`input-and-label-object-fit`} className="field px-3">
             <label className="form-label">{t('widget.Table.imageFit', 'Image fit')}</label>
             <Select

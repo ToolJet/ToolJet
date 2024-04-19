@@ -200,6 +200,22 @@ export const Inspector = ({
     } else {
       allParams[param.name] = value;
     }
+
+    if (
+      component.component.component === 'Table' &&
+      param.name === 'contentWrap' &&
+      !resolveReferences(value, currentState) &&
+      newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
+    ) {
+      const updatedColumns = newDefinition.properties.columns.value.map((item) => {
+        return item.columnType === 'image' ? { ...item, height: '' } : item; // Create a new object for image columns
+      });
+
+      // Update the columns value with the updated columns
+      newDefinition.properties.columns.value = updatedColumns;
+      isParamFromTableColumn = true;
+    }
+
     newDefinition[paramType] = allParams;
     newComponent.component.definition = newDefinition;
     componentDefinitionChanged(newComponent, {
