@@ -132,7 +132,7 @@ const String = ({
       <OverlayTrigger
         placement="bottom"
         overlay={_showOverlay ? getOverlay() : <div></div>}
-        trigger={_showOverlay && ['hover']}
+        trigger={_showOverlay && ['hover', 'focus']}
         rootClose={true}
         show={_showOverlay && showOverlay && !isEditing}
       >
