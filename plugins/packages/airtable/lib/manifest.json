@@ -12,7 +12,7 @@
       "rawData": {}
     },
     "options": {
-      "api_key": {
+      "personal_access_token": {
         "type": "string",
         "encrypted": true
       }
@@ -20,20 +20,20 @@
     "customTesting": true
   },
   "defaults": {
-    "api_key": {
+    "personal_access_token": {
       "value": ""
     }
   },
   "properties": {
-    "api_key": {
-      "label": "API key",
-      "key": "api_key",
+    "personal_access_token": {
+      "label": "Personal access token",
+      "key": "personal_access_token",
       "type": "password",
-      "description": "Api key for airtable",
-      "helpText": "For generating API key, visit: <a href='https://airtable.com/account' target='_blank' rel='noreferrer'>Airtable account page</a>"
+      "description": "Personal access token for airtable",
+      "helpText": "For generating personal access token, visit: <a href='https://airtable.com/account' target='_blank' rel='noreferrer'>Airtable account page</a>"
     }
   },
   "required": [
-    "api_key"
+    "personal_access_token"
   ]
 }

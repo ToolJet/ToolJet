@@ -1,0 +1,16 @@
+{
+  "name": "Expense tracker admin",
+  "description": "Update and manage employee expenses centrally through an admin dashboard built with ToolJet web UI and database.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "expense-tracker-admin",
+  "category": "operations"
+}

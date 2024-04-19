@@ -14,6 +14,7 @@ Transformations can be enabled on queries to transform the query results. ToolJe
 
 :::caution
 - Every transformation is scoped to the query it's written for. 
+- Workspace Constants are resolved server side and will not work with transformations.
 - Actions and CSA(Component Specific Actions) cannot be called within the transformation, they can only be called within **[RunJS](/docs/data-sources/run-js)** query or **[RunPy](/docs/data-sources/run-py)** query.
 :::
 

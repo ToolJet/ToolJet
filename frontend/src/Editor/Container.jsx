@@ -24,6 +24,8 @@ import { ModuleContext } from '../_contexts/ModuleContext';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { isPDFSupported } from '@/_stores/utils';
+import toast from 'react-hot-toast';
 
 const NO_OF_GRIDS = 43;
 
@@ -42,12 +44,12 @@ export const Container = ({
   zoomLevel,
   removeComponent,
   deviceWindowWidth,
-  darkMode,
   socket,
   handleUndo,
   handleRedo,
   sideBarDebugger,
   currentPageId,
+  darkMode,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
@@ -78,7 +80,7 @@ export const Container = ({
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    maxWidth: `${canvasWidth}px`,
+    maxWidth: currentLayout === 'mobile' ? deviceWindowWidth : `${canvasWidth}px`,
     backgroundSize: `${gridWidth}px 10px`,
   };
 
@@ -244,7 +246,6 @@ export const Container = ({
 
       const bottomPadding = mode === 'view' ? 100 : 300;
       const frameHeight = mode === 'view' ? 45 : 85;
-
       setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
     },
     [setCanvasHeight, currentLayout, mode]
@@ -259,6 +260,13 @@ export const Container = ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
         if (item.parent) {
+          return;
+        }
+
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
           return;
         }
 
@@ -567,7 +575,6 @@ export const Container = ({
     },
     [setIsDragging]
   );
-
   const containerProps = useMemo(() => {
     return {
       mode,

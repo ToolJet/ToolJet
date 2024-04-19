@@ -222,6 +222,10 @@ export function extractMajorVersion(version) {
   return semver.valid(semver.coerce(version));
 }
 
+export function checkVersionCompatibility(importingVersion) {
+  return semver.gte(semver.coerce(globalThis.TOOLJET_VERSION), semver.coerce(importingVersion));
+}
+
 /**
  * Checks if a given Tooljet version is compatible with normalized app definition schemas.
  *
@@ -235,3 +239,42 @@ export function extractMajorVersion(version) {
 export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
   return semver.satisfies(semver.coerce(version), '>= 2.24.0');
 }
+
+export function isVersionGreaterThanOrEqual(version1: string, version2: string) {
+  if (!version1) return false;
+
+  const v1Parts = version1.split('-')[0].split('.').map(Number);
+  const v2Parts = version2.split('-')[0].split('.').map(Number);
+
+  for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+    const v1Part = +v1Parts[i] || 0;
+    const v2Part = +v2Parts[i] || 0;
+
+    if (v1Part < v2Part) {
+      return false;
+    } else if (v1Part > v2Part) {
+      return true;
+    }
+  }
+
+  return true;
+}
+
+export const getMaxCopyNumber = (existNameList) => {
+  if (existNameList.length == 0) return '';
+  const filteredNames = existNameList.filter((name) => {
+    const parts = name.group.split('_');
+    return !isNaN(parseInt(parts[parts.length - 1]));
+  });
+
+  // Extracting numbers from the filtered names
+  const numbers = filteredNames.map((name) => {
+    const parts = name.group.split('_');
+    return parseInt(parts[parts.length - 1]);
+  });
+
+  // Finding the maximum number
+  // Creating the new name with maxNumber + 1
+  const maxNumber = Math.max(...numbers, 0);
+  return maxNumber + 1;
+};

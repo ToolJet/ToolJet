@@ -7,7 +7,7 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { User } from 'src/decorators/user.decorator';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { CreateGroupPermissionDto, UpdateGroupPermissionDto } from '@dto/group-permission.dto';
+import { CreateGroupPermissionDto, UpdateGroupPermissionDto, DuplucateGroupDto } from '@dto/group-permission.dto';
 
 @Controller('group_permissions')
 export class GroupPermissionsController {
@@ -19,6 +19,14 @@ export class GroupPermissionsController {
   async create(@User() user, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
     await this.groupPermissionsService.create(user, createGroupPermissionDto.group);
     return;
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
+  @Post(':id/duplicate')
+  async duplicate(@User() user, @Param('id') id: string, @Body() body: DuplucateGroupDto) {
+    const duplicateGroup = await this.groupPermissionsService.duplicateGroup(user, id, body);
+    return duplicateGroup;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -102,8 +110,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Get(':id/addable_users')
-  async addableUsers(@User() user, @Param('id') id, @Query('input') searchInput) {
-    const users = await this.groupPermissionsService.findAddableUsers(user, id, searchInput);
+  async addableUsers(@User() user, @Param('id') id, @Query('input') searchInput: string) {
+    const users = await this.groupPermissionsService.findAddableUsers(user, id, searchInput.trim());
 
     return decamelizeKeys({ users });
   }

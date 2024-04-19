@@ -1,0 +1,16 @@
+{
+  "name": "KPI management dashboard (ToolJet Database)",
+  "description": "Monitor essential product metrics with the AARRR pirate metrics framework using dynamic dashboards and the ToolJet database.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "kpi-management-dashboard-tooljet-db",
+  "category": "operations"
+}

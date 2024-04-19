@@ -28,6 +28,7 @@ import { Layout } from 'src/entities/layout.entity';
 
 import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 
 const uuid = require('uuid');
 @Injectable()
@@ -146,6 +147,7 @@ export class AppsService {
           canvasMaxHeight: 2400,
           canvasBackgroundColor: '#edeff5',
           backgroundFxQuery: '',
+          appMode: 'auto',
         };
         await manager.save(appVersion);
 
@@ -218,7 +220,7 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string): Promise<App[]> {
+  async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
     const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
     if (page) {
@@ -477,6 +479,17 @@ export class AppsService {
       return false;
     };
 
+    const isChildOfKanbanModal = (componentParentId: string, allComponents = []) => {
+      if (!componentParentId.includes('modal')) return false;
+
+      if (componentParentId) {
+        const parentId = componentParentId.split('-').slice(0, -1).join('-');
+        const isParentKandban = allComponents.find((comp) => comp.id === parentId)?.type === 'Kanban';
+
+        return isParentKandban;
+      }
+    };
+
     for (const page of pages) {
       const savedPage = await manager.save(
         manager.create(Page, {
@@ -574,6 +587,11 @@ export class AppsService {
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
+        } else if (isChildOfKanbanModal(component.parent, page.components)) {
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-modal`;
         } else {
           parentId = oldComponentToNewComponentMapping[parentId];
         }

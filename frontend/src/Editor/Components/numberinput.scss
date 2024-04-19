@@ -1,0 +1,39 @@
+.arrow {
+    cursor: pointer;
+    user-select: none;
+    position: absolute;
+    font-size: 12px;
+}
+
+.numberinput-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.input-number::-webkit-inner-spin-button,
+.input-number::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.input-number {
+    align-items: center;
+    -webkit-appearance: none !important;
+    /* Remove clear button on Safari */
+    -moz-appearance: textfield !important;
+    /* Remove clear button on Firefox */
+    appearance: none !important;
+    /* Remove clear button on modern browsers */
+}
+
+.numberinput-down-arrow {
+    position: absolute;
+    width: 20px;
+}
+
+.numberinput-up-arrow {
+    position: absolute;
+    width: 20px;
+}

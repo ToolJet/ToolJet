@@ -43,16 +43,6 @@ export const reset = () => {
   });
 };
 
-export const addNewUserMW = (firstName, email, companyName) => {
-  common.navigateToManageUsers();
-  users.inviteUser(firstName, email);
-  // cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-  //   "have.text",
-  //   "My workspace"
-  // );
-  updateWorkspaceName(email);
-};
-
 export const updateWorkspaceName = (email) => {
   let workspaceNametimeStamp, workspaceId, userId, defuserId, defWorkspaceId;
 

@@ -17,6 +17,75 @@ export function renderQuerySelector(component, dataQueries, eventOptionUpdated, 
     />
   );
 }
+export function renderCustomStyles(
+  component,
+  componentMeta,
+  paramUpdated,
+  dataQueries,
+  param,
+  paramType,
+  currentState,
+  components = {},
+  accordian,
+  darkMode = false,
+  verticalLine = true,
+  placeholder = ''
+) {
+  const componentConfig = component.component;
+  const componentDefinition = componentConfig.definition;
+  const paramTypeDefinition = componentDefinition[paramType] || {};
+  const definition = paramTypeDefinition[param] || {};
+  const meta = componentMeta[paramType]?.[accordian]?.[param];
+
+  if (
+    componentConfig.component == 'DropDown' ||
+    componentConfig.component == 'Form' ||
+    componentConfig.component == 'Listview' ||
+    componentConfig.component == 'TextInput' ||
+    componentConfig.component == 'NumberInput' ||
+    componentConfig.component == 'PasswordInput'
+  ) {
+    const paramTypeConfig = componentMeta[paramType] || {};
+    const paramConfig = paramTypeConfig[param] || {};
+    const { conditionallyRender = null } = paramConfig;
+
+    if (conditionallyRender) {
+      const { key, value } = conditionallyRender;
+      if (paramTypeDefinition?.[key] ?? value) {
+        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+
+        if (resolvedValue?.value !== value) {
+          return;
+        }
+      }
+    }
+  }
+
+  return (
+    <>
+      <Code
+        param={{ name: param, ...component.component.properties[param] }}
+        definition={definition}
+        dataQueries={dataQueries}
+        onChange={paramUpdated}
+        paramType={paramType}
+        components={components}
+        componentMeta={componentMeta}
+        darkMode={darkMode}
+        componentName={component.component.name || null}
+        type={meta?.type}
+        fxActive={definition.fxActive ?? false}
+        onFxPress={(active) => {
+          paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
+        }}
+        component={component}
+        verticalLine={verticalLine}
+        accordian={accordian}
+        placeholder={placeholder}
+      />
+    </>
+  );
+}
 
 export function renderElement(
   component,
@@ -28,6 +97,7 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
+  placeholder = '',
   verticalLine = true
 ) {
   const componentConfig = component.component;
@@ -72,6 +142,7 @@ export function renderElement(
       }}
       component={component}
       verticalLine={verticalLine}
+      placeholder={placeholder}
     />
   );
 }

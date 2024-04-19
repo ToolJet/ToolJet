@@ -1,0 +1,143 @@
+import { fake } from "Fixtures/fake";
+import { postgreSqlSelector } from "Selectors/postgreSql";
+import { postgreSqlText } from "Texts/postgreSql";
+import { commonWidgetText, commonText } from "Texts/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+
+import {
+  addQuery,
+  fillDataSourceTextField,
+  fillConnectionForm,
+  selectAndAddDataSource,
+  openQueryEditor,
+  selectQueryMode,
+  addGuiQuery,
+  addWidgetsToAddUser,
+} from "Support/utils/postgreSql";
+
+const data = {};
+
+describe("Data sources", () => {
+  beforeEach(() => {
+    cy.appUILogin();
+    data.dataSourceName = fake.lastName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
+  });
+
+  it("Should verify elements on connection form", () => {
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources()
+    );
+    cy.get(postgreSqlSelector.databaseLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDatabase()
+    );
+    cy.get(postgreSqlSelector.apiLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allApis
+    );
+    cy.get(postgreSqlSelector.cloudStorageLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allCloudStorage
+    );
+
+    selectAndAddDataSource("databases", "TypeSense", data.dataSourceName);
+
+    cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.labelHost
+    );
+    cy.get(postgreSqlSelector.labelPort).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.labelPort
+    );
+    cy.get('[data-cy="label-api-key"]').verifyVisibleElement(
+      "have.text",
+      "API Key"
+    );
+    cy.get('[data-cy="label-protocol"]').verifyVisibleElement(
+      "have.text",
+      "Protocol"
+    );
+    cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.whiteListIpText
+    );
+    cy.get(postgreSqlSelector.buttonCopyIp).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.textCopy
+    );
+
+    cy.get(postgreSqlSelector.linkReadDocumentation).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.readDocumentation
+    );
+    cy.get(postgreSqlSelector.buttonTestConnection)
+      .verifyVisibleElement(
+        "have.text",
+        postgreSqlText.buttonTextTestConnection
+      )
+      .click();
+    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.couldNotConnect
+    );
+    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.buttonTextSave
+    );
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      "Ensure that apiKey is set"
+    );
+    deleteDatasource(`cypress-${data.dataSourceName}-typesense`);
+  });
+
+  it("Should verify the functionality of TypeSense connection form.", () => {
+    selectAndAddDataSource("databases", "TypeSense", data.dataSourceName);
+
+    fillDataSourceTextField(
+      postgreSqlText.labelHost,
+      postgreSqlText.placeholderEnterHost,
+      Cypress.env("typesense_host")
+    );
+    cy.get(".react-select__input-container").click().type(`HTTPS{enter}`);
+    fillDataSourceTextField(
+      postgreSqlText.labelPort,
+      postgreSqlText.placeholderEnterPort,
+      Cypress.env("typesense_port")
+    );
+    fillDataSourceTextField(
+      "API Key",
+      "Enter API key",
+      Cypress.env("typesense_api_key")
+    );
+    //dropdown
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.get(postgreSqlSelector.textConnectionVerified, {
+      timeout: 10000,
+    }).should("have.text", postgreSqlText.labelConnectionVerified);
+    cy.get(postgreSqlSelector.buttonSave).click();
+
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
+
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.dataSourceName}-typesense-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.dataSourceName}-typesense`
+    );
+
+    deleteDatasource(`cypress-${data.dataSourceName}-typesense`);
+  });
+});

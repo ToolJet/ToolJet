@@ -1,0 +1,16 @@
+{
+  "name": "Google cloud storage explorer",
+  "description": "Browse, search, upload, download, and manage objects in Google Cloud Storage buckets through an intuitive ToolJet web interface.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "GCS",
+      "id": "gcs"
+    }
+  ],
+  "id": "google-cloud-storage-explorer",
+  "category": "utilities"
+}

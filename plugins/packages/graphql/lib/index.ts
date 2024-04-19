@@ -34,13 +34,23 @@ export default class GraphqlQueryService implements QueryService {
     };
 
     const paramsFromUrl = urrl.parse(url, true).query;
+    const searchParams = new URLSearchParams();
+
+    // Append parameters individually to preserve duplicates
+    for (const [key, value] of Object.entries(paramsFromUrl)) {
+      if (Array.isArray(value)) {
+        value.forEach((val) => searchParams.append(key, val));
+      } else {
+        searchParams.append(key, String(value));
+      }
+    }
+    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions)) {
+      searchParams.append(key, String(value));
+    }
     const _requestOptions: OptionsOfTextResponseBody = {
       method: 'post',
       headers: sanitizeHeaders(sourceOptions, queryOptions),
-      searchParams: {
-        ...paramsFromUrl,
-        ...sanitizeSearchParams(sourceOptions, queryOptions),
-      },
+      searchParams,
       json,
       ...fetchHttpsCertsForCustomCA(),
     };

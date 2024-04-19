@@ -1,0 +1,16 @@
+{
+  "name": "Sales analytics dashboard (ToolJet Database)",
+  "description": "The Sales Analytics Dashboard template offers comprehensive sales monitoring and insights with four key sections: Main Dashboard (critical metrics), Orders (order details), Customers (demographics & history), and Products (product performance).",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "sales-analytics-dashboard-tooljet-db",
+  "category": "sales-and-marketing"
+}

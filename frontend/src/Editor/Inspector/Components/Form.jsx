@@ -148,7 +148,7 @@ export const baseComponentProperties = (
   });
 
   items.push({
-    title: `${i18next.t('widget.common.layout', 'Layout')}`,
+    title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
     children: (
       <>

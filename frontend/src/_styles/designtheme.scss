@@ -61,11 +61,74 @@
 @import "@radix-ui/colors/goldDark.css";
 @import "@radix-ui/colors/bronzeDark.css";
 
-:root {
+:root, .light-theme {
     --base: #FCFCFD;
     --base-black: #18181A;
-    --text-black-000 : #000000;
-    --slate12:#313739;
+    --text-black-000: #000000;
+    --slate12: #313739;
+
+    --controls-switch-tab: #fff;
+    --controls-switch-tag: #CCD1D54D;
+    --text-disabled: #889099;
+    --text-default: #1B1F24;
+
+
+    // new design theme
+    --primary-brand: #4368E3;
+    --primary-accent-strong: #4368E3;
+    --primary-accent-subtle: rgba(67, 104, 227, 30%);
+    --primary-white: #FFFFFF;
+    --primary-black: #1B1F24;
+
+    // text
+    --text-primary: #1B1F24;
+    --text-placeholder: #6A727C;
+    --text-disbled: #ACB2B9;
+    --text-on-solid: #FFFFFF;
+
+
+    // status
+    --status-error-strong: #D72D39;
+    --status-error-subtle: rgba(215, 45, 57, 30%);
+    --status-warning-strong: #BF4F03;
+    --status-warning-subtle: rgba(191, 79, 3, 30%);
+    --status-success-strong: #1E823B;
+    --status-success-subtle: rgba(30, 130, 59, 30%);
+
+    //icon 
+    --icons-strong: #6A727C;
+    --icons-default: #6A727C;
+    --icons-weak-disabled: #6A727C;
+    --icons-disabled-on-white: #6A727C;
+    --icons-on-solid: #6A727C;
+
+    // borders
+    --borders-strong: #ACB2B9;
+    --borders-default: #CCD1D5;
+    --borders-weak-disabled: #CCD1D5;
+    --borders-disabled-on-white: #E4E7EB;
+    --borders-disabled-on-white-dimmed: rgba(246, 248, 250, 80%);
+
+    // interactive overlays
+    --interactive-overlays-fill-hover: rgba(27, 31, 36, 8%);
+    --interactive-overlays-fill-pressed: rgba(27, 31, 36, 10%);
+    --interactive-overlays-border-hover: rgba(27, 31, 36, 12%);
+    --interactive-overlays-border-pressed: rgba(27, 31, 36, 16%);
+    --interactive-overlays-focus-outline: #4368E3;
+    --interactive-overlays-focus-inner-shadow: #FFFFFF;
+    --interactive-overlays-column-resize: #1B1F244D;
+
+
+    //surfaces
+    --surfaces-app-bg-default: #F6F6F6;
+    --surfaces-surface-01: #FFFFFF;
+    --surfaces-surface-02: #F6F8FA;
+    --surfaces-surface-03: #E4E7EB;
+
+    // utilities
+    --utilities-scrollbar: rgba(106, 114, 124, 12%);
+
+
 }
 
 .dark-theme {
@@ -73,5 +136,69 @@
     --base: #1f2936;
     --base-black: #FBFCFD;
     --text-black-000: #ffffff;
-    --slate1:#1f2936; 
+    --slate1: #1f2936;
+
+
+    --controls-switch-tab: #2B3036;
+    --controls-switch-tag: #121518;
+    --text-disabled: #6D757D;
+    --text-default: #FAFCFF;
+
+
+    // new design theme
+    --primary-brand: #4A6DD9;
+    --primary-accent-strong: #4A6DD9;
+    --primary-accent-subtle: rgba(74, 109, 217, 30%);
+    --primary-white: #FAFCFF;
+    --primary-black: #121518;
+
+    // text
+    --text-primary: #CFD3D8;
+    --text-placeholder: #858C94;
+    --text-disbled: #545B64;
+    --text-on-solid: #FAFCFF;
+
+
+    // status
+    --status-error-strong: #D03F43;
+    --status-error-subtle: rgba(208, 63, 67, 30%);
+    --status-warning-strong: #BA5722;
+    --status-warning-subtle: rgba(186, 87, 34, 30%);
+    --status-success-strong: #318344;
+    --status-success-subtle: rgba(49, 131, 68, 30%);
+
+    //icon 
+    --icons-strong: rgba(207, 211, 216, 90%);
+    --icons-default: rgba(207, 211, 216, 65%);
+    --icons-weak-disabled: rgba(207, 211, 216, 35%);
+    --icons-disabled-on-white: rgba(207, 211, 216, 20%);
+    --icons-on-solid: #FAFCFF;
+
+    // borders
+    --borders-strong: #545B64;
+    --borders-default: #3C434B;
+    --borders-weak-disabled: #2B3036;
+    --borders-disabled-on-white: rgba(43, 48, 54, 20%);
+    --borders-disabled-on-white-dimmed: rgba(43, 48, 54, 20%);
+
+
+    // interactive overlays
+
+    --interactive-overlays-fill-hover: rgba(255, 255, 255, 12%);
+    --interactive-overlays-fill-pressed: rgba(255, 255, 255, 20%);
+    --interactive-overlays-border-hover: rgba(255, 255, 255, 20%);
+    --interactive-overlays-border-pressed: rgba(255, 255, 255, 28%);
+    --interactive-overlays-focus-outline: #4A6DD9;
+    --interactive-overlays-focus-inner-shadow: #121518;
+    --interactive-overlays-column-resize: #FFFFFF80;
+
+
+    //surfaces
+    --surfaces-app-bg-default: #121518;
+    --surfaces-surface-01: #1E2226;
+    --surfaces-surface-02: #2B3036;
+    --surfaces-surface-03: #3C434B;
+
+    // utilities
+    --utilities-scrollbar: rgba(109, 117, 125, 16%);
 }

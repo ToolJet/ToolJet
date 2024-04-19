@@ -92,15 +92,26 @@ export default class RestapiQueryService implements QueryService {
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
+    const searchParams = new URLSearchParams();
+
+    // Append parameters individually to preserve duplicates
+    for (const [key, value] of Object.entries(paramsFromUrl)) {
+      if (Array.isArray(value)) {
+        value.forEach((val) => searchParams.append(key, val));
+      } else {
+        searchParams.append(key, String(value));
+      }
+    }
+    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
+      searchParams.append(key, String(value));
+    }
 
     const _requestOptions: OptionsOfTextResponseBody = {
       method,
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
       headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
-      searchParams: {
-        ...paramsFromUrl,
-        ...sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource),
-      },
+      searchParams,
+      ...(isUrlEncoded ? { form: json } : { json }),
     };
 
     const hasFiles = (json) => {

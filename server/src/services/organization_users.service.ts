@@ -56,6 +56,16 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
+  async updateOrgUser(organizationUserId: string, updateUserDto) {
+    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
+    return await this.usersService.update(
+      organizationUser.userId,
+      updateUserDto,
+      null,
+      organizationUser.organizationId
+    );
+  }
+
   async archive(id: string, organizationId: string): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOneOrFail({
       where: { id, organizationId },
@@ -96,7 +106,7 @@ export class OrganizationUsersService {
         `${invitationToken}?oid=${organizationUser.organizationId}`,
         organizationUser.organization.name
       )
-      .catch((err) => console.error(err));
+      .catch((err) => console.error('Error while sending welcome mail', err));
 
     return;
   }

@@ -1,0 +1,16 @@
+{
+  "name": "KPI management dashboard (Airtable)",
+  "description": "Monitor essential product metrics with the AARRR pirate metrics framework using dynamic dashboards and Airtable as the backend.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "Airtable",
+      "id": "airtable"
+    }
+  ],
+  "id": "kpi-management-dashboard-airtable",
+  "category": "operations"
+}
