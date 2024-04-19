@@ -45,6 +45,7 @@ export function createEditorStore(moduleName) {
     currentPageId: null,
     currentSessionId: uuid(),
     moduleName,
+    appMode: 'auto',
   };
 
   return create(
@@ -93,6 +94,7 @@ export function createEditorStore(moduleName) {
           });
         },
         setCurrentPageId: (currentPageId) => set({ currentPageId }),
+        setAppMode: (appMode) => set({ appMode }),
       },
     }),
     { name: STORE_NAME }
