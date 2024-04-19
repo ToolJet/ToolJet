@@ -12737,6 +12737,59 @@ tbody {
   }
 }
 
+.canvas-container {
+  scrollbar-color: transparent;
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    background-color: transparent;
+    width: 6px;
+    scrollbar-width: thin;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+    scrollbar-width: thin;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  &:hover{
+    scrollbar-color: #6a727c4d;
+    &::-webkit-scrollbar-thumb {
+      background-color: #6a727c4d !important;
+    }
+  }
+}
+
+.jet-listview {
+  &:hover{
+    scrollbar-color: #6a727c4d;
+    &::-webkit-scrollbar-thumb {
+      background-color: #6a727c4d !important;
+    }
+  }
+}
+
+.dark-theme {
+  .canvas-container {
+    &:hover {
+      scrollbar-color: #6a727c4d;
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #6a727c4d !important;
+      }
+    }
+  }
+
+  .jet-listview {
+    &:hover {
+      scrollbar-color: #6a727c4d;
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #6a727c4d !important;
+      }
+    }
+  }
+}
 .number-input-arrow {
   &:hover {
     background-color: var(--interactive-overlays-fill-hover) !important;
