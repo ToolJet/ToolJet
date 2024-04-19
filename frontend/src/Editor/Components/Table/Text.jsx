@@ -140,9 +140,12 @@ const Text = ({
       </div>
     );
   };
+
   const _showOverlay = isEditable
     ? ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight
-    : ref.current && ref.current?.parentElement?.clientWidth < nonEditableCellValueRef.current?.clientWidth;
+    : ref.current &&
+      (ref.current?.parentElement?.clientWidth < nonEditableCellValueRef.current?.clientWidth ||
+        ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight);
 
   return (
     <>
