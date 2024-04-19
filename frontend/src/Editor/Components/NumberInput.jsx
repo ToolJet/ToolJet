@@ -175,7 +175,7 @@ export const NumberInput = function NumberInput({
       : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -183,7 +183,7 @@ export const NumberInput = function NumberInput({
       : borderColor != '#CCD1D5'
       ? borderColor
       : disable || loading
-      ? '1px solid var(--borders-disabled-on-white)'
+      ? 'var(--borders-disabled-on-white-dimmed)'
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
     backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor)
@@ -304,6 +304,7 @@ export const NumberInput = function NumberInput({
             display: !visibility ? 'none' : 'flex',
             whiteSpace: 'nowrap',
           }}
+          data-disabled={disable || loading}
         >
           <Label
             label={label}
@@ -341,7 +342,7 @@ export const NumberInput = function NumberInput({
                     : '50%'
                 }`,
                 transform: ' translateY(-50%)',
-                color: iconColor !== '#CCD1D5' ? iconColor : 'var(--icons-weak-disabled)',
+                color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
                 zIndex: 3,
               }}
               stroke={1.5}
@@ -380,7 +381,8 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${padding == 'default' ? `${height / 2}px` : `${height / 2 + 2}px`}`}
+                  height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  fill={'var(--icons-default)'}
                   style={{
                     top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
@@ -391,28 +393,24 @@ export const NumberInput = function NumberInput({
                         : '1px',
                     borderLeft:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '1px solid var(--borders-default)',
                     borderBottom:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '.5px solid var(--borders-default)',
                     borderTopRightRadius: borderRadius - 1,
-                    backgroundColor:
-                      loading || disable
-                        ? darkMode
-                          ? 'var(--surfaces-app-bg-default)'
-                          : 'var(--surfaces-surface-03)'
-                        : ' var(--surfaces-surface-01)',
+                    backgroundColor: 'transparent',
                     zIndex: 3,
                   }}
-                  className="numberinput-up-arrow arrow"
-                  name="cheveronup"
+                  className="numberinput-up-arrow arrow number-input-arrow"
+                  name="TriangleDownCenter"
                 ></SolidIcon>
               </div>
 
               <div onClick={(e) => handleDecrement(e)}>
                 <SolidIcon
+                  fill={'var(--icons-default)'}
                   style={{
                     right:
                       labelWidth == 0
@@ -423,25 +421,20 @@ export const NumberInput = function NumberInput({
                     bottom: '1px',
                     borderLeft:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '1px solid var(--borders-default)',
                     borderTop:
                       disable || loading
-                        ? '1px solid var(--borders-disabled-on-white)'
+                        ? '1px solid var(--borders-weak-disabled)'
                         : '.5px solid var(--borders-default)',
                     borderBottomRightRadius: borderRadius - 1,
-                    backgroundColor:
-                      loading || disable
-                        ? darkMode
-                          ? 'var(--surfaces-app-bg-default)'
-                          : 'var(--surfaces-surface-03)'
-                        : ' var(--surfaces-surface-01)',
+                    backgroundColor: 'transparent',
                     zIndex: 3,
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${padding == 'default' ? `${height / 2}px` : `${height / 2 + 2}px`}`}
-                  className="numberinput-down-arrow arrow"
-                  name="cheverondown"
+                  height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  className="numberinput-down-arrow arrow number-input-arrow"
+                  name="TriangleUpCenter"
                 ></SolidIcon>
               </div>
             </>

@@ -62,7 +62,7 @@ const String = ({
     <div
       ref={ref}
       contentEditable={true}
-      className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input ${
+      className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
         darkMode ? ' textarea-dark-theme' : ''
       }`}
       style={{
@@ -139,7 +139,7 @@ const String = ({
       <OverlayTrigger
         placement="bottom"
         overlay={_showOverlay ? getOverlay() : <div></div>}
-        trigger={_showOverlay && ['hover']}
+        trigger={_showOverlay && ['hover', 'focus']}
         rootClose={true}
         show={_showOverlay && showOverlay && !isEditing}
       >
@@ -178,7 +178,7 @@ const String = ({
                 if (!hovered) setHovered(true);
               }}
               onMouseLeave={() => setHovered(false)}
-              className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
+              className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
             >
               {_renderString()}
             </div>

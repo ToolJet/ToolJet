@@ -145,7 +145,7 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
+        cellValue = cellValue === undefined ? '' : cellValue;
         switch (columnType) {
           case 'string':
           case undefined:
@@ -322,7 +322,15 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <input
                     type="number"
-                    style={{ ...cellStyles, maxWidth: width, outline: 'none', border: 'none', background: 'inherit' }}
+                    style={{
+                      ...cellStyles,
+                      maxWidth: width,
+                      outline: 'none',
+                      border: 'none',
+                      background: 'inherit',
+                      width: '85%',
+                    }}
+                    id={`table-input-${column.id}`}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -352,7 +360,7 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`table-column-type-input-element input-number ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
                   <div className="arror-container">
@@ -486,7 +494,7 @@ export default function generateColumnsData({
                     }
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
-                    showPopoverIfOverflow={!contentWrap || (contentWrap && !isMaxRowHeightAuto)}
+                    isMaxRowHeightAuto={contentWrap && isMaxRowHeightAuto}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>

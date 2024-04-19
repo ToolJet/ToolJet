@@ -65,7 +65,6 @@ export function setCurrentStateAsync(_ref, changes) {
 
 export function onComponentOptionsChanged(moduleName, component, options) {
   const componentName = component.name;
-  console.log({ moduleName });
   const components = getCurrentState(moduleName).components;
   let componentData = components[componentName];
   componentData = componentData || {};
