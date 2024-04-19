@@ -728,15 +728,14 @@
   --tblr-table-accent-bg: var(--interactive-overlays-fill-hover);
 }
 .resizing-column {
-  background-color: var(--slate4, #ECEEF0) !important;
-  border-right: 4px solid var(--slate5, #E6E8EB) !important;
+  border-right: 1px solid var(--interactive-overlay-border-pressed) !important;
 }
 
 .table-striped {
   .resizing-column {
     background-color: var(--slate4, #ECEEF0) !important;
     --tblr-table-accent-bg: var(--slate4, #ECEEF0);
-    border-right: 4px solid var(--slate5, #E6E8EB) !important;
+    border-right: 1px solid var(--interactive-overlay-border-pressed) !important;
   }
 }
 
