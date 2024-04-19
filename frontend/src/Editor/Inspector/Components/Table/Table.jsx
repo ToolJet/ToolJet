@@ -20,6 +20,8 @@ import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { ModuleContext } from '../../../../_contexts/ModuleContext';
 import { useSuperStore } from '@/_stores/superStore';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
+
+const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
   static contextType = ModuleContext;
 
@@ -80,7 +82,7 @@ class TableComponent extends React.Component {
 
   checkIfAllColumnsAreEditable = (component) => {
     const isAllColumnsEditable = component.component?.definition?.properties?.columns?.value
-      ?.filter((column) => column.columnType !== 'link')
+      ?.filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
       .every((column) => resolveReferences(column.isEditable, this.props.currentState));
     return isAllColumnsEditable;
   };
@@ -90,7 +92,7 @@ class TableComponent extends React.Component {
     const currentPropsColumns = this.props.component.component.definition.properties.columns?.value;
     if (prevPropsColumns !== currentPropsColumns) {
       const isAllColumnsEditable = currentPropsColumns
-        .filter((column) => column.columnType !== 'link')
+        .filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
         .every((column) => resolveReferences(column.isEditable, this.props.currentState));
       this.setState({ isAllColumnsEditable });
     }
@@ -399,12 +401,11 @@ class TableComponent extends React.Component {
     const newColumns = columns.value;
     newColumns[index] = column;
 
-    // When column type is link, we need to make it non-editable
-    if (newColumns[index].columnType === 'link') {
+    if (NON_EDITABLE_COLUMNS.includes(newColumns[index].columnType)) {
       newColumns[index].isEditable = '{{false}}';
     }
 
-    if (item === 'columnType' && value !== 'link' && isAllColumnsEditable) {
+    if (item === 'columnType' && !NON_EDITABLE_COLUMNS.includes(value) && isAllColumnsEditable) {
       newColumns[index].isEditable = '{{true}}';
     }
 
@@ -417,7 +418,7 @@ class TableComponent extends React.Component {
     // Check if all columns are editable and also if we have disabled "make all columns editable" toggle, if yes then enable it
     if (item === 'isEditable' && resolveReferences(value) && !isAllColumnsEditable) {
       const _isAllColumnsEditable = newColumns
-        .filter((column) => column.columnType !== 'link')
+        .filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
         .every((column) => resolveReferences(column.isEditable));
       if (_isAllColumnsEditable) {
         this.setState({ isAllColumnsEditable: true });
@@ -474,11 +475,11 @@ class TableComponent extends React.Component {
 
     const newValue = columns.value.map((column) => ({
       ...column,
-      isEditable: column.columnType !== 'link' ? value : '{{false}}', // Link columns are not editable
+      isEditable: !NON_EDITABLE_COLUMNS.includes(column.columnType) ? value : '{{false}}',
     }));
 
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
-  }
+  };
 
   duplicateColumn = (index) => {
     const columns = this.props.component.component.definition.properties?.columns ?? [];
@@ -524,7 +525,7 @@ class TableComponent extends React.Component {
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
-      resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
+        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -656,8 +657,9 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
-                                      className={`${this.state.activeColumnPopoverIndex === index && 'active-column-list'
-                                        }`}
+                                      className={`${
+                                        this.state.activeColumnPopoverIndex === index && 'active-column-list'
+                                      }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
                                     />
