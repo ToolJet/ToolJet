@@ -691,8 +691,8 @@
   --tblr-table-accent-bg: var(--slate2);
 }
 .table-striped>tbody>tr:nth-of-type(even):hover{
-  background-color: var(--interactive-overlays-fill-hover) !important;
-  --tblr-table-accent-bg: var(--interactive-overlays-fill-hover) !important;
+  background-color: var(--interactive-overlays-fill-hover) ;
+  --tblr-table-accent-bg: var(--interactive-overlays-fill-hover);
 }
 .resizing-column {
   background-color: var(--slate4, #ECEEF0) !important;
