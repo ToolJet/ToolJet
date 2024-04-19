@@ -1225,6 +1225,7 @@ export class AppImportExportService {
             canvasMaxHeight: 2400,
             canvasBackgroundColor: '#edeff5',
             backgroundFxQuery: '',
+            appMode: 'auto',
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
