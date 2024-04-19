@@ -83,6 +83,12 @@ export class TooljetDbService {
         return await this.joinTable(organizationId, params);
       case 'edit_column':
         return await this.editColumn(organizationId, params);
+      case 'create_foreign_key':
+        return await this.createForeignKey(organizationId, params);
+      case 'update_foreign_key':
+        return await this.updateForeignKey(organizationId, params);
+      case 'delete_foreign_key':
+        return await this.deleteForeignKey(organizationId, params);
       default:
         throw new BadRequestException('Action not defined');
     }
@@ -827,5 +833,96 @@ export class TooljetDbService {
       throw new BadRequestException(errorMessage);
     }
     return referenced_tables_info;
+  }
+
+  private async createForeignKey(organizationId: string, params) {
+    const { table_name, foreign_keys } = params;
+    if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId: organizationId, tableName: table_name },
+    });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+
+    let referenced_tables_info = {};
+    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+      referenced_table_list,
+      organizationId,
+      'TABLENAME'
+    );
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
+    try {
+      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+      );
+      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
+
+      await tjdbQueryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
+      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
+    } catch (err) {
+      await tjdbQueryRunner.rollbackTransaction();
+      await tjdbQueryRunner.release();
+      throw err;
+    }
+  }
+
+  private async updateForeignKey(organizationId: string, params) {
+    const { table_name, foreign_key_id, foreign_keys } = params;
+    if (!foreign_key_id) throw new BadRequestException('Foreign key id is mandatory');
+    if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId: organizationId, tableName: table_name },
+    });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+
+    let referenced_tables_info = {};
+    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+      referenced_table_list,
+      organizationId,
+      'TABLENAME'
+    );
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
+    try {
+      await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
+
+      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+      );
+      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
+
+      await tjdbQueryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
+      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
+    } catch (err) {
+      await tjdbQueryRunner.rollbackTransaction();
+      await tjdbQueryRunner.release();
+      throw err;
+    }
+  }
+
+  private async deleteForeignKey(organizationId: string, params) {
+    const { table_name, foreign_key_id } = params;
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId: organizationId, tableName: table_name },
+    });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
+    return { statusCode: 200, message: 'Foreign key relation deleted successfully!' };
   }
 }

@@ -15,6 +15,7 @@ import {
   UploadedFile,
   BadRequestException,
   UseFilters,
+  Put,
 } from '@nestjs/common';
 import { Express } from 'express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -177,6 +178,56 @@ export class TooljetDbController {
       column: columnDto,
     };
     const result = await this.tooljetDbService.perform(organizationId, 'edit_column', params);
+    return decamelizeKeys({ result });
+  }
+
+  @Post('/organizations/:organizationId/table/:tableName/foreignkey')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddForeignKey, 'all'))
+  async createForeignKey(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Body('foreignKeys') foreignKeys: Array<PostgrestForeignKeyDto>
+  ) {
+    const params = {
+      table_name: tableName,
+      foreign_keys: foreignKeys,
+    };
+    const result = await this.tooljetDbService.perform(organizationId, 'create_foreign_key', params);
+    return decamelizeKeys({ result });
+  }
+
+  @Put('/organizations/:organizationId/table/:tableName/foreignkey')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.UpdateForeignKey, 'all'))
+  async updateForeignKey(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Body('foreignKeyId') foreignKeyId: string,
+    @Body('foreignKeys') foreignKeys: Array<PostgrestForeignKeyDto>
+  ) {
+    const params = {
+      table_name: tableName,
+      foreign_key_id: foreignKeyId,
+      foreign_keys: foreignKeys,
+    };
+    const result = await this.tooljetDbService.perform(organizationId, 'update_foreign_key', params);
+    return decamelizeKeys({ result });
+  }
+
+  @Delete('/organizations/:organizationId/table/:tableName/foreignkey/:foreignKeyId')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.DeleteForeignKey, 'all'))
+  async deleteForeignKey(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Param('foreignKeyId') foreignKeyId: string
+  ) {
+    const params = {
+      table_name: tableName,
+      foreign_key_id: foreignKeyId,
+    };
+    const result = await this.tooljetDbService.perform(organizationId, 'delete_foreign_key', params);
     return decamelizeKeys({ result });
   }
 }
