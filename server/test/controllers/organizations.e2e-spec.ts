@@ -48,10 +48,12 @@ describe('organizations controller', () => {
 
       await orgUser.reload();
 
+      //Added Groups to expect
       expect(response.body.users[0]).toStrictEqual({
         email: user.email,
         user_id: user.id,
         first_name: user.firstName,
+        groups: ['all_users', 'admin'],
         id: orgUser.id,
         last_name: user.lastName,
         name: `${user.firstName} ${user.lastName}`,
@@ -406,6 +408,7 @@ describe('organizations controller', () => {
         expect(authGetResponse.statusCode).toBe(200);
 
         expect(getResponse.statusCode).toBe(200);
+        //Added host_name in expect
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: `${user.email}'s workspace`,
@@ -422,6 +425,7 @@ describe('organizations controller', () => {
               configs: {
                 client_id: 'git-client-id',
                 client_secret: '',
+                host_name: '',
               },
               enabled: true,
             },

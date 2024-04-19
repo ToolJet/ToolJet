@@ -1213,7 +1213,7 @@ export class AppImportExportService {
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
       } else {
-        version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {

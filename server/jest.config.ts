@@ -1,8 +1,7 @@
 module.exports = async () => {
   return {
     verbose: true,
-    moduleFileExtensions: ['js', 'json', 'ts','node'],
-    runInBand: true,
+    moduleFileExtensions: ['js', 'json', 'ts', 'node'], // Added space after the comma
     rootDir: '.',
     testEnvironment: 'node',
     testRegex: '.spec.ts$',
