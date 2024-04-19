@@ -125,6 +125,7 @@
   td {
     overflow-x: initial;
     padding: 8px 12px !important;
+    overflow-y: hidden;
     &.has-number{
       padding: 0px 0px 0px 12px !important;
     }
@@ -1395,6 +1396,7 @@
 .table.table-striped > :not(caption) > * > * {
   border-bottom: 0; /* Remove border bottom if .table-striped class is present */
 }
+
 .th:has(.resizer:hover){
   border-right: 1px solid var(--interactive-overlay-border-pressed) !important; 
 }
