@@ -242,7 +242,7 @@ export default function generateColumnsData({
                       outline: 'none',
                       border: 'none',
                       background: 'inherit',
-                      paddingRight: '20px',
+                      width: '85%',
                     }}
                     id={`table-input-${column.id}`}
                     onKeyDown={(e) => {
