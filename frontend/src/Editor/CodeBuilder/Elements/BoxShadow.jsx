@@ -29,7 +29,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
 
   const colorPickerStyle = {
     position: 'absolute',
-    bottom: '260px',
+    top: '-220px',
   };
 
   useEffect(() => {
@@ -187,7 +187,13 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
                 }}
                 data-cy={`${cyLabel}-picker-icon`}
               ></div>
-              <small className="col p-0" data-cy={`${cyLabel}-value`}>
+              <small
+                className="col p-0"
+                data-cy={`${cyLabel}-value`}
+                style={{
+                  color: 'var(--slate12)',
+                }}
+              >
                 {_value}
               </small>
             </div>

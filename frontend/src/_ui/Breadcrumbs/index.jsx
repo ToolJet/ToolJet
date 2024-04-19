@@ -18,11 +18,9 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
             <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
               <p className=" tj-text-xsm ">{breadcrumb}</p>
               {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
-              <li className="breadcrumb-item font-weight-500">
-                <Link to={`${breadcrumb.key}${search}`} data-cy="breadcrumb-page-title">
-                  {' '}
-                  {sidebarNav}
-                </Link>
+              <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+                {' '}
+                {sidebarNav}
               </li>
               {beta && <span className="badge bg-color-primary mx-3">beta</span>}
             </div>
@@ -38,5 +36,7 @@ const routes = [
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/data-sources', breadcrumb: 'Data sources' },
+  { path: '/:worspace_id/workspace-constants', breadcrumb: ' ' },
+  { path: '/:worspace_id/settings', breadcrumb: ' ' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
 ];

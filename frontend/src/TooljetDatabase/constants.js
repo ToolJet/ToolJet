@@ -1,12 +1,27 @@
+import React from 'react';
+import BigInt from './Icons/Biginteger.svg';
+import Float from './Icons/Float.svg';
+import Integer from './Icons/Integer.svg';
+import CharacterVar from './Icons/Text.svg';
+import Boolean from './Icons/Toggle.svg';
+import Serial from './Icons/Serial.svg';
+
 export const dataTypes = [
-  { value: 'character varying', label: 'varchar' },
-  { value: 'integer', label: 'int' },
-  { value: 'bigint', label: 'bigint' },
-  { value: 'double precision', label: 'float' },
-  { value: 'boolean', label: 'boolean' },
+  {
+    name: 'Varying character strings',
+    label: 'varchar',
+    icon: <CharacterVar width="16" height="16" />,
+    value: 'character varying',
+  },
+  { name: 'Integers up to 4 bytes', label: 'int', icon: <Integer width="16" height="16" />, value: 'integer' },
+  { name: 'Integers up to 8 bytes', label: 'bigint', icon: <BigInt width="16" height="16" />, value: 'bigint' },
+  { name: 'Decimal numbers', label: 'float', icon: <Float width="16" height="16" />, value: 'double precision' },
+  { name: 'Boolean True/False', label: 'boolean', icon: <Boolean width="16" height="16" />, value: 'boolean' },
 ];
 
-export const primaryKeydataTypes = [{ value: 'serial', label: 'serial' }];
+export const primaryKeydataTypes = [
+  { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
+];
 
 export const operators = [
   { value: 'eq', label: 'equals' },
@@ -22,3 +37,109 @@ export const operators = [
   { value: 'in', label: 'in' },
   { value: 'is', label: 'is' },
 ];
+
+export const formatOptionLabel = ({ label, icon }) => {
+  return (
+    <div>
+      <span style={{ marginRight: '4px' }}>{icon}</span>
+      <span>{label}</span>
+    </div>
+  );
+};
+
+export const isSerialDataType = (columnDetails) => {
+  const { dataType = '', column_default = '' } = columnDetails;
+  const serialDatatypeDefaultValuePattern = 'nextval(';
+
+  if (dataType === 'integer' && column_default) {
+    if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
+  }
+  return false;
+};
+
+export default function tjdbDropdownStyles(
+  darkMode,
+  darkDisabledBackground,
+  lightDisabledBackground,
+  lightFocussedBackground,
+  darkFocussedBackground,
+  lightBackground,
+  darkBackground,
+  darkBorderHover,
+  lightBorderHover,
+  darkDisabledBorder,
+  lightDisabledBorder,
+  lightFocussedBorder,
+  darkFocussedBorder,
+  lightBorder,
+  darkBorder,
+  dropdownContainerWidth
+) {
+  return {
+    option: (base, state) => ({
+      ...base,
+      backgroundColor:
+        state.isSelected && !darkMode ? '#F0F4FF' : state.isSelected && darkMode ? '#323C4B' : 'transparent',
+      ':hover': {
+        backgroundColor: state.isFocused && !darkMode ? '#F0F4FF' : '#323C4B',
+      },
+      color: darkMode ? '#fff' : '#232e3c',
+      cursor: 'pointer',
+    }),
+    control: (provided, state) => ({
+      ...provided,
+      background:
+        state.isDisabled && darkMode
+          ? darkDisabledBackground
+          : state.isDisabled && !darkMode
+          ? lightDisabledBackground
+          : state.isFocused && !darkMode
+          ? lightFocussedBackground
+          : state.isFocused && darkMode
+          ? darkFocussedBackground
+          : !darkMode
+          ? lightBackground
+          : darkBackground,
+      borderColor:
+        state.isFocused && !darkMode
+          ? lightFocussedBorder
+          : state.isFocused && darkMode
+          ? darkFocussedBorder
+          : darkMode && state.isDisabled
+          ? !darkMode && state.isDisabled
+            ? lightDisabledBorder
+            : darkDisabledBorder
+          : darkMode
+          ? darkBorder
+          : lightBorder,
+      '&:hover': {
+        borderColor: darkMode ? darkBorderHover : lightBorderHover,
+      },
+      boxShadow: state.isFocused ? 'none' : 'none',
+      height: '36px !important',
+      minHeight: '36px',
+    }),
+    menuList: (provided, state) => ({
+      ...provided,
+      padding: '8px',
+      color: darkMode ? '#fff' : '#232e3c',
+    }),
+    menu: (base) => ({
+      ...base,
+      width: dropdownContainerWidth,
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#232e3c',
+    }),
+    placeholder: () => ({
+      position: 'absolute',
+      left: '10px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      zIndex: '1',
+      color: '#808080',
+    }),
+  };
+}

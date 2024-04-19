@@ -1,14 +1,15 @@
 import React from 'react';
 
-const EyeDisable = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
+const EyeDisable = ({ style, fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
   <svg
     data-cy={`icon-hidden`}
     width={width}
     height={width}
     viewBox={viewBox}
-    fill="none"
+    fill={fill}
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    style={style}
   >
     <path
       fillRule="evenodd"

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import classNames from 'classnames';
 
-export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true }) => {
+export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true, meta }) => {
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const colorPickerPosition = meta?.colorPickerPosition ?? '';
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -38,8 +39,14 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
   };
   const eventPopover = () => {
     return (
-      <Popover className={`${darkMode && ' dark-theme'}`}>
-        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'}>
+      <Popover
+        className={classNames(
+          { 'dark-theme': darkMode },
+          // This is fix when color picker don't have much space to open in bottom side
+          { 'inspector-color-input-popover': colorPickerPosition === 'top' }
+        )}
+      >
+        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'} style={{ padding: '0px' }}>
           <>{ColorPicker()}</>
         </Popover.Body>
       </Popover>
@@ -110,7 +117,7 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
               }}
               show={showPicker}
               trigger="click"
-              placement={'left'}
+              placement={!colorPickerPosition ? 'left' : colorPickerPosition}
               rootClose={true}
               overlay={eventPopover()}
             >

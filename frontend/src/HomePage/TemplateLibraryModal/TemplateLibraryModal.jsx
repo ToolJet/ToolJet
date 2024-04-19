@@ -61,7 +61,9 @@ export default function TemplateLibraryModal(props) {
       centered
     >
       <Modal.Header>
-        <Modal.Title>{t('homePage.templateLibraryModal.select', 'Select template')}</Modal.Title>
+        <Modal.Title data-cy="select-template-header">
+          {t('homePage.templateLibraryModal.select', 'Select template')}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container fluid>
@@ -90,7 +92,7 @@ export default function TemplateLibraryModal(props) {
                     style={{ borderTop: '1px solid #D2DDEC', zIndex: 1 }}
                   >
                     <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>
-                      <ButtonSolid variant="tertiary" onClick={props.onCloseButtonClick}>
+                      <ButtonSolid variant="tertiary" onClick={props.onCloseButtonClick} data-cy="cancel-button">
                         {t('globals.cancel', 'Cancel')}
                       </ButtonSolid>
                       <ButtonSolid
@@ -102,6 +104,7 @@ export default function TemplateLibraryModal(props) {
                         isLoading={deploying}
                         className="ms-2"
                         disabled={props.appCreationDisabled}
+                        data-cy="create-application-from-template-button"
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </ButtonSolid>

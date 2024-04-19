@@ -1,0 +1,16 @@
+{
+  "name": "Sales analytics dashboard (Snowflake)",
+  "description": "Visualize key sales metrics like total customers, revenue, AoV, and ROI using interactive dashboards for data-driven insights with Snowflake as the backend.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "Snowflake",
+      "id": "snowflake"
+    }
+  ],
+  "id": "sales-analytics-dashboard-snowflake",
+  "category": "sales-and-marketing"
+}

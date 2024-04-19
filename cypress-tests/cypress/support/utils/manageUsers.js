@@ -15,7 +15,7 @@ export const manageUsersElements = () => {
   });
   cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
     "have.text",
-    usersText.breadcrumbUsersPageTitle
+    " Users"
   );
 
   for (const element in usersSelector.usersElements) {
@@ -41,11 +41,19 @@ export const manageUsersElements = () => {
       cy.get(
         usersSelector.userStatus(usersText.adminUserName)
       ).verifyVisibleElement("have.text", usersText.activeStatus);
-      cy.get("td button").verifyVisibleElement(
-        "have.text",
-        usersText.adminUserState
-      );
+      cy.wait(1000);
+      cy.get('[data-cy="user-actions-button"]').click();
     });
+
+  cy.get('[data-cy="edit-user-details-button"]').verifyVisibleElement(
+    "have.text",
+    "Edit user details"
+  );
+  cy.get('[data-cy="archive-button"]').verifyVisibleElement(
+    "have.text",
+    "Archive user"
+  );
+
   cy.get(usersSelector.userFilterInput).should("be.visible");
 
   cy.get(usersSelector.buttonAddUsers)
@@ -60,6 +68,7 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonUploadCsvFile
   );
+
   cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
     "have.text",
     usersText.addUsersCardTitle
@@ -67,7 +76,7 @@ export const manageUsersElements = () => {
 
   cy.get(commonSelectors.labelFullNameInput).verifyVisibleElement(
     "have.text",
-    commonText.labelFullNameInput
+    "Name"
   );
   cy.get(commonSelectors.inputFieldFullName).should("be.visible");
   cy.get(commonSelectors.labelEmailInput).verifyVisibleElement(
@@ -81,10 +90,8 @@ export const manageUsersElements = () => {
     "have.text",
     commonText.groupInputFieldLabel
   );
-  cy.get(".dropdown-heading-value > .gray").verifyVisibleElement(
-    "have.text",
-    "Select groups to add for this user"
-  );
+  cy.wait(1000);
+  cy.get('[data-cy="user-group-select"]').should("be.visible");
   cy.get(commonSelectors.cancelButton).verifyVisibleElement(
     "have.text",
     usersText.cancelButton
@@ -115,6 +122,15 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
+
+  cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  cy.get(usersSelector.buttonDownloadTemplate).click();
+  cy.wait(4000)
+  cy.exec("ls ./cypress/downloads/").then((result) => {
+    const downloadedAppExportFileName = result.stdout.split("\n")[0];
+    expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
+  });
+
   cy.get(usersSelector.iconBulkUpload).should("be.visible");
   cy.get(usersSelector.helperTextSelectFile).verifyVisibleElement(
     "have.text",
@@ -157,14 +173,24 @@ export const confirmInviteElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+
+  cy.get("body").then(($el) => {
+    if ($el.text().includes(commonText.passwordLabel)) {
+      cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+        "have.text",
+        commonText.passwordLabel
+      );
+      cy.get(commonSelectors.passwordInputField).should("be.visible");
+      cy.get(commonSelectors.acceptInviteButton)
+        .verifyVisibleElement("have.text", commonText.acceptInviteButton)
+        .should("be.disabled");
+    }
+  });
+
+  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
-    commonText.passwordLabel
+    commonText.acceptInviteButton
   );
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.get(commonSelectors.acceptInviteButton)
-    .verifyVisibleElement("have.text", commonText.acceptInviteButton)
-    .should("be.disabled");
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -219,21 +245,6 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
   cy.wait(200);
 };
 
-export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
-  fillUserInviteForm(firstName, email);
-  selectUserGroup(group1);
-  selectUserGroup(group2);
-  cy.get(usersSelector.buttonInviteUsers).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    usersText.userCreatedToast
-  );
-  // copyInvitationLink(firstName, email);
-  cy.wait(1000);
-  fetchAndVisitInviteLink(email);
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(commonSelectors.acceptInviteButton).click();
-};
 
 export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {
@@ -264,17 +275,52 @@ export const fillUserInviteForm = (firstName, email) => {
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
   cy.get("body").then(($body) => {
-    if (!$body.find(".search > input").length > 0) {
-      cy.get(".dropdown-heading-value > .gray").click();
-      cy.clearAndType(".search > input", groupName);
-      cy.wait(500);
-      cy.get("li > .select-item > .item-renderer").last().click();
-    } else {
-      cy.clearAndType(".search > input", groupName);
-      cy.wait(500);
-      cy.get("li > .select-item > .item-renderer").last().click();
+    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+
+    if (selectDropdown.length === 0) {
+      cy.get('[data-cy="user-group-select"]>>>>>').click();
     }
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check()
   });
+};
+
+export const inviteUserWithUserGroups = (
+  firstName,
+  email,
+  groupName1,
+  groupName2
+) => {
+  fillUserInviteForm(firstName, email);
+
+  cy.wait(2000);
+
+  cy.get("body").then(($body) => {
+    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+
+    if (selectDropdown.length === 0) {
+      cy.get('[data-cy="user-group-select"]>>>>>').click();
+    }
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.wait(1000);
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check()
+  });
+
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.userCreatedToast
+  );
+
+  cy.wait(1000);
+  fetchAndVisitInviteLink(email);
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const fetchAndVisitInviteLink = (email) => {

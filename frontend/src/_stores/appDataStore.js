@@ -30,6 +30,12 @@ export function createAppDataStore(moduleName) {
     areOthersOnSameVersionAndPage: false,
     appVersionPreviewLink: null,
     moduleName,
+    metadata: null,
+    eventsUpdatedLoader: false,
+    eventsCreatedLoader: false,
+    actionsUpdatedLoader: false,
+    eventToDeleteLoaderIndex: null,
+    isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   };
   return create(
     zustandDevTools(
@@ -66,14 +72,21 @@ export function createAppDataStore(moduleName) {
                 .finally(() => resolve());
             });
           },
-          updateAppVersionEventHandlers: async (events, updateType = 'update') => {
+          updateAppVersionEventHandlers: async (events, updateType = 'update', param) => {
             get().actions.setIsSaving(true);
+            if (param === 'actionId') {
+              set({ actionsUpdatedLoader: true });
+            }
+            if (param === 'eventId') {
+              set({ eventsUpdatedLoader: true });
+            }
             const appId = get().appId;
             const versionId = get().currentVersionId;
 
             const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events, updateType);
 
             get().actions.setIsSaving(false);
+            set({ eventsUpdatedLoader: false, actionsUpdatedLoader: false });
             const updatedEvents = get().events;
 
             updatedEvents.forEach((e, index) => {
@@ -88,12 +101,16 @@ export function createAppDataStore(moduleName) {
 
           createAppVersionEventHandlers: async (event) => {
             get().actions.setIsSaving(true);
+            set({ eventsCreatedLoader: true });
+
             const appId = get().appId;
             const versionId = get().currentVersionId;
 
             const updatedEvents = get().events;
             const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
             get().actions.setIsSaving(false);
+            set({ eventsCreatedLoader: false });
+
             updatedEvents.push(response);
 
             set(() => ({ events: updatedEvents }));
@@ -108,6 +125,8 @@ export function createAppDataStore(moduleName) {
 
             const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
             get().actions.setIsSaving(false);
+
+            set({ eventToDeleteLoaderIndex: null });
             if (response?.affected === 1) {
               updatedEvents.splice(
                 updatedEvents.findIndex((e) => e.id === eventId),
@@ -117,6 +136,7 @@ export function createAppDataStore(moduleName) {
               set(() => ({ events: updatedEvents }));
             }
           },
+
           autoUpdateEventStore: async (versionId) => {
             const appId = get().appId;
             const response = await appVersionService.findAllEventsWithSourceId(appId, versionId);
@@ -126,6 +146,9 @@ export function createAppDataStore(moduleName) {
           setIsSaving: (isSaving) => set(() => ({ isSaving })),
           setAppId: (appId) => set(() => ({ appId })),
           setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
+          setMetadata: (metadata) => set(() => ({ metadata })),
+          setEventToDeleteLoaderIndex: (index) => set(() => ({ eventToDeleteLoaderIndex: index })),
+          updateIsTJDarkMode: (isTJDarkMode) => set({ isTJDarkMode }),
         },
       }),
       { name: 'App Data Store' }

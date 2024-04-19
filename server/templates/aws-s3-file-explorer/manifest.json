@@ -1,0 +1,16 @@
+{
+  "name": "AWS S3 file explorer",
+  "description": "Navigate Amazon S3 buckets, search, preview, and manage objects with an easy-to-use web explorer for S3 storage.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "AWS S3",
+      "id": "s3"
+    }
+  ],
+  "id": "aws-s3-file-explorer",
+  "category": "utilities"
+}

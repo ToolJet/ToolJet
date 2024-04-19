@@ -52,8 +52,10 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   let result = '';
   let error;
 
-  // dont resolve if code starts with "queries." and ends with "run()"
-  if (code.startsWith('queries.') && code.endsWith('run()')) {
+  if (code === '_' || code.includes('this._')) {
+    error = `Cannot resolve circular reference ${code}`;
+  } else if (code.startsWith('queries.') && code.endsWith('run()')) {
+    //! dont resolve if code starts with "queries." and ends with "run()"
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
@@ -67,6 +69,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'client',
           'server',
           'constants',
+          'parameters',
           'moment',
           '_',
           ...Object.keys(customObjects),
@@ -83,6 +86,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+        state?.parameters,
         moment,
         _,
         ...Object.values(customObjects),
@@ -154,7 +158,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app']; //Keywords that slows down the app
+  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -342,7 +346,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const minValue = validationObject?.minValue?.value;
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
-
+  const mandatory = validationObject?.mandatory?.value;
   const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
@@ -373,7 +377,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
-    if (widgetValue === undefined || widgetValue < parseInt(resolvedMinValue)) {
+    if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
         isValid: false,
         validationError: `Minimum value is ${resolvedMinValue}`,
@@ -383,7 +387,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
   if (resolvedMaxValue !== undefined) {
-    if (widgetValue === undefined || widgetValue > parseInt(resolvedMaxValue)) {
+    if (widgetValue === undefined || widgetValue > parseFloat(resolvedMaxValue)) {
       return {
         isValid: false,
         validationError: `Maximum value is ${resolvedMaxValue}`,
@@ -396,6 +400,13 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+
+  if (resolvedMandatory == true) {
+    if (!widgetValue) {
+      return { isValid: false, validationError: `Field cannot be empty` };
+    }
+  }
   return {
     isValid,
     validationError,
@@ -454,6 +465,7 @@ export async function executeMultilineJS(
     //this will handle the preview case where you cannot find the queryDetails in state.
     formattedParams = { ...parameters };
   }
+
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
@@ -468,6 +480,18 @@ export async function executeMultilineJS(
           .dataQueries.find((q) => q.name === key);
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
+      },
+
+      getData: () => {
+        return getCurrentState().queries[key].data;
+      },
+
+      getRawData: () => {
+        return getCurrentState().queries[key].rawData;
+      },
+
+      getloadingState: () => {
+        return getCurrentState().queries[key].isLoading;
       },
     };
   }
@@ -487,7 +511,7 @@ export async function executeMultilineJS(
       'client',
       'server',
       'constants',
-      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
       code,
     ];
     var evalFn = new AsyncFunction(...fnParams);
@@ -505,7 +529,7 @@ export async function executeMultilineJS(
       currentState?.client,
       currentState?.server,
       currentState?.constants,
-      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
     ];
     result = {
       status: 'ok',
@@ -607,9 +631,9 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
       );
     }
 
-    if (isPreview) {
-      return previewQuery(_ref, query, true, processedParams);
-    }
+    // if (isPreview) {
+    //   return previewQuery(_ref, query, true, processedParams);
+    // }
 
     const event = {
       actionId: 'run-query',
@@ -627,6 +651,16 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         actionId: 'set-custom-variable',
         key,
         value,
+      };
+      return executeAction(_ref, event, mode, {});
+    }
+  };
+
+  const getVariable = (key = '') => {
+    if (key) {
+      const event = {
+        actionId: 'get-custom-variable',
+        key,
       };
       return executeAction(_ref, event, mode, {});
     }
@@ -737,6 +771,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     return executeAction(_ref, event, mode, {});
   };
 
+  const getPageVariable = (key = '') => {
+    const event = {
+      actionId: 'get-page-variable',
+      key,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
   const unsetPageVariable = (key = '') => {
     const event = {
       actionId: 'unset-page-variable',
@@ -775,6 +817,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   return {
     runQuery,
     setVariable,
+    getVariable,
     unSetVariable,
     showAlert,
     logout,
@@ -785,6 +828,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     goToApp,
     generateFile,
     setPageVariable,
+    getPageVariable,
     unsetPageVariable,
     switchPage,
   };
@@ -792,7 +836,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
 
 export const loadPyodide = async () => {
   try {
-    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/' });
+    const pyodide = await window.loadPyodide({ indexURL: '/assets/libs/pyodide-0.23.2/' });
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);
@@ -877,7 +921,8 @@ export const validateName = (
   showError = false,
   allowSpecialChars = true,
   allowSpaces = true,
-  checkReservedWords = false
+  checkReservedWords = false,
+  allowAllCases = false
 ) => {
   const newName = name;
   let errorMsg = '';
@@ -895,8 +940,9 @@ export const validateName = (
 
   if (newName) {
     //check for alphanumeric
-    if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
-      if (/[A-Z]/.test(newName)) {
+    const regex = allowAllCases ? /^[a-zA-Z0-9 -]+$/ : /^[a-z0-9 -]+$/;
+    if (!allowSpecialChars && newName.match(regex) === null) {
+      if (/[A-Z]/.test(newName) && !allowAllCases) {
         errorMsg = 'Only lowercase letters are accepted.';
       } else {
         errorMsg = `Special characters are not accepted.`;
@@ -1067,5 +1113,87 @@ export const determineJustifyContentValue = (value) => {
       return 'center';
     default:
       return 'start';
+  }
+};
+
+export const USER_DRAWER_MODES = {
+  EDIT: 'EDIT',
+  CREATE: 'CREATE',
+};
+
+export const humanizeifDefaultGroupName = (groupName) => {
+  switch (groupName) {
+    case 'all_users':
+      return 'All users';
+
+    case 'admin':
+      return 'Admin';
+
+    default:
+      return groupName;
+  }
+};
+
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
+};
+
+export const pageTitles = {
+  INSTANCE_SETTINGS: 'Settings',
+  WORKSPACE_SETTINGS: 'Workspace settings',
+  INTEGRATIONS: 'Marketplace',
+  WORKFLOWS: 'Workflows',
+  DATABASE: 'Database',
+  DATA_SOURCES: 'Data sources',
+  AUDIT_LOGS: 'Audit logs',
+  ACCOUNT_SETTINGS: 'Profile settings',
+  SETTINGS: 'Profile settings',
+  EDITOR: 'Editor',
+  WORKFLOW_EDITOR: 'workflowEditor',
+  VIEWER: 'Viewer',
+  DASHBOARD: 'Dashboard',
+  WORKSPACE_CONSTANTS: 'Workspace constants',
+};
+
+export const setWindowTitle = async (pageDetails, location) => {
+  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  const pathToTitle = {
+    'instance-settings': pageTitles.INSTANCE_SETTINGS,
+    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
+    integrations: pageTitles.INTEGRATIONS,
+    workflows: pageTitles.WORKFLOWS,
+    database: pageTitles.DATABASE,
+    'data-sources': pageTitles.DATA_SOURCES,
+    'audit-logs': pageTitles.AUDIT_LOGS,
+    'account-settings': pageTitles.ACCOUNT_SETTINGS,
+    settings: pageTitles.SETTINGS,
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+  };
+  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
+    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
+  }
+  switch (pageTitleKey) {
+    case pageTitles.VIEWER: {
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
+    }
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
+    }
+    default: {
+      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
+      break;
+    }
+  }
+  if (pageTitle) {
+    document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
   }
 };

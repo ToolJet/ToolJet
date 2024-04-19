@@ -48,7 +48,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -62,30 +62,25 @@ import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorS
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
-import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 import { ModuleContext } from '../_contexts/ModuleContext';
 import { useSuperStore } from '../_stores/superStore';
+import cx from 'classnames';
 
 setAutoFreeze(false);
 enablePatches();
-
-function setWindowTitle(name) {
-  document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
-}
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 const EditorComponent = (props) => {
   const moduleName = useContext(ModuleContext);
   const { socket } = createWebsocketConnection(props?.params?.id);
-  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -179,6 +174,7 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
+  const { isAppDarkMode, appMode, onAppModeChange } = useAppDarkMode();
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -245,12 +241,13 @@ const EditorComponent = (props) => {
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
-      document.title = 'Tooljet - Dashboard';
+      document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       socket && socket?.close();
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
       useSuperStore.getState().modules[moduleName].useEditorStore.getState().actions.setIsEditorActive(false);
       prevAppDefinition.current = null;
+      props.setEditorOrViewer('');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -268,6 +265,8 @@ const EditorComponent = (props) => {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
       computeComponentState(components, moduleName);
+
+      if (appDiffOptions?.skipAutoSave === true) return;
 
       if (useSuperStore.getState().modules[moduleName].useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
@@ -287,6 +286,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     // This effect runs when lastKeyPressTimestamp changes
+    if (!appDiffOptions?.widgetMovedWithKeyboard) return;
     if (Date.now() - lastKeyPressTimestamp < 500) {
       updateEditorState({
         isUpdatingEditorStateInProcess: true,
@@ -311,17 +311,13 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -426,8 +422,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -437,7 +431,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -466,7 +460,7 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
-
+    props.setEditorOrViewer('editor');
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
@@ -557,8 +551,10 @@ const EditorComponent = (props) => {
   };
 
   const onNameChanged = (newName) => {
+    app.name = newName;
+    updateState({ appName: newName, app: app });
     updateState({ appName: newName });
-    setWindowTitle(newName);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -608,15 +604,17 @@ const EditorComponent = (props) => {
   };
 
   const changeDarkMode = (newMode) => {
-    useSuperStore
-      .getState()
-      .modules[moduleName].useCurrentStateStore.getState()
-      .actions.setCurrentState({
-        globals: {
-          ...currentState.globals,
-          theme: { name: newMode ? 'dark' : 'light' },
-        },
-      });
+    if (appMode === 'auto') {
+      useSuperStore
+        .getState()
+        .modules[moduleName].useCurrentStateStore.getState()
+        .actions.setCurrentState({
+          globals: {
+            ...currentState.globals,
+            theme: { name: newMode ? 'dark' : 'light' },
+          },
+        });
+    }
     props.switchDarkMode(newMode);
   };
 
@@ -658,9 +656,11 @@ const EditorComponent = (props) => {
   };
 
   const computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = appDefinition?.globalSettings ?? '#edeff5';
+    const canvasBackgroundColor = appDefinition?.globalSettings?.canvasBackgroundColor
+      ? appDefinition?.globalSettings?.canvasBackgroundColor
+      : '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-      return props.darkMode ? '#2f3c4c' : '#edeff5';
+      return isAppDarkMode ? '#2f3c4c' : '#edeff5';
     }
     return canvasBackgroundColor;
   };
@@ -696,11 +696,12 @@ const EditorComponent = (props) => {
   };
 
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
-    setWindowTitle(data.name);
+    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useSuperStore
       .getState()
       .modules[moduleName].useAppVersionStore.getState()
       .actions.updateEditingVersion(data.editing_version);
+
     if (!releasedVersionId || !versionSwitched) {
       useSuperStore
         .getState()
@@ -741,6 +742,7 @@ const EditorComponent = (props) => {
     };
 
     setCurrentPageId(homePageId);
+    onAppModeChange(appJson?.globalSettings?.appMode);
 
     useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
@@ -1065,7 +1067,7 @@ const EditorComponent = (props) => {
     for (let key in prevPatch) {
       const type = typeof prevPatch[key];
 
-      if (type === 'object') {
+      if (type === 'object' && !_.isEmpty(prevPatch[key])) {
         handlePaths(prevPatch[key], [...paths, key], appJSON);
       } else {
         const currentpath = [...paths, key].join('.');
@@ -1190,7 +1192,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
+        appDefinitionChanged(updatedAppDefinition, { componentDefinitionChanged: true, ...props });
       }
     }
   };
@@ -1719,7 +1721,7 @@ const EditorComponent = (props) => {
 
   if (isLoading) {
     return (
-      <div className="apploader">
+      <div className={cx('apploader', { 'dark-theme theme-dark': props.darkMode })}>
         <div className="col col-* editor-center-wrapper">
           <div className="editor-center">
             <div className="canvas">
@@ -1743,7 +1745,7 @@ const EditorComponent = (props) => {
     );
   }
   return (
-    <div className="editor wrapper">
+    <div className={`editor wrapper`}>
       <Confirm
         show={queryConfirmationList?.length > 0}
         message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -1763,7 +1765,7 @@ const EditorComponent = (props) => {
         darkMode={props.darkMode}
       />
       {isVersionReleased && <ReleasedVersionError />}
-      <EditorContextWrapper>
+      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
@@ -1781,7 +1783,6 @@ const EditorComponent = (props) => {
           appName={appName}
           appId={appId}
           slug={slug}
-          isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
@@ -1838,14 +1839,18 @@ const EditorComponent = (props) => {
               id="main-editor-canvas"
             >
               <div
-                className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                className={cx(
+                  'canvas-container align-items-center',
+                  { 'dark-theme theme-dark': isAppDarkMode },
+                  { 'hide-sidebar': !showLeftSidebar }
+                )}
                 style={{
                   transform: `scale(${zoomLevel})`,
                   borderLeft:
                     (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                     `px solid ${computeCanvasBackgroundColor()}`,
                   height: computeCanvasContainerHeight(),
-                  background: !props.darkMode ? '#EBEBEF' : '#2E3035',
+                  background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={handleCanvasContainerMouseUp}
                 ref={canvasContainerRef}
@@ -1892,14 +1897,14 @@ const EditorComponent = (props) => {
                       </div>
                     )}
                     {defaultComponentStateComputed && (
-                      <>
+                      <div>
                         <Container
                           canvasWidth={getCanvasWidth()}
                           socket={socket}
                           appDefinition={appDefinition}
                           appDefinitionChanged={appDefinitionChanged}
                           snapToGrid={true}
-                          darkMode={props.darkMode}
+                          darkMode={isAppDarkMode}
                           mode={'edit'}
                           zoomLevel={zoomLevel}
                           deviceWindowWidth={deviceWindowWidth}
@@ -1920,7 +1925,7 @@ const EditorComponent = (props) => {
                           canvasWidth={getCanvasWidth()}
                           onDragging={(isDragging) => setIsDragging(isDragging)}
                         />
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1939,7 +1944,7 @@ const EditorComponent = (props) => {
               />
               <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
             </div>
-            <div className="editor-sidebar">
+            <div className={cx('editor-sidebar', { 'dark-theme theme-dark': props.darkMode })}>
               <EditorKeyHooks
                 moveComponents={moveComponents}
                 cloneComponents={cloningComponents}
@@ -1969,7 +1974,9 @@ const EditorComponent = (props) => {
               />
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (
-              <CommentNotifications socket={socket} pageId={currentPageId} />
+              <div className={cx({ 'dark-theme theme-dark': props.darkMode })}>
+                <CommentNotifications socket={socket} pageId={currentPageId} />
+              </div>
             )}
           </div>
         </DndProvider>

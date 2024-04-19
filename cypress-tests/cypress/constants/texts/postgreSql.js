@@ -2,8 +2,16 @@ export const postgreSqlText = {
   labelDataSources: "Datasources",
   labelAddDataSource: "+ add data source",
 
-  allDataSources: "All data sources (43)",
-  allDatabase: "Databases (19)",
+  allDataSources: () => {
+    return Cypress.env("marketplace_action")
+      ? "All data sources (44)"
+      : "All data sources (42)";
+  },
+  allDatabase: () => {
+    return Cypress.env("marketplace_action")
+      ? "Databases (20)"
+      : "Databases (18)";
+  },
   allApis: "APIs (20)",
   allCloudStorage: "Cloud Storages (4)",
 

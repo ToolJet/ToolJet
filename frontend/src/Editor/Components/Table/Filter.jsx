@@ -1,16 +1,31 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import _ from 'lodash';
+import _, { isArray } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff as deepDiff } from 'deep-object-diff';
+
+const FILTER_OPTIONS = [
+  { name: 'contains', value: 'contains' },
+  { name: 'does not contains', value: 'doesNotContains' },
+  { name: 'matches', value: 'matches' },
+  { name: 'does not match', value: 'nl' },
+  { name: 'equals', value: 'equals' },
+  { name: 'does not equal', value: 'ne' },
+  { name: 'is empty', value: 'isEmpty' },
+  { name: 'is not empty', value: 'isNotEmpty' },
+  { name: 'greater than', value: 'gt' },
+  { name: 'less than', value: 'lt' },
+  { name: 'greater than or equals', value: 'gte' },
+  { name: 'less than or equals', value: 'lte' },
+];
 
 export function Filter(props) {
   const { t } = useTranslation();
 
-  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent, darkMode } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent, darkMode, setExposedVariable } = props;
   const { filters } = filterDetails;
 
   const [activeFilters, set] = React.useState(filters);
@@ -37,12 +52,15 @@ export function Filter(props) {
     if (value === 'isEmpty' || value === 'isNotEmpty') {
       newFilters[index].value.value = '';
     }
-
     mergeToFilterDetails({
       filters: newFilters,
     });
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
+
+  const debouncedFilterChanged = _.debounce((newFilters) => {
+    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+  }, 500);
 
   function filterValueChanged(index, value) {
     const newFilters = filters;
@@ -53,7 +71,7 @@ export function Filter(props) {
     mergeToFilterDetails({
       filters: newFilters,
     });
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+    debouncedFilterChanged(newFilters);
   }
 
   function addFilter() {
@@ -82,7 +100,7 @@ export function Filter(props) {
     setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (filters.length > 0) {
       const tableFilters = JSON.parse(JSON.stringify(filters));
       const shouldFire = findFilterDiff(activeFilters, tableFilters);
@@ -92,6 +110,45 @@ export function Filter(props) {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
+
+  useEffect(() => {
+    // Add CSA to set filters
+    setExposedVariable('setFilters', async function (_filters) {
+      if (!isArray(_filters)) return;
+      const filterArr = [];
+      _filters.forEach((_filter) => {
+        const { column = '', value = '', condition = '' } = _filter;
+        const columnId = props.columns.find((col) => col.name === column)?.value;
+        const isCorrectCondition = FILTER_OPTIONS.some((option) => option.value === condition);
+        if (columnId && isCorrectCondition) {
+          const filterObj = {
+            id: columnId,
+            value: {
+              column,
+              condition,
+              value,
+            },
+          };
+          filterArr.push(filterObj);
+        }
+      });
+      if (filterArr.length) {
+        setAllFilters(filterArr.filter((filter) => filter.id !== ''));
+        mergeToFilterDetails({
+          filters: filterArr,
+        });
+      }
+    });
+
+    // Add CSA to clear filters
+    setExposedVariable('clearFilters', async function (_filters) {
+      setAllFilters([]);
+      mergeToFilterDetails({
+        filters: [],
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(props.columns)]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debounceFn = React.useCallback(
@@ -110,8 +167,12 @@ export function Filter(props) {
     };
   };
 
+  if (!filterDetails.filtersVisible) {
+    return null;
+  }
+
   return (
-    <div className={`table-filters card ${darkMode && 'dark-theme'}`}>
+    <div className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`}>
       <div className="card-header row">
         <div className="col">
           <h4 data-cy={`header-filters`} className="font-weight-normal">
@@ -146,24 +207,12 @@ export function Filter(props) {
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
                 styles={selectStyles('100%')}
                 useCustomStyles={true}
+                darkMode={darkMode}
               />
             </div>
             <div data-cy={`select-operation-dropdown-${index ?? ''}`} className="col" style={{ maxWidth: '180px' }}>
               <Select
-                options={[
-                  { name: 'contains', value: 'contains' },
-                  { name: 'does not contains', value: 'doesNotContains' },
-                  { name: 'matches', value: 'matches' },
-                  { name: 'does not match', value: 'nl' },
-                  { name: 'equals', value: 'equals' },
-                  { name: 'does not equal', value: 'ne' },
-                  { name: 'is empty', value: 'isEmpty' },
-                  { name: 'is not empty', value: 'isNotEmpty' },
-                  { name: 'greater than', value: 'gt' },
-                  { name: 'less than', value: 'lt' },
-                  { name: 'greater than or equals', value: 'gte' },
-                  { name: 'less than or equals', value: 'lte' },
-                ]}
+                options={FILTER_OPTIONS}
                 value={filter.value.condition}
                 search={true}
                 onChange={(value) => {
@@ -174,6 +223,7 @@ export function Filter(props) {
                 styles={selectStyles('100%')}
                 dataCy={`select-coloumn-dropdown-${index ?? ''}`}
                 useCustomStyles={true}
+                darkMode={darkMode}
               />
             </div>
             <div className="col">
@@ -184,7 +234,7 @@ export function Filter(props) {
                   value={filter.value.value}
                   placeholder="value"
                   className="form-control"
-                  onChange={(e) => _.debounce(filterValueChanged(index, e.target.value), 500)}
+                  onChange={(e) => filterValueChanged(index, e.target.value)}
                 />
               )}
             </div>
@@ -252,8 +302,8 @@ const findFilterDiff = (oldFilters, newFilters) => {
   };
 
   const diff = Object.entries(filterDiff).reduce((acc, [key, value]) => {
-    const type = getType(value.value);
-    return (acc = { ...acc, keyIndex: key, type: type, diff: value.value[type] });
+    const type = getType(value?.value);
+    return (acc = { ...acc, keyIndex: key, type: type, diff: value?.value?.[type] });
   }, {});
 
   return shouldFireEvent(diff, newFilters);
