@@ -15,6 +15,7 @@ import {
   ValidationArguments,
   ValidationOptions,
   ValidateNested,
+  IsBoolean,
 } from 'class-validator';
 import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
 
@@ -96,6 +97,19 @@ class ReservedKeywordConstraint implements ValidatorConstraintInterface {
   }
 }
 
+export class ConstraintTypeDto {
+  @IsOptional()
+  @IsBoolean()
+  @Validate(SQLInjectionValidator)
+  is_not_null: boolean;
+
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @IsOptional()
+  @Validate(SQLInjectionValidator)
+  is_primary_key: Array<string>;
+}
+
 export class CreatePostgrestTableDto {
   @IsString()
   @IsNotEmpty()
@@ -136,12 +150,6 @@ export class PostgrestTableColumnDto {
   @Validate(SQLInjectionValidator)
   data_type: string;
 
-  @IsString()
-  @Transform(({ value }) => sanitizeInput(value))
-  @IsOptional()
-  @Validate(SQLInjectionValidator)
-  constraint_type: string;
-
   @IsOptional()
   @Transform(({ value, obj }) => {
     const sanitizedValue = sanitizeInput(value);
@@ -150,14 +158,16 @@ export class PostgrestTableColumnDto {
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
-  @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
+  // @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
   column_default: string | number | boolean;
+
+  @IsOptional()
+  constraints_type: ConstraintTypeDto;
 }
 
 export class RenamePostgrestTableDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
     message: 'Table name can only contain letters, numbers and underscores',
@@ -174,4 +184,55 @@ export class RenamePostgrestTableDto {
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;
+}
+
+export class EditColumnTableDto {
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(31, { message: 'Column name must be less than 32 characters' })
+  @MinLength(1, { message: 'Column name must be at least 1 character' })
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message:
+      '  $value : Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+  })
+  @Validate(ReservedKeywordConstraint, {
+    message: ' $value : Column name cannot be a reserved keyword',
+  })
+  @Validate(SQLInjectionValidator, { message: 'Column name does not support special characters' })
+  new_column_name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MinLength(1, { message: 'Column name must be at least 1 character' })
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message:
+      '  $value : Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+  })
+  @Validate(ReservedKeywordConstraint, {
+    message: ' $value : Column name cannot be a reserved keyword',
+  })
+  @Validate(SQLInjectionValidator, { message: 'Column name does not support special characters' })
+  column_name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  @Validate(SQLInjectionValidator)
+  data_type: string;
+
+  @IsOptional()
+  @Transform(({ value, obj }) => {
+    const sanitizedValue = sanitizeInput(value);
+    return validateDefaultValue(sanitizedValue, obj);
+  })
+  @Match('data_type', {
+    message: 'Default value must match the data type',
+  })
+  // @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
+  column_default: string | number | boolean;
+
+  @IsOptional()
+  constraints_type: ConstraintTypeDto;
 }

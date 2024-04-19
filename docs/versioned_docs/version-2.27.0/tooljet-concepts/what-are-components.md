@@ -14,7 +14,7 @@ These components range from basic UI elements like buttons, text fields, and tab
 
 ### Customizing Components
 
-Components are highly customizable and interactive. Once you place a component on the canvas, you can easily modify its properties, styles, and behaviors through the configuration panel on the right side of the App-Builder. This allows you to make your application dynamic and responsive. 
+Components are highly customizable and interactive. Once you place a component on the canvas, you can easily modify its properties, styles, and behaviors through the properties panel on the right side of the App-Builder. This allows you to make your application dynamic and responsive. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/component-config.gif" alt="Component Configuration" />

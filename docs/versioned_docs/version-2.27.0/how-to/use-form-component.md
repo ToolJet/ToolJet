@@ -32,7 +32,7 @@ In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form
 - Choose *products* as Table name, List rows as Operations
 - Enable `Run this query on application load?` to automatically run the query when the app starts
 - Click on Run to fetch data
-- Click on the Table component to open its configuration panel on the right. Under the `Data` property, paste the below code:
+- Click on the Table component to open its properties panel on the right. Under the `Data` property, paste the below code:
 ```js
 {{queries.getProducts.data}}
 ```

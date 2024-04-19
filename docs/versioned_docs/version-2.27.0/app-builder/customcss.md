@@ -3,7 +3,9 @@ id: customstyles
 title: Custom Styles
 ---
 
+<a href="https://www.tooljet.com/pricing">
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+</a>
 
 Custom Styles feature enables the implementation of theming on ToolJet apps, allowing users to inject their own CSS styling to override the default app styling. This feature fulfills the requirement of allowing users to easily customize the appearance of their apps.
 

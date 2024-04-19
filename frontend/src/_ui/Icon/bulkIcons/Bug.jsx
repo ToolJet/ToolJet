@@ -9,7 +9,7 @@ const Bug = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 24
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <g clip-path="url(#clip0_1122_124236)">
+    <g clipPath="url(#clip0_1122_124236)">
       <path
         opacity="0.4"
         fillRule="evenodd"

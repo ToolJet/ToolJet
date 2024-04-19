@@ -3,15 +3,15 @@ import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { useSuperStore } from '../_stores/superStore';
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
+import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -52,8 +52,10 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   let result = '';
   let error;
 
-  // dont resolve if code starts with "queries." and ends with "run()"
-  if (code.startsWith('queries.') && code.endsWith('run()')) {
+  if (code === '_' || code.includes('this._')) {
+    error = `Cannot resolve circular reference ${code}`;
+  } else if (code.startsWith('queries.') && code.endsWith('run()')) {
+    //! dont resolve if code starts with "queries." and ends with "run()"
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
@@ -156,7 +158,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app']; //Keywords that slows down the app
+  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -411,6 +413,97 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   };
 }
 
+export function validateDates({ validationObject, widgetValue, currentState, customResolveObjects }) {
+  let isValid = true;
+  let validationError = null;
+  const validationDateFormat = validationObject?.dateFormat?.value || 'MM/DD/YYYY';
+  const validationTimeFormat = validationObject?.timeFormat?.value || 'HH:mm';
+  const customRule = validationObject?.customRule?.value;
+  const parsedDateFormat = validationObject?.parseDateFormat?.value;
+  const isTwentyFourHrFormatEnabled = validationObject?.isTwentyFourHrFormatEnabled?.value ?? false;
+  const isDateSelectionEnabled = validationObject?.isDateSelectionEnabled?.value ?? true;
+  const _widgetDateValue = moment(widgetValue, parsedDateFormat);
+  const _widgetTimeValue = moment(
+    widgetValue,
+    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled, isDateSelectionEnabled)
+  ).format(validationTimeFormat);
+
+  const resolvedMinDate = resolveWidgetFieldValue(
+    validationObject?.minDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxDate = resolveWidgetFieldValue(
+    validationObject?.maxDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMinTime = resolveWidgetFieldValue(
+    validationObject?.minTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxTime = resolveWidgetFieldValue(
+    validationObject?.maxTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+
+  // Minimum date validation
+  if (resolvedMinDate !== undefined && moment(resolvedMinDate).isValid()) {
+    if (!moment(resolvedMinDate, validationDateFormat).isBefore(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum date is ${resolvedMinDate}`,
+      };
+    }
+  }
+
+  // Maximum date validation
+  if (resolvedMaxDate !== undefined && moment(resolvedMaxDate).isValid()) {
+    if (!moment(resolvedMaxDate, validationDateFormat).isAfter(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum date is ${resolvedMaxDate}`,
+      };
+    }
+  }
+
+  // Minimum time validation
+  if (resolvedMinTime !== undefined && moment(resolvedMinTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMinTime, validationTimeFormat).isBefore(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum time is ${resolvedMinTime}`,
+      };
+    }
+  }
+
+  // Maximum time validation
+  if (resolvedMaxTime !== undefined && moment(resolvedMaxTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMaxTime, validationTimeFormat).isAfter(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum time is ${resolvedMaxTime}`,
+      };
+    }
+  }
+
+  //Custom rule validation
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+    return { isValid: false, validationError: resolvedCustomRule };
+  }
+  return {
+    isValid,
+    validationError,
+  };
+}
+
 export function validateEmail(email) {
   const emailRegex =
     /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -442,7 +535,6 @@ export async function executeMultilineJS(
     .getState()
     .modules[_ref.moduleName].useDataQueriesStore.getState()
     .dataQueries.find((q) => q.id === queryId);
-  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
 
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
@@ -834,7 +926,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
 
 export const loadPyodide = async () => {
   try {
-    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/' });
+    const pyodide = await window.loadPyodide({ indexURL: '/assets/libs/pyodide-0.23.2/' });
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);
@@ -919,7 +1011,8 @@ export const validateName = (
   showError = false,
   allowSpecialChars = true,
   allowSpaces = true,
-  checkReservedWords = false
+  checkReservedWords = false,
+  allowAllCases = false
 ) => {
   const newName = name;
   let errorMsg = '';
@@ -937,8 +1030,9 @@ export const validateName = (
 
   if (newName) {
     //check for alphanumeric
-    if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
-      if (/[A-Z]/.test(newName)) {
+    const regex = allowAllCases ? /^[a-zA-Z0-9 -]+$/ : /^[a-z0-9 -]+$/;
+    if (!allowSpecialChars && newName.match(regex) === null) {
+      if (/[A-Z]/.test(newName) && !allowAllCases) {
         errorMsg = 'Only lowercase letters are accepted.';
       } else {
         errorMsg = `Special characters are not accepted.`;

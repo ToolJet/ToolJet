@@ -231,7 +231,7 @@ Find more Tutorials on our **[Blog](https://blog.tooljet.com/)**.
 
 ## For ToolJet Contributors
 
-To contribute to ToolJet code, plugins, and documentation, refer to our **[Contributing Guide](/docs/category/contributing-guide)**.
+To contribute to ToolJet code, plugins, and documentation, refer to our **[Contributing Guide](/docs/2.11.0/category/contributing-guide)**.
 
 [![GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)](https://github.com/ToolJet/ToolJet/contributors)
 [![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)

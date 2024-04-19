@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "AWS Lambda datasource",
+  "description": "A schema defining AWS Lambda datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "invoke_lambda",
+          "name": "Invoke Lambda Function"
+        }
+      ]
+    },
+    "invoke_lambda": {
+      "functionName": {
+        "label": "Function Name",
+        "key": "functionName",
+        "type": "codehinter",
+        "description": "Name of the Lambda function to invoke",
+        "className": "codehinter-plugins",
+        "placeholder": "my-lambda-function"
+      },
+      "payload": {
+        "label": "Payload",
+        "key": "payload",
+        "type": "codehinter",
+        "description": "JSON payload to send to the Lambda function",
+        "className": "codehinter-plugins",
+        "placeholder": "{\"key\": \"value\"}",
+        "height": "150px"
+      }
+    }
+  }
+}

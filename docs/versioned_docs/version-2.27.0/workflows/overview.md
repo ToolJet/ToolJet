@@ -2,7 +2,9 @@
 id: overview
 title: Overview
 ---
+<a href="https://www.tooljet.com/pricing">
 <div className='badge badge--primary heading-badge' style={{marginBottom:'10px'}}>Available on: Paid plans</div>
+</a>
 <br/>
 
 ToolJet Workflows is a visual, node-based platform tailored for data-centric automation tasks. With its intuitive design, users can create detailed queries across diverse data sources, manage conditional flows, and execute custom JavaScript code while making the processes presentable and easy to manage. 

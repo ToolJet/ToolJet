@@ -6,10 +6,11 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
 import { BreadCrumbContext } from '@/App/App';
+import WarningInfo from '../Icons/Edit-information.svg';
 
 const TableForm = ({
   selectedTable = {},
-  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraint_type: 'PRIMARY KEY' } },
+  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraints_type: { is_primary_key: true } } },
   onCreate,
   onEdit,
   onClose,
@@ -70,7 +71,8 @@ const TableForm = ({
   function handleKeyPress(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleCreate(e);
+      if (!isEditMode) handleCreate(e);
+      if (isEditMode && selectedTable.table_name !== tableName) handleEdit();
     }
   }
 
@@ -93,6 +95,17 @@ const TableForm = ({
     onEdit && onEdit();
   };
 
+  const isRequiredFieldsExistForCreateTableOperation = (columnDetails) => {
+    if (
+      !columnDetails.column_name ||
+      !columnDetails.data_type ||
+      isEmpty(columnDetails?.column_name.trim()) ||
+      isEmpty(columnDetails?.data_type)
+    )
+      return false;
+    return true;
+  };
+
   return (
     <div className="drawer-card-wrapper">
       <div className="card-header">
@@ -109,6 +122,16 @@ const TableForm = ({
       </div>
       <div>
         <div className="card-body">
+          {isEditMode && (
+            <div className="edit-warning-info mb-3">
+              <div className="edit-warning-icon">
+                <WarningInfo />
+              </div>
+              <span className="edit-warning-text">
+                Editing the table name could break queries and apps connected with this table.
+              </span>
+            </div>
+          )}
           <div className="mb-3">
             <div className="form-label" data-cy="table-name-label">
               Table name
@@ -139,6 +162,10 @@ const TableForm = ({
         onClose={onClose}
         onEdit={handleEdit}
         onCreate={handleCreate}
+        shouldDisableCreateBtn={
+          isEmpty(tableName) ||
+          (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
+        }
       />
     </div>
   );
