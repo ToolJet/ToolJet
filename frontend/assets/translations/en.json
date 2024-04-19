@@ -947,6 +947,7 @@
             "maxWidthOfCanvas": "Max width of canvas",
             "maxHeightOfCanvas": "Max height of canvas",
             "backgroundColorOfCanvas": "Canvas background",
+            "appMode": "App mode",
             "exportApp": "Export app"
         },
         "Back": {
