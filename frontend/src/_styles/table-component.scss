@@ -132,6 +132,9 @@
   td {
     overflow-x: initial;
     padding: 8px 12px !important;
+    &.has-number{
+      padding: 0px 0px 0px 12px !important;
+    }
 
 
     // &.has-number {
@@ -687,7 +690,10 @@
   background-color: var(--slate2);
   --tblr-table-accent-bg: var(--slate2);
 }
-
+.table-striped>tbody>tr:nth-of-type(even):hover{
+  background-color: var(--interactive-overlays-fill-hover) ;
+  --tblr-table-accent-bg: var(--interactive-overlays-fill-hover);
+}
 .resizing-column {
   background-color: var(--slate4, #ECEEF0) !important;
   border-right: 4px solid var(--slate5, #E6E8EB) !important;
@@ -1301,7 +1307,7 @@
       top: 0px;
       bottom: 0px;
       flex-direction: column;
-      justify-content: space-around;
+      justify-content: center;
 
       .numberinput-up-arrow-table {
         right: 1px !important;

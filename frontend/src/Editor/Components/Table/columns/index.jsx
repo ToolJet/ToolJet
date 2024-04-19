@@ -348,7 +348,7 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`table-column-type-input-element input-number ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
                   <div className="arror-container">
