@@ -57,6 +57,8 @@ const String = ({
       setIsEditing(false);
     }
   }, [isEditable]);
+
+  console.log('test---', isMaxRowHeightAuto, maxRowHeightValue, cellSize);
   const _renderString = () => (
     <div
       ref={ref}
@@ -156,7 +158,19 @@ const String = ({
             }}
             ref={ref}
           >
-            <span>{cellValue}</span>
+            <span
+              style={{
+                maxHeight: isMaxRowHeightAuto
+                  ? 'auto'
+                  : maxRowHeightValue
+                  ? maxRowHeightValue
+                  : cellSize === 'condensed'
+                  ? '39px'
+                  : '45px',
+              }}
+            >
+              {cellValue}
+            </span>
           </div>
         ) : (
           <div className="h-100 d-flex flex-column justify-content-center position-relative">
