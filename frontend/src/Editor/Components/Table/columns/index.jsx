@@ -412,6 +412,9 @@ export default function generateColumnsData({
                 currentState={currentState}
                 containerWidth={width}
                 cell={cell}
+                isMaxRowHeightAuto={isMaxRowHeightAuto}
+                cellSize={cellSize}
+                maxRowHeightValue={maxRowHeightValue}
               />
               // </div>
             );

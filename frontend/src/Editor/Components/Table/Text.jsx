@@ -14,6 +14,9 @@ const Text = ({
   containerWidth,
   cell,
   horizontalAlignment,
+  isMaxRowHeightAuto,
+  cellSize,
+  maxRowHeightValue,
 }) => {
   const validationData = validateWidget({
     validationObject: {
@@ -102,7 +105,20 @@ const Text = ({
       )}`}
       style={cellStyles}
     >
-      <span ref={nonEditableCellValueRef}>{cellValue}</span>
+      <span
+        style={{
+          maxHeight: isMaxRowHeightAuto
+            ? 'auto'
+            : maxRowHeightValue
+            ? maxRowHeightValue
+            : cellSize === 'condensed'
+            ? '39px'
+            : '45px',
+        }}
+        ref={nonEditableCellValueRef}
+      >
+        {cellValue}
+      </span>
     </div>
   );
 
@@ -140,7 +156,7 @@ const Text = ({
         <div
           className={`h-100 d-flex ${
             _showOverlay && isEditable ? '' : 'justify-content-center'
-          } flex-column position-relative bla`}
+          } flex-column position-relative`}
           style={{ ...(isEditing && { zIndex: 2 }) }}
         >
           <div
