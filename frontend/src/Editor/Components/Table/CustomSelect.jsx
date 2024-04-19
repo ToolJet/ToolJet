@@ -297,8 +297,7 @@ const getOverlay = (value, containerWidth, darkMode) => {
   return Array.isArray(value) ? (
     <div
       style={{
-        maxWidth: containerWidth,
-        width: containerWidth,
+        maxWidth: '266px',
       }}
       className={`overlay-cell-table overlay-multiselect-table ${darkMode && 'dark-theme'}`}
     >
