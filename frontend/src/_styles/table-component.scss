@@ -117,13 +117,6 @@
     display: flex !important;
   }
 
-  .table-row:hover,
-  .table-row:focus {
-    background: var(--interactive-overlays-fill-hover);
-    border-bottom: 0px transparent
-
-  }
-
   .table-row.selected {
     --tblr-table-accent-bg: var(--indigo3, #F0F4FF) !important;
     background: var(--indigo3, #F0F4FF) !important;
@@ -295,6 +288,13 @@
   // }
 }
 
+.jet-data-table>table:not(.table-resizing) {
+  .table-row:hover,
+  .table-row:focus {
+    background: var(--slate4, #ECEEF0) !important;   
+  }
+}
+
 .jet-data-table::-webkit-scrollbar {
   background: transparent;
 }
@@ -424,6 +424,29 @@
       touch-action: none;
       width: 30px;
       cursor: ew-resize !important;
+      border: 0 !important; // overriding the border added in theme.scss
+      .table-column-resize-handle {
+        display: none;
+        width: 10px;
+        height: 100%;
+        transform: translateX(50%);
+        &::after {
+            content: '';
+            display: block;
+            height: 10px;
+            width: 4px;
+            background: var(--interactive-overlay-column-resize);
+            top: 11px;
+            position: absolute;
+            left: 3px;
+            border-radius: 10px;
+        }
+      }
+      &:hover {
+          .table-column-resize-handle {
+            display: block !important;
+          }
+        }
     }
 
     &:last-child {
@@ -706,15 +729,14 @@
   --tblr-table-accent-bg: var(--interactive-overlays-fill-hover);
 }
 .resizing-column {
-  background-color: var(--slate4, #ECEEF0) !important;
-  border-right: 4px solid var(--slate5, #E6E8EB) !important;
+  border-right: 1px solid var(--interactive-overlay-border-pressed) !important;
 }
 
 .table-striped {
   .resizing-column {
     background-color: var(--slate4, #ECEEF0) !important;
     --tblr-table-accent-bg: var(--slate4, #ECEEF0);
-    border-right: 4px solid var(--slate5, #E6E8EB) !important;
+    border-right: 1px solid var(--interactive-overlay-border-pressed) !important;
   }
 }
 
@@ -760,10 +782,6 @@
       right: -5px;
     }
   }
-}
-
-.th:has(.resizer:hover) {
-  border-right: 4px solid var(--slate5, #ECEEF0) !important;
 }
 
 // boolean column type css
@@ -1377,4 +1395,8 @@
 
 .table.table-striped > :not(caption) > * > * {
   border-bottom: 0; /* Remove border bottom if .table-striped class is present */
+}
+
+.th:has(.resizer:hover){
+  border-right: 1px solid var(--interactive-overlay-border-pressed) !important; 
 }

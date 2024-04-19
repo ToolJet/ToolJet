@@ -1185,7 +1185,9 @@ export function Table({
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
             tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-          } ${!loadingState && page.length !== 0 && 'h-100'}`}
+          } ${!loadingState && page.length !== 0 && 'h-100'} ${
+            state?.columnResizing?.isResizingColumn ? 'table-resizing' : ''
+          }`}
           style={computedStyles}
         >
           <thead>
@@ -1381,7 +1383,14 @@ export function Table({
                                           ? ''
                                           : 'resizer'
                                       }  ${column.isResizing ? 'isResizing' : ''}`}
-                                    ></div>
+                                    >
+                                      <div
+                                        className="table-column-resize-handle"
+                                        style={{
+                                          ...(column.isResizing && { display: 'block' }),
+                                        }}
+                                      ></div>
+                                    </div>
                                   </th>
                                 );
                               }}
