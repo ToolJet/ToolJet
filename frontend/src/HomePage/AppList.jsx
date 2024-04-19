@@ -10,7 +10,7 @@ const AppList = (props) => {
       {props.isLoading && (
         <>
           {Array.from(Array(2)).map((_, rowIndex) => (
-            <div className="row mb-3" key={rowIndex}>
+            <div className="row skeleton-container mb-3" key={rowIndex}>
               {Array.from(Array(3)).map((_, index) => (
                 <div className="col" key={rowIndex * 3 + index}>
                   <div className="card-skeleton-container">
