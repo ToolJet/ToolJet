@@ -78,7 +78,13 @@ export const TextInput = function TextInput({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles.iconVisibility
+      ? height < 20
+        ? '0px 10px 0px 29px'
+        : '8px 10px 8px 29px'
+      : height < 20
+      ? '0px 10px'
+      : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
