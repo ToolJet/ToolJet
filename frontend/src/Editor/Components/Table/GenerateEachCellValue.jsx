@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import DOMPurify from 'dompurify';
 import NullRenderer from './NullRenderer/NullRenderer';
 
 export default function GenerateEachCellValue({
@@ -16,9 +18,10 @@ export default function GenerateEachCellValue({
   cellTextColor,
   cell,
   currentState,
+  darkMode,
+  cellWidth,
   isCellValueChanged,
   setIsCellValueChanged,
-  darkMode,
 }) {
   const mounted = useMounted();
   const updateCellValue = useRef();
@@ -28,6 +31,19 @@ export default function GenerateEachCellValue({
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const [isNullCellClicked, setIsNullCellClicked] = React.useState(false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
+  const ref = useRef();
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    if (hovered) {
+      setShowOverlay(true);
+    } else {
+      setShowOverlay(false);
+    }
+  }, [hovered]);
+
+  const _showOverlay = ref?.current && ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth;
 
   const handleCellClick = () => {
     setIsNullCellClicked(true);
@@ -108,6 +124,24 @@ export default function GenerateEachCellValue({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowData, rowChangeSet]);
 
+  const getOverlay = () => {
+    return (
+      <div
+        className={`overlay-cell-table ${darkMode && 'dark-theme'}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}
+      >
+        <span
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
+          style={{
+            maxWidth: cellWidth,
+          }}
+        ></span>
+      </div>
+    );
+  };
+
   let htmlElement = cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
     if (globalFilter) {
@@ -125,7 +159,14 @@ export default function GenerateEachCellValue({
 
   const _renderCellWhenHighlighted = () => {
     return (
-      <div className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper">
+      <div
+        className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper"
+        style={{ oveflow: 'hidden' }}
+        onMouseMove={() => {
+          if (!hovered) setHovered(true);
+        }}
+        onMouseOut={() => setHovered(false)}
+      >
         {cellValue === null ? (
           <NullRenderer darkMode={darkMode} />
         ) : (
@@ -133,12 +174,16 @@ export default function GenerateEachCellValue({
             style={{
               color: cellTextColor,
             }}
-            dangerouslySetInnerHTML={{
-              __html: htmlElement,
-            }}
+            ref={ref}
             tabIndex={0}
-            className={`form-control-plaintext form-control-plaintext-sm ${columnType === 'text' && 'h-100 my-1'}`}
-          ></div>
+            className={`table-column-type-div-element ${columnType === 'text' && 'h-100 my-1'}`}
+          >
+            <span
+              dangerouslySetInnerHTML={{
+                __html: htmlElement,
+              }}
+            ></span>
+          </div>
         )}
         <div
           style={{
@@ -199,11 +244,21 @@ export default function GenerateEachCellValue({
       className={`w-100 h-100 ${columnType === 'selector' && 'd-flex align-items-center justify-content-center'}`}
       ref={cellRef}
     >
-      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells
-        ? _renderCellWhenHighlighted()
-        : cellValue === null
-        ? _renderNullCell()
-        : cellRender}
+      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
+        <OverlayTrigger
+          placement="bottom"
+          overlay={_showOverlay ? getOverlay() : <div></div>}
+          trigger={_showOverlay && ['hover']}
+          rootClose={true}
+          show={_showOverlay && showOverlay}
+        >
+          {_renderCellWhenHighlighted()}
+        </OverlayTrigger>
+      ) : cellValue === null ? (
+        _renderNullCell()
+      ) : (
+        cellRender
+      )}
     </div>
   );
 }

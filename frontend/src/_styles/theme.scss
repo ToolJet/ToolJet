@@ -276,6 +276,7 @@ button {
   border-width: 0px 0px 1px 0px;
 }
 
+
 .accordion-item,
 .accordion-button {
   background-color: inherit;
@@ -7588,9 +7589,9 @@ tbody {
   }
 }
 
-.jet-data-table td .textarea-dark-theme.text-container:focus {
-  background-color: transparent !important;
-}
+// .jet-data-table td .textarea-dark-theme.text-container:focus {
+//   background-color: transparent !important;
+// }
 
 .tooljet-logo-loader {
   height: 100vh;
@@ -12462,7 +12463,9 @@ tbody {
 .custom-gap-2 {
   gap: 2px
 }
-
+.custom-gap-3{
+  gap: 3px;
+}
 .custom-gap-4 {
   gap: 4px;
 }
@@ -12474,11 +12477,20 @@ tbody {
 .custom-gap-12 {
   gap: 12px
 }
+.custom-gap-16{
+  gap: 16px;
+}
+.text-black-000{
+  color: var(--text-black-000) !important;
+}
 
 .overflow-tooltip {
   .tooltip-inner {
     max-width: 100%;
   }
+}
+.tooltip-inner {
+  border-radius: 8px;
 }
 
 #inspector-tabpane-properties {
@@ -12488,7 +12500,9 @@ tbody {
     }
   }
 }
-
+.custom-gap-7{
+  gap:7px
+}
 .card-table {
   overflow: visible;
 }
@@ -12734,6 +12748,24 @@ tbody {
 .tj-number-input-widget {
   input[type="number"] {
     -moz-appearance: textfield !important;
+  }
+}
+
+.inspector-validation-date-picker {
+  .react-datepicker-wrapper { 
+    input {
+      width: 100%;
+      border: 1px solid var(--slate7);
+      padding: 5px 5px;
+      background-color: var(--base);
+      color: var(--slate12)
+    }
+}
+
+  .dark-theme {
+    .react-datepicker__day {
+      color: white;
+    }
   }
 }
 
