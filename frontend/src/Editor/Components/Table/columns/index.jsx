@@ -318,7 +318,14 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
                   <input
                     type="number"
-                    style={{ ...cellStyles, maxWidth: width, outline: 'none', border: 'none', background: 'inherit' }}
+                    style={{
+                      ...cellStyles,
+                      maxWidth: width,
+                      outline: 'none',
+                      border: 'none',
+                      background: 'inherit',
+                      width: '85%',
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
