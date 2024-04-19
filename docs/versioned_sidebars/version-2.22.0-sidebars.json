@@ -351,7 +351,8 @@
         "how-to/s3-custom-endpoints",
         "how-to/upload-files-aws",
         "how-to/upload-files-gcs",
-        "how-to/loading-image-pdf-from-db"
+        "how-to/loading-image-pdf-from-db",
+        "how-to/print-multi-tabs-report"
       ]
     },
     {

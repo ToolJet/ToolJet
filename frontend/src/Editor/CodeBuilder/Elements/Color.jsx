@@ -46,7 +46,7 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
       >
-        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'}>
+        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'} style={{ padding: '0px' }}>
           <>{ColorPicker()}</>
         </Popover.Body>
       </Popover>

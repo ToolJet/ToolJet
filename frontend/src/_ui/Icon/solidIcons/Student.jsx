@@ -3,8 +3,8 @@ import React from 'react';
 const Student = ({ fill = '#C1C8CD', width = '21', className = '', viewBox = '0 0 21 21' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={width} height={width} viewBox="0 0 14 17" fill="none">
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M12.4167 8.08333V3.5H13.6667V8.08333C13.6667 8.42851 13.3868 8.70833 13.0417 8.70833C12.6965 8.70833 12.4167 8.42851 12.4167 8.08333Z"
       fill={fill}
     />

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
@@ -16,7 +15,6 @@ import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { redirectToDashboard } from '@/_helpers/routes';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
@@ -35,7 +33,6 @@ export default function EditorHeader({
   onVersionDelete,
   slug,
   darkMode,
-  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
 
@@ -81,8 +78,10 @@ export default function EditorHeader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, currentVersionId, editingVersion]);
 
+  const shouldRenderReleaseButton = !!app?.id;
+
   return (
-    <div className="header" style={{ width: '100%' }}>
+    <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
@@ -117,6 +116,7 @@ export default function EditorHeader({
                   handleRedo={handleRedo}
                   showToggleLayoutBtn
                   showUndoRedoBtn
+                  darkMode={darkMode}
                 />
                 <div className="d-flex align-items-center">
                   <div style={{ width: '100px', marginRight: '20px' }}>
@@ -154,6 +154,7 @@ export default function EditorHeader({
                   setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                   onVersionDelete={onVersionDelete}
                   isPublic={isPublic ?? false}
+                  darkMode={darkMode}
                 />
               )}
             </div>
@@ -191,7 +192,7 @@ export default function EditorHeader({
                   </div>
                 </div>
 
-                {isSocketOpen && (
+                {shouldRenderReleaseButton && (
                   <div className="nav-item dropdown promote-release-btn">
                     <ReleaseVersionButton
                       appId={appId}

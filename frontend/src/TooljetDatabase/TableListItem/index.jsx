@@ -5,17 +5,19 @@ import { tooljetDatabaseService, appsService } from '@/_services';
 import { ListItemPopover } from './ActionsPopover';
 import { TooljetDatabaseContext } from '../index';
 import { ToolTip } from '@/_components';
-
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
+import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
-  const { organizationId, columns, selectedTable, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
-  const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const { organizationId, columns, selectedTable, setSelectedTable, selectedTableData } =
+    useContext(TooljetDatabaseContext);
+  const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [isAddNewColumnDrawerOpen, setIsAddNewColumnDrawerOpen] = useState(false);
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -114,6 +116,10 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
             darkMode={darkMode}
             handleExportTable={handleExportTable}
             onMenuToggle={onMenuToggle}
+            onAddNewColumnBtnClick={() => {
+              setShowDropDownMenu(false);
+              setIsAddNewColumnDrawerOpen(true);
+            }}
           />
         </div>
       )}
@@ -132,6 +138,11 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           onClose={() => setIsEditTableDrawerOpen(false)}
         />
       </Drawer>
+      <CreateColumnDrawer
+        isCreateColumnDrawerOpen={isAddNewColumnDrawerOpen}
+        setIsCreateColumnDrawerOpen={setIsAddNewColumnDrawerOpen}
+        rows={selectedTableData}
+      />
     </div>
   );
 };

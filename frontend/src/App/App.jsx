@@ -31,15 +31,21 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import { useSuperStore } from '../_stores/superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
+import cx from 'classnames';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { ManageGroupPermissions } from '@/ManageGroupPermissions';
+import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
+import { ManageOrgVars } from '@/ManageOrgVars';
 
 const AppWrapper = (props) => {
+  const { isAppDarkMode } = useAppDarkMode();
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter props={props} />
+        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} />
       </BrowserRouter>
     </Suspense>
   );
@@ -54,6 +60,7 @@ class AppComponent extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       darkMode: localStorage.getItem('darkMode') === 'true',
+      isEditorOrViewer: '',
     };
   }
   updateSidebarNAV = (val) => {
@@ -97,19 +104,19 @@ class AppComponent extends React.Component {
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
+    useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
   };
 
   render() {
-    const { updateAvailable, darkMode } = this.state;
-
+    const { updateAvailable, darkMode, isEditorOrViewer } = this.state;
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
       },
     };
 
-    if (darkMode) {
+    if (isEditorOrViewer === 'viewer' ? this.props.isAppDarkMode : darkMode) {
       toastOptions = {
         className: 'toast-dark-mode',
         style: {
@@ -124,7 +131,12 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     return (
       <>
-        <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`} data-cy="main-wrapper">
+        <div
+          className={cx('main-wrapper', {
+            'theme-dark dark-theme': !isEditorOrViewer && darkMode,
+          })}
+          data-cy="main-wrapper"
+        >
           {updateAvailable && (
             <div className="alert alert-info alert-dismissible" role="alert">
               <h3 className="mb-1">Update available</h3>
@@ -180,7 +192,11 @@ class AppComponent extends React.Component {
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
                 element={
                   <PrivateRoute>
-                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <AppLoader
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -198,7 +214,11 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={this.props.isAppDarkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -207,7 +227,11 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/versions/:versionId/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={this.props.isAppDarkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -228,7 +252,36 @@ class AppComponent extends React.Component {
                     <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
-              />
+              >
+                <Route
+                  path="users"
+                  element={
+                    <AdminRoute>
+                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-login"
+                  element={
+                    <AdminRoute>
+                      <OrganizationLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="groups"
+                  element={
+                    <AdminRoute>
+                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="workspace-variables"
+                  element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+              </Route>
               <Route
                 exact
                 path="/:workspaceId/settings"

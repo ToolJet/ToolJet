@@ -1155,7 +1155,7 @@ export const widgets = [
           transformation: 'none',
           fontStyle: 'normal',
           lineHeight: 1.5,
-          textIndent: '0',
+          textIndent: '-1',
           letterSpacing: '0',
           wordSpacing: '0',
           fontVariant: 'normal',
@@ -1700,17 +1700,17 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '#11181C' },
-        borderColor: { value: '#6A727C47' },
+        textColor: { value: '#1B1F24' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
+        errTextColor: { value: '#D72D39' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        iconColor: { value: '#C1C8CD' },
+        iconColor: { value: '#CFD3D859' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
+        color: { value: '#1B1F24' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -1989,15 +1989,16 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#6A727C47' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
-        textColor: { value: '#232e3c' },
-        iconColor: { value: '#C1C8CD' },
+        errTextColor: { value: '#D72D39' },
+        textColor: { value: '#1B1F24' },
+        color: { value: '#1B1F24' },
+
+        iconColor: { value: '#CFD3D859' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -2273,15 +2274,15 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#6A727C47' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
-        textColor: { value: '#11181C' },
-        iconColor: { value: '#C1C8CD' },
+        errTextColor: { value: '#D72D39' },
+        textColor: { value: '#1B1F24' },
+        iconColor: { value: '#CFD3D859' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
+        color: { value: '#1B1F24' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -2427,7 +2428,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'toggle',
-        displayName: 'Default Status',
+        displayName: 'Default status',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2447,7 +2448,7 @@ export const widgets = [
       },
       checkboxColor: {
         type: 'color',
-        displayName: 'Checkbox Color',
+        displayName: 'Checkbox color',
         validation: {
           schema: { type: 'string' },
         },
@@ -2624,7 +2625,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'toggle',
-        displayName: 'Default Status',
+        displayName: 'Default status',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -3494,7 +3495,7 @@ export const widgets = [
       },
       selectedTextColor: {
         type: 'color',
-        displayName: 'Selected Text Color',
+        displayName: 'Selected text color',
         validation: {
           schema: {
             type: 'string',
@@ -4473,7 +4474,7 @@ export const widgets = [
     properties: {
       enableLineNumber: {
         type: 'code',
-        displayName: 'Show Line Number',
+        displayName: 'Show line number',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -6428,21 +6429,21 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       linkTarget: {
         type: 'code',
-        displayName: 'Link Target',
+        displayName: 'Link target',
         validation: {
           schema: { type: 'string' },
         },
       },
       linkText: {
         type: 'code',
-        displayName: 'Link Text',
+        displayName: 'Link text',
         validation: {
           schema: { type: 'string' },
         },
       },
       targetType: {
         type: 'select',
-        displayName: 'Target Type',
+        displayName: 'Target type',
         options: [
           { name: 'New Tab', value: 'new' },
           { name: 'Same Tab', value: 'same' },
@@ -6459,14 +6460,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textSize: {
         type: 'number',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'number' },
         },

@@ -54,6 +54,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import moment from 'moment';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -344,6 +345,10 @@ export function Table({
     }
   }
 
+  function getExportFileName() {
+    return `${component?.name}_${moment().format('DD-MM-YYYY_HH-mm')}`;
+  }
+
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
       onEvent('onPageChanged', tableEvents, { component });
@@ -444,16 +449,40 @@ export function Table({
     }));
 
   tableData = useMemo(() => {
-    return tableData.map((row) => ({
-      ...row,
-      ...Object.fromEntries(
-        transformations.map((t) => [
-          t.key,
-          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
-        ])
-      ),
-    }));
-  }, [JSON.stringify([transformations, currentState])]);
+    return tableData.map((row) => {
+      const transformedObject = {};
+
+      transformations.forEach(({ key, transformation }) => {
+        const nestedKeys = key.includes('.') && key.split('.');
+        if (nestedKeys) {
+          // Single-level nested property
+          const [nestedKey, subKey] = nestedKeys;
+          const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
+          const newValue = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row?.[nestedKey]?.[subKey],
+            rowData: row,
+          });
+
+          // Apply transformation to subKey
+          nestedObject[subKey] = newValue;
+
+          // Update transformedObject with the new nested object
+          transformedObject[nestedKey] = nestedObject;
+        } else {
+          // Non-nested property
+          transformedObject[key] = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row[key],
+            rowData: row,
+          });
+        }
+      });
+
+      return {
+        ...row,
+        ...transformedObject,
+      };
+    });
+  }, [JSON.stringify([tableData, transformations, currentState])]);
 
   useEffect(() => {
     setExposedVariables({
@@ -479,7 +508,6 @@ export function Table({
     t,
     darkMode,
   });
-
   const [leftActionsCellData, rightActionsCellData] = useMemo(
     () =>
       generateActionsData({
@@ -610,6 +638,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      getExportFileName,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
@@ -682,7 +711,6 @@ export function Table({
       },
     ];
   }, [JSON.stringify(state)]);
-
   const getDetailsOfPreSelectedRow = () => {
     const key = Object?.keys(defaultSelectedRow)[0] ?? '';
     const value = defaultSelectedRow?.[key] ?? undefined;
@@ -1033,7 +1061,7 @@ export function Table({
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className={`card jet-table table-component ${darkMode && 'dark-theme'}`}
+      className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
       style={{
         width: `100%`,
         height: `${height}px`,
