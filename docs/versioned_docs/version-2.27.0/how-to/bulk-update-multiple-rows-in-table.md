@@ -1,66 +1,58 @@
 ---
 id: bulk-update-multiple-rows
-title: Bulk update multiple rows in table
+title: Bulk Update Multiple Rows in Table
 ---
 
-# Bulk update multiple rows in table
+For the purpose of this guide, it's presumed that you've already established a successful connection to your data source. We'll use PostgreSQL for this example, but you can adjust the queries based on the SQL database that you are using.
 
-Currently, the data sources in ToolJet have operation for **bulk update(GUI mode)** but that only works for changes made in the single row. We will soon be adding a new operation for bulk updating the multiple rows but for now we can bulk update multiple rows by creating a Custom JS query. 
+## 1. Create a Query to Get the Data
 
-In this guide, We have assumed that you have successfully connected the data source. For this guide, we will be using the PostgreSQL data source as an example database. Currently, this workaround can be used only for PostgreSQL and MySQL.
-
-## 1. Create a query to get the data from the database
-
-- Create a postgresql query in **SQL mode** and enter 
+- Create a PostgreSQL query in SQL mode, rename it to *users* and enter the below code.
   
 ```sql
-SELECT * FROM tooljet // replace tooljet with your table name
+SELECT * FROM <table name> // *replace <table name> with your table name*
+```
+- Enable the `Run the query on application load?` option to execute the query automatically when the application starts. 
+- Click on the **Run** button to fetch the data from the database.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/data.png" alt="Fetch the Data" />
+</div>
+
+
+## 2. Display the Data on the Table
+
+- Drag and drop a **Table** component onto the canvas from the components library on the right.
+- Click on the Table component to open its properties on the right sidebar.
+- To populate the Table with the data returned by the query, add the below code under the `Data` field of the Table:
+```js
+{{queries.users.data}}
 ```
 
-- Hit **Run** to fetch the data from the database
-
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/data.png)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/populate.png" alt="Display Data on the Table" />
 </div>
 
-## 2. Display the data on the table
+## 3. Make the Columns Editable
 
-- Go to the **Components** library on the right and drag a **Table** component onto the canvas
-- Click on the handle of the **Table** component to open its properties on the right sidebar
-- Populate the table with the data from the query by entering **`{{queries.<queryname>.data}}`** in the **Data** field
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/populate.png)
-
-</div>
-
-## 3. Make the columns editable
-
-- Under the **Columns** accordion, click on the column name that you want to make editable
-- On clicking the column name, a new section will open. Enable the toggle for **Make editable** to make the column editable
+- Under the Columns accordion, click on the column name that you want to make editable.
+- On clicking the column name, a new section will open. Enable the toggle for `Make editable` to make the column editable.
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/editable.png)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/editable.png" alt="Make Column Editable" />
 </div>
 
 ## 4. Enable Multiple Row Selection
 
-- Under the **Row Selection** accordion, enable the **Allow Selection**, **Highlight Selected Row**, and **Bulk Selection** option
+- Under the Row Selection accordion, enable the `Allow Selection`, `Highlight Selected Row`, and `Bulk Selection` option.
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/rowselect.png)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/rowselect.png" alt="Multiple Row Selection" />
 </div>
 
 ## 5. Create a Custom JS query
 
-- Create a new Run Javascript query and use the code below to generate the SQL query for updating multiple rows.
+- Create a new Run Javascript query and use the code below to generate the SQL query for updating multiple rows. The query will be named as *runjs1* by default. 
 
 ```js
 const uniqueIdentifier = "id"
@@ -80,54 +72,50 @@ const sql = cols.map((column) => {
 
 return sql
 ```
-:::info
-Here the **Unique identifier** is **id**, this is the column name that is used to identify the row in the database.
-Update the **Unique identifier** if you are using a different column name.
-Update **table1** with the name of the table you are using.
-:::
+
+Here the unique identifier is **id** and Table component's name is **table1**. You can update the unique identifier if you are using a different column as a unique identifier. You can also update the Table name if you have renamed it, the default name is *table1*.
+
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/runjs1.png)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/runjs1.png" alt="RunJS code to later the data" />
 </div>
 
-## 6. Create an Update query
+## 6. Create an Update Query
 
-- Create a postgresql query in **SQL mode** and rename it as **update**:
+- Create a PostgreSQL query in SQL mode and rename it to *update*:
     
 ```sql
 {{queries.runjs1.data.join(' ')}}
 ```
 
-- This query will run the SQL query generated by the runjs1 query.
+- This query will run the SQL query generated by the *runjs1* query.
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/update.png)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/update.png" alt="Bulk Update Rows" />
 </div>
 
-## 7. Adding event handlers to execute queries in sequence
+## 7. Adding Event Handlers to Execute Queries in Sequence
 
-- Edit the **Table** component and add the event handler for **Save Changes** event so that whenever a user will edit the table and hit the **Save Changes** button the runjs1 query will run.
-- Add **loading state** to table so that whenever the **users** or **update** query is running the table will show a loading state.
-
+- Edit the Table component and add an event handler for `Save Changes` event so that whenever a user will edit the Table and hit the Save Changes button the *runjs1* query will run.
+- Optionally, add loading state to the Table by clicking on `fx` next to the `Loading state` property.
+- Use the below code to show the loading state whenever a query is getting executed.
 ```js
-{{queries.users.isLoading || queries.update.isLoading}} // add this in the loading state field of the table
+{{queries.users.isLoading || queries.update.isLoading}}
 ```
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/savechanges.png)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/savechanges.png" alt="Adding Events" />
 </div>
 
-- Now, go to the **runjs1** query and add a **Event** to run update query for **Query Success** Event. This will run the update query whenever the runjs1 query will be run.
+- Now, go to the *runjs1* query and add an event to run the *update* query for Query Success event. This will run the *update* query after the *runjs1* query is successfully executed.
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/new/querysuccess.png)
-
+    <img style={{ border:'0' }} className="screenshot-full" src="/img/how-to/bulk-update-multiple/new/querysuccess.png" alt="Query Success" />
 </div>
 
-- Finally, go to the **update** query and add a **Event** to run the users query for **Query Success** Event. This will refresh the table whenever the update query will be run.
+The data needs to reload once the *update* query runs since we want the Table component to be populated with the updated data. 
+
+- Add a new event handler in the *update* query.
+- Select Query Success as the Event and Run Query as the Action.
+- Select *users* as Query.
+
+This will refresh the table whenever the *update* query will be run.

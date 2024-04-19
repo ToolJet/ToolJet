@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { ToolTip } from '@/_components/ToolTip';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -25,7 +24,7 @@ export const TextInput = function TextInput({
   const textInputRef = useRef();
   const labelRef = useRef();
 
-  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
+  const { loadingState, disabledState, label, placeholder } = properties;
 
   const {
     padding,
@@ -57,7 +56,7 @@ export const TextInput = function TextInput({
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '38px') : padding == 'default' ? height : height + 2,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: isFocused
@@ -71,7 +70,6 @@ export const TextInput = function TextInput({
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
-    // flex: padding !== 'none' && 1,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
@@ -187,9 +185,11 @@ export const TextInput = function TextInput({
   useEffect(() => {
     if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
       adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
+    else {
+      adjustHeightBasedOnAlignment(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout]);
+  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
@@ -238,6 +238,7 @@ export const TextInput = function TextInput({
   const renderInput = () => (
     <>
       <div
+        data-cy={`label-${String(component.name).toLowerCase()}`}
         data-disabled={disable || loading}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
@@ -295,7 +296,7 @@ export const TextInput = function TextInput({
           />
         )}
         <input
-          data-cy={`label-${String(component.name).toLowerCase()}`}
+          data-cy={dataCy}
           ref={textInputRef}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''

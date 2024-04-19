@@ -83,7 +83,7 @@ export const commonSelectors = {
   workspaceSettings: '[data-cy="workspace-settings"]',
   manageUsersOption: '[data-cy="users-list-item"]',
   manageGroupsOption: '[data-cy="groups-list-item"]',
-  manageSSOOption: '[data-cy="sso-list-item"]',
+  manageSSOOption: '[data-cy="workspace-login-list-item"]',
   workspaceVariableOption: '[data-cy="workspace-variables-list-item"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
@@ -256,8 +256,8 @@ export const commonSelectors = {
       .toLowerCase()}-label"]`;
   },
   defaultModalTitle: '[data-cy="modal-title"]',
-  workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]'
-
+  workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
+  confirmationButton: '[data-cy="confirmation-button"]',
 };
 
 export const commonWidgetSelector = {
@@ -268,7 +268,9 @@ export const commonWidgetSelector = {
   draggableWidget: (widgetName) => {
     return `[data-cy=draggable-widget-${cyParamName(widgetName)}]`;
   },
-
+  textInputInputField: (widgetName) => {
+    return `[data-cy=input-${cyParamName(widgetName)}]`;
+  },
   parameterLabel: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-widget-parameter-label"]`;
   },

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
-
-// Use plotly basic bundle
-import Plotly from 'plotly.js-basic-dist-min';
+// eslint-disable-next-line import/no-unresolved
+import Plotly from 'plotly.js-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
@@ -172,13 +171,21 @@ export const Chart = function Chart({
 
   const handleClick = useCallback((data) => {
     if (data.length > 0) {
-      const { x: xAxisLabel, y: yAxisLabel, label: dataLabel, value: dataValue, percent: dataPercent } = data[0];
+      const {
+        x: xAxisLabel,
+        y: yAxisLabel,
+        label: dataLabel,
+        value: dataValue,
+        percent: dataPercent,
+        fullData: { name } = {},
+      } = data[0];
       setExposedVariable('clickedDataPoint', {
         xAxisLabel,
         yAxisLabel,
         dataLabel,
         dataValue,
         dataPercent,
+        dataSeriesName: name,
       });
       fireEvent('onClick');
     }

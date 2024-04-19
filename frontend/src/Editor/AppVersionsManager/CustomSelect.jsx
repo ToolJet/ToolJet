@@ -31,7 +31,7 @@ export const Menu = (props) => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <rect width="28" height="28" rx="6" fill="#F0F4FF" />
+                  <rect width="28" height="28" rx="6" fill="var(--indigo3)" />
                   <path
                     fillRule="evenodd"
                     clipRule="evenodd"
@@ -59,7 +59,7 @@ export const Menu = (props) => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <rect width="34" height="34" rx="6" fill="#F0F4FF" />
+              <rect width="34" height="34" rx="6" fill="var(--indigo3)" />
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"

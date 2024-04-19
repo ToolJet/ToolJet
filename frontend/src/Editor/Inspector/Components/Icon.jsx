@@ -173,7 +173,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
-    title: 'Layout',
+    title: 'Devices',
     isOpen: false,
     children: (
       <>

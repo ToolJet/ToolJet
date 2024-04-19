@@ -23,6 +23,7 @@ import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
+import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 
 const { iconList, defaultIcon } = configs;
 
@@ -260,7 +261,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
-      toast.error("Couldn't import the app");
+      toast.error(error?.error || 'App import failed');
     }
   };
 
@@ -799,13 +800,6 @@ class HomePageComponent extends React.Component {
                           data-cy="import-option-input"
                         />
                       </label>
-                      <Dropdown.Item
-                        className="homepage-dropdown-style tj-text tj-text-xsm"
-                        onClick={() => this.setState({ showCreateModuleModal: true })}
-                        data-cy="create-module-button"
-                      >
-                        {this.props.t('homePage.header.createModule', 'Create module')}
-                      </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
                 </div>
