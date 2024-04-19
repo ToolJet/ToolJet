@@ -110,10 +110,10 @@ const Text = ({
           maxHeight: isMaxRowHeightAuto
             ? 'auto'
             : maxRowHeightValue
-            ? maxRowHeightValue
+            ? maxRowHeightValue - 16 // decreasing 16px for padding fix
             : cellSize === 'condensed'
-            ? '39px'
-            : '45px',
+            ? '23px'
+            : '29px',
         }}
         ref={nonEditableCellValueRef}
       >
