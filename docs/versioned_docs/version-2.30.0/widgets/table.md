@@ -197,7 +197,7 @@ This column type is automatically selected by default when a column is added or 
 | Column name | Specify the name to be displayed on the table column header |
 | Overflow | Manage the handling of content that exceeds the cell dimensions. `Wrap` wraps the content onto the next line within the cell, `Scroll` enables scrolling for content that exceeds the cell, and `Hide` conceals content that goes beyond the cell boundary. |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Text color | Modify the color of the text in the column. You can use a hex color code or color name. The value can be dynamically assigned using JS. Refer to the [how-to guide](/docs/how-to/access-cellvalue-rowdata). |
 | Cell background color | Adjust the background color of the cell in the column. You can utilize a hex color code or color name. The value can be dynamically assigned using JS. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -211,7 +211,7 @@ Selecting the column type as **Number** will only load numerical data in the col
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. |
 | Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
@@ -230,7 +230,7 @@ The **Badge** column type is utilized to exhibit labels on the columns using the
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the badge as an array |
 | Labels | Provide the labels for the values in the badge as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -250,7 +250,7 @@ Similar to the **Badge** column type, the **Multiple Badges** type is used to di
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the multiple badges as an array |
 | Labels | Provide the labels for the values in the multiple badges as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -270,7 +270,7 @@ The **Tags** column type is utilized to display tags within the column cells usi
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
 
@@ -288,7 +288,7 @@ The **Dropdown** column type is used to display a dropdown in the column cells u
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the dropdown as an array |
 | Labels | Provide the labels for the values in the dropdown as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -308,7 +308,7 @@ The **Radio** column type is used to show radio buttons in the column cells usin
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the radio as an array |
 | Labels | Provide the labels for the values in the radio as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -328,7 +328,7 @@ The **Multiselect** column type is used to show a multiselect dropdown in the co
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the multiselect as an array |
 | Labels | Provide the labels for the values in the multiselect as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -348,7 +348,7 @@ The **Toggle Switch** column type is used to display a toggle switch in the colu
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
-| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can change use a JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Active color | Set the color of the toggle switch when it is active using this property. |
 | + Add Event Handler | Add an event handler to perform actions whenever the toggle switch is turned on or off. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -621,7 +621,7 @@ Activate this option to visually emphasize the last clicked row. **Enabling** th
 
 To enable the selection of one or more rows from the current page of a table, you can activate the 'Bulk selection' setting in the inspector. The values of the selected rows will be exposed as '**selectedRows**'.
 
-### Default Selected Row
+### Default selected row
 
 By enabling this option, you can designate a default row to be pre-selected when the app loads. This means that whenever the app is opened for the first time, a specific row will already be highlighted in the table by default. Additionally, there is an accessible variable that stores the value for this setting. You can find a list of all accessible variables **[here](#exposed-variables)**.
 
@@ -633,6 +633,9 @@ Example:
 ```
 
 Please ensure that the value provided in the object corresponds to a valid id in the table to ensure proper functionality.
+
+### Select row on cell edit
+Enabling the `Make editable` property for a column allows the app users to edit the column. While editing, the related row will be selected by default. To stop the row from getting selected by default, turn off `Select row on cell edit`.
 
 ## Search Sort and Filter
 

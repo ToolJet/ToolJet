@@ -9,6 +9,7 @@ export const DocsCard = ({ label, imgSrc, link, height = 40, width = 40, title }
 
     const description = {
         "Try ToolJet": "Try out ToolJet with single docker command",
+        "System Requirements": "Learn about system requirements for running ToolJet",
         DigitalOcean: "Quickly deploy ToolJet using the Deploy to DigitalOcean button",
         Docker: "Deploy ToolJet on a server using docker-compose",
         Heroku: "Deploy ToolJet on Heroku using the one-click-deployment button",

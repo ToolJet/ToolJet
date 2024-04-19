@@ -3,11 +3,15 @@ import './list.scss';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import classNames from 'classnames';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 import SortableList from '@/_components/SortableList';
+import { DeprecatedColumnTooltip } from '@/Editor/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
+import Icons from '@/_ui/Icon/solidIcons/index';
+
 function List({ children, ...restProps }) {
   return <ListGroup {...restProps}>{children}</ListGroup>;
 }
@@ -22,11 +26,16 @@ function ListItem({
   onMenuOptionClick,
   isEditable,
   isDraggable,
+  deleteIconOutsideMenu = false,
+  showCopyColumnOption = false,
+  showVisibilityIcon = false,
+  isColumnVisible = true,
+  columnType,
+  isDeprecated,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
-
   return (
     <div>
       <ListGroup.Item
@@ -49,13 +58,27 @@ function ListItem({
           >
             {primaryText}
             <span className="list-item-secondary-text">{secondaryText}</span>
-            {isEditable && (
+
+            {isEditable && columnType !== 'image' && (
               <span style={{ marginLeft: '8px' }}>
                 <Edit width={16} />
               </span>
             )}
+            {showVisibilityIcon && !isColumnVisible && (
+              <span style={{ marginLeft: '8px' }}>
+                <SolidIcon name="eyedisable" width={16} />
+              </span>
+            )}
+
+            {isDeprecated && (
+              <DeprecatedColumnTooltip columnType={columnType}>
+                <span className={'list-item-deprecated-column-type'}>
+                  <Icons name={'warning'} height={14} width={14} fill="#DB4324" />
+                </span>
+              </DeprecatedColumnTooltip>
+            )}
           </div>
-          <div className="col-auto">
+          <div className="col-auto d-flex align-items-center custom-gap-4">
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -97,12 +120,7 @@ function ListItem({
                 }}
               >
                 {enableActionsMenu && isHovered && (
-                  <ButtonSolid
-                    variant="tertiary"
-                    size="xs"
-                    className={'list-menu-option-btn'}
-                    // data-cy={'page-menu'}
-                  >
+                  <ButtonSolid variant="tertiary" size="xs" className={'list-menu-option-btn'}>
                     <span>
                       <MoreVertical fill={'var(--slate12)'} width={'20'} />
                     </span>
@@ -110,6 +128,38 @@ function ListItem({
                 )}
               </span>
             </OverlayTrigger>
+            {showCopyColumnOption && isHovered && (
+              <ButtonSolid
+                variant="ghostBlack"
+                size="xs"
+                className={'copy-column-icon'}
+                // data-cy={'page-menu'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMenuOptionClick(primaryText, 'copyColumn');
+                }}
+              >
+                <span className="d-flex">
+                  <SolidIcon name="copy" fill={'var(--icons-strong)'} width={16} />
+                </span>
+              </ButtonSolid>
+            )}
+            {deleteIconOutsideMenu && isHovered && (
+              <ButtonSolid
+                variant="danger"
+                size="xs"
+                className={'delete-icon-btn'}
+                // data-cy={'page-menu'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMenuOptionClick(primaryText, 'Delete');
+                }}
+              >
+                <span className="d-flex">
+                  <Trash fill={'var(--tomato9)'} width={16} />
+                </span>
+              </ButtonSolid>
+            )}
           </div>
         </div>
       </ListGroup.Item>

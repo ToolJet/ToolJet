@@ -43,6 +43,8 @@ import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
 import { NumberInput } from './Elements/NumberInput';
+import TableRowHeightInput from './Elements/TableRowHeightInput';
+
 import { validateProperty } from '../component-properties-validation';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
@@ -63,6 +65,7 @@ const AllElements = {
   Icon,
   Visibility,
   NumberInput,
+  TableRowHeightInput,
 };
 
 export function CodeHinter({

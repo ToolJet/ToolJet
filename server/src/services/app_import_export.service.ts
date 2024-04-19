@@ -50,7 +50,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -60,7 +60,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
-const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
+const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
 
 @Injectable()
 export class AppImportExportService {
@@ -237,6 +237,7 @@ export class AppImportExportService {
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+    const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
     await this.setupImportedAppAssociations(
       this.entityManager,
@@ -245,7 +246,7 @@ export class AppImportExportService {
       user,
       externalResourceMappings,
       isNormalizedAppDefinitionSchema,
-      tooljetVersion
+      currentTooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
 
@@ -324,7 +325,7 @@ export class AppImportExportService {
     user: User,
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
-    tooljetVersion: string
+    tooljetVersion: string | null
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -587,7 +588,7 @@ export class AppImportExportService {
     importingPages: Page[],
     importingComponents: Component[],
     importingEvents: EventHandler[],
-    tooljetVersion: string
+    tooljetVersion: string | null
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1224,6 +1225,7 @@ export class AppImportExportService {
             canvasMaxHeight: 2400,
             canvasBackgroundColor: '#edeff5',
             backgroundFxQuery: '',
+            appMode: 'auto',
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
@@ -1693,15 +1695,20 @@ function migrateProperties(
   componentType: NewRevampedComponent,
   component: Component,
   componentTypes: NewRevampedComponent[],
-  tooljetVersion: string
+  tooljetVersion: string | null
 ) {
-  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
-
   const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (!tooljetVersion) {
+    return { properties, styles, general, generalStyles, validation };
+  }
+
+  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
+
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {

@@ -28,6 +28,7 @@ import { Layout } from 'src/entities/layout.entity';
 
 import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 
 const uuid = require('uuid');
 @Injectable()
@@ -146,6 +147,7 @@ export class AppsService {
           canvasMaxHeight: 2400,
           canvasBackgroundColor: '#edeff5',
           backgroundFxQuery: '',
+          appMode: 'auto',
         };
         await manager.save(appVersion);
 
@@ -218,7 +220,7 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string): Promise<App[]> {
+  async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
     const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
     if (page) {
