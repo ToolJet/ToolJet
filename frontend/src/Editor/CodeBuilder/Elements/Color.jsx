@@ -47,7 +47,7 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
         )}
         style={{ zIndex: 10000 }}
       >
-        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'}>
+        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'} style={{ padding: '0px' }}>
           <>{ColorPicker()}</>
         </Popover.Body>
       </Popover>

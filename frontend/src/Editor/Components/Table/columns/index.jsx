@@ -143,7 +143,7 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
+        cellValue = cellValue === undefined ? '' : cellValue;
         switch (columnType) {
           case 'string':
           case undefined:
@@ -164,88 +164,6 @@ export default function generateColumnsData({
                 isMaxRowHeightAuto={isMaxRowHeightAuto}
               />
             );
-
-            // if (isEditable) {
-            //   const validationData = validateWidget({
-            //     validationObject: {
-            //       regex: {
-            //         value: column.regex,
-            //       },
-            //       minLength: {
-            //         value: column.minLength,
-            //       },
-            //       maxLength: {
-            //         value: column.maxLength,
-            //       },
-            //       customRule: {
-            //         value: column.customRule,
-            //       },
-            //     },
-            //     widgetValue: cellValue,
-            //     currentState,
-            //     customResolveObjects: { cellValue },
-            //   });
-
-            //   const { isValid, validationError } = validationData;
-            //   const cellStyles = {
-            //     color: textColor ?? 'inherit',
-            //   };
-
-            //   return (
-            //     <div className="h-100 d-flex flex-column justify-content-center position-relative">
-            //       <div
-            //         rows="1"
-            //         contentEditable={true}
-            //         className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input ${darkMode ? ' textarea-dark-theme' : ''
-            //           }`}
-            //         style={{
-            //           ...cellStyles,
-            //           maxWidth: width,
-            //           outline: 'none',
-            //           border: 'none',
-            //           background: 'inherit',
-            //         }}
-            //         readOnly={!isEditable}
-            //         onBlur={(e) => {
-            //           if (cellValue !== e.target.textContent) {
-            //             handleCellValueChange(
-            //               cell.row.index,
-            //               column.key || column.name,
-            //               e.target.textContent,
-            //               cell.row.original
-            //             );
-            //           }
-            //         }}
-            //         onKeyDown={(e) => {
-            //           if (e.key === 'Enter') {
-            //             if (cellValue !== e.target.textContent) {
-            //               handleCellValueChange(
-            //                 cell.row.index,
-            //                 column.key || column.name,
-            //                 e.target.textContent,
-            //                 cell.row.original
-            //               );
-            //             }
-            //           }
-            //         }}
-            //         onFocus={(e) => e.stopPropagation()}
-            //       >
-            //         {cellValue}
-            //       </div>
-            //       <div className={isValid ? '' : 'invalid-feedback'}>{validationError}</div>
-            //     </div>
-            //   );
-            // }
-            // return (
-            //   <div
-            //     className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-            //       horizontalAlignment
-            //     )}`}
-            //     style={cellStyles}
-            //   >
-            //     {String(cellValue)}
-            //   </div>
-            // );
           }
           case 'number': {
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
@@ -326,6 +244,7 @@ export default function generateColumnsData({
                       background: 'inherit',
                       paddingRight: '20px',
                     }}
+                    id={`table-input-${column.id}`}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {

@@ -55,6 +55,7 @@ import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { isRowInValid } from '../tableUtils';
+import moment from 'moment';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -177,6 +178,8 @@ export function Table({
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
   const [hoverAdded, setHoverAdded] = useState(false);
   const [generatedColumn, setGeneratedColumn] = useState([]);
+  const [isCellValueChanged, setIsCellValueChanged] = useState(false);
+
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
@@ -236,6 +239,8 @@ export function Table({
 
   function handleExistingRowCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
+    setIsCellValueChanged(true);
+
     const dataUpdates = tableDetails.dataUpdates || [];
     const clonedTableData = _.cloneDeep(tableData);
 
@@ -273,6 +278,7 @@ export function Table({
   }, [JSON.stringify(tableDetails)]);
 
   function handleNewRowCellValueChange(index, key, value, rowData) {
+    setIsCellValueChanged(true);
     const changeSet = copyOfTableDetails.current.addNewRowsDetails.newRowsChangeSet || {};
     const dataUpdates = copyOfTableDetails.current.addNewRowsDetails.newRowsDataUpdates || {};
     let obj = changeSet ? changeSet[index] || {} : {};
@@ -347,6 +353,10 @@ export function Table({
       // Returning false as downloading of file is already taken care of
       return false;
     }
+  }
+
+  function getExportFileName() {
+    return `${component?.name}_${moment().format('DD-MM-YYYY_HH-mm')}`;
   }
 
   function onPageIndexChanged(page) {
@@ -639,6 +649,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      getExportFileName,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
@@ -1064,7 +1075,7 @@ export function Table({
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className={`card jet-table table-component ${darkMode && 'dark-theme'}`}
+      className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
       style={{
         width: `100%`,
         height: `${height}px`,
@@ -1590,6 +1601,9 @@ export function Table({
                               cell={cell}
                               currentState={currentState}
                               cellWidth={cell.column.width}
+                              isCellValueChanged={isCellValueChanged}
+                              setIsCellValueChanged={setIsCellValueChanged}
+                              darkMode={darkMode}
                             />
                           </div>
                         </td>
@@ -1667,6 +1681,7 @@ export function Table({
                       variant="primary"
                       className={`tj-text-xsm`}
                       onClick={() => {
+                        setIsCellValueChanged(false);
                         onEvent('onBulkUpdate', tableEvents, { component }).then(() => {
                           handleChangesSaved();
                         });
@@ -1685,6 +1700,7 @@ export function Table({
                       variant="tertiary"
                       className={`tj-text-xsm`}
                       onClick={() => {
+                        setIsCellValueChanged(false);
                         handleChangesDiscarded();
                       }}
                       data-cy={`table-button-discard-changes`}

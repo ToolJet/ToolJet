@@ -61,7 +61,7 @@
 @import "@radix-ui/colors/goldDark.css";
 @import "@radix-ui/colors/bronzeDark.css";
 
-:root {
+:root, .light-theme {
     --base: #FCFCFD;
     --base-black: #18181A;
     --text-black-000: #000000;
@@ -76,7 +76,7 @@
     // new design theme
     --primary-brand: #4368E3;
     --primary-accent-strong: #4368E3;
-    --primary-accent-subtle: #4368E34D;
+    --primary-accent-subtle: rgba(67, 104, 227, 30%);
     --primary-white: #FFFFFF;
     --primary-black: #1B1F24;
 
@@ -89,15 +89,15 @@
 
     // status
     --status-error-strong: #D72D39;
-    --status-error-subtle: #D72D394D;
+    --status-error-subtle: rgba(215, 45, 57, 30%);
     --status-warning-strong: #BF4F03;
-    --status-warning-subtle: #BF4F034D;
+    --status-warning-subtle: rgba(191, 79, 3, 30%);
     --status-success-strong: #1E823B;
-    --status-success-subtle: #1E823B4D;
+    --status-success-subtle: rgba(30, 130, 59, 30%);
 
     //icon 
     --icons-strong: #6A727C;
-    --icons-default: #ACB2B9;
+    --icons-default: #6A727C;
     --icons-weak-disabled: #6A727C;
     --icons-disabled-on-white: #6A727C;
     --icons-on-solid: #6A727C;
@@ -105,14 +105,15 @@
     // borders
     --borders-strong: #ACB2B9;
     --borders-default: #CCD1D5;
-    --borders-weak-disabled: #E4E7EB;
-    --borders-disabled-on-white: #F6F8FA;
+    --borders-weak-disabled: #CCD1D5;
+    --borders-disabled-on-white: #E4E7EB;
+    --borders-disabled-on-white-dimmed: rgba(246, 248, 250, 80%);
 
     // interactive overlays
-    --interactive-overlays-fill-hover: #1B1F2414;
-    --interactive-overlays-fill-pressed: #1B1F241A;
-    --interactive-overlays-border-hover: #1B1F241F;
-    --interactive-overlays-border-pressed: #1B1F2429;
+    --interactive-overlays-fill-hover: rgba(27, 31, 36, 8%);
+    --interactive-overlays-fill-pressed: rgba(27, 31, 36, 10%);
+    --interactive-overlays-border-hover: rgba(27, 31, 36, 12%);
+    --interactive-overlays-border-pressed: rgba(27, 31, 36, 16%);
     --interactive-overlays-focus-outline: #4368E3;
     --interactive-overlays-focus-inner-shadow: #FFFFFF;
     --interactive-overlays-column-resize: #1B1F244D;
@@ -130,7 +131,7 @@
     --surfaces-surface-03: #E4E7EB;
 
     // utilities
-    --utilities-scrollbar: #6A727C1F;
+    --utilities-scrollbar: rgba(106, 114, 124, 12%);
 
     //box shadows
     --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
@@ -162,7 +163,7 @@
     // new design theme
     --primary-brand: #4A6DD9;
     --primary-accent-strong: #4A6DD9;
-    --primary-accent-subtle: #4A6DD94D;
+    --primary-accent-subtle: rgba(74, 109, 217, 30%);
     --primary-white: #FAFCFF;
     --primary-black: #121518;
 
@@ -175,31 +176,33 @@
 
     // status
     --status-error-strong: #D03F43;
-    --status-error-subtle: #D03F434D;
+    --status-error-subtle: rgba(208, 63, 67, 30%);
     --status-warning-strong: #BA5722;
-    --status-warning-subtle: #BA57224D;
+    --status-warning-subtle: rgba(186, 87, 34, 30%);
     --status-success-strong: #318344;
-    --status-success-subtle: #3183444D;
+    --status-success-subtle: rgba(49, 131, 68, 30%);
 
     //icon 
-    --icons-strong: #CFD3D8E5;
-    --icons-default: #CFD3D8A6;
-    --icons-weak-disabled: #CFD3D859;
-    --icons-disabled-on-white: #CFD3D833;
+    --icons-strong: rgba(207, 211, 216, 90%);
+    --icons-default: rgba(207, 211, 216, 65%);
+    --icons-weak-disabled: rgba(207, 211, 216, 35%);
+    --icons-disabled-on-white: rgba(207, 211, 216, 20%);
     --icons-on-solid: #FAFCFF;
 
     // borders
     --borders-strong: #545B64;
     --borders-default: #3C434B;
     --borders-weak-disabled: #2B3036;
-    --borders-disabled-on-white: #2B303633;
+    --borders-disabled-on-white: rgba(43, 48, 54, 20%);
+    --borders-disabled-on-white-dimmed: rgba(43, 48, 54, 20%);
+
 
     // interactive overlays
 
-    --interactive-overlays-fill-hover: #FFFFFF1F;
-    --interactive-overlays-fill-pressed: #FFFFFF33;
-    --interactive-overlays-border-hover: #FFFFFF33;
-    --interactive-overlays-border-pressed: #FFFFFF47;
+    --interactive-overlays-fill-hover: rgba(255, 255, 255, 12%);
+    --interactive-overlays-fill-pressed: rgba(255, 255, 255, 20%);
+    --interactive-overlays-border-hover: rgba(255, 255, 255, 20%);
+    --interactive-overlays-border-pressed: rgba(255, 255, 255, 28%);
     --interactive-overlays-focus-outline: #4A6DD9;
     --interactive-overlays-focus-inner-shadow: #121518;
     --interactive-overlays-column-resize: #FFFFFF80;
@@ -216,7 +219,7 @@
     --surfaces-surface-03: #3C434B;
 
     // utilities
-    --utilities-scrollbar: #6D757D29;
+    --utilities-scrollbar: rgba(109, 117, 125, 16%);
 
     //box-shadow
     --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.40);

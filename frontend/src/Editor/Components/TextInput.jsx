@@ -58,7 +58,7 @@ export const TextInput = function TextInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: textColor !== '#1B1F24' ? textColor : disable ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -303,7 +303,7 @@ export const TextInput = function TextInput({
                   : '50%'
               }`,
               transform: ' translateY(-50%)',
-              color: iconColor !== '#CCD1D5' ? iconColor : 'var(--icons-weak-disabled)',
+              color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
             stroke={1.5}
