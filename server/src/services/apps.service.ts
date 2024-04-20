@@ -525,10 +525,9 @@ export class AppsService {
         const newComponent = new Component();
         const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
 
-        newComponent.id = uuid.v4();
-
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
 
+        newComponent.id = component.id;
         newComponent.name = component.name;
         newComponent.type = component.type;
         newComponent.pageId = savedPage.id;
