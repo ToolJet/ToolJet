@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-const tinycolor = require('tinycolor2');
+var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
+  const { height, properties, styles, fireEvent, registerAction, id, dataCy, setExposedVariable } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState);
   const [visibility, setVisibility] = useState(styles.visibility);
   const [loading, setLoading] = useState(properties.loadingState);
+  const [badge, setBadge] = useState(properties?.badge);
 
   useEffect(() => {
     setLabel(properties.text);
@@ -32,6 +33,22 @@ export const Button = function Button(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
+  const handleBadge = (value) => {
+    if (value == undefined || value <= 0) {
+      setBadge('');
+    }
+    else if (value > 99) {
+      setBadge('99+');
+    }
+    else {
+      setBadge(value);
+    }
+  }
+  useEffect(() => {
+    handleBadge(properties?.badge)
+  }, [properties.badge]);
+
+
   const computedStyles = {
     backgroundColor,
     color: textColor,
@@ -45,32 +62,48 @@ export const Button = function Button(props) {
     boxShadow: boxShadow,
   };
 
-  useEffect(() => {
-    const exposedVariables = {
-      click: async function () {
-        if (!disable) {
-          fireEvent('onClick');
-        }
-      },
-      setText: async function (text) {
-        setLabel(text);
-        setExposedVariable('buttonText', text);
-      },
-      disable: async function (value) {
-        setDisable(value);
-      },
-      visibility: async function (value) {
-        setVisibility(value);
-      },
-      loading: async function (value) {
-        setLoading(value);
-      },
-    };
+  registerAction(
+    'click',
+    async function () {
+      if (!disable) {
+        fireEvent('onClick');
+      }
+    },
+    [disable]
+  );
 
-    setExposedVariables(exposedVariables);
+  registerAction(
+    'setText',
+    async function (text) {
+      setLabel(text);
+      setExposedVariable('buttonText', text);
+    },
+    [setLabel]
+  );
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable, setLabel, setDisable, setVisibility, setLoading]);
+  registerAction(
+    'disable',
+    async function (value) {
+      setDisable(value);
+    },
+    [setDisable]
+  );
+
+  registerAction(
+    'visibility',
+    async function (value) {
+      setVisibility(value);
+    },
+    [setVisibility]
+  );
+
+  registerAction(
+    'loading',
+    async function (value) {
+      setLoading(value);
+    },
+    [setLoading]
+  );
 
   const hasCustomBackground = backgroundColor?.charAt() === '#';
   if (hasCustomBackground) {
@@ -100,6 +133,9 @@ export const Button = function Button(props) {
         type="default"
       >
         {label}
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ display: badge === '' ? 'none' : '','zIndex':9999 }}>
+          {badge}
+        </span>
       </button>
     </div>
   );

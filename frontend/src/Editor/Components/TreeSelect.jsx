@@ -5,16 +5,7 @@ import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
 
-export const TreeSelect = ({
-  height,
-  properties,
-  styles,
-  setExposedVariable,
-  setExposedVariables,
-  fireEvent,
-  darkMode,
-  dataCy,
-}) => {
+export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
   const { label } = properties;
   const { visibility, disabledState, checkboxColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
@@ -41,18 +32,13 @@ export const TreeSelect = ({
     };
     updateCheckedArr(data, checkedData);
     setChecked(checkedArr);
+    setExposedVariable('checked', checkedArr);
     checkedArr.forEach((item) => {
       checkedPathArray.push(pathObj[item]);
       checkedPathString.push(pathObj[item].join('-'));
     });
-
-    const exposedVariables = {
-      checkedPathArray: checkedPathArray,
-      checkedPathStrings: checkedPathString,
-      checked: checkedArr,
-    };
-    setExposedVariables(exposedVariables);
-
+    setExposedVariable('checkedPathArray', checkedPathArray);
+    setExposedVariable('checkedPathStrings', checkedPathString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(checkedData), JSON.stringify(data)]);
 
@@ -84,16 +70,12 @@ export const TreeSelect = ({
       checkedPathArray.push(pathObj[item]);
       checkedPathString.push(pathObj[item].join('-'));
     });
-
-    const exposedVariables = {
-      checkedPathArray: checkedPathArray,
-      checkedPathStrings: checkedPathString,
-      checked: checked,
-    };
-    setExposedVariables(exposedVariables);
-
-    updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
-    fireEvent('onChange');
+    setExposedVariable('checkedPathArray', checkedPathArray);
+    setExposedVariable('checkedPathStrings', checkedPathString);
+    setExposedVariable('checked', checked).then(() => {
+      updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
+      fireEvent('onChange');
+    });
     setChecked(checked);
   };
 

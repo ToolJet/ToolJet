@@ -163,21 +163,21 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
               className={`btn btn-primary${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
               onClick={() => onStart()}
             >
-              Start
+              开始
             </a>
           )}
           {state === 'running' && (
             <a className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onPause}>
-              Pause
+              暂停
             </a>
           )}
           {state === 'paused' && (
             <a className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onResume}>
-              Resume
+              继续
             </a>
           )}
           <a className={`btn${styles.disabledState ? ' disabled' : ''}`} onClick={onReset}>
-            Reset
+            重置
           </a>
         </div>
       </div>

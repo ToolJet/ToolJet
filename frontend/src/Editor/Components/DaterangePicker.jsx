@@ -20,6 +20,7 @@ export const DaterangePicker = function DaterangePicker({
   const formatProp = typeof properties.format === 'string' ? properties.format : '';
 
   const [focusedInput, setFocusedInput] = useState(null);
+  moment.locale(['zh-cn'])
   const [startDate, setStartDate] = useState(moment(defaultStartDate, formatProp));
   const [endDate, setEndDate] = useState(moment(defaultEndDate, formatProp));
 

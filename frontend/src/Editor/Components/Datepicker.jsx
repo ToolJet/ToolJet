@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import DatePickerComponent from 'react-datepicker';
+import DatePickerComponent, { registerLocale } from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
+import zh from 'date-fns/locale/zh-CN'; // the locale you want
 
 export const Datepicker = function Datepicker({
   height,
@@ -17,13 +18,13 @@ export const Datepicker = function Datepicker({
   fireEvent,
   dataCy,
 }) {
+  registerLocale('zh', zh);
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
-  const [showValidationError, setShowValidationError] = useState(false);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -38,11 +39,11 @@ export const Datepicker = function Datepicker({
   };
 
   const onDateChange = (date) => {
-    setShowValidationError(true);
     setDate(date);
     const dateString = computeDateString(date);
-    setExposedVariable('value', dateString);
-    fireEvent('onSelect');
+    setExposedVariable('value', dateString).then(() => {
+      fireEvent('onSelect');
+    });
   };
 
   useEffect(() => {
@@ -90,9 +91,10 @@ export const Datepicker = function Datepicker({
       }}
     >
       <DatePickerComponent
-        className={`input-field form-control ${
-          !isValid && showValidationError ? 'is-invalid' : ''
-        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
+        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
+          darkMode ? 'bg-dark color-white' : 'bg-light'
+        }`}
+        locale="zh"
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
@@ -110,7 +112,7 @@ export const Datepicker = function Datepicker({
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
-        {showValidationError && validationError}
+        {validationError}
       </div>
     </div>
   );

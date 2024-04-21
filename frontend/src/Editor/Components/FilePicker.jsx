@@ -2,10 +2,8 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
-// eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { useAppInfo } from '@/_stores/appDataStore';
 
 export const FilePicker = ({
   id,
@@ -16,13 +14,13 @@ export const FilePicker = ({
   onEvent,
   darkMode,
   styles,
-  setExposedVariable,
+  registerAction,
   dataCy,
 }) => {
   const currentState = useCurrentState();
   //* properties definitions
   const instructionText =
-    component.definition.properties.instructionText?.value ?? 'Drag and drop files here or click to select files';
+    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -55,10 +53,6 @@ export const FilePicker = ({
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   const parsedWidgetVisibility =
     typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
-
-  const { events: allAppEvents } = useAppInfo();
-
-  const filePickerEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
 
   const bgThemeColor = darkMode ? '#232E3C' : '#fff';
 
@@ -193,7 +187,7 @@ export const FilePicker = ({
       name: file.name,
       type: file.type,
       content: readFileAsText,
-      dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
+      dataURL: `data:${file.type};base64,${readFileAsDataURL}`, // 合并成Base64字符格式
       base64Data: readFileAsDataURL,
       parsedData: shouldProcessFileParsing
         ? await processFileContent(file.type, { readFileAsDataURL, readFileAsText })
@@ -227,10 +221,10 @@ export const FilePicker = ({
     const fileSize = formatFileSize(rejectedFileSize);
 
     if (code === errorType.MIN_SIZE) {
-      return `File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`;
+      return `文件 ${fileSize} 太小. 最小文件大小为 ${formatFileSize(parsedMinSize)}`;
     }
     if (code === errorType.MAX_SIZE) {
-      return `File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`;
+      return `文件 ${fileSize} 太大. 最大文件大小为 ${formatFileSize(parsedMaxSize)}`;
     }
 
     return message;
@@ -241,7 +235,7 @@ export const FilePicker = ({
       onComponentOptionChanged(component, 'file', [], id);
     }
 
-    if (acceptedFiles.length !== 0 && onEvent) {
+    if (acceptedFiles.length !== 0) {
       const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
         onComponentOptionChanged(component, 'isParsing', true, id);
@@ -256,8 +250,7 @@ export const FilePicker = ({
       });
       setSelectedFiles(fileData);
       onComponentOptionChanged(component, 'file', fileData, id);
-
-      onEvent('onFileSelected', filePickerEvents, { component })
+      onEvent('onFileSelected', { component })
         .then(() => {
           setAccepted(true);
           // eslint-disable-next-line no-unused-vars
@@ -270,7 +263,7 @@ export const FilePicker = ({
             }, 600);
           });
         })
-        .then(() => onEvent('onFileLoaded', filePickerEvents, { component }));
+        .then(() => onEvent('onFileLoaded', { component }));
     }
 
     if (fileRejections.length > 0) {
@@ -293,7 +286,7 @@ export const FilePicker = ({
       copy.splice(index, 1);
       return copy;
     });
-    onEvent('onFileDeselected', filePickerEvents);
+    onEvent('onFileDeselected', { component });
   };
 
   useEffect(() => {
@@ -301,11 +294,16 @@ export const FilePicker = ({
       setShowSelectedFiles(false);
     }
     onComponentOptionChanged(component, 'file', selectedFiles, id);
-    setExposedVariable('clearFiles', async function () {
-      setSelectedFiles([]);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
+
+  registerAction(
+    'clearFiles',
+    async function () {
+      setSelectedFiles([]);
+    },
+    [setSelectedFiles]
+  );
 
   return (
     <section>
@@ -348,7 +346,7 @@ export const FilePicker = ({
 
         <FilePicker.Signifiers
           signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
-          feedback={'All files will be accepted'}
+          feedback={'松开鼠标上传文件.'}
           cls="text-lime mt-3"
         />
         <FilePicker.Signifiers
@@ -357,7 +355,7 @@ export const FilePicker = ({
           cls="text-red mt-3"
         />
 
-        <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
+        <FilePicker.Signifiers signifier={isDragReject} feedback={'文件将被拒绝.'} cls="text-red mt-3" />
       </div>
     </section>
   );
@@ -384,7 +382,7 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
   };
   return (
     <aside style={styles}>
-      <span className="text-info">Files</span>
+      <span className="text-info">文件列表</span>
       <div className="row accepted-files">{children}</div>
     </aside>
   );

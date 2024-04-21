@@ -15,8 +15,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   };
   const activeStepHandler = (id) => {
     const active = steps.filter((item) => item.id == id);
-    setExposedVariable('currentStepId', active[0].id);
-    fireEvent('onSelect');
+    setExposedVariable('currentStepId', active[0].id).then(() => fireEvent('onSelect'));
     setActiveStep(active[0].id);
   };
 

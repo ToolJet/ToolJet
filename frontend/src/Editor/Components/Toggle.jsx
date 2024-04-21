@@ -52,7 +52,7 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col px-1 py-0 mt-0">
+      <div className="col px-1 py-0 my-auto">
         <Switch
           disabledState={disabledState}
           on={on}

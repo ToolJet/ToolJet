@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import Markdown from 'react-markdown';
-import './text.scss';
-import Loader from '@/ToolJetUI/Loader/Loader';
+import Markdown from "react-markdown";
 
-const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
-  top: 'flex-start',
-  center: 'center',
-  bottom: 'flex-end',
-};
-
-export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
+export const Text = function Text({
+  height,
+  properties,
+  styles,
+  darkMode,
+  registerAction,
+  setExposedVariable,
+  dataCy,
+}) {
   let {
     textSize,
     textColor,
@@ -25,85 +25,59 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     letterSpacing,
     wordSpacing,
     fontVariant,
+    disabledState,
     boxShadow,
-    verticalAlignment,
-    borderColor,
-    borderRadius,
-    isScrollRequired,
   } = styles;
-  const { loadingState, textFormat, disabledState } = properties;
-  const [text, setText] = useState(() => computeText());
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isLoading, setLoading] = useState(loadingState);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
+  const { loadingState } = properties;
+  const [text, setText] = useState('');
+  const [visibility, setVisibility] = useState(styles.visibility);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isLoading !== loadingState) setLoading(loadingState);
-    if (isDisabled !== disabledState) setIsDisabled(disabledState);
-
+    if (visibility !== styles.visibility) setVisibility(styles.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, loadingState, disabledState]);
+  }, [styles.visibility]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const text = computeText();
     setText(text);
     setExposedVariable('text', text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.text]);
 
-    setExposedVariable('setText', async function (text) {
+  registerAction(
+    'setText',
+    async function (text) {
       setText(text);
       setExposedVariable('text', text);
-    });
-    setExposedVariable('clear', async function (text) {
-      setText('');
-      setExposedVariable('text', '');
-    });
-    setExposedVariable('isVisible', properties.visibility);
-    setExposedVariable('isLoading', loadingState);
-    setExposedVariable('isDisabled', disabledState);
-
-    setExposedVariable('visibility', async function (value) {
+    },
+    [setText]
+  );
+  registerAction(
+    'visibility',
+    async function (value) {
       setVisibility(value);
-    });
-
-    setExposedVariable('setVisibility', async function (value) {
-      setVisibility(value);
-    });
-
-    setExposedVariable('setLoading', async function (value) {
-      setLoading(value);
-    });
-
-    setExposedVariable('setDisable', async function (value) {
-      setIsDisabled(value);
-    });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    properties.text,
-    setText,
-    setVisibility,
-    properties.visibility,
-    loadingState,
-    disabledState,
-    setIsDisabled,
-    setLoading,
-  ]);
+    },
+    [setVisibility]
+  );
 
   function computeText() {
-    return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
+    if (properties.text instanceof String)
+      return properties.text
+    else if (typeof properties.text == 'object')
+      return JSON.stringify(properties.text)
+    else
+      return properties.text?.toString() || ""
   }
 
-  const handleClick = () => {
-    fireEvent('onClick');
-  };
-
   const computedStyles = {
-    height: `${height}px`,
-    backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
+    backgroundColor,
     color,
-    display: visibility ? 'flex' : 'none',
+    height,
+    display: visibility ? (properties.markDownMode ? '' : 'flex') : 'none',
+    alignItems: 'center',
+    textAlign,
     fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',
     lineHeight: lineHeight ?? 1.5,
     textDecoration: decoration ?? 'none',
@@ -114,62 +88,21 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     letterSpacing: `${letterSpacing}px` ?? '0px',
     wordSpacing: `${wordSpacing}px` ?? '0px',
     boxShadow,
-    border: '1px solid',
-    borderColor: darkMode && ['#f2f2f5'].includes(borderColor) ? '#2f3c4c' : borderColor ? borderColor : 'transparent',
-    borderRadius: borderRadius ? `${borderRadius}px` : '0px',
-    fontSize: `${textSize}px`,
   };
-
-  const commonStyles = {
-    width: '100%',
-    height: '100%',
-    overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
-    textAlign,
-    overflowX: isScrollRequired === 'disabled' && 'hidden',
-  };
-
-  const commonScrollStyle = {
-    overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'hidden',
-  };
-
+  //添加Markdown解析
   return (
-    <div
-      data-disabled={isDisabled}
-      className="text-widget"
-      style={computedStyles}
-      data-cy={dataCy}
-      onMouseOver={() => {
-        fireEvent('onHover');
-      }}
-      onClick={handleClick}
-    >
-      {!isLoading && (
-        <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div style={commonScrollStyle}>{text}</div>}
-          {textFormat === 'markdown' && (
-            <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'}>{text}</Markdown>
-            </div>
-          )}
-          {(textFormat === 'html' || !textFormat) && (
-            <div
-              style={commonScrollStyle}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(text || ''),
-              }}
-            />
-          )}
-        </div>
-      )}
-      {isLoading === true && (
-        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div data-disabled={disabledState} className="text-widget" style={computedStyles} data-cy={dataCy}>
+      {loadingState ? (
+        <div style={{ width: '100%' }}>
           <center>
-            <Loader width="16" absolute={false} />
+            <div className="spinner-border" role="status"></div>
           </center>
         </div>
+      ) : properties.markDownMode ? (<Markdown>{text}</Markdown>) : (
+        <div
+          style={{ width: '100%', fontSize: textSize }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(properties.parseEnter ? text.replaceAll('\n', '<br>') : text) }}
+        />
       )}
     </div>
   );

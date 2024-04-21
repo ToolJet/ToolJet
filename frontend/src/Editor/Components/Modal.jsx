@@ -14,7 +14,7 @@ export const Modal = function Modal({
   styles,
   exposedVariables,
   setExposedVariable,
-  setExposedVariables,
+  registerAction,
   fireEvent,
   dataCy,
   height,
@@ -46,27 +46,27 @@ export const Modal = function Modal({
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setShowModal(false);
-        setExposedVariable('show', false);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setShowModal]);
+  registerAction(
+    'open',
+    async function () {
+      setExposedVariable('show', true);
+      setShowModal(true);
+    },
+    [setShowModal]
+  );
+  registerAction(
+    'close',
+    async function () {
+      setShowModal(false);
+      setExposedVariable('show', false);
+    },
+    [setShowModal]
+  );
 
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
     setShowModal(exposedVariables.show ?? false);
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
-    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
-    inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
@@ -129,8 +129,7 @@ export const Modal = function Modal({
 
   function hideModal() {
     setShowModal(false);
-    setExposedVariable('show', false);
-    fireEvent('onClose');
+    setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
@@ -160,7 +159,7 @@ export const Modal = function Modal({
   useEffect(() => {
     if (closeOnClickingOutside) {
       const handleClickOutside = (event) => {
-        const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
+        const modalRef = parentRef.current.parentElement.parentElement.parentElement;
 
         if (modalRef && modalRef === event.target) {
           hideModal();
@@ -176,12 +175,7 @@ export const Modal = function Modal({
   }, [closeOnClickingOutside, parentRef]);
 
   return (
-    <div
-      className="container d-flex align-items-center"
-      data-disabled={disabledState}
-      data-cy={dataCy}
-      style={{ height }}
-    >
+    <div className="container" data-disabled={disabledState} data-cy={dataCy}>
       {useDefaultButton && (
         <button
           disabled={disabledState}

@@ -82,23 +82,24 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
     height: '15px',
   };
   const renderPDF = () => (
-    <Document
-      file={url}
-      onLoadSuccess={onDocumentLoadSuccess}
-      onLoadError={onDocumentLoadError}
-      className="pdf-document"
-    >
-      {Array.from(new Array(numPages), (el, index) => (
-        <Page
-          pageNumber={index + 1}
-          width={scale ? width - 12 : undefined}
-          height={scale ? undefined : height}
-          key={`page_${index + 1}`}
-          inputRef={(el) => (pageRef.current[index] = el)}
-        />
-      ))}
-    </Document>
-  );
+      <Document
+        // 自动检测base64，并添加类型描述
+        file={(url && url.length > 1000 && /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/.test(url))?'data:application/pdf;base64,' + url:url}
+        onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={onDocumentLoadError}
+        className="pdf-document"
+      >
+        {Array.from(new Array(numPages), (el, index) => (
+          <Page
+            pageNumber={index + 1}
+            width={scale ? width - 12 : undefined}
+            height={scale ? undefined : height}
+            key={`page_${index + 1}`}
+            inputRef={(el) => (pageRef.current[index] = el)}
+          />
+        ))}
+      </Document>
+      );
 
   async function downloadFile(url, pdfName) {
     const pdf = await fetch(url);
@@ -130,13 +131,13 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
           ref={documentRef}
           onScroll={handleScroll}
         >
-          {url === '' ? 'No PDF file specified' : renderPDF()}
+          {url === '' ? '未指定PDF文件' : renderPDF()}
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
             className={`d-flex ${
               pageControls ? 'justify-content-between' : 'justify-content-end'
-            } py-3 px-3 align-items-baseline bg-white border-top border-light`}
+              } py-3 px-3 align-items-baseline bg-white border-top border-light`}
           >
             {pageControls && (
               <>
@@ -150,7 +151,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
                     ‹
                   </button>
                   <span>
-                    {pageNumber} of {numPages}
+                    {pageNumber} / {numPages}
                   </span>
                   <button
                     disabled={pageNumber >= numPages}
@@ -175,7 +176,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
                   style={downloadIconImgStyle}
                   className="mx-1"
                 />
-                <span className="mx-1">Download PDF</span>
+                <span className="mx-1">下载PDF</span>
               </div>
             )}
           </div>

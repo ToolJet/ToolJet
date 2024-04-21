@@ -1,11 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
-import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
 import _ from 'lodash';
+import moment from 'moment';
 
 const localizer = momentLocalizer(moment);
+const messages = {
+  week: '周视图',
+  work_week: '周工作',
+  day: '日视图',
+  month: '月视图',
+  previous: '向前',
+  next: '往后',
+  today: `今天`,
+  agenda: '日程列表',
+  date: '日期',
+  time: '时间',
+  event: '事件',
+  noEventsInRange: "您还未添加过待办。",
+  showMore: (total) => `+${total} plus`,
+}
+const formats = {
+  dayFormat: 'D',
+  weekdayFormat: 'dd',
+  monthHeaderFormat: 'YYYY年 M月',
+  dayHeaderFormat: 'Y年M月D日 dddd',
+  weekHeaderFormat: 'Y年M月D日 dddd',
+  dayRangeHeaderFormat: ({ start, end }) => {
+    const s = moment(start).format('M月D日');
+    const e = moment(end).format('M月D日');
+    return `${s} - ${e}`;
+  },
+  agendaDateFormat: 'M月D日 ddd',
+  agendaTimeFormat: 'h:mm A',
+  agendaTimeRangeFormat: ({ start, end }) => {
+    const s = moment(start).format('h:mm A');
+    const e = moment(end).format('h:mm A');
+    return `${s} - ${e}`;
+  },
+}
 
 const prepareEvent = (event, dateFormat) => ({
   ...event,
@@ -24,7 +58,7 @@ const parseDate = (date, dateFormat) => {
   return parsed;
 };
 
-const allowedCalendarViews = ['month', 'week', 'day'];
+const allowedCalendarViews = ['month', 'week', 'day', 'agenda'];
 
 export const Calendar = function ({
   id,
@@ -81,7 +115,7 @@ export const Calendar = function ({
       action,
     };
 
-    fireEvent('onCalendarSlotSelect', { component, selectedSlots });
+    fireEvent('onCalendarSlotSelect', { selectedSlots });
   };
 
   function popoverClosed() {
@@ -111,10 +145,10 @@ export const Calendar = function ({
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(moment(defaultDate).format('DD-MM-YYYY'))]);
+  }, [JSON.stringify(moment(defaultDate).format('YYYY-MM-DD'))]);
 
   const components = {
-    timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
+    timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center' }}>全天</div>,
     week: {
       header: (props) => <div>{moment(props.date).format(styles.weekDateFormat)}</div>,
     },
@@ -134,12 +168,14 @@ export const Calendar = function ({
         ${exposedVariables.currentView === 'week' ? 'resources-week-cls' : ''}
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
+        messages={messages}
         date={currentDate}
         events={events}
         startAccessor="start"
         endAccessor="end"
         style={style}
         views={allowedCalendarViews}
+        formats={formats}
         defaultView={defaultView}
         view={defaultView}
         onView={(view) => {
@@ -153,7 +189,7 @@ export const Calendar = function ({
         min={startTime}
         max={endTime}
         onSelectEvent={(calendarEvent, e) => {
-          fireEvent('onCalendarEventSelect', { component, calendarEvent });
+          fireEvent('onCalendarEventSelect', { calendarEvent });
           if (properties.showPopOverOnEventClick)
             setEventPopoverOptions({
               ...eventPopoverOptions,

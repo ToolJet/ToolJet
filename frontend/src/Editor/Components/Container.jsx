@@ -16,6 +16,8 @@ export const Container = function Container({
   properties,
 }) {
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
+  // 是否显示滚动条
+  const showScroll = component.definition.properties.showScroll.value == '{{true}}' ? true : false;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
@@ -24,7 +26,7 @@ export const Container = function Container({
     border: `1px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
-    overflow: 'hidden auto',
+    overflow: showScroll ? 'hidden auto' : 'hidden',
     position: 'relative',
     boxShadow,
   };

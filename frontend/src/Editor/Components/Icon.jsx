@@ -3,18 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 
-export const Icon = ({
-  properties,
-  styles,
-  fireEvent,
-  width,
-  height,
-  setExposedVariable,
-  setExposedVariables,
-  darkMode,
-  dataCy,
-  component,
-}) => {
+export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode, dataCy, component }) => {
   const { icon } = properties;
   const { iconColor, visibility, boxShadow } = styles;
   // eslint-disable-next-line import/namespace
@@ -31,18 +20,17 @@ export const Icon = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
-  useEffect(() => {
-    const exposedVariables = {
-      setVisibility: async function (visibility) {
-        setIconVisibility(visibility);
-      },
-      click: async function () {
-        fireEvent('onClick');
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setIconVisibility]);
+  registerAction(
+    'setVisibility',
+    async function (visibility) {
+      setIconVisibility(visibility);
+    },
+    [setIconVisibility]
+  );
+
+  registerAction('click', async function () {
+    fireEvent('onClick');
+  });
 
   return (
     <div
@@ -51,7 +39,7 @@ export const Icon = ({
     >
       <IconElement
         color={color}
-        style={{ width, height, boxShadow, color: iconColor }}
+        style={{ width, height, boxShadow }}
         onClick={(event) => {
           event.stopPropagation();
           fireEvent('onClick');

@@ -17,17 +17,15 @@ export const Multiselect = function Multiselect({
   styles,
   exposedVariables,
   setExposedVariable,
-  setExposedVariables,
   onComponentClick,
   darkMode,
   fireEvent,
+  registerAction,
   dataCy,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const [selected, setSelected] = useState([]);
-  const [searched, setSearched] = useState('');
-
   let selectOptions = [];
   try {
     selectOptions = [
@@ -71,76 +69,85 @@ export const Multiselect = function Multiselect({
     setExposedVariable(
       'values',
       items.map((item) => item.value)
-    );
-    fireEvent('onSelect');
+    ).then(() => fireEvent('onSelect'));
   };
 
-  useEffect(() => {
-    const exposedVariables = {
-      selectOption: async function (value) {
-        if (
-          selectOptions.some((option) => option.value === value) &&
-          !selected.some((option) => option.value === value)
-        ) {
-          const newSelected = [
-            ...selected,
-            ...selectOptions.filter(
-              (option) =>
-                option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
-            ),
-          ];
-          setSelected(newSelected);
-          setExposedVariable(
-            'values',
-            newSelected.map((item) => item.value)
-          );
-          fireEvent('onSelect');
-        }
-      },
-      deselectOption: async function (value) {
-        if (
-          selectOptions.some((option) => option.value === value) &&
-          selected.some((option) => option.value === value)
-        ) {
-          const newSelected = [
-            ...selected.filter(function (item) {
-              return item.value !== value;
-            }),
-          ];
-          setSelected(newSelected);
-          setExposedVariable(
-            'values',
-            newSelected.map((item) => item.value)
-          );
-          fireEvent('onSelect');
-        }
-      },
-      clearSelections: async function () {
-        if (selected.length >= 1) {
-          setSelected([]);
-          setExposedVariable('values', []);
-          fireEvent('onSelect');
-        }
-      },
-    };
+  registerAction(
+    'selectOption',
+    async function (value) {
+      if (
+        selectOptions.some((option) => option.value === value) &&
+        !selected.some((option) => option.value === value)
+      ) {
+        const newSelected = [
+          ...selected,
+          ...selectOptions.filter(
+            (option) =>
+              option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
+          ),
+        ];
+        setSelected(newSelected);
+        setExposedVariable(
+          'values',
+          newSelected.map((item) => item.value)
+        ).then(() => fireEvent('onSelect'));
+      }
+    },
+    [selected, setSelected]
+  );
+  registerAction(
+    'deselectOption',
+    async function (value) {
+      if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
+        const newSelected = [
+          ...selected.filter(function (item) {
+            return item.value !== value;
+          }),
+        ];
+        setSelected(newSelected);
+        setExposedVariable(
+          'values',
+          newSelected.map((item) => item.value)
+        ).then(() => fireEvent('onSelect'));
+      }
+    },
+    [selected, setSelected]
+  );
+  registerAction(
+    'clearSelections',
+    async function () {
+      if (selected.length >= 1) {
+        setSelected([]);
+        setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+      }
+    },
+    [selected, setSelected]
+  );
 
-    setExposedVariables(exposedVariables);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, setSelected]);
-
-  const filterOptions = (options, filter) => {
-    setSearched(filter);
-
-    if (searched !== filter) {
-      setExposedVariable('searchText', filter);
-      fireEvent('onSearchTextChanged');
+  const overrideStrings = {
+    "allItemsAreSelected": "项目已全选.",
+    "clearSearch": "清除搜索",
+    "clearSelected": "清除选择",
+    "noOptions": "未找到",
+    "search": "搜索",
+    "selectAll": "全选",
+    "selectAllFiltered": "全选 (筛选项)",
+    "selectSomeItems": "请选择...",
+    "create": "创建",
+  }
+  const selectPinYin = (option, input) => {
+    if (input === '') return option;
+    else if (input && (input.charCodeAt() >= 32 && input.charCodeAt() <= 126)) {
+      return option.filter(item => {
+        if (item.label.spell('first').toLowerCase().indexOf(input.toLowerCase()) >= 0) return true
+        else if (item.label.spell().toLowerCase().indexOf(input.toLowerCase()) >= 0) return true
+        else return false
+      })
+    } else {
+      return option.filter(item => {
+        return item.label.toLowerCase().indexOf(input.toLowerCase())>=0
+      })
     }
-    if (!filter) return options;
-
-    return options.filter(
-      ({ label, value }) => label != null && value != null && label.toLowerCase().includes(filter.toLowerCase())
-    );
   };
 
   return (
@@ -171,8 +178,8 @@ export const Multiselect = function Multiselect({
           disabled={disabledState}
           className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
           ItemRenderer={ItemRenderer}
-          filterOptions={filterOptions}
-          debounceDuration={0}
+          overrideStrings={overrideStrings}
+          filterOptions={selectPinYin}
         />
       </div>
     </div>

@@ -6,9 +6,9 @@ export const ColorPicker = function ({
   properties,
   styles,
   setExposedVariable,
-  setExposedVariables,
   darkMode,
   height,
+  registerAction,
   fireEvent,
   dataCy,
 }) {
@@ -46,75 +46,51 @@ export const ColorPicker = function ({
     return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
   };
 
-  useEffect(() => {
-    let exposedVariables = {};
-    setExposedVariable('setColor', async function (colorCode) {
+  registerAction(
+    'setColor',
+    async function (colorCode) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(colorCode)) {
         if (colorCode !== color) {
           setColor(colorCode);
-          exposedVariables = {
-            selectedColorHex: colorCode,
-            selectedColorRGB: hexToRgb(colorCode),
-            selectedColorRGBA: hexToRgba(colorCode),
-          };
-          setExposedVariables(exposedVariables);
-
-          fireEvent('onChange');
+          setExposedVariable('selectedColorHex', `${colorCode}`);
+          setExposedVariable('selectedColorRGB', hexToRgb(colorCode));
+          setExposedVariable('selectedColorRGBA', hexToRgba(colorCode)).then(() => fireEvent('onChange'));
         }
       } else {
-        exposedVariables = {
-          selectedColorHex: undefined,
-          selectedColorRGB: undefined,
-          selectedColorRGBA: undefined,
-        };
-        setExposedVariables(exposedVariables);
-
-        fireEvent('onChange');
+        setExposedVariable('selectedColorHex', 'undefined');
+        setExposedVariable('selectedColorRGB', 'undefined');
+        setExposedVariable('selectedColorRGBA', 'undefined').then(() => fireEvent('onChange'));
         setColor('Invalid Color');
       }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setColor]);
+    },
+    [setColor]
+  );
 
   useEffect(() => {
-    let exposedVariables = {};
     if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {
       if (defaultColor !== color) {
-        exposedVariables = {
-          selectedColorHex: defaultColor,
-          selectedColorRGB: hexToRgb(defaultColor),
-          selectedColorRGBA: hexToRgba(defaultColor),
-        };
-        setExposedVariables(exposedVariables);
-
+        setExposedVariable('selectedColorHex', `${defaultColor}`);
+        setExposedVariable('selectedColorRGB', hexToRgb(defaultColor));
+        setExposedVariable('selectedColorRGBA', hexToRgba(defaultColor));
         setColor(defaultColor);
       }
     } else {
-      exposedVariables = {
-        selectedColorHex: undefined,
-        selectedColorRGB: undefined,
-        selectedColorRGBA: undefined,
-      };
-      setExposedVariables(exposedVariables);
-
+      setExposedVariable('selectedColorHex', 'undefined');
+      setExposedVariable('selectedColorRGB', 'undefined');
+      setExposedVariable('selectedColorRGBA', 'undefined');
       setColor(`Invalid Color`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultColor]);
 
   const handleColorChange = (colorCode) => {
-    let exposedVariables = {};
     const { r, g, b, a } = colorCode.rgb;
     const { hex: hexColor } = colorCode;
     if (hexColor !== color) {
       setColor(hexColor);
-      exposedVariables = {
-        selectedColorHex: hexColor,
-        selectedColorRGB: `rgb(${r},${g},${b})`,
-        selectedColorRGBA: `rgb(${r},${g},${b},${a})`,
-      };
-      setExposedVariables(exposedVariables);
-      fireEvent('onChange');
+      setExposedVariable('selectedColorHex', `${hexColor}`);
+      setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`);
+      setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`).then(() => fireEvent('onChange'));
     }
   };
   //background color style for the div dispaying box filled by selected color

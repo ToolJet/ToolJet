@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
 import { Pagination } from '@/_components/Pagination';
-import { removeFunctionObjects } from '@/_helpers/appUtils';
 
 export const Listview = function Listview({
   id,
@@ -15,7 +14,6 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
-  setExposedVariables,
   darkMode,
   dataCy,
 }) {
@@ -48,29 +46,25 @@ export const Listview = function Listview({
   };
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
-  const parentRef = useRef(null);
-  const [childrenData, setChildrenData] = useState({});
 
-  function onRecordClicked(index) {
-    setSelectedRowIndex(index);
-    const exposedVariables = {
-      selectedRecordId: index,
-      selectedRecord: childrenData[index],
-    };
-    setExposedVariables(exposedVariables);
-    fireEvent('onRecordClicked');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }
   function onRowClicked(index) {
     setSelectedRowIndex(index);
-    const exposedVariables = {
-      selectedRowId: index,
-      selectedRow: childrenData[index],
-    };
-    setExposedVariables(exposedVariables);
+    setExposedVariable('selectedRowId', index);
+    setExposedVariable('selectedRow', childrenData[index]);
     fireEvent('onRowClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
+  function onRecordClicked(index) {
+    setSelectedRowIndex(index);
+    setExposedVariable('selectedRecordId', index);
+    setExposedVariable('selectedRecord', childrenData[index]);
+    fireEvent('onRecordClicked');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
+
+  const parentRef = useRef(null);
+
+  const [childrenData, setChildrenData] = useState({});
 
   useEffect(() => {
     if (columns < 1) {
@@ -79,19 +73,15 @@ export const Listview = function Listview({
   }, [columns]);
 
   useEffect(() => {
-    const childrenDataClone = _.cloneDeep(childrenData);
+    setExposedVariable('data', {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    const exposedVariables = {
-      data: removeFunctionObjects(childrenDataClone),
-      children: childrenData,
-    };
-    setExposedVariables(exposedVariables);
+  useEffect(() => {
+    setExposedVariable('data', childrenData);
     if (selectedRowIndex != undefined) {
-      const exposedVariables = {
-        selectedRowId: selectedRowIndex,
-        selectedRow: childrenData[selectedRowIndex],
-      };
-      setExposedVariables(exposedVariables);
+      setExposedVariable('selectedRowId', selectedRowIndex);
+      setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
@@ -127,7 +117,7 @@ export const Listview = function Listview({
             key={index}
             data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
-              event.preventDefault();
+              event.stopPropagation();
               onRecordClicked(index);
               onRowClicked(index);
             }}
@@ -168,17 +158,13 @@ export const Listview = function Listview({
           style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0 }}
         >
           <div style={{ backgroundColor }}>
-            {data?.length > 0 ? (
-              <Pagination
-                darkMode={darkMode}
-                currentPage={currentPage}
-                pageChanged={pageChanged}
-                count={data?.length}
-                itemsPerPage={rowPerPageValue}
-              />
-            ) : (
-              <div style={{ height: '61px' }}></div>
-            )}
+            <Pagination
+              darkMode={darkMode}
+              currentPage={currentPage}
+              pageChanged={pageChanged}
+              count={data?.length}
+              itemsPerPage={rowPerPageValue}
+            />
           </div>
         </div>
       )}
