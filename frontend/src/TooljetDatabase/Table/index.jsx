@@ -1321,42 +1321,39 @@ const Table = ({ collapseSidebar }) => {
                                       {cell.value === null ? (
                                         <span className="cell-text-null">Null</span>
                                       ) : cell.column.dataType === 'boolean' ? (
-                                        <div
-                                          className="d-flex align-items-center justify-content-between"
-                                          onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
-                                        >
-                                          <div className="row" style={{ width: '33px' }}>
-                                            <div className="col-1">
-                                              <label className={`form-switch`}>
-                                                <input
-                                                  className="form-check-input"
-                                                  type="checkbox"
-                                                  checked={cell.value}
-                                                  onChange={() => {
-                                                    if (shouldOpenCellEditMenu(index)) {
-                                                      handleToggleCellEdit(
-                                                        cell.value,
-                                                        row.values.id,
-                                                        index,
-                                                        rIndex,
-                                                        true,
-                                                        cell.value
-                                                      );
-                                                    }
-                                                  }}
-                                                />
-                                              </label>
-                                            </div>
+                                        // <div className="d-flex align-items-center justify-content-between">
+                                        <div className="row" style={{ width: '33px' }}>
+                                          <div className="col-1">
+                                            <label className={`form-switch`}>
+                                              <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                checked={cell.value}
+                                                onChange={() => {
+                                                  if (shouldOpenCellEditMenu(index)) {
+                                                    handleToggleCellEdit(
+                                                      cell.value,
+                                                      row.values.id,
+                                                      index,
+                                                      rIndex,
+                                                      true,
+                                                      cell.value
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                            </label>
                                           </div>
-                                          <ToolTip
-                                            message={'Open referenced table'}
-                                            placement="top"
-                                            tooltipClassName="tootip-table"
-                                          >
-                                            <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
-                                          </ToolTip>
                                         </div>
                                       ) : (
+                                        //   <ToolTip
+                                        //     message={'Open referenced table'}
+                                        //     placement="top"
+                                        //     tooltipClassName="tootip-table"
+                                        //   >
+                                        //     <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                        //   </ToolTip>
+                                        // </div>
                                         <div
                                           className={cx({
                                             'foreignkey-cell': isForeignKey,
