@@ -4,6 +4,7 @@ import Table from '../Table';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
 import Warning from '../Icons/warning.svg';
+import WarningDark from '../Icons/warning-dark.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -28,8 +29,8 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
       <>
         <div className="empty-table-container">
           <div>
-            <div className="warning-icon-container">
-              <Warning />
+            <div className={darkMode ? 'warning-icon-container-dark' : 'warning-icon-container'}>
+              {darkMode ? <WarningDark /> : <Warning />}
             </div>
             <div className="text-h3" style={{ width: '400px', textAlign: 'center' }} data-cy="do-not-have-records-text">
               {emptyMessage}
@@ -37,7 +38,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
             </div>
             <div className="tjdb-create-new-table">
               <ButtonSolid
-                variant="tertiary"
+                variant={`${darkMode ? 'zBlack' : 'tertiary'}`}
                 disabled={false}
                 onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
                 size="sm"

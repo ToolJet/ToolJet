@@ -17,6 +17,7 @@ import TableFooter from './Footer';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
+import WarningDark from '../Icons/warning-dark.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -69,7 +70,11 @@ const Table = ({ collapseSidebar }) => {
     errorState: false,
   });
   const [filterEnable, setFilterEnable] = useState(false);
-  const selectedCellRef = useRef({ rowIndex: null, columnIndex: null, editable: false });
+  const selectedCellRef = useRef({
+    rowIndex: null,
+    columnIndex: null,
+    editable: false,
+  });
 
   const [cellVal, setCellVal] = useState('');
   const [editPopover, setEditPopover] = useState(false);
@@ -86,7 +91,11 @@ const Table = ({ collapseSidebar }) => {
   const updateCellNavigationRefToDefault = () => {
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
       removeCellSelectionClassNames(selectedCellRef.current.rowIndex, selectedCellRef.current.columnIndex);
-    selectedCellRef.current = { rowIndex: null, columnIndex: null, editable: false };
+    selectedCellRef.current = {
+      rowIndex: null,
+      columnIndex: null,
+      editable: false,
+    };
   };
 
   const toggleSelectOrDeSelectAllRows = (totalRowsCount) => {
@@ -1082,7 +1091,6 @@ const Table = ({ collapseSidebar }) => {
                           </div>
                         </div>
                       </td>
-
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
@@ -1110,6 +1118,8 @@ const Table = ({ collapseSidebar }) => {
                                     cellClick.cellIndex === index &&
                                     cellClick.editable === true
                                   ? 'table-editable-parent-cell'
+                                  : darkMode
+                                  ? `table-cell table-cell-dark`
                                   : `table-cell`
                               }`,
                               {
@@ -1318,8 +1328,8 @@ const Table = ({ collapseSidebar }) => {
         {rows.length === 0 && !loadingState && (
           <div className="empty-table-container">
             <div>
-              <div className="warning-icon-container">
-                <Warning />
+              <div className={darkMode ? 'warning-icon-container-dark' : 'warning-icon-container'}>
+                {darkMode ? <WarningDark /> : <Warning />}
               </div>
               <div
                 className="text-h3"
@@ -1340,7 +1350,7 @@ const Table = ({ collapseSidebar }) => {
                 >
                   <span className="col-auto">
                     <ButtonSolid
-                      variant="tertiary"
+                      variant={`${darkMode ? 'zBlack' : 'tertiary'}`}
                       disabled={false}
                       onClick={() => toggleAddNewDataMenu(true)}
                       size="sm"
