@@ -20,6 +20,8 @@ import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { ModuleContext } from '../../../../_contexts/ModuleContext';
 import { useSuperStore } from '@/_stores/superStore';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
+
+const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
   static contextType = ModuleContext;
 
@@ -49,6 +51,7 @@ class TableComponent extends React.Component {
       actionPopOverRootClose: true,
       showPopOver: false,
       popOverRootCloseBlockers: [],
+      isAllColumnsEditable: false,
       activeColumnPopoverIndex: null,
     };
   }
@@ -73,7 +76,26 @@ class TableComponent extends React.Component {
       eventOptionUpdated,
       components,
       currentState,
+      isAllColumnsEditable: this.checkIfAllColumnsAreEditable(this.props.component),
     });
+  }
+
+  checkIfAllColumnsAreEditable = (component) => {
+    const isAllColumnsEditable = component.component?.definition?.properties?.columns?.value
+      ?.filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
+      .every((column) => resolveReferences(column.isEditable, this.props.currentState));
+    return isAllColumnsEditable;
+  };
+
+  componentDidUpdate(prevProps) {
+    const prevPropsColumns = prevProps?.component?.component.definition.properties.columns?.value;
+    const currentPropsColumns = this.props.component.component.definition.properties.columns?.value;
+    if (prevPropsColumns !== currentPropsColumns) {
+      const isAllColumnsEditable = currentPropsColumns
+        .filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
+        .every((column) => resolveReferences(column.isEditable, this.props.currentState));
+      this.setState({ isAllColumnsEditable });
+    }
   }
 
   onActionButtonPropertyChanged = (index, property, value) => {
@@ -345,6 +367,7 @@ class TableComponent extends React.Component {
     newValue.push({
       name: this.generateNewColumnName(columns.value),
       id: uuidv4(),
+      isEditable: this.state?.isAllColumnsEditable,
       fxActiveFields: [],
       columnType: 'string',
     });
@@ -367,7 +390,9 @@ class TableComponent extends React.Component {
 
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
-    let column = columns.value[index];
+    const column = columns.value[index];
+    const isAllColumnsEditable = this.state.isAllColumnsEditable;
+
     if (item === 'columnType' && (value === 'select' || value === 'newMultiSelect')) {
       column?.options?.length > 0 && column.options.forEach((option) => unset(option, 'makeDefaultOption'));
       column.defaultOptionsList = [];
@@ -376,7 +401,29 @@ class TableComponent extends React.Component {
     const newColumns = columns.value;
     newColumns[index] = column;
 
+    if (NON_EDITABLE_COLUMNS.includes(newColumns[index].columnType)) {
+      newColumns[index].isEditable = '{{false}}';
+    }
+
+    if (item === 'columnType' && !NON_EDITABLE_COLUMNS.includes(value) && isAllColumnsEditable) {
+      newColumns[index].isEditable = '{{true}}';
+    }
+
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+
+    // When any of the column is not editable, we need to disable "make all columns editable" toggle
+    if (item === 'isEditable' && !resolveReferences(value) && isAllColumnsEditable) {
+      this.setState({ isAllColumnsEditable: false });
+    }
+    // Check if all columns are editable and also if we have disabled "make all columns editable" toggle, if yes then enable it
+    if (item === 'isEditable' && resolveReferences(value) && !isAllColumnsEditable) {
+      const _isAllColumnsEditable = newColumns
+        .filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
+        .every((column) => resolveReferences(column.isEditable));
+      if (_isAllColumnsEditable) {
+        this.setState({ isAllColumnsEditable: true });
+      }
+    }
   };
 
   getItemStyle = (isDragging, draggableStyle) => ({
@@ -417,6 +464,22 @@ class TableComponent extends React.Component {
 
   getPopoverFieldSource = (column, field) =>
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
+
+  handleMakeAllColumnsEditable = (value) => {
+    const columns = resolveReferences(
+      this.props.component.component.definition.properties.columns,
+      this.props.currentState
+    );
+
+    this.setState({ isAllColumnsEditable: resolveReferences(value) });
+
+    const newValue = columns.value.map((column) => ({
+      ...column,
+      isEditable: !NON_EDITABLE_COLUMNS.includes(column.columnType) ? value : '{{false}}',
+    }));
+
+    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
+  };
 
   duplicateColumn = (index) => {
     const columns = this.props.component.component.definition.properties?.columns ?? [];
@@ -463,6 +526,7 @@ class TableComponent extends React.Component {
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
         resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
+
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -502,6 +566,7 @@ class TableComponent extends React.Component {
                     <div className="w-100 d-flex custom-gap-4 flex-column" {...droppableProps} ref={innerRef}>
                       {columns.value.map((item, index) => {
                         const resolvedItemName = resolveReferences(item.name, this.state.currentState);
+                        const isEditable = resolveReferences(item.isEditable, this.state.currentState);
                         const columnVisibility = item?.columnVisibility ?? true;
                         const getSecondaryText = (text) => {
                           switch (text) {
@@ -573,7 +638,7 @@ class TableComponent extends React.Component {
                                       secondaryText={getSecondaryText(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
                                       enableActionsMenu={false}
-                                      isEditable={item.isEditable === '{{true}}'}
+                                      isEditable={isEditable}
                                       onMenuOptionClick={(listItem, menuOptionLabel) => {
                                         if (menuOptionLabel === 'Delete') {
                                           this.removeColumn(index, `${item.name}-${index}`);
@@ -612,11 +677,24 @@ class TableComponent extends React.Component {
               </DragDropContext>
               <div style={{ marginTop: '8px' }}>
                 {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
-                <div>
+                <div className="mb-2">
                   <AddNewButton dataCy={`button-add-column`} onClick={this.addNewColumn}>
                     {this.props.t('widget.Table.addNewColumn', ' Add new column')}
                   </AddNewButton>
                 </div>
+                <ProgramaticallyHandleProperties
+                  label="Make all columns editable'"
+                  currentState={this.state.currentState}
+                  darkMode={this.props.darkMode}
+                  callbackFunction={(index, property, value) => {
+                    this.handleMakeAllColumnsEditable(value);
+                  }}
+                  property="isAllColumnsEditable"
+                  props={{ isAllColumnsEditable: this.state.isAllColumnsEditable }}
+                  component={this.props.component}
+                  paramMeta={{ type: 'toggle', displayName: 'Make all columns editable' }}
+                  paramType="properties"
+                />
               </div>
             </List>
           )}
