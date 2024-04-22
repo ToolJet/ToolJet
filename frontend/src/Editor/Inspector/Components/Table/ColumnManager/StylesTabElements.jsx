@@ -161,7 +161,7 @@ export const StylesTabElements = ({
         <>
           <div data-cy={`input-and-label-text-color`} className="field px-3">
             <ProgramaticallyHandleProperties
-              label="Link color"
+              label="Text color"
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -169,7 +169,7 @@ export const StylesTabElements = ({
               property="linkColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Link color' }}
+              paramMeta={{ type: 'color', displayName: 'Text color' }}
               paramType="properties"
             />
           </div>
