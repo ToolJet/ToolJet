@@ -324,7 +324,9 @@ export function OpenIdSSOModal({
                       {t('header.organization.menus.manageSSO.openid.redirectUrl', 'Redirect URL')}
                     </label>
                     <div className="d-flex justify-content-between form-control align-items-center">
-                      <p data-cy="redirect-url" id="redirect-url">{`${getHostURL()}/sso/openid/${configId}`}</p>
+                      <p data-cy="redirect-url" id="redirect-url">{`${getHostURL()}/sso/openid${
+                        !instanceLevel ? `/${configId}` : ''
+                      }`}</p>
                       <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
                     </div>
                   </div>

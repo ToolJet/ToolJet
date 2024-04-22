@@ -100,8 +100,9 @@ export function AppModal({
           closeModal();
         }
       } catch (error) {
-        toast.error(e.error, {
+        toast.error(error.error, {
           position: 'top-center',
+          style: { fontSize: '12px' },
         });
       }
     }

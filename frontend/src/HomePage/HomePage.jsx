@@ -1199,7 +1199,6 @@ class HomePageComponent extends React.Component {
                     style={{ marginTop: '2rem' }}
                   />
                 )}
-
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />

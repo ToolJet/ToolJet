@@ -8,6 +8,8 @@ import { UsersService } from 'src/services/users.service';
 type Actions =
   | 'authorizeOauthForSource'
   | 'cloneApp'
+  | 'importApp'
+  | 'exportApp'
   | 'createApp'
   | 'createDataSource'
   | 'createQuery'
@@ -45,18 +47,23 @@ export class AppsAbilityFactory {
 
   async appsActions(user: User, id?: string) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppsAbility>);
+    const canUpdateApp = await this.usersService.userCan(user, 'update', 'App', id);
 
     if (await this.usersService.userCan(user, 'create', 'User')) {
       can('createUsers', App, { organizationId: user.organizationId });
     }
 
-    if (await this.usersService.userCan(user, 'update', 'App', id)) {
+    if (canUpdateApp) {
       can('editApp', App, { organizationId: user.organizationId });
     }
 
     if (await this.usersService.userCan(user, 'create', 'App')) {
       can('createApp', App);
-      can('cloneApp', App, { organizationId: user.organizationId });
+      can('importApp', App);
+      if (canUpdateApp) {
+        can('cloneApp', App, { organizationId: user.organizationId });
+        can('exportApp', App, { organizationId: user.organizationId });
+      }
     }
 
     if (await this.usersService.userCan(user, 'read', 'App', id)) {
@@ -76,7 +83,7 @@ export class AppsAbilityFactory {
       });
     }
 
-    if (await this.usersService.userCan(user, 'update', 'App', id)) {
+    if (canUpdateApp) {
       can('updateParams', App, { organizationId: user.organizationId });
       can('createVersions', App, { organizationId: user.organizationId });
       can('deleteVersions', App, { organizationId: user.organizationId });

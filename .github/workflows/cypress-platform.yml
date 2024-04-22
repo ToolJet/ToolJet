@@ -226,7 +226,7 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.121.104.58:8080/.well-known/openid-configuration" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
 
@@ -361,7 +361,7 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.121.104.58:8080/.well-known/openid-configuration" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
