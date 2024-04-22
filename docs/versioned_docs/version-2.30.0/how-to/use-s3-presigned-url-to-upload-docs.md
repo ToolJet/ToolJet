@@ -93,7 +93,7 @@ After setting up the parameters, click **Run** to run the query, and the URL can
 
   <div style={{textAlign: 'center'}}>
 
-  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/getSignedURL.png" alt="Use S3 pre-signed URL to upload documents: get signed URL"/>
+  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/get-signed-url.png" alt="Use S3 pre-signed URL to upload documents: get signed URL"/>
 
   </div>
 
@@ -131,7 +131,7 @@ After uploading the file to your bucket, in the files table, click on the **Copy
 
   <div style={{textAlign: 'center'}}>
 
-  <img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/accessSignedURL.png" alt="Use S3 pre-signed URL to upload documents: access signed URL"/>
+  <img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/access-signed-url.png" alt="Use S3 pre-signed URL to upload documents: access signed URL"/>
 
   </div>
 
