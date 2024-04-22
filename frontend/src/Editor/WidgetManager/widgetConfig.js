@@ -491,6 +491,7 @@ export const widgets = [
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
         autogenerateColumns: { value: true, generateNestedColumns: true },
+        isAllColumnsEditable: { value: '{{false}}' },
         columns: {
           value: [
             {
