@@ -6,11 +6,15 @@ import { tooljetDatabaseService } from '@/_services';
 import { renderDatatypeIcon } from '../constants';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import Information from '@/_ui/Icon/solidIcons/Information';
+import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 
 import './styles.scss';
 
-const RowForm = ({ onCreate, onClose }) => {
+const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const isForeignKey = true;
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
@@ -37,6 +41,15 @@ const RowForm = ({ onCreate, onClose }) => {
       }
     });
     return data;
+  });
+
+  // const referenceColumn = 'Name';
+
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
+    return {
+      label: item.Name,
+      value: item.Name,
+    };
   });
 
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType) => {
@@ -136,27 +149,56 @@ const RowForm = ({ onCreate, onClose }) => {
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            <input
-              //defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
-              type="text"
-              value={inputValues[index]?.value === null ? '' : inputValues[index]?.value}
-              onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-              disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
-              placeholder={
-                isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
-              }
-              className={
-                isSerialDataTypeColumn && !darkMode
-                  ? 'primary-idKey-light'
-                  : isSerialDataTypeColumn && darkMode
-                  ? 'primary-idKey-dark'
-                  : !darkMode
-                  ? 'form-control'
-                  : 'form-control dark-form-row'
-              }
-              data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
-              autoComplete="off"
-            />
+            {isForeignKey ? (
+              <DropDownSelect
+                buttonClasses="border border-end-1 foreignKeyAcces-container"
+                showPlaceHolder={true}
+                options={referenceTableDetails}
+                darkMode={darkMode}
+                emptyError={
+                  <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                    <Information />
+                    No table selected
+                  </div>
+                }
+                value={referencedColumnDetails[0]}
+                foreignKeyAccessInRowForm={true}
+                disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
+                topPlaceHolder={
+                  isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
+                }
+                // onChange={(value) => {
+                //   setTable(value);
+                //   handleSelectColumn(value?.value);
+                // }}
+                onAdd={true}
+                addBtnLabel={'Open referenced table'}
+                // showRedirection={showRedirection}
+                // showDescription={showDescription}
+              />
+            ) : (
+              <input
+                //defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
+                type="text"
+                value={inputValues[index]?.value === null ? '' : inputValues[index]?.value}
+                onChange={(e) => handleInputChange(index, e.target.value, columnName)}
+                disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
+                placeholder={
+                  isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
+                }
+                className={
+                  isSerialDataTypeColumn && !darkMode
+                    ? 'primary-idKey-light'
+                    : isSerialDataTypeColumn && darkMode
+                    ? 'primary-idKey-dark'
+                    : !darkMode
+                    ? 'form-control'
+                    : 'form-control dark-form-row'
+                }
+                data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
+                autoComplete="off"
+              />
+            )}
             {inputValues[index].value === null && (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             )}
@@ -220,7 +262,16 @@ const RowForm = ({ onCreate, onClose }) => {
                         {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                       </span>
                       <span style={{ marginRight: '5px' }}>{headerText}</span>
-                      {constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
+                      {constraints_type?.is_primary_key === true && (
+                        <span style={{ marginRight: '3px' }}>
+                          <SolidIcon name="primarykey" />
+                        </span>
+                      )}
+                      {/* {isForeignKey === true && (
+                        <span>
+                          <ForeignKeyIndicator />
+                        </span>
+                      )} */}
                     </div>
                   </div>
                   <div

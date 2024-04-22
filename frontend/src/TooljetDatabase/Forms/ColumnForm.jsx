@@ -242,12 +242,18 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
           position="right"
           drawerStyle={{ width: '500px' }}
           isForeignKeyRelation={true}
-          onClose={() => setIsForeignKeyDraweOpen(false)}
+          onClose={() => {
+            setIsForeignKeyDraweOpen(false);
+            setIsForeignKey(false);
+          }}
         >
           <ForeignKeyTableForm
             tableName={selectedTable.table_name}
             columns={columns}
-            onClose={() => setIsForeignKeyDraweOpen(false)}
+            onClose={() => {
+              setIsForeignKeyDraweOpen(false);
+              setIsForeignKey(false);
+            }}
             isEditColumn={true}
           />
         </Drawer>

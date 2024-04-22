@@ -27,6 +27,8 @@ function DataSourceSelect({
   columnInfoForTable,
   showColumnInfo = false,
   showDescription = false,
+  foreignKeyAccessInRowForm,
+  isCellEdit,
 }) {
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
@@ -46,7 +48,14 @@ function DataSourceSelect({
       <Select
         onChange={(option) => handleChangeDataSource(option)}
         classNames={{
-          menu: () => (foreignKeyAccess ? 'tj-scrollbar tjdb-dashboard-scrollbar' : 'tj-scrollbar'),
+          menu: () =>
+            foreignKeyAccess
+              ? 'tj-scrollbar tjdb-dashboard-scrollbar'
+              : foreignKeyAccessInRowForm
+              ? 'tj-scrollbar tjdb-rowForm-scrollbar'
+              : isCellEdit
+              ? 'tj-scrollbar tjdb-cellEdit-scrollbar'
+              : 'tj-scrollbar',
         }}
         ref={selectRef}
         controlShouldRenderValue={false}
@@ -143,6 +152,7 @@ function DataSourceSelect({
                 foreignKeyAccess={foreignKeyAccess}
                 columnInfoForTable={columnInfoForTable}
                 showColumnInfo={showColumnInfo}
+                foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
               />
             ),
             [onAdd, addBtnLabel, emptyError]
@@ -285,6 +295,7 @@ const MenuList = ({
   columnInfoForTable,
   showColumnInfo,
   options,
+  foreignKeyAccessInRowForm,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -308,12 +319,13 @@ const MenuList = ({
       {onAdd && (
         <div
           className={cx('mt-2 border-slate3-top', {
-            'tj-foreignKey p-1': foreignKeyAccess,
-            'p-2': !foreignKeyAccess,
+            'tj-foreignKey p-1': foreignKeyAccess || foreignKeyAccessInRowForm,
+            'p-2': !foreignKeyAccess || !foreignKeyAccessInRowForm,
           })}
         >
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={onAdd}>
-            + {addBtnLabel || 'Add new'}
+            {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}{' '}
+            {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}
           </ButtonSolid>
         </div>
       )}

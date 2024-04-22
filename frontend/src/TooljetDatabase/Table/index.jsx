@@ -17,11 +17,13 @@ import TableFooter from './Footer';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
+import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
+import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
@@ -45,6 +47,7 @@ const Table = ({ collapseSidebar }) => {
     handleRefetchQuery,
     loadingState,
     setForeignKeys,
+    tables,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -78,11 +81,15 @@ const Table = ({ collapseSidebar }) => {
   const [nullValue, setNullValue] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
+  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   const prevSelectedTableRef = useRef({});
   const tooljetDbTableRef = useRef(null);
   const duration = 300;
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const isForeignKey = true;
+  const tableId = tables[1]?.id;
 
   const updateCellNavigationRefToDefault = () => {
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
@@ -112,6 +119,24 @@ const Table = ({ collapseSidebar }) => {
     new Array(totalRowsCount).fill(true).forEach((value, index) => (newSelectedRowIds[index] = value));
     setSelectedRowIds(newSelectedRowIds);
     return;
+  };
+
+  const getForeignKeyDetails = () => {
+    const sortQuery = new PostgrestQueryBuilder();
+    const limit = pageSize;
+    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
+    tooljetDatabaseService
+      .findOne(organizationId, tableId, `${sortQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`)
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+          return;
+        }
+
+        if (Array.isArray(data) && data?.length > 0) {
+          setReferencedColumnDetails(data);
+        }
+      });
   };
 
   const toggleRowSelection = (uniqueRowId) => {
@@ -771,6 +796,7 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setDefaultValue(isCellValueDefault);
       setEditPopover(false);
+      getForeignKeyDetails();
     }
   };
 
@@ -828,17 +854,28 @@ const Table = ({ collapseSidebar }) => {
           </div>
           <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
             <div>
-              <SolidIcon name="primarykey" />
+              <span style={{ marginRight: isForeignKey ? '3px' : '' }}>
+                <SolidIcon name="primarykey" />
+              </span>
+              {isForeignKey === true && <ForeignKeyIndicator />}
             </div>
           </ToolTip>
         </div>
       </ToolTip>
     ) : (
-      <div className="tj-db-headerText">
-        <span className="tj-text-xsm tj-db-dataype text-lowercase">
-          {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
-        </span>
-        {column.render('Header')}
+      <div className="primaryKeyTooltip">
+        <div>
+          <span className="tj-text-xsm tj-db-dataype text-lowercase">
+            {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
+          </span>
+          {column.render('Header')}
+        </div>
+
+        {isForeignKey === true && (
+          <span style={{ marginRight: '3px' }}>
+            <ForeignKeyIndicator />
+          </span>
+        )}
       </div>
     );
   }
@@ -878,6 +915,8 @@ const Table = ({ collapseSidebar }) => {
   //   });
   // });
 
+  // const isForeignKey = true;
+
   return (
     <div>
       <TjdbTableHeader
@@ -894,6 +933,8 @@ const Table = ({ collapseSidebar }) => {
         setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
         setFilterEnable={setFilterEnable}
         filterEnable={filterEnable}
+        referencedColumnDetails={referencedColumnDetails}
+        getForeignKeyDetails={getForeignKeyDetails}
       />
       <div
         style={{
@@ -1074,6 +1115,7 @@ const Table = ({ collapseSidebar }) => {
                             onClick={() => {
                               replaceToggleSelectedRow(row.id);
                               setTimeout(() => setIsEditRowDrawerOpen(true), 100);
+                              getForeignKeyDetails();
                             }}
                             className="tjdb-checkbox-cell"
                             data-cy="edit-cell-expand"
@@ -1172,6 +1214,8 @@ const Table = ({ collapseSidebar }) => {
                                       setNullValue={setNullValue}
                                       nullValue={nullValue}
                                       isBoolean={cell.column?.dataType === 'boolean' ? true : false}
+                                      referencedColumnDetails={referencedColumnDetails}
+                                      isForeignKey={isForeignKey}
                                       darkMode={darkMode}
                                     >
                                       <div
@@ -1183,64 +1227,82 @@ const Table = ({ collapseSidebar }) => {
                                         {cellVal === null ? (
                                           <span className="cell-text-null-input">Null</span>
                                         ) : cell.column?.dataType === 'boolean' ? (
-                                          <div
-                                            className="row"
-                                            style={{ marginLeft: '0px' }}
-                                            onClick={() => {
-                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
-                                            }}
-                                          >
-                                            <div className="col-1 p-0">
-                                              <label className={`form-switch`}>
-                                                <input
-                                                  autoComplete="off"
-                                                  id="edit-input-blur"
-                                                  className="form-check-input fs-12"
-                                                  type="checkbox"
-                                                  checked={editPopover ? cellVal : cell.value}
-                                                  onChange={() => {
-                                                    if (!editPopover && shouldOpenCellEditMenu(index))
-                                                      handleToggleCellEdit(
-                                                        cell.value,
-                                                        row.values.id,
-                                                        index,
-                                                        rIndex,
-                                                        true,
-                                                        cell.value
-                                                      );
-                                                  }}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setCellClick((prev) => ({
-                                                      ...prev,
-                                                      editable: false,
-                                                    }));
-                                                  }}
-                                                />
-                                              </label>
+                                          <div className="d-flex align-items-center justify-content-between">
+                                            <div
+                                              className="row"
+                                              style={{ marginLeft: '0px' }}
+                                              onClick={() => {
+                                                if (shouldOpenCellEditMenu(index)) setEditPopover(true);
+                                              }}
+                                            >
+                                              <div className="col-1 p-0">
+                                                <label className={`form-switch`}>
+                                                  <input
+                                                    autoComplete="off"
+                                                    id="edit-input-blur"
+                                                    className="form-check-input fs-12"
+                                                    type="checkbox"
+                                                    checked={editPopover ? cellVal : cell.value}
+                                                    onChange={() => {
+                                                      if (!editPopover && shouldOpenCellEditMenu(index))
+                                                        handleToggleCellEdit(
+                                                          cell.value,
+                                                          row.values.id,
+                                                          index,
+                                                          rIndex,
+                                                          true,
+                                                          cell.value
+                                                        );
+                                                    }}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setCellClick((prev) => ({
+                                                        ...prev,
+                                                        editable: false,
+                                                      }));
+                                                    }}
+                                                  />
+                                                </label>
+                                              </div>
                                             </div>
+                                            <ToolTip
+                                              message={'Open referenced table'}
+                                              placement="top"
+                                              tooltipClassName="tootip-table"
+                                            >
+                                              <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                            </ToolTip>
                                           </div>
                                         ) : (
-                                          <input
-                                            autoComplete="off"
-                                            className="form-control fs-12 text-truncate"
-                                            id="edit-input-blur"
-                                            value={cellVal === null ? '' : cellVal}
-                                            onChange={(e) => {
-                                              if (shouldOpenCellEditMenu(index)) setCellVal(e.target.value);
-                                              if (e.target.value !== headerGroups[0].headers[index].column_default) {
-                                                setDefaultValue(false);
-                                              } else {
-                                                setDefaultValue(true);
+                                          <div className="d-flex align-items-center justify-content-between">
+                                            <input
+                                              autoComplete="off"
+                                              className="form-control fs-12 text-truncate"
+                                              id="edit-input-blur"
+                                              value={cellVal === null ? '' : cellVal}
+                                              onChange={(e) => {
+                                                if (shouldOpenCellEditMenu(index)) setCellVal(e.target.value);
+                                                if (e.target.value !== headerGroups[0].headers[index].column_default) {
+                                                  setDefaultValue(false);
+                                                } else {
+                                                  setDefaultValue(true);
+                                                }
+                                              }}
+                                              onFocus={() => {
+                                                if (shouldOpenCellEditMenu(index)) setEditPopover(true);
+                                              }}
+                                              disabled={
+                                                nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
                                               }
-                                            }}
-                                            onFocus={() => {
-                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
-                                            }}
-                                            disabled={
-                                              nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
-                                            }
-                                          />
+                                            />
+                                            <ToolTip
+                                              message={'Open referenced table'}
+                                              placement="top"
+                                              tooltipClassName="tootip-table"
+                                            >
+                                              <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                            </ToolTip>
+                                          </div>
                                         )}
                                       </div>
                                     </CellEditMenu>
@@ -1249,32 +1311,57 @@ const Table = ({ collapseSidebar }) => {
                                       {cell.value === null ? (
                                         <span className="cell-text-null">Null</span>
                                       ) : cell.column.dataType === 'boolean' ? (
-                                        <div className="row" style={{ width: '33px' }}>
-                                          <div className="col-1">
-                                            <label className={`form-switch`}>
-                                              <input
-                                                className="form-check-input"
-                                                type="checkbox"
-                                                checked={cell.value}
-                                                onChange={() => {
-                                                  if (shouldOpenCellEditMenu(index)) {
-                                                    handleToggleCellEdit(
-                                                      cell.value,
-                                                      row.values.id,
-                                                      index,
-                                                      rIndex,
-                                                      true,
-                                                      cell.value
-                                                    );
-                                                  }
-                                                }}
-                                              />
-                                            </label>
+                                        <div
+                                          className="d-flex align-items-center justify-content-between"
+                                          onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
+                                        >
+                                          <div className="row" style={{ width: '33px' }}>
+                                            <div className="col-1">
+                                              <label className={`form-switch`}>
+                                                <input
+                                                  className="form-check-input"
+                                                  type="checkbox"
+                                                  checked={cell.value}
+                                                  onChange={() => {
+                                                    if (shouldOpenCellEditMenu(index)) {
+                                                      handleToggleCellEdit(
+                                                        cell.value,
+                                                        row.values.id,
+                                                        index,
+                                                        rIndex,
+                                                        true,
+                                                        cell.value
+                                                      );
+                                                    }
+                                                  }}
+                                                />
+                                              </label>
+                                            </div>
                                           </div>
+                                          <ToolTip
+                                            message={'Open referenced table'}
+                                            placement="top"
+                                            tooltipClassName="tootip-table"
+                                          >
+                                            <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                          </ToolTip>
                                         </div>
                                       ) : (
-                                        <div className="cell-text">
-                                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                        <div
+                                          className={cx({
+                                            'foreignkey-cell': isForeignKey,
+                                          })}
+                                        >
+                                          <div className="cell-text">
+                                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                          </div>
+                                          <ToolTip
+                                            message={'Open referenced table'}
+                                            placement="top"
+                                            tooltipClassName="tootip-table"
+                                          >
+                                            <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                          </ToolTip>
                                         </div>
                                       )}
                                     </>
@@ -1305,6 +1392,7 @@ const Table = ({ collapseSidebar }) => {
                 <div
                   onClick={() => {
                     resetCellAndRowSelection();
+                    getForeignKeyDetails();
                     setIsCreateRowDrawerOpen(true);
                   }}
                   className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}

@@ -66,12 +66,7 @@ function TableDetailsDropdown({
         </ToolTip>
       </div>
 
-      <ToolTip
-        message={isEditColumn ? 'Current column' : ''}
-        placement="top"
-        tooltipClassName="tootip-table"
-        show={isEditColumn}
-      >
+      <ToolTip message={source ? 'Current column' : null} placement="top" tooltipClassName="tootip-table" show={source}>
         <div className="d-flex align-items-center justify-content-between mt-2">
           <span className="keyRelation-column-title">{secondColumnName}</span>
           <div style={{ width: '80%' }}>

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import DropDownSelect from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import LeftNav from '../../Icons/LeftNav.svg';
 import RightNav from '../../Icons/RightNav.svg';
@@ -23,6 +25,8 @@ export const CellEditMenu = ({
   setNullValue,
   nullValue,
   isBoolean,
+  referencedColumnDetails = [],
+  isForeignKey = false,
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -99,6 +103,13 @@ export const CellEditMenu = ({
     e.stopPropagation();
   };
 
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
+    return {
+      label: item.Name,
+      value: item.Name,
+    };
+  });
+
   useEffect(() => {
     if (show) {
       document.addEventListener('keydown', handleKeyDown);
@@ -112,10 +123,40 @@ export const CellEditMenu = ({
     if (selectedValue !== cellValue) setSelectedValue(cellValue);
   }, [cellValue]);
 
+  console.log('first', referenceTableDetails);
+
   const popover = (
     <Popover className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className={`d-flex flex-column ${isBoolean ? 'gap-4' : 'gap-3'}`}>
+          {isForeignKey && (
+            <DropDownSelect
+              buttonClasses="border border-end-1 foreignKeyAcces-container"
+              showPlaceHolder={true}
+              options={referenceTableDetails}
+              darkMode={darkMode}
+              emptyError={
+                <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                  <Information />
+                  No table selected
+                </div>
+              }
+              value={referencedColumnDetails[0]}
+              // disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
+              // topPlaceHolder={
+              //   isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
+              // }
+              // onChange={(value) => {
+              //   setTable(value);
+              //   handleSelectColumn(value?.value);
+              // }}
+              onAdd={true}
+              addBtnLabel={'Open referenced table'}
+              isCellEdit={true}
+              // showRedirection={showRedirection}
+              // showDescription={showDescription}
+            />
+          )}
           {/*  Boolean View */}
           {isBoolean && (
             <div className="d-flex align-items-start gap-2">

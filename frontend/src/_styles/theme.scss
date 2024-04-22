@@ -12000,6 +12000,56 @@ tbody {
 
 }
 
+.tjdb-rowForm-scrollbar {
+  width: 494px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.tjdb-cellEdit-scrollbar {
+  width: 266px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
 .tj-scrollbar {
 
   ::-webkit-scrollbar,

@@ -29,6 +29,9 @@ const DropDownSelect = ({
   columnInfoForTable,
   showColumnInfo = false,
   showDescription = false,
+  foreignKeyAccessInRowForm = false,
+  topPlaceHolder = '',
+  isCellEdit = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -112,8 +115,20 @@ const DropDownSelect = ({
           id={popoverId.current}
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{
-            width: foreignKeyAccess ? '355px' : '244px',
-            maxWidth: foreignKeyAccess ? '355px' : '246px',
+            width: foreignKeyAccess
+              ? '355px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '244px',
+            maxWidth: foreignKeyAccess
+              ? '355px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '246px',
             overflow: 'hidden',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }}
@@ -137,6 +152,8 @@ const DropDownSelect = ({
             columnInfoForTable={columnInfoForTable}
             showColumnInfo={showColumnInfo}
             showDescription={showDescription}
+            foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
+            isCellEdit={isCellEdit}
           />
         </Popover>
       }
@@ -157,8 +174,8 @@ const DropDownSelect = ({
             {
               'justify-content-start': !shouldCenterAlignText,
               'justify-content-centre': shouldCenterAlignText,
-              'border-1 tdb-dropdown-btn-foreignKeyAccess': foreignKeyAccess,
-              'border-0 tdb-dropdown-btn': !foreignKeyAccess,
+              'border-1 tdb-dropdown-btn-foreignKeyAccess': foreignKeyAccess || foreignKeyAccessInRowForm,
+              'border-0 tdb-dropdown-btn': !foreignKeyAccess || !foreignKeyAccessInRowForm,
             },
             'gap-0',
             'w-100',
@@ -186,7 +203,7 @@ const DropDownSelect = ({
                 selected?.label
               )
             ) : showPlaceHolder ? (
-              <span style={{ color: '#9e9e9e' }}>Select..</span>
+              <span style={{ color: '#9e9e9e' }}>{foreignKeyAccessInRowForm ? topPlaceHolder : 'Select...'}</span>
             ) : (
               ''
             )}

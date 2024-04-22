@@ -533,3 +533,27 @@
   padding: 8px;
   gap: 10px;
 }
+
+.editRow-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  .edit-row-tableName {
+    background: var(--slate3);
+    padding: 5px 10px 5px 10px !important;
+    border-radius: 6px;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+    cursor: pointer;
+
+    span {
+      color: var(--slate11);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+  }
+}

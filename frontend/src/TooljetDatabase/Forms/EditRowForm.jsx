@@ -6,12 +6,16 @@ import { tooljetDatabaseService } from '@/_services';
 import _ from 'lodash';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
+import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 
-const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
+const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnDetails }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const isForeignKey = true;
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
@@ -72,6 +76,13 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
     });
 
     return data;
+  });
+
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
+    return {
+      label: item.Name,
+      value: item.Name,
+    };
   });
 
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
@@ -177,18 +188,49 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            <input
-              //defaultValue={currentValue}
-              value={inputValues[index]?.value !== null && inputValues[index]?.value}
-              type="text"
-              disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
-              onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-              placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
-              className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
-              data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
-              autoComplete="off"
-              // onFocus={onFocused}
-            />
+            {isForeignKey ? (
+              <DropDownSelect
+                buttonClasses="border border-end-1 foreignKeyAcces-container"
+                showPlaceHolder={true}
+                options={referenceTableDetails}
+                darkMode={darkMode}
+                emptyError={
+                  <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                    <Information />
+                    No table selected
+                  </div>
+                }
+                value={referencedColumnDetails[0]}
+                foreignKeyAccessInRowForm={true}
+                disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
+                topPlaceHolder={
+                  inputValues[index]?.disabled || shouldInputBeDisabled
+                    ? 'Auto-generated'
+                    : inputValues[index]?.value !== null && 'Enter a value'
+                }
+                // onChange={(value) => {
+                //   setTable(value);
+                //   handleSelectColumn(value?.value);
+                // }}
+                onAdd={true}
+                addBtnLabel={'Open referenced table'}
+                // showRedirection={showRedirection}
+                // showDescription={showDescription}
+              />
+            ) : (
+              <input
+                //defaultValue={currentValue}
+                value={inputValues[index]?.value !== null && inputValues[index]?.value}
+                type="text"
+                disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
+                onChange={(e) => handleInputChange(index, e.target.value, columnName)}
+                placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
+                className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
+                data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
+                autoComplete="off"
+                // onFocus={onFocused}
+              />
+            )}
             {inputValues[index]?.value === null ? (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             ) : null}
@@ -249,9 +291,16 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title">
-        <h3 className="card-title" data-cy="edit-row-header">
-          Edit row
-        </h3>
+        <div className="editRow-header-container">
+          <h3 className="card-title" data-cy="edit-row-header">
+            Edit row
+          </h3>
+          <ToolTip message="Open referenced table" placement="right" tooltipClassName="tootip-table">
+            <div className="edit-row-tableName">
+              <span>tableName</span> <Maximize />
+            </div>
+          </ToolTip>
+        </div>
       </div>
       <div className="card-body">
         <div>

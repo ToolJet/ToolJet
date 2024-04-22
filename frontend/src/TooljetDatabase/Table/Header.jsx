@@ -29,6 +29,8 @@ const Header = ({
   setIsEditRowDrawerOpen,
   setFilterEnable,
   filterEnable,
+  referencedColumnDetails,
+  getForeignKeyDetails,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
@@ -198,6 +200,8 @@ const Header = ({
                       setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
                       selectedRowIds={selectedRowIds}
                       rows={rows}
+                      referencedColumnDetails={referencedColumnDetails}
+                      getForeignKeyDetails={getForeignKeyDetails}
                     />
                   ) : null}
                   {Object.keys(selectedRowIds).length > 0 && (
@@ -261,6 +265,7 @@ const Header = ({
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+        referencedColumnDetails={referencedColumnDetails}
       />
       <BulkUploadDrawer
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
