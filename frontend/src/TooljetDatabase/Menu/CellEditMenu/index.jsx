@@ -123,8 +123,6 @@ export const CellEditMenu = ({
     if (selectedValue !== cellValue) setSelectedValue(cellValue);
   }, [cellValue]);
 
-  console.log('first', referenceTableDetails);
-
   const popover = (
     <Popover className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>

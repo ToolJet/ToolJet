@@ -176,6 +176,7 @@
   border-radius: 6px !important;
   margin: 0px auto 8px auto !important;
 }
+
 .warning-icon-container-dark {
   background-color: #2B2F30 !important;
 }
@@ -240,7 +241,7 @@
 
   position: relative !important;
   background-color: transparent;
-  height: 100% !important;
+  // height: 100% !important;
 
   .cell-text-null-input {
     background-color: var(--slate3) !important;
