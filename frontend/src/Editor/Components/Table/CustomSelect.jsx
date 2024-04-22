@@ -29,7 +29,6 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
-  showPopoverIfOverflow,
   isMaxRowHeightAuto,
 }) => {
   const containerRef = useRef(null);
@@ -162,7 +161,7 @@ export const CustomSelect = ({
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && showPopoverIfOverflow && (_value?.length || defaultValue?.length) && !isFocused ? (
+        isMulti && (_value?.length || defaultValue?.length) && !isFocused ? (
           getOverlay(_value ? _value : defaultValue, containerWidth, darkMode)
         ) : (
           <div></div>
@@ -171,7 +170,6 @@ export const CustomSelect = ({
       trigger={
         isMulti &&
         !isFocused &&
-        showPopoverIfOverflow &&
         calculateIfPopoverRequired(_value ? _value : defaultValue, containerWidth - 40) && ['hover', 'focus']
       } //container width -24 -16 gives that select container size
       rootClose={true}
