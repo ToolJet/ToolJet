@@ -136,10 +136,10 @@ export class TooljetDbService {
     `);
 
     // Transforming the Query response
-    const refrenced_table_list = [];
+    const referenced_table_list = [];
     foreign_keys = foreign_keys.map((foreign_key_detail) => {
       const { referenced_table_name, column_names, referenced_column_names } = foreign_key_detail;
-      refrenced_table_list.push(referenced_table_name.slice(1, -1));
+      referenced_table_list.push(referenced_table_name.slice(1, -1));
       return {
         ...foreign_key_detail,
         referenced_table_name: referenced_table_name.slice(1, -1),
@@ -149,7 +149,7 @@ export class TooljetDbService {
     });
 
     const referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-      refrenced_table_list,
+      referenced_table_list,
       organizationId,
       'TABLEID'
     );
@@ -157,6 +157,7 @@ export class TooljetDbService {
     foreign_keys = foreign_keys.map((foreign_key_detail) => {
       return {
         ...foreign_key_detail,
+        referenced_table_id: foreign_key_detail.referenced_table_name,
         referenced_table_name: referenced_tables_info[foreign_key_detail.referenced_table_name],
       };
     });
