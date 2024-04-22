@@ -198,6 +198,7 @@ export const CustomSelect = ({
           hideSelectedOptions={false}
           isClearable={false}
           clearIndicator={false}
+          darkMode={darkMode}
           {...{
             menuIsOpen: isFocused || undefined,
             isFocused: isFocused || undefined,
