@@ -165,15 +165,19 @@
   height: 32px !important;
 }
 
-.warning-icon-container {
+.warning-icon-container,
+.warning-icon-container-dark {
   width: 54px !important;
   height: 52px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background-color: #F1F3F5 !important;
+  background-color: #F1F3F5;
   border-radius: 6px !important;
   margin: 0px auto 8px auto !important;
+}
+.warning-icon-container-dark {
+  background-color: #2B2F30 !important;
 }
 
 .empty-table-description {

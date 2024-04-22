@@ -17,12 +17,32 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
   const isForeignKey = true;
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
-  const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
+  const [activeTab, setActiveTab] = useState(() => {
+    if (Array.isArray(columns)) {
+      return columns.map((item) => {
+        if (item.column_default === null) {
+          return 'Custom';
+        } else {
+          return 'Default';
+        }
+      });
+    } else {
+      return [];
+    }
+  });
+
   const [inputValues, setInputValues] = useState(
     Array.isArray(columns)
-      ? columns.map((item) => {
-          if (item.column_default !== null) {
+      ? columns.map((item, index) => {
+          if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false };
+          }
+          if (item.column_default !== null) {
+            return {
+              value: item.column_default || '',
+              checkboxValue: item.column_default === 'true' ? true : false,
+              disabled: true,
+            };
           } else if (item.constraints_type.is_not_null === false) {
             return { value: '', checkboxValue: false, disabled: false };
           }
@@ -30,6 +50,12 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
         })
       : []
   );
+
+  useEffect(() => {
+    columns.map(({ accessor, dataType, column_default }, index) => {
+      saveData(dataType, accessor, inputValues, index, column_default);
+    });
+  }, []);
 
   const [data, setData] = useState(() => {
     const data = {};
@@ -71,22 +97,25 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
     }
-
     setInputValues(newInputValues);
+    saveData(dataType, columnName, newInputValues, index, defaultValue);
+  };
+
+  const saveData = (dataType, accessor, inputValuesArr, index, defaultVal) => {
     if (dataType === 'boolean') {
       setData({
         ...data,
-        [columnName]: newInputValues[index].checkboxValue === null ? null : newInputValues[index].checkboxValue,
+        [accessor]: inputValuesArr[index].checkboxValue === null ? null : inputValuesArr[index].checkboxValue,
       });
     } else {
       setData({
         ...data,
-        [columnName]:
-          newInputValues[index].value === null
+        [accessor]:
+          inputValuesArr[index].value === null
             ? null
-            : newInputValues[index].value === 'Default'
-            ? defaultValue
-            : newInputValues[index].value,
+            : inputValuesArr[index].value === 'Default'
+            ? defaultVal
+            : inputValuesArr[index].value,
       });
     }
   };

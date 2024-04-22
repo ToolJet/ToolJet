@@ -22,7 +22,7 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - influxDB](/img/datasource-reference/influxdb/influxauth.png)
+![ToolJet - Data source - influxDB](/img/datasource-reference/influxdb/influxauth-v2.png)
 
 </div>
 
@@ -50,11 +50,9 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 
 - [Delete a bucket](#delete-a-bucket)
 
+<img className="screenshot-full" src="/img/datasource-reference/influxdb/operations-v2.png" alt="influx operations" />
 
-<img className="screenshot-full" src="/img/datasource-reference/influxdb/operations.png" alt="influx operations" />
-
-
-### Write data 
+### Write data
 
 This operation writes data to a bucket.
 
@@ -63,7 +61,7 @@ This operation writes data to a bucket.
 - **Bucket**
 - **Organization name or ID**
 
-#### Optional parameters: 
+#### Optional parameters:
 
 - **Precision**
 
@@ -72,28 +70,30 @@ This operation writes data to a bucket.
 Retrieves data from InfluxDB buckets.
 
 #### Required parameters:
+
 - **Organization name or ID**
 
 ### Generate an Abstract Syntax Tree (AST) from a query
 
 This operation analyzes flux query and generates a query specification.
 
-#### Required parameters: 
+#### Required parameters:
 
 - **Query**
 
-### Retrieve query suggestions 
+### Retrieve query suggestions
 
 This query retrieve query suggestions.
 
-### Retrieve query suggestions for a branching suggestion 
+### Retrieve query suggestions for a branching suggestion
 
 This operation retrieve query suggestions for a branching suggestion.
 
 #### Required parameters:
+
 - **Name**
 
-### Analyze a Flux query 
+### Analyze a Flux query
 
 This Analyzes a Flux query.
 
@@ -101,29 +101,33 @@ This Analyzes a Flux query.
 
 - **Query**
 
-### List buckets 
+### List buckets
 
 This operation lists all the buckets in a database.
-### Create a bucket 
 
-#### Required parameters: 
+### Create a bucket
+
+#### Required parameters:
 
 - **Query**
 
-### Retrieve a bucket 
+### Retrieve a bucket
 
 This operation retrieve a bucket in a database.
 
 #### Required parameters:
+
 - **Bucket ID**
 
 ### Update a bucket
 
 #### Required parameters:
+
 - **Bucket ID**
 - **Query**
 
 ### Delete a bucket
 
 #### Required parameters:
+
 - **Bucket ID**
