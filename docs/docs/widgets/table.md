@@ -487,7 +487,7 @@ Under column properties, expand the detailed view of a column type to access a t
 
 ## Action Buttons
 
-Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
+Action buttons will be displayed as the last column of the table. The styles of these buttons can be customized and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
 |:-------- |:------------ |
@@ -518,7 +518,7 @@ When Server-side sort is enabled, clicking on the column headers will not automa
 
 ### Enable Filtering
 
-The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
+The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the filter button by clicking on the **Fx** button.
 
 #### Server-side Filter
 When Server-side filter is enabled, applying filters will not automatically filter the table, instead, the `Filter changed` event will be fired and the applied filters will be exposed as `filters`. You can use this data to run any query that feeds data to the table in a manner that reflects the filters applied.
@@ -543,19 +543,19 @@ When Server-side pagination is enabled, you'll be able to set three other table 
 Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
 :::
 
-## Addional Actions
+## Additional Actions
 
 ### Show Add New Row Button
 
-The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the Add new row button by clicking on the **Fx** button.
+The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the Add new row button by clicking on the **Fx** button.
 
 ### Show Download Button
 
-The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
+The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the download button by clicking on the **Fx** button.
 
 ### Hide Column Selector Button
 
-The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
+The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the column selector button by clicking on the **Fx** button.
 
 ### Loading State (Boolean)
 

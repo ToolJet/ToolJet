@@ -65,18 +65,20 @@ export const BlankPage = function BlankPage({
                     )}
                   </p>
                   <div className="row mt-4">
-                    <ButtonSolid
-                      leftIcon="plus"
-                      onClick={openCreateAppModal}
-                      isLoading={creatingApp}
-                      data-cy="button-new-app-from-scratch"
-                      className="col"
-                      fill={'#FDFDFE'}
-                      disabled={appCreationDisabled}
-                    >
-                      Create new application
-                    </ButtonSolid>
-                    <div className="col">
+                    <div className="col-6">
+                      <ButtonSolid
+                        leftIcon="plus"
+                        onClick={openCreateAppModal}
+                        isLoading={creatingApp}
+                        data-cy="button-new-app-from-scratch"
+                        className="col"
+                        fill={'#FDFDFE'}
+                        disabled={appCreationDisabled}
+                      >
+                        Create new application
+                      </ButtonSolid>
+                    </div>
+                    <div className="col-6">
                       <ButtonSolid
                         leftIcon="folderdownload"
                         onChange={readAndImport}
