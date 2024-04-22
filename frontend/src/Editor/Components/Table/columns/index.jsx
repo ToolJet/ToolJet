@@ -330,7 +330,7 @@ export default function generateColumnsData({
                       background: 'inherit',
                       paddingRight: '20px',
                     }}
-                    id={`table-input-${column.id}`}
+                    id={`table-input-${column.id}-${cell.row.id}`}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {

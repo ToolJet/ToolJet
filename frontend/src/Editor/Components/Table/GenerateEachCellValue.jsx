@@ -231,7 +231,7 @@ export default function GenerateEachCellValue({
 
   useEffect(() => {
     if (isNullCellClicked) {
-      const inputElement = document.getElementById(`table-input-${cell.column.id}`);
+      const inputElement = document.getElementById(`table-input-${cell.column.id}-${cell.row.id}`);
       if (inputElement) {
         inputElement.focus();
       }
