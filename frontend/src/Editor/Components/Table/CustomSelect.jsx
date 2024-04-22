@@ -114,6 +114,8 @@ export const CustomSelect = ({
   const defaultValue = useMemo(() => {
     if (defaultOptionsList.length >= 1) {
       return !isMulti ? defaultOptionsList[defaultOptionsList.length - 1] : defaultOptionsList;
+    } else {
+      return null;
     }
   }, [isMulti, defaultOptionsList]);
 
