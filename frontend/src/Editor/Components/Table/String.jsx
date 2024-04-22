@@ -64,7 +64,7 @@ const String = ({
       contentEditable={true}
       className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
         darkMode ? ' textarea-dark-theme' : ''
-      }`}
+      }  justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
       style={{
         color: cellTextColor ? cellTextColor : 'inherit',
         outline: 'none',
