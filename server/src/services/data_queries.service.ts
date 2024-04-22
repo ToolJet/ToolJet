@@ -380,7 +380,7 @@ export class DataQueriesService {
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     let tokenOptions: any;
-    if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
+    if (['googlesheets', 'slack', 'zendesk', 'salesforce'].includes(dataSource.kind)) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
     } else {
       const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
