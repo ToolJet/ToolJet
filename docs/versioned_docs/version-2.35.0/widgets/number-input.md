@@ -4,7 +4,7 @@ title: Number Input
 ---
 # Number Input
 
-The Number Input component allows users to enter numeric values. It can be used as a standalone component or in form fields. In this document, we'll go through all the configuration options for the **Number Input** component. 
+The **Number Input** component allows users to enter numeric values. It can be used as a standalone component or in form fields. In this document, we'll go through all the configuration options for the **Number Input** component. 
 
 ## Properties
 

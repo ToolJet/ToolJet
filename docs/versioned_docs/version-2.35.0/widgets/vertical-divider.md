@@ -4,7 +4,7 @@ title: Vertical Divider
 ---
 # Vertical Divider
 
-Vertical Divider widget is used to add vertical separator between components.
+The **Vertical Divider** widget is used to add vertical separator between components.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
