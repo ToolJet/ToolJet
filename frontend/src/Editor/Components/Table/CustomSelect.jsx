@@ -188,7 +188,12 @@ export const CustomSelect = ({
           onMenuInputFocus={() => setIsFocused(true)}
           onChange={(value) => {
             setIsFocused(false);
-            onChange(value);
+            if (!isMulti && value === _value?.value) {
+              // for single select column type if on change value is similar to current value , then discard the current value
+              onChange('');
+            } else {
+              onChange(value);
+            }
           }}
           useCustomStyles={true}
           styles={customStyles}
