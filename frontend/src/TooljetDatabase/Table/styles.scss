@@ -161,6 +161,7 @@
   border-radius: 6px !important;
   margin: 0px auto 8px auto !important;
 }
+
 .warning-icon-container-dark {
   background-color: #2B2F30 !important;
 }
@@ -304,9 +305,13 @@
 }
 
 .create-table-list-items {
+  width: 262px !important;
+  z-index: 1000 !important;
+  inset: 10px auto auto -20px !important;
+
   .popover-body {
     padding: 0px !important;
-    width: 240px !important;
+    width: 262px !important;
 
     .unique-constraint-parent {
       padding: 16px 16px 0px 16px !important;

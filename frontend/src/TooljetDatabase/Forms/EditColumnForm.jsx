@@ -290,9 +290,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  checked={
-                    !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key ? true : isUniqueConstraint
-                  }
+                  checked={isUniqueConstraint || selectedColumn?.constraints_type?.is_primary_key ? true : false}
                   onChange={(e) => {
                     setIsUniqueConstraint(e.target.checked);
                   }}
@@ -301,9 +299,13 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
               </label>
             </div>
             <div className="col d-flex flex-column">
-              <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+              <p className="m-0 p-0 fw-500">
+                {isUniqueConstraint || selectedColumn?.constraints_type?.is_primary_key ? 'UNIQUE' : 'NOT UNIQUE'}
+              </p>
               <p className="fw-400 secondary-text">
-                {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
+                {isUniqueConstraint || selectedColumn?.constraints_type?.is_primary_key
+                  ? 'Unique value constraint is added'
+                  : 'Unique value constraint is not added'}
               </p>
             </div>
           </div>
