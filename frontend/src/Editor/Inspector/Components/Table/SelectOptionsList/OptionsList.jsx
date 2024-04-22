@@ -65,8 +65,24 @@ export const OptionsList = ({
     const columns = props.component.component.definition.properties.columns;
     const column = columns.value[index];
     const options = column.options;
-    options.splice(optionIndex, 1);
+    const deletedOption = options.splice(optionIndex, 1);
     column.options = options;
+    const deletedOptionIndexInDefaultOptionsList = column.defaultOptionsList.findIndex((defaultOption, index) => {
+      if (
+        defaultOption.value === deletedOption.value &&
+        defaultOption.label === deletedOption.label &&
+        defaultOption.makeDefaultOption === deletedOption.makeDefaultOption
+      ) {
+        return index;
+      } else {
+        return -1;
+      }
+    });
+    if (deletedOptionIndexInDefaultOptionsList !== -1) {
+      const defaultOptionsList = column.defaultOptionsList;
+      defaultOptionsList.splice(deletedOptionIndexInDefaultOptionsList, 1);
+      column.defaultOptionsList = defaultOptionsList;
+    }
     const newColumns = columns.value;
     newColumns[index] = column;
     props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
@@ -100,6 +116,8 @@ export const OptionsList = ({
           column.options[optionIndex][property] = value;
           if (isValueTruthy) {
             column.defaultOptionsList = [column.options[optionIndex]];
+          } else {
+            column.defaultOptionsList = [];
           }
         } else {
           const defaultOptionsList = column?.defaultOptionsList ?? [];
