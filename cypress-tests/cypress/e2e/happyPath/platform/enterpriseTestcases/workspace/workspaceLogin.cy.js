@@ -8,20 +8,18 @@ import { commonText } from "Texts/common";
 import {
     oidcSSOPageElements,
     disableSSO,
-    setSignupStatus,
-    deleteOrganisationSSO,
     passwordToggle
 } from "Support/utils/eeCommon";
 import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
 
-describe("Manage SSO for multi workspace", () => {
+describe("Workspace login", () => {
     const data = {};
     const envVar = Cypress.env("environment");
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
-        deleteOrganisationSSO("My workspace", [
+        SSO.deleteOrganisationSSO("My workspace", [
             "google",
             "git",
             "openid",
@@ -34,8 +32,9 @@ describe("Manage SSO for multi workspace", () => {
         passwordToggle(true)
     })
     it("Should verify General settings page elements", () => {
+        passwordToggle(true)
         SSO.defaultSSO(true);
-        setSignupStatus(false);
+        SSO.setSignupStatus(false);
         common.navigateToManageSSO();
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
@@ -82,6 +81,7 @@ describe("Manage SSO for multi workspace", () => {
         );
 
         SSO.generalSettings();
+        passwordToggle(true)
     });
 
     it("Should verify Google SSO modal elements", () => {

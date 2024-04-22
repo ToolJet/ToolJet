@@ -311,6 +311,7 @@ export class AppsController {
     return response;
   }
 
+  // Deprecated - moved to import - export - controller
   @UseGuards(JwtAuthGuard, AppCountGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')

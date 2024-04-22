@@ -83,7 +83,8 @@ module.exports = defineConfig({
             "cypress/e2e/happyPath/platform/enterpriseTestcases/globalDataSource/*.cy.js",
             "cypress/e2e/happyPath/platform/enterpriseTestcases/multi-env/*cy.js",
             "cypress/e2e/happyPath/platform/enterpriseTestcases/licensing/*.cy.js",
-            "cypress/e2e/happyPath/platform/enterpriseTestcases/gitSync/*cy.js"
+            "cypress/e2e/happyPath/platform/enterpriseTestcases/gitSync/*cy.js",
+            "cypress/e2e/happyPath/platform/enterpriseTestcases/settings/instanceLogin.cy.js"
         ],
         numTestsKeptInMemory: 1,
         redirectionLimit: 20,

@@ -27,9 +27,9 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('/export')
   async export(@User() user, @Body() exportResourcesDto: ExportResourcesDto) {
-    const ability = await this.appsAbilityFactory.appsActions(user);
+    const ability = await this.appsAbilityFactory.appsActions(user, exportResourcesDto?.app?.[0]?.id);
 
-    if (!ability.can('createApp', App)) {
+    if (!ability.can('exportApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const result = await this.importExportResourcesService.export(user, exportResourcesDto);
@@ -45,10 +45,9 @@ export class ImportExportResourcesController {
     const appAbility = await this.appsAbilityFactory.appsActions(user);
     const gdsAbility = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!appAbility.can('createApp', App)) {
-      throw new ForbiddenException('You do not have create app permissions to perform this action');
+    if (!appAbility.can('importApp', App)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
-
     const importHasGlobalDatasource = importResourcesDto.app[0]?.definition?.appV2?.dataSources.find(
       (ds) => ds.scope === 'global'
     );
@@ -67,10 +66,10 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post('/clone')
   async clone(@User() user, @Body() cloneResourcesDto: CloneResourcesDto) {
-    const appAbility = await this.appsAbilityFactory.appsActions(user);
+    const appAbility = await this.appsAbilityFactory.appsActions(user, cloneResourcesDto?.app?.[0]?.id);
     const gdsAbility = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!appAbility.can('createApp', App)) {
+    if (!appAbility.can('cloneApp', App)) {
       throw new ForbiddenException('You do not have app create permissions to perform this action');
     }
 
