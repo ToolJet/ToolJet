@@ -487,7 +487,7 @@ Under column properties, expand the detailed view of a column type to access a t
 
 ## Action Buttons
 
-Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
+Action buttons will be displayed as the last column of the table. The styles of these buttons can be customized and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
 |:-------- |:------------ |
@@ -543,7 +543,7 @@ When Server-side pagination is enabled, you'll be able to set three other table 
 Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
 :::
 
-## Addional Actions
+## Additional Actions
 
 ### Show Add New Row Button
 

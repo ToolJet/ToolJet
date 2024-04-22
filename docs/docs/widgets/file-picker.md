@@ -1,10 +1,10 @@
 ---
 id: file-picker
-title: Filepicker
+title: File Picker
 ---
-# Filepicker
+# File Picker
 
-Filepicker widget allows the user to drag and drop files or upload files by browsing the filesystem and selecting one or more files in a directory.
+**File Picker** widget allows the user to drag and drop files or upload files by browsing the filesystem and selecting one or more files in a directory.
 
 :::info
  File types must be a valid [MIME](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) type according to input element specification or a valid file extension.
@@ -123,7 +123,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 |:----------- |:----------- |:----------- |
 | Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`.  |
 | Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
-| Border radius | Use this property to modify the border radius of the filepicker widget. The field expects only numerical value from `1` to `100`. | By default, its value is set to `0`. |
+| Border radius | Use this property to modify the border radius of the File Picker widget. The field expects only numerical value from `1` to `100`. | By default, its value is set to `0`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

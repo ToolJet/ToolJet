@@ -4,7 +4,7 @@ title: Calendar
 ---
 # Calendar
 
-Calendar widget comes with the following features:  
+**Calendar** widget comes with the following features:  
 - **Day, month and week level views**
 - **Events**
 - **Resource scheduling**
@@ -181,7 +181,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the calendar component.
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the Calendar component.
 
 </div>
 
@@ -203,7 +203,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 ## General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget. Under the <b>General</b> accordion,you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget. Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 </div>
 
