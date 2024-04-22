@@ -525,7 +525,7 @@ export class AppsService {
         const newComponent = new Component();
         const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
 
-        newComponent.id = component.id;
+        newComponent.id = uuid.v4();
 
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
 
@@ -575,6 +575,11 @@ export class AppsService {
 
       newComponents.forEach((component) => {
         let parentId = component.parent ? component.parent : null;
+
+        if (component.properties.buttonToSubmit) {
+          const newButtonToSubmit = oldComponentToNewComponentMapping[component.properties.buttonToSubmit.value];
+          component.properties.buttonToSubmit.value = newButtonToSubmit;
+        }
 
         if (!parentId) return;
 
