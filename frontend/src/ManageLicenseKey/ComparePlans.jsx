@@ -108,7 +108,7 @@ export default function ComparePlans({ planForm, updatePlanDetailsForm, costing,
       <div className="row gx-0 body-wrapper">
         <div className={'col license-content-wrapper'}>
           <div className={`col tj-dashboard-header-wrap font-weight-500 license-header-wrap`}>
-            <div>Compare plans</div>
+            <div data-cy="compare-plans-label">Compare plans</div>
           </div>
 
           <div className="content-wrapper">
@@ -117,25 +117,31 @@ export default function ComparePlans({ planForm, updatePlanDetailsForm, costing,
                 <div key={index} className={`plan ${plan.className}`}>
                   <div className="header">
                     <div className="tag-container">
-                      <span className={`tag`}>{plan.name}</span>
+                      <span className={`tag`} data-cy={`${plan.name.toLowerCase().replace(/\s+/g, '-')}-header`}>
+                        {plan.name}
+                      </span>
                       {plan.tagAdornment}
                     </div>
                     <div className="pricing-container">
                       {plan.isCustomPricing ? (
-                        <div className="price">Custom pricing</div>
+                        <div className="price" data-cy="custom-pricing-label">
+                          Custom pricing
+                        </div>
                       ) : (
                         <>
-                          <div className="price">
+                          <div className="price" data-cy="builder-price">
                             ${plan.builderPrice}
-                            <span className="sub-text">
+                            <span className="sub-text" data-cy="builder-price-sub-text">
                               {' '}
                               / month <br /> per builder
                             </span>
                           </div>
-                          <span className="add">+</span>
-                          <div className="price">
+                          <span className="add" data-cy="plus-icon">
+                            +
+                          </span>
+                          <div className="price" data-cy="end-user-price">
                             ${plan.endUserPrice}
-                            <span className="sub-text">
+                            <span className="sub-text" data-cy="end-user-price-sub-text">
                               {' '}
                               / month <br /> per end user
                             </span>
@@ -147,7 +153,11 @@ export default function ComparePlans({ planForm, updatePlanDetailsForm, costing,
                   <div>
                     <ul className="perks-container">
                       {plan.perks.map((perk, index) => (
-                        <li key={index} className="perk">
+                        <li
+                          key={index}
+                          className="perk"
+                          data-cy={`${plan.name.toLowerCase().replace(/\s+/g, '-')}-${index + 1}`}
+                        >
                           {' '}
                           {perk}
                         </li>
@@ -164,6 +174,7 @@ export default function ComparePlans({ planForm, updatePlanDetailsForm, costing,
                       fill={plan.bottomAction.fill}
                       rightIcon={plan.bottomAction.rightIcon}
                       className={plan.bottomAction.className}
+                      data-cy={`${plan.bottomAction.text.toLowerCase().replace(/\s+/g, '-')}-button`}
                     >
                       {plan.bottomAction.text}
                     </ButtonSolid>

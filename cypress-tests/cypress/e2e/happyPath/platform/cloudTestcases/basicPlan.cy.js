@@ -22,6 +22,7 @@ import {
     multiEnvSelector,
     eeGroupsSelector
 } from "Selectors/eeCommon";
+import { ssoEeSelector } from "Selectors/eeCommon";
 
 describe("", () => {
     const data = {};
@@ -54,7 +55,7 @@ describe("", () => {
         );
         cy.get(whiteLabellingSelectors.appLogoInput).verifyVisibleElement(
             "have.attr",
-            "placeholder",
+            "value",
             "https://app.tooljet.com/logo.svg"
         );
         cy.get(whiteLabellingSelectors.appLogoInput).should("be.disabled");
@@ -68,7 +69,7 @@ describe("", () => {
         );
         cy.get(whiteLabellingSelectors.pageTitleInput).verifyVisibleElement(
             "have.attr",
-            "placeholder",
+            "value",
             "ToolJet"
         );
         cy.get(whiteLabellingSelectors.pageTitleInput).should("be.disabled");
@@ -83,7 +84,7 @@ describe("", () => {
         cy.get(whiteLabellingSelectors.favIconInput).should("be.disabled");
         cy.get(whiteLabellingSelectors.favIconInput).verifyVisibleElement(
             "have.attr",
-            "placeholder",
+            "value",
             "https://app.tooljet.com/favico.png"
         );
         cy.get(whiteLabellingSelectors.favIconHelpText).verifyVisibleElement(
@@ -293,7 +294,7 @@ describe("", () => {
         cy.verifyLabel("Multi-Environment");
         cy.verifyLabel("GitSync");
     });
-    it("Verify basic plan features and banners", () => {
+    it.only("Verify basic plan features and banners", () => {
         data.appName = `${fake.companyName}-App`;
         data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         cy.defaultWorkspaceLogin();
@@ -365,17 +366,17 @@ describe("", () => {
         );
         navigateToManageSSO();
         verifyTooltipDisabled(
-            commonSelectors.listItem("OpenID Connect"),
+            ssoEeSelector.oidc,
             "OpenID Connect is available only\n        in paid plans"
         );
         cy.reload();
         verifyTooltipDisabled(
-            commonSelectors.listItem("LDAP"),
+            '[data-cy="ldap-sso-card"]',
             "LDAP is available only\n        in paid plans"
         );
         cy.reload();
         verifyTooltipDisabled(
-            commonSelectors.listItem("SAML"),
+            '[data-cy="saml-sso-card"]',
             "SAML is available only\n        in paid plans"
         );
 

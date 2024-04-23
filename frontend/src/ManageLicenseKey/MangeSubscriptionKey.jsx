@@ -381,6 +381,7 @@ function ManageSubscriptionKey({ darkMode }) {
           onClick={actionBtnProps.onClick}
           variant={mode !== MODAL_MODE.NEW && 'primary'}
           className={`sso-footer-save-btn ${mode === MODAL_MODE.NEW && 'upgrade-btn'}`}
+          data-cy="upgrade-button"
         >
           {actionBtnProps.text}
         </ButtonSolid>
@@ -401,10 +402,12 @@ function ManageSubscriptionKey({ darkMode }) {
                 selectedTab === 'limits' && 'border-none'
               }`}
             >
-              <div data-cy={'Subscription overview'}>Subscription overview</div>
+              <div data-cy={'subscription-overview'}>Subscription overview</div>
               {!isLoading ? (
                 licenseType && (
-                  <div className={`status-container ${licenseTypeTag.className}`}>{licenseTypeTag.text}</div>
+                  <div className={`status-container ${licenseTypeTag.className}`} data-cy="license-type-label">
+                    {licenseTypeTag.text}
+                  </div>
                 )
               ) : (
                 <Skeleton width="150px" height="20px" />
@@ -413,7 +416,9 @@ function ManageSubscriptionKey({ darkMode }) {
             <div className="content-wrapper">
               <div className="limits-access-container metrics-wrapper">
                 <div className="limits-container">
-                  <div className="title">SUBSCRIPTION LIMITS</div>
+                  <div className="title" data-cy="subscription-limits-label">
+                    SUBSCRIPTION LIMITS
+                  </div>
                   <div className="limits-content mt-3">
                     {limitsData.map((limit) => (
                       <div key={limit?.label} className="d-flex align-items-center metric">
@@ -444,7 +449,9 @@ function ManageSubscriptionKey({ darkMode }) {
                   </div>
                 </div>
                 <div className="access-container">
-                  <div className="title">FEATURE ACCESS</div>
+                  <div className="title" data-cy="feature-access-label">
+                    FEATURE ACCESS
+                  </div>
                   <Access />
                 </div>
               </div>
