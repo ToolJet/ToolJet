@@ -171,7 +171,7 @@ export const Datepicker = function Datepicker({
           : moment(_date).format(selectedDateFormat);
       }
       if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
-        return moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
+        return moment.tz(_date, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
       }
       return moment(_date).format(selectedDateFormat);
     }
