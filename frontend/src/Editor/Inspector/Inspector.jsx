@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
@@ -12,7 +12,6 @@ import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { Modal } from './Components/Modal';
 import { CustomComponent } from './Components/CustomComponent';
-import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +33,8 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
+
+const Icon = lazy(() => import('./Components/Icon'));
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -611,7 +612,11 @@ const GetAccordion = React.memo(
         return <CustomComponent {...restProps} />;
 
       case 'Icon':
-        return <Icon {...restProps} />;
+        return (
+          <Suspense fallback={null}>
+            <Icon {...restProps} />
+          </Suspense>
+        );
 
       case 'Form':
         return <Form {...restProps} />;

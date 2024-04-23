@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
-export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
+export default function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
   const { value, min, max, enableTwoHandle } = properties;
   const { trackColor, handleColor, lineColor, visibility, boxShadow } = styles;
   const sliderRef = useRef(null);
@@ -97,4 +97,4 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
       )}
     </div>
   );
-};
+}

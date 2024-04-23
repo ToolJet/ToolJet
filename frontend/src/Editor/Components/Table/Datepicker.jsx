@@ -22,7 +22,7 @@ const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneD
   return '';
 };
 
-export const Datepicker = function Datepicker({
+export default function Datepicker({
   value,
   onChange,
   readOnly,
@@ -92,4 +92,4 @@ export const Datepicker = function Datepicker({
       />
     </div>
   );
-};
+}

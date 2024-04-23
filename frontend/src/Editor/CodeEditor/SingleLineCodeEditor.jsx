@@ -262,7 +262,7 @@ const EditorInput = ({
   );
 };
 
-const DynamicEditorBridge = (props) => {
+export const DynamicEditorBridge = (props) => {
   const {
     initialValue,
     type,

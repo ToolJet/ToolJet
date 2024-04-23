@@ -7,7 +7,7 @@ const Plot = createPlotlyComponent(Plotly);
 import { isEqual, cloneDeep } from 'lodash';
 var tinycolor = require('tinycolor2');
 
-export const Chart = function Chart({
+export default function Chart({
   width,
   height,
   darkMode,
@@ -223,7 +223,7 @@ export const Chart = function Chart({
       )}
     </div>
   );
-};
+}
 
 // onClick event was not working when the component is re-rendered for every click. Hance, memoization is used
 const PlotComponent = memo(

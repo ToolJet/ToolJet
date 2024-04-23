@@ -9,7 +9,7 @@ import { SearchBox } from '@/_components/SearchBox';
 import * as Icons from '@tabler/icons-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 
-export function Icon({ componentMeta, darkMode, ...restProps }) {
+export default function Icon({ componentMeta, darkMode, ...restProps }) {
   const {
     layoutPropertyChanged,
     component,

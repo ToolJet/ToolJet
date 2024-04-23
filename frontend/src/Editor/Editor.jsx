@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState, lazy } from 'react';
 import {
   appService,
   authenticationService,
@@ -14,10 +14,8 @@ import _, { isEqual, isEmpty, debounce, omit, noop } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
-import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
-import QueryPanel from './QueryPanel/QueryPanel';
 import {
   onEvent,
   onQueryConfirmOrCancel,
@@ -79,7 +77,6 @@ import { diff } from 'deep-object-diff';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 import { getQueryParams } from '@/_helpers/routes';
-import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 import AutoLayoutAlert from './AutoLayoutAlert';
 import { HotkeysProvider } from 'react-hotkeys-hook';
@@ -87,6 +84,14 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+
+// import QueryPanel from './QueryPanel/QueryPanel';
+// import LeftSidebar from './LeftSidebar';
+// import RightSidebarTabManager from './RightSidebarTabManager';
+
+const QueryPanel = lazy(() => import('./QueryPanel/QueryPanel'));
+const RightSidebarTabManager = lazy(() => import('./RightSidebarTabManager'));
+const LeftSidebar = lazy(() => import('./LeftSidebar'));
 
 setAutoFreeze(false);
 enablePatches();

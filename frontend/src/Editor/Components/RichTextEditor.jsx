@@ -2,14 +2,7 @@ import React, { useEffect } from 'react';
 import 'draft-js/dist/Draft.css';
 import { DraftEditor } from './DraftEditor';
 
-export const RichTextEditor = function RichTextEditor({
-  width,
-  height,
-  properties,
-  styles,
-  setExposedVariable,
-  dataCy,
-}) {
+export default function RichTextEditor({ width, height, properties, styles, setExposedVariable, dataCy }) {
   const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
@@ -39,4 +32,4 @@ export const RichTextEditor = function RichTextEditor({
       ></DraftEditor>
     </div>
   );
-};
+}

@@ -10,7 +10,7 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   bottom: 'flex-end',
 };
 
-export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
+export default function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
   let {
     textSize,
     textColor,
@@ -173,4 +173,4 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
       )}
     </div>
   );
-};
+}

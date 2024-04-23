@@ -1,20 +1,26 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { shallow } from 'zustand/shallow';
 import './styles.scss';
-import SingleLineCodeEditor from './SingleLineCodeEditor';
-import MultiLineCodeEditor from './MultiLineCodeEditor';
 import usePortal from '@/_hooks/use-portal';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isNumber } from 'lodash';
 import { Alert } from '@/_ui/Alert/Alert';
 
+const SingleLineCodeEditor = lazy(() => import('./SingleLineCodeEditor'));
+
+const EditorBridge = lazy(() =>
+  import('./SingleLineCodeEditor').then((module) => {
+    return { default: module.DynamicEditorBridge };
+  })
+);
+
 const CODE_EDITOR_TYPE = {
-  fxEditor: SingleLineCodeEditor.EditorBridge,
+  fxEditor: EditorBridge,
   basic: SingleLineCodeEditor,
-  multiline: MultiLineCodeEditor,
+  multiline: lazy(() => import('./MultiLineCodeEditor')),
   extendedSingleLine: SingleLineCodeEditor,
 };
 
@@ -63,20 +69,22 @@ const CodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps 
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 
   return (
-    <RenderCodeEditor
-      type={type}
-      initialValue={initialValue}
-      suggestions={suggestions}
-      darkMode={darkMode}
-      portalProps={{
-        isOpen,
-        setIsOpen,
-        handleTogglePopupExapand,
-        forceUpdate,
-      }}
-      componentName={componentName}
-      {...restProps}
-    />
+    <Suspense fallback={null}>
+      <RenderCodeEditor
+        type={type}
+        initialValue={initialValue}
+        suggestions={suggestions}
+        darkMode={darkMode}
+        portalProps={{
+          isOpen,
+          setIsOpen,
+          handleTogglePopupExapand,
+          forceUpdate,
+        }}
+        componentName={componentName}
+        {...restProps}
+      />
+    </Suspense>
   );
 };
 

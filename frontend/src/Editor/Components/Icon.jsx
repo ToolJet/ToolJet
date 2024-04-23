@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 
-export const Icon = ({
+export default ({
   properties,
   styles,
   fireEvent,

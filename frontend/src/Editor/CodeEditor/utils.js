@@ -6,18 +6,6 @@ import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
 import { hasCircularDependency } from '@/_helpers/utils';
 
-const acorn = require('acorn');
-
-const acorn_code = `
-const array = [1, 2, 3];
-const string = "hello";
-const object = {};
-const boolean = true;
-const number = 1;
-`;
-
-const ast = acorn.parse(acorn_code, { ecmaVersion: 2020 });
-
 export const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
 function traverseAST(node, callback) {
@@ -82,16 +70,28 @@ function inferType(node) {
 export const createJavaScriptSuggestions = () => {
   const allMethods = {};
 
-  traverseAST(ast, (node) => {
-    if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier') {
-      const type = inferType(node.init);
-      if (type) {
-        allMethods[node.id.name] = {
-          type: type,
-          methods: getMethods(type),
-        };
+  import('acorn').then((acorn) => {
+    const acorn_code = `
+    const array = [1, 2, 3];
+    const string = "hello";
+    const object = {};
+    const boolean = true;
+    const number = 1;
+    `;
+
+    const ast = acorn.parse(acorn_code, { ecmaVersion: 2020 });
+
+    traverseAST(ast, (node) => {
+      if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier') {
+        const type = inferType(node.init);
+        if (type) {
+          allMethods[node.id.name] = {
+            type: type,
+            methods: getMethods(type),
+          };
+        }
       }
-    }
+    });
   });
 
   return allMethods;

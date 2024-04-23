@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { SketchPicker } from 'react-color';
+import React, { useState, lazy } from 'react';
 import { ToolTip } from './Components/ToolTip';
+
+const SketchPicker = lazy(() => import('react-color').then((module) => ({ default: module.SketchPicker })));
 
 export const Color = ({ param, definition, onChange, paramType, componentMeta, cyLabel }) => {
   const [showPicker, setShowPicker] = useState(false);

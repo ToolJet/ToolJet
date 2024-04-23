@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes, EditorConstants } from './editorConstants';
@@ -7,7 +7,6 @@ import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
@@ -20,7 +19,6 @@ import { shallow } from 'zustand/shallow';
 import _, { cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
 import toast from 'react-hot-toast';
 import { isOnlyLayoutUpdate, handleLowPriorityWork } from '@/_helpers/editorHelpers';
@@ -28,6 +26,9 @@ import GhostWidget from './GhostWidget';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
+
+const Comments = lazy(() => import('./Comments'));
+const DragContainer = lazy(() => import('./DragContainer'));
 
 export const Container = ({
   widthOfCanvas,
@@ -794,7 +795,9 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments socket={socket} newThread={newThread} canvasWidth={canvasWidth} currentPageId={currentPageId} />
+          <Suspense fallback={null}>
+            <Comments socket={socket} newThread={newThread} canvasWidth={canvasWidth} currentPageId={currentPageId} />
+          </Suspense>
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
@@ -876,17 +879,19 @@ export const Container = ({
             gridWidth={gridWidth}
           />
           <DragGhostWidget />
-          <DragContainer
-            widgets={boxes}
-            onResizeStop={onResizeStop}
-            onDrag={onDragStop}
-            gridWidth={gridWidth}
-            selectedComponents={selectedComponents}
-            currentLayout={currentLayout}
-            currentPageId={currentPageId}
-            draggedSubContainer={draggedSubContainer}
-            mode={isVersionReleased ? 'view' : mode}
-          />
+          <Suspense fallback={null}>
+            <DragContainer
+              widgets={boxes}
+              onResizeStop={onResizeStop}
+              onDrag={onDragStop}
+              gridWidth={gridWidth}
+              selectedComponents={selectedComponents}
+              currentLayout={currentLayout}
+              currentPageId={currentPageId}
+              draggedSubContainer={draggedSubContainer}
+              mode={isVersionReleased ? 'view' : mode}
+            />
+          </Suspense>
         </div>
       </div>
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (

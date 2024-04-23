@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import _ from 'lodash';
+import { truncate } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as MobileMenu } from 'react-burger-menu';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
@@ -93,7 +93,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
                   >
                     <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
                       <div className="card-body">
-                        <span style={{ color: 'var(--slate12)' }}>{_.truncate(page?.name, { length: 22 })}</span>
+                        <span style={{ color: 'var(--slate12)' }}>{truncate(page?.name, { length: 22 })}</span>
                       </div>
                     </div>
                   </div>

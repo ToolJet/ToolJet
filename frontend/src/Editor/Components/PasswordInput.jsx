@@ -6,7 +6,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Label from '@/_ui/Label';
 
-export const PasswordInput = function PasswordInput({
+export default function PasswordInput({
   height,
   validate,
   properties,
@@ -368,4 +368,4 @@ export const PasswordInput = function PasswordInput({
   );
 
   return <div>{renderInput()}</div>;
-};
+}

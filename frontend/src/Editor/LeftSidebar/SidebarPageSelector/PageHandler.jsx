@@ -3,7 +3,7 @@ import { RenameInput } from './RenameInput';
 import { PagehandlerMenu } from './PagehandlerMenu';
 import { EditModal } from './EditModal';
 import { SettingsModal } from './SettingsModal';
-import _ from 'lodash';
+import { kebabCase } from 'lodash';
 import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -224,7 +224,7 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode
         icon: '⚠️',
       });
     } else {
-      addNewPage({ name: pageName, handle: _.kebabCase(pageName.toLowerCase()) });
+      addNewPage({ name: pageName, handle: pageName.toLowerCase() });
     }
     setNewPageBeingCreated(false);
   };

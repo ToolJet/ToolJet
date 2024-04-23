@@ -5,7 +5,7 @@ import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import moment from 'moment';
 
-export const DaterangePicker = function DaterangePicker({
+export default function DaterangePicker({
   height,
   properties,
   styles,
@@ -87,4 +87,4 @@ export const DaterangePicker = function DaterangePicker({
       />
     </div>
   );
-};
+}

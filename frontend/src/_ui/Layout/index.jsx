@@ -12,6 +12,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import Settings from '@/_components/Settings';
+import '@/_styles/left-sidebar.scss';
 
 function Layout({
   children,

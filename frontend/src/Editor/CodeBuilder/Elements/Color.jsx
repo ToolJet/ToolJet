@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { SketchPicker } from 'react-color';
+import React, { useState, lazy } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import classNames from 'classnames';
+
+const SketchPicker = lazy(() => import('react-color').then((module) => ({ default: module.SketchPicker })));
 
 export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true, meta }) => {
   const [showPicker, setShowPicker] = useState(false);

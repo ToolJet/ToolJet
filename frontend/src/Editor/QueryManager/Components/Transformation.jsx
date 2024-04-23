@@ -3,7 +3,7 @@ import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
-import _ from 'lodash';
+import { merge } from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 
@@ -59,7 +59,7 @@ return data.filter(row => row.amount > 1000);
 
     if (selectedQueryId !== queryId) {
       const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
-      const finalState = _.merge(
+      const finalState = merge(
         {},
         { [options?.transformationLanguage ?? lang]: options.transformation ?? defaultValue[lang] },
         nonLangdefaultCode

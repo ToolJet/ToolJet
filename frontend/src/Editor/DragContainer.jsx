@@ -1,6 +1,5 @@
 // import '@/Editor/wdyr';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import Moveable from 'react-moveable';
+import React, { useEffect, useState, useRef, useCallback, lazy } from 'react';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import './DragContainer.css';
@@ -10,6 +9,8 @@ import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
 import { individualGroupableProps } from './gridUtils';
+
+const Moveable = lazy(() => import('react-moveable'));
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, bottom: 0, position: 'css' };
 const RESIZABLE_CONFIG = {

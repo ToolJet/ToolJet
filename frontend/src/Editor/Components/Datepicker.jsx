@@ -3,7 +3,7 @@ import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 
-export const Datepicker = function Datepicker({
+export default function Datepicker({
   height,
   properties,
   styles,
@@ -115,4 +115,4 @@ export const Datepicker = function Datepicker({
       </div>
     </div>
   );
-};
+}

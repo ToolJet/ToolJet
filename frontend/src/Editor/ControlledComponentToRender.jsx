@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, Suspense } from 'react';
 import { getComponentToRender } from '@/_helpers/editorHelpers';
 import _ from 'lodash';
 
@@ -49,7 +49,11 @@ const ComponentWrapper = React.memo(({ componentName, ...props }) => {
     return <ComponentToRender key={key} resetComponent={resetComponent} {...props} />;
   }
 
-  return <ComponentToRender {...props} />;
+  return (
+    <Suspense fallback="">
+      <ComponentToRender {...props} />
+    </Suspense>
+  );
 }, shouldUpdate);
 
 export default ComponentWrapper;

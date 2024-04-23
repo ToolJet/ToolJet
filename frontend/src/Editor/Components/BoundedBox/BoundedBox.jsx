@@ -8,7 +8,7 @@ import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+export default function ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
@@ -227,4 +227,4 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       />
     </div>
   );
-};
+}

@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 
 import { useAppInfo } from '@/_stores/appDataStore';
 
-export const FilePicker = ({
+export default function FilePicker({
   id,
   width,
   height,
@@ -18,7 +18,7 @@ export const FilePicker = ({
   styles,
   setExposedVariable,
   dataCy,
-}) => {
+}) {
   //* properties definitions
   const instructionText =
     component.definition.properties.instructionText?.value ?? 'Drag and drop files here or click to select files';
@@ -354,7 +354,7 @@ export const FilePicker = ({
       </div>
     </section>
   );
-};
+}
 
 FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   if (signifier) {

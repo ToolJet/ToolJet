@@ -4,7 +4,7 @@ import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { debounce } from 'lodash';
 
-export const PDF = React.memo(({ styles, properties, width, height, component, dataCy }) => {
+export default React.memo(({ styles, properties, width, height, component, dataCy }) => {
   const pdfName = component.name;
   const { visibility, boxShadow } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;

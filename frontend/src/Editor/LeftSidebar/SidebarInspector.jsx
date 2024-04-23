@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
-import _ from 'lodash';
+import { isEmpty, merge } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import Icon from '@/_ui/Icon/solidIcons/index';
@@ -62,10 +62,10 @@ export const LeftSidebarInspector = ({
   const memoizedJSONData = React.useMemo(() => {
     const updatedQueries = {};
     const { queries: currentQueries } = currentState;
-    // if (!_.isEmpty(dataQueries)) {
+    // if (!isEmpty(dataQueries)) {
     //   const copyCurrentQueies = JSON.parse(JSON.stringify(currentQueries));
     //   dataQueries.forEach((query) => {
-    //     updatedQueries[query.name] = _.merge(copyCurrentQueies[query.name], {
+    //     updatedQueries[query.name] = merge(copyCurrentQueies[query.name], {
     //       id: query.id,
     //       isLoading: false,
     //       data: [],
@@ -73,7 +73,7 @@ export const LeftSidebarInspector = ({
     //     });
     //   });
     // }
-    // const data = _.merge(currentState, { queries: updatedQueries });
+    // const data = merge(currentState, { queries: updatedQueries });
     const jsontreeData = { ...currentState, queries: currentQueries };
     delete jsontreeData.errors;
     delete jsontreeData.client;
@@ -122,7 +122,7 @@ export const LeftSidebarInspector = ({
   const componentIcons = Object.entries(currentState['components']).map(([key, value]) => {
     const component = componentDefinitions[value.id]?.component ?? {};
 
-    if (!_.isEmpty(component) && component.name === key) {
+    if (!isEmpty(component) && component.name === key) {
       return {
         iconName: key,
         iconPath: `assets/images/icons/widgets/${
@@ -137,7 +137,7 @@ export const LeftSidebarInspector = ({
       const component = componentDefinitions[value.id]?.component ?? {};
       const componentExposedVariables = value;
 
-      if (!_.isEmpty(component) && component.component === 'TextInput') {
+      if (!isEmpty(component) && component.component === 'TextInput') {
         const icons = [];
 
         if (componentExposedVariables.disable) {
@@ -163,7 +163,7 @@ export const LeftSidebarInspector = ({
         return icons;
       }
 
-      if (!_.isEmpty(component) && component.component === 'Text' && componentExposedVariables?.visibility) {
+      if (!isEmpty(component) && component.component === 'Text' && componentExposedVariables?.visibility) {
         return [
           {
             iconName: 'visibility',

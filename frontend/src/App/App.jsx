@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
@@ -25,7 +25,6 @@ import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
-import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
@@ -36,6 +35,8 @@ import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { ManageOrgVars } from '@/ManageOrgVars';
+
+const SetupScreenSelfHost = lazy(() => import('../SuccessInfoScreen/SetupScreenSelfHost'));
 
 const AppWrapper = (props) => {
   return (
@@ -155,7 +156,15 @@ class AppComponent extends React.Component {
             <Routes>
               <Route path="/login/:organizationId" exact element={<LoginPage />} />
               <Route path="/login" exact element={<LoginPage />} />
-              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              <Route
+                path="/setup"
+                exact
+                element={
+                  <Suspense fallback={null}>
+                    <SetupScreenSelfHost {...this.props} darkMode={darkMode} />
+                  </Suspense>
+                }
+              />
               <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
               <Route path="/sso/:origin" exact element={<Oauth />} />
               <Route path="/signup" element={<SignupPage />} />

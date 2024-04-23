@@ -5,7 +5,6 @@ import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
 import { Editor } from '@/Editor';
 const Y = require('yjs');
-const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
 
 const ydoc = new Y.Doc();
@@ -31,10 +30,13 @@ export const RealtimeEditor = (props) => {
 
   React.useEffect(() => {
     /* TODO: when we convert the editor.jsx to fn component. please try to avoid this extra call */
-    const domain = psl.parse(window.location.host).domain;
-    document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
-    document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
-    document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
+
+    import('psl').then((psl) => {
+      const domain = psl.parse(window.location.host).domain;
+      document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
+      document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
+      document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
+    });
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);

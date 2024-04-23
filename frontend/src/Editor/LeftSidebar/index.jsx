@@ -20,7 +20,7 @@ import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
 
-export const LeftSidebar = forwardRef((props, ref) => {
+export default forwardRef((props, ref) => {
   const router = useRouter();
   const {
     appId,

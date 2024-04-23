@@ -8,7 +8,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
 
-export const NumberInput = function NumberInput({
+export default function NumberInput({
   height,
   properties,
   validate,
@@ -424,4 +424,4 @@ export const NumberInput = function NumberInput({
   };
 
   return <div>{renderInput()}</div>;
-};
+}

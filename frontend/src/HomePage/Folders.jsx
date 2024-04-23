@@ -11,7 +11,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
-import _ from 'lodash';
+import { isEmpty } from 'lodash';
 import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -57,7 +57,7 @@ export const Folders = function Folders({
   }, [folders]);
 
   useEffect(() => {
-    if (_.isEmpty(currentFolder)) {
+    if (isEmpty(currentFolder)) {
       updateSidebarNAV('All apps');
       setActiveFolder({});
     } else {
@@ -99,7 +99,7 @@ export const Folders = function Folders({
   }
 
   function handleFolderChange(folder) {
-    if (_.isEmpty(folder)) {
+    if (isEmpty(folder)) {
       setActiveFolder({});
     } else {
       setActiveFolder(folder);
@@ -276,8 +276,8 @@ export const Folders = function Folders({
             className={cx(
               `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
               {
-                'bg-light-indigo': _.isEmpty(activeFolder) && !darkMode,
-                'bg-dark-indigo': _.isEmpty(activeFolder) && darkMode,
+                'bg-light-indigo': isEmpty(activeFolder) && !darkMode,
+                'bg-dark-indigo': isEmpty(activeFolder) && darkMode,
               }
             )}
             style={{ height: '32px' }}

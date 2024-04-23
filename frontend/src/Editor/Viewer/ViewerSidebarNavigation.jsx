@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import { truncate } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import FolderList from '@/_ui/FolderList/FolderList';
 
@@ -29,7 +29,7 @@ export const ViewerSidebarNavigation = ({ isMobileDevice, pages, currentPageId, 
               selectedItem={page?.id === currentPageId}
             >
               <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-3 text-wrap">
-                {_.truncate(page?.name, { length: 18 })}
+                {truncate(page?.name, { length: 18 })}
               </span>
             </FolderList>
           )

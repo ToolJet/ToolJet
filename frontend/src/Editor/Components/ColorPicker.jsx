@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SketchPicker } from 'react-color';
 
-export const ColorPicker = function ({
+export default function ({
   width,
   properties,
   styles,
@@ -159,4 +159,4 @@ export const ColorPicker = function ({
       )}
     </div>
   );
-};
+}

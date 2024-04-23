@@ -6,7 +6,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
 
-export const TextInput = function TextInput({
+export default function TextInput({
   height,
   validate,
   properties,
@@ -339,4 +339,4 @@ export const TextInput = function TextInput({
       )}
     </>
   );
-};
+}

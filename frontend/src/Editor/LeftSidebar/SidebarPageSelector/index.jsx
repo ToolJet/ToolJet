@@ -3,7 +3,7 @@ import Fuse from 'fuse.js';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
 import { GlobalSettings } from './GlobalSettings';
-import _ from 'lodash';
+import { isEqual, cloneDeep } from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
@@ -36,7 +36,7 @@ const LeftSidebarPageSelector = ({
 }) => {
   const pages = useMemo(
     () =>
-      Object.entries(_.cloneDeep(appDefinition.pages))
+      Object.entries(cloneDeep(appDefinition.pages))
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [],
     [JSON.stringify(appDefinition.pages)]
@@ -72,7 +72,7 @@ const LeftSidebarPageSelector = ({
   };
 
   React.useEffect(() => {
-    if (!_.isEqual(pages, allpages)) {
+    if (!isEqual(pages, allpages)) {
       setPages(pages);
     }
 

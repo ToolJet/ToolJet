@@ -3,16 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
-export const Image = function Image({
-  component,
-  height,
-  properties,
-  styles,
-  fireEvent,
-  width,
-  parentId = null,
-  dataCy,
-}) {
+export default function Image({ component, height, properties, styles, fireEvent, width, parentId = null, dataCy }) {
   const { source, loadingState, alternativeText, zoomButtons, rotateButton } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, imageFit, boxShadow } = styles;
   const {
@@ -154,4 +145,4 @@ export const Image = function Image({
       )}
     </div>
   );
-};
+}

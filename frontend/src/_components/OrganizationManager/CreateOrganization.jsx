@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 import { appendWorkspaceId, getHostURL } from '@/_helpers/routes';
-import _ from 'lodash';
+import { isEmpty, debounce } from 'lodash';
 import { FormWrapper } from '@/_components/FormWrapper';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
@@ -35,7 +35,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         emptyError = true;
       }
     });
-    const errorFound = !_.isEmpty(name.error) || !_.isEmpty(slug.error);
+    const errorFound = !isEmpty(name.error) || !isEmpty(slug.error);
 
     if (!emptyError && !errorFound) {
       const slugValue = slug.value;
@@ -128,12 +128,12 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setSlugDisabled(true);
   };
 
-  const delayedSlugChange = _.debounce(async (value) => {
+  const delayedSlugChange = debounce(async (value) => {
     setSlugProgress(true);
     await handleInputChange(value, 'slug');
   }, 300);
 
-  const delayedNameChange = _.debounce(async (value) => {
+  const delayedNameChange = debounce(async (value) => {
     setWorkspaceNameProgress(true);
     await handleInputChange(value, 'name');
   }, 300);

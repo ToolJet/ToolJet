@@ -4,7 +4,7 @@ import Categories from './Categories';
 import AppList from './AppList';
 import { libraryAppService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import _ from 'lodash';
+import { map } from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { getWorkspaceId } from '../../_helpers/utils';
 
 const identifyUniqueCategories = (templates) =>
-  ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
+  ['all', ...new Set(map(templates, 'category'))].map((categoryId) => ({
     id: categoryId,
     count: templates.filter((template) => categoryId === 'all' || template.category === categoryId).length,
   }));
