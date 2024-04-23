@@ -73,13 +73,6 @@ const String = ({
         background: 'inherit',
         position: 'relative',
         height: '100%',
-        maxHeight: isMaxRowHeightAuto
-          ? 'auto'
-          : maxRowHeightValue
-          ? maxRowHeightValue
-          : cellSize === 'condensed'
-          ? '39px'
-          : '45px',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
@@ -171,7 +164,7 @@ const String = ({
                 if (!hovered) setHovered(true);
               }}
               onMouseLeave={() => setHovered(false)}
-              className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
+              className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
             >
               {_renderString()}
             </div>

@@ -890,7 +890,8 @@
       &.has-textarea {
         overflow: hidden;
         .table-column-type-div-element {
-          display: block;
+          display: flex;
+          height: 100%;
         }
       }
 
