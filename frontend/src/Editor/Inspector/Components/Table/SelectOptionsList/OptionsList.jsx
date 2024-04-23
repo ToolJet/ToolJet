@@ -65,8 +65,24 @@ export const OptionsList = ({
     const columns = props.component.component.definition.properties.columns;
     const column = columns.value[index];
     const options = column.options;
-    options.splice(optionIndex, 1);
+    const deletedOption = options.splice(optionIndex, 1);
     column.options = options;
+    const defaultOptionsList = column.defaultOptionsList || [];
+    const deletedOptionIndexInDefaultOptionsList = defaultOptionsList?.findIndex((defaultOption, index) => {
+      if (
+        defaultOption.value === deletedOption.value &&
+        defaultOption.label === deletedOption.label &&
+        defaultOption.makeDefaultOption === deletedOption.makeDefaultOption
+      ) {
+        return index;
+      } else {
+        return -1;
+      }
+    });
+    if (deletedOptionIndexInDefaultOptionsList !== -1) {
+      defaultOptionsList.splice(deletedOptionIndexInDefaultOptionsList, 1);
+      column.defaultOptionsList = defaultOptionsList;
+    }
     const newColumns = columns.value;
     newColumns[index] = column;
     props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
@@ -100,6 +116,8 @@ export const OptionsList = ({
           column.options[optionIndex][property] = value;
           if (isValueTruthy) {
             column.defaultOptionsList = [column.options[optionIndex]];
+          } else {
+            column.defaultOptionsList = [];
           }
         } else {
           const defaultOptionsList = column?.defaultOptionsList ?? [];
@@ -230,10 +248,7 @@ export const OptionsList = ({
               popOverCallback={(showing) => {
                 setColumnPopoverRootCloseBlocker('dynamicOptions', showing);
               }}
-              placeholder={`{{[{ label: 'Reading', value: 'Reading' },
-                { label: 'Traveling', value: 'Traveling' },
-                { label: 'Photography', value: 'Photography' },
-                { label: 'Music', value: 'Music' }]}}`}
+              placeholder={`{{[{ label: 'Reading', value: 'Reading' }, { label: 'Traveling', value: 'Traveling' }, { label: 'Photography', value: 'Photography' }, { label: 'Music', value: 'Music' }]}}`}
             />
             <ProgramaticallyHandleProperties
               label="Options loading state"

@@ -1741,7 +1741,7 @@ export function Table({
                   )
                 ))}
             </div>
-            <div className={`col d-flex e h-100 ${loadingState && 'w-100'}`}>
+            <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
               {enablePagination && (
                 <Pagination
                   lastActivePageIndex={pageIndex}

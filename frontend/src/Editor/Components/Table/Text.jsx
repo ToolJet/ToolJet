@@ -39,7 +39,6 @@ const Text = ({
   const nonEditableCellValueRef = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [contentEditable, setContentEditable] = useState(false);
   const cellStyles = {
     color: cellTextColor ?? 'inherit',
   };
@@ -55,7 +54,7 @@ const Text = ({
 
   const _renderTextArea = () => (
     <div
-      contentEditable={contentEditable}
+      contentEditable={true}
       className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
         darkMode ? ' textarea-dark-theme' : ''
       }`}
@@ -68,6 +67,8 @@ const Text = ({
         overflowY: 'auto',
         whiteSpace: 'pre-wrap',
         position: 'static',
+        display: 'flex',
+        alignItems: 'center',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
@@ -91,9 +92,6 @@ const Text = ({
         setIsEditing(true);
         // setShowOverlay(false);
         e.stopPropagation();
-      }}
-      onClick={(e) => {
-        setContentEditable(true);
       }}
     />
   );
@@ -168,7 +166,7 @@ const Text = ({
             }}
             onMouseLeave={() => setHovered(false)}
             ref={ref}
-            className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
+            className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
           >
             {!isEditable ? _renderNonEditableData() : _renderTextArea()}
           </div>

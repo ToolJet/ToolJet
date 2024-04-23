@@ -255,7 +255,7 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 28.86,
+      width: 35,
       height: 456,
     },
     events: {
@@ -472,7 +472,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         data: {
           value:
-            "{{ [ \n\t\t{ id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '15/05/2022', mobile_number: '9876543210', interest: ['Reading', 'Traveling','Photography'], photo: 'https://reqres.in/img/faces/7-image.jpg' }, \n\t\t{ id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '20/09/2021', mobile_number: '8765432109', interest: ['Cooking','Gardening','Hiking'], photo: 'https://reqres.in/img/faces/5-image.jpg' }, \n\t\t{ id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', mobile_number: '7654321098', interest: ['Music','Dancing','Crafting'], photo: 'https://reqres.in/img/faces/3-image.jpg' }, \n\t\t{ id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', mobile_number: '6543210987', interest: ['Reading', 'Traveling', 'Volunteering'], photo: 'https://reqres.in/img/faces/1-image.jpg' }, \n\t\t{ id: 5, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '07/01/2021', mobile_number: '4321098765', interest: ['Music', 'Dancing', 'Hiking'], photo: 'https://reqres.in/img/faces/4-image.jpg' }, \n\t\t{ id: 6, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', mobile_number: '2109876543', interest: ['Cooking', 'Traveling', 'Photography'], photo: 'https://reqres.in/img/faces/6-image.jpg' }, \n\t\t{ id: 7, name: 'Mia Tiana', email: 'mia.tiana@example.com', date: '21/11/2022', mobile_number: '1098705217', interest: ['Music', 'Gardening', 'Hiking'], photo: 'https://reqres.in/img/faces/2-image.jpg' }, \n\t\t{ id: 8, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '31/03/2023', mobile_number: '9876543210', interest: ['Reading', 'Dancing', 'Crafting'], photo: 'https://reqres.in/img/faces/9-image.jpg' }, \n\t\t{ id: 9, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '07/09/2022', mobile_number: '7654321098', interest: ['Music','Gardening','Photography'], photo: 'https://reqres.in/img/faces/8-image.jpg' }, \n\t\t{ id: 10, name: 'Michael Reyes', email: 'michael.reyes@example.com', date: '25/12/2021', mobile_number: '5432109876', interest: ['Cooking','Crafting','Volunteering'], photo: 'https://reqres.in/img/faces/10-image.jpg' } \n] }}",
+            "{{ [ \n\t\t{ id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '15/05/2022', mobile_number: 9876543210, interest: ['Reading', 'Traveling','Photography'], photo: 'https://reqres.in/img/faces/7-image.jpg' }, \n\t\t{ id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '20/09/2021', mobile_number: 8765432109, interest: ['Cooking','Gardening','Hiking'], photo: 'https://reqres.in/img/faces/5-image.jpg' }, \n\t\t{ id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', mobile_number: 7654321098, interest: ['Music','Dancing','Crafting'], photo: 'https://reqres.in/img/faces/3-image.jpg' }, \n\t\t{ id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', mobile_number: 6543210987, interest: ['Reading', 'Traveling', 'Volunteering'], photo: 'https://reqres.in/img/faces/1-image.jpg' }, \n\t\t{ id: 5, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '07/01/2021', mobile_number: 4321098765, interest: ['Music', 'Dancing', 'Hiking'], photo: 'https://reqres.in/img/faces/4-image.jpg' }, \n\t\t{ id: 6, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', mobile_number: 2109876543, interest: ['Cooking', 'Traveling', 'Photography'], photo: 'https://reqres.in/img/faces/6-image.jpg' }, \n\t\t{ id: 7, name: 'Mia Tiana', email: 'mia.tiana@example.com', date: '21/11/2022', mobile_number: 1098705217, interest: ['Music', 'Gardening', 'Hiking'], photo: 'https://reqres.in/img/faces/2-image.jpg' }, \n\t\t{ id: 8, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '31/03/2023', mobile_number: 9876543210, interest: ['Reading', 'Dancing', 'Crafting'], photo: 'https://reqres.in/img/faces/9-image.jpg' }, \n\t\t{ id: 9, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '07/09/2022', mobile_number: 7654321098, interest: ['Music','Gardening','Photography'], photo: 'https://reqres.in/img/faces/8-image.jpg' }, \n\t\t{ id: 10, name: 'Michael Reyes', email: 'michael.reyes@example.com', date: '25/12/2021', mobile_number: 5432109876, interest: ['Cooking','Crafting','Volunteering'], photo: 'https://reqres.in/img/faces/10-image.jpg' } \n] }}",
         },
         useDynamicColumn: { value: '{{false}}' },
         columnData: {
@@ -499,18 +499,32 @@ export const widgets = [
               id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737',
               autogenerated: true,
               fxActiveFields: [],
+              columnSize: 30,
+            },
+            {
+              name: 'photo',
+              key: 'photo',
+              id: 'f23b7d134b2e490ea41e3bb8eeb8c8e37472af243bf6b70d5af294482097e3a2',
+              autogenerated: true,
+              fxActiveFields: [],
+              columnType: 'image',
+              objectFit: 'contain',
+              borderRadius: '100',
+              columnSize: 70,
             },
             {
               name: 'name',
               id: '5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a',
               autogenerated: true,
               fxActiveFields: [],
+              columnSize: 130,
             },
             {
               name: 'email',
               id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f',
               autogenerated: true,
               fxActiveFields: [],
+              columnSize: 230,
             },
             {
               name: 'date',
@@ -522,6 +536,7 @@ export const widgets = [
               dateFormat: 'DD/MM/YYYY',
               parseDateFormat: 'DD/MM/YYYY',
               isDateSelectionEnabled: true,
+              columnSize: 130,
             },
             {
               name: 'mobile_number',
@@ -529,6 +544,7 @@ export const widgets = [
               autogenerated: true,
               fxActiveFields: [],
               columnType: 'number',
+              columnSize: 140,
             },
             {
               name: 'interest',
@@ -537,6 +553,7 @@ export const widgets = [
               autogenerated: true,
               fxActiveFields: [],
               columnType: 'newMultiSelect',
+              columnSize: 300,
               options: [
                 {
                   label: 'Reading',
@@ -580,15 +597,6 @@ export const widgets = [
                 },
               ],
             },
-            {
-              name: 'photo',
-              key: 'photo',
-              id: 'f23b7d134b2e490ea41e3bb8eeb8c8e37472af243bf6b70d5af294482097e3a2',
-              autogenerated: true,
-              fxActiveFields: [],
-              columnType: 'image',
-              objectFit: 'contain',
-            },
           ],
         },
         showBulkUpdateActions: { value: '{{true}}' },
@@ -609,7 +617,7 @@ export const widgets = [
         textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
         cellSize: { value: 'regular' },
-        borderRadius: { value: '4' },
+        borderRadius: { value: '8' },
         tableType: { value: 'table-classic' },
         maxRowHeight: { value: 'auto' },
         maxRowHeightValue: { value: '80px' },
