@@ -128,6 +128,9 @@
     overflow-y: hidden;
 
     &.has-number {
+      padding: 0px 12px 0px 12px !important;
+    }
+    &.has-number.isEditable{
       padding: 0px 0px 0px 12px !important;
     }
 
@@ -869,6 +872,10 @@
       &:hover {
         // border: 1px solid var(--slate8);
         background-color: var(--slate4);
+      }
+
+      .invalid-feedback {
+        height: 22px ;
       }
 
       &:has(.invalid-feedback):hover {
