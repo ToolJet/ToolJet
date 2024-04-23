@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import Select from '@/_ui/Select';
 import { useTranslation } from 'react-i18next';
@@ -86,7 +86,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
 
   items.push(
     {
-      title: 'Formatting',
+      title: 'Date format',
       className: 'table-date-picker-formatting-accordion',
       children: (
         <>
@@ -245,7 +245,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
       ),
     },
     {
-      title: 'Parse',
+      title: 'Parse format',
       children: (
         <>
           <ProgramaticallyHandleProperties
