@@ -343,7 +343,7 @@ class InstanceLogin extends React.Component {
                               checked={options?.passwordLoginEnabled === true}
                               disabled={!isAnySSOEnabled}
                             />
-                            <label className="form-check-label bold-text" data-cy="password-login-label">
+                            <label className="form-check-label bold-text" data-cy="label-password-login">
                               Password login
                             </label>
                           </div>

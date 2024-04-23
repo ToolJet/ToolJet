@@ -197,7 +197,7 @@ class InstanceSSOConfiguration extends React.Component {
           className="sso-option"
           key={key}
           onClick={isFeatureAvailable ? () => this.openModal(key) : (e) => e.preventDefault()}
-          data-cy="sso-card"
+          data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-sso-card`}
         >
           <div className="sso-option-label">
             {

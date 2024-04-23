@@ -8,8 +8,6 @@ import {
   WorkspaceInvitationLink,
   enableDefaultSSO,
   disableSSO,
-  setSignupStatus,
-  deleteOrganisationSSO
 } from "Support/utils/eeCommon";
 import { commonSelectors } from "Selectors/common";
 import {
@@ -18,7 +16,7 @@ import {
   instanceSettingsSelector,
 } from "Selectors/eeCommon";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
-import * as SSO from "Support/utils/manageSSO";
+import { setSignupStatus, defaultSSO, deleteOrganisationSSO } from "Support/utils/manageSSO";
 import { confirmInviteElements } from "Support/utils/manageUsers";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
@@ -34,13 +32,13 @@ describe("Verify OIDC user onboarding", () => {
     cy.visit("/my-workspace");
     cy.intercept("GET", "api/library_apps").as("apps");
     cy.wait(2000);
-    SSO.defaultSSO(true);
+    defaultSSO(true);
   });
 
   it("Verify user onboarding using workspace OIDC", () => {
     deleteOrganisationSSO("My workspace", ["openid"]);
     common.navigateToManageSSO();
-    SSO.defaultSSO(false);
+    defaultSSO(false);
     setSignupStatus(false);
     cy.wait(1000);
 

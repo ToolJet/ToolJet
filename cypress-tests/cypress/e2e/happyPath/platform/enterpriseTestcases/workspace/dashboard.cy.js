@@ -40,7 +40,7 @@ describe(
       cy.get(commonSelectors.editRectangleIcon).should("be.visible");
       cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
         "have.text",
-        "Create new app"
+        "Create an app"
       );
       cy.get(dashboardSelector.folderLabel).should("be.visible");
       cy.get(dashboardSelector.folderLabel).should(($el) => {
