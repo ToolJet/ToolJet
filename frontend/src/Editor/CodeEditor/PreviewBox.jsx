@@ -116,7 +116,11 @@ export const PreviewBox = ({ currentValue, validationSchema, setErrorStateActive
         coersionData={coersionData}
         withValidation={!isEmpty(validationSchema)}
       />
-      <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon={'copy'} tip={'Copy to clipboard'} />
+      <CodeHinter.PopupIcon
+        callback={() => copyToClipboard(error ? error?.value : content)}
+        icon={'copy'}
+        tip={'Copy to clipboard'}
+      />
     </>
   );
 };
@@ -351,7 +355,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           padding: '0',
         }}
       >
-        {prettyPrintedJson?.startsWith('{{')
+        {prettyPrintedJson?.startsWith('{{') && prettyPrintedJson?.endsWith('{{')
           ? prettyPrintedJson?.replace(/{{/g, '').replace(/}}/g, '')
           : prettyPrintedJson}
       </pre>

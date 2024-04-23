@@ -15,6 +15,7 @@ const CODE_EDITOR_TYPE = {
   fxEditor: SingleLineCodeEditor.EditorBridge,
   basic: SingleLineCodeEditor,
   multiline: MultiLineCodeEditor,
+  extendedSingleLine: SingleLineCodeEditor,
 };
 
 const CodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps }) => {

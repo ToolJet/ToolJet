@@ -24,7 +24,8 @@
         "key": "query",
         "type": "codehinter",
         "description": "Enter query",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     }
   }

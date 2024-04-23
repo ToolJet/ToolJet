@@ -368,6 +368,14 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
+
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -1950,7 +1958,7 @@ const EditorComponent = (props) => {
           darkMode={props.darkMode}
         />
         {isVersionReleased && <ReleasedVersionError />}
-        <EditorContextWrapper>
+        <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
           <EditorHeader
             darkMode={props.darkMode}
             appDefinition={JSON.parse(JSON.stringify(appDefinition))}
