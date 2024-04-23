@@ -24,7 +24,6 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
-import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
@@ -819,8 +818,6 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', parameters);
-    } else if (query.kind === 'tooljetdb') {
-      queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit', queryState);
     } else {
@@ -853,12 +850,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
           setPreviewData(finalData);
         }
         let queryStatusCode = data?.status ?? null;
-        const queryStatus =
-          query.kind === 'tooljetdb'
-            ? data.statusText
-            : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
+        const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
 
         switch (true) {
           // Note: Need to move away from statusText -> statusCode
@@ -988,8 +980,6 @@ export function runQuery(
       queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode, queryState);
-    } else if (query.kind === 'tooljetdb') {
-      queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
     } else {
       queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
     }
@@ -1002,12 +992,7 @@ export function runQuery(
         }
 
         let queryStatusCode = data?.status ?? null;
-        const promiseStatus =
-          query.kind === 'tooljetdb'
-            ? data.statusText
-            : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
+        const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
         // Note: Need to move away from statusText -> statusCode
         if (
           promiseStatus === 'failed' ||
