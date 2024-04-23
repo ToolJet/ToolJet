@@ -108,14 +108,14 @@ export class TooljetDbController {
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddColumn, 'all'))
   async addColumn(
-    @Body() body: { column: PostgrestTableColumnDto; foreignKeys?: PostgrestForeignKeyDto },
+    @Body() body: { column: PostgrestTableColumnDto; foreign_keys?: PostgrestForeignKeyDto },
     @Param('organizationId') organizationId,
     @Param('tableName') tableName
   ) {
     const params = {
       table_name: tableName,
       column: body.column,
-      foreign_keys: body?.foreignKeys || [],
+      foreign_keys: body?.foreign_keys || [],
     };
     const result = await this.tooljetDbService.perform(organizationId, 'add_column', params);
     return decamelizeKeys({ result });
@@ -187,11 +187,11 @@ export class TooljetDbController {
   async createForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreignKeys') foreignKeys: Array<PostgrestForeignKeyDto>
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
   ) {
     const params = {
       table_name: tableName,
-      foreign_keys: foreignKeys,
+      foreign_keys: foreign_keys,
     };
     const result = await this.tooljetDbService.perform(organizationId, 'create_foreign_key', params);
     return decamelizeKeys({ result });
@@ -203,13 +203,13 @@ export class TooljetDbController {
   async updateForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreignKeyId') foreignKeyId: string,
-    @Body('foreignKeys') foreignKeys: Array<PostgrestForeignKeyDto>
+    @Body('foreign_key_id') foreign_key_id: string,
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
   ) {
     const params = {
       table_name: tableName,
-      foreign_key_id: foreignKeyId,
-      foreign_keys: foreignKeys,
+      foreign_key_id: foreign_key_id,
+      foreign_keys: foreign_keys,
     };
     const result = await this.tooljetDbService.perform(organizationId, 'update_foreign_key', params);
     return decamelizeKeys({ result });
