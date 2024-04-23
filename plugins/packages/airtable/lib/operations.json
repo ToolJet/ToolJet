@@ -143,6 +143,7 @@
         "type": "codehinter",
         "description": "Enter list of records",
         "height": "150px",
+        "editorType": "extendedSingleLine",
         "placeholder": "[{ \"fields\": {} }]"
       }
     },
@@ -185,7 +186,8 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "delete_record": {
