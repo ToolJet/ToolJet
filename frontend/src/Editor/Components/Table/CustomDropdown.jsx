@@ -3,7 +3,17 @@ import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
-export const CustomDropdown = ({ options, value, multiple, onChange, isEditable, width, contentWrap, autoHeight }) => {
+export const CustomDropdown = ({
+  options,
+  value,
+  multiple,
+  onChange,
+  isEditable,
+  width,
+  contentWrap,
+  autoHeight,
+  darkMode,
+}) => {
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -58,9 +68,7 @@ export const CustomDropdown = ({ options, value, multiple, onChange, isEditable,
       );
     }
   }
-
   const getOverlay = (value, containerWidth, options) => {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
     const labels = Array.isArray(value)
       ? value.map((value) => {
           const option = options.find((option) => option.value === value);
