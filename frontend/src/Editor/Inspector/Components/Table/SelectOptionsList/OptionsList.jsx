@@ -67,7 +67,8 @@ export const OptionsList = ({
     const options = column.options;
     const deletedOption = options.splice(optionIndex, 1);
     column.options = options;
-    const deletedOptionIndexInDefaultOptionsList = column?.defaultOptionsList?.findIndex((defaultOption, index) => {
+    const defaultOptionsList = column.defaultOptionsList || [];
+    const deletedOptionIndexInDefaultOptionsList = defaultOptionsList?.findIndex((defaultOption, index) => {
       if (
         defaultOption.value === deletedOption.value &&
         defaultOption.label === deletedOption.label &&
@@ -78,8 +79,7 @@ export const OptionsList = ({
         return -1;
       }
     });
-    if (column?.defaultOptionsList && deletedOptionIndexInDefaultOptionsList !== -1) {
-      const defaultOptionsList = column.defaultOptionsList;
+    if (deletedOptionIndexInDefaultOptionsList !== -1) {
       defaultOptionsList.splice(deletedOptionIndexInDefaultOptionsList, 1);
       column.defaultOptionsList = defaultOptionsList;
     }
