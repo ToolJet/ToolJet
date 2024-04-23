@@ -24,7 +24,9 @@ export const StylesTabElements = ({
     <>
       <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {column.columnType !== 'boolean' ? t('widget.Table.textAlignment', 'Text Alignment') : 'Alignment'}
+          {column.columnType !== 'boolean' && column.columnType !== 'image'
+            ? t('widget.Table.textAlignment', 'Text Alignment')
+            : 'Alignment'}
         </label>
         <ToggleGroup
           onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
