@@ -6,6 +6,7 @@ import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
+import { QueryError } from 'src/modules/data_sources/query.errors';
 import got from 'got';
 
 @Injectable()
@@ -48,13 +49,12 @@ export class PostgrestProxyService {
         method,
         headers: reqHeaders,
         responseType: 'json',
-        throwHttpErrors: false, // don't throw for non-2xx status codes
         ...(!isEmpty(body) && { body: JSON.stringify(body) }),
       });
 
       return response.body;
     } catch (error) {
-      return error;
+      throw new QueryError('Query could not be completed', error.message, {});
     }
   }
 
