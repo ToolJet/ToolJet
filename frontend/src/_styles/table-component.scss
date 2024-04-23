@@ -853,6 +853,10 @@
         background-color: var(--slate4);
       }
 
+      .invalid-feedback {
+        height: 22px ;
+      }
+
       &:has(.invalid-feedback):hover {
         border: 1px solid var(--tomato10);
 
