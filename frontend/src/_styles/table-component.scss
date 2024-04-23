@@ -1040,16 +1040,11 @@
 
     .table-column-date-picker-accordion {
 
-      .accordion-button,
-      .accordion-body {
-        // padding-left:  0 !important;
-        // padding-right: 0 !important;
-        // padding-top: 0 !important
+      .accordion-button {
+        .accordion-title-text {
+          text-transform: none !important
+        }
       }
-
-      // .accordion-header {
-      //   padding: 16px
-      // }
       .grey-bg-section {
         // background-color: var(--slate3);
         // padding: 12px 16px;

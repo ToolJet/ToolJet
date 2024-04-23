@@ -156,14 +156,18 @@ export const Datepicker = function Datepicker({
   const dateInputRef = useRef(null); // Create a ref
 
   const computeDateString = (_date) => {
+    if (!value) return ''; // If there is no value in table data, return empty string to display
     if (!isDateSelectionEnabled && !isTimeChecked) return '';
+    if (_date === null) return 'Invalid date';
 
     const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
     const selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 
     if (isDateSelectionEnabled) {
       if (isTimeChecked && parseInUnixTimestamp && unixTimestamp) {
-        return moment.tz(_date, timeZoneDisplay).format(selectedDateFormat);
+        return timeZoneDisplay
+          ? moment(_date).tz(timeZoneDisplay).format(selectedDateFormat)
+          : moment(_date).format(selectedDateFormat);
       }
       if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
         return moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
@@ -188,6 +192,7 @@ export const Datepicker = function Datepicker({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates]);
+
   return (
     <div ref={pickerRef}>
       <DatePickerComponent
@@ -199,7 +204,7 @@ export const Datepicker = function Datepicker({
         })}
         selected={date}
         onChange={(date) => handleDateChange(date)}
-        value={date !== null ? computeDateString(date) : 'Invalid date'}
+        value={computeDateString(date)}
         dateFormat={dateDisplayFormat}
         customInput={
           <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
