@@ -67,6 +67,8 @@ const Text = ({
         overflowY: 'auto',
         whiteSpace: 'pre-wrap',
         position: 'static',
+        display: 'flex',
+        alignItems: 'center',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
@@ -164,7 +166,7 @@ const Text = ({
             }}
             onMouseLeave={() => setHovered(false)}
             ref={ref}
-            className={`${!isValid ? 'is-invalid' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
+            className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
           >
             {!isEditable ? _renderNonEditableData() : _renderTextArea()}
           </div>

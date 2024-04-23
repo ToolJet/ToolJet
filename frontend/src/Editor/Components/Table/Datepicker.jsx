@@ -157,7 +157,7 @@ export const Datepicker = function Datepicker({
   const dateInputRef = useRef(null); // Create a ref
 
   const computeDateString = (_date) => {
-    if (!value) return ''; // If there is no value in table data, return empty string to display
+    if (_date === null && !value) return ''; // If there is no value in table data, return empty string to display
     if (!isDateSelectionEnabled && !isTimeChecked) return '';
     if (_date === null) return 'Invalid date';
 
@@ -171,7 +171,7 @@ export const Datepicker = function Datepicker({
           : moment(_date).format(selectedDateFormat);
       }
       if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
-        return moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
+        return moment.tz(_date, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
       }
       return moment(_date).format(selectedDateFormat);
     }
