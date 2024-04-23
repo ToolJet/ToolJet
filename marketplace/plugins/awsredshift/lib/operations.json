@@ -24,7 +24,8 @@
         "key": "sql_query",
         "type": "codehinter",
         "description": "Enter your SQL query",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     }
   }
