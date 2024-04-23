@@ -570,7 +570,6 @@ export default function generateColumnsData({
                       borderRadius: `${column?.borderRadius}%`,
                       objectFit: `${column?.objectFit}`,
                     }}
-                    alt={cellValue}
                   />
                 )}
               </div>
