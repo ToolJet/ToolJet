@@ -157,7 +157,7 @@ export const Datepicker = function Datepicker({
   const dateInputRef = useRef(null); // Create a ref
 
   const computeDateString = (_date) => {
-    if (!value) return ''; // If there is no value in table data, return empty string to display
+    if (_date === null && !value) return ''; // If there is no value in table data, return empty string to display
     if (!isDateSelectionEnabled && !isTimeChecked) return '';
     if (_date === null) return 'Invalid date';
 
