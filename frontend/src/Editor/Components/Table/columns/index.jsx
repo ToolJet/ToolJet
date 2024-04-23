@@ -37,10 +37,10 @@ export default function generateColumnsData({
 }) {
   return columnProperties.map((column) => {
     if (!column) return;
-    const columnSize = columnSizes[column?.id] || columnSizes[column?.name];
+    const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
+
     const columnType = column?.columnType;
     let sortType = 'alphanumeric';
-
     const columnOptions = {};
     if (
       columnType === 'dropdown' ||
@@ -559,7 +559,7 @@ export default function generateColumnsData({
           case 'image': {
             const computeImageHeight = column?.height ? `${column?.height}px` : '100%';
             return (
-              <div style={{ height: '100%' }}>
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
                 {cellValue && (
                   <img
                     src={cellValue}
@@ -570,7 +570,6 @@ export default function generateColumnsData({
                       borderRadius: `${column?.borderRadius}%`,
                       objectFit: `${column?.objectFit}`,
                     }}
-                    alt={cellValue}
                   />
                 )}
               </div>

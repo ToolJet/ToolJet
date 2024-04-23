@@ -78,7 +78,7 @@ export function AddNewRowComponent({
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
-          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'dark-theme'}`}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'dark-theme table-dark'}`}
         >
           <thead>
             {headerGroups.map((headerGroup, index) => {
@@ -118,7 +118,7 @@ export function AddNewRowComponent({
                       <td
                         key={index}
                         {...cellProps}
-                        style={{ ...cellProps.style }}
+                        style={{ ...cellProps.style, backgroundColor: 'inherit' }}
                         className={cx(`table-text-align-${cell.column.horizontalAlignment}  td`, {
                           'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                           'has-left-actions': cell.column.id === 'leftActions',
