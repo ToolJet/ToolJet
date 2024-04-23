@@ -46,6 +46,8 @@ import { VersionReleaseDto } from '@dto/version-release.dto';
 
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
+import { AppBase } from 'src/entities/app_base.entity';
+
 const uuid = require('uuid');
 
 interface AppResourceMappings {
@@ -258,7 +260,7 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
+  async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
     const viewableAppsQb = viewableAppsQuery(
       user,
       await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),

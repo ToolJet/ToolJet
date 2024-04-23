@@ -6,10 +6,10 @@ import { SSOGuard } from '@ee/licensing/guards/sso.guard';
 import { LDAPGuard } from '@ee/licensing/guards/ldap.guard';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 import { SAMLGuard } from '@ee/licensing/guards/saml.guard';
-
+import { InstanceLoginConfigsService } from '@services/instance_login_configs.service';
 @Module({
   controllers: [InstanceLoginConfigsController],
-  providers: [SSOGuard, OIDCGuard, LDAPGuard, SAMLGuard],
+  providers: [InstanceLoginConfigsService, SSOGuard, OIDCGuard, LDAPGuard, SAMLGuard],
   imports: [InstanceSettingsModule, OrganizationsModule],
 })
 export class InstanceLoginConfigsModule {}

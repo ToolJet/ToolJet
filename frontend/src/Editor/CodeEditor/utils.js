@@ -126,7 +126,7 @@ const resolveWorkspaceVariables = (query, state) => {
   return [valid, error, resolvedStr];
 };
 
-function resolveCode(code, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
+function resolveCode(code, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
 
@@ -285,6 +285,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
 
   if (validationSchema) {
     const [valid, errors, newValue] = validateComponentProperty(resolvedValue, validationSchema);
+
     return [valid, errors, newValue, resolvedValue];
   }
 };

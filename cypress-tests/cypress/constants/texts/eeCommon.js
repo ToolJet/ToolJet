@@ -12,11 +12,11 @@ export const ssoEeText = {
   oidcPageElements: {
     oidcToggleLabel: "OpenID Connect",
     nameLabel: "Name",
-    clientIdLabel: "Client Id",
-    clientSecretLabel: "Client SecretEncrypted",
+    clientIdLabel: "Client ID",
+    clientSecretLabel: "Client secretEncrypted",
     encryptedLabel: "Encrypted",
-    WellKnownUrlLabel: "Well Known URL",
-    redirectUrlLabel: "Redirect URL",
+    WellKnownUrlLabel: "Well known URL",
+    // redirectUrlLabel: "Redirect URL",
   },
   oidcEnabledToast: "Enabled OpenId SSO",
   oidcDisabledToast: "Disabled OpenId SSO",
@@ -30,14 +30,24 @@ export const ssoEeText = {
   ldapPageElements: {
     ldapToggleLabel: "LDAP",
     nameLabel: "Name",
-    hostLabel: 'Host Name',
-    portLabel: 'Port',
+    hostLabel: "Host name",
+    portLabel: "Port",
     baseDnLabel: "Base DN",
     baseDnHelperText: "Location without UID or CN",
     sslLabel: "SSL",
   },
   ldapSSOText: "Sign in with Tooljet LDAP Auth",
-  userNameInputLabel: "Username"
+  userNameInputLabel: "Username",
+  samlModalElements: {
+    toggleLabel: "SAML",
+    NameLabel: "Name",
+    metaDataLabel: "Identity provider metadata",
+    baseDNHelperText:
+      "Ensure the Identity provider metadata is in XML format. You can download it from your IdP's site",
+    groupAttributeLabel: "Group attribute",
+    groupAttributeHelperText:
+      "Define attribute for user-to-group mapping based on the IdP",
+  },
 };
 export const eeGroupsText = {
   resourceDs: "Datasources",

@@ -8,6 +8,7 @@ import Skeleton from 'react-loading-skeleton';
 import { LicenseBanner } from '@/LicenseBanner';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
+import { ToolTip } from '@/_components/ToolTip';
 
 class ManageInstanceSettingsComponent extends React.Component {
   constructor(props) {
@@ -23,6 +24,7 @@ class ManageInstanceSettingsComponent extends React.Component {
       disabled: false,
       initialOptions: {},
       featureAccess: {},
+      isSignUpEnabled: window.public_config?.ENABLE_SIGNUP === 'true',
     };
   }
 
@@ -70,21 +72,19 @@ class ManageInstanceSettingsComponent extends React.Component {
     this.setState({ options: this.state.initialOptions }, () => this.checkForChanges());
   };
 
-  saveSettings = () => {
+  saveSettings = async () => {
     this.setState({ isSaving: true });
-    instanceSettingsService
-      .update(this.state.options)
-      .then(() => {
-        toast.success('Instance settings have been updated', {
-          position: 'top-center',
-        });
-        this.setState({ isSaving: false, hasChanges: false });
-        this.fetchSettings();
-      })
-      .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
-        this.setState({ isSaving: false });
+    try {
+      await instanceSettingsService.update(this.state.options);
+      toast.success('Instance settings have been updated', {
+        position: 'top-center',
       });
+      this.setState({ isSaving: false, hasChanges: false });
+    } catch (error) {
+      toast.error(error.error, { position: 'top-center' });
+      this.setState({ isSaving: false });
+    }
+    await this.fetchSettings();
   };
 
   returnBooleanValue = (value) => (value === 'true' ? true : false);
@@ -108,7 +108,7 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   render() {
-    const { options, isSaving, disabled, isLoading, hasChanges, featureAccess } = this.state;
+    const { options, isSaving, disabled, isLoading, hasChanges, featureAccess, isSignUpEnabled } = this.state;
     const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
     return (
       <ErrorBoundary showFallback={true}>
@@ -146,24 +146,32 @@ class ManageInstanceSettingsComponent extends React.Component {
                         {options.map((option) => (
                           <div key={option?.key} className="form-group mb-3">
                             {option && (
-                              <label className="form-check form-switch">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  onChange={() => this.optionsChanged(option?.key)}
-                                  checked={option.value === 'true'}
-                                  data-cy="form-check-input"
-                                  disabled={disabled}
-                                />
-                                <span className="form-check-label" data-cy="form-check-label">
-                                  {this.props.t(option?.label_key, option?.label)}
-                                </span>
-                                <div className="help-text">
-                                  <div data-cy="instance-settings-help-text">
-                                    {this.props.t(option?.helper_text_key, option?.helper_text)}
+                              <ToolTip
+                                message="Personal workspace must be enabled for sign up to instance"
+                                placement="left"
+                                show={option.key === 'ALLOW_PERSONAL_WORKSPACE' && isSignUpEnabled}
+                              >
+                                <label className="form-check form-switch">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    onChange={() => this.optionsChanged(option?.key)}
+                                    checked={option.value === 'true'}
+                                    data-cy="form-check-input"
+                                    disabled={
+                                      disabled || (option.key === 'ALLOW_PERSONAL_WORKSPACE' && isSignUpEnabled)
+                                    }
+                                  />
+                                  <span className="form-check-label" data-cy="form-check-label">
+                                    {this.props.t(option?.label_key, option?.label)}
+                                  </span>
+                                  <div className="help-text">
+                                    <div data-cy="instance-settings-help-text">
+                                      {this.props.t(option?.helper_text_key, option?.helper_text)}
+                                    </div>
                                   </div>
-                                </div>
-                              </label>
+                                </label>
+                              </ToolTip>
                             )}
                           </div>
                         ))}

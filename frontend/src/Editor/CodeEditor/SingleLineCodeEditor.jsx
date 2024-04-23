@@ -121,7 +121,6 @@ const EditorInput = ({
   isFocused,
   componentId,
   type,
-  className,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -131,7 +130,21 @@ const EditorInput = ({
     let queryInput = context.state.doc.toString();
 
     if (totalReferences > 0) {
-      const currentWord = queryInput.split('{{').pop().split('}}')[0];
+      const currentCursor = context.state.selection.main.head;
+      const currentCursorPos = context.pos;
+
+      let currentWord = queryInput.substring(currentCursor, currentCursorPos);
+
+      if (currentWord?.length === 0) {
+        const lastBracesFromPos = queryInput.lastIndexOf('{{', currentCursorPos);
+        currentWord = queryInput.substring(lastBracesFromPos, currentCursorPos);
+        //remove curly braces from the current word as will append it later
+        currentWord = currentWord.replace(/{{|}}/g, '');
+      }
+
+      // remove \n from the current word if it is present
+      currentWord = currentWord.replace(/\n/g, '');
+
       queryInput = '{{' + currentWord + '}}';
     }
 
@@ -164,11 +177,11 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setFirstTimeFocus(false);
     if (ignoreValidation) {
       return onBlurUpdate(currentValue);
     }
     setTimeout(() => {
+      setFirstTimeFocus(false);
       if (!error || currentValue == '') {
         const _value = currentValue;
         onBlurUpdate(_value);

@@ -694,7 +694,6 @@ export default function DragContainer({
 
             const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
 
-            // Adding the new updates to the macro task queue to unblock UI
             onDrag(
               events.map((ev) => {
                 let posX = ev.lastEvent.translate[0];

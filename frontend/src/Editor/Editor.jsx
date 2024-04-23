@@ -223,7 +223,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     updateState({ isLoading: true });
-    (app.creation_mode === 'GIT' || app.creationMode === 'GIT') && onEditorFreeze(true);
+    useResolveStore.getState().actions.resetStore();
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = {
       ...currentSession?.current_user,
@@ -269,6 +269,8 @@ const EditorComponent = (props) => {
       subscription.unsubscribe();
       if (window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true') props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
+      useCurrentStateStore.getState().actions.setEditorReady(false);
+      useResolveStore.getState().actions.resetStore();
       prevAppDefinition.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -753,6 +755,10 @@ const EditorComponent = (props) => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
+    //Freeze the app
+    const { should_freeze_editor } = data;
+    onEditorFreeze(should_freeze_editor);
+
     if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
       const releasedId = data.current_version_id || data.currentVersionId;
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
@@ -820,9 +826,6 @@ const EditorComponent = (props) => {
       },
     });
 
-    if (data.creationMode === 'GIT') {
-      onEditorFreeze(true);
-    }
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
@@ -840,8 +843,10 @@ const EditorComponent = (props) => {
     }
 
     Promise.all([
-      await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id),
-      await fetchDataSources(data.editing_version?.id),
+      await useDataSourcesStore
+        .getState()
+        .actions.fetchGlobalDataSources(data?.organization_id, data.editing_version?.id, currentEnvironmentId),
+      await fetchDataSources(data.editing_version?.id, currentEnvironmentId),
       await fetchDataQueries(data.editing_version?.id, true, true),
     ])
       .then(async () => {
@@ -901,7 +906,6 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-      if (appData.creationMode !== 'GIT') onEditorFreeze(false);
       setAppVersionPromoted(false);
       useCurrentStateStore.getState().actions.setCurrentState({});
       useCurrentStateStore.getState().actions.setEditorReady(false);
@@ -1427,8 +1431,6 @@ const EditorComponent = (props) => {
     _appDefinition.pages[currentPageId].components = newComponents;
 
     appDefinitionChanged(_appDefinition, { containerChanges: true, widgetMovedWithKeyboard: true });
-    // console.log('arpit::', { componentsIds });
-    // updateComponentsNeedsUpdateOnNextRender(componentsIds);
   };
 
   const copyComponents = () =>
