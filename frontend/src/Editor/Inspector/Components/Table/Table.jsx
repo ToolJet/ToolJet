@@ -590,7 +590,7 @@ class TableComponent extends React.Component {
                               return 'Link';
                             case 'radio':
                               return 'Radio';
-                            case 'multiSelect':
+                            case 'multiselect':
                               return 'Multiselect deprecated';
                             case 'toggle':
                               return 'Toggle';
