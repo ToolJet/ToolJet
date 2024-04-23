@@ -64,7 +64,8 @@ const String = ({
       contentEditable={true}
       className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
         darkMode ? ' textarea-dark-theme' : ''
-      }  justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+      } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+      tabIndex={-1}
       style={{
         color: cellTextColor ? cellTextColor : 'inherit',
         outline: 'none',
@@ -99,7 +100,7 @@ const String = ({
         e.stopPropagation();
       }}
     >
-      {isEditing ? cellValue : <span>{cellValue}</span>}
+      <span>{cellValue}</span>
     </div>
   );
 
@@ -148,7 +149,6 @@ const String = ({
             onMouseLeave={() => {
               setHovered(false);
             }}
-            ref={ref}
           >
             <span
               style={{
