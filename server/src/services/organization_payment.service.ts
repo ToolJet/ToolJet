@@ -41,10 +41,17 @@ export class OrganizationPaymentService {
 
   async getUpcomingInvoice(organizationId: string): Promise<OrganizationSubscriptionInvoice> {
     return dbTransactionWrap((manager: EntityManager) => {
-      return manager.findOne(OrganizationSubscriptionInvoice, {
-        where: { organizationId: organizationId },
-        order: { createdAt: 'DESC' },
-      });
+      return manager
+        .createQueryBuilder(OrganizationSubscription, 'organization_subscription')
+        .innerJoinAndSelect(
+          'organization_subscription.organizationSubscriptionInvoices',
+          'organization_subscription_invoices'
+        )
+        .where('organization_subscription.organizationId = :organizationId', {
+          organizationId,
+        })
+        .orderBy('organization_subscription_invoices.createdAt', 'DESC')
+        .getOne();
     });
   }
 
@@ -274,7 +281,7 @@ export class OrganizationPaymentService {
   async upcomingInvoiceHandler(invoiceObject) {
     const { subscription: subscriptionId, status, period_end, hosted_invoice_url, id: invoiceId } = invoiceObject;
     const organizationLicensePayments = await this.getOrganizationLicensePayments(undefined, subscriptionId);
-    const { customerId, organizationId, userId, id } = organizationLicensePayments;
+    const { customerId, userId, id } = organizationLicensePayments;
     const dueDate = new Date(period_end * 1000);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -283,7 +290,6 @@ export class OrganizationPaymentService {
           organizationSubscriptionId: id,
           customerId,
           status,
-          organizationId,
           userId,
           invoiceDue: dueDate,
           invoiceLink: hosted_invoice_url,
@@ -372,7 +378,6 @@ export class OrganizationPaymentService {
               organizationSubscriptionId: organizationPayment.id,
               customerId,
               status: invoiceObject.status,
-              organizationId: organizationPayment.organizationId,
               invoiceDue: dueDate,
               userId: organizationPayment.userId,
               invoiceLink: invoiceObject.hosted_invoice_url,
@@ -461,7 +466,6 @@ export class OrganizationPaymentService {
             organizationSubscriptionId: subscription.id,
             customerId,
             status: invoiceObject.status,
-            organizationId: subscription.organizationId,
             invoiceDue: dueDate,
             userId: subscription.userId,
             invoiceLink: invoiceObject.hosted_invoice_url,

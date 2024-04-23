@@ -16,9 +16,6 @@ export class OrganizationSubscriptionInvoice {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @Column({ name: 'organization_id' })
-  organizationId: string;
-
   @Column({ name: 'user_id' })
   userId: string;
 
