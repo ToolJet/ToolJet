@@ -798,7 +798,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id || props?.params?.slug;
+    const _appId = props?.id || props?.params?.slug;
 
     if (!onMount) {
       await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
