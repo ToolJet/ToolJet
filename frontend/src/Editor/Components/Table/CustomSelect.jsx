@@ -114,6 +114,8 @@ export const CustomSelect = ({
   const defaultValue = useMemo(() => {
     if (defaultOptionsList.length >= 1) {
       return !isMulti ? defaultOptionsList[defaultOptionsList.length - 1] : defaultOptionsList;
+    } else {
+      return null;
     }
   }, [isMulti, defaultOptionsList]);
 
@@ -188,7 +190,12 @@ export const CustomSelect = ({
           onMenuInputFocus={() => setIsFocused(true)}
           onChange={(value) => {
             setIsFocused(false);
-            onChange(value);
+            if (!isMulti && value === _value?.value) {
+              // for single select column type if on change value is similar to current value , then discard the current value
+              onChange('');
+            } else {
+              onChange(value);
+            }
           }}
           useCustomStyles={true}
           styles={customStyles}
