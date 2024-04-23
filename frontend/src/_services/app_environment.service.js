@@ -6,6 +6,7 @@ export const appEnvironmentService = {
   getAllEnvironments,
   getVersionsByEnvironment,
   getEnvironment,
+  init,
 };
 
 /* This endpoint now only will work with viewer. For Editor we may need to do some logic changes in backend code */
@@ -43,4 +44,10 @@ function getVersionsByEnvironment(appId, environmentId /* not needed for CE */) 
     `${config.apiUrl}/app-environments${environmentId ? `/${environmentId}` : ''}/versions${query ? `?${query}` : ''}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function init(editing_version_id = null) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = queryString.stringify({ editing_version_id });
+  return fetch(`${config.apiUrl}/app-environments/init?${query}`, requestOptions).then(handleResponse);
 }

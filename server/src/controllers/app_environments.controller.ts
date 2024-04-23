@@ -14,6 +14,16 @@ export class AppEnvironmentsController {
   constructor(private appEnvironmentServices: AppEnvironmentService, private appsAbilityFactory: AppsAbilityFactory) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('init')
+  async init(@User() user, @Query('editing_version_id') editingVersionId: string) {
+    /* 
+     init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
+     Should not use for any other purpose. 
+    */
+    return await this.appEnvironmentServices.init(editingVersionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
   async index(@User() user, @Query('app_id') appId: string) {
     const { organizationId } = user;
@@ -96,13 +106,6 @@ export class AppEnvironmentsController {
     }
 
     return await this.appEnvironmentServices.delete(id, organizationId);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('versions')
-  async getVersions(@User() user, @Query('app_id') appId: string) {
-    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);
-    return { appVersions };
   }
 
   @UseGuards(JwtAuthGuard)

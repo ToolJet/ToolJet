@@ -36,6 +36,7 @@ import { LicenseService } from '@services/license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { VersionReleaseDto } from '@dto/version-release.dto';
 
 @Controller({
   path: 'apps',
@@ -514,5 +515,21 @@ export class AppsControllerV2 {
     }
 
     return await this.eventService.deleteEvent(eventId, versionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/release')
+  async releaseVersion(
+    @User() user,
+    @Param('id') id,
+    @AppDecorator() app: App,
+    @Body() versionReleaseDto: VersionReleaseDto
+  ) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('updateParams', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    return await this.appsService.releaseVersion(app.id, versionReleaseDto);
   }
 }

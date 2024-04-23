@@ -406,20 +406,6 @@ const EditorComponent = (props) => {
     return editorRef;
   };
 
-  const fetchApps = async (page) => {
-    const { apps } = await appsService.getAll(page, '', '', 'front-end');
-
-    updateState({
-      apps: apps.map((app) => ({
-        id: app.id,
-        name: app.name,
-        slug: app.slug,
-        creationMode: app?.creationMode || app?.creation_mode,
-        current_version_id: app.current_version_id,
-      })),
-    });
-  };
-
   const fetchOrgEnvironmentVariables = () => {
     orgEnvironmentVariableService.getVariables().then((data) => {
       const client_variables = {};
@@ -542,7 +528,6 @@ const EditorComponent = (props) => {
 
     onEditorFreeze(true, false);
     await fetchApp(props.params.pageHandle);
-    await fetchApps(0);
     await fetchOrgEnvironmentVariables();
     await fetchEnvironments();
 
