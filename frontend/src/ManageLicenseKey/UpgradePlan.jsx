@@ -20,10 +20,14 @@ export default function UpgradePlan({ costing, planForm, licenseLoaded, updatePl
         <div className="requirements-form">
           <div className="input-container">
             <div className="label-container">
-              <label className="tj-text-xsm tj-text font-weight-500">Plan type</label>
+              <label className="tj-text-xsm tj-text font-weight-500" data-cy="plan-type-label">
+                Plan type
+              </label>
             </div>
             <div className="price tj-text-sm input-wrapper">
-              <div className={`tag valid-status`}>Business plan</div>
+              <div className={`tag valid-status`} data-cy="business-plan-label">
+                Business plan
+              </div>
             </div>
           </div>
           <div className="input-container">

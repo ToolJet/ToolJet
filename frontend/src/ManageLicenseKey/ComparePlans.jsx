@@ -44,9 +44,9 @@ export default function ComparePlans({ planForm, updatePlanDetailsForm, costing,
               type="checkbox"
               checked={subscriptionType === 'yearly'}
               onChange={(e) => updatePlanDetailsForm('subscriptionType', e.target.checked ? 'yearly' : 'monthly')}
-              data-cy="offer-toggle"
+              data-cy="compare-plan-offer-toggle"
             />
-            <span className="tj-text-sm type-toggle" data-cy="offer-toggle-label">
+            <span className="tj-text-sm type-toggle" data-cy="compare-plan-offer-toggle-label">
               {capitalize(subscriptionType)}
               <br />
               <span
@@ -156,7 +156,7 @@ export default function ComparePlans({ planForm, updatePlanDetailsForm, costing,
                         <li
                           key={index}
                           className="perk"
-                          data-cy={`${plan.name.toLowerCase().replace(/\s+/g, '-')}-${index + 1}`}
+                          data-cy={`${plan.name.toLowerCase().replace(/\s+/g, '-')}-${index}`}
                         >
                           {' '}
                           {perk}
