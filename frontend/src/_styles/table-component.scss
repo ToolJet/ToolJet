@@ -129,8 +129,9 @@
     &.has-number{
       padding: 0px 0px 0px 12px !important;
     }
-
-
+    &.has-dropdown,&.has-multiselect,&.has-badge,&.has-badges{
+      overflow-y: visible !important;
+    }
     // &.has-number {
     //   padding: 0 !important;
     // }
@@ -1262,7 +1263,7 @@
 }
 
 .overlay-radio-table {
-  margin-top: 10px;
+  // margin-top: 10px;
   span {
     font-family: 'IBM Plex Sans';
     line-height: 20px;
