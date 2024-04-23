@@ -29,7 +29,6 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
-  showPopoverIfOverflow,
   isMaxRowHeightAuto,
 }) => {
   const containerRef = useRef(null);
@@ -114,6 +113,8 @@ export const CustomSelect = ({
   const defaultValue = useMemo(() => {
     if (defaultOptionsList.length >= 1) {
       return !isMulti ? defaultOptionsList[defaultOptionsList.length - 1] : defaultOptionsList;
+    } else {
+      return isMulti ? [] : {};
     }
   }, [isMulti, defaultOptionsList]);
 
@@ -162,7 +163,7 @@ export const CustomSelect = ({
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && showPopoverIfOverflow && (_value?.length || defaultValue?.length) && !isFocused ? (
+        isMulti && (_value?.length || defaultValue?.length) && !isFocused ? (
           getOverlay(_value ? _value : defaultValue, containerWidth, darkMode)
         ) : (
           <div></div>
@@ -171,7 +172,6 @@ export const CustomSelect = ({
       trigger={
         isMulti &&
         !isFocused &&
-        showPopoverIfOverflow &&
         calculateIfPopoverRequired(_value ? _value : defaultValue, containerWidth - 40) && ['hover', 'focus']
       } //container width -24 -16 gives that select container size
       rootClose={true}
@@ -188,7 +188,12 @@ export const CustomSelect = ({
           onMenuInputFocus={() => setIsFocused(true)}
           onChange={(value) => {
             setIsFocused(false);
-            onChange(value);
+            if (!isMulti && value === _value?.value) {
+              // for single select column type if on change value is similar to current value , then discard the current value
+              onChange('');
+            } else {
+              onChange(value);
+            }
           }}
           useCustomStyles={true}
           styles={customStyles}

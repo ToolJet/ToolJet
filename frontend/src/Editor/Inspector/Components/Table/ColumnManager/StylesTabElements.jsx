@@ -24,7 +24,9 @@ export const StylesTabElements = ({
     <>
       <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {column.columnType !== 'boolean' ? t('widget.Table.textAlignment', 'Text Alignment') : 'Alignment'}
+          {column.columnType !== 'boolean' && column.columnType !== 'image'
+            ? t('widget.Table.textAlignment', 'Text Alignment')
+            : 'Alignment'}
         </label>
         <ToggleGroup
           onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
@@ -161,7 +163,7 @@ export const StylesTabElements = ({
         <>
           <div data-cy={`input-and-label-text-color`} className="field px-3">
             <ProgramaticallyHandleProperties
-              label="Link color"
+              label="Text color"
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -169,7 +171,7 @@ export const StylesTabElements = ({
               property="linkColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Link color' }}
+              paramMeta={{ type: 'color', displayName: 'Text color' }}
               paramType="properties"
             />
           </div>
