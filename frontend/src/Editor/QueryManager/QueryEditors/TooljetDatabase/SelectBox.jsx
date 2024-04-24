@@ -29,6 +29,7 @@ function DataSourceSelect({
   showDescription = false,
   foreignKeyAccessInRowForm,
   isCellEdit,
+  getForeignKeyDetails,
 }) {
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
@@ -153,6 +154,7 @@ function DataSourceSelect({
                 columnInfoForTable={columnInfoForTable}
                 showColumnInfo={showColumnInfo}
                 foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
+                getForeignKeyDetails={getForeignKeyDetails}
               />
             ),
             [onAdd, addBtnLabel, emptyError]
@@ -296,6 +298,7 @@ const MenuList = ({
   showColumnInfo,
   options,
   foreignKeyAccessInRowForm,
+  getForeignKeyDetails,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -306,13 +309,21 @@ const MenuList = ({
   }
   menuListStyles.padding = '4px';
 
+  const handleScroll = (event) => {
+    // Your scroll event handling logic here
+    console.log('Scrolled!', event.target.scrollTop);
+    // if (event.target.scrollTop > 300) {
+    //   getForeignKeyDetails();
+    // }
+  };
+
   return (
     <>
       {!isEmpty(options) && showColumnInfo && columnInfoForTable}
       {isEmpty(options) && emptyError ? (
         emptyError
       ) : (
-        <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
+        <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu" onScroll={(e) => handleScroll(e)}>
           {children}
         </div>
       )}

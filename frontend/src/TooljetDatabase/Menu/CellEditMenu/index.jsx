@@ -26,7 +26,9 @@ export const CellEditMenu = ({
   nullValue,
   isBoolean,
   referencedColumnDetails = [],
+  referenceColumnName = '',
   isForeignKey = false,
+  getForeignKeyDetails,
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -104,9 +106,10 @@ export const CellEditMenu = ({
   };
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
+    const [key, value] = Object.entries(item);
     return {
-      label: item.Name,
-      value: item.Name,
+      label: key[1],
+      value: key[1],
     };
   });
 
@@ -153,6 +156,7 @@ export const CellEditMenu = ({
               isCellEdit={true}
               // showRedirection={showRedirection}
               // showDescription={showDescription}
+              getForeignKeyDetails={getForeignKeyDetails}
             />
           )}
           {/*  Boolean View */}

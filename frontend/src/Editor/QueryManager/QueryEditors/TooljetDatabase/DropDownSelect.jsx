@@ -32,6 +32,7 @@ const DropDownSelect = ({
   foreignKeyAccessInRowForm = false,
   topPlaceHolder = '',
   isCellEdit = false,
+  getForeignKeyDetails,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -154,6 +155,7 @@ const DropDownSelect = ({
             showDescription={showDescription}
             foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
             isCellEdit={isCellEdit}
+            getForeignKeyDetails={getForeignKeyDetails}
           />
         </Popover>
       }

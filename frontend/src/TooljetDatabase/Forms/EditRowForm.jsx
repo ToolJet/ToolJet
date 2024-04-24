@@ -304,17 +304,19 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
           <h3 className="card-title" data-cy="edit-row-header">
             Edit row
           </h3>
-          <ToolTip message="Open referenced table" placement="right" tooltipClassName="tootip-table">
-            <Link
-              target="_blank"
-              to={getPrivateRoute('database')}
-              // state={{ id: 'e8d56181-5c36-4a71-8d29-71418c954deb', name: 'details' }}
-            >
-              <div className="edit-row-tableName" onClick={handleNavigateToReferencedtable}>
-                <span>tableName</span> <Maximize />
-              </div>
-            </Link>
-          </ToolTip>
+          {foreignKeys.length > 0 && (
+            <ToolTip message="Open referenced table" placement="right" tooltipClassName="tootip-table">
+              <Link
+                target="_blank"
+                to={getPrivateRoute('database')}
+                // state={{ id: 'e8d56181-5c36-4a71-8d29-71418c954deb', name: 'details' }}
+              >
+                <div className="edit-row-tableName" onClick={handleNavigateToReferencedtable}>
+                  <span>{foreignKeys[0].referenced_table_name}</span> <Maximize />
+                </div>
+              </Link>
+            </ToolTip>
+          )}
         </div>
       </div>
       <div className="card-body">

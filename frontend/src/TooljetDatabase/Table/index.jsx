@@ -49,10 +49,12 @@ const Table = ({ collapseSidebar }) => {
     loadingState,
     setForeignKeys,
     tables,
+    foreignKeys,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
+  const [loadingColumns, setLoadingColumns] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
@@ -94,7 +96,6 @@ const Table = ({ collapseSidebar }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const isForeignKey = true;
-  const tableId = tables[1]?.id;
 
   const updateCellNavigationRefToDefault = () => {
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
@@ -132,25 +133,32 @@ const Table = ({ collapseSidebar }) => {
 
   const getForeignKeyDetails = () => {
     // const sortQuery = new PostgrestQueryBuilder();
+    setLoadingColumns(true);
     const selectQuery = new PostgrestQueryBuilder();
-    // const referencedColumns = ['sports'];
-    // referencedColumns.forEach((col) => {
-    //   selectQuery.select(col)
-    // })
+    const referencedColumns = foreignKeys[0]?.referenced_column_names;
+    referencedColumns?.forEach((col) => {
+      selectQuery.select(col);
+    });
     //${selectQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}&limit=${limit}&offset=${pageRange - 1}
     // const filteredValue = 'Cricket';
-    const limit = pageSize;
+    const limit = 15;
     const pageRange = `${(pageCount - 1) * pageSize + 1}`;
     tooljetDatabaseService
-      .findOne(organizationId, tableId, `${selectQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`)
+      .findOne(
+        organizationId,
+        foreignKeys[0]?.referenced_table_id,
+        `${selectQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`
+      )
       .then(({ headers, data = [], error }) => {
         if (error) {
-          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+          toast.error(error?.message ?? `Failed to fetch table "${foreignKeys[0].referenced_table_name}"`);
+          setLoadingColumns(false);
           return;
         }
 
         if (Array.isArray(data) && data?.length > 0) {
           setReferencedColumnDetails(data);
+          setLoadingColumns(false);
         }
       });
   };
@@ -1232,8 +1240,12 @@ const Table = ({ collapseSidebar }) => {
                                       nullValue={nullValue}
                                       isBoolean={cell.column?.dataType === 'boolean' ? true : false}
                                       referencedColumnDetails={referencedColumnDetails}
+                                      referenceColumnName={
+                                        foreignKeys.length > 0 && foreignKeys[0]?.referenced_column_names[0]
+                                      }
                                       isForeignKey={isForeignKey}
                                       darkMode={darkMode}
+                                      getForeignKeyDetails={getForeignKeyDetails}
                                     >
                                       <div
                                         className="input-cell-parent"
