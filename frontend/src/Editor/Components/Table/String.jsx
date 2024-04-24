@@ -61,7 +61,7 @@ const String = ({
   const _renderString = () => (
     <div
       ref={ref}
-      contentEditable={true}
+      contentEditable={'plaintext-only'} // this allows to paste plain text only and gets rids of styling when pasting
       className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
         darkMode ? ' textarea-dark-theme' : ''
       } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}

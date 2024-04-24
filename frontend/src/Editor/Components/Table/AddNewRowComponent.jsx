@@ -131,6 +131,7 @@ export function AddNewRowComponent({
                           // [cellSize]: true,
                           'selector-column': cell.column.columnType === 'selector' && cell.column.id === 'selection',
                           'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnType),
+                          isEditable: isEditable,
                         })}
                       >
                         <div
