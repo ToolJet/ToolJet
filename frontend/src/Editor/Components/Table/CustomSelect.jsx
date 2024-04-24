@@ -139,17 +139,6 @@ export const CustomSelect = ({
     '.react-select__value-container'
   )?.clientHeight;
 
-  console.log(
-    'Selectheights',
-    {
-      containerHeight,
-      valueContainerHeight,
-      hasOverlay: valueContainerHeight > containerHeight,
-      _value,
-    },
-    selectContainerRef.current?.querySelector('.react-select__value-container')
-  );
-
   return (
     <OverlayTrigger
       placement="bottom"
