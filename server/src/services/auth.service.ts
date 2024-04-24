@@ -255,6 +255,7 @@ export class AuthService {
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
+        currentOrganizationName: organization.name,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         super_admin: user.userType === 'instance',
         groupPermissions: await this.usersService.groupPermissions(user, manager),
@@ -732,19 +733,29 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
-    return decamelizeKeys({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      currentOrganizationSlug: currentOrganization?.slug,
-      currentOrganizationId: currentOrganization?.id
+  async generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const currentOrganizationId = currentOrganization?.id
         ? currentOrganization?.id
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
-        : user?.organizationIds?.[0],
-      ...(appData && { appData }),
+        : user?.organizationIds?.[0];
+      const organizationDetails = currentOrganization
+        ? currentOrganization
+        : await manager.findOneOrFail(Organization, {
+            where: { id: currentOrganizationId },
+            select: ['slug', 'name', 'id'],
+          });
+      return decamelizeKeys({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        currentOrganizationSlug: organizationDetails.slug,
+        currentOrganizationName: organizationDetails.name,
+        currentOrganizationId,
+        ...(appData && { appData }),
+      });
     });
   }
 

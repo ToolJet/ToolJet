@@ -72,7 +72,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
+import { FreezeVersionInfo } from './FreezeVersionInfo';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 import { getQueryParams } from '@/_helpers/routes';
@@ -84,7 +84,6 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
-import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 
 setAutoFreeze(false);
 enablePatches();
