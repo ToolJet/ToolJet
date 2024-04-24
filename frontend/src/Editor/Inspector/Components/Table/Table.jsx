@@ -570,10 +570,12 @@ class TableComponent extends React.Component {
                         const columnVisibility = item?.columnVisibility ?? true;
                         const getSecondaryText = (text) => {
                           switch (text) {
-                            case 'string':
-                            case 'default':
                             case undefined:
+                              return '';
+                            case 'string':
                               return 'String';
+                            case 'default':
+                              return 'Default';
                             case 'number':
                               return 'Number';
                             case 'text':
