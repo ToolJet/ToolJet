@@ -4,13 +4,13 @@ export const postgreSqlText = {
 
   allDataSources: () => {
     return Cypress.env("marketplace_action")
-      ? "All data sources (43)"
-      : "All data sources (41)";
+      ? "All data sources (44)"
+      : "All data sources (42)";
   },
   allDatabase: () => {
     return Cypress.env("marketplace_action")
-      ? "Databases (19)"
-      : "Databases (17)";
+      ? "Databases (20)"
+      : "Databases (18)";
   },
   allApis: "APIs (20)",
   allCloudStorage: "Cloud Storages (4)",
