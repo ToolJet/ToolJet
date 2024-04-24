@@ -17,6 +17,7 @@ import {
   ValidateNested,
   IsBoolean,
   IsObject,
+  IsIn,
 } from 'class-validator';
 import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
 
@@ -156,10 +157,16 @@ export class PostgrestForeignKeyDto {
   referenced_column_names: Array<string>;
 
   @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-remove operation has invalid input',
+  })
   @IsOptional()
   on_delete: string;
 
   @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-delete operation has invalid input',
+  })
   @IsOptional()
   on_update: string;
 }
