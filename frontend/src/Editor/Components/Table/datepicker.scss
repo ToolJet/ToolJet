@@ -6,6 +6,10 @@
     padding: 0px;
 }
 
+.react-datepicker-popper {
+   z-index: 3;
+}
+
 .tj-timepicker-widget {
     &.react-datepicker-popper {
         background-color: unset;
