@@ -32,22 +32,37 @@ export default function SubscriptionFooter({ toggleUpgradeModal, costing, featur
   return (
     <div className="subscription-footer">
       {licenseType === 'trial' || licenseType === 'basic' ? (
-        <ButtonSolid variant="" onClick={toggleUpgradeModal} className={`${'tj-base-btn upgrade-btn'}`}>
+        <ButtonSolid
+          variant=""
+          onClick={toggleUpgradeModal}
+          className={`${'tj-base-btn upgrade-btn'}`}
+          data-cy="upgrade-button"
+        >
           Upgrade
         </ButtonSolid>
       ) : (
         <div className="manage-subscription-container">
           <div className="due-container">
-            <div className="tj-text-md font-weight-500">
+            <div className="tj-text-md font-weight-500" data-cy="total-amount">
               ${costing.totalValue}/{subscriptionType === 'yearly' ? 'year' : 'month'}
             </div>
             <div className="tj-text-xsm text-muted">{calculateDueDate(currentPeriodEndInMilliSeconds)}</div>
           </div>
           <div className="action-btn-container">
-            <ButtonSolid isLoading={isLoading} rightIcon="oubound" variant="tertiary" onClick={handleCreatePortal}>
+            <ButtonSolid
+              isLoading={isLoading}
+              rightIcon="oubound"
+              variant="tertiary"
+              onClick={handleCreatePortal}
+              data-cy="view-invoice-button"
+            >
               View invoices
             </ButtonSolid>
-            <ButtonSolid disabled={isExpired || status == 'failed'} onClick={toggleUpgradeModal}>
+            <ButtonSolid
+              disabled={isExpired || status == 'failed'}
+              onClick={toggleUpgradeModal}
+              data-cy="manage-subscription-button"
+            >
               Manage subscription
             </ButtonSolid>
           </div>

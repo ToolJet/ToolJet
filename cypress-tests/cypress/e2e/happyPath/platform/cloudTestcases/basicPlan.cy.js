@@ -20,7 +20,7 @@ import {
     whiteLabellingSelectors,
     commonEeSelectors,
     multiEnvSelector,
-    eeGroupsSelector
+    eeGroupsSelector,
 } from "Selectors/eeCommon";
 import { ssoEeSelector } from "Selectors/eeCommon";
 
@@ -29,7 +29,7 @@ describe("", () => {
 
     it("Verify White labelling and Subscription page elements", () => {
         cy.defaultWorkspaceLogin();
-        openInstanceSettings()
+        openInstanceSettings();
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq("Settings");
         });
@@ -109,14 +109,80 @@ describe("", () => {
             " Subscription"
         );
 
-        cy.get(commonSelectors.listItem("Upgrade plan"))
-            .verifyVisibleElement("have.text", "Upgrade plan")
-            .click();
-        cy.get(cloudLicesningSelector.upgradePlanTabTitle).verifyVisibleElement(
+        cy.get('[data-cy="subscription-overview"]').verifyVisibleElement(
             "have.text",
-            "Upgrade to business plan"
+            "Subscription overview"
         );
-        cy.get(cloudLicesningSelector.builderUserLabel).verifyVisibleElement('have.text', "No. of builders")
+
+        cy.get('[data-cy="license-type-label"]').verifyVisibleElement(
+            "have.text",
+            "Basic plan"
+        );
+
+        cy.verifyLabel("SUBSCRIPTION LIMITS");
+        cy.get(licenseSelectors.noOfAppsLabel).verifyVisibleElement(
+            "have.text",
+            "Apps"
+        );
+        cy.get(licenseSelectors.noOfAppsfield).verifyVisibleElement(
+            "have.value",
+            "Unlimited"
+        );
+        cy.get(licenseSelectors.noOfTotalUsersLabel).verifyVisibleElement(
+            "have.text",
+            "Total users"
+        );
+        cy.get(licenseSelectors.noOfBuildersLabel).verifyVisibleElement(
+            "have.text",
+            "Builders"
+        );
+        cy.get(licenseSelectors.noOfBuildersfield).verifyVisibleElement(
+            "have.value",
+            "Unlimited"
+        );
+        cy.get(licenseSelectors.noOfEndUsersLabel).verifyVisibleElement(
+            "have.text",
+            "End users"
+        );
+        cy.get(licenseSelectors.noOfEndUsersfield).verifyVisibleElement(
+            "have.value",
+            "Unlimited"
+        );
+        cy.get(licenseSelectors.noOfTablesLabel).verifyVisibleElement(
+            "have.text",
+            "Tables"
+        );
+        cy.get(licenseSelectors.noOfTablesfield).verifyVisibleElement(
+            "have.value",
+            "0/5"
+        );
+
+        cy.verifyLabel("FEATURE ACCESS");
+        cy.verifyLabel("Open ID Connect");
+        cy.verifyLabel("Audit logs");
+        cy.verifyLabel("LDAP");
+        cy.verifyLabel("SAML");
+        cy.verifyLabel("Custom styles");
+        cy.verifyLabel("Multi-Environment");
+        cy.verifyLabel("Multiplayer editing");
+        cy.verifyLabel("GitSync");
+
+        cy.get('[data-cy="upgrade-button"]')
+            .eq(0)
+            .verifyVisibleElement("have.text", "Upgrade")
+            .click();
+        cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+            "have.text",
+            "Upgrade"
+        );
+
+        cy.verifyLabel("Plan type");
+        cy.verifyLabel("Business plan");
+
+        cy.get(cloudLicesningSelector.builderUserLabel).verifyVisibleElement(
+            "have.text",
+            "No. of builders"
+        );
         cy.get(cloudLicesningSelector.builderUserCostLabel).verifyVisibleElement(
             "have.text",
             "$24/month"
@@ -125,7 +191,10 @@ describe("", () => {
             "have.value",
             "1"
         );
-        cy.get(cloudLicesningSelector.endUserLabel).verifyVisibleElement('have.text', "No. of end users")
+        cy.get(cloudLicesningSelector.endUserLabel).verifyVisibleElement(
+            "have.text",
+            "No. of end users"
+        );
         cy.get(cloudLicesningSelector.endUserCostLabel).verifyVisibleElement(
             "have.text",
             "$8/month"
@@ -141,29 +210,26 @@ describe("", () => {
             "Enter promo code"
         );
         cy.get(cloudLicesningSelector.offerToggle).should("be.visible");
-        cy.get(cloudLicesningSelector.offerToggleLabel).verifyVisibleElement(
-            "have.text",
-            "Pay yearly 20% $(96) off"
-        );
-        cy.verifyLabel("Total amount");
+        cy.get(cloudLicesningSelector.offerToggleLabel)
+            .eq(0)
+            .verifyVisibleElement(
+                "have.text",
+                "Pay yearly You saved $96 by opting for the yearly plan!"
+            );
         cy.get(cloudLicesningSelector.totalCostValue).verifyVisibleElement(
             "have.text",
             "$384.00/year"
         );
-        cy.get(cloudLicesningSelector.termsHelperText).verifyVisibleElement(
+        cy.get('[data-cy="remaining-amount"]').verifyVisibleElement(
             "have.text",
-            "By upgrading, you agree to the terms and conditions"
+            "$384.00"
         );
-        cy.get(cloudLicesningSelector.termsLink).verifyVisibleElement(
-            "have.attr",
-            "href",
-            "https://www.tooljet.com/terms"
-        );
+        cy.verifyLabel("Due today");
         cy.get(cloudLicesningSelector.contactUsHelper).verifyVisibleElement(
             "have.text",
             "Want a custom plan tailored to your needs? Contact us at hello@tooljet.com"
         );
-        cy.get(licenseSelectors.updateButton).verifyVisibleElement(
+        cy.get('[data-cy="modal-upgrade-button"]').verifyVisibleElement(
             "have.text",
             "Upgrade"
         );
@@ -176,10 +242,6 @@ describe("", () => {
         cy.get(cloudLicesningSelector.endUserCostLabel).verifyVisibleElement(
             "have.text",
             "$10/month"
-        );
-        cy.get('[data-cy="offer-toggle-label"]>span').should(
-            "have.class",
-            "text-striked"
         );
         cy.get(cloudLicesningSelector.totalCostValue).verifyVisibleElement(
             "have.text",
@@ -196,105 +258,150 @@ describe("", () => {
         cy.get(cloudLicesningSelector.offerToggle).check();
         cy.get(cloudLicesningSelector.offerToggleLabel).verifyVisibleElement(
             "have.text",
-            "Pay yearly 20% $(13080) off"
+            "Pay yearly You saved $13080 by opting for the yearly plan!"
         );
         cy.get(cloudLicesningSelector.totalCostValue).verifyVisibleElement(
             "have.text",
             "$52320.00/year"
         );
-
-        cy.get(commonSelectors.listItem("Subscription key"))
-            .verifyVisibleElement("have.text", "Subscription key")
-            .click();
-        cy.get(cloudLicesningSelector.subscriptionTabTitle).verifyVisibleElement(
-            "have.text",
-            "Subscription key"
-        );
-        cy.verifyLabel("Subscription key");
-        cy.get(cloudLicesningSelector.subscriptionKeyTextArea).verifyVisibleElement(
-            "have.attr",
-            "placeholder",
-            "Enter subscription key"
-        );
-        cy.get(
-            cloudLicesningSelector.subscriptionKeyHelperText
-        ).verifyVisibleElement(
-            "have.text",
-            "This subscription is configured for the current workspace only"
-        );
-        cy.get(licenseSelectors.updateButton).verifyVisibleElement(
-            "have.text",
-            "Update"
-        );
-        cy.get(licenseSelectors.updateButton).should("be.disabled");
-
-        cy.get(licenseSelectors.limitOption)
-            .verifyVisibleElement("have.text", licenseText.limitOption)
-            .click();
-
-        cy.get(licenseSelectors.appsTab).verifyVisibleElement(
-            "have.text",
-            licenseText.appsTab
-        );
-        cy.get(licenseSelectors.noOfAppsLabel).verifyVisibleElement(
-            "have.text",
-            licenseText.noOfAppsLabel
-        );
-        cy.get(licenseSelectors.noOfAppsfield).verifyVisibleElement(
-            "have.value",
-            "Unlimited"
-        );
-
-        cy.get(licenseSelectors.usersTab)
-            .verifyVisibleElement("have.text", licenseText.usersTab)
-            .click();
-        cy.get(licenseSelectors.noOfTotalUsersLabel).verifyVisibleElement(
-            "have.text",
-            "Number of total users"
-        );
-        cy.get(licenseSelectors.noOfBuildersLabel).verifyVisibleElement(
-            "have.text",
-            "Number of builders"
-        );
-        cy.get(licenseSelectors.noOfBuildersfield).verifyVisibleElement(
-            "have.value",
-            "Unlimited"
-        );
-        cy.get(licenseSelectors.noOfEndUsersLabel).verifyVisibleElement(
-            "have.text",
-            "Number of end users"
-        );
-        cy.get(licenseSelectors.noOfEndUsersfield).verifyVisibleElement(
-            "have.value",
-            "Unlimited"
-        );
-
-        cy.get(licenseSelectors.tablesTab)
-            .verifyVisibleElement("have.text", licenseText.tablesTab)
-            .click();
-        cy.get(licenseSelectors.noOfTablesLabel).verifyVisibleElement(
-            "have.text",
-            "Number of tables"
-        );
-        cy.get(licenseSelectors.noOfTablesfield).verifyVisibleElement(
-            "have.value",
-            "0/5"
-        );
-
-        cy.get(licenseSelectors.accessOption).click();
-        cy.get(licenseSelectors.accessTabTitle).verifyVisibleElement(
-            "have.text",
-            "Access"
-        );
-        cy.verifyLabel("Open ID Connect");
-        cy.verifyLabel("Audit logs");
-        cy.verifyLabel("LDAP");
-        cy.verifyLabel("SAML");
-        cy.verifyLabel("Custom styles");
-        cy.verifyLabel("Multi-Environment");
-        cy.verifyLabel("GitSync");
+        cy.get('[data-cy="modal-close-button"]').click();
     });
-    it.only("Verify basic plan features and banners", () => {
+    it("Compare plans", () => {
+        cy.defaultWorkspaceLogin();
+        openInstanceSettings();
+        cy.get('[data-cy="subscription-list-item"]').click();
+        cy.verifyLabel("Compare plans");
+        cy.get('[data-cy="basic-plan-header"]').verifyVisibleElement(
+            "have.text",
+            "Basic plan"
+        );
+        cy.get(' [data-cy="builder-price"]:eq(0)').should(($el) => {
+            expect($el.contents().text().trim().replace(/\s+/g, " ")).to.eq(
+                "$0 / month per builder"
+            );
+        });
+        cy.get('[data-cy="plus-icon"]:eq(0)').verifyVisibleElement(
+            "have.text",
+            "+"
+        );
+        cy.get('[data-cy="end-user-price"]:eq(0)').should(($el) => {
+            expect($el.contents().text().trim().replace(/\s+/g, " ")).to.eq(
+                "$0 / month per end user"
+            );
+        });
+        const basicPlan = [
+            " Unlimited applications",
+            " SSO (Google & Github)",
+            " Community support",
+            " Unlimited ToolJet tables and rows",
+            " Multiplayer editing",
+        ];
+
+        for (let i = 0; i <= 4; i++) {
+            cy.get(`[data-cy="basic-plan-${i}"]`).verifyVisibleElement(
+                "have.text",
+                basicPlan[`${i}`]
+            );
+        }
+        cy.get('[data-cy="current-plan-button"]').verifyVisibleElement(
+            "have.text",
+            "Current plan"
+        );
+        cy.get('[data-cy="business-plan-header"]').verifyVisibleElement(
+            "have.text",
+            "Business plan"
+        );
+        cy.get('[data-cy="compare-plan-offer-toggle"]').should("be.visible");
+        cy.get('[data-cy="compare-plan-offer-toggle-label"]').verifyVisibleElement(
+            "have.text",
+            "Yearly20% off"
+        );
+        cy.get(' [data-cy="builder-price"]:eq(1)').should(($el) => {
+            expect($el.contents().text().trim().replace(/\s+/g, " ")).to.eq(
+                "$24 / month per builder"
+            );
+        });
+        cy.get('[data-cy="plus-icon"]:eq(1)').verifyVisibleElement(
+            "have.text",
+            "+"
+        );
+        cy.get('[data-cy="end-user-price"]:eq(1)').should(($el) => {
+            expect($el.contents().text().trim().replace(/\s+/g, " ")).to.eq(
+                "$8 / month per end user"
+            );
+        });
+        cy.wait(500);
+        cy.get('[data-cy="compare-plan-offer-toggle"]').uncheck();
+        cy.get('[data-cy="compare-plan-offer-toggle-label"]').verifyVisibleElement(
+            "have.text",
+            "Monthly20% off"
+        );
+        cy.get(' [data-cy="builder-price"]:eq(1)').should(($el) => {
+            expect($el.contents().text().trim().replace(/\s+/g, " ")).to.eq(
+                "$30 / month per builder"
+            );
+        });
+        cy.get('[data-cy="end-user-price"]:eq(1)').should(($el) => {
+            expect($el.contents().text().trim().replace(/\s+/g, " ")).to.eq(
+                "$10 / month per end user"
+            );
+        });
+
+        const businessPlan = [
+            " Multi-instance deployments",
+            " SSO (Okta, Google, OpenID Connect & more)",
+            " Granular access control",
+            " Unlimited users",
+            " Custom branding/white labelling",
+            " Audit logging",
+            " Unlimited ToolJet tables and rows",
+            " Multiple environments",
+            " Air-gapped deployment",
+            " Priority support via email",
+        ];
+
+        for (let i = 0; i <= 9; i++) {
+            cy.get(`[data-cy="business-plan-${i}"]`).verifyVisibleElement(
+                "have.text",
+                businessPlan[`${i}`]
+            );
+        }
+        cy.get('[data-cy="upgrade-button"]:eq(1)').verifyVisibleElement(
+            "have.text",
+            "Upgrade"
+        );
+
+        cy.get('[data-cy="enterprise-header"]').verifyVisibleElement(
+            "have.text",
+            "Enterprise"
+        );
+        cy.get('[data-cy="custom-pricing-label"]').verifyVisibleElement(
+            "have.text",
+            "Custom pricing"
+        );
+
+        const enterprisePlan = [
+            " All features of business plan",
+            " Unlimited applications",
+            " SSO (Google & Github)",
+            " Community support",
+            " Unlimited ToolJet tables and rows",
+            " Multiplayer editing",
+        ];
+
+        for (let i = 0; i <= 5; i++) {
+            cy.get(`[data-cy="enterprise-${i}"]`).verifyVisibleElement(
+                "have.text",
+                enterprisePlan[`${i}`]
+            );
+        }
+
+        cy.get('[data-cy="schedule-a-call-button"]').verifyVisibleElement(
+            "have.text",
+            "Schedule a call"
+        );
+    });
+    it("Verify basic plan features and banners", () => {
         data.appName = `${fake.companyName}-App`;
         data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         cy.defaultWorkspaceLogin();
