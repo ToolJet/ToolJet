@@ -363,16 +363,18 @@ function ManageSubscriptionKey({ darkMode }) {
     return (
       <div className="upgrade-plan-footer">
         <div className="total-amount">
-          <div className="font-weight-500 tj-text tj-text-md">
+          <div className="font-weight-500 tj-text tj-text-md" data-cy="total-amount">
             ${costing.totalValue}/
             <span className="font-weight-500">{subscriptionType === 'yearly' ? 'year' : 'month'}</span>
           </div>
         </div>
         <div className="due-container">
-          <div className="tj-text-md font-weight-500">
+          <div className="tj-text-md font-weight-500" data-cy="remaining-amount">
             ${mode === MODAL_MODE.UPGRADE ? centsToUSD(proration?.amount_due) : costing?.totalValue}
           </div>
-          <div className="tj-text-xsm text-muted">Due today</div>
+          <div className="tj-text-xsm text-muted" data-cy="due-today-label">
+            Due today
+          </div>
         </div>
         <div className="separator"></div>
         <ButtonSolid
@@ -381,6 +383,7 @@ function ManageSubscriptionKey({ darkMode }) {
           onClick={actionBtnProps.onClick}
           variant={mode !== MODAL_MODE.NEW && 'primary'}
           className={`sso-footer-save-btn ${mode === MODAL_MODE.NEW && 'upgrade-btn'}`}
+          data-cy="modal-upgrade-button"
         >
           {actionBtnProps.text}
         </ButtonSolid>
@@ -401,10 +404,12 @@ function ManageSubscriptionKey({ darkMode }) {
                 selectedTab === 'limits' && 'border-none'
               }`}
             >
-              <div data-cy={'Subscription overview'}>Subscription overview</div>
+              <div data-cy={'subscription-overview'}>Subscription overview</div>
               {!isLoading ? (
                 licenseType && (
-                  <div className={`status-container ${licenseTypeTag.className}`}>{licenseTypeTag.text}</div>
+                  <div className={`status-container ${licenseTypeTag.className}`} data-cy="license-type-label">
+                    {licenseTypeTag.text}
+                  </div>
                 )
               ) : (
                 <Skeleton width="150px" height="20px" />
@@ -413,7 +418,9 @@ function ManageSubscriptionKey({ darkMode }) {
             <div className="content-wrapper">
               <div className="limits-access-container metrics-wrapper">
                 <div className="limits-container">
-                  <div className="title">SUBSCRIPTION LIMITS</div>
+                  <div className="title" data-cy="subscription-limits-label">
+                    SUBSCRIPTION LIMITS
+                  </div>
                   <div className="limits-content mt-3">
                     {limitsData.map((limit) => (
                       <div key={limit?.label} className="d-flex align-items-center metric">
@@ -444,7 +451,9 @@ function ManageSubscriptionKey({ darkMode }) {
                   </div>
                 </div>
                 <div className="access-container">
-                  <div className="title">FEATURE ACCESS</div>
+                  <div className="title" data-cy="feature-access-label">
+                    FEATURE ACCESS
+                  </div>
                   <Access />
                 </div>
               </div>

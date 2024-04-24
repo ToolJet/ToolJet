@@ -74,15 +74,15 @@ export const AppMenu = function AppMenu({
                         onClick={() => openAppActionModal('remove-app-from-folder')}
                       />
                     )}
-                    {appType !== 'workflow' && (
-                      <Field
-                        text={t('homePage.appCard.cloneApp', 'Clone app')}
-                        onClick={() => openAppActionModal('clone-app')}
-                      />
-                    )}
-                    {appType !== 'workflow' && (
-                      <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
-                    )}
+                  </>
+                )}
+                {canUpdateApp && canCreateApp && appType !== 'workflow' && (
+                  <>
+                    <Field
+                      text={t('homePage.appCard.cloneApp', 'Clone app')}
+                      onClick={() => openAppActionModal('clone-app')}
+                    />
+                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
                   </>
                 )}
                 {canDeleteApp && (

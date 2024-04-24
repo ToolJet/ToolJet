@@ -565,42 +565,6 @@ export const archiveWorkspace = (workspaceName) => {
   cy.get(commonEeSelectors.confirmButton).click();
 };
 
-export const setSignupStatus = (enable) => {
-  cy.getCookie("tj_auth_token").then((cookie) => {
-    cy.request(
-      {
-        method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
-        headers: {
-          "Tj-Workspace-Id": Cypress.env("workspaceId"),
-          Cookie: `tj_auth_token=${cookie.value}`,
-        },
-        body: { enableSignUp: enable, domain: "" },
-      },
-      { log: false }
-    ).then((response) => {
-      expect(response.status).to.equal(200);
-    });
-  });
-};
-
-export const deleteOrganisationSSO = (workspaceName, services) => {
-  let workspaceId;
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select id from organizations where name='${workspaceName}';`,
-  }).then((resp) => {
-    workspaceId = resp.rows[0].id;
-
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: `DELETE FROM sso_configs WHERE organization_id = '${workspaceId}' AND sso IN (${services
-        .map((service) => `'${service}'`)
-        .join(",")});`,
-    });
-  });
-};
-
 export const passwordToggle = (enable) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -611,7 +575,7 @@ export const passwordToggle = (enable) => {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
         },
-        body: { "type": "form", "enabled": false },
+        body: { type: "form", enabled: enable },
       },
       { log: false }
     ).then((response) => {
@@ -619,3 +583,49 @@ export const passwordToggle = (enable) => {
     });
   });
 };
+
+export const InstanceSSO = (personalWorkspace, enableSignup, workspaceSSO) => {
+  allowPersonalWorkspace(personalWorkspace);
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `UPDATE instance_settings SET value = '${enableSignup}'  WHERE key = 'ENABLE_SIGNUP';UPDATE instance_settings SET value = '${workspaceSSO}' WHERE key = 'ENABLE_WORKSPACE_LOGIN_CONFIGURATION';`,
+  });
+};
+
+export const resetInstanceDomain = () => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "PATCH",
+        url: "http://localhost:3000/api/instance-login-configs",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: { allowedDomains: "" },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  });
+};
+
+export const instanceSSOConfig = (allow = true) => {
+  const value = allow ? "true" : "false";
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `UPDATE sso_configs SET enabled = ${allow} WHERE sso IN ('google', 'git', 'openid')AND organization_id IS NULL;`,
+  });
+};
+
+
+export const updateInstanceSettings = (key, value) => {
+  cy.task("updateSetting", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `UPDATE instance_settings SET value = ${value} WHERE key = ${key};`,
+  });
+}
+

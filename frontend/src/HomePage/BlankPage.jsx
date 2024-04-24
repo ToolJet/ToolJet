@@ -150,19 +150,21 @@ export const BlankPage = function BlankPage({
                           )}
                     </p>
                     <div className="row mt-4">
-                      <ButtonSolid
-                        disabled={appCreationDisabled && appType !== 'workflow'}
-                        leftIcon="plus"
-                        onClick={() => openCreateAppModal('blank_page')}
-                        isLoading={creatingApp}
-                        data-cy="button-new-app-from-scratch"
-                        className="col"
-                        fill={'#FDFDFE'}
-                      >
-                        Create new {appType !== 'workflow' ? 'application' : 'workflow'}
-                      </ButtonSolid>
+                      <div className="col-6">
+                        <ButtonSolid
+                          disabled={appCreationDisabled && appType !== 'workflow'}
+                          leftIcon="plus"
+                          onClick={() => openCreateAppModal('blank_page')}
+                          isLoading={creatingApp}
+                          data-cy="button-new-app-from-scratch"
+                          className="col"
+                          fill={'#FDFDFE'}
+                        >
+                          Create new {appType !== 'workflow' ? 'application' : 'workflow'}
+                        </ButtonSolid>
+                      </div>
                       {appType !== 'workflow' && (
-                        <div className="col">
+                        <div className="col-6">
                           <ButtonSolid
                             disabled={appCreationDisabled}
                             leftIcon="folderdownload"

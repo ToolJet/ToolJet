@@ -171,10 +171,10 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 type="text"
                                 onChange={(e) => this.optionsChanged('App Logo', e.target.value)}
                                 aria-describedby="emailHelp"
-                                value={settings['App Logo']}
+                                value={settings['App Logo'] || 'https://app.tooljet.com/logo.svg'}
                                 data-cy={`input-field-app-logo`}
                                 style={{ width: '516px' }}
-                                placeholder={'https://app.tooljet.com/logo.svg' || 'Enter App Logo'}
+                                placeholder={'Enter App Logo'}
                                 disabled={disabled}
                               />
                               <div className="help-text">
@@ -207,10 +207,10 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 type="text"
                                 onChange={(e) => this.optionsChanged('Page Title', e.target.value)}
                                 aria-describedby="emailHelp"
-                                value={settings['Page Title']}
+                                value={settings['Page Title'] || 'ToolJet'}
                                 data-cy={`input-field-page-title`}
                                 style={{ width: '516px' }}
-                                placeholder={'ToolJet' || 'Enter app title'}
+                                placeholder={'Enter app title'}
                                 disabled={disabled}
                               />
                               <div className="help-text">
@@ -242,10 +242,10 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 type="text"
                                 onChange={(e) => this.optionsChanged('Favicon', e.target.value)}
                                 aria-describedby="emailHelp"
-                                value={settings['Favicon']}
+                                value={settings['Favicon'] || 'https://app.tooljet.com/favico.png'}
                                 data-cy={`input-field-fav-icon`}
                                 style={{ width: '516px' }}
-                                placeholder={'https://app.tooljet.com/favico.png' || 'Enter favicon'}
+                                placeholder={'Enter favicon'}
                                 disabled={disabled}
                               />
                               <div className="help-text">

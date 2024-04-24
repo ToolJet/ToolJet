@@ -224,7 +224,7 @@ export function GoogleSSOModal({
                       <div className="d-flex justify-content-between form-control align-items-center">
                         <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${
                           window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                        }sso/google/${configId}`}</p>
+                        }sso/google${!instanceLevel ? `/${configId}` : ''}`}</p>
                         <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
                       </div>
                     </div>

@@ -5,12 +5,13 @@ import {
     navigateToManageSSO,
     navigateToManageGroups,
 } from "Support/utils/common";
-import { addNewUser } from "Support/utils/eeCommon";
+import { addNewUser, InstanceSSO } from "Support/utils/eeCommon";
 import {
     commonEeSelectors,
     instanceSettingsSelector,
     multiEnvSelector,
     ssoEeSelector,
+
 } from "Selectors/eeCommon";
 import { licenseText } from "Texts/license";
 import { licenseSelectors } from "Selectors/license";
@@ -36,6 +37,8 @@ describe("", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
         updateLicense(Cypress.env("license-key"));
+        InstanceSSO(true, true, true);
+
     });
     after(() => {
         updateLicense(Cypress.env("license-key"));
