@@ -93,7 +93,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
           <div className="grey-bg-section mb-2 border">
             <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px', borderRadius: '6px' }}>
               <ProgramaticallyHandleProperties
-                label="Enable date selection"
+                label="Enable date"
                 currentState={currentState}
                 index={index}
                 darkMode={darkMode}
@@ -102,7 +102,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 props={column}
                 component={component}
                 paramType="properties"
-                paramMeta={{ type: 'toggle', displayName: 'Enable date selection' }}
+                paramMeta={{ type: 'toggle', displayName: 'Enable date' }}
               />
             </div>
             {resolveReferences(column?.isDateSelectionEnabled, currentState) && (
@@ -163,7 +163,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
           <div className="grey-bg-section mb-2 border">
             <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px', borderRadius: '6px' }}>
               <ProgramaticallyHandleProperties
-                label="Enable time selection"
+                label="Enable time"
                 currentState={currentState}
                 index={index}
                 darkMode={darkMode}
@@ -172,7 +172,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 props={column}
                 component={component}
                 paramType="properties"
-                paramMeta={{ type: 'toggle', displayName: 'Enable time selection' }}
+                paramMeta={{ type: 'toggle', displayName: 'Enable time' }}
               />
             </div>
             {resolveReferences(column?.isTimeChecked, currentState) && (
