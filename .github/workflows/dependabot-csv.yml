@@ -1,0 +1,25 @@
+name: Dependatbot csv exportor
+
+on: 
+  workflow_dispatch:
+    
+
+jobs:
+
+  Exportor:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Export Dependabot alerts
+        uses: ambilykk/dependabot-alert-export@v1.0
+        with:        
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          org_name: 'ToolJet'
+          repo_name: 'ToolJet'
+          csv_path: data/vulnerability.csv
+              
+      - name: Upload Vulnerability report
+        uses: actions/upload-artifact@v3
+        with:
+          name: vulnerability_report
+          path: data/vulnerability.csv
