@@ -405,8 +405,8 @@
             "wishToDeleteFolder": "Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted."
         },
         "header": {
-            "createNewApplication": "Create new app",
-            "import": "Import",
+            "createNewApplication": "Create an app",
+            "import": "Import from device",
             "chooseFromTemplate": "Choose from template"
         },
         "pagination": {
