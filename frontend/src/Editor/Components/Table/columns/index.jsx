@@ -324,7 +324,6 @@ export default function generateColumnsData({
                     type="number"
                     style={{
                       ...cellStyles,
-                      maxWidth: width,
                       outline: 'none',
                       border: 'none',
                       background: 'inherit',
