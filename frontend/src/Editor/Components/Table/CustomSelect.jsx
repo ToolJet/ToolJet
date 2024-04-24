@@ -106,7 +106,7 @@ export const CustomSelect = ({
     if (defaultOptionsList.length >= 1) {
       return !isMulti ? defaultOptionsList[defaultOptionsList.length - 1] : defaultOptionsList;
     } else {
-      return null;
+      return isMulti ? [] : {};
     }
   }, [isMulti, defaultOptionsList]);
 

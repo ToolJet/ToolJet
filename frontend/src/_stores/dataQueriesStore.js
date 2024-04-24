@@ -250,7 +250,9 @@ export function createDataQueriesStore(moduleName) {
                 actions.setSelectedQuery(null);
                 toast.error(`Failed to create query: ${error.message}`);
               })
-              .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+              .finally(() =>
+                useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().actions.setIsSaving(false)
+              );
           },
           renameQuery: (id, newName) => {
             /** If query creation in progress, skips call and pushes the update to queue */
