@@ -11,6 +11,7 @@ import { SeedsService } from '@services/seeds.service';
 import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
+import * as path from 'path';
 
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -44,6 +45,8 @@ import { OrganizationConstantModule } from './modules/organization_constants/org
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -75,6 +78,40 @@ const imports = [
             }
           : false,
       redact: ['req.headers.authorization'],
+    },
+  }),
+  MailerModule.forRoot({
+    transport:
+      process.env.NODE_ENV === 'development'
+        ? {
+            host: 'localhost',
+            ignoreTLS: true,
+            secure: false,
+          }
+        : {
+            host: process.env.SMTP_DOMAIN,
+            port: +process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_SSL === 'true',
+            auth: {
+              user: process.env.SMTP_USERNAME,
+              pass: process.env.SMTP_PASSWORD,
+            },
+          },
+    preview: process.env.NODE_ENV === 'development',
+    template: {
+      dir: join(__dirname, 'mails'),
+      adapter: new HandlebarsAdapter(),
+      options: {
+        strict: false,
+      },
+    },
+    options: {
+      partials: {
+        dir: path.join(__dirname, 'mails/base/partials'),
+        options: {
+          strict: false,
+        },
+      },
     },
   }),
   TypeOrmModule.forRoot(ormconfig),

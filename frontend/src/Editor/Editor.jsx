@@ -73,7 +73,6 @@ import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
-import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -94,7 +93,6 @@ enablePatches();
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
-  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -1993,7 +1991,6 @@ const EditorComponent = (props) => {
             appName={appName}
             appId={appId}
             slug={slug}
-            isSocketOpen={isSocketOpen}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">

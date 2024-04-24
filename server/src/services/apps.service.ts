@@ -29,6 +29,8 @@ import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
+import { AppBase } from 'src/entities/app_base.entity';
+
 const uuid = require('uuid');
 
 interface AppResourceMappings {
@@ -225,7 +227,7 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string): Promise<App[]> {
+  async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
     const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
     if (page) {
