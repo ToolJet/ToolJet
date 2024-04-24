@@ -88,7 +88,6 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
-import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 
 setAutoFreeze(false);
 enablePatches();

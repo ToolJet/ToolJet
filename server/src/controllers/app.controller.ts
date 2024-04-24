@@ -78,7 +78,7 @@ export class AppController {
       currentOrganization = organization;
     }
 
-    return this.authService.generateSessionPayload(user, currentOrganization);
+    return await this.authService.generateSessionPayload(user, currentOrganization);
   }
 
   @UseGuards(JwtAuthGuard)
