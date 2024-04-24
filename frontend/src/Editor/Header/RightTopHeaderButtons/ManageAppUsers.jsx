@@ -182,14 +182,14 @@ class ManageAppUsersComponent extends React.Component {
 
     const shouldShowShareModal = this.props.isVersionReleased
       ? this.props.multiEnvironmentEnabled
-        ? this.props.currentEnvironment?.is_default
+        ? this.props.currentEnvironment?.isDefault
           ? true
           : false
         : this.props.currentEnvironment?.priority === 1
       : false;
 
     const envTooltipFlag =
-      (!this.props.isVersionReleased && this.props.currentEnvironment?.is_default) ||
+      (!this.props.isVersionReleased && this.props.currentEnvironment?.isDefault) ||
       (!this.props.multiEnvironmentEnabled && this.props.currentEnvironment?.priority === 1);
 
     return (

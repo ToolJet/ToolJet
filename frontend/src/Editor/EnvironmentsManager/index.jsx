@@ -21,9 +21,8 @@ const EnvironmentManager = (props) => {
     licenseType,
   } = props;
 
-  const { currentAppEnvironmentId, currentAppEnvironment, currentLayout } = useEditorStore(
+  const { currentAppEnvironment, currentLayout } = useEditorStore(
     (state) => ({
-      currentAppEnvironmentId: state?.currentAppEnvironmentId,
       currentAppEnvironment: state?.currentAppEnvironment,
       currentLayout: state.currentLayout,
     }),
@@ -126,13 +125,7 @@ const EnvironmentManager = (props) => {
         maxWidth: isViewer && currentLayout === 'mobile' ? '100%' : '180px',
       }}
     >
-      <EnvironmentSelectBox
-        options={options}
-        currentEnv={currentAppEnvironment}
-        onEnvChange={(env) => selectEnvironment(env)}
-        versionId={editingVersion.id}
-        licenseValid={licenseValid}
-      />
+      <EnvironmentSelectBox options={options} currentEnv={currentAppEnvironment} licenseValid={licenseValid} />
     </div>
   );
 };

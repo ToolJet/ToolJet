@@ -1136,7 +1136,7 @@ export function runQuery(
       } else if (query.kind === 'tooljetdb') {
         queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
       } else {
-        queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
+        queryExecutionPromise = dataqueryService.run(queryId, options, query?.option, currentAppEnvironmentId);
       }
 
       queryExecutionPromise

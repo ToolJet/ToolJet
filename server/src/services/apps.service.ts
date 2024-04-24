@@ -46,6 +46,7 @@ import { VersionReleaseDto } from '@dto/version-release.dto';
 
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
+import { PromoteVersionDto } from '@dto/promote-version.dto';
 import { AppBase } from 'src/entities/app_base.entity';
 
 const uuid = require('uuid');
@@ -1396,7 +1397,6 @@ export class AppsService {
       ),
     };
   }
-
   async releaseVersion(appId: string, versionReleaseDto: VersionReleaseDto, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { versionToBeReleased } = versionReleaseDto;
@@ -1416,5 +1416,54 @@ export class AppsService {
 
       return await manager.update(App, appId, { currentVersionId: versionToBeReleased });
     }, manager);
+  }
+
+  async promoteVersion(appId: string, versionId: string, promoteVersionDto: PromoteVersionDto, organizationId: string) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const { currentEnvironmentId } = promoteVersionDto;
+      const editableParams = {};
+      //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
+      if (currentEnvironmentId) {
+        const version = await manager.findOne(AppVersion, { where: { id: versionId } });
+        let currentEnvironment: AppEnvironment;
+
+        if (currentEnvironmentId) {
+          currentEnvironment = await AppEnvironment.findOne({
+            where: { id: version.currentEnvironmentId },
+          });
+        }
+
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+          throw new BadRequestException('You do not have permissions to perform this action');
+        }
+
+        if (version.currentEnvironmentId !== currentEnvironmentId) {
+          throw new NotAcceptableException();
+        }
+
+        const nextEnvironment = await AppEnvironment.findOneOrFail({
+          where: {
+            priority: MoreThan(currentEnvironment.priority),
+            organizationId,
+          },
+          order: { priority: 'ASC' },
+        });
+        editableParams['currentEnvironmentId'] = nextEnvironment.id;
+
+        if (version.promotedFrom) {
+          /* 
+        should make this field null. 
+        otherwise unreleased versions will demote back to promoted_from when the user go back to base plan again. 
+        (this query will only run one time after the user buys a paid plan)
+        */
+          editableParams['promotedFrom'] = null;
+        }
+
+        editableParams['updatedAt'] = new Date();
+        await this.appVersionsRepository.update(version.id, editableParams);
+        const environments = await this.appEnvironmentService.getAll(organizationId, manager, appId);
+        return { editorEnvironment: nextEnvironment, environments };
+      }
+    });
   }
 }

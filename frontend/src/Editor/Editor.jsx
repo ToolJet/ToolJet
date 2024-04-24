@@ -84,6 +84,7 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 
 setAutoFreeze(false);
 enablePatches();
@@ -99,7 +100,6 @@ const EditorComponent = (props) => {
     setIsSaving,
     createAppVersionEventHandlers,
     autoUpdateEventStore,
-    setEnvironments,
   } = useAppDataActions();
 
   const {
@@ -107,23 +107,20 @@ const EditorComponent = (props) => {
     updateQueryConfirmationList,
     setSelectedComponents,
     setCurrentPageId,
-    setCurrentAppEnvironmentId,
-    setCurrentAppEnvironmentDetails,
     updateComponentsNeedsUpdateOnNextRender,
   } = useEditorActions();
 
-  const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
-  const { isVersionReleased, editingVersionId, releasedVersionId, isEditorFreezed, isBannerMandatory } =
-    useAppVersionStore(
-      (state) => ({
-        isVersionReleased: state?.isVersionReleased,
-        editingVersionId: state?.editingVersion?.id,
-        releasedVersionId: state?.releasedVersionId,
-        isEditorFreezed: state?.isEditorFreezed,
-        isBannerMandatory: state?.isBannerMandatory,
-      }),
-      shallow
-    );
+  const { setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
+  const { isVersionReleased, editingVersionId, isEditorFreezed, isBannerMandatory } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state?.isVersionReleased,
+      editingVersionId: state?.editingVersion?.id,
+      releasedVersionId: state?.releasedVersionId,
+      isEditorFreezed: state?.isEditorFreezed,
+      isBannerMandatory: state?.isBannerMandatory,
+    }),
+    shallow
+  );
 
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -139,7 +136,6 @@ const EditorComponent = (props) => {
     queryConfirmationList,
     currentPageId,
     currentSessionId,
-    currentAppEnvironment,
     currentAppEnvironmentId,
     featureAccess,
   } = useEditorStore(
@@ -175,7 +171,6 @@ const EditorComponent = (props) => {
     appDiffOptions,
     events,
     areOthersOnSameVersionAndPage,
-    environments,
     creationMode,
   } = useAppDataStore(
     (state) => ({
@@ -223,6 +218,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     updateState({ isLoading: true });
+    useEditorStore.getState().actions.updateFeatureAccess();
     useResolveStore.getState().actions.resetStore();
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = {
@@ -519,7 +515,9 @@ const EditorComponent = (props) => {
   const initEventListeners = () => {
     socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
-      if (data === 'versionReleased') fetchApp();
+      if (data === 'versionReleased') {
+        //TODO update the released version id
+      }
     });
   };
 
@@ -528,10 +526,8 @@ const EditorComponent = (props) => {
 
     useResolveStore.getState().actions.updateJSHints();
 
-    onEditorFreeze(true, false);
-    await fetchApp(props.params.pageHandle);
+    await runForInitialLoad();
     await fetchOrgEnvironmentVariables();
-    await fetchEnvironments();
 
     await fetchAndInjectCustomStyles();
     initComponentVersioning();
@@ -563,10 +559,6 @@ const EditorComponent = (props) => {
   const fetchGlobalDataSources = (appVersionId, environmentId) => {
     const { current_organization_id: organizationId } = currentUser;
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId, appVersionId, environmentId);
-  };
-
-  const onVersionDelete = () => {
-    fetchApp(props.params.pageHandle);
   };
 
   const toggleAppMaintenance = () => {
@@ -728,76 +720,89 @@ const EditorComponent = (props) => {
     });
   };
 
-  const getEnvironmentDetails = (environmentId) => {
-    const queryParams = { slug: props.params.slug };
-    return appEnvironmentService.getEnvironment(environmentId, queryParams);
-  };
+  /* Only for the first load of an app. Should not use for any other cases */
+  const runForInitialLoad = async () => {
+    const appId = props.id;
+    const appData = await appService.fetchApp(appId);
+    const {
+      name: appName,
+      current_version_id,
+      editing_version,
+      organization_id: organizationId,
+      slug,
+      is_maintenance_on: isMaintenanceOn,
+      is_public: isPublic,
+      user_id: userId,
+      events,
+      creation_mode: creationMode,
+      should_freeze_editor: shouldFreezeEditor,
+      editorEnvironment,
+    } = appData;
+    const startingPageHandle = props.params.pageHandle;
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
+    useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
+    current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
 
-  const fetchEnvironments = () => {
-    const appId = props?.id;
-    appEnvironmentService.getAllEnvironments(appId).then((data) => {
-      const envArray = data?.environments;
+    //Freeze the app
+    onEditorFreeze(shouldFreezeEditor);
 
-      setEnvironments(envArray);
+    /* Load the constants to the store using the current environment of the editing_version */
+    const currentEnvironmentId = editorEnvironment.id;
+    useEditorStore.getState().actions.setCurrentAppEnvironmentId(currentEnvironmentId);
+    await fetchOrgEnvironmentConstants(currentEnvironmentId);
+
+    updateState({
+      slug,
+      isMaintenanceOn,
+      organizationId,
+      isPublic,
+      appName,
+      userId,
+      appId,
+      events,
+      currentVersionId: editing_version?.id,
+      creationMode,
+      app: appData,
     });
+
+    /* Set globals with environment  */
+    const extraGlobals = {
+      environment: {
+        id: editorEnvironment?.id,
+        name: editorEnvironment?.name,
+      },
+    };
+    await processNewAppDefinition(
+      appData,
+      startingPageHandle,
+      false,
+      ({ homePageId }) => {
+        handleLowPriorityWork(async () => {
+          await useDataSourcesStore
+            .getState()
+            .actions.fetchGlobalDataSources(organizationId, editing_version?.id, currentEnvironmentId);
+          await fetchDataSources(editing_version?.id, currentEnvironmentId);
+          commonLowPriorityActions(events, { homePageId });
+        });
+      },
+      extraGlobals
+    );
   };
 
-  const callBack = async (
+  const commonLowPriorityActions = async (events, { homePageId }) => {
+    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+    const editorRef = getEditorRef();
+    await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+  };
+
+  const processNewAppDefinition = async (
     data,
     startingPageHandle,
     versionSwitched = false,
-    environmentSwitch = false,
-    selectedEnvironmentId = null,
-    //Temporary fix for the issue of not getting the selected environment id. Will be removed once the multi-env decouple is done
-    extraProps = {}
+    onComplete,
+    extraGlobals = {}
   ) => {
-    const { canLoadSameEnv } = extraProps;
-    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
-    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
-
-    //Freeze the app
-    const { should_freeze_editor } = data;
-    onEditorFreeze(should_freeze_editor);
-
-    if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
-      const releasedId = data.current_version_id || data.currentVersionId;
-      releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
-    }
-
-    const currentAppVersionEnvId =
-      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
-
-    const currentOrgId = data?.organization_id || data?.organizationId;
-
-    const shouldChangeEnvToAppVersionEnv = !environmentSwitch && !versionSwitched && !canLoadSameEnv;
-    const currentEnvironmentId = shouldChangeEnvToAppVersionEnv ? currentAppVersionEnvId : selectedEnvironmentId;
-    await fetchOrgEnvironmentConstants(currentEnvironmentId);
-
-    let envDetails = useEditorStore.getState().currentAppEnvironment;
-    if (!environmentSwitch) {
-      setCurrentAppEnvironmentId(currentEnvironmentId);
-      /* Editor environment */
-      const editorEnvironment = await fetchEnvironment(currentEnvironmentId);
-      envDetails = editorEnvironment;
-      setCurrentAppEnvironmentDetails(editorEnvironment);
-      /* App version's environment */
-      const appVersionEnvironment = await fetchEnvironment(currentAppVersionEnvId);
-      setAppVersionCurrentEnvironment(appVersionEnvironment);
-    }
-    updateState({
-      slug: environmentSwitch ? slug : data.slug,
-      isMaintenanceOn: data?.is_maintenance_on,
-      organizationId: currentOrgId,
-      isPublic: data?.is_public || data?.isPublic,
-      appName: data?.name,
-      userId: data?.user_id,
-      appId: data?.id,
-      events: data.events,
-      currentVersionId: data?.editing_version?.id,
-      creationMode: data?.creationMode || data?.creation_mode,
-      app: data,
-    });
-
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -819,10 +824,7 @@ const EditorComponent = (props) => {
       page: currentpageData,
       globals: {
         ...useCurrentStateStore.getState().globals,
-        environment: {
-          id: envDetails?.id,
-          name: envDetails?.name,
-        },
+        ...extraGlobals,
       },
     });
 
@@ -842,59 +844,18 @@ const EditorComponent = (props) => {
       });
     }
 
-    Promise.all([
-      await useDataSourcesStore
-        .getState()
-        .actions.fetchGlobalDataSources(data?.organization_id, data.editing_version?.id, currentEnvironmentId),
-      await fetchDataSources(data.editing_version?.id, currentEnvironmentId),
-      await fetchDataQueries(data.editing_version?.id, true, true),
-    ])
+    Promise.all([await fetchDataQueries(data.editing_version?.id, true, true)])
       .then(async () => {
         await onEditorLoad(appJson, homePageId, versionSwitched);
         updateEntityReferences(appJson, homePageId);
       })
       .finally(async () => {
-        const currentPageEvents = data.events.filter(
-          (event) => event.target === 'page' && event.sourceId === homePageId
-        );
-
-        const editorRef = getEditorRef();
-
-        handleLowPriorityWork(async () => {
-          await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-          await handleEvent('onPageLoad', currentPageEvents, {}, true);
-
-          const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
-          if (currentEnvironmentObj[appId] !== envDetails?.id) {
-            currentEnvironmentObj[appId] = currentEnvironmentId;
-            localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
-          }
-        });
+        const funcParams = { homePageId };
+        typeof onComplete === 'function' && (await onComplete(funcParams));
       });
   };
 
-  const fetchEnvironment = async (currentEnvironmentId) => {
-    const { environment } = await getEnvironmentDetails(currentEnvironmentId);
-    return environment;
-  };
-
-  const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id || props?.params?.slug;
-
-    if (!onMount) {
-      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
-    } else {
-      callBack(app, startingPageHandle);
-    }
-  };
-
-  const setAppDefinitionFromVersion = (
-    appData,
-    versionSwitched = false,
-    isEnvironmentSwitched = false,
-    selectedEnvironmentId = null,
-    extraProps = {}
-  ) => {
+  const setAppDefinitionFromVersion = (appData, selectedEnvironment) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersionId) {
       if (version?.id === currentVersionId) {
@@ -906,12 +867,24 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-      setAppVersionPromoted(false);
       useCurrentStateStore.getState().actions.setCurrentState({});
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
 
-      callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId, extraProps);
+      const { editing_version, should_freeze_editor: shouldFreezeEditor } = appData;
+      useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
+      onEditorFreeze(shouldFreezeEditor);
+      updateState({
+        events,
+        currentVersionId: editing_version?.id,
+        app: appData,
+      });
+      processNewAppDefinition(appData, null, true, ({ homePageId }) => {
+        handleLowPriorityWork(async () => {
+          await fetchDataSources(editing_version?.id, selectedEnvironment.id);
+          commonLowPriorityActions(events, homePageId);
+        });
+      });
       initComponentVersioning();
     }
   };
@@ -2002,21 +1975,71 @@ const EditorComponent = (props) => {
     });
   };
 
-  const appEnvironmentChanged = async (currentEnvironment, envSelection) => {
-    const shouldUpdate = currentAppEnvironmentId !== currentEnvironment?.id;
+  const buildAppForEnvironmentChange = async (selectedVersionDef, selectedEnvironment, preDeffBuildActions) => {
+    const newEnvironmentId = selectedEnvironment.id;
+    updateEditorState({
+      isLoading: true,
+    });
+    useCurrentStateStore.getState().actions.setCurrentState({});
+    useCurrentStateStore.getState().actions.setEditorReady(false);
+    useResolveStore.getState().actions.resetStore();
+    const {
+      editing_version,
+      organizationId,
+      organization_id,
+      should_freeze_editor: shouldFreezeEditor,
+    } = selectedVersionDef;
+    useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
+    useEditorStore.getState().actions.setCurrentAppEnvironmentId(newEnvironmentId);
+    onEditorFreeze(shouldFreezeEditor);
+    updateState({
+      events,
+      currentVersionId: editing_version?.id,
+      app: selectedVersionDef,
+    });
+    await preDeffBuildActions();
+    const extraGlobals = {
+      environment: {
+        name: selectedEnvironment.name,
+        id: selectedEnvironment.id,
+      },
+    };
+    processNewAppDefinition(
+      selectedVersionDef,
+      null,
+      true,
+      ({ homePageId }) => {
+        handleLowPriorityWork(async () => {
+          await useDataSourcesStore
+            .getState()
+            .actions.fetchGlobalDataSources(organizationId || organization_id, editing_version.id, newEnvironmentId);
+          await fetchDataSources(editing_version?.id, newEnvironmentId);
+          commonLowPriorityActions(events, homePageId);
+        });
+      },
+      extraGlobals
+    );
+    initComponentVersioning();
+  };
 
-    if (shouldUpdate) {
-      const selectedEnvironment = environments.find((env) => env.id === currentEnvironment?.id);
-      setCurrentAppEnvironmentDetails(selectedEnvironment);
-      setCurrentAppEnvironmentId(currentEnvironment?.id);
-
-      if (!envSelection) {
-        window.location.reload(false);
-      } else {
-        const selectedEnvironmentId = currentEnvironment?.id;
-
-        callBack(app, props.params.pageHandle, false, true, selectedEnvironmentId);
+  const appEnvironmentChanged = async (newData, isAppVersionPromoted) => {
+    const { selectedEnvironment, selectedVersionDef } = newData;
+    const newEnvironmentId = selectedEnvironment.id;
+    if (selectedVersionDef) {
+      /* Call and store environment related constants, GDS, LDS APIs and build newDeff */
+      buildAppForEnvironmentChange(selectedVersionDef, selectedEnvironment, async () => {
+        await fetchOrgEnvironmentConstants(newEnvironmentId);
+      });
+    } else if (selectedEnvironment) {
+      let updatedAppData = app;
+      if (isAppVersionPromoted) {
+        updatedAppData = await appService.fetchApp(appId);
       }
+
+      /* Only Trigger app environment changed callBack, refetch constants, GDS, LDS */
+      buildAppForEnvironmentChange(updatedAppData, selectedEnvironment, async () => {
+        await fetchOrgEnvironmentConstants(newEnvironmentId);
+      });
     }
   };
   const toggleGitSyncModal = () => {
@@ -2123,7 +2146,6 @@ const EditorComponent = (props) => {
             onVersionRelease={onVersionRelease}
             saveEditingVersion={saveEditingVersion}
             appEnvironmentChanged={appEnvironmentChanged}
-            onVersionDelete={onVersionDelete}
             isMaintenanceOn={isMaintenanceOn}
             appName={appName}
             appId={appId}
@@ -2131,7 +2153,6 @@ const EditorComponent = (props) => {
             toggleGitSyncModal={toggleGitSyncModal}
             showGitSyncModal={showGitSyncModal}
             setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
-            fetchEnvironments={fetchEnvironments}
             isEditorFreezed={isEditorFreezed}
           />
           <DndProvider backend={HTML5Backend}>

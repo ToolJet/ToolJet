@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import ReleaseConfirmation from '../../ReleaseConfirmation';
+import ReleaseConfirmation from '@/Editor/ReleaseConfirmation';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
@@ -26,10 +26,10 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
 
-    const { id: versionToBeReleased, name, app_id } = editingVersion;
+    const { id: versionToBeReleased, name, app_id, appId } = editingVersion;
 
     appsService
-      .releaseVersion(app_id, versionToBeReleased)
+      .releaseVersion(app_id || appId, versionToBeReleased)
       .then(() => {
         toast(`Version ${name} released`, {
           icon: '🚀',
@@ -41,9 +41,6 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
       .catch((_error) => {
         toast.error('Oops, something went wrong');
         setIsReleasing(false);
-      })
-      .finally(() => {
-        useAppVersionStore.getState().actions.updateReleasedVersionId(editingVersion.id);
       });
   };
 

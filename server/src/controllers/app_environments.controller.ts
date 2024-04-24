@@ -8,6 +8,7 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { App } from 'src/entities/app.entity';
 import { CreateAppEnvironmentDto, UpdateAppEnvironmentDto } from '@dto/app_environment.dto';
 import { PublicAppEnvironmentGuard } from 'src/modules/app_environments/public_app_environment.guard';
+import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
 @Controller('app-environments')
 export class AppEnvironmentsController {
@@ -20,7 +21,22 @@ export class AppEnvironmentsController {
      init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
      Should not use for any other purpose. 
     */
-    return await this.appEnvironmentServices.init(editingVersionId);
+    return await this.appEnvironmentServices.init(editingVersionId, user.organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/post-action/:action')
+  async environmentActions(
+    @User() user,
+    @Param('action') action: string,
+    @Body() appEnvironmentActionParametersDto: AppEnvironmentActionParametersDto
+  ) {
+    /* 
+     init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
+     Should not use for any other purpose. 
+    */
+    const { organizationId } = user;
+    return await this.appEnvironmentServices.processActions(organizationId, action, appEnvironmentActionParametersDto);
   }
 
   @UseGuards(JwtAuthGuard)
