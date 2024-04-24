@@ -592,9 +592,8 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
       if (ssoConfigResp.rows.length > 0) {
         cy.task("updateId", {
           dbconfig: Cypress.env("app_db"),
-          sql: `UPDATE sso_configs SET enabled = ${
-            enabled ? "true" : "false"
-          } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
+          sql: `UPDATE sso_configs SET enabled = ${enabled ? "true" : "false"
+            } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
         });
       }
     });
