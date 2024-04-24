@@ -142,6 +142,7 @@ const String = ({
             onMouseLeave={() => {
               setHovered(false);
             }}
+            ref={ref}
           >
             <span
               style={{
