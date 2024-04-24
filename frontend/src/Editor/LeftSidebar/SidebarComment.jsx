@@ -43,7 +43,7 @@ export const LeftSidebarComment = forwardRef(
       }
       async function fetchData() {
         try {
-          const data = await licenseService.getFeatureAccess();
+          const data = useEditorStore.getState().featureAccess;
           setBasicPlan(data?.licenseStatus?.isExpired || !data?.licenseStatus?.isLicenseValid);
         } catch (error) {
           console.error('Error:', error);
