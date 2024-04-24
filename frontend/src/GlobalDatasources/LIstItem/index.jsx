@@ -8,7 +8,15 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
-export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
+export const ListItem = ({
+  dataSource,
+  key,
+  active,
+  onDelete,
+  updateSelectedDatasource,
+  toolTipText,
+  disableDelButton = false,
+}) => {
   const {
     setSelectedDataSource,
     toggleDataSourceManagerModal,
@@ -52,57 +60,62 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
   };
 
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
+  const showDeleteButton = !isSampleDb;
 
   return (
-    <div
-      key={key}
-      className={cx('mx-3 rounded-3 datasources-list', {
-        'datasources-list-item': active,
-      })}
+    <ToolTip
+      placement="right"
+      show={toolTipText ? true : false}
+      message={'Sample data source\ncannot be deleted'}
+      tooltipClassName="tooltip-sampl-db"
     >
       <div
-        role="button"
-        onClick={() => handleActions(selectDataSource)}
-        className="col d-flex align-items-center overflow-hidden"
-        data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
+        key={key}
+        className={cx('mx-3 rounded-3 datasources-list', {
+          'datasources-list-item': active,
+        })}
       >
-        <div>{icon}</div>
-
-        <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px', display: 'flex' }}>
-          {dataSource.name}
-          {isSampleDb && (
-            <div
-              className="font-400 tj-text-xxsm text-truncate"
-              style={{ paddingTop: '3px', paddingLeft: '2px', color: '#687076' }}
-            >{`(postgres)`}</div>
-          )}
-        </div>
-      </div>
-      <div className="col-auto">
-        <ToolTip
-          placement="right"
-          show={isSampleDb}
-          message={'Sample data source\ncannot be deleted'}
-          tooltipClassName="tooltip-sampl-db"
+        <div
+          role="button"
+          onClick={() => handleActions(selectDataSource)}
+          className="col d-flex align-items-center overflow-hidden"
+          data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
         >
-          <button
-            disabled={isSampleDb}
-            className="ds-delete-btn"
-            onClick={() => onDelete(dataSource)}
-            data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
-          >
-            <div>
-              <SolidIcon
-                width="14"
-                height="14"
-                name="delete"
-                fill={isSampleDb ? '#E6E8EB' : '#E54D2E'}
-                className={isSampleDb ? 'disabled-button' : ''}
-              />
-            </div>
-          </button>
-        </ToolTip>
+          <div>{icon}</div>
+
+          <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px', display: 'flex' }}>
+            {dataSource.name}
+            {isSampleDb && (
+              <div
+                className="font-400 tj-text-xxsm text-truncate"
+                style={{ paddingTop: '3px', paddingLeft: '2px', color: '#687076' }}
+              >{`(postgres)`}</div>
+            )}
+          </div>
+        </div>
+        {showDeleteButton && (
+          <div className="col-auto">
+            {}
+            <button
+              title={'Delete'}
+              disabled={disableDelButton}
+              className="ds-delete-btn"
+              onClick={() => onDelete(dataSource)}
+              data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
+            >
+              <div>
+                <SolidIcon
+                  width="14"
+                  height="14"
+                  name="delete"
+                  fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
+                  className={disableDelButton ? 'disabled-button' : ''}
+                />
+              </div>
+            </button>
+          </div>
+        )}
       </div>
-    </div>
+    </ToolTip>
   );
 };

@@ -37,6 +37,7 @@ import { OrganizationUpdateDto } from '@dto/organization.dto';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 const MAX_ROW_COUNT = 500;
 
@@ -845,7 +846,7 @@ export class OrganizationsService {
       kind: 'postgresql',
       type: DataSourceTypes.SAMPLE,
       scope: DataSourceScopes.GLOBAL,
-      organization_id: organizationId,
+      organizationId,
     };
     const options = [
       {
@@ -879,31 +880,21 @@ export class OrganizationsService {
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
     ];
-    const insertQueryText = `INSERT INTO "data_sources" (${Object.keys(config).join(', ')}) VALUES (${Object.values(
-      config
-    ).map((_, index) => `$${index + 1}`)}) RETURNING "id", "type", "scope", "created_at", "updated_at"`;
-    const insertValues = Object.values(config);
+    const dataSource = manager.create(DataSource, config);
+    await manager.save(dataSource);
 
-    const dataSourceList = await manager.query(insertQueryText, insertValues);
-    const dataSource: DataSource = dataSourceList[0];
-
-    const allEnvs: AppEnvironment[] = await await manager.query(
-      `
-          SELECT *
-          FROM app_environments
-          WHERE organization_id = $1
-          AND enabled = true
-          ORDER BY priority ASC
-        `,
-      [organizationId]
-    );
+    const allEnvs: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
 
     await Promise.all(
       allEnvs?.map(async (env) => {
         const parsedOptions = await this.dataSourceService.parseOptionsForCreate(options);
-        const insertQuery = `INSERT INTO "data_source_options" ( environment_id , data_source_id, options ) VALUES ( $1 , $2 , $3)`;
-        const values = [env.id, dataSource.id, parsedOptions];
-        await manager.query(insertQuery, values);
+        await manager.save(
+          manager.create(DataSourceOptions, {
+            environmentId: env.id,
+            dataSourceId: dataSource.id,
+            options: parsedOptions,
+          })
+        );
       })
     );
   }

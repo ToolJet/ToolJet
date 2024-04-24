@@ -788,6 +788,11 @@ class DataSourceManagerComponent extends React.Component {
       ? deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
+    const docLink = isSampleDb
+      ? 'sampledb Link'
+      : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       pluginsLoaded && (
         <div>
@@ -940,11 +945,7 @@ class DataSourceManagerComponent extends React.Component {
                   <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                   <a
                     className="color-primary tj-docs-link tj-text-sm"
-                    href={
-                      selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-                        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
-                        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource.kind}`
-                    }
+                    href={docLink}
                     target="_blank"
                     rel="noreferrer"
                     data-cy="link-read-documentation"

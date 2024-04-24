@@ -6,7 +6,7 @@ import { runPopulateScript } from 'scripts/populate-sample-db';
 export class SampleDBScheduler {
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async handleCron() {
-    console.log('starting job to populate samplw at ', new Date().toISOString());
+    console.log('starting job to populate sample data at ', new Date().toISOString());
     runPopulateScript();
   }
 }

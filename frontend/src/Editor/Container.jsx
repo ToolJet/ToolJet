@@ -720,7 +720,7 @@ export const Container = ({
               <div className="box-icon">
                 <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
               </div>
-              <div className="title-text">Drag and drop a component</div>
+              <div className={`title-text`}>Drag and drop a component</div>
               <div className="title-desc">
                 Choose a component from the right side panel or use our pre-built templates to get started quickly!
               </div>
@@ -729,7 +729,7 @@ export const Container = ({
               <div className="box-icon">
                 <SolidIcon name="datasource" fill="#3E63DD" width="25" />
               </div>
-              <div className="title-text">Create a Query</div>
+              <div className={`title-text`}>Create a Query</div>
               <div className="title-desc">
                 Connect to your data source or use our sample data source to start playing around!
               </div>
@@ -749,7 +749,7 @@ export const Container = ({
               <div className="box-icon">
                 <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
               </div>
-              <div className="title-text">Share your application!</div>
+              <div className={`title-text `}>Share your application!</div>
               <div className="title-desc">
                 Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
               </div>
