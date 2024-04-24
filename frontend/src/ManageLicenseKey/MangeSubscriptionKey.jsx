@@ -363,16 +363,18 @@ function ManageSubscriptionKey({ darkMode }) {
     return (
       <div className="upgrade-plan-footer">
         <div className="total-amount">
-          <div className="font-weight-500 tj-text tj-text-md">
+          <div className="font-weight-500 tj-text tj-text-md" data-cy="total-amount">
             ${costing.totalValue}/
             <span className="font-weight-500">{subscriptionType === 'yearly' ? 'year' : 'month'}</span>
           </div>
         </div>
         <div className="due-container">
-          <div className="tj-text-md font-weight-500">
+          <div className="tj-text-md font-weight-500" data-cy="remaining-amount">
             ${mode === MODAL_MODE.UPGRADE ? centsToUSD(proration?.amount_due) : costing?.totalValue}
           </div>
-          <div className="tj-text-xsm text-muted">Due today</div>
+          <div className="tj-text-xsm text-muted" data-cy="due-today-label">
+            Due today
+          </div>
         </div>
         <div className="separator"></div>
         <ButtonSolid
@@ -381,7 +383,7 @@ function ManageSubscriptionKey({ darkMode }) {
           onClick={actionBtnProps.onClick}
           variant={mode !== MODAL_MODE.NEW && 'primary'}
           className={`sso-footer-save-btn ${mode === MODAL_MODE.NEW && 'upgrade-btn'}`}
-          data-cy="upgrade-button"
+          data-cy="modal-upgrade-button"
         >
           {actionBtnProps.text}
         </ButtonSolid>

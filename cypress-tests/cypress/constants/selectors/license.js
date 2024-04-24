@@ -48,7 +48,7 @@ export const cloudLicesningSelector = {
     promoCodeInput: '[data-cy="promo-code-input"]',
     offerToggle: '[data-cy="offer-toggle"]',
     offerToggleLabel: '[data-cy="offer-toggle-label"]',
-    totalCostValue: '[data-cy="total-cost-value"]',
+    totalCostValue: '[data-cy="total-amount"]',
     termsHelperText: '[data-cy="terms-helper-text"]',
     termsLink: '[data-cy="terms-link"]',
     contactUsHelper: '[data-cy="contact-us-helper-text"]',
@@ -57,5 +57,13 @@ export const cloudLicesningSelector = {
     subscriptionKeyHelperText: '[data-cy="subscription-key-helper-text"]',
     warningTextHeader: '[data-cy="warning-text-header"]',
     upgradeLink: '[data-cy="upgrade-link"]',
+
+    basicPlan: {
+        apps: "Unlimited applications",
+        sso: "SSO (Google & Github)",
+        comminity: "Community support",
+        tjDb: "Unlimited ToolJet tables and rows",
+        multiplayer: "Multiplayer editing",
+    },
 
 };
