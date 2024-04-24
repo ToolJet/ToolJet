@@ -42,14 +42,15 @@ export class OrganizationPaymentService {
   async getUpcomingInvoice(organizationId: string): Promise<OrganizationSubscriptionInvoice> {
     return dbTransactionWrap((manager: EntityManager) => {
       return manager
-        .createQueryBuilder(OrganizationSubscription, 'organization_subscription')
-        .innerJoinAndSelect(
-          'organization_subscription.organizationSubscriptionInvoices',
-          'organization_subscription_invoices'
+        .createQueryBuilder(OrganizationSubscriptionInvoice, 'organization_subscription_invoices')
+        .innerJoin(
+          'organization_subscription_invoices.organizationSubscription',
+          'organization_subscriptions',
+          'organization_subscriptions.organizationId = :organizationId',
+          {
+            organizationId,
+          }
         )
-        .where('organization_subscription.organizationId = :organizationId', {
-          organizationId,
-        })
         .orderBy('organization_subscription_invoices.createdAt', 'DESC')
         .getOne();
     });
