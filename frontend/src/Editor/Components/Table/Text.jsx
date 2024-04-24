@@ -54,7 +54,7 @@ const Text = ({
 
   const _renderTextArea = () => (
     <div
-      contentEditable={'plaintext-only'} // this allows to paste plain text only and gets rids of styling when pasting
+      contentEditable={'true'}
       className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
         darkMode ? ' textarea-dark-theme' : ''
       }`}
