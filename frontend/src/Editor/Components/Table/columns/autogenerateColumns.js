@@ -84,18 +84,9 @@ export default function autogenerateColumns(
     ...columnDeletionHistory,
   ]);
 
-  const getTypeOfData = (data) => {
-    let typeofData = typeof data;
-    switch (typeofData) {
-      case 'object':
-        return Array.isArray(data) ? 'array' : 'object';
-      default:
-        return typeofData;
-    }
-  };
   const keysAndDataTypesToGenerateNewColumns = keysFromWhichNewColumnsShouldBeGenerated?.map((key) => [
     key,
-    getTypeOfData(firstRow[key]),
+    typeof firstRow[key],
   ]);
 
   const keysOfExistingColumnsThatNeedToPersist = existingColumns
@@ -122,7 +113,6 @@ const dataTypeToColumnTypeMapping = {
   string: 'string',
   number: 'number',
   boolean: 'boolean',
-  array: 'select',
 };
 
 const convertDataTypeToColumnType = (dataType) => {
