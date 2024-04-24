@@ -152,6 +152,7 @@
       border: 0;
       height: 100%;
       outline: none;
+      -webkit-user-modify: read-write-plaintext-only;
     }
 
     textarea {
