@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import ColumnName from '../Icons/ColumnName.svg';
 import TableSchema from './TableSchema';
 import ForeignKeyRelation from './ForeignKeyRelation';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import _, { isEmpty } from 'lodash';
 
-const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns, tableName }) => {
+const ColumnsForm = ({
+  columns,
+  setColumns,
+  isEditMode,
+  editColumns,
+  tableName,
+  setForeignKeyDetails,
+  isRequiredFieldsExistForCreateTableOperation,
+  foreignKeyDetails,
+  organizationId,
+  existingForeignKeyDetails,
+  setCreateForeignKeyInEdit,
+  createForeignKeyInEdit = false,
+  selectedTable,
+}) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
   const [indexHoveredColumn, setIndexHoveredColumn] = useState(null);
+  const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
 
   const handleDelete = (index) => {
     const newColumns = { ...columns };
@@ -33,6 +49,10 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns, tableName }
   //   delete newColumns[index];
   //   setColumns(newColumns);
   // };
+
+  // const isNameAvailable = Object.values(columns).some((obj) => Object.values(obj).includes(char));
+
+  // console.log('first', index);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -77,8 +97,15 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns, tableName }
           setColumnSelection={setColumnSelection}
           handleDelete={handleDelete}
           isEditMode={isEditMode}
-          isActiveForeignKey={false}
+          isActiveForeignKey={
+            !isEmpty(foreignKeyDetails?.column_names) ||
+            !isEmpty(foreignKeyDetails?.referenced_column_names) ||
+            !isEmpty(foreignKeyDetails?.referenced_table_name) ||
+            !isEmpty(foreignKeyDetails?.on_delete) ||
+            !isEmpty(foreignKeyDetails?.on_update)
+          }
           indexHover={indexHoveredColumn}
+          foreignKeyDetails={foreignKeyDetails}
         />
 
         <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
@@ -103,6 +130,16 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns, tableName }
           tableName={tableName}
           columns={columns}
           isEditMode={isEditMode}
+          setForeignKeyDetails={setForeignKeyDetails}
+          isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
+          foreignKeyDetails={foreignKeyDetails}
+          organizationId={organizationId}
+          existingForeignKeyDetails={existingForeignKeyDetails}
+          setCreateForeignKeyInEdit={setCreateForeignKeyInEdit}
+          createForeignKeyInEdit={createForeignKeyInEdit}
+          selectedTable={selectedTable}
+          setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}
+          isForeignKeyDraweOpen={isForeignKeyDraweOpen}
         />
       </div>
     </div>

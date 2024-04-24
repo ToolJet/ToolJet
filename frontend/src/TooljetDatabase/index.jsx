@@ -5,7 +5,7 @@ import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
 import { pageTitles, setWindowTitle } from '@/_helpers/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -70,6 +70,9 @@ export const TooljetDatabase = (props) => {
   };
   const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
+  // let { state } = useLocation();
+
+  // console.log('state', selectedTable);
 
   if (!admin) {
     navigate('/');
@@ -145,6 +148,9 @@ export const TooljetDatabase = (props) => {
 
   useEffect(() => {
     updateSidebarNAV('');
+    // if (state.id && state.name) {
+    //   setSelectedTable({ id: state.id, table_name: state.name });
+    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

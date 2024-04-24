@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import TableDetailsDropdown from './TableDetailsDropdown';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
@@ -11,10 +11,20 @@ import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import { dataTypes, getColumnDataType } from '../constants';
 
-function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
-  const [targetColumn, setTargetColumn] = useState([]);
+function SourceKeyRelation({
+  tableName,
+  columns,
+  isEditMode,
+  isEditColumn,
+  isCreateColumn,
+  setTargetColumn,
+  targetColumn,
+  setForeignKeyDetails,
+  foreignKeyDetails,
+  createForeignKeyInEdit,
+  isForeignKeyDraweOpen,
+}) {
   const { tables, organizationId, selectedTable, setForeignKeys } = useContext(TooljetDatabaseContext);
-  const [selectedSourceColumn, setSelectedSourceColumn] = useState({});
 
   const sourceTable = [
     {
@@ -25,25 +35,26 @@ function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
     },
   ];
 
-  const sourceColumns = isEditColumn
-    ? [
-        {
-          name: columns?.column_name,
-          label: columns?.column_name,
-          icon: columns?.dataTypeDetails?.icon ?? columns?.dataTypeDetails[0]?.icon,
-          value: columns?.column_name,
-          dataType: columns?.data_type,
-        },
-      ]
-    : Object.values(columns).map((item) => {
-        return {
-          name: item?.column_name,
-          label: item?.column_name,
-          icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
-          value: item?.column_name,
-          dataType: item?.data_type,
-        };
-      });
+  const sourceColumns =
+    isEditColumn || isCreateColumn
+      ? [
+          {
+            name: columns?.column_name,
+            label: columns?.column_name,
+            icon: columns?.dataTypeDetails?.icon ?? columns?.dataTypeDetails[0]?.icon,
+            value: columns?.column_name,
+            dataType: columns?.data_type,
+          },
+        ]
+      : Object.values(columns).map((item) => {
+          return {
+            name: item?.column_name,
+            label: item?.column_name,
+            icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
+            value: item?.column_name,
+            dataType: item?.data_type,
+          };
+        });
 
   const tableList = tables.map((item) => {
     return {
@@ -54,29 +65,29 @@ function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
 
   const onUpdateOptions = [
     {
-      name: 'No action',
-      label: 'No action',
-      value: 'No action',
+      name: 'NO ACTION',
+      label: 'NO ACTION',
+      value: 'NO ACTION',
     },
     {
-      name: 'Cascade',
-      label: 'Cascade',
-      value: 'Cascade',
+      name: 'CASCADE',
+      label: 'CASCADE',
+      value: 'CASCADE',
     },
     {
-      name: 'Restrict',
-      label: 'Restrict',
-      value: 'Restrict',
+      name: 'RESTRICT',
+      label: 'RESTRICT',
+      value: 'RESTRICT',
     },
     {
-      name: 'Set as null',
-      label: 'Set as null',
-      value: 'Set as null',
+      name: 'SET NULL',
+      label: 'SET NULL',
+      value: 'SET NULL',
     },
     {
-      name: 'Set as default',
-      label: 'Set as default',
-      value: 'Set as default',
+      name: 'SET DEFAULT',
+      label: 'SET DEFAULT',
+      value: 'SET DEFAULT',
     },
   ];
 
@@ -104,11 +115,26 @@ function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
   };
 
   const targetTableColumns =
-    targetColumn.length > 0 && !isEditColumn
-      ? targetColumn?.filter((item) => selectedSourceColumn.dataType === item.dataType)
-      : isEditColumn && targetColumn.length > 0
-      ? targetColumn?.filter((item) => sourceColumns[0].dataType === item.dataType)
+    targetColumn.length > 0 && (!isEditColumn || !isCreateColumn)
+      ? targetColumn?.filter((item) => foreignKeyDetails?.column_names?.dataType === item?.dataType)
+      : (isEditColumn || isCreateColumn) && targetColumn.length > 0
+      ? targetColumn?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
       : [];
+
+  useEffect(() => {
+    if ((isEditMode && !createForeignKeyInEdit && isForeignKeyDraweOpen) || isEditColumn) {
+      handleSelectColumn(foreignKeyDetails?.referenced_table_name?.value);
+    }
+  }, [isForeignKeyDraweOpen, isEditColumn]);
+
+  useEffect(() => {
+    if (isEditColumn || isCreateColumn) {
+      setForeignKeyDetails((prevDetails) => ({
+        ...prevDetails,
+        column_names: sourceColumns[0],
+      }));
+    }
+  }, [isEditColumn, isCreateColumn]);
 
   return (
     <div className="relations-container">
@@ -128,17 +154,16 @@ function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
         <TableDetailsDropdown
           firstColumnName={'Table'}
           secondColumnName={'Column'}
-          firstColumnPlaceholder={'Select Table'}
-          secondColumnPlaceholder={'Select Column'}
           tableList={sourceTable}
           tableColumns={sourceColumns}
           source={true}
           setTargetColumn={setTargetColumn}
-          selectedSourceColumn={selectedSourceColumn}
-          updateSelectedSourceColumns={setSelectedSourceColumn}
           isEditColumn={isEditColumn}
-          defaultValue={isEditColumn ? sourceColumns[0] : []}
+          isCreateColumn={isCreateColumn}
+          defaultValue={isEditColumn || isCreateColumn ? sourceColumns[0] : []}
           onAdd={true}
+          foreignKeyDetails={foreignKeyDetails}
+          setForeignKeyDetails={setForeignKeyDetails}
         />
       </div>
       <div className="target mt-4">
@@ -152,8 +177,6 @@ function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
         <TableDetailsDropdown
           firstColumnName={'Table'}
           secondColumnName={'Column'}
-          firstColumnPlaceholder={'Select Table'}
-          secondColumnPlaceholder={'Select Column'}
           tableList={tableList}
           tableColumns={targetTableColumns}
           source={false}
@@ -161,6 +184,8 @@ function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
           showColumnInfo={true}
           showRedirection={true}
           onAdd={true}
+          foreignKeyDetails={foreignKeyDetails}
+          setForeignKeyDetails={setForeignKeyDetails}
         />
       </div>
       <div className="actions mt-4">
@@ -174,12 +199,13 @@ function SourceKeyRelation({ tableName, columns, isEditMode, isEditColumn }) {
         <TableDetailsDropdown
           firstColumnName={'On update'}
           secondColumnName={'On remove'}
-          firstColumnPlaceholder={'Select action'}
-          secondColumnPlaceholder={'Select columns from this table to reference with..'}
           tableList={onUpdateOptions}
           tableColumns={onUpdateOptions}
           source={false}
           showDescription={true}
+          actions={true}
+          foreignKeyDetails={foreignKeyDetails}
+          setForeignKeyDetails={setForeignKeyDetails}
         />
       </div>
     </div>

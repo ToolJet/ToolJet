@@ -14,18 +14,27 @@ import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import './styles.scss';
 
-const ColumnForm = ({ onCreate, onClose, rows }) => {
+const ColumnForm = ({ onCreate, onClose, rows, isEditColumn = false }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
-  const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
   const [isNotNull, setIsNotNull] = useState(false);
+  // const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(false);
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
+
+  const [foreignKeyDetails, setForeignKeyDetails] = useState({
+    column_names: {},
+    referenced_table_name: {},
+    referenced_column_names: {},
+    on_delete: {},
+    on_update: {},
+  });
 
   const columns = {
     column_name: columnName,
@@ -120,6 +129,25 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
       toast.error('Data type cannot be empty');
       return;
     }
+    const foreignKeyArray = [
+      {
+        column_names: [foreignKeyDetails.column_names?.value],
+        referenced_table_name: foreignKeyDetails.referenced_table_name?.value,
+        referenced_column_names: [foreignKeyDetails.referenced_column_names?.value],
+        on_delete: foreignKeyDetails.on_delete?.value,
+        on_update: foreignKeyDetails.on_update?.value,
+      },
+    ];
+
+    const isCheckingValues =
+      Object.keys(foreignKeyDetails.column_names).length === 0 &&
+      Object.keys(foreignKeyDetails.referenced_column_names).length === 0 &&
+      Object.keys(foreignKeyDetails.referenced_table_name).length === 0 &&
+      Object.keys(foreignKeyDetails.on_delete).length === 0 &&
+      Object.keys(foreignKeyDetails.on_update).length === 0
+        ? false
+        : true;
+
     setFetching(true);
     const { error } = await tooljetDatabaseService.createColumn(
       organizationId,
@@ -129,7 +157,9 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
       defaultValue,
       isNotNull,
       isUniqueConstraint,
-      isSerialType
+      isSerialType,
+      isCheckingValues,
+      foreignKeyArray
     );
     setFetching(false);
     if (error) {
@@ -138,6 +168,11 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
     }
     toast.success(`Column created successfully`);
     onCreate && onCreate();
+  };
+
+  const handleCreateForeignKey = () => {
+    setIsForeignKeyDraweOpen(false);
+    toast.success(`Foreign key created successfully`);
   };
 
   return (
@@ -203,44 +238,52 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
           ) : null}
         </div>
 
-        <div className="row mb-3">
-          <div className="col-1">
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={isForeignKey}
-                onChange={(e) => {
-                  setIsForeignKey(e.target.checked);
-                  setIsForeignKeyDraweOpen(e.target.checked);
-                }}
-                disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
-              />
-            </label>
-          </div>
-          <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500">Foreign Key relation</p>
-            {!isForeignKey ? (
+        {isEmpty(foreignKeyDetails?.column_names) ||
+        isEmpty(foreignKeyDetails?.referenced_column_names) ||
+        isEmpty(foreignKeyDetails?.referenced_table_name) ||
+        isEmpty(foreignKeyDetails?.on_delete) ||
+        isEmpty(foreignKeyDetails?.on_update) ? (
+          <div className="row mb-3">
+            <div className="col-1">
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isForeignKey}
+                  onChange={(e) => {
+                    if (isForeignKey === false && foreignKeyDetails.length > 0) {
+                      setIsForeignKey(false);
+                      setForeignKeyDetails({});
+                    }
+                    setIsForeignKey(e.target.checked);
+                    setIsForeignKeyDraweOpen(e.target.checked);
+                  }}
+                  disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
+                />
+              </label>
+            </div>
+            <div className="col d-flex flex-column">
+              <p className="m-0 p-0 fw-500">Foreign Key relation</p>
               <p className="fw-400 secondary-text">Add foreign key to check referral integrity</p>
-            ) : (
-              <div className="foreignKey-details" onClick={() => {}}>
-                <span className="foreignKey-text">Name</span>
-                <div className="foreign-key-relation">
-                  <ForeignKeyRelationIcon width="13" height="13" />
-                </div>
-                <span className="foreignKey-text">table2.column4</span>
-                <div className="editForeignkey" onClick={() => {}}>
-                  <EditIcon width="17" height="18" />
-                </div>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="foreignKey-details" onClick={() => {}}>
+            <span className="foreignKey-text">{foreignKeyDetails?.column_names?.value}</span>
+            <div className="foreign-key-relation">
+              <ForeignKeyRelationIcon width="13" height="13" />
+            </div>
+            <span className="foreignKey-text">{`${foreignKeyDetails?.referenced_table_name?.value}.${foreignKeyDetails?.referenced_column_names?.value}`}</span>
+            <div className="editForeignkey" onClick={() => {}}>
+              <EditIcon width="17" height="18" />
+            </div>
+          </div>
+        )}
 
         <Drawer
           isOpen={isForeignKeyDraweOpen}
           position="right"
-          drawerStyle={{ width: '500px' }}
+          drawerStyle={{ width: '560px' }}
           isForeignKeyRelation={true}
           onClose={() => {
             setIsForeignKeyDraweOpen(false);
@@ -254,7 +297,14 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
               setIsForeignKeyDraweOpen(false);
               setIsForeignKey(false);
             }}
-            isEditColumn={true}
+            isCreateColumn={true}
+            isForeignKeyForColumnDrawer={true}
+            handleCreateForeignKey={handleCreateForeignKey}
+            setForeignKeyDetails={setForeignKeyDetails}
+            // isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
+            foreignKeyDetails={foreignKeyDetails}
+            organizationId={organizationId}
+            existingForeignKeyDetails={foreignKeys}
           />
         </Drawer>
 

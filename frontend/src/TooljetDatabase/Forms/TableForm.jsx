@@ -34,10 +34,73 @@ const TableForm = ({
 
   const [fetching, setFetching] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
   const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
-  const { organizationId } = useContext(TooljetDatabaseContext);
+  const { organizationId, foreignKeys } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  const existingForeignKeyColumnDetails = Object.values(columns)?.filter((item) => {
+    return item?.column_name === foreignKeys[0]?.column_names[0];
+  });
+
+  const existingColumnName =
+    isEditMode &&
+    existingForeignKeyColumnDetails.length > 0 &&
+    existingForeignKeyColumnDetails?.map((item) => {
+      return {
+        name: item?.column_name,
+        label: item?.column_name,
+        icon: item?.dataTypeDetails[0]?.icon,
+        value: item?.column_name,
+        dataType: item?.data_type,
+      };
+    });
+
+  const referencedColumnName =
+    isEditMode &&
+    existingForeignKeyColumnDetails.length > 0 &&
+    existingForeignKeyColumnDetails?.map((item) => {
+      return {
+        name: foreignKeys[0]?.referenced_column_names[0],
+        label: foreignKeys[0]?.referenced_column_names[0],
+        icon: item?.dataTypeDetails[0]?.icon,
+        value: foreignKeys[0]?.referenced_column_names[0],
+        dataType: item?.data_type,
+      };
+    });
+
+  const [foreignKeyDetails, setForeignKeyDetails] = useState({
+    column_names: isEditMode ? (!createForeignKeyInEdit ? existingColumnName[0] : {}) : {},
+    referenced_table_name: isEditMode
+      ? !createForeignKeyInEdit
+        ? {
+            name: foreignKeys[0]?.referenced_table_name,
+            label: foreignKeys[0]?.referenced_table_name,
+            value: foreignKeys[0]?.referenced_table_name,
+          }
+        : {}
+      : {},
+    referenced_column_names: isEditMode ? (!createForeignKeyInEdit ? referencedColumnName[0] : {}) : {},
+    on_delete: isEditMode
+      ? !createForeignKeyInEdit
+        ? {
+            name: foreignKeys[0]?.on_delete,
+            label: foreignKeys[0]?.on_delete,
+            value: foreignKeys[0]?.on_delete,
+          }
+        : {}
+      : {},
+    on_update: isEditMode
+      ? !createForeignKeyInEdit
+        ? {
+            name: foreignKeys[0]?.on_update,
+            label: foreignKeys[0]?.on_update,
+            value: foreignKeys[0]?.on_update,
+          }
+        : {}
+      : {},
+  });
 
   useEffect(() => {
     toast.dismiss();
@@ -66,6 +129,10 @@ const TableForm = ({
   // });
 
   // const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+
+  // let data = isEditMode
+  //   ? bodyColumns(editColumns, _.cloneDeep([...editPrimaryKeyColumns, ...editNonPrimaryKeyColumns]))
+  //   : bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
 
   function bodyColumns(columns, arrayOfTableColumns) {
     let newArray = [];
@@ -105,10 +172,6 @@ const TableForm = ({
     return newArray;
   }
 
-  // let data = isEditMode
-  //   ? bodyColumns(editColumns, _.cloneDeep([...editPrimaryKeyColumns, ...editNonPrimaryKeyColumns]))
-  //   : bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
-
   let data = bodyColumns(columns, arrayOfTableColumns);
 
   const validateTableName = () => {
@@ -131,6 +194,10 @@ const TableForm = ({
     return true;
   };
 
+  // const handleCreateForeignKey = (foreignKeyColumns) => {
+  //  setForeignKeys(foreignKeyColumns)
+  // }
+
   const handleCreate = async () => {
     if (!validateTableName()) return;
 
@@ -140,8 +207,33 @@ const TableForm = ({
       return;
     }
 
+    const foreignKeyArray = [
+      {
+        column_names: [foreignKeyDetails.column_names?.value],
+        referenced_table_name: foreignKeyDetails.referenced_table_name?.value,
+        referenced_column_names: [foreignKeyDetails.referenced_column_names?.value],
+        on_delete: foreignKeyDetails.on_delete?.value,
+        on_update: foreignKeyDetails.on_update?.value,
+      },
+    ];
+
+    const checkingValues =
+      Object.keys(foreignKeyDetails.column_names).length === 0 &&
+      Object.keys(foreignKeyDetails.referenced_column_names).length === 0 &&
+      Object.keys(foreignKeyDetails.referenced_table_name).length === 0 &&
+      Object.keys(foreignKeyDetails.on_delete).length === 0 &&
+      Object.keys(foreignKeyDetails.on_update).length === 0
+        ? false
+        : true;
+
     setFetching(true);
-    const { error, data } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
+    const { error, data } = await tooljetDatabaseService.createTable(
+      organizationId,
+      tableName,
+      Object.values(columns),
+      foreignKeyArray,
+      checkingValues
+    );
     setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
@@ -150,6 +242,7 @@ const TableForm = ({
 
     toast.success(`${tableName} created successfully`);
     onCreate && onCreate({ id: data.result.id, table_name: tableName });
+    setCreateForeignKeyInEdit(false);
   };
 
   function handleKeyPress(e) {
@@ -182,6 +275,7 @@ const TableForm = ({
     updateSelectedTable({ ...selectedTable, table_name: tableName });
 
     onEdit && onEdit();
+    setCreateForeignKeyInEdit(false);
   };
 
   const isRequiredFieldsExistForCreateTableOperation = (columnDetails) => {
@@ -283,6 +377,14 @@ const TableForm = ({
           isEditMode={isEditMode}
           editColumns={columns}
           tableName={tableName}
+          setForeignKeyDetails={setForeignKeyDetails}
+          isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
+          foreignKeyDetails={foreignKeyDetails}
+          organizationId={organizationId}
+          existingForeignKeyDetails={foreignKeys}
+          setCreateForeignKeyInEdit={setCreateForeignKeyInEdit}
+          createForeignKeyInEdit={createForeignKeyInEdit}
+          selectedTable={selectedTable}
         />
       </div>
       <DrawerFooter

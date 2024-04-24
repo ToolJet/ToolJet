@@ -19,19 +19,24 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import { ToolTip } from '@/_components/ToolTip';
+import { ConfirmDialog } from '@/_components';
 
-const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
+const ColumnForm = ({ onClose, selectedColumn, setColumns, rows, isEditColumn }) => {
   const nullValue = selectedColumn?.constraints_type?.is_not_null ?? false;
   const uniqueConstraintValue = selectedColumn?.constraints_type?.is_unique ?? false;
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
+  const [onDelete, setOnDelete] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [isNotNull, setIsNotNull] = useState(nullValue);
+  const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(uniqueConstraintValue);
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
+  const [onChangeInForeignKey, setOnChangeInForeignKey] = useState(false);
+
   const {
     organizationId,
     selectedTable,
@@ -41,7 +46,116 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
     pageSize,
     sortFilters,
     setForeignKeys,
+    foreignKeys,
   } = useContext(TooljetDatabaseContext);
+
+  const columns = {
+    column_name: columnName,
+    data_type: dataType,
+    constraints_type: {
+      is_not_null: isNotNull,
+      is_primary_key: selectedColumn.is_primary_key,
+      is_unique: isUniqueConstraint,
+    },
+    dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
+    column_default: defaultValue,
+  };
+
+  const existingForeignKeyColumnDetails = [];
+
+  const matchingForeignKey = foreignKeys.find(
+    (obj) => obj.column_names && obj.column_names.length > 0 && columns.column_name === obj.column_names[0]
+  );
+
+  if (matchingForeignKey) {
+    existingForeignKeyColumnDetails.push(columns);
+  }
+
+  const existingColumnName =
+    isEditColumn &&
+    existingForeignKeyColumnDetails.length > 0 &&
+    existingForeignKeyColumnDetails?.map((item) => {
+      return {
+        name: item?.column_name,
+        label: item?.column_name,
+        icon: item?.dataTypeDetails[0]?.icon,
+        value: item?.column_name,
+        dataType: item?.data_type,
+      };
+    });
+
+  const referencedColumnName =
+    isEditColumn &&
+    existingForeignKeyColumnDetails.length > 0 &&
+    existingForeignKeyColumnDetails?.map((item) => {
+      return {
+        name: foreignKeys[0]?.referenced_column_names[0],
+        label: foreignKeys[0]?.referenced_column_names[0],
+        icon: item?.dataTypeDetails[0]?.icon,
+        value: foreignKeys[0]?.referenced_column_names[0],
+        dataType: item?.data_type,
+      };
+    });
+
+  const [foreignKeyDetails, setForeignKeyDetails] = useState({
+    column_names: isEditColumn ? (!createForeignKeyInEdit ? existingColumnName[0] : {}) : {},
+    referenced_table_name: isEditColumn
+      ? !createForeignKeyInEdit
+        ? {
+            name: foreignKeys[0]?.referenced_table_name,
+            label: foreignKeys[0]?.referenced_table_name,
+            value: foreignKeys[0]?.referenced_table_name,
+          }
+        : {}
+      : {},
+    referenced_column_names: isEditColumn ? (!createForeignKeyInEdit ? referencedColumnName[0] : {}) : {},
+    on_delete: isEditColumn
+      ? !createForeignKeyInEdit
+        ? {
+            name: foreignKeys[0]?.on_delete,
+            label: foreignKeys[0]?.on_delete,
+            value: foreignKeys[0]?.on_delete,
+          }
+        : {}
+      : {},
+    on_update: isEditColumn
+      ? !createForeignKeyInEdit
+        ? {
+            name: foreignKeys[0]?.on_update,
+            label: foreignKeys[0]?.on_update,
+            value: foreignKeys[0]?.on_update,
+          }
+        : {}
+      : {},
+  });
+
+  const existingReferencedTableName = foreignKeys[0]?.referenced_table_name;
+  const existingReferencedColumnName = foreignKeys[0]?.referenced_column_names[0];
+  const currentReferencedTableName = foreignKeyDetails?.referenced_table_name?.value;
+  const currentReferencedColumnName = foreignKeyDetails?.referenced_column_names?.value;
+
+  const handleCreateForeignKeyinEditMode = async () => {
+    const data = [
+      {
+        column_names: [foreignKeyDetails?.column_names?.value],
+        referenced_table_name: foreignKeyDetails?.referenced_table_name?.value,
+        referenced_column_names: [foreignKeyDetails?.referenced_column_names?.value],
+        on_delete: foreignKeyDetails?.on_delete?.value,
+        on_update: foreignKeyDetails?.on_update?.value,
+      },
+    ];
+    const { error } = await tooljetDatabaseService.createForeignKey(organizationId, selectedTable.table_name, data);
+
+    if (error) {
+      toast.error(error?.message ?? `Failed to edit foreign key`);
+      return;
+    }
+
+    toast.success(`Foreign key created successfully`);
+    setCreateForeignKeyInEdit(false);
+    setIsForeignKeyDraweOpen(false);
+  };
+
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
   const [defaultValueLength] = useState(defaultValue?.length);
   const darkDisabledBackground = '#1f2936';
@@ -63,18 +177,6 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
   const dropdownContainerWidth = '360px';
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
-  const columns = {
-    column_name: columnName,
-    data_type: dataType,
-    constraints_type: {
-      is_not_null: isNotNull,
-      is_primary_key: selectedColumn.is_primary_key,
-      is_unique: isUniqueConstraint,
-    },
-    dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
-    column_default: defaultValue,
-  };
 
   const customStyles = tjdbDropdownStyles(
     darkMode,
@@ -157,6 +259,72 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
   const toolTipPlacementStyle = {
     width: '126px',
   };
+
+  const handleDeleteColumn = async () => {
+    const id = foreignKeys[0]?.constraint_name;
+    const { error } = await tooljetDatabaseService.deleteForeignKey(organizationId, selectedTable.table_name, id);
+
+    if (error) {
+      toast.error(error?.message ?? `Failed to delete foreign key`);
+      return;
+    }
+
+    setForeignKeyDetails({});
+    setOnDelete(false);
+    setIsForeignKeyDraweOpen(false);
+    toast.success(`Foreign key deleted successfully`);
+  };
+
+  const footerStyle = {
+    borderTop: '1px solid var(--slate5)',
+    paddingTop: '12px',
+    marginTop: '0px',
+  };
+
+  const handleEditForeignKey = async () => {
+    const id = foreignKeys[0]?.constraint_name;
+    const data = [
+      {
+        column_names: [foreignKeyDetails?.column_names?.value],
+        referenced_table_name: foreignKeyDetails?.referenced_table_name?.value,
+        referenced_column_names: [foreignKeyDetails?.referenced_column_names?.value],
+        on_delete: foreignKeyDetails?.on_delete?.value,
+        on_update: foreignKeyDetails?.on_update?.value,
+      },
+    ];
+    const { error } = await tooljetDatabaseService.editForeignKey(organizationId, selectedTable.table_name, id, data);
+
+    if (error) {
+      toast.error(error?.message ?? `Failed to edit foreign key`);
+      return;
+    }
+
+    toast.success(`Foreign key edited successfully`);
+
+    setIsForeignKeyDraweOpen(false);
+  };
+
+  const changesInForeignKey = () => {
+    const newForeignKeyDetails = [];
+
+    if (
+      currentReferencedColumnName !== existingReferencedColumnName ||
+      currentReferencedTableName !== existingReferencedTableName
+    ) {
+      const newDetail = {};
+      if (currentReferencedColumnName !== existingReferencedColumnName) {
+        newDetail.columnName = currentReferencedColumnName;
+      }
+      if (currentReferencedTableName !== existingReferencedTableName) {
+        newDetail.tableName = currentReferencedTableName;
+      }
+      newForeignKeyDetails.push(newDetail);
+    }
+
+    return newForeignKeyDetails;
+  };
+
+  const newChangesInForeignKey = changesInForeignKey();
 
   return (
     <>
@@ -262,48 +430,59 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
 
           {/* foreign key toggle */}
 
-          <div className="row mb-3">
-            <div className="col-1">
-              <label className={`form-switch`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={isForeignKey}
-                  onChange={(e) => {
-                    setIsForeignKey(e.target.checked);
-                    setIsForeignKeyDraweOpen(e.target.checked);
-                  }}
-                  disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
-                />
-              </label>
-            </div>
-            <div className="col d-flex flex-column">
-              <p className="m-0 p-0 fw-500">Foreign Key relation</p>
-              {!isForeignKey ? (
+          {isEmpty(foreignKeyDetails?.column_names) ||
+          isEmpty(foreignKeyDetails?.referenced_column_names) ||
+          isEmpty(foreignKeyDetails?.referenced_table_name) ||
+          isEmpty(foreignKeyDetails?.on_delete) ||
+          isEmpty(foreignKeyDetails?.on_update) ? (
+            <div className="row mb-3">
+              <div className="col-1">
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={isForeignKey}
+                    onChange={(e) => {
+                      setIsForeignKey(e.target.checked);
+                      setIsForeignKeyDraweOpen(e.target.checked);
+                      setCreateForeignKeyInEdit(e.target.checked);
+                    }}
+                    disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
+                  />
+                </label>
+              </div>
+              <div className="col d-flex flex-column">
+                <p className="m-0 p-0 fw-500">Foreign Key relation</p>
                 <p className="fw-400 secondary-text">Add foreign key to check referral integrity</p>
-              ) : (
-                <div className="foreignKey-details" onClick={() => {}}>
-                  <span className="foreignKey-text">Name</span>
-                  <div className="foreign-key-relation">
-                    <ForeignKeyRelationIcon width="13" height="13" />
-                  </div>
-                  <span className="foreignKey-text">table2.column4</span>
-                  <div className="editForeignkey" onClick={() => {}}>
-                    <EditIcon width="17" height="18" />
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="foreignKey-details" onClick={() => {}}>
+              <span className="foreignKey-text">{foreignKeyDetails?.column_names?.value}</span>
+              <div className="foreign-key-relation">
+                <ForeignKeyRelationIcon width="13" height="13" />
+              </div>
+              <span className="foreignKey-text">{`${foreignKeyDetails?.referenced_table_name?.value}.${foreignKeyDetails?.referenced_column_names?.value}`}</span>
+              <div
+                className="editForeignkey"
+                onClick={() => {
+                  setIsForeignKeyDraweOpen(true);
+                }}
+              >
+                <EditIcon width="17" height="18" />
+              </div>
+            </div>
+          )}
 
           <Drawer
             isOpen={isForeignKeyDraweOpen}
             position="right"
-            drawerStyle={{ width: '500px' }}
+            drawerStyle={{ width: '560px' }}
             isForeignKeyRelation={true}
             onClose={() => {
               setIsForeignKeyDraweOpen(false);
               setIsForeignKey(false);
+              setCreateForeignKeyInEdit(false);
             }}
           >
             <ForeignKeyTableForm
@@ -312,8 +491,21 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
               onClose={() => {
                 setIsForeignKeyDraweOpen(false);
                 setIsForeignKey(false);
+                setCreateForeignKeyInEdit(false);
               }}
-              isEditColumn={true}
+              isEditColumn={isEditColumn}
+              isForeignKeyForColumnDrawer={true}
+              handleCreateForeignKey={handleCreateForeignKeyinEditMode}
+              setForeignKeyDetails={setForeignKeyDetails}
+              foreignKeyDetails={foreignKeyDetails}
+              organizationId={organizationId}
+              existingForeignKeyDetails={foreignKeys}
+              handleEditForeignKey={() =>
+                newChangesInForeignKey.length > 0 ? setOnChangeInForeignKey(true) : handleEditForeignKey()
+              }
+              createForeignKeyInEdit={createForeignKeyInEdit}
+              isForeignKeyDraweOpen={isForeignKeyDraweOpen}
+              onDeletePopup={() => setOnDelete(true)}
             />
           </Drawer>
 
@@ -416,6 +608,59 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns, rows }) => {
           shouldDisableCreateBtn={columnName === ''}
         />
       </div>
+      <ConfirmDialog
+        title={'Delete foreign key'}
+        show={onDelete}
+        message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
+        onConfirm={handleDeleteColumn}
+        onCancel={() => {
+          setOnDelete(false);
+        }}
+        darkMode={darkMode}
+        confirmButtonType="dangerPrimary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => {
+          setOnDelete(false);
+        }}
+        confirmButtonText={'Continue'}
+        cancelButtonText={'Cancel'}
+        // confirmIcon={<DeleteIcon />}
+        footerStyle={footerStyle}
+      />
+      <ConfirmDialog
+        title={'Change in foreign key relation'}
+        show={onChangeInForeignKey}
+        message={
+          <div>
+            <span>
+              Updating the foreign key relation will drop the current constraint and add the new one. This will also
+              replace the default value set in the target table columns with those of the source table. Read docs to
+              know more.
+            </span>
+            <p className="mt-3 mb-0">Are you sure you want to continue?</p>
+          </div>
+        }
+        onConfirm={() => {
+          handleEditForeignKey();
+          setOnChangeInForeignKey(false);
+        }}
+        onCancel={() => setOnChangeInForeignKey(false)}
+        darkMode={darkMode}
+        confirmButtonType="primary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => setOnChangeInForeignKey(false)}
+        confirmButtonText={'Continue'}
+        cancelButtonText={'Cancel'}
+        footerStyle={footerStyle}
+        // currentPrimaryKeyIcons={currentPrimaryKeyIcons}
+        // newPrimaryKeyIcons={newPrimaryKeyIcons}
+        isEditToolJetDbTable={true}
+        foreignKeyChanges={newChangesInForeignKey}
+        existingReferencedTableName={existingReferencedTableName}
+        existingReferencedColumnName={existingReferencedColumnName}
+        currentReferencedTableName={currentReferencedTableName}
+        currentReferencedColumnName={currentReferencedColumnName}
+      />
     </>
   );
 };

@@ -1,11 +1,13 @@
 import React from 'react';
 import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
+import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import Serial from '../Icons/Serial.svg';
 import ForeignKeyRelation from '../Icons/Fk-relation.svg';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
+import ArrowRight from '../Icons/ArrowRight.svg';
 import Tick from '../Icons/Tick.svg';
 import ForeignKeyActive from '../Icons/ForeignKeyActiveRelation.svg';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
@@ -22,6 +24,7 @@ function TableSchema({
   isActiveForeignKey = false,
   indexHover,
   editColumns,
+  foreignKeyDetails,
 }) {
   const { Option } = components;
 
@@ -102,6 +105,9 @@ function TableSchema({
   }
 
   const primaryKeyLength = countPrimaryKeyLength(columnDetails);
+  const indexOfActiveForeignKey = Object.values(columns).findIndex((obj) =>
+    Object.values(obj).includes(foreignKeyDetails?.column_names?.value)
+  );
 
   return (
     <div className="column-schema-container">
@@ -132,16 +138,30 @@ function TableSchema({
             </div>
 
             <ToolTip
-              message={isActiveForeignKey ? 'Foreign key relation' : 'No foreign key relation'}
+              message={
+                index == indexOfActiveForeignKey ? (
+                  <div>
+                    <span>Foreign key relation</span>
+                    <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                      <span>{foreignKeyDetails?.column_names?.value}</span>
+                      <ArrowRight />
+                      <span>{`${foreignKeyDetails?.referenced_table_name?.value}.${foreignKeyDetails?.referenced_column_names?.value}`}</span>
+                    </div>
+                  </div>
+                ) : (
+                  'No foreign key relation'
+                )
+              }
               placement="top"
               tooltipClassName="tootip-table"
             >
-              <div className="foreign-key-relation">
-                {isActiveForeignKey ? (
-                  <ForeignKeyActive width="13" height="13" />
-                ) : (
-                  <ForeignKeyRelation width="13" height="13" />
-                )}
+              <div
+                className={cx({
+                  'foreign-key-relation-active': index == indexOfActiveForeignKey,
+                  'foreign-key-relation': index != indexOfActiveForeignKey,
+                })}
+              >
+                <ForeignKeyRelation width="13" height="13" />
               </div>
             </ToolTip>
 

@@ -14,7 +14,7 @@ import './styles.scss';
 
 const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const isForeignKey = true;
+  const isForeignKey = false;
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {

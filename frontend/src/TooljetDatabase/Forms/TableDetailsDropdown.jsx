@@ -14,24 +14,22 @@ import tjdbDropdownStyles, {
 function TableDetailsDropdown({
   firstColumnName,
   secondColumnName,
-  firstColumnPlaceholder,
-  secondColumnPlaceholder,
   tableList = [],
   tableColumns = [],
   source = false,
   handleSelectColumn = () => {},
   showColumnInfo = false,
-  updateSelectedSourceColumns = () => {},
-  selectedSourceColumn = {},
   showRedirection = false,
   showDescription = false,
   isEditColumn,
+  isCreateColumn,
   defaultValue = [],
   onAdd = false,
+  actions,
+  setForeignKeyDetails,
+  foreignKeyDetails,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [column, setColumn] = useState({});
-  const [table, setTable] = useState({});
   return (
     <div className="mt-3">
       <div className="d-flex align-items-center justify-content-between">
@@ -50,12 +48,29 @@ function TableDetailsDropdown({
                   No table selected
                 </div>
               }
-              value={source ? tableList[0] : table}
+              value={
+                source
+                  ? tableList[0]
+                  : actions
+                  ? foreignKeyDetails?.on_update
+                  : foreignKeyDetails?.referenced_table_name
+              }
               foreignKeyAccess={true}
-              disabled={source || isEditColumn ? true : false}
+              disabled={source || isEditColumn || isCreateColumn ? true : false}
               onChange={(value) => {
-                setTable(value);
-                handleSelectColumn(value?.value);
+                if (actions) {
+                  setForeignKeyDetails((prevDetails) => ({
+                    ...prevDetails,
+                    on_update: value,
+                  }));
+                } else {
+                  setForeignKeyDetails((prevDetails) => ({
+                    ...prevDetails,
+                    referenced_table_name: value,
+                  }));
+                  // setTable(value);
+                  handleSelectColumn(value?.value);
+                }
               }}
               onAdd={onAdd}
               addBtnLabel={'Add new table'}
@@ -81,13 +96,33 @@ function TableDetailsDropdown({
                   {tableColumns.length === 0 ? 'There are no columns of the same datatype' : 'No table selected yet'}
                 </div>
               }
-              value={source && !isEditColumn ? selectedSourceColumn : source && isEditColumn ? defaultValue : column}
+              value={
+                source && (!isEditColumn || !isCreateColumn)
+                  ? foreignKeyDetails?.column_names
+                  : source && (isEditColumn || isCreateColumn)
+                  ? defaultValue
+                  : actions
+                  ? foreignKeyDetails?.on_delete
+                  : foreignKeyDetails?.referenced_column_names
+              }
               foreignKeyAccess={true}
               onChange={(value) => {
                 if (source) {
-                  updateSelectedSourceColumns(value);
+                  // updateSelectedSourceColumns(value);
+                  setForeignKeyDetails((prevDetails) => ({
+                    ...prevDetails,
+                    column_names: value,
+                  }));
+                } else if (actions) {
+                  setForeignKeyDetails((prevDetails) => ({
+                    ...prevDetails,
+                    on_delete: value,
+                  }));
                 } else {
-                  setColumn(value);
+                  setForeignKeyDetails((prevDetails) => ({
+                    ...prevDetails,
+                    referenced_column_names: value,
+                  }));
                 }
               }}
               onAdd={onAdd}
@@ -100,7 +135,7 @@ function TableDetailsDropdown({
               }
               showColumnInfo={showColumnInfo}
               showDescription={showDescription}
-              disabled={isEditColumn}
+              disabled={isEditColumn || isCreateColumn}
             />
           </div>
         </div>

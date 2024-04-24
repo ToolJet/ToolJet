@@ -12,11 +12,13 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
+import { Link } from 'react-router-dom';
+import { getPrivateRoute, redirectToDashboard } from '@/_helpers/routes';
 
 const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnDetails }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const isForeignKey = true;
-  const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
@@ -288,6 +290,13 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
     ([key, value]) => currentValue[key] === value
   );
 
+  console.log('first', foreignKeys);
+
+  const handleNavigateToReferencedtable = () => {
+    const data = { id: foreignKeys[0]?.referenced_table_id, table_name: foreignKeys[0]?.referenced_table_name };
+    localStorage.setItem('tableDetails', JSON.stringify(data));
+  };
+
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title">
@@ -296,9 +305,15 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
             Edit row
           </h3>
           <ToolTip message="Open referenced table" placement="right" tooltipClassName="tootip-table">
-            <div className="edit-row-tableName">
-              <span>tableName</span> <Maximize />
-            </div>
+            <Link
+              target="_blank"
+              to={getPrivateRoute('database')}
+              // state={{ id: 'e8d56181-5c36-4a71-8d29-71418c954deb', name: 'details' }}
+            >
+              <div className="edit-row-tableName" onClick={handleNavigateToReferencedtable}>
+                <span>tableName</span> <Maximize />
+              </div>
+            </Link>
           </ToolTip>
         </div>
       </div>

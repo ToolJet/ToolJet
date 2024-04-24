@@ -131,11 +131,18 @@ const Table = ({ collapseSidebar }) => {
   };
 
   const getForeignKeyDetails = () => {
-    const sortQuery = new PostgrestQueryBuilder();
+    // const sortQuery = new PostgrestQueryBuilder();
+    const selectQuery = new PostgrestQueryBuilder();
+    // const referencedColumns = ['sports'];
+    // referencedColumns.forEach((col) => {
+    //   selectQuery.select(col)
+    // })
+    //${selectQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}&limit=${limit}&offset=${pageRange - 1}
+    // const filteredValue = 'Cricket';
     const limit = pageSize;
     const pageRange = `${(pageCount - 1) * pageSize + 1}`;
     tooljetDatabaseService
-      .findOne(organizationId, tableId, `${sortQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`)
+      .findOne(organizationId, tableId, `${selectQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`)
       .then(({ headers, data = [], error }) => {
         if (error) {
           toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
@@ -1481,6 +1488,7 @@ const Table = ({ collapseSidebar }) => {
           setColumns={setColumns}
           onClose={() => setIsEditColumnDrawerOpen(false)}
           rows={rows}
+          isEditColumn={true}
         />
       </Drawer>
       <ConfirmDialog
