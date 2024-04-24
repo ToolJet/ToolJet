@@ -11,8 +11,8 @@ jobs:
 
     steps:
       - name: Export Dependabot alerts
-        uses: ambilykk/dependabot-alert-export@v1.0
-        with:        
+        uses: ShamKarthikS-Hexaware/dependabot-alert-export@v1.0
+        with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           org_name: 'ToolJet'
           repo_name: 'ToolJet'
