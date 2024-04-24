@@ -21,14 +21,17 @@ import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { ConfirmDialog } from '@/_components';
 import { deepEqual } from '../../_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
+import { useSuperStore } from '@/_stores/superStore';
+import { ModuleContext } from '@/_contexts/ModuleContext';
 
 class DataSourceManagerComponent extends React.Component {
+  static contextType = ModuleContext;
+
   constructor(props) {
     super(props);
 
@@ -38,7 +41,6 @@ class DataSourceManagerComponent extends React.Component {
     let options = {};
     let dataSourceMeta = {};
     let datasourceName = '';
-
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
@@ -197,7 +199,8 @@ class DataSourceManagerComponent extends React.Component {
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
-    const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
+    const appVersionId = useSuperStore.getState().modules[this.context].useAppVersionStore?.getState()
+      ?.editingVersion?.id;
     const currentEnvironment = this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
