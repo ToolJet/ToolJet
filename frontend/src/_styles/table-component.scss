@@ -1446,3 +1446,7 @@
     max-height: max-content !important;
   }
 }
+
+.table-column-type-input-element[type="number"] {
+  -moz-appearance: textfield !important;
+}
