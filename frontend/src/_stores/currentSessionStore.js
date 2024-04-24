@@ -14,7 +14,7 @@ export const useCurrentSessionStore = create(
       ...initialState,
       actions: {
         fetchOrganizations: async () => {
-          if (get().isGettingOrganizations) return;
+          if (get().isGettingOrganizations || get().organizations.length) return;
           try {
             set({ isGettingOrganizations: true });
             const response = await organizationService.getOrganizations();
