@@ -532,7 +532,8 @@
     flex-direction: column;
     flex: 1 0 0;
     border-radius: 6px;
-    span{
+
+    span {
       display: flex;
       padding: 10px 14px !important;
       align-items: center;
@@ -543,7 +544,7 @@
       &:hover {
         background-color: var(--slate3, #F1F3F5) !important;
       }
-  
+
       &:focus-visible {
         background: var(--slate1, #FBFCFD) !important;
         box-shadow: 0px 0px 0px 4px var(--slate6) !important;
@@ -872,7 +873,7 @@
       }
 
       .invalid-feedback {
-        height: 22px ;
+        height: 22px;
       }
 
       &:has(.invalid-feedback):hover {
@@ -962,11 +963,12 @@
           .react-select__value-container {
             display: flex;
             align-items: center;
+            padding: 0px;
           }
 
           .react-select__value-container--is-multi {
             flex-flow: wrap;
-            gap: 6px;
+            gap: 4px;
             max-height: 100%;
           }
         }

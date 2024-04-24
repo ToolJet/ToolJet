@@ -8,11 +8,6 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isArray, isString } from 'lodash';
 const { MenuList } = components;
 
-const SCALING_FACTOR = 0.6;
-const FONT_SIZE = 12;
-const PADDING = 12;
-const MARGIN = 10; // including left and right side
-
 export const CustomSelect = ({
   options,
   value,
@@ -29,7 +24,6 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
-  isMaxRowHeightAuto,
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null); // Ref for the input search box
@@ -86,7 +80,6 @@ export const CustomSelect = ({
       ...provided,
       padding: '2px 6px',
       background: 'var(--surfaces-surface-03)',
-      margin: '0 5px',
       borderRadius: '6px',
       color: textColor || 'var(--text-primary)',
       fontSize: '12px',
@@ -95,7 +88,6 @@ export const CustomSelect = ({
       ...provided,
       padding: '2px 6px',
       background: 'var(--surfaces-surface-03)',
-      margin: '0 5px',
       borderRadius: '6px',
       color: textColor || 'var(--text-primary)',
       fontSize: '12px',
@@ -141,23 +133,22 @@ export const CustomSelect = ({
     }
   }, [options, value, isMulti]);
 
-  const calculateIfPopoverRequired = (value, containerWidth) => {
-    let totalWidth = 0;
+  const selectContainerRef = useRef(null); // Ref for the input search box
+  const containerHeight = selectContainerRef.current?.clientHeight;
+  const valueContainerHeight = selectContainerRef.current?.querySelector(
+    '.react-select__value-container'
+  )?.clientHeight;
 
-    // // Calculate total width of all span elements
-    for (const option of value) {
-      const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + PADDING + MARGIN;
-      // Check if max row height is auto and then if any of the options width exceeds container width, return true
-      if (isMaxRowHeightAuto) {
-        if (valueWidth > containerWidth) {
-          return true;
-        }
-      } else {
-        totalWidth += valueWidth + 4; // Adding 4px to be safe
-      }
-    }
-    return totalWidth > containerWidth; // Return based on total width comparison
-  };
+  console.log(
+    'Selectheights',
+    {
+      containerHeight,
+      valueContainerHeight,
+      hasOverlay: valueContainerHeight > containerHeight,
+      _value,
+    },
+    selectContainerRef.current?.querySelector('.react-select__value-container')
+  );
 
   return (
     <OverlayTrigger
@@ -169,14 +160,10 @@ export const CustomSelect = ({
           <div></div>
         )
       }
-      trigger={
-        isMulti &&
-        !isFocused &&
-        calculateIfPopoverRequired(_value ? _value : defaultValue, containerWidth - 40) && ['hover', 'focus']
-      } //container width -24 -16 gives that select container size
+      trigger={isMulti && !isFocused && valueContainerHeight > containerHeight && ['hover', 'focus']} //container width -24 -16 gives that select container size
       rootClose={true}
     >
-      <div className="w-100 h-100 d-flex align-items-center">
+      <div className="w-100 h-100 d-flex align-items-center" ref={selectContainerRef}>
         <Select
           options={options}
           hasSearch={false}
@@ -291,7 +278,6 @@ const CustomMultiValueContainer = (props) => {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        gap: '4px',
       }}
     >
       {props.children}
