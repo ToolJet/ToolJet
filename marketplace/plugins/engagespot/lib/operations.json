@@ -1,0 +1,157 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Engagespot datasource",
+  "description": "A schema defining Engagespot datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "create_or_update_user",
+          "name": "Create Or Update User"
+        },
+        {
+          "value": "send_notification",
+          "name": "Send Notification"
+        },
+        {
+          "value": "generate_user_token",
+          "name": "Generate User Token"
+        }
+      ]
+    },
+    "create_or_update_user":{
+      "identifier": {
+        "label": "User Identifier",
+        "key": "identifier",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter a  unique identifier for user",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter User Identifier"
+      },
+      "profile":{
+        "label": "User Profile JSON",
+        "key": "profile",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Enter profile attribute JSON",
+        "width": "320px",
+        "height": "70px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter profile attribute"
+      }
+    },
+    "send_notification":{
+      "notification_title":{
+        "label": "Notification Title",
+        "key": "notification_title",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Enter the title of your notification",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Notification Title"
+      },
+      "message":{
+        "label": "Notification Message",
+        "key": "message",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Enter the message of your notification",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Notification Message"
+      },
+      "url":{
+        "label": "Notification URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Enter the Notification URL of your notification",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Notification URL"
+      },
+      "icon":{
+        "label": "Notification Icon",
+        "key": "icon",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Enter the Notification Icon of your notification",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Notification Icon"
+      },
+      "reciepient":{
+        "label": "Reciepient",
+        "key": "reciepient",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Unique identifier of your user to send this notification to",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "User Identifier"
+      },
+      "data":{
+        "label": "Notification Data",
+        "key": "data",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Enter the Notification Data of your notification",
+        "width": "320px",
+        "height": "90px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Notification Data"
+      },
+      "category":{
+        "label": "Notification Category",
+        "key": "category",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Enter the Notification Category of your notification",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Notification Category"
+      },
+      "override":{
+        "label": "Override",
+        "key": "override",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description":"Override delivery preferences configured in your account",
+        "width": "320px",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Notification Override"
+      }
+    },
+    "generate_user_token":{
+      "identifier": {
+        "label": "User Identifier",
+        "key": "identifier",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter a  unique identifier for user",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter User Identifier"
+      }
+    }
+  }
+}

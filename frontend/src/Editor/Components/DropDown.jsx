@@ -21,7 +21,6 @@ export const DropDown = function DropDown({
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
   const [showValidationError, setShowValidationError] = useState(false);
-
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
@@ -98,7 +97,7 @@ export const DropDown = function DropDown({
     setExposedItem(newValue, index);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, JSON.stringify(values)]);
+  }, [JSON.stringify(value), JSON.stringify(values)]);
 
   useEffect(() => {
     let index = null;
