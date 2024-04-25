@@ -100,6 +100,7 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
         backgroundColor: darkMode ? '' : '#F8FAFF',
         borderColor: '#3E63DD',
         boxShadow: '0px 0px 0px 2px #C6D4F9 ',
+        opacity: 0.5,
       },
       cursor: 'pointer',
     }),

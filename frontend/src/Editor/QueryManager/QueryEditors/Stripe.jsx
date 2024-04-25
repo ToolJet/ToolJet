@@ -6,6 +6,7 @@ import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { ToolTip } from '@/_components';
 
 const operationColorMapping = {
   get: 'azure',
@@ -35,7 +36,6 @@ class StripeComponent extends React.Component {
         params: queryParams,
       },
     });
-
     this.fetchOpenApiSpec();
   }
 
@@ -62,8 +62,8 @@ class StripeComponent extends React.Component {
   }
 
   changeOperation = (value) => {
-    const operation = value.split(',')[0];
-    const path = value.split(',')[1];
+    const operation = value.split('/', 2)[0];
+    const path = value.substring(value.indexOf('/'));
 
     this.setState(
       {
@@ -116,7 +116,8 @@ class StripeComponent extends React.Component {
 
   renderOperationOption = (props) => {
     const path = props.value;
-    const operation = props.label;
+    const operation = props.operation;
+
     if (path && operation) {
       return (
         <div className="row">
@@ -135,22 +136,44 @@ class StripeComponent extends React.Component {
   };
 
   computeOperationSelectionOptions = (operationOptions) => {
-    let options = [];
+    let pgs = []; // array of objects
     const paths = operationOptions?.paths;
 
     if (paths) {
       for (const path of Object.keys(paths)) {
         for (const operation of Object.keys(paths[path])) {
-          options.push({
-            value: `${operation},${path}`,
-            name: path,
-            operation: operation,
-          });
+          //path looks like get/v1/account/{id}
+          let interim = path.split('/')[2]; // gives category of path, here "account"
+          let found = pgs.findIndex((obj) => obj.label === interim); //returns index of object that has label key's value as interim
+
+          if (found >= 0) {
+            // object with label as interim exists in pgs
+            pgs[found]['options'].push({
+              value: `${operation}${path}`,
+              label: `${operation}${path}`,
+              name: path,
+              operation: operation,
+            });
+          } else {
+            // object with label as interim does not exists in pgs
+            // creating new object in pgs with label as interim
+            pgs.push({
+              label: interim,
+              options: [
+                {
+                  label: `${operation}${path}`,
+                  value: `${operation}${path}`,
+                  name: path,
+                  operation: operation,
+                },
+              ],
+            });
+          }
         }
       }
     }
 
-    return options;
+    return pgs;
   };
 
   render() {
@@ -173,7 +196,10 @@ class StripeComponent extends React.Component {
       }
     }
 
-    const currentValue = this.state.options?.operation + ',' + this.props.options?.path ?? null;
+    const currentValue = {
+      operation: this.state.options?.operation,
+      value: this.state.options?.operation + this.state.options?.path,
+    };
 
     return (
       <div>
@@ -215,19 +241,36 @@ class StripeComponent extends React.Component {
             {selectedOperation && (
               <div className={`row stripe-fields-row ${this.props.darkMode && 'theme-dark'}`}>
                 {pathParams.length > 0 && (
-                  <div className={`path-fields ${Object.keys(requestBody.schema.properties).length === 0 && 'd-none'}`}>
-                    <h5 className="text-heading">{this.props.t('globals.path', 'PATH')}</h5>
-                    <div className="input-group-parent-container">
+                  <div className={`path-fields d-flex ${pathParams.length === 0 && 'd-none'}`}>
+                    <h5 className="text-heading form-label">{this.props.t('globals.path', 'PATH')}</h5>
+                    <div className="flex-grow-1  input-group-parent-container">
                       {pathParams.map((param) => (
                         <div className="input-group-wrapper" key={param.name}>
                           <div className="input-group">
-                            <div className="col-auto field field-width-179">
-                              <input
-                                type="text"
-                                value={param.name}
-                                className="form-control border-0"
-                                placeholder="key"
-                              />
+                            <div className="col-auto d-flex field field-width-179 align-items-center">
+                              {param?.description ? (
+                                <ToolTip message={param.description}>
+                                  <u className="cursor-help">
+                                    <input
+                                      type="text"
+                                      value={param.name}
+                                      className="form-control"
+                                      placeholder="key"
+                                      disabled
+                                    />
+                                  </u>
+                                </ToolTip>
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={param.name}
+                                  className="form-control"
+                                  placeholder="key"
+                                  disabled
+                                />
+                              )}
+                              {param.required && <span className="text-danger fw-bold ">*</span>}
+                              <div className="p-2 text-muted ">{param.schema?.type?.substring(0, 3).toUpperCase()}</div>
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
@@ -266,24 +309,45 @@ class StripeComponent extends React.Component {
                     </div>
                   </div>
                 )}
-
                 {queryParams.length > 0 && (
-                  <div
-                    className={`query-fields ${Object.keys(requestBody.schema.properties).length === 0 && 'd-none'}`}
-                  >
-                    <h5 className="text-heading">{this.props.t('globals.query'.toUpperCase(), 'QUERY')}</h5>
-                    <div className="input-group-parent-container">
+                  <div className={`query-fields d-flex ${queryParams.length === 0 && 'd-none'}`}>
+                    <h5 className="text-heading form-label">{this.props.t('globals.query'.toUpperCase(), 'Query')}</h5>
+                    <div className="flex-grow-1 input-group-parent-container">
                       {queryParams.map((param) => (
                         <div className="input-group-wrapper" key={param.name}>
                           <div className="input-group">
-                            <div className="col-auto field field-width-179">
-                              <input
-                                type="text"
-                                value={param.name}
-                                className="form-control"
-                                placeholder="key"
-                                disabled
-                              />
+                            <div className="col-auto d-flex field field-width-179 align-items-center">
+                              {param?.description ? (
+                                <ToolTip message={param.description}>
+                                  <u className="cursor-help">
+                                    <input
+                                      type="text"
+                                      value={param.name}
+                                      className="form-control"
+                                      placeholder="key"
+                                      disabled
+                                    />
+                                  </u>
+                                </ToolTip>
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={param.name}
+                                  className="form-control"
+                                  placeholder="key"
+                                  disabled
+                                />
+                              )}
+                              {param.required && <span className="text-danger fw-bold">*</span>}
+                              <div className="p-2 text-muted ">
+                                {param?.schema?.anyOf
+                                  ? param?.schema?.anyOf.map((type, i) =>
+                                      i < param.schema?.anyOf.length - 1
+                                        ? type.type.substring(0, 3).toUpperCase() + '|'
+                                        : type.type.substring(0, 3).toUpperCase()
+                                    )
+                                  : param?.schema?.type?.substring(0, 3).toUpperCase()}
+                              </div>
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
@@ -338,9 +402,30 @@ class StripeComponent extends React.Component {
                       {Object.keys(requestBody.schema.properties).map((param) => (
                         <div className="input-group-wrapper" key={param.name}>
                           <div className="input-group">
-                            <div className="col-auto field field-width-179">
-                              <input type="text" value={param} className="form-control" placeholder="key" disabled />
+                            <div className="col-auto d-flex field field-width-179 align-items-center">
+                              {requestBody.schema.properties[param]?.['description'] ? (
+                                <ToolTip
+                                  message={DOMPurify.sanitize(requestBody.schema.properties[param]['description'])}
+                                >
+                                  <u className="cursor-help">
+                                    <input
+                                      type="text"
+                                      value={param}
+                                      className="form-control"
+                                      placeholder="key"
+                                      disabled
+                                    />
+                                  </u>
+                                </ToolTip>
+                              ) : (
+                                <input type="text" value={param} className="form-control" placeholder="key" disabled />
+                              )}
+                              {param.required && <span className="text-danger fw-bold">*</span>}
+                              <div className="p-2 text-muted ">
+                                {requestBody?.schema?.properties?.[param]?.['type']?.substring(0, 3).toUpperCase()}
+                              </div>
                             </div>
+
                             <div className="col field overflow-hidden">
                               <CodeHinter
                                 initialValue={this.state.options.params?.request[param] ?? ''}

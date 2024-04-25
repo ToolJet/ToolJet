@@ -58,7 +58,7 @@ export const SelectComponent = ({
 
     return option.label;
   };
-
+  //console.log(value)
   return (
     <Select
       {...restProps}
