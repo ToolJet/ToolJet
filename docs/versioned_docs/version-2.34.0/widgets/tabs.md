@@ -7,12 +7,6 @@ title: Tabs
 
 A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a [container](/docs/widgets/container/) that can have different widgets placed inside it.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/tabs/tabs.png" alt="ToolJet - Widget Reference - Tabs" />
-
-</div>
-
 :::caution Restricted components
 In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Tabs component using drag-and-drop functionality.
 
@@ -21,9 +15,7 @@ If the builder attempts to add any of the aforementioned components inside the T
 `<Restricted component> cannot be used as a child component within the Tabs.`
 :::
 
-## How To Use Tabs Widget
-
-<iframe height="500" src="https://www.youtube.com/embed/YmAhpO4Ku5w" title="Tabs Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Properties
 
@@ -51,12 +43,6 @@ You can specify the different color for each tab using the `backgroundColor` pro
  ]}}
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/tabs/tabsbg.png" alt="Tabs properties"/>
-
-</div>
-
 ### Default tab
 
 This property selects the container in the tab which matches the corresponding `id`. By default, the value is set to `0`.
@@ -69,70 +55,78 @@ It allows you to hide all the tab titles defined in the Tabs property above. It 
 
 This property is enabled by default. When enabled, only the active tab will be rendered and when disabled, all the tabs in the component will be rendered.
 
-## Events
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/tabs/events.png" alt="irtable record"/>
-
 </div>
 
-### On tab switch
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-This event is triggered when the tab is switched.
+## Events
+
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
+|:----------- |:----------- |
+| On tab switch | This event is triggered when the tab is switched. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Component Specific Actions (CSA)
+
+Following actions of Tabs component can be controlled using the component specific actions(CSA):
+
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:--------- |
+| setTab | Set the current tab of the tabs component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.tabs1.setTab(1)` |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:--------- |
+| currentTab | This variable holds the id of the current tab selected on the tabs component. | Access the value dynamically using JS: `{{components.tabs1.currentTab}}`|
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Actions
 
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
+| <div style={{ width:"100px"}}> Action   </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Properties </div> |
+|:----------- |:----------- |:------------------ |
 | setTab | Set current tab. | `id` |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Layout
 
-### Show on desktop
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+</div>
 
-### Show on mobile
-
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Styles
 
-### Highlight Color
-
-You can change the highlight color of the selected tab by entering the Hex color code or choosing a color of your choice from the color picker.
-
-### Tab width
-
-Tab width can be set as **auto** or **equally split**.
-
-### Visibility
-
-Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`.
-
-### Disable
-
-This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
+| <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> |
+|:----------- |:----------- |
+| Highlight color | You can change the highlight color of the selected tab by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Tab width | Tab width can be set as **auto** or **equally split**. |
+| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
-## Exposed Variables
-
-| Variables    | Description |
-| ----------- | ----------- |
-| currentTab | This variable holds the id of the current tab selected on the tabs component. You can access the value dynamically using JS: `{{components.tabs1.currentTab}}`|
-
-## Component specific actions (CSA)
-
-Following actions of Tabs component can be controlled using the component specific actions(CSA):
-
-| Actions     | Description |
-| ----------- | ----------- |
-| setTab | Set the current tab of the tabs component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.tabs1.setTab(1)` |
+</div>

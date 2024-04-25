@@ -460,19 +460,19 @@ If server-side search is enabled, `on search` event is fired after the content o
 
 ### Show download button
 
-The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
+The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the download button by clicking on the **Fx** button.
 
 ### Hide column selector button
 
-The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
+The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the column selector button by clicking on the **Fx** button.
 
 ### Show filter button
 
-The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
+The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the filter button by clicking on the **Fx** button.
 
 ### Show add new row button
 
-The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the Add new row button by clicking on the **Fx** button.
+The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the Add new row button by clicking on the **Fx** button.
 
 ### Show update buttons
 
