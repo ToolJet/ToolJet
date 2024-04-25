@@ -52,6 +52,7 @@ import { SessionService } from '@services/session.service';
       Credential,
       Plugin,
       Metadata,
+      DataSource,
     ]),
     CaslModule,
     MetaModule,

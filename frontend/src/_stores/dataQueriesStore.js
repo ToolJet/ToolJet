@@ -159,11 +159,12 @@ export function createDataQueriesStore(moduleName) {
             actions.setSelectedQuery(selectedQuery.id);
           },
           // createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
-          createDataQuery: (selectedDataSource, shouldRunQuery) => {
+          createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}) => {
             const appVersionId = useSuperStore.getState().modules[get().moduleName].useAppVersionStore.getState()
               .editingVersion?.id;
             const appId = useSuperStore.getState().modules[get().moduleName].useAppDataStore.getState().appId;
-            const { options, name } = getDefaultOptions(selectedDataSource, get().moduleName);
+            const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource, get().moduleName);
+            const options = { ...defaultOptions, ...customOptions };
             const kind = selectedDataSource.kind;
             const tempId = uuidv4();
             set({ creatingQueryInProcessId: tempId });
