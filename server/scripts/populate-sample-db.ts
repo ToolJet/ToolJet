@@ -41,11 +41,8 @@ export async function populateSampleData(envVars) {
 
     // Read files from the folder asynchronously
     const files = await fs.promises.readdir(folderPath);
-    console.log(files);
 
     for (const file of files) {
-      console.log(file);
-
       if (file.startsWith('.')) continue; // Skip hidden files
 
       const filePath = path.join(folderPath, file);
@@ -163,40 +160,3 @@ async function insertData(client: Client, tableName: string, data) {
 
   await client.query(insertQuery);
 }
-
-// PLEASE DON'T DELETE COMMENTED FUNCTION - this function is for creating json from excel sheet
-/*
-export async function populateJsonSampleDataToFiles() {
-  try {
-    fs.readdir(folderPath, async (err, files) => {
-      if (err) {
-        console.error('Error reading directory:', err);
-        return;
-      }
-      const filesToRead = fs.readdirSync(folderPath).filter((file) => !file.startsWith('.'));
-      for (const file of filesToRead) {
-        const workbook = xlsx.readFile(filePath);
-        for (const sheetName of workbook.SheetNames) {
-          const worksheet = workbook.Sheets[sheetName];
-          const data = xlsx.utils.sheet_to_csv(worksheet);
-          const parsedData = Papa.parse(data, { header: true, delimiter: ',', dynamicTyping: true });
-          const tableName = `${file}_${sheetName}`.replace(/[^\w]/g, '').replace(/\s+/g, '_').toLowerCase();
-          const jsonfolderPath = path.join(__dirname, '../src/assets/sample-data-json-files');
-          const jsonFilePath = path.join(jsonfolderPath, `${tableName}.json`);
-
-          // Write parsed data to a JSON file
-          fs.writeFile(jsonFilePath, JSON.stringify(parsedData.data), (err) => {
-            if (err) {
-              console.error('Error writing JSON file:', err);
-            } else {
-              console.log(`JSON file saved: ${jsonFilePath}`);
-            }
-          });
-        }
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
-}
-*/
