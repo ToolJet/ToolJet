@@ -726,7 +726,9 @@ export const Container = ({
               <div className="box-icon">
                 <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
               </div>
-              <div className={`title-text`}>Drag and drop a component</div>
+              <div className={`title-text`} data-cy="empty-editor-text">
+                Drag and drop a component
+              </div>
               <div className="title-desc">
                 Choose a component from the right side panel or use our pre-built templates to get started quickly!
               </div>
