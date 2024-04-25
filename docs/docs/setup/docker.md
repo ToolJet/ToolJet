@@ -135,7 +135,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
 ## Docker Backup
 
-To perform backup or restore. Follow the below steps:
+To perform backup or restore,  follow the below steps:
 
 1. Download the script:
 ```bash
