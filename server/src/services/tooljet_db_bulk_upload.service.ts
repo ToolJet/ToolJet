@@ -7,6 +7,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { isEmpty } from 'lodash';
 import { pipeline } from 'stream/promises';
 import { PassThrough } from 'stream';
+import { v4 as uuid } from 'uuid';
 
 const MAX_ROW_COUNT = 1000;
 
@@ -48,26 +49,41 @@ export class TooljetDbBulkUploadService {
       strictColumnHandling: true,
       discardUnmappedColumns: true,
     });
-    const primaryKeyColumns = internalTableColumnSchema
-      .filter((colDetails) => colDetails.keytype === 'PRIMARY KEY')
-      .map((colDetails) => colDetails.column_name);
+    const primaryKeyColumnSchema = internalTableColumnSchema.filter(
+      (colDetails) => colDetails.keytype === 'PRIMARY KEY'
+    );
     const primaryKeyValuesToUpsert = new Set();
     let rowsProcessed = 0;
 
     csvStream
       .on('headers', (headers) => this.validateHeadersAsColumnSubset(internalTableColumnSchema, headers, csvStream))
-      .transform((row) => this.validateAndParseColumnDataType(internalTableColumnSchema, row, rowsProcessed, csvStream))
+      .transform((row) =>
+        this.validateAndParseColumnDataType(
+          internalTableColumnSchema,
+          primaryKeyColumnSchema,
+          row,
+          rowsProcessed,
+          csvStream
+        )
+      )
       .on('data', (row) => {
         rowsProcessed++;
 
         const primaryKeyValuesIdentifier = Object.entries(row)
-          .filter(([columnName, _]) => primaryKeyColumns.includes(columnName))
-          .map(([_, value]) => value)
+          .map(([columnName, value]) => {
+            const primaryKey = this.findPrimaryKey(columnName, primaryKeyColumnSchema);
+
+            if (isEmpty(primaryKey)) return null;
+            if (isEmpty(value) && !isEmpty(primaryKey.column_default)) return uuid();
+            return value;
+          })
+          .filter((value) => value !== null)
           .join('-');
 
         if (primaryKeyValuesToUpsert.has(primaryKeyValuesIdentifier)) {
           throw new BadRequestException(`Duplicate primary key found on row[${rowsProcessed + 1}]`);
         }
+
         primaryKeyValuesToUpsert.add(primaryKeyValuesIdentifier);
         rowsToUpsert.push(row);
       })
@@ -100,38 +116,43 @@ export class TooljetDbBulkUploadService {
       .filter((colDetails) => colDetails.keytype === 'PRIMARY KEY')
       .map((colDetails) => colDetails.column_name);
 
-    const valueSets = [];
-    let placeholders = [];
-    let rowIndex = 1;
-    for (const row of rowsToUpsert) {
-      // Filter out null primary keys if they have default values set (e.g., auto-incremented IDs)
-      const rowColumns = Object.keys(row).filter((col) => row[col] !== null || !primaryKeyColumns.includes(col));
-      const rowData = rowColumns.map((col) => row[col]);
-      const rowPlaceholders = rowData.map((_, idx) => `$${rowIndex + idx}`).join(', ');
+    const allValueSets = [];
+    let allPlaceholders = [];
+    let parameterIndex = 1;
 
-      valueSets.push(`(${rowPlaceholders})`);
-      placeholders = placeholders.concat(rowData);
-      rowIndex += rowData.length;
+    for (const row of rowsToUpsert) {
+      const valueSet = [];
+      const currentPlaceholders = [];
+
+      for (const col of Object.keys(row)) {
+        if (row[col] === null && primaryKeyColumns.includes(col)) {
+          // Use DEFAULT when the value is null and it's a primary key column
+          valueSet.push('DEFAULT');
+        } else {
+          // Otherwise, use the placeholder and collect the value
+          valueSet.push(`$${parameterIndex++}`);
+          currentPlaceholders.push(row[col]);
+        }
+      }
+
+      allValueSets.push(`(${valueSet.join(', ')})`);
+      allPlaceholders = allPlaceholders.concat(currentPlaceholders);
     }
 
-    // Columns for insert should exclude primary keys that might be null
-    const insertColumns = Object.keys(rowsToUpsert[0]).filter(
-      (col) => rowsToUpsert.some((row) => row[col] !== null) || !primaryKeyColumns.includes(col)
-    );
+    const allColumns = Object.keys(rowsToUpsert[0]);
 
-    const onConflictUpdate = insertColumns
+    const onConflictUpdate = allColumns
       .filter((col) => !primaryKeyColumns.includes(col))
       .map((col) => `"${col}" = EXCLUDED."${col}"`)
       .join(', ');
 
-    const queryText = `
-    INSERT INTO "${internalTableId}" ("${insertColumns.join('", "')}")
-    VALUES ${valueSets.join(', ')}
-    ON CONFLICT (${primaryKeyColumns.join(', ')})
-    DO UPDATE SET ${onConflictUpdate}
-  `;
+    const queryText =
+      `INSERT INTO "${internalTableId}" ("${allColumns.join('", "')}") ` +
+      `VALUES ${allValueSets.join(', ')} ` +
+      `ON CONFLICT (${primaryKeyColumns.join(', ')}) ` +
+      `DO UPDATE SET ${onConflictUpdate};`;
 
-    await tooljetDbManager.query(queryText, placeholders);
+    await tooljetDbManager.query(queryText, allPlaceholders);
   }
 
   async validateHeadersAsColumnSubset(
@@ -150,8 +171,13 @@ export class TooljetDbBulkUploadService {
     }
   }
 
+  findPrimaryKey(columnName, primaryKeyColumns) {
+    return primaryKeyColumns.find((colDetails) => colDetails.column_name === columnName);
+  }
+
   validateAndParseColumnDataType(
     internalTableColumnSchema: TableColumnSchema[],
+    primaryKeyColumnSchema: TableColumnSchema[],
     row: unknown,
     rowsProcessed: number,
     csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
@@ -162,10 +188,9 @@ export class TooljetDbBulkUploadService {
       const columnsInCsv = Object.keys(row);
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
-        const { keytype, column_default } = columnDetails;
-        const primaryKeyHasNoDefaultValue = keytype === 'PRIMARY KEY' && isEmpty(column_default);
+        const primaryKey = this.findPrimaryKey(columnInCsv, primaryKeyColumnSchema);
 
-        if (primaryKeyHasNoDefaultValue && isEmpty(row[columnInCsv]))
+        if (!isEmpty(primaryKey) && isEmpty(primaryKey.column_default) && isEmpty(row[columnInCsv]))
           throw `Primary key required for column ${columnDetails.column_name}`;
 
         result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
