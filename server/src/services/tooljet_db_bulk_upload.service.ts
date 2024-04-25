@@ -33,7 +33,7 @@ export class TooljetDbBulkUploadService {
       table_name: tableName,
     });
 
-    return await this.bulkUploadCsv(internalTable.id, internalTableColumnSchema, fileBuffer);
+    return await this.bulkUploadCsv(internalTable.id, internalTableColumnSchema.columns, fileBuffer);
   }
 
   async bulkUploadCsv(
