@@ -29,6 +29,8 @@ export const CellEditMenu = ({
   referenceColumnName = '',
   isForeignKey = false,
   getForeignKeyDetails,
+  scrollEventForColumnValus,
+  loadingForeignKey,
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -157,6 +159,8 @@ export const CellEditMenu = ({
               // showRedirection={showRedirection}
               // showDescription={showDescription}
               getForeignKeyDetails={getForeignKeyDetails}
+              scrollEventForColumnValus={scrollEventForColumnValus}
+              loadingForeignKey={loadingForeignKey}
             />
           )}
           {/*  Boolean View */}

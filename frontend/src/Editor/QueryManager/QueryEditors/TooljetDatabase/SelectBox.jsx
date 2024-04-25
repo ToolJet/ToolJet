@@ -1,6 +1,6 @@
-import React, { isValidElement, useCallback, useState } from 'react';
+import React, { isValidElement, useCallback, useState, useRef } from 'react';
 import Select, { components } from 'react-select';
-import { isEmpty } from 'lodash';
+import { isEmpty, debounce } from 'lodash';
 import { authenticationService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Search from '@/_ui/Icon/solidIcons/Search';
@@ -30,7 +30,10 @@ function DataSourceSelect({
   foreignKeyAccessInRowForm,
   isCellEdit,
   getForeignKeyDetails,
+  scrollEventForColumnValus,
+  loadingForeignKey,
 }) {
+  const scrollContainerRef = useRef(null);
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
     closePopup && !isMulti && closePopup();
@@ -155,6 +158,9 @@ function DataSourceSelect({
                 showColumnInfo={showColumnInfo}
                 foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
                 getForeignKeyDetails={getForeignKeyDetails}
+                scrollContainerRef={scrollContainerRef}
+                scrollEventForColumnValus={scrollEventForColumnValus}
+                loadingForeignKey={loadingForeignKey}
               />
             ),
             [onAdd, addBtnLabel, emptyError]
@@ -299,6 +305,9 @@ const MenuList = ({
   options,
   foreignKeyAccessInRowForm,
   getForeignKeyDetails,
+  scrollContainerRef,
+  scrollEventForColumnValus,
+  loadingForeignKey,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -310,12 +319,15 @@ const MenuList = ({
   menuListStyles.padding = '4px';
 
   const handleScroll = (event) => {
-    // Your scroll event handling logic here
-    console.log('Scrolled!', event.target.scrollTop);
-    // if (event.target.scrollTop > 300) {
-    //   getForeignKeyDetails();
-    // }
+    const target = scrollContainerRef?.current;
+    let scrollTop = target?.scrollTop;
+    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+    if (scrollPercentage > 98 && !loadingForeignKey) {
+      getForeignKeyDetails(1);
+    }
   };
+
+  scrollContainerRef?.current?.addEventListener('scroll', handleScroll);
 
   return (
     <>
@@ -323,7 +335,11 @@ const MenuList = ({
       {isEmpty(options) && emptyError ? (
         emptyError
       ) : (
-        <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu" onScroll={(e) => handleScroll(e)}>
+        <div
+          ref={scrollEventForColumnValus ? scrollContainerRef : innerRef}
+          style={menuListStyles}
+          id="query-ds-select-menu"
+        >
           {children}
         </div>
       )}

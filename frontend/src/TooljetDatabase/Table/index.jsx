@@ -54,7 +54,8 @@ const Table = ({ collapseSidebar }) => {
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
-  const [loadingColumns, setLoadingColumns] = useState(false);
+  const [loadingForeignKey, setLoadingForeignkey] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(1);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
@@ -131,34 +132,33 @@ const Table = ({ collapseSidebar }) => {
     return;
   };
 
-  const getForeignKeyDetails = () => {
-    // const sortQuery = new PostgrestQueryBuilder();
-    setLoadingColumns(true);
+  const getForeignKeyDetails = (add) => {
+    setLoadingForeignkey(true);
     const selectQuery = new PostgrestQueryBuilder();
     const referencedColumns = foreignKeys[0]?.referenced_column_names;
     referencedColumns?.forEach((col) => {
       selectQuery.select(col);
     });
-    //${selectQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}&limit=${limit}&offset=${pageRange - 1}
-    // const filteredValue = 'Cricket';
     const limit = 15;
-    const pageRange = `${(pageCount - 1) * pageSize + 1}`;
+    const offset = (totalRecords - 1) * limit;
+    // const pageRange = `${(pageCount - 1) * pageSize + 1}`;
     tooljetDatabaseService
       .findOne(
         organizationId,
         foreignKeys[0]?.referenced_table_id,
-        `${selectQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`
+        `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
       )
       .then(({ headers, data = [], error }) => {
         if (error) {
           toast.error(error?.message ?? `Failed to fetch table "${foreignKeys[0].referenced_table_name}"`);
-          setLoadingColumns(false);
+          setLoadingForeignkey(false);
           return;
         }
 
         if (Array.isArray(data) && data?.length > 0) {
-          setReferencedColumnDetails(data);
-          setLoadingColumns(false);
+          setTotalRecords((prevTotalRecords) => prevTotalRecords + add);
+          setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+          setLoadingForeignkey(false);
         }
       });
   };
@@ -820,7 +820,7 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setDefaultValue(isCellValueDefault);
       setEditPopover(false);
-      getForeignKeyDetails();
+      getForeignKeyDetails(1);
     }
   };
 
@@ -1139,7 +1139,7 @@ const Table = ({ collapseSidebar }) => {
                             onClick={() => {
                               replaceToggleSelectedRow(row.id);
                               setTimeout(() => setIsEditRowDrawerOpen(true), 100);
-                              getForeignKeyDetails();
+                              getForeignKeyDetails(0);
                             }}
                             className="tjdb-checkbox-cell"
                             data-cy="edit-cell-expand"
@@ -1246,6 +1246,8 @@ const Table = ({ collapseSidebar }) => {
                                       isForeignKey={isForeignKey}
                                       darkMode={darkMode}
                                       getForeignKeyDetails={getForeignKeyDetails}
+                                      scrollEventForColumnValus={true}
+                                      loadingForeignKey={loadingForeignKey}
                                     >
                                       <div
                                         className="input-cell-parent"
@@ -1418,7 +1420,7 @@ const Table = ({ collapseSidebar }) => {
                 <div
                   onClick={() => {
                     resetCellAndRowSelection();
-                    getForeignKeyDetails();
+                    getForeignKeyDetails(0);
                     setIsCreateRowDrawerOpen(true);
                   }}
                   className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
