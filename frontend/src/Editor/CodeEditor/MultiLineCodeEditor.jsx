@@ -183,7 +183,7 @@ const MultiLineCodeEditor = (props) => {
           const fromIndex = from - wordToReplace.length;
 
           const pickedCompletionConfig = {
-            from: fromIndex,
+            from: fromIndex === 1 ? 0 : fromIndex,
             to: to,
             insert: completion.label,
           };
