@@ -116,8 +116,6 @@ export class OrganizationsService {
         manager
       );
 
-      await this.createSampleDB(organization.id, manager);
-
       if (user) {
         await this.organizationUserService.create(user, organization, false, manager);
 
