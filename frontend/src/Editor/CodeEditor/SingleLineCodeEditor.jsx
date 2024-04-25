@@ -54,7 +54,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, portalProps?.isOpen, cursorInsidePreview]);
-
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
   return (
@@ -77,6 +76,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         type={restProps?.type}
+        isPortalOpen={restProps?.portalProps?.isOpen}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
