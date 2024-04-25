@@ -67,6 +67,7 @@ class HomePageComponent extends React.Component {
       showTemplateLibraryModal: false,
       app: {},
       showCreateAppModal: false,
+      showCreateModuleModal: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -144,11 +145,11 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = async (appName) => {
+  createApp = async (appName, type) => {
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
-      const data = await appsService.createApp({ icon: sample(iconList), name: appName });
+      const data = await appsService.createApp({ icon: sample(iconList), name: appName, type });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       toast.success('App created successfully!');
@@ -559,11 +560,11 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppModal = () => {
-    this.setState({ showCreateAppModal: true });
+    this.setState({ showCreateAppModal: true, showCreateModuleModal: true });
   };
 
   closeCreateAppModal = () => {
-    this.setState({ showCreateAppModal: false });
+    this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
   };
 
   render() {
@@ -587,6 +588,7 @@ class HomePageComponent extends React.Component {
       appToBeDeleted,
       app,
       showCreateAppModal,
+      showCreateModuleModal,
       showImportAppModal,
       fileContent,
       fileName,
@@ -596,13 +598,13 @@ class HomePageComponent extends React.Component {
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
-          {showCreateAppModal && (
+          {(showCreateAppModal || showCreateModuleModal) && (
             <AppModal
               closeModal={this.closeCreateAppModal}
-              processApp={this.createApp}
+              processApp={(name) => this.createApp(name, showCreateAppModal ? 'front-end' : 'module')}
               show={this.openCreateAppModal}
-              title={'Create app'}
-              actionButton={'+ Create app'}
+              title={showCreateAppModal ? 'Create app' : 'Create module'}
+              actionButton={showCreateAppModal ? '+ Create app' : '+ Create module'}
               actionLoadingButton={'Creating'}
             />
           )}

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo, useContext } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -17,11 +17,13 @@ import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useSuperStore } from '@/_stores/superStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { useSampleDataSource } from '@/_stores/dataSourcesStore';
+import { ModuleContext } from '../_contexts/ModuleContext';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -48,12 +50,12 @@ export const Container = ({
   zoomLevel,
   removeComponent,
   deviceWindowWidth,
-  darkMode,
   socket,
   handleUndo,
   handleRedo,
   sideBarDebugger,
   currentPageId,
+  darkMode,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
@@ -61,6 +63,9 @@ export const Container = ({
   const { setPreviewData } = useQueryPanelActions();
   const sampleDataSource = useSampleDataSource();
   const firstUpdate = useRef(true);
+
+  const moduleName = useContext(ModuleContext);
+
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
@@ -350,7 +355,8 @@ export const Container = ({
 
       let newBoxes = { ...boxes };
 
-      for (const selectedComponent of useEditorStore.getState().selectedComponents) {
+      for (const selectedComponent of useSuperStore.getState().modules[moduleName].useEditorStore.getState()
+        .selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
           if (draft[selectedComponent.id]) {
             const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;

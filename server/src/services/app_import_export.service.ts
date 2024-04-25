@@ -50,7 +50,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -60,7 +60,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
-const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
+const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
 
 @Injectable()
 export class AppImportExportService {
@@ -1226,6 +1226,7 @@ export class AppImportExportService {
             canvasMaxHeight: 2400,
             canvasBackgroundColor: '#edeff5',
             backgroundFxQuery: '',
+            appMode: 'auto',
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
