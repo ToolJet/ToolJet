@@ -228,11 +228,6 @@
     }
 }
 
-.focus-box-shadow-active {
-    .cm-editor {
-        // box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-    }
-}
 
 .codehinter-multi-line-input {
 
@@ -304,7 +299,6 @@
 .cm-scroller {
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    // padding: 2px !important;
     overscroll-behavior: contain;
 }
 
