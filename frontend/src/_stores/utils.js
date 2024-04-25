@@ -445,7 +445,7 @@ export function findAllEntityReferences(node, allRefs) {
         typeof value === 'string' &&
         value.includes('{{') &&
         value.includes('}}') &&
-        (value.startsWith('{{components') || value.startsWith('queries'))
+        (value.startsWith('{{components') || value.startsWith('{{queries'))
       ) {
         const referenceExists = value;
 
