@@ -149,7 +149,7 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
 
   const previewContent = !withValidation ? resolvedValue : computeCoersionPreview(resolvedValue, coersionData);
 
-  const cls = error ? 'bg-red-lt' : 'bg-green-lt';
+  const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 
   return (
     <div class={`d-flex flex-column align-content-between flex-wrap`}>
@@ -178,7 +178,12 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
       bsPrefix="codehinter-preview-popover"
       id="popover-basic"
       className={`${darkMode && 'dark-theme'}`}
-      style={{ width: '250px', maxWidth: '350px', marginRight: 10, zIndex: 1200 }}
+      style={{
+        width: '250px',
+        maxWidth: '350px',
+        marginRight: 2,
+        zIndex: restProps?.type == 'fxEditor' ? 1400 : 1200,
+      }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
     >
@@ -186,6 +191,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
         style={{
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
           padding: isEmpty(validationSchema) && '0px',
+          boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
         }}
       >
         <div>
@@ -353,6 +359,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           fontSize: '12px',
           overflowY: 'auto',
           padding: '0',
+          margin: '0',
         }}
       >
         {prettyPrintedJson?.startsWith('{{') && prettyPrintedJson?.endsWith('{{')
