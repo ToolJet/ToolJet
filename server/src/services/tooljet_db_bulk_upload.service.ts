@@ -116,6 +116,10 @@ export class TooljetDbBulkUploadService {
       .filter((colDetails) => colDetails.keytype === 'PRIMARY KEY')
       .map((colDetails) => colDetails.column_name);
 
+    const serialTypeColumns = internalTableColumnSchema
+      .filter((colDetails) => colDetails.data_type === 'integer' && /^nextval\(/.test(colDetails.column_default))
+      .map((colDetails) => colDetails.column_name);
+
     const allValueSets = [];
     let allPlaceholders = [];
     let parameterIndex = 1;
@@ -125,11 +129,9 @@ export class TooljetDbBulkUploadService {
       const currentPlaceholders = [];
 
       for (const col of Object.keys(row)) {
-        if (row[col] === null && primaryKeyColumns.includes(col)) {
-          // Use DEFAULT when the value is null and it's a primary key column
+        if (serialTypeColumns.includes(col) || (row[col] === null && primaryKeyColumns.includes(col))) {
           valueSet.push('DEFAULT');
         } else {
-          // Otherwise, use the placeholder and collect the value
           valueSet.push(`$${parameterIndex++}`);
           currentPlaceholders.push(row[col]);
         }
