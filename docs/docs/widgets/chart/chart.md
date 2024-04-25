@@ -1,6 +1,6 @@
 ---
 id: chart-properties
-title: Chart Properties
+title: Properties
 ---
 # Chart
 

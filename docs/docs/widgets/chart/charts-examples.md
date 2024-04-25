@@ -59,6 +59,66 @@ Displays trends and patterns in data over time.
 
 </div>
 
+### Line Chart With Annotations
+Displays trends and patterns in data over time with annotations.
+
+```bash
+{
+  "data": [
+    {
+      "x": ["Jan", "Feb", "Mar"],
+      "y": [100, 80, 40],
+      "type": "scatter",
+      "mode": "lines+markers"
+    }
+  ],
+  "layout": {
+    "title": "Monthly Performance",
+    "annotations": [
+      {
+        "x": "Jan",
+        "y": 100,
+        "xref": "x",
+        "yref": "y",
+        "text": "January: 100",
+        "showarrow": true,
+        "arrowhead": 2,
+        "ax": 0,
+        "ay": -30
+      },
+      {
+        "x": "Feb",
+        "y": 80,
+        "xref": "x",
+        "yref": "y",
+        "text": "February: 80",
+        "showarrow": true,
+        "arrowhead": 2,
+        "ax": 0,
+        "ay": -30
+      },
+      {
+        "x": "Mar",
+        "y": 40,
+        "xref": "x",
+        "yref": "y",
+        "text": "March: 40",
+        "showarrow": true,
+        "arrowhead": 2,
+        "ax": 0,
+        "ay": -30
+      }
+    ]
+  }
+}
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/plotly/line-chart-with-annotations.png" alt="ToolJet - Widget Reference - Line Chart With Annotations" />
+
+</div>
+
 ### Bar
 Compares categories of data or visualizes changes in a variable across different groups.
 

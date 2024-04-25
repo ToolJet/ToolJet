@@ -90,8 +90,8 @@ const sidebars = {
                   'type': 'category',
                   'label': 'Chart',
                   'items': [
-                    'widgets/chart-properties',
-                    'widgets/chart-examples'
+                    'widgets/chart/chart-properties',
+                    'widgets/chart/chart-examples'
                   ]
                 },
                 'widgets/checkbox',
@@ -128,7 +128,15 @@ const sidebars = {
                 'widgets/statistics',
                 'widgets/steps',
                 'widgets/svg-image',
-                'widgets/table',
+                {
+                  'type': 'category',
+                  'label': 'Table',
+                  'items': [
+                    'widgets/table/table-properties',
+                    'widgets/table/table-columns',
+                    'widgets/table/table-csa-and-variables',
+                  ]
+                },
                 'widgets/tabs',
                 'widgets/tags',
                 'widgets/text-input',
