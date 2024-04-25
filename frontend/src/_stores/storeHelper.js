@@ -37,7 +37,7 @@ export const getDefaultOptions = (source, moduleName) => {
     }
   }
 
-  return { options, name: computeQueryName(source.kind, moduleName) };
+  return { options, name: computeQueryName(source, moduleName) };
 };
 
 const computeQueryName = (source, moduleName) => {
