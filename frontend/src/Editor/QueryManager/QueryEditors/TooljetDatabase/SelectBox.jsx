@@ -1,7 +1,9 @@
-import React, { isValidElement, useCallback, useState, useRef } from 'react';
+import React, { isValidElement, useCallback, useState, useRef, useEffect } from 'react';
 import Select, { components } from 'react-select';
 import { isEmpty, debounce } from 'lodash';
-import { authenticationService } from '@/_services';
+import { authenticationService, tooljetDatabaseService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
@@ -29,11 +31,15 @@ function DataSourceSelect({
   showDescription = false,
   foreignKeyAccessInRowForm,
   isCellEdit,
-  getForeignKeyDetails,
   scrollEventForColumnValus,
-  loadingForeignKey,
+  organizationId,
+  foreignKeys,
+  setReferencedColumnDetails,
 }) {
+  const [loadingForeignKey, setLoadingForeignkey] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(1);
   const scrollContainerRef = useRef(null);
+
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
     closePopup && !isMulti && closePopup();
@@ -46,6 +52,55 @@ function DataSourceSelect({
       optionsCount += item.options.length;
     }
   });
+
+  const getForeignKeyDetails = (add) => {
+    setLoadingForeignkey(true);
+    const selectQuery = new PostgrestQueryBuilder();
+    const referencedColumns = foreignKeys[0]?.referenced_column_names;
+    referencedColumns?.forEach((col) => {
+      selectQuery.select(col);
+    });
+    const limit = 15;
+    const offset = (totalRecords - 1) * limit;
+    tooljetDatabaseService
+      .findOne(
+        organizationId,
+        foreignKeys[0]?.referenced_table_id,
+        `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
+      )
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Failed to fetch table "${foreignKeys[0].referenced_table_name}"`);
+          setLoadingForeignkey(false);
+          return;
+        }
+
+        if (Array.isArray(data) && data?.length > 0) {
+          setTotalRecords((prevTotalRecords) => prevTotalRecords + add);
+          setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+          setLoadingForeignkey(false);
+          // console.log('first', 1);
+        }
+      });
+  };
+
+  const handleScroll = (event) => {
+    const target = scrollContainerRef?.current;
+    let scrollTop = target?.scrollTop;
+    console.log('scroll', loadingForeignKey);
+    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+
+    if (scrollPercentage > 98 && !loadingForeignKey) {
+      getForeignKeyDetails(1);
+    }
+  };
+  // scrollContainerRef?.current?.addEventListener('scroll', handleScroll);
+
+  useEffect(() => {
+    getForeignKeyDetails(1);
+  }, []);
+
+  console.log('select', loadingForeignKey);
 
   return (
     <div>
@@ -63,9 +118,11 @@ function DataSourceSelect({
         }}
         ref={selectRef}
         controlShouldRenderValue={false}
+        onMenuScroll={handleScroll}
         menuPlacement="auto"
         menuIsOpen
         hideSelectedOptions={false}
+        // onMenuOpen={handleSelectOpen}
         components={{
           // ...(isMulti && {
           Option: ({ children, ...props }) => {
@@ -157,10 +214,10 @@ function DataSourceSelect({
                 columnInfoForTable={columnInfoForTable}
                 showColumnInfo={showColumnInfo}
                 foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                getForeignKeyDetails={getForeignKeyDetails}
-                scrollContainerRef={scrollContainerRef}
                 scrollEventForColumnValus={scrollEventForColumnValus}
+                getForeignKeyDetails={getForeignKeyDetails}
                 loadingForeignKey={loadingForeignKey}
+                scrollContainerRef={scrollContainerRef}
               />
             ),
             [onAdd, addBtnLabel, emptyError]
@@ -304,30 +361,20 @@ const MenuList = ({
   showColumnInfo,
   options,
   foreignKeyAccessInRowForm,
-  getForeignKeyDetails,
-  scrollContainerRef,
   scrollEventForColumnValus,
+  getForeignKeyDetails,
   loadingForeignKey,
+  scrollContainerRef,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
+
   const { admin } = authenticationService.currentSessionValue;
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
-
-  const handleScroll = (event) => {
-    const target = scrollContainerRef?.current;
-    let scrollTop = target?.scrollTop;
-    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
-    if (scrollPercentage > 98 && !loadingForeignKey) {
-      getForeignKeyDetails(1);
-    }
-  };
-
-  scrollContainerRef?.current?.addEventListener('scroll', handleScroll);
 
   return (
     <>

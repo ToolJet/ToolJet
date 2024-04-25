@@ -54,8 +54,7 @@ const Table = ({ collapseSidebar }) => {
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
-  const [loadingForeignKey, setLoadingForeignkey] = useState(false);
-  const [totalRecords, setTotalRecords] = useState(1);
+
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
@@ -130,37 +129,6 @@ const Table = ({ collapseSidebar }) => {
     new Array(totalRowsCount).fill(true).forEach((value, index) => (newSelectedRowIds[index] = value));
     setSelectedRowIds(newSelectedRowIds);
     return;
-  };
-
-  const getForeignKeyDetails = (add) => {
-    setLoadingForeignkey(true);
-    const selectQuery = new PostgrestQueryBuilder();
-    const referencedColumns = foreignKeys[0]?.referenced_column_names;
-    referencedColumns?.forEach((col) => {
-      selectQuery.select(col);
-    });
-    const limit = 15;
-    const offset = (totalRecords - 1) * limit;
-    // const pageRange = `${(pageCount - 1) * pageSize + 1}`;
-    tooljetDatabaseService
-      .findOne(
-        organizationId,
-        foreignKeys[0]?.referenced_table_id,
-        `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
-      )
-      .then(({ headers, data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Failed to fetch table "${foreignKeys[0].referenced_table_name}"`);
-          setLoadingForeignkey(false);
-          return;
-        }
-
-        if (Array.isArray(data) && data?.length > 0) {
-          setTotalRecords((prevTotalRecords) => prevTotalRecords + add);
-          setReferencedColumnDetails((prevData) => [...prevData, ...data]);
-          setLoadingForeignkey(false);
-        }
-      });
   };
 
   const toggleRowSelection = (uniqueRowId) => {
@@ -820,7 +788,7 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setDefaultValue(isCellValueDefault);
       setEditPopover(false);
-      getForeignKeyDetails(1);
+      // getForeignKeyDetails(1);
     }
   };
 
@@ -878,10 +846,10 @@ const Table = ({ collapseSidebar }) => {
           </div>
           <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
             <div>
-              <span style={{ marginRight: isForeignKey ? '3px' : '' }}>
+              <span style={{ marginRight: foreignKeys[0]?.column_names?.length > 0 ? '3px' : '' }}>
                 <SolidIcon name="primarykey" />
               </span>
-              {isForeignKey === true && <ForeignKeyIndicator />}
+              {foreignKeys[0]?.column_names?.length > 0 && <ForeignKeyIndicator />}
             </div>
           </ToolTip>
         </div>
@@ -895,7 +863,7 @@ const Table = ({ collapseSidebar }) => {
           {column.render('Header')}
         </div>
 
-        {isForeignKey === true && (
+        {foreignKeys[0]?.column_names?.length > 0 && (
           <span style={{ marginRight: '3px' }}>
             <ForeignKeyIndicator />
           </span>
@@ -930,17 +898,6 @@ const Table = ({ collapseSidebar }) => {
     marginTop: '0px',
   };
 
-  // primary key column should come in front row of table
-  // headerGroups.forEach((item) => {
-  //   item.headers.sort((a, b) => {
-  //     if (a.constraints_type && a.constraints_type.is_primary_key) return -1;
-  //     if (b.constraints_type && b.constraints_type.is_primary_key) return 1;
-  //     return 0;
-  //   });
-  // });
-
-  // const isForeignKey = true;
-
   return (
     <div>
       <TjdbTableHeader
@@ -958,7 +915,7 @@ const Table = ({ collapseSidebar }) => {
         setFilterEnable={setFilterEnable}
         filterEnable={filterEnable}
         referencedColumnDetails={referencedColumnDetails}
-        getForeignKeyDetails={getForeignKeyDetails}
+        // getForeignKeyDetails={getForeignKeyDetails}
       />
       <div
         style={{
@@ -1139,7 +1096,7 @@ const Table = ({ collapseSidebar }) => {
                             onClick={() => {
                               replaceToggleSelectedRow(row.id);
                               setTimeout(() => setIsEditRowDrawerOpen(true), 100);
-                              getForeignKeyDetails(0);
+                              // getForeignKeyDetails(0);
                             }}
                             className="tjdb-checkbox-cell"
                             data-cy="edit-cell-expand"
@@ -1243,11 +1200,12 @@ const Table = ({ collapseSidebar }) => {
                                       referenceColumnName={
                                         foreignKeys.length > 0 && foreignKeys[0]?.referenced_column_names[0]
                                       }
-                                      isForeignKey={isForeignKey}
+                                      isForeignKey={foreignKeys[0]?.column_names?.length > 0}
                                       darkMode={darkMode}
-                                      getForeignKeyDetails={getForeignKeyDetails}
                                       scrollEventForColumnValus={true}
-                                      loadingForeignKey={loadingForeignKey}
+                                      organizationId={organizationId}
+                                      foreignKeys={foreignKeys}
+                                      setReferencedColumnDetails={setReferencedColumnDetails}
                                     >
                                       <div
                                         className="input-cell-parent"
@@ -1301,7 +1259,9 @@ const Table = ({ collapseSidebar }) => {
                                               placement="top"
                                               tooltipClassName="tootip-table"
                                             >
-                                              <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                              <div className="cursor-pointer">
+                                                {foreignKeys[0]?.column_names?.length > 0 && <Maximize />}
+                                              </div>
                                             </ToolTip>
                                           </div>
                                         ) : (
@@ -1331,7 +1291,9 @@ const Table = ({ collapseSidebar }) => {
                                               placement="top"
                                               tooltipClassName="tootip-table"
                                             >
-                                              <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                              <div className="cursor-pointer">
+                                                {foreignKeys[0]?.column_names?.length > 0 && <Maximize />}
+                                              </div>
                                             </ToolTip>
                                           </div>
                                         )}
@@ -1377,7 +1339,7 @@ const Table = ({ collapseSidebar }) => {
                                         // </div>
                                         <div
                                           className={cx({
-                                            'foreignkey-cell': isForeignKey,
+                                            'foreignkey-cell': foreignKeys[0]?.column_names?.length > 0,
                                           })}
                                         >
                                           <div className="cell-text">
@@ -1388,7 +1350,9 @@ const Table = ({ collapseSidebar }) => {
                                             placement="top"
                                             tooltipClassName="tootip-table"
                                           >
-                                            <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                            <div className="cursor-pointer">
+                                              {foreignKeys[0]?.column_names?.length > 0 && <Maximize />}
+                                            </div>
                                           </ToolTip>
                                         </div>
                                       )}
@@ -1420,7 +1384,7 @@ const Table = ({ collapseSidebar }) => {
                 <div
                   onClick={() => {
                     resetCellAndRowSelection();
-                    getForeignKeyDetails(0);
+                    // getForeignKeyDetails(0);
                     setIsCreateRowDrawerOpen(true);
                   }}
                   className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}

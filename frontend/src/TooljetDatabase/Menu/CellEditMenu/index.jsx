@@ -28,9 +28,10 @@ export const CellEditMenu = ({
   referencedColumnDetails = [],
   referenceColumnName = '',
   isForeignKey = false,
-  getForeignKeyDetails,
   scrollEventForColumnValus,
-  loadingForeignKey,
+  organizationId,
+  foreignKeys,
+  setReferencedColumnDetails,
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -145,10 +146,6 @@ export const CellEditMenu = ({
                 </div>
               }
               value={referencedColumnDetails[0]}
-              // disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
-              // topPlaceHolder={
-              //   isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
-              // }
               // onChange={(value) => {
               //   setTable(value);
               //   handleSelectColumn(value?.value);
@@ -156,11 +153,10 @@ export const CellEditMenu = ({
               onAdd={true}
               addBtnLabel={'Open referenced table'}
               isCellEdit={true}
-              // showRedirection={showRedirection}
-              // showDescription={showDescription}
-              getForeignKeyDetails={getForeignKeyDetails}
               scrollEventForColumnValus={scrollEventForColumnValus}
-              loadingForeignKey={loadingForeignKey}
+              organizationId={organizationId}
+              foreignKeys={foreignKeys}
+              setReferencedColumnDetails={setReferencedColumnDetails}
             />
           )}
           {/*  Boolean View */}
