@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
@@ -189,10 +189,28 @@ export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion
     resetDeleteModal,
   };
 
+  /* Force close is not working with usual blur function of react-select */
+  const clickedOutsideRef = useRef(null);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (clickedOutsideRef.current && !clickedOutsideRef.current.contains(event.target)) {
+        if (!forceMenuOpen) {
+          setForceMenuOpen(false);
+        }
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clickedOutsideRef]);
+
   return (
     <div
       className="d-flex align-items-center p-0"
       style={{ margin: isViewer && currentLayout === 'mobile' ? '0px' : '0 24px' }}
+      ref={clickedOutsideRef}
     >
       <div
         className={cx('d-flex version-manager-container p-0', {
