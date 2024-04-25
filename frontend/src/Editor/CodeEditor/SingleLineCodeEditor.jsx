@@ -31,7 +31,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
   //! Re render the component when the componentName changes as the initialValue is not updated
-
+  console.log('restProps---', restProps);
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
     setCurrentValue(initialValue);
@@ -74,10 +74,10 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
-        // fxActive={fxActive}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
+        type={restProps?.type}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
