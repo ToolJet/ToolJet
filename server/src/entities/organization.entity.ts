@@ -8,11 +8,11 @@ import {
   JoinColumn,
   BaseEntity,
 } from 'typeorm';
-import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
 import { AppEnvironment } from './app_environments.entity';
+import { GroupPermissions } from './group_permissions.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -40,9 +40,8 @@ export class Organization extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => GroupPermission, (groupPermission) => groupPermission.organization, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'organization_id' })
-  groupPermissions: GroupPermission[];
+  @OneToMany(() => GroupPermissions, (groupPermissions) => groupPermissions.organization, { onDelete: 'CASCADE' })
+  groupPermissions: GroupPermissions[];
 
   @OneToMany(() => SSOConfigs, (ssoConfigs) => ssoConfigs.organization, { cascade: ['insert'] })
   ssoConfigs: SSOConfigs[];

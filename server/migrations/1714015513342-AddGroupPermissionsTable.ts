@@ -1,0 +1,36 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
+
+export class AddGroupPermissionsTable1714015513342 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `
+       CREATE TYPE group_permissions_type AS ENUM ('custom', 'default');
+        `
+    );
+
+    await queryRunner.query(`
+    CREATE TABLE IF NOT EXISTS group_permissions (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        organization_id UUID,
+        name VARCHAR NOT NULL,
+        type group_permissions_type NOT NULL,
+        editable BOOLEAN NOT NULL,
+        only_builders BOOLEAN NOT NULL,
+        app_create BOOLEAN DEFAULT false,
+        app_delete BOOLEAN DEFAULT false,
+        folder_crud BOOLEAN DEFAULT false,
+        org_constant_crud BOOLEAN DEFAULT false,
+        data_source_create BOOLEAN DEFAULT false,
+        data_source_delete BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_organization_id FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
+    );
+        `);
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE IF EXISTS group_permissions`);
+    await queryRunner.query(`DROP TYPE IF EXISTS group_permissions_type;`);
+  }
+}

@@ -16,9 +16,9 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
-import { AppGroupPermission } from './app_group_permission.entity';
 import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
+import { GroupApps } from './group_apps.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
@@ -76,8 +76,8 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
-  @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
-  appGroupPermissions: AppGroupPermission[];
+  @OneToMany(() => GroupApps, (groupApps) => groupApps.app, { onDelete: 'CASCADE' })
+  appGroups: GroupApps[];
 
   public editingVersion;
 

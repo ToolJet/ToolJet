@@ -18,9 +18,9 @@ import { App } from './app.entity';
 import { GroupPermission } from './group_permission.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
-import { UserGroupPermission } from './user_group_permission.entity';
 import { File } from './file.entity';
 import { Organization } from './organization.entity';
+import { GroupUsers } from './group_users.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -123,8 +123,8 @@ export class User extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
-  @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
-  userGroupPermissions: UserGroupPermission[];
+  @OneToMany(() => GroupUsers, (groupUsers) => groupUsers.user, { onDelete: 'CASCADE' })
+  userGroups: GroupUsers[];
 
   @OneToMany(() => App, (app) => app.user)
   apps: App[];
