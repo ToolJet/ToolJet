@@ -540,8 +540,6 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    useResolveStore.getState().actions.updateJSHints();
-
     onEditorFreeze(true, false);
     await fetchApp(props.params.pageHandle);
     await fetchApps(0);
@@ -766,6 +764,7 @@ const EditorComponent = (props) => {
     //Temporary fix for the issue of not getting the selected environment id. Will be removed once the multi-env decouple is done
     extraProps = {}
   ) => {
+    useResolveStore.getState().actions.updateJSHints();
     const { canLoadSameEnv } = extraProps;
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
