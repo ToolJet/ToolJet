@@ -1,9 +1,8 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
+import { QueryError, QueryResult, QueryService } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions } from './types';
 import jsforce from 'jsforce';
 
 export default class Salesforce implements QueryService {
-
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     //sourceOptions.redirect_uri = this.authUrl();
     let result = {};
@@ -12,7 +11,9 @@ export default class Salesforce implements QueryService {
     const client_id = sourceOptions.client_id;
     const client_secret = sourceOptions.client_secret;
     const redirect_uri = sourceOptions.redirect_uri;
-    const operation = queryOptions.operation
+    const operation = queryOptions.operation;
+    // eslint-disable-next-line prettier/prettier
+    console.log("Operation from salesforce: ", operation);
 
     const oauth2 = new jsforce.OAuth2({
       clientId: client_id,
@@ -23,33 +24,36 @@ export default class Salesforce implements QueryService {
     const conn = new jsforce.Connection({ oauth2: oauth2 });
 
     try {
-      switch(operation){
-        case 'soql':
-          const {query}=queryOptions[operation];
+      switch (operation) {
+        case 'soql': {
+          const query = queryOptions.soql_query;
           result = await conn.query(query);
           break;
+        }
+        case 'crud': {
+          const actiontype = queryOptions.actiontype;
+          const resource_name = queryOptions.resource_name;
+          const resource_id = queryOptions.resource_id;
+          const resource_body = queryOptions.resource_body;
+          const parsedBody = JSON.parse(resource_body);
 
-        case 'crud':
-          const {actiontype}=queryOptions[operation]
-          const {resource_id,resource_name,resource_body} = queryOptions[operation][actiontype];
-
-          switch(actiontype){
+          switch (actiontype) {
             case 'retrieve':
               response = await conn.sobject(resource_name).retrieve(resource_id);
               result = response;
               break;
 
             case 'create':
-              response = await conn.sobject(resource_name).create(resource_body);
+              response = await conn.sobject(resource_name).create(parsedBody);
               result = response;
               break;
 
             case 'update':
-              response = await conn.sobject(resource_name).update({Id:resource_id,...resource_body})
+              response = await conn.sobject(resource_name).update({ Id: resource_id, ...parsedBody });
               result = response;
               break;
 
-            // TODO -> extIdField is not present in the upsert 
+            // TODO -> extIdField is not present in the upsert
             // case 'upsert':
             //   response = await conn.sobject(resource_name).upsert(resource_body)
             //   break;
@@ -60,37 +64,39 @@ export default class Salesforce implements QueryService {
               break;
 
             default:
-              throw new QueryError('Invalid CRUD operation','Please specify a valid operation',{});
+              throw new QueryError('Invalid CRUD operation', 'Please specify a valid operation', {});
           }
           break;
-
-        case 'bulkLoad':
-          const { crud_action } = queryOptions[operation];
-          const { object_type, records } = queryOptions[operation][crud_action];
+        }
+        case 'bulkLoad': {
+          const crud_action = queryOptions.crud_action;
+          const object_type = queryOptions.object_type;
+          const records = queryOptions.records;
           const job = conn.bulk.createJob(object_type, crud_action);
           const batch = job.createBatch();
 
           batch.execute(records);
 
-          batch.on("error", function(err) {
+          batch.on('error', function (err) {
             throw new QueryError('Bulk Load Error', err.message, {});
           });
-          
-          batch.on("queue", function(batchInfo) {
+
+          batch.on('queue', function (batchInfo) {
             console.log('Batch Queued:', batchInfo);
             batch.poll(1000, 20000);
           });
-          
-          batch.on("response", function(rets) {
+
+          batch.on('response', function (rets) {
             console.log('Batch Response:', rets);
             result = rets;
           });
 
           break;
-
-        case 'apexRestQuery':
-          const { methodtype } = queryOptions[operation];
-          let { path, body } = queryOptions[operation][methodtype];
+        }
+        case 'apexRestQuery': {
+          const methodtype = queryOptions.methodtype;
+          const path = queryOptions.path;
+          const body = queryOptions.body ? JSON.parse(queryOptions.body) : {};
 
           try {
             switch (methodtype) {
@@ -117,6 +123,7 @@ export default class Salesforce implements QueryService {
             throw new QueryError('Apex REST API Error', error.message, {});
           }
           break;
+        }
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
@@ -169,14 +176,23 @@ export default class Salesforce implements QueryService {
       redirectUri: redirectUri,
     });
     const conn = new jsforce.Connection({ oauth2: oauth2 });
-    const response = await conn.authorize(authCode);
+    let response;
+
+    try {
+      response = await conn.authorize(authCode);
+    } catch (error) {
+      throw new QueryError('Authorization Error', error.message, {});
+    }
     const authDetails = [];
-    if(conn['accessToken']){
+    if (conn['accessToken']) {
       authDetails.push(['access_token', conn['accessToken']]);
     }
-    if(conn['refreshToken']){
+    if (conn['refreshToken']) {
       authDetails.push(['refresh_token', conn['refreshToken']]);
     }
-    return authDetails;
+    return {
+      authDetails,
+      response,
+    };
   }
 }
