@@ -134,12 +134,16 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 </Tabs>
 
 ## Docker Backup
-The is a Docker-specific feature that assists in backing up the database during an upgrade process. If you plan to utilize this feature, uncomment the backup service in the docker-compose file. Additionally, you need to set an environment variable: `DATABASE_BACKUP=true`. This enables the creation of a `pg_dump` file, which will be stored in the backup folder.
+To perform backup or restore. Follow the below steps:
 
-To restore the database from this dump, execute the following command:
-
+1. Download the script:
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
 ```
-cat your_dump.sql | docker exec -i --user postgres <postgres-db-container-name> psql -U postgres
+
+2. Run the script with the following command:
+```bash
+./backup-restore.sh 
 ```
 
 
