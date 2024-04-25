@@ -1041,6 +1041,13 @@ const EditorComponent = (props) => {
         updatingEditorStateInProcess = false;
       }
 
+      if (opts?.addNewPage) {
+        updatedAppDefinition.pages[currentPageId] = {
+          ...updatedAppDefinition.pages[currentPageId],
+          components: {},
+        };
+      }
+
       updateEditorState({
         isUpdatingEditorStateInProcess: updatingEditorStateInProcess,
         appDefinition: updatedAppDefinition,
