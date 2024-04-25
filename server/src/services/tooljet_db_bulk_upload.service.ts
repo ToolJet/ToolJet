@@ -171,7 +171,7 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  findPrimaryKey(columnName, primaryKeyColumns) {
+  findPrimaryKey(columnName: string, primaryKeyColumns: TableColumnSchema[]) {
     return primaryKeyColumns.find((colDetails) => colDetails.column_name === columnName);
   }
 
