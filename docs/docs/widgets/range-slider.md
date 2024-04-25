@@ -4,7 +4,7 @@ title: Range Slider
 ---
 # Range Slider
 
-Range sliders are widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
+The **Range Slider** widget is widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
 
 :::tip
 Range Sliders have "Two handles" option which allows user to select within a range.
@@ -72,7 +72,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Line color | Enter the hexcode to set the default color for slider's track. |
 | Handle color | Enter the hexcode to set the color for slider's handler. |
 | Track color | Enter the hexcode to set the color for slider's active portion on the track. |
-| Visibility | Set the visivlity of the slider programmatically. The default value is `{{true}}`. |
+| Visibility | Set the visibility of the slider programmatically. The default value is `{{true}}`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

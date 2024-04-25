@@ -4,7 +4,7 @@ title: Modal
 ---
 # Modal
 
-Modal widget renders in front of a backdrop, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, forms, etc.
+The **Modal** widget renders in front of a backdrop, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, forms, etc.
 
 :::caution Restricted components
 In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Modal component using drag-and-drop functionality.
@@ -57,12 +57,12 @@ Just like any other event on ToolJet, you can set multiple handlers for the even
 
 ## Component Specific Actions (CSA)
 
-Following actions of modal component can be controlled using the component specific actions(CSA):
+Following actions of Modal component can be controlled using the component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| open | Control the opening and closing of the modal componennt via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
-| close | Control the closing of the modal componennt via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |
+| open | Control the opening and closing of the Modal component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
+| close | Control the closing of the Modal component via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |
 
 </div>
 
