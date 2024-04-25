@@ -162,7 +162,15 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
   );
 };
 
-const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsidePreview, ...restProps }) => {
+const PreviewContainer = ({
+  children,
+  isFocused,
+  enablePreview,
+  setCursorInsidePreview,
+  isPortalOpen,
+  type,
+  ...restProps
+}) => {
   const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement } = restProps;
 
   const [errorMessage, setErrorMessage] = useState('');
@@ -182,7 +190,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
         width: '250px',
         maxWidth: '350px',
         marginRight: 2,
-        zIndex: restProps?.type == 'fxEditor' ? 1400 : 1200,
+        zIndex: type == 'fxEditor' ? 1400 : 1200,
       }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
@@ -289,7 +297,12 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
   );
 
   return (
-    <OverlayTrigger trigger="click" show={enablePreview && isFocused} placement={previewPlacement} overlay={popover}>
+    <OverlayTrigger
+      trigger="click"
+      show={enablePreview && isFocused && !isPortalOpen}
+      placement={previewPlacement}
+      overlay={popover}
+    >
       {children}
     </OverlayTrigger>
   );
