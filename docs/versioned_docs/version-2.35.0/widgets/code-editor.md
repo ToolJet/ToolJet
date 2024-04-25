@@ -4,7 +4,7 @@ title: Code Editor
 ---
 # Code Editor
 
-Code Editor widget is a versatile text editor for editing code and supports several languages. 
+**Code Editor** widget is a versatile text editor for editing code and supports several languages. 
 
 <div style={{textAlign: 'center'}}>
 
