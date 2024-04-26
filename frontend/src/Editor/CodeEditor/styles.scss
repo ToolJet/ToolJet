@@ -32,7 +32,6 @@
 
 .cm-base-autocomplete {
     height: 300px !important;
-    max-width: 250px !important;
     color: var(--Text-default, #1B1F24);
     background: var(--slate1) !important;
     border: 1px solid var(--Border-week, #E4E7EB) !important;
@@ -41,6 +40,7 @@
     z-index: 99999 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    left: 0px !important;
 
 
     ul {
@@ -204,6 +204,7 @@
     -moz-appearance: none;
     appearance: none;
     cursor: text;
+    justify-content: center;
 
 
     .cm-tooltip-autocomplete {
@@ -213,6 +214,8 @@
 
     .cm-editor {
         min-height: 32px;
+        justify-content: center !important;
+
     }
 }
 
@@ -220,15 +223,11 @@
 
     .cm-editor {
         outline: none;
-        // border-color: $color-dark-indigo-09 !important;
+        border: 2px solid #4368E3 !important;
+        justify-content: center !important;
     }
 }
 
-.focus-box-shadow-active {
-    .cm-editor {
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-    }
-}
 
 .codehinter-multi-line-input {
 
@@ -238,6 +237,9 @@
 
         .cm-gutters {
             width: 42px;
+            background-color: var(--interactive-default) !important;
+            color: var(--text-disabled) !important;
+            border-right: 1px solid var(--borders-disabled-on-white) !important;
         }
     }
 
@@ -296,7 +298,6 @@
 .cm-scroller {
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    padding: 2px !important;
     overscroll-behavior: contain;
 }
 
@@ -349,25 +350,100 @@
 .editor-container {
     .codehinter-input .cm-editor {
         max-height: auto !important;
+        justify-content: center;
     }
 }
 
-// remove if multiline codehinter is moved to side
-// .multiline-previewbox-wrapper {
-//     box-shadow: 0px 4px 8px 0px #3032331A;
-//     border: 1px solid var(--borders-disabled-on-white, #E4E7EB);
-//     background: #FFFFFF;
-//     width: Fixed (548px)px;
-//     border-radius: 8px;
-//     max-height: 300px;
-//     overflow-y: auto;
-//     position: relative;
-// }
 
-// .dark-theme,
-// .theme-dark {
-//     .multiline-previewbox-wrapper {
-//         background: #1E2226;
-//         border: 1px solid rgba(43, 48, 54, 20%);
-//     }
-// }
+
+.codehinter-error-banner {
+    color: #D72D39;
+    background-color: #FCEEEF;
+}
+
+.codehinter-success-banner {
+    color: #1E823B;
+    background-color: #E8F3EB;
+}
+
+.cm-gutterElement {
+    color: var(--text-disabled);
+}
+
+.rest-api-tabpanes-body {
+    .cm-gutters {
+        width: 42px !important;
+        background-color: var(--interactive-default) !important;
+        color: var(--text-disabled) !important;
+        border-right: 1px solid var(--borders-disabled-on-white) !important;
+    }
+}
+
+.cm-content {
+    padding-right: 20px !important;
+}
+
+.modal-body {
+    .codehinter-input .cm-editor {
+        border: 1px solid var(--borders-disabled-on-white, #E4E7EB) !important;
+    }
+
+    .codehinter-input .cm-editor {
+        border-top-left-radius: 0px !important;
+        border-top-right-radius: 0px !important;
+    }
+
+    .codehinter-input {
+        height: 100%;
+        border: none !important;
+
+
+    }
+}
+
+.cm-gutters {
+    width: 42px !important;
+    background-color: var(--interactive-default) !important;
+    color: var(--text-disabled) !important;
+    border-right: 1px solid var(--borders-disabled-on-white) !important;
+}
+
+
+.query-hinter {
+    .cm-editor {
+        border-bottom-right-radius: 4px !important;
+        border-bottom-left-radius: 4px !important;
+        border-right-color: var(--borders-disabled-on-white);
+        border-left-color: var(--borders-disabled-on-white);
+        border-bottom-color: var(--borders-disabled-on-white);
+        border-top-right-radius: 0px !important;
+        border-top-left-radius: 0px !important;
+        justify-content: center;
+        border-top: none;
+    }
+
+    .cm-content {
+        background-color: var(--surfaces-surface-02) !important;
+    }
+}
+
+.transformation-container {
+    box-shadow: 0px 4px 8px 0px #3032331A;
+}
+
+.codehinder-popup-badge {
+    background-color: var(--surfaces-surface-02);
+    color: var(--text-default);
+    padding: 6px 8px 6px 8px;
+    gap: 10px;
+    border-radius: 6px 0px 0px 0px;
+}
+
+.resize-modal-portal .resize-modal .modal-content .modal-body .editor-container {
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.resize-modal-portal .resize-modal .resize-handle {
+    border-bottom: none !important;
+}
