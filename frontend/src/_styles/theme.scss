@@ -3321,6 +3321,10 @@ input:focus-visible {
         #4c5b79 80%);
   }
 
+  .app-icon-skeleton {
+    background-color: #3A4251 !important;
+  }
+
   .folder-icon-skeleton::after {
     background-image: linear-gradient(to right,
         #566177 0,
