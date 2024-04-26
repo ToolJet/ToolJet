@@ -43,7 +43,7 @@ export const NotificationCenter = ({ darkMode }) => {
 
   const overlay = (
     <div
-      className={`notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card ${
+      className={`notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card  ${
         darkMode && 'dark-theme'
       }`}
       data-bs-popper="static"
