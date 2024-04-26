@@ -126,7 +126,7 @@ export const BlankPage = function BlankPage({
             <div className="container-xl d-flex flex-column justify-content-center">
               <div>
                 <div className="row homepage-empty-container">
-                  <div className="col-6">
+                  <div className="col-7">
                     <h3 className="empty-welcome-header" data-cy="empty-homepage-welcome-header">
                       {t('blankPage.welcomeToToolJet', `Welcome to your new ${whiteLabelText} workspace`, {
                         whiteLabelText,
@@ -202,7 +202,7 @@ export const BlankPage = function BlankPage({
                       )}
                     </div>
                   </div>
-                  <div className="col-6 empty-home-page-image" data-cy="empty-home-page-image">
+                  <div className="col-5 empty-home-page-image" data-cy="empty-home-page-image">
                     <EmptyIllustration />
                   </div>
                 </div>
