@@ -14,6 +14,10 @@ import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+}
+
 function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
@@ -68,7 +72,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
               data-tooltip-content={source.name}
               data-cy={`ds-${source.name.toLowerCase()}`}
             >
-              {source.name}
+              {decodeEntities(source.name)}
               <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
             </div>
           ),

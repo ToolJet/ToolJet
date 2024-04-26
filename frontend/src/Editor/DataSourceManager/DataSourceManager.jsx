@@ -29,6 +29,10 @@ import { withRouter } from '@/_hoc/withRouter';
 import { useSuperStore } from '@/_stores/superStore';
 import { ModuleContext } from '@/_contexts/ModuleContext';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+}
+
 class DataSourceManagerComponent extends React.Component {
   static contextType = ModuleContext;
 
@@ -768,7 +772,7 @@ class DataSourceManagerComponent extends React.Component {
                           type="text"
                           onChange={(e) => this.onNameChanged(e.target.value)}
                           className="form-control-plaintext form-control-plaintext-sm color-slate12"
-                          value={selectedDataSource.name}
+                          value={decodeEntities(selectedDataSource.name)}
                           style={{ width: '160px' }}
                           data-cy="data-source-name-input-filed"
                           autoFocus

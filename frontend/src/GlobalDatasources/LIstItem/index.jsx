@@ -6,6 +6,10 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+}
+
 export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
   const {
     setSelectedDataSource,
@@ -60,7 +64,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
         <div>{icon}</div>
 
         <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px' }}>
-          {dataSource.name}
+          {decodeEntities(dataSource.name)}
         </div>
       </div>
       <div className="col-auto">

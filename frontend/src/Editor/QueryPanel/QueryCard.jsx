@@ -12,6 +12,10 @@ import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { useModuleName } from '@/_contexts/ModuleContext';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+}
+
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
   const moduleName = useModuleName();
   const selectedQuery = useSelectedQuery();
@@ -84,7 +88,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                 darkMode && 'text-white'
               }`}
               type="text"
-              defaultValue={dataQuery.name}
+              defaultValue={decodeEntities(dataQuery.name)}
               autoFocus={true}
               onKeyDown={({ target, key }) => {
                 if (key === 'Enter') {
@@ -102,7 +106,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                 data-tooltip-id="query-card-name-tooltip"
                 data-tooltip-content={dataQuery.name}
               >
-                {dataQuery.name}
+                {decodeEntities(dataQuery.name)}
               </span>{' '}
               <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
               {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}

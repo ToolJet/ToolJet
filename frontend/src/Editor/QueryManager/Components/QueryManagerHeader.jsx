@@ -25,6 +25,10 @@ import { useModuleName } from '@/_contexts/ModuleContext';
 
 import ParameterList from './ParameterList';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+}
+
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
   const moduleName = useModuleName();
   const { renameQuery } = useDataQueriesActions();
@@ -298,7 +302,7 @@ const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
             disabled={isDiabled}
             className={'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500'}
           >
-            <span className="text-truncate">{name} </span>
+            <span className="text-truncate">{decodeEntities(name)} </span>
             <span
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}
