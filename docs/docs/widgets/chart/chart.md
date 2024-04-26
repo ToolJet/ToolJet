@@ -22,7 +22,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 ## Exposed variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
+|:---------- | :---------- | :------------ |
 | chartTitle       | Holds the title of the chart component. | Accessible dynamically with JS (for e.g., `{{components.chart1.chartTitle}}`). |
 | xAxisTitle         | Contains the title for the X-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`). |
 | yAxisTitle         | Contains the title for the Y-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`). |
