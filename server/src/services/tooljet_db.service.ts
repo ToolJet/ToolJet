@@ -698,7 +698,7 @@ export class TooljetDbService {
   }
 
   private async editColumn(organizationId: string, params) {
-    const { table_name: tableName, column } = params;
+    const { table_name: tableName, column, foreign_key_id_to_delete } = params;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
@@ -711,6 +711,7 @@ export class TooljetDbService {
     await tjdbQueryRunner.startTransaction();
 
     try {
+      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id_to_delete);
       await tjdbQueryRunner.changeColumn(
         internalTable.id,
         column.column_name,

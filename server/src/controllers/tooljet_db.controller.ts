@@ -171,11 +171,13 @@ export class TooljetDbController {
   async editColumn(
     @Body('column') columnDto: EditColumnTableDto,
     @Param('organizationId') organizationId,
-    @Param('tableName') tableName
+    @Param('tableName') tableName,
+    @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string
   ) {
     const params = {
       table_name: tableName,
       column: columnDto,
+      foreign_key_id_to_delete: foreignKeyIdToDelete || '',
     };
     const result = await this.tooljetDbService.perform(organizationId, 'edit_column', params);
     return decamelizeKeys({ result });
