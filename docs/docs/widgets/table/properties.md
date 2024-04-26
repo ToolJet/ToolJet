@@ -47,7 +47,7 @@ Below are the button text properties that you can set.
 | Property | Description |
 | :------- | :----------- |
 | Button text | Sets the text that you want to be displayed on the action button. |
-| Button position | Sets the button position to left or right |
+| Button position | Sets the button position to left or right. |
 | Background color | Sets the background color of the action button. |
 | Text color | Sets the color of button-text of the action button. |
 | Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the `fx` button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
@@ -113,7 +113,7 @@ This event is triggered when the **Save** button is clicked from the **Add new r
 
 ### Allow selection
 
-This option is active by default. **Enabling** this functionality allows users to choose a row in the Table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible. 
+This option is active by default. **Enabling** this functionality allows users to choose a row in the Table by utilizing `checkboxes` placed next to each row. If this option is disabled, the ability to highlight selected rows and perform bulk selection will not be accessible. 
 
 ### Highlight selected row
 
@@ -186,7 +186,7 @@ When Server-side filter is enabled, applying filters will not automatically filt
 
 ## Pagination
 
-Pagination helps manage the display of large data sets by dividing them into manageable segments. Client-side pagination is enabled by default. When enabled, an additional property, **Number of rows per page**, becomes available to set the number of records per page. The default value is set to 10; if disabled, all records will appear on a single page
+Pagination helps manage the display of large data sets by dividing them into manageable segments. Client-side pagination is enabled by default. When enabled, an additional property, **Number of rows per page**, becomes available to set the number of records per page. The default value is set to 10; if disabled, all records will appear on a single page.
 
 #### Server-side pagination
 
@@ -239,8 +239,8 @@ Disable condition allows you to control whether the Table is enabled or disabled
 
 | Option  | Description | Expected value |
 |:----------- |:----------- |:----------- |
-| **Show on desktop** | Toggle on or off to show or hide the component on desktop devices | `{{true}}` or `{{false}}` |
-| **Show on mobile** | Toggle on or off to show or hide the component on mobile devices | `{{true}}` or `{{false}}` |
+| **Show on desktop** | Shows or hides the component on desktop devices. | Use the toggle switch or configure it dynamically using `fx`.|
+| **Show on mobile** | Shows or hides the component on mobile devices. | Use the toggle switch or configure it dynamically using `fx`.|
 
 ## Styles
 ### Data

@@ -41,7 +41,7 @@ The table component supports the following column types:
 - **[String](#string)**
 - **[Number](#number)**
 - **[Text](#text)**
-- **[Datepicker](#Datepicker)**
+- **[Datepicker](#datepicker)**
 - **[Select](#select)**
 - **[Multiselect](#multiselect)**
 - **[Boolean](#boolean)**
@@ -53,7 +53,8 @@ The table component supports the following column types:
 - **[Toggle switch](#toggle-switch-deprecated)** - Deprecated
 - **[Radio](#radio-deprecated)** - Deprecated
 - **[Badge](#badge-deprecated)** - Deprecated
-- **[Multiple Badges](#multiple-deprecated)** - Deprecated
+- **[Multiple Badges](#multiple-badges-deprecated)** - Deprecated
+
 - **[Tags](#tags-deprecated)** - Deprecated
 
 
