@@ -134,7 +134,8 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 </Tabs>
 
 ## Docker Backup
-To perform backup or restore,  follow the below steps:
+
+The below bash script will help with taking back-up and as well as restoring:
 
 1. Download the script:
 ```bash
@@ -145,6 +146,10 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
 ```bash
 ./backup-restore.sh 
 ```
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
+</div>
 
 
 ## Upgrading to the Latest Version
