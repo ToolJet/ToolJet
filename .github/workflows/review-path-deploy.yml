@@ -192,7 +192,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com/apps/tooljet/ \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
       - uses: actions/github-script@v6
