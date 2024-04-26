@@ -6,7 +6,13 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { getColumnDataType } from '../../constants';
 
-const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen, rows }) => {
+const CreateColumnDrawer = ({
+  setIsCreateColumnDrawerOpen,
+  isCreateColumnDrawerOpen,
+  rows,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+}) => {
   const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize, setForeignKeys } =
     useContext(TooljetDatabaseContext);
 
@@ -32,7 +38,11 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                 );
               }
 
-              if (foreign_keys.length) setForeignKeys([...foreign_keys]);
+              if (foreign_keys.length > 0) {
+                setForeignKeys([...foreign_keys]);
+              } else {
+                setForeignKeys([]);
+              }
             });
             handleRefetchQuery({}, {}, 1, pageSize);
             setPageCount(1);
@@ -40,6 +50,8 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}
           rows={rows}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
     </>

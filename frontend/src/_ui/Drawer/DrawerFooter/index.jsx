@@ -26,7 +26,7 @@ function DrawerFooter({
           <a className="read-documentation">Read documentation</a>
         </div>
         <div className="d-flex action-btns">
-          {isForeignKeyDraweOpen && (isEditMode || isEditColumn) ? (
+          {isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit)) ? (
             <ButtonSolid variant="dangerTertiary" onClick={onDeletePopup}>
               <DeleteIcon />
               &nbsp; Delete

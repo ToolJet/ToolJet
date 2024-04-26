@@ -67,6 +67,7 @@ function TableDetailsDropdown({
                   setForeignKeyDetails((prevDetails) => ({
                     ...prevDetails,
                     referenced_table_name: value,
+                    referenced_column_names: {},
                   }));
                   // setTable(value);
                   handleSelectColumn(value?.value);

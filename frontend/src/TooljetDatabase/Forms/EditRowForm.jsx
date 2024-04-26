@@ -13,12 +13,20 @@ import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 import { Link } from 'react-router-dom';
-import { getPrivateRoute, redirectToDashboard } from '@/_helpers/routes';
+import { getPrivateRoute } from '@/_helpers/routes';
+import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
+import ArrowRight from '../Icons/ArrowRight.svg';
 
-const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnDetails }) => {
+const EditRowForm = ({
+  onEdit,
+  onClose,
+  selectedRowObj = null,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const isForeignKey = true;
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const isForeignKey = foreignKeys?.length > 0 && foreignKeys[0]?.column_names.length > 0 ? true : false;
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
@@ -58,7 +66,7 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
               currentValue[key] === null || currentValue[key]?.toString() === columns[index].column_default
                 ? true
                 : false;
-            return { value: value, disabled: disabledValue };
+            return { value: value, disabled: disabledValue, label: value };
           })
         : [];
 
@@ -81,9 +89,10 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
   });
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
+    const [key, value] = Object.entries(item);
     return {
-      label: item.Name,
-      value: item.Name,
+      label: key[1],
+      value: key[1],
     };
   });
 
@@ -96,19 +105,19 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
     const actualDefaultVal = defaultValue === 'true' ? true : false;
     const newInputValues = [...inputValues];
     if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
-      newInputValues[index] = { value: defaultValue, disabled: true };
+      newInputValues[index] = { value: defaultValue, disabled: true, label: defaultValue };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
-      newInputValues[index] = { value: actualDefaultVal, disabled: true };
+      newInputValues[index] = { value: actualDefaultVal, disabled: true, label: actualDefaultVal };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
-      newInputValues[index] = { value: null, disabled: true };
+      newInputValues[index] = { value: null, disabled: true, label: null };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: null, disabled: true };
+      newInputValues[index] = { value: null, disabled: true, label: null };
     } else if (tabData === 'Custom' && customVal.length > 0) {
-      newInputValues[index] = { value: customVal, disabled: false };
+      newInputValues[index] = { value: customVal, disabled: false, label: customVal };
     } else if (tabData === 'Custom' && customVal.length <= 0) {
-      newInputValues[index] = { value: '', disabled: false };
+      newInputValues[index] = { value: '', disabled: false, label: '' };
     } else {
-      newInputValues[index] = { value: customVal, disabled: false };
+      newInputValues[index] = { value: customVal, disabled: false, label: customVal };
     }
 
     setInputValues(newInputValues);
@@ -147,7 +156,7 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
-    newInputValues[index] = { value: value, disabled: false };
+    newInputValues[index] = { value: value, disabled: false, label: value };
     setInputValues(newInputValues);
     setRowData({ ...rowData, [columnName]: value });
   };
@@ -190,7 +199,7 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            {isForeignKey ? (
+            {isForeignKey && foreignKeys[0]?.column_names[0] === columnName ? (
               <DropDownSelect
                 buttonClasses="border border-end-1 foreignKeyAcces-container"
                 showPlaceHolder={true}
@@ -202,7 +211,7 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
                     No table selected
                   </div>
                 }
-                value={referencedColumnDetails[0]}
+                value={inputValues[index]?.value !== null && inputValues[index]}
                 foreignKeyAccessInRowForm={true}
                 disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
                 topPlaceHolder={
@@ -210,14 +219,11 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
                     ? 'Auto-generated'
                     : inputValues[index]?.value !== null && 'Enter a value'
                 }
-                // onChange={(value) => {
-                //   setTable(value);
-                //   handleSelectColumn(value?.value);
-                // }}
+                onChange={(value) => handleInputChange(index, value.value, columnName)}
                 onAdd={true}
                 addBtnLabel={'Open referenced table'}
-                // showRedirection={showRedirection}
-                // showDescription={showDescription}
+                foreignKeys={foreignKeys}
+                setReferencedColumnDetails={setReferencedColumnDetails}
               />
             ) : (
               <input
@@ -290,8 +296,6 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
     ([key, value]) => currentValue[key] === value
   );
 
-  console.log('first', foreignKeys);
-
   const handleNavigateToReferencedtable = () => {
     const data = { id: foreignKeys[0]?.referenced_table_id, table_name: foreignKeys[0]?.referenced_table_name };
     localStorage.setItem('tableDetails', JSON.stringify(data));
@@ -338,10 +342,44 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null, referencedColumnD
                       className="form-label"
                       data-cy={`${String(Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-name-label`}
                     >
-                      <div className="d-flex align-items-center justify-content-start mb-2">
-                        <span style={{ width: '24px' }}>{renderDatatypeIcon(dataType)}</span>
+                      <div className="headerText-withIcon d-flex align-items-center justify-content-start">
+                        <span style={{ width: '24px' }}>
+                          {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
+                        </span>
                         <span style={{ marginRight: '5px' }}>{headerText}</span>
-                        {constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
+                        {constraints_type?.is_primary_key === true && (
+                          <span style={{ marginRight: '3px' }}>
+                            <SolidIcon name="primarykey" />
+                          </span>
+                        )}
+                        <ToolTip
+                          message={
+                            isForeignKey === true &&
+                            foreignKeys.length > 0 &&
+                            foreignKeys[0]?.column_names[0] === Header ? (
+                              <div>
+                                <span>Foreign key relation</span>
+                                <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                                  <span>{foreignKeys[0]?.column_names[0]}</span>
+                                  <ArrowRight />
+                                  <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
+                                </div>
+                              </div>
+                            ) : null
+                          }
+                          placement="top"
+                          tooltipClassName="tootip-table"
+                        >
+                          <div>
+                            {isForeignKey === true &&
+                              foreignKeys.length > 0 &&
+                              foreignKeys[0]?.column_names[0] === Header && (
+                                <span>
+                                  <ForeignKeyIndicator />
+                                </span>
+                              )}
+                          </div>
+                        </ToolTip>
                       </div>
                     </div>
 

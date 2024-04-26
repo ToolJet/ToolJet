@@ -28,7 +28,7 @@ const ForeignKeyTableForm = ({
     <div className="foreignKeyRelation-form-container">
       <div className="card-header">
         <h3 className="card-title" data-cy="create-new-table-header">
-          Create foreign key relation
+          {`${isEditMode || isEditColumn ? 'Edit' : 'Create'} foreign key relation`}
         </h3>
       </div>
       <SourceKeyRelation

@@ -110,7 +110,7 @@ function SourceKeyRelation({
           }))
         );
       }
-      if (foreign_keys.length) setForeignKeys([...foreign_keys]);
+      // if (foreign_keys.length) setForeignKeys([...foreign_keys]);
     });
   };
 
@@ -135,6 +135,8 @@ function SourceKeyRelation({
       }));
     }
   }, [isEditColumn, isCreateColumn]);
+
+  console.log('first', targetTableColumns);
 
   return (
     <div className="relations-container">

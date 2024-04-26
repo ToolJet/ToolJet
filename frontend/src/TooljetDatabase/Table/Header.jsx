@@ -30,7 +30,7 @@ const Header = ({
   setFilterEnable,
   filterEnable,
   referencedColumnDetails,
-  getForeignKeyDetails,
+  setReferencedColumnDetails,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
@@ -201,7 +201,7 @@ const Header = ({
                       selectedRowIds={selectedRowIds}
                       rows={rows}
                       referencedColumnDetails={referencedColumnDetails}
-                      getForeignKeyDetails={getForeignKeyDetails}
+                      setReferencedColumnDetails={setReferencedColumnDetails}
                     />
                   ) : null}
                   {Object.keys(selectedRowIds).length > 0 && (
@@ -261,11 +261,14 @@ const Header = ({
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
         rows={rows}
+        referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
         referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <BulkUploadDrawer
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}

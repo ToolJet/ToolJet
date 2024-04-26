@@ -14,7 +14,7 @@ const EditRowDrawer = ({
   selectedRowIds,
   rows,
   referencedColumnDetails,
-  getForeignKeyDetails,
+  setReferencedColumnDetails,
 }) => {
   const {
     organizationId,
@@ -42,7 +42,6 @@ const EditRowDrawer = ({
         size="sm"
         onClick={() => {
           setIsEditRowDrawerOpen(!isEditRowDrawerOpen);
-          getForeignKeyDetails();
         }}
         className="gap-0"
         data-cy="edit-row-button-"
@@ -107,6 +106,7 @@ const EditRowDrawer = ({
           onClose={() => setIsEditRowDrawerOpen(false)}
           selectedRowObj={selectedRowObj}
           referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
     </>

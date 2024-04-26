@@ -9,13 +9,14 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
+import ArrowRight from '../Icons/ArrowRight.svg';
 
 import './styles.scss';
 
-const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
+const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const isForeignKey = false;
-  const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const isForeignKey = foreignKeys?.length > 0 && foreignKeys[0]?.column_names.length > 0 ? true : false;
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     if (Array.isArray(columns)) {
@@ -35,18 +36,19 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
     Array.isArray(columns)
       ? columns.map((item, index) => {
           if (item.accessor === 'id') {
-            return { value: '', checkboxValue: false, disabled: false };
+            return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
           if (item.column_default !== null) {
             return {
               value: item.column_default || '',
               checkboxValue: item.column_default === 'true' ? true : false,
               disabled: true,
+              label: item.column_default || '',
             };
           } else if (item.constraints_type.is_not_null === false) {
-            return { value: '', checkboxValue: false, disabled: false };
+            return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
-          return { value: '', checkboxValue: false, disabled: false };
+          return { value: '', checkboxValue: false, disabled: false, label: '' };
         })
       : []
   );
@@ -72,9 +74,10 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
   // const referenceColumn = 'Name';
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
+    const [key, value] = Object.entries(item);
     return {
-      label: item.Name,
-      value: item.Name,
+      label: key[1],
+      value: key[1],
     };
   });
 
@@ -85,17 +88,22 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
     const newInputValues = [...inputValues];
     const actualDefaultVal = defaultValue === 'true' ? true : false;
     if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
-      newInputValues[index] = { value: defaultValue, checkboxValue: defaultValue, disabled: true };
+      newInputValues[index] = { value: defaultValue, checkboxValue: defaultValue, disabled: true, label: defaultValue };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
-      newInputValues[index] = { value: defaultValue, checkboxValue: actualDefaultVal, disabled: true };
+      newInputValues[index] = {
+        value: defaultValue,
+        checkboxValue: actualDefaultVal,
+        disabled: true,
+        label: defaultValue,
+      };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
-      newInputValues[index] = { value: null, checkboxValue: false, disabled: true };
+      newInputValues[index] = { value: null, checkboxValue: false, disabled: true, label: null };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: null, checkboxValue: null, disabled: true };
+      newInputValues[index] = { value: null, checkboxValue: null, disabled: true, label: null };
     } else if (tabData === 'Custom' && dataType === 'character varying') {
-      newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
+      newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     } else {
-      newInputValues[index] = { value: '', checkboxValue: false, disabled: false };
+      newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     }
     setInputValues(newInputValues);
     saveData(dataType, columnName, newInputValues, index, defaultValue);
@@ -122,7 +130,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
-    newInputValues[index] = { value, checkboxValue: inputValues[index].checkboxValue, disabled: false };
+    newInputValues[index] = { value, checkboxValue: inputValues[index].checkboxValue, disabled: false, label: value };
     setInputValues(newInputValues);
     setData({ ...data, [columnName]: value });
   };
@@ -133,6 +141,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
       value: inputValues[index].value,
       checkboxValue: !inputValues[index].checkboxValue,
       disabled: inputValues[index].disabled,
+      label: inputValues[index].value,
     };
     setInputValues(newInputValues);
     setData({ ...data, [columnName]: value });
@@ -167,7 +176,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
     toast.success(`Row created successfully`);
     onCreate && onCreate();
   };
-
+  // console.log('first', foreignKeys.length > 0 && foreignKeys[0]?.column_names[0] === 'sequenceNo');
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
     const isSerialDataTypeColumn = dataType === 'serial';
     switch (dataType) {
@@ -178,7 +187,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            {isForeignKey ? (
+            {isForeignKey && foreignKeys[0]?.column_names[0] === columnName ? (
               <DropDownSelect
                 buttonClasses="border border-end-1 foreignKeyAcces-container"
                 showPlaceHolder={true}
@@ -190,20 +199,19 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
                     No table selected
                   </div>
                 }
-                value={referencedColumnDetails[0]}
+                value={inputValues[index]?.value !== null && inputValues[index]}
                 foreignKeyAccessInRowForm={true}
                 disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
                 topPlaceHolder={
                   isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
                 }
-                // onChange={(value) => {
-                //   setTable(value);
-                //   handleSelectColumn(value?.value);
-                // }}
+                onChange={(value) => {
+                  handleInputChange(index, value.value, columnName);
+                }}
                 onAdd={true}
                 addBtnLabel={'Open referenced table'}
-                // showRedirection={showRedirection}
-                // showDescription={showDescription}
+                foreignKeys={foreignKeys}
+                setReferencedColumnDetails={setReferencedColumnDetails}
               />
             ) : (
               <input
@@ -296,11 +304,34 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails }) => {
                           <SolidIcon name="primarykey" />
                         </span>
                       )}
-                      {/* {isForeignKey === true && (
-                        <span>
-                          <ForeignKeyIndicator />
-                        </span>
-                      )} */}
+                      <ToolTip
+                        message={
+                          isForeignKey === true &&
+                          foreignKeys.length > 0 &&
+                          foreignKeys[0]?.column_names[0] === Header ? (
+                            <div>
+                              <span>Foreign key relation</span>
+                              <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                                <span>{foreignKeys[0]?.column_names[0]}</span>
+                                <ArrowRight />
+                                <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
+                              </div>
+                            </div>
+                          ) : null
+                        }
+                        placement="top"
+                        tooltipClassName="tootip-table"
+                      >
+                        <div>
+                          {isForeignKey === true &&
+                            foreignKeys.length > 0 &&
+                            foreignKeys[0]?.column_names[0] === Header && (
+                              <span>
+                                <ForeignKeyIndicator />
+                              </span>
+                            )}
+                        </div>
+                      </ToolTip>
                     </div>
                   </div>
                   <div

@@ -120,7 +120,11 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           }))
         );
       }
-      if (foreign_keys.length) setForeignKeys([...foreign_keys]);
+      if (foreign_keys.length > 0) {
+        setForeignKeys([...foreign_keys]);
+      } else {
+        setForeignKeys([]);
+      }
     });
     handleRefetchQuery({}, {}, 1, pageSize);
     setPageCount(1);

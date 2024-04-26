@@ -56,7 +56,7 @@ function DataSourceSelect({
   const getForeignKeyDetails = (add) => {
     setLoadingForeignkey(true);
     const selectQuery = new PostgrestQueryBuilder();
-    const referencedColumns = foreignKeys[0]?.referenced_column_names;
+    const referencedColumns = foreignKeys?.length > 0 ? foreignKeys[0]?.referenced_column_names : [];
     referencedColumns?.forEach((col) => {
       selectQuery.select(col);
     });
@@ -65,12 +65,15 @@ function DataSourceSelect({
     tooljetDatabaseService
       .findOne(
         organizationId,
-        foreignKeys[0]?.referenced_table_id,
+        foreignKeys?.length > 0 && foreignKeys[0]?.referenced_table_id,
         `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
       )
       .then(({ headers, data = [], error }) => {
         if (error) {
-          toast.error(error?.message ?? `Failed to fetch table "${foreignKeys[0].referenced_table_name}"`);
+          toast.error(
+            error?.message ??
+              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+          );
           setLoadingForeignkey(false);
           return;
         }
@@ -84,23 +87,23 @@ function DataSourceSelect({
       });
   };
 
-  const handleScroll = (event) => {
-    const target = scrollContainerRef?.current;
-    let scrollTop = target?.scrollTop;
-    console.log('scroll', loadingForeignKey);
-    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+  // const handleScroll = (event) => {
+  //   const target = scrollContainerRef?.current;
+  //   let scrollTop = target?.scrollTop;
+  //   console.log('scroll', loadingForeignKey);
+  //   const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
 
-    if (scrollPercentage > 98 && !loadingForeignKey) {
-      getForeignKeyDetails(1);
-    }
-  };
-  // scrollContainerRef?.current?.addEventListener('scroll', handleScroll);
+  //   if (scrollPercentage > 98 && !loadingForeignKey) {
+  //     getForeignKeyDetails(1);
+  //   }
+  // };
+  // // scrollContainerRef?.current?.addEventListener('scroll', handleScroll);
 
   useEffect(() => {
     getForeignKeyDetails(1);
-  }, []);
 
-  console.log('select', loadingForeignKey);
+    // console.log('first', foreignKeys);
+  }, []);
 
   return (
     <div>
@@ -118,7 +121,7 @@ function DataSourceSelect({
         }}
         ref={selectRef}
         controlShouldRenderValue={false}
-        onMenuScroll={handleScroll}
+        // onMenuScroll={handleScroll}
         menuPlacement="auto"
         menuIsOpen
         hideSelectedOptions={false}

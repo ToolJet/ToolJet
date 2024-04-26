@@ -25,6 +25,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
+import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
@@ -94,8 +95,6 @@ const Table = ({ collapseSidebar }) => {
   const tooljetDbTableRef = useRef(null);
   const duration = 300;
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
-  const isForeignKey = true;
 
   const updateCellNavigationRefToDefault = () => {
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
@@ -298,7 +297,11 @@ const Table = ({ collapseSidebar }) => {
             }))
           );
         }
-        if (foreign_keys.length) setForeignKeys([...foreign_keys]);
+        if (foreign_keys.length > 0) {
+          setForeignKeys([...foreign_keys]);
+        } else {
+          setForeignKeys([]);
+        }
       });
     } else {
       setColumns([]);
@@ -849,9 +852,33 @@ const Table = ({ collapseSidebar }) => {
               <span style={{ marginRight: foreignKeys[0]?.column_names?.length > 0 ? '3px' : '' }}>
                 <SolidIcon name="primarykey" />
               </span>
-              {foreignKeys[0]?.column_names?.length > 0 && <ForeignKeyIndicator />}
             </div>
           </ToolTip>
+          {foreignKeys[0]?.column_names?.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header && (
+            <ToolTip
+              message={
+                foreignKeys.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header ? (
+                  <div>
+                    <span>Foreign key relation</span>
+                    <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                      <span>{foreignKeys[0]?.column_names[0]}</span>
+                      <ArrowRight />
+                      <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
+                    </div>
+                  </div>
+                ) : null
+              }
+              placement="top"
+              tooltipClassName="tootip-table"
+              show={true}
+            >
+              <div>
+                <span style={{ marginRight: foreignKeys[0]?.column_names?.length > 0 ? '3px' : '' }}>
+                  <ForeignKeyIndicator />
+                </span>
+              </div>
+            </ToolTip>
+          )}
         </div>
       </ToolTip>
     ) : (
@@ -863,11 +890,31 @@ const Table = ({ collapseSidebar }) => {
           {column.render('Header')}
         </div>
 
-        {foreignKeys[0]?.column_names?.length > 0 && (
-          <span style={{ marginRight: '3px' }}>
-            <ForeignKeyIndicator />
-          </span>
-        )}
+        <ToolTip
+          message={
+            foreignKeys.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header ? (
+              <div>
+                <span>Foreign key relation</span>
+                <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                  <span>{foreignKeys[0]?.column_names[0]}</span>
+                  <ArrowRight />
+                  <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
+                </div>
+              </div>
+            ) : null
+          }
+          placement="top"
+          tooltipClassName="tootip-table"
+          show={true}
+        >
+          <div>
+            {foreignKeys[0]?.column_names?.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header && (
+              <span style={{ marginRight: foreignKeys[0]?.column_names?.length > 0 ? '3px' : '' }}>
+                <ForeignKeyIndicator />
+              </span>
+            )}
+          </div>
+        </ToolTip>
       </div>
     );
   }
@@ -915,6 +962,7 @@ const Table = ({ collapseSidebar }) => {
         setFilterEnable={setFilterEnable}
         filterEnable={filterEnable}
         referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
         // getForeignKeyDetails={getForeignKeyDetails}
       />
       <div
@@ -1113,6 +1161,7 @@ const Table = ({ collapseSidebar }) => {
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`
                             : `id-${cell.row.values?.id}-column-${cell.column.id}`;
+
                         return (
                           <td
                             {...cell.getCellProps()}
@@ -1260,7 +1309,10 @@ const Table = ({ collapseSidebar }) => {
                                               tooltipClassName="tootip-table"
                                             >
                                               <div className="cursor-pointer">
-                                                {foreignKeys[0]?.column_names?.length > 0 && <Maximize />}
+                                                {foreignKeys[0]?.column_names?.length > 0 &&
+                                                  foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
+                                                    <Maximize />
+                                                  )}
                                               </div>
                                             </ToolTip>
                                           </div>
@@ -1292,7 +1344,10 @@ const Table = ({ collapseSidebar }) => {
                                               tooltipClassName="tootip-table"
                                             >
                                               <div className="cursor-pointer">
-                                                {foreignKeys[0]?.column_names?.length > 0 && <Maximize />}
+                                                {foreignKeys[0]?.column_names?.length > 0 &&
+                                                  foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
+                                                    <Maximize />
+                                                  )}
                                               </div>
                                             </ToolTip>
                                           </div>
@@ -1339,7 +1394,9 @@ const Table = ({ collapseSidebar }) => {
                                         // </div>
                                         <div
                                           className={cx({
-                                            'foreignkey-cell': foreignKeys[0]?.column_names?.length > 0,
+                                            'foreignkey-cell':
+                                              foreignKeys[0]?.column_names?.length > 0 &&
+                                              foreignKeys[0]?.column_names[0] === cell?.column?.Header,
                                           })}
                                         >
                                           <div className="cell-text">
@@ -1351,7 +1408,10 @@ const Table = ({ collapseSidebar }) => {
                                             tooltipClassName="tootip-table"
                                           >
                                             <div className="cursor-pointer">
-                                              {foreignKeys[0]?.column_names?.length > 0 && <Maximize />}
+                                              {foreignKeys[0]?.column_names?.length > 0 &&
+                                                foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
+                                                  <Maximize />
+                                                )}
                                             </div>
                                           </ToolTip>
                                         </div>
@@ -1384,7 +1444,6 @@ const Table = ({ collapseSidebar }) => {
                 <div
                   onClick={() => {
                     resetCellAndRowSelection();
-                    // getForeignKeyDetails(0);
                     setIsCreateRowDrawerOpen(true);
                   }}
                   className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
@@ -1467,6 +1526,8 @@ const Table = ({ collapseSidebar }) => {
           onClose={() => setIsEditColumnDrawerOpen(false)}
           rows={rows}
           isEditColumn={true}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
       <ConfirmDialog
