@@ -733,25 +733,27 @@ export const Container = ({
                 Choose a component from the right side panel or use our pre-built templates to get started quickly!
               </div>
             </div>
-            <div className="col-md-4 dotted-cont">
-              <div className="box-icon">
-                <SolidIcon name="datasource" fill="#3E63DD" width="25" />
-              </div>
-              <div className={`title-text`}>Create a Query</div>
-              <div className="title-desc">
-                Connect to your data source or use our sample data source to start playing around!
-              </div>
-              <div className="box-link">
-                <div className="child">
-                  <a className="link-but" onClick={handleConnectSampleDB}>
-                    Connect to sample data source{' '}
-                  </a>
+            {!!sampleDataSource && (
+              <div className="col-md-4 dotted-cont">
+                <div className="box-icon">
+                  <SolidIcon name="datasource" fill="#3E63DD" width="25" />
                 </div>
-                <div>
-                  <BulkIcon name="arrowright" fill="#3E63DD" />
+                <div className={`title-text`}>Create a Query</div>
+                <div className="title-desc">
+                  Connect to your data source or use our sample data source to start playing around!
+                </div>
+                <div className="box-link">
+                  <div className="child">
+                    <a className="link-but" onClick={handleConnectSampleDB}>
+                      Connect to sample data source{' '}
+                    </a>
+                  </div>
+                  <div>
+                    <BulkIcon name="arrowright" fill="#3E63DD" />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="col-md-4 dotted-cont">
               <div className="box-icon">
