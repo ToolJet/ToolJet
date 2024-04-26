@@ -32,6 +32,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
         email,
         name,
         organization_invite_url,
+        is_workspace_sign_up_invite,
       } = invitedUserSession;
       /* 
         We should only run the authorization against the session if the user has active workspace 
@@ -41,6 +42,10 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
         email,
         name,
       });
+      if (is_workspace_sign_up_invite) {
+        setLoading(false);
+        return;
+      }
       /* User has active account. but still using the same invite. redirect to the org-invite URL */
       if (organization_invite_url) navigate(organization_invite_url);
       if (!noWorkspaceAttachedInTheSession) {

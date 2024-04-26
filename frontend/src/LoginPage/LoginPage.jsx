@@ -25,6 +25,7 @@ class LoginPageComponent extends React.Component {
       isLoading: false,
       showPassword: false,
       emailError: false,
+      redirectTo: null,
     };
     this.organizationId = props.organizationId;
     this.paramOrganizationSlug = props?.params?.organizationId;
@@ -72,6 +73,9 @@ class LoginPageComponent extends React.Component {
     authenticationService.saveLoginOrganizationId(this.organizationId);
     authenticationService.saveLoginOrganizationSlug(this.paramOrganizationSlug);
     redirectPath && setCookie('redirectPath', redirectPath, iframe);
+    this.setState({
+      redirectTo: redirectPath,
+    });
   }
 
   authUser = (e) => {
@@ -117,7 +121,7 @@ class LoginPageComponent extends React.Component {
 
   render() {
     const { configs, currentOrganizationName } = this.props;
-    const { isLoading } = this.state;
+    const { isLoading, redirectTo } = this.state;
     const shouldShowLoginMethods = configs?.google?.enabled || configs?.git?.enabled || configs?.form?.enabled;
     const noLoginMethodsEnabled = !configs?.form && !configs?.git && !configs?.google;
     const workspaceSignUpEnabled = this.organizationId && configs?.enable_sign_up;
@@ -127,6 +131,9 @@ class LoginPageComponent extends React.Component {
     const signupText = workspaceSignUpEnabled
       ? this.props.t('loginSignupPage.newToWorkspace', `New to this workspace?`)
       : this.props.t('loginSignupPage.newToTooljet', `New to Tooljet?`);
+    const signUpUrl = `/signup${this.paramOrganizationSlug ? `/${this.paramOrganizationSlug}` : ''}${
+      redirectTo ? `?redirectTo=${redirectTo}` : ''
+    }`;
 
     return (
       <>
@@ -177,7 +184,7 @@ class LoginPageComponent extends React.Component {
                                 >
                                   {this.props.t('newToTooljet', signupText)}
                                   <Link
-                                    to={`/signup${this.paramOrganizationSlug ? `/${this.paramOrganizationSlug}` : ''}`}
+                                    to={signUpUrl}
                                     tabIndex="-1"
                                     style={{ marginLeft: '4px' }}
                                     data-cy="create-an-account-link"

@@ -26,6 +26,7 @@ class SignupPageComponent extends React.Component {
     this.inviteeEmail = routeState?.inviteeEmail;
     this.inviteOrganizationId = props.organizationId;
     this.paramInviteOrganizationSlug = props.params.organizationId;
+    this.redirectTo = location?.search?.split('redirectTo=')[1];
 
     this.state = {
       isLoading: false,
@@ -86,7 +87,7 @@ class SignupPageComponent extends React.Component {
         });
     } else {
       authenticationService
-        .signup(email, name, password, this.inviteOrganizationId)
+        .signup(email, name, password, this.inviteOrganizationId, this.redirectTo)
         .then((response) => {
           const { organizationInviteUrl } = response;
           if (organizationInviteUrl) onInvitedUserSignUpSuccess(response, this.props.navigate);

@@ -81,6 +81,7 @@ export class OrganizationUsersService {
         'user.status',
         'user.firstName',
         'user.lastName',
+        'user.source',
       ])
       .innerJoin('organizationUser.user', 'user')
       .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
