@@ -338,7 +338,7 @@ export async function runTransformation(
       const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
       if (mode === 'edit') {
         toast(
-          <span>
+          <span className="text-break">
             <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
             {$errorMessage || 'Unknown error'}
           </span>,
@@ -1022,7 +1022,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             }
 
             toast(
-              <span>
+              <span className="text-break">
                 <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
                 {err?.message ? err?.message : 'Something went wrong'}
               </span>,
@@ -1260,7 +1260,7 @@ export function runQuery(
             }
 
             toast(
-              <span>
+              <span className="text-break">
                 <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
                 {err?.message ? err?.message : 'Something went wrong'}
               </span>,
@@ -1362,7 +1362,7 @@ export function runQuery(
         const { error } = err;
         if (mode !== 'view') {
           toast(
-            <span>
+            <span className="text-break">
               <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
               {err?.message ? err?.message : 'Unknown error'}
             </span>,
