@@ -42,7 +42,7 @@ To add an event to a color-picker component, click on the widget handle to open 
 
 ## Component Specific Actions (CSA)
 
-Following actions of Color Picker component can be controlled using the component specific actions(CSA):
+The following actions of the component can be controlled using component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:----------- |
@@ -107,20 +107,4 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 </div>
 
-## Exposed Variables
-
-| Variables    | Description |
-| ----------- | ----------- |
-| selectedColorHex | This variable gets updated with HEX color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorHex}}`|
-| selectedColorRGB | This variable gets updated with RGB color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGB}}`|
-| selectedColorRGBA | This variable gets updated with RGBA color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGBA}}`|
-
-## Component specific actions (CSA)
-
-Following actions of the component can be controlled using the component specific actions(CSA):
-
-
-
-| Actions     | Description |
-| ----------- | ----------- |
-| setColor | Set a color on the color component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.colorpicker1.setColor('#64A07A')` |
+</div>
