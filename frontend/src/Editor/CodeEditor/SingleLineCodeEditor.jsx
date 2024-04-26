@@ -22,7 +22,6 @@ import CodeHinter from './CodeHinter';
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
-
   const [isFocused, setIsFocused] = useState(false);
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
@@ -289,6 +288,7 @@ const DynamicEditorBridge = (props) => {
     cyLabel = '',
     onChange,
     styleDefinition,
+    onVisibilityChange,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -349,6 +349,7 @@ const DynamicEditorBridge = (props) => {
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 styleDefinition={styleDefinition}
+                onVisibilityChange={onVisibilityChange}
               />
             )}
           </div>
