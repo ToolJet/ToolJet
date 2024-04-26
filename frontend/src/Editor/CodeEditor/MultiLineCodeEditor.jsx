@@ -126,6 +126,7 @@ const MultiLineCodeEditor = (props) => {
     const searchQuery = contentAsPerLine.substring(indexOfLeftSpaceBeforeTheSubstring, indexEndOfSubstring).trim();
 
     const finalQuery = searchQuery.split(' ').pop();
+    console.log('--arpit:: finalQuery', { finalQuery });
 
     let JSLangHints = [];
     if (lang === 'javascript') {
