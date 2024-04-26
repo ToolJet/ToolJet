@@ -999,6 +999,7 @@ const EditorComponent = (props) => {
     }
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
+    removeUndefined(diffPatches);
 
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
