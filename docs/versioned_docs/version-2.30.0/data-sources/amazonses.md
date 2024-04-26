@@ -37,10 +37,6 @@ Click on the **Save** button to save the data source.
 ## Supported operations
 1.  Email service
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Email service
 Required parameters:
 - Send email to
