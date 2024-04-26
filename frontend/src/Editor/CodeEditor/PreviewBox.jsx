@@ -168,7 +168,6 @@ const PreviewContainer = ({
   enablePreview,
   setCursorInsidePreview,
   isPortalOpen,
-  type,
   ...restProps
 }) => {
   const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement } = restProps;
@@ -190,7 +189,7 @@ const PreviewContainer = ({
         width: '250px',
         maxWidth: '350px',
         marginRight: 2,
-        zIndex: type == 'fxEditor' ? 1400 : 1200,
+        zIndex: 1400,
       }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
