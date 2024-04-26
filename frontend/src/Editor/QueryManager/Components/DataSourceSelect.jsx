@@ -21,11 +21,9 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const sampleDataSource = useSampleDataSource();
-  const [userDefinedSources, setUserDefinedSources] = useState([
-    ...dataSources,
-    ...globalDataSources,
-    sampleDataSource,
-  ]);
+  const [userDefinedSources, setUserDefinedSources] = useState(
+    [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource].filter(Boolean)
+  );
   const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
   const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
   const { createDataQuery } = useDataQueriesActions();
@@ -37,7 +35,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   };
 
   useEffect(() => {
-    const allDataSources = [...dataSources, ...globalDataSources, sampleDataSource];
+    const shouldAddSampleDataSource = !!sampleDataSource;
+    const allDataSources = [...dataSources, ...globalDataSources, shouldAddSampleDataSource && sampleDataSource].filter(
+      Boolean
+    );
     setUserDefinedSources(allDataSources);
     const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
     allDataSources.forEach(({ plugin }) => {

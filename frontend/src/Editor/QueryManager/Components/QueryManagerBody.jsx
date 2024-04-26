@@ -237,9 +237,9 @@ export const QueryManagerBody = ({
   };
 
   const renderChangeDataSource = () => {
-    const selectableDataSources = [...globalDataSources, ...dataSources, sampleDataSource].filter(
-      (ds) => ds.kind === selectedQuery?.kind
-    );
+    const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
+      .filter(Boolean)
+      .filter((ds) => ds.kind === selectedQuery?.kind);
     if (isEmpty(selectableDataSources)) {
       return '';
     }

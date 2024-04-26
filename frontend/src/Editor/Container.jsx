@@ -640,6 +640,10 @@ export const Container = ({
     childComponents,
   ]);
 
+  const queryBoxText = sampleDataSource
+    ? 'Connect to your data source or use our sample data source to start playing around!'
+    : 'Connect to a data source to be able to create a query';
+
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -738,19 +742,20 @@ export const Container = ({
                 <SolidIcon name="datasource" fill="#3E63DD" width="25" />
               </div>
               <div className={`title-text`}>Create a Query</div>
-              <div className="title-desc">
-                Connect to your data source or use our sample data source to start playing around!
-              </div>
-              <div className="box-link">
-                <div className="child">
-                  <a className="link-but" onClick={handleConnectSampleDB}>
-                    Connect to sample data source{' '}
-                  </a>
+              <div className="title-desc">{queryBoxText}</div>
+              {!!sampleDataSource && (
+                <div className="box-link">
+                  <div className="child">
+                    <a className="link-but" onClick={handleConnectSampleDB}>
+                      Connect to sample data source{' '}
+                    </a>
+                  </div>
+
+                  <div>
+                    <BulkIcon name="arrowright" fill="#3E63DD" />
+                  </div>
                 </div>
-                <div>
-                  <BulkIcon name="arrowright" fill="#3E63DD" />
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="col-md-4 dotted-cont">
