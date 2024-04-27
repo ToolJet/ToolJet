@@ -217,12 +217,17 @@ export const generateInviteURL = (
   return `${baseURL}${inviteSupath}${organizationSupath}${queryString}`;
 };
 
-export const generateOrgInviteURL = (organizationToken: string, organizationId?: string, fullUrl = true) => {
+export const generateOrgInviteURL = (
+  organizationToken: string,
+  organizationId?: string,
+  fullUrl = true,
+  redirectTo?: string
+) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
   return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
-  }`;
+  }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
 
 export function extractMajorVersion(version) {

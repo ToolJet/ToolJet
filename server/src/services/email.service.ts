@@ -122,10 +122,12 @@ export class EmailService {
     name: string,
     sender: string,
     invitationtoken: string,
-    organizationName: string
+    organizationName: string,
+    organizationId: string,
+    redirectTo?: string
   ) {
     const subject = `Welcome to ${organizationName || 'ToolJet'}`;
-    const inviteUrl = generateOrgInviteURL(invitationtoken);
+    const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo);
     const templateData = {
       name: name || '',
       inviteUrl,

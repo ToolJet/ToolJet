@@ -413,7 +413,9 @@ export class AuthService {
   sendOrgInvite = (
     userParams: { email: string; firstName: string },
     signingUpOrganizationName: string,
-    invitationToken = null,
+    organizationId: string,
+    invitationToken: string,
+    redirectTo?: string,
     throwError = true
   ) => {
     this.emailService
@@ -422,7 +424,9 @@ export class AuthService {
         userParams.firstName,
         null,
         invitationToken,
-        signingUpOrganizationName
+        signingUpOrganizationName,
+        organizationId,
+        redirectTo
       )
       .catch((err) => console.error(err));
     if (throwError) {
@@ -485,22 +489,6 @@ export class AuthService {
           manager
         );
       }
-      case activeAccountButnotActiveInWorkspace: {
-        /* Send the org invite again */
-        const defaultOrganization = await this.organizationsService.fetchOrganization(
-          existingUser.defaultOrganizationId
-        );
-        return await this.processOrganizationSignup(
-          response,
-          existingUser,
-          {
-            invitationToken: alreadyInvitedUserByAdmin.invitationToken,
-            organizationId,
-          },
-          manager,
-          defaultOrganization
-        );
-      }
       case activeUserWantsToSignUpToWorkspace: {
         const isAlreadyAddedToWorkspaceButNotActive = organizationUsers.find(
           (organizationUser: OrganizationUser) => organizationUser.organizationId === organizationId
@@ -515,8 +503,26 @@ export class AuthService {
         return this.sendOrgInvite(
           { email: existingUser.email, firstName: existingUser.firstName },
           signingUpOrganization.name,
+          signingUpOrganization.id,
           organizationUser.invitationToken,
+          redirectTo,
           !!isAlreadyAddedToWorkspaceButNotActive
+        );
+      }
+      case activeAccountButnotActiveInWorkspace: {
+        /* Send the org invite again */
+        const defaultOrganization = await this.organizationsService.fetchOrganization(
+          existingUser.defaultOrganizationId
+        );
+        return await this.processOrganizationSignup(
+          response,
+          existingUser,
+          {
+            invitationToken: alreadyInvitedUserByAdmin.invitationToken,
+            organizationId,
+          },
+          manager,
+          defaultOrganization
         );
       }
       case hasWorkspaceInviteButUserWantsInstanceSignup: {
