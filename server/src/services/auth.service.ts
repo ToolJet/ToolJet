@@ -119,6 +119,9 @@ export class AuthService {
     if (isInviteRedirect) {
       /* give access to the default organization */
       user = await this.usersService.findByEmail(email, organizationId, [WORKSPACE_USER_STATUS.INVITED]);
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
       organizationId = null;
     } else {
       user = await this.validateUser(email, password, organizationId);
@@ -361,20 +364,6 @@ export class AuthService {
           .catch((err) => console.error('Error while sending welcome mail', err));
         return {};
       } else {
-        if (existingUser) {
-          /* Invite user doing instance signup. So reset name fields and set password */
-          await this.usersService.updateUser(
-            existingUser.id,
-            {
-              ...(firstName && { firstName }),
-              lastName: lastName ?? '',
-              defaultOrganizationId: personalWorkspace.id,
-              password,
-              source: SOURCE.SIGNUP,
-            },
-            manager
-          );
-        }
         this.emailService
           .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
           .catch((err) => console.error('Error while sending welcome mail', err));
@@ -464,12 +453,16 @@ export class AuthService {
         organizationUser.organizationId === organizationId && organizationUser.status === WORKSPACE_USER_STATUS.ACTIVE
     );
 
-    /* User who missed the organization invite flow  */
+    /*
+    NOTE: Active user and account is different
+    active account -> user.status == active && invitation_token is null
+    active user -> has active account + active workspace (workspace status is active and invitation token is null)
+    */
+
+    /* User who missed the organization invite flow / user already got invite from the admin and want's to use workspace signup instead  */
     const activeAccountButnotActiveInWorkspace = !!alreadyInvitedUserByAdmin && !existingUser.invitationToken;
     const invitedButNotActivated = !!alreadyInvitedUserByAdmin && !!existingUser.invitationToken;
     const activeUserWantsToSignUpToWorkspace = hasActiveWorkspaces && !!organizationId && !isAlreadyActiveInWorkspace;
-    const personalWorkspaceCount = await this.organizationUsersService.personalWorkspaceCount(existingUser.id);
-    /* Personal workspace case */
     const hasWorkspaceInviteButUserWantsInstanceSignup =
       !!existingUser?.invitationToken && hasSomeWorkspaceInvites && !organizationId;
     const isUserAlreadyExisted = !!isAlreadyActiveInWorkspace || hasActiveWorkspaces || !existingUser?.invitationToken;
@@ -526,22 +519,26 @@ export class AuthService {
         );
       }
       case hasWorkspaceInviteButUserWantsInstanceSignup: {
-        const errorMessage = 'The user is already registered. Please check your inbox for the activation link';
-        if (personalWorkspaceCount === 0) {
-          await this.createUserOrPersonalWorkspace(
-            { email: existingUser.email, password, firstName, lastName },
-            existingUser,
-            null,
-            redirectTo,
+        /* Invite user doing instance signup. So reset name fields and set password */
+        const firstTimeSignup = existingUser.source !== SOURCE.SIGNUP;
+        if (firstTimeSignup) {
+          await this.usersService.updateUser(
+            existingUser.id,
+            {
+              ...(firstName && { firstName }),
+              ...(lastName && { lastName }),
+              password,
+              source: SOURCE.SIGNUP,
+            },
             manager
           );
-        } else {
-          this.emailService
-            .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
-            .catch((err) => console.error('Error while sending welcome mail', err));
-          throw new NotAcceptableException(errorMessage);
         }
-        break;
+        this.emailService
+          .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
+          .catch((err) => console.error('Error while sending welcome mail', err));
+        const errorMessage = 'The user is already registered. Please check your inbox for the activation link';
+        if (!firstTimeSignup) throw new NotAcceptableException(errorMessage);
+        return {};
       }
       case workspaceSignupForInstanceSignedUpUserButNotActive: {
         const organizationUser = await this.addUserToTheWorkspace(
@@ -560,7 +557,7 @@ export class AuthService {
       }
       case isUserAlreadyExisted: {
         /* already an user of that workspace or user is trying signup again from instance signup page */
-        const errorMessage = organizationId ? 'User already extsts in the workspace.' : 'Email already exists.';
+        const errorMessage = organizationId ? 'User already exists in the workspace.' : 'Email already exists.';
         throw new NotAcceptableException(errorMessage);
       }
       default:
