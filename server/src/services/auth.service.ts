@@ -466,32 +466,54 @@ export class AuthService {
     const hasWorkspaceInviteButUserWantsInstanceSignup =
       !!existingUser?.invitationToken && hasSomeWorkspaceInvites && !organizationId;
     const isUserAlreadyExisted = !!isAlreadyActiveInWorkspace || hasActiveWorkspaces || !existingUser?.invitationToken;
-    const workspaceSignupForInstanceSignedUpUserButNotActive = !!existingUser?.invitationToken && !!organizationId;
+    const workspaceSignupForInstanceSignedUpUserButNotActive =
+      !!organizationId && !!existingUser?.invitationToken && !alreadyInvitedUserByAdmin;
 
     switch (true) {
+      case workspaceSignupForInstanceSignedUpUserButNotActive:
       case invitedButNotActivated: {
-        /* 
-               Organization Signup and admin already send an invite to the user
-               activate account and send org invite url 
-            */
-        return this.activateUserAndInviteToTheWorkspace(
-          existingUser,
-          { invitationToken: alreadyInvitedUserByAdmin.invitationToken, organizationId },
-          userParams,
-          response,
-          manager
-        );
-      }
-      case activeUserWantsToSignUpToWorkspace: {
-        const isAlreadyAddedToWorkspaceButNotActive = organizationUsers.find(
-          (organizationUser: OrganizationUser) => organizationUser.organizationId === organizationId
-        );
         let organizationUser: OrganizationUser;
-        if (isAlreadyAddedToWorkspaceButNotActive) {
-          organizationUser = isAlreadyAddedToWorkspaceButNotActive;
+        if (alreadyInvitedUserByAdmin) {
+          /*
+            CASE: User is new and already got an invite from admin. But he choose to signup from workspace signup page
+            Response: Send the org invite again and thorw an error
+          */
+          organizationUser = alreadyInvitedUserByAdmin;
+        } else {
+          /* 
+            CASE: User signed up throug the instance page, but don't want to continue the invite floe. So decided to go with workspace signup 
+            Response: Add the user to the workspace and send the organization and account invite again (eg: /invitations/<>/workspaces/<>).
+          */
+          organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
+        }
+        this.emailService
+          .sendWelcomeEmail(
+            existingUser.email,
+            existingUser.firstName,
+            existingUser.invitationToken,
+            organizationUser.invitationToken,
+            organizationUser.organizationId,
+            signingUpOrganization.name,
+            null,
+            redirectTo
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+        if (alreadyInvitedUserByAdmin) {
+          throw new NotAcceptableException(
+            'The user is already registered. Please check your inbox for the activation link'
+          );
+        }
+        return {};
+      }
+      case activeAccountButnotActiveInWorkspace:
+      case activeUserWantsToSignUpToWorkspace: {
+        /* User is already active in some workspace but not in this workspace */
+        let organizationUser: OrganizationUser;
+        if (alreadyInvitedUserByAdmin) {
+          organizationUser = alreadyInvitedUserByAdmin;
         } else {
           /* Create new organizations_user entry and send an invite */
-          organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager, response);
+          organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
         }
         return this.sendOrgInvite(
           { email: existingUser.email, firstName: existingUser.firstName },
@@ -499,29 +521,13 @@ export class AuthService {
           signingUpOrganization.id,
           organizationUser.invitationToken,
           redirectTo,
-          !!isAlreadyAddedToWorkspaceButNotActive
-        );
-      }
-      case activeAccountButnotActiveInWorkspace: {
-        /* Send the org invite again */
-        const defaultOrganization = await this.organizationsService.fetchOrganization(
-          existingUser.defaultOrganizationId
-        );
-        return await this.processOrganizationSignup(
-          response,
-          existingUser,
-          {
-            invitationToken: alreadyInvitedUserByAdmin.invitationToken,
-            organizationId,
-          },
-          manager,
-          defaultOrganization
+          !!alreadyInvitedUserByAdmin
         );
       }
       case hasWorkspaceInviteButUserWantsInstanceSignup: {
-        /* Invite user doing instance signup. So reset name fields and set password */
         const firstTimeSignup = existingUser.source !== SOURCE.SIGNUP;
         if (firstTimeSignup) {
+          /* Invite user doing instance signup. So reset name fields and set password */
           await this.usersService.updateUser(
             existingUser.id,
             {
@@ -540,23 +546,7 @@ export class AuthService {
         if (!firstTimeSignup) throw new NotAcceptableException(errorMessage);
         return {};
       }
-      case workspaceSignupForInstanceSignedUpUserButNotActive: {
-        const organizationUser = await this.addUserToTheWorkspace(
-          existingUser,
-          signingUpOrganization,
-          manager,
-          response
-        );
-        return this.activateUserAndInviteToTheWorkspace(
-          existingUser,
-          { invitationToken: organizationUser.invitationToken, organizationId },
-          userParams,
-          response,
-          manager
-        );
-      }
       case isUserAlreadyExisted: {
-        /* already an user of that workspace or user is trying signup again from instance signup page */
         const errorMessage = organizationId ? 'User already exists in the workspace.' : 'Email already exists.';
         throw new NotAcceptableException(errorMessage);
       }
@@ -565,45 +555,7 @@ export class AuthService {
     }
   };
 
-  async activateUserAndInviteToTheWorkspace(
-    existingUser: User,
-    organizationDetails: { invitationToken: string; organizationId: string },
-    userParams: { firstName: string; lastName: string; password: string },
-    response: Response,
-    manager: EntityManager
-  ) {
-    const { firstName, lastName, password } = userParams;
-    const { invitationToken, organizationId } = organizationDetails;
-    await this.usersService.updateUser(
-      existingUser.id,
-      {
-        invitationToken: null,
-        password,
-        ...(firstName && {
-          firstName,
-        }) /* we should reset the name if the user is not activated his account before */,
-        lastName: lastName ?? '',
-        ...getUserStatusAndSource(lifecycleEvents.USER_REDEEM),
-      },
-      manager
-    );
-    return await this.processOrganizationSignup(
-      response,
-      existingUser,
-      {
-        invitationToken,
-        organizationId,
-      },
-      manager
-    );
-  }
-
-  async addUserToTheWorkspace(
-    existingUser: User,
-    signingUpOrganization: Organization,
-    manager: EntityManager,
-    response: Response
-  ) {
+  async addUserToTheWorkspace(existingUser: User, signingUpOrganization: Organization, manager: EntityManager) {
     await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, existingUser.id, manager);
     return this.organizationUsersService.create(existingUser, signingUpOrganization, true, manager);
   }
