@@ -39,10 +39,14 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
   );
   const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
+  const [tableForeignKeyInfo, setTableForeignKeyInfo] = useState({});
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
   ];
+
+  console.log('tableInfo', tableInfo);
+  console.log('tableForeignKeyInfo', tableForeignKeyInfo);
 
   const setJoinOptions = (values) => {
     const tableSet = new Set();
@@ -235,6 +239,11 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         })),
       }));
 
+      setTableForeignKeyInfo((fk_info) => ({
+        ...fk_info,
+        [table_name]: data?.result?.foreign_keys || [],
+      }));
+
       if (isNewTableAdded) {
         setJoinTableOptions((joinOptions) => {
           const { fields } = joinOptions;
@@ -312,6 +321,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       deleteJoinTableOptions,
       findTableDetails,
       findTableDetailsByName,
+      tableForeignKeyInfo,
+      setTableForeignKeyInfo,
     }),
     [
       organizationId,
@@ -376,6 +387,11 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         }));
         setColumns(columnList);
         setTableInfo((prevTableInfo) => ({ ...prevTableInfo, [table_name]: columnList }));
+
+        setTableForeignKeyInfo((fk_info) => ({
+          ...fk_info,
+          [table_name]: data?.result?.foreign_keys || [],
+        }));
 
         if (isNewTableAdded) {
           setJoinTableOptions((joinOptions) => {
