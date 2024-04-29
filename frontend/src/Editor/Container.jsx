@@ -32,6 +32,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { isPDFSupported } from '@/_stores/utils';
 import toast from 'react-hot-toast';
+import { getSubpath } from '@/_helpers/routes';
 
 const NO_OF_GRIDS = 43;
 
@@ -580,7 +581,11 @@ export const Container = ({
 
   const openAddUserWorkspaceSetting = () => {
     const workspaceId = getWorkspaceId();
-    window.open(`/${workspaceId}/workspace-settings?adduser=true`, '_blank');
+    const subPath = getSubpath();
+    const path = subPath
+      ? `${subPath}/${workspaceId}/workspace-settings?adduser=true`
+      : `/${workspaceId}/workspace-settings?adduser=true`;
+    window.open(path, '_blank');
   };
 
   const handleConnectSampleDB = () => {
