@@ -13,7 +13,7 @@ Button component can be used to trigger an action. It can be used to submit a fo
 | Property      | Description | Expected value |
 | :----------- | :----------- | :----------- |
 | **Button Text** | It can be used to set the label of the button. | Any **String** value: `Send Message`, `Delete`, or `{{queries.xyz.data.action}}` |
-| **Loading state** | The loading state can be used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to `{{true}}`` or `{{false}}``  |
+| **Loading state** | The loading state can be used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to `{{true}}` or `{{false}}`  |
 
 ## Events
 

@@ -24,6 +24,7 @@ import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
+import Skeleton from 'react-loading-skeleton';
 
 const { iconList, defaultIcon } = configs;
 
@@ -65,6 +66,7 @@ class HomePageComponent extends React.Component {
       showTemplateLibraryModal: false,
       app: {},
       showCreateAppModal: false,
+      showCreateModuleModal: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -134,11 +136,11 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = async (appName) => {
+  createApp = async (appName, type) => {
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
-      const data = await appsService.createApp({ icon: sample(iconList), name: appName });
+      const data = await appsService.createApp({ icon: sample(iconList), name: appName, type });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       toast.success('App created successfully!');
@@ -543,11 +545,11 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppModal = () => {
-    this.setState({ showCreateAppModal: true });
+    this.setState({ showCreateAppModal: true, showCreateModuleModal: true });
   };
 
   closeCreateAppModal = () => {
-    this.setState({ showCreateAppModal: false });
+    this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
   };
 
   render() {
@@ -571,6 +573,7 @@ class HomePageComponent extends React.Component {
       appToBeDeleted,
       app,
       showCreateAppModal,
+      showCreateModuleModal,
       showImportAppModal,
       fileContent,
       fileName,
@@ -580,13 +583,13 @@ class HomePageComponent extends React.Component {
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
-          {showCreateAppModal && (
+          {(showCreateAppModal || showCreateModuleModal) && (
             <AppModal
               closeModal={this.closeCreateAppModal}
-              processApp={this.createApp}
+              processApp={(name) => this.createApp(name, showCreateAppModal ? 'front-end' : 'module')}
               show={this.openCreateAppModal}
-              title={'Create app'}
-              actionButton={'+ Create app'}
+              title={showCreateAppModal ? 'Create app' : 'Create module'}
+              actionButton={showCreateAppModal ? '+ Create app' : '+ Create module'}
               actionLoadingButton={'Creating'}
             />
           )}
@@ -773,7 +776,7 @@ class HomePageComponent extends React.Component {
                       data-cy="create-new-app-button"
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
-                      {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                      {this.props.t('homePage.header.createNewApplication', 'Create an app')}
                     </Button>
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position new-app-dropdown">
@@ -789,7 +792,7 @@ class HomePageComponent extends React.Component {
                         data-cy="import-option-label"
                         onChange={this.readAndImport}
                       >
-                        {this.props.t('homePage.header.import', 'Import')}
+                        {this.props.t('homePage.header.import', 'Import from device')}
                         <input
                           type="file"
                           accept=".json"
@@ -824,6 +827,16 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
+                {isLoading && (
+                  <Skeleton
+                    count={1}
+                    height={20}
+                    width={880}
+                    baseColor="#ECEEF0"
+                    className="mb-3"
+                    style={{ marginTop: '2rem' }}
+                  />
+                )}
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
@@ -873,23 +886,22 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {isLoading ||
-                  (meta.total_count > 0 && (
-                    <AppList
-                      apps={apps}
-                      canCreateApp={this.canCreateApp}
-                      canDeleteApp={this.canDeleteApp}
-                      canUpdateApp={this.canUpdateApp}
-                      deleteApp={this.deleteApp}
-                      exportApp={this.exportApp}
-                      meta={meta}
-                      currentFolder={currentFolder}
-                      isLoading={isLoading}
-                      darkMode={this.props.darkMode}
-                      appActionModal={this.appActionModal}
-                      removeAppFromFolder={this.removeAppFromFolder}
-                    />
-                  ))}
+                {meta.total_count > 0 && (
+                  <AppList
+                    apps={apps}
+                    canCreateApp={this.canCreateApp}
+                    canDeleteApp={this.canDeleteApp}
+                    canUpdateApp={this.canUpdateApp}
+                    deleteApp={this.deleteApp}
+                    exportApp={this.exportApp}
+                    meta={meta}
+                    currentFolder={currentFolder}
+                    isLoading={isLoading}
+                    darkMode={this.props.darkMode}
+                    appActionModal={this.appActionModal}
+                    removeAppFromFolder={this.removeAppFromFolder}
+                  />
+                )}
               </div>
               <div className="footer-container">
                 {this.pageCount() > MAX_APPS_PER_PAGE && (
