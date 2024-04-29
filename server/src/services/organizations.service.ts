@@ -670,8 +670,9 @@ export class OrganizationsService {
             user.email,
             user.firstName,
             name,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
-            currentOrganization.name
+            organizationUser.invitationToken,
+            currentOrganization.name,
+            organizationUser.organizationId
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       }

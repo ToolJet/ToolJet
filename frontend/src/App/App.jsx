@@ -199,7 +199,11 @@ class AppComponent extends React.Component {
               <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/invitations/:token/workspaces/:organizationToken"
-                element={<OrganizationInviteRoute {...this.props} />}
+                element={
+                  <OrganizationInviteRoute {...this.props}>
+                    <VerificationSuccessInfoScreen />
+                  </OrganizationInviteRoute>
+                }
               />
               <Route
                 path="/organization-invitations/:token"

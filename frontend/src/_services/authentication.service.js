@@ -163,11 +163,11 @@ function getOrganizationConfigs(organizationId) {
     .then((configs) => configs?.sso_configs);
 }
 
-function signup(email, name, password, organizationId) {
+function signup(email, name, password, organizationId, redirectTo) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, name, password, organizationId }),
+    body: JSON.stringify({ email, name, password, organizationId, redirectTo }),
     credentials: 'include',
   };
 

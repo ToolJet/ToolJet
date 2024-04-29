@@ -200,22 +200,34 @@ export const generateInviteURL = (
   invitationToken: string,
   organizationToken?: string,
   organizationId?: string,
-  source?: string
+  source?: string,
+  redirectTo?: string
 ) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-
-  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${
-    organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
-  }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
+  const baseURL = `${host}${subpath ? subpath : '/'}`;
+  const inviteSupath = `invitations/${invitationToken}`;
+  const organizationSupath = `${organizationToken ? `/workspaces/${organizationToken}` : ''}`;
+  let queryString = new URLSearchParams({
+    ...(organizationId && { oid: organizationId }),
+    ...(source && { source }),
+    ...(redirectTo && { redirectTo }),
+  }).toString();
+  queryString = queryString ? `?${queryString}` : '';
+  return `${baseURL}${inviteSupath}${organizationSupath}${queryString}`;
 };
 
-export const generateOrgInviteURL = (organizationToken: string, organizationId?: string, fullUrl = true) => {
+export const generateOrgInviteURL = (
+  organizationToken: string,
+  organizationId?: string,
+  fullUrl = true,
+  redirectTo?: string
+) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
   return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
-  }`;
+  }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
 
 export function extractMajorVersion(version) {
