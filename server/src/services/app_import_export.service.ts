@@ -50,7 +50,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -60,7 +60,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
-const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
+const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
 
 @Injectable()
 export class AppImportExportService {
@@ -95,13 +95,14 @@ export class AppImportExportService {
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
-      let dataSources =
+      const legacyLocalDataSources =
         appVersions?.length &&
         (await manager
           .createQueryBuilder(DataSource, 'data_sources')
           .where('data_sources.appVersionId IN(:...versionId)', {
             versionId: appVersions.map((v) => v.id),
           })
+          .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
           .orderBy('data_sources.created_at', 'ASC')
           .getMany());
 
@@ -127,7 +128,7 @@ export class AppImportExportService {
 
       const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
 
-      dataSources = [...dataSources, ...globalDataSources];
+      const dataSources = [...legacyLocalDataSources, ...globalDataSources];
 
       if (dataSources?.length) {
         dataQueries = await manager
@@ -1225,6 +1226,7 @@ export class AppImportExportService {
             canvasMaxHeight: 2400,
             canvasBackgroundColor: '#edeff5',
             backgroundFxQuery: '',
+            appMode: 'auto',
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;

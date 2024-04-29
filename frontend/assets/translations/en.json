@@ -406,8 +406,8 @@
             "wishToDeleteFolder": "Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted."
         },
         "header": {
-            "createNewApplication": "Create new app",
-            "import": "Import",
+            "createNewApplication": "Create an app",
+            "import": "Import from device",
             "chooseFromTemplate": "Choose from template"
         },
         "pagination": {
@@ -707,7 +707,7 @@
             "columnType": "Column type",
             "columnName": "Column name",
             "overflow": "Overflow",
-            "key": "key",
+            "key": "Key",
             "textColor": "Text color",
             "validation": "Validation",
             "regex": "Regex",
@@ -717,8 +717,8 @@
             "values": "Values",
             "labels": "Labels",
             "cellBgColor": "Cell background color",
-            "dateDisplayformat": "Date display format",
-            "dateParseformat": "Date parse format",
+            "dateDisplayformat": "Date format",
+            "dateParseformat": "Date",
             "showTime": "show time",
             "makeEditable": "make editable",
             "buttonText": "Button text",
@@ -728,7 +728,10 @@
             "addColumn": "Add column",
             "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
-            "horizontalAlignment": "horizontal alignment"
+            "horizontalAlignment":"Horizontal alignment",
+            "textAlignment":"Text alignment",
+            "deciamalPlaces":"Decimal Places",
+            "imageFit":"Image fit"
         },
         "Button": {
             "displayName": "Button",
@@ -948,6 +951,7 @@
             "maxWidthOfCanvas": "Max width of canvas",
             "maxHeightOfCanvas": "Max height of canvas",
             "backgroundColorOfCanvas": "Canvas background",
+            "appMode": "App mode",
             "exportApp": "Export app"
         },
         "Back": {

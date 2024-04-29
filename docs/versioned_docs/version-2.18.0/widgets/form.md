@@ -321,7 +321,7 @@ passwordInput1: {
     validation: {
         maxLength: 9,
         minLength: 5,
-        regex: '^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$'
+        regex: `'^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$'`
     },
     placeholder: 'Enter a password',
     label: ''
@@ -339,7 +339,7 @@ passwordInput1: {
 | **validation** | Specifies validation rules for the password. | Object containing `maxLength`, `minLength`, and `regex` properties |
 | **maxLength** | Specifies the maximum length of the password. | Numeric value like 9 |
 | **minLength** | Specifies the minimum length of the password. | Numeric value like 5 |
-| **regex** | Specifies the regular expression for password validation. | Regular expression pattern like '^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$' |
+| **regex** | Specifies the regular expression for password validation. | Regular expression pattern like `'^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$'` |
 | **placeholder** | Specifies the placeholder text of the password input. | Any string value like 'Enter a password' |
 | **label** | Specifies the label of the component. | Any string value (in this case, it's an empty string), to hide the label you can use whitespace within quotes `' '` |
 

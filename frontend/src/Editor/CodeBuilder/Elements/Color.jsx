@@ -45,8 +45,9 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
           // This is fix when color picker don't have much space to open in bottom side
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
+        style={{ zIndex: 10000 }}
       >
-        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'}>
+        <Popover.Body className={!asBoxShadowPopover && 'boxshadow-picker'} style={{ padding: '0px' }}>
           <>{ColorPicker()}</>
         </Popover.Body>
       </Popover>

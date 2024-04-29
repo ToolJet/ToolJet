@@ -4,10 +4,10 @@ title: Radio Button
 ---
 # Radio Button
 
-Radio button widget can be used to select one option from a group of options.
+The **Radio Button** widget can be used to select one option from a group of options.
 
 :::tip
-Radio buttons are preferred when the list of options is less than six, and all the options can be displayed at once.
+Radio Buttons are preferred when the list of options is less than six, and all the options can be displayed at once.
 :::
 
 :::info

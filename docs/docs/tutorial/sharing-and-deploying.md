@@ -14,7 +14,7 @@ Clicking on `Preview` will open up the currently opened version of the app in th
 
 ## Sharing an app
 
-Once you have released a version of your app, you can share the app with others using a customised url. To share an app:
+Once you have released a version of your app, you can share the app with others using a customized url. To share an app:
 
 - Click on the **Share** button on the top-right corner
 
