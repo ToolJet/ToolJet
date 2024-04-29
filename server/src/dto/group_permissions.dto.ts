@@ -11,7 +11,7 @@ export class CreateGroupPermissionDto {
 export class UpdateGroupPermissionDto {
   @IsString()
   @Transform(({ value }) => value.trim())
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @IsBoolean()
@@ -37,15 +37,4 @@ export class UpdateGroupPermissionDto {
   @IsBoolean()
   @IsOptional()
   dataSourceDelete: boolean;
-}
-
-export class DuplucateGroupDto {
-  @IsBoolean()
-  addPermission;
-
-  @IsBoolean()
-  addApps;
-
-  @IsBoolean()
-  addUsers;
 }

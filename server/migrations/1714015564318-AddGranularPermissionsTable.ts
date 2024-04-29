@@ -15,7 +15,7 @@ export class AddGranularPermissionsTable1714015564318 implements MigrationInterf
         group_id UUID,
         name VARCHAR NOT NULL,
         type resource_type NOT NULL,
-        is_all BOOLEAN DEFAULT false,
+        is_all BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_group_id FOREIGN KEY (group_id) REFERENCES group_permissions(id) ON DELETE CASCADE

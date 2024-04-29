@@ -5,4 +5,5 @@ export enum DataBaseConstraints {
   WORKSPACE_NAME_UNIQUE = 'name_organizations_unique',
   WORKSPACE_SLUG_UNIQUE = 'slug_organizations_unique',
   USER_ORGANIZATION_UNIQUE = 'user_organization_unique',
+  GROUP_NAME_UNIQUE = 'group_name_organization_id_unique',
 }
