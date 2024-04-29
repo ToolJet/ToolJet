@@ -101,9 +101,9 @@ function DataSourceSelect({
   // // scrollContainerRef?.current?.addEventListener('scroll', handleScroll);
 
   useEffect(() => {
-    // if (scrollEventForColumnValus) {
-    getForeignKeyDetails(1);
-    // }
+    if (scrollEventForColumnValus) {
+      getForeignKeyDetails(1);
+    }
 
     // console.log('first', foreignKeys);
   }, []);

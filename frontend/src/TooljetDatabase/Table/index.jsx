@@ -827,6 +827,15 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
+  function isMatchingForeignKeyColumn(columnName) {
+    return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
+  }
+
+  function isMatchingForeignKeyColumnDetails(columnHeader) {
+    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    return matchingColumn;
+  }
+
   function tableHeaderContent(column, index) {
     const { constraints_type = {}, dataType = '' } = column;
     const { is_primary_key } = constraints_type;
@@ -847,38 +856,50 @@ const Table = ({ collapseSidebar }) => {
             </span>
             <span>{column.render('Header')}</span>
           </div>
-          <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
-            <div>
-              <span style={{ marginRight: foreignKeys[0]?.column_names?.length > 0 ? '3px' : '' }}>
-                <SolidIcon name="primarykey" />
-              </span>
-            </div>
-          </ToolTip>
-          {foreignKeys[0]?.column_names?.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header && (
-            <ToolTip
-              message={
-                foreignKeys.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header ? (
-                  <div>
-                    <span>Foreign key relation</span>
-                    <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                      <span>{foreignKeys[0]?.column_names[0]}</span>
-                      <ArrowRight />
-                      <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
-                    </div>
-                  </div>
-                ) : null
-              }
-              placement="top"
-              tooltipClassName="tootip-table"
-              show={true}
-            >
+          <div className="d-flex align-items-center">
+            <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
               <div>
-                <span style={{ marginRight: foreignKeys[0]?.column_names?.length > 0 ? '3px' : '' }}>
-                  <ForeignKeyIndicator />
+                <span
+                  style={{
+                    marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
+                  }}
+                >
+                  <SolidIcon name="primarykey" />
                 </span>
               </div>
             </ToolTip>
-          )}
+            {isMatchingForeignKeyColumn(column.Header) && (
+              <ToolTip
+                message={
+                  isMatchingForeignKeyColumn(column.Header) ? (
+                    <div>
+                      <span>Foreign key relation</span>
+                      <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                        <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
+                        <ArrowRight />
+                        <span>{`${isMatchingForeignKeyColumnDetails(column.Header)?.referenced_table_name}.${
+                          isMatchingForeignKeyColumnDetails(column.Header)?.referenced_column_names[0]
+                        }`}</span>
+                      </div>
+                    </div>
+                  ) : null
+                }
+                placement="top"
+                tooltipClassName="tootip-table"
+                show={true}
+              >
+                <div>
+                  <span
+                    style={{
+                      marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
+                    }}
+                  >
+                    <ForeignKeyIndicator />
+                  </span>
+                </div>
+              </ToolTip>
+            )}
+          </div>
         </div>
       </ToolTip>
     ) : (
@@ -892,13 +913,15 @@ const Table = ({ collapseSidebar }) => {
 
         <ToolTip
           message={
-            foreignKeys.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header ? (
+            isMatchingForeignKeyColumn(column.Header) ? (
               <div>
                 <span>Foreign key relation</span>
                 <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                  <span>{foreignKeys[0]?.column_names[0]}</span>
+                  <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
                   <ArrowRight />
-                  <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
+                  <span>{`${isMatchingForeignKeyColumnDetails(column.Header)?.referenced_table_name}.${
+                    isMatchingForeignKeyColumnDetails(column.Header)?.referenced_column_names[0]
+                  }`}</span>
                 </div>
               </div>
             ) : null
@@ -908,8 +931,12 @@ const Table = ({ collapseSidebar }) => {
           show={true}
         >
           <div>
-            {foreignKeys[0]?.column_names?.length > 0 && foreignKeys[0]?.column_names[0] === column?.Header && (
-              <span style={{ marginRight: foreignKeys[0]?.column_names?.length > 0 ? '3px' : '' }}>
+            {isMatchingForeignKeyColumn(column.Header) && (
+              <span
+                style={{
+                  marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
+                }}
+              >
                 <ForeignKeyIndicator />
               </span>
             )}
@@ -1247,9 +1274,11 @@ const Table = ({ collapseSidebar }) => {
                                       isBoolean={cell.column?.dataType === 'boolean' ? true : false}
                                       referencedColumnDetails={referencedColumnDetails}
                                       referenceColumnName={
-                                        foreignKeys.length > 0 && foreignKeys[0]?.referenced_column_names[0]
+                                        foreignKeys.length > 0 &&
+                                        isMatchingForeignKeyColumnDetails(cell.column.Header)
+                                          ?.referenced_column_names[0]
                                       }
-                                      isForeignKey={foreignKeys[0]?.column_names?.length > 0}
+                                      isForeignKey={isMatchingForeignKeyColumn(cell.column.Header)}
                                       darkMode={darkMode}
                                       scrollEventForColumnValus={true}
                                       organizationId={organizationId}
@@ -1303,18 +1332,15 @@ const Table = ({ collapseSidebar }) => {
                                                 </label>
                                               </div>
                                             </div>
-                                            <ToolTip
+                                            {/* <ToolTip
                                               message={'Open referenced table'}
                                               placement="top"
                                               tooltipClassName="tootip-table"
                                             >
                                               <div className="cursor-pointer">
-                                                {foreignKeys[0]?.column_names?.length > 0 &&
-                                                  foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
-                                                    <Maximize />
-                                                  )}
+                                                {isMatchingForeignKeyColumn(cell.column.Header) && <Maximize />}
                                               </div>
-                                            </ToolTip>
+                                            </ToolTip> */}
                                           </div>
                                         ) : (
                                           <div className="d-flex align-items-center justify-content-between">
@@ -1338,7 +1364,7 @@ const Table = ({ collapseSidebar }) => {
                                                 nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
                                               }
                                             />
-                                            <ToolTip
+                                            {/* <ToolTip
                                               message={'Open referenced table'}
                                               placement="top"
                                               tooltipClassName="tootip-table"
@@ -1349,7 +1375,7 @@ const Table = ({ collapseSidebar }) => {
                                                     <Maximize />
                                                   )}
                                               </div>
-                                            </ToolTip>
+                                            </ToolTip> */}
                                           </div>
                                         )}
                                       </div>
@@ -1394,15 +1420,13 @@ const Table = ({ collapseSidebar }) => {
                                         // </div>
                                         <div
                                           className={cx({
-                                            'foreignkey-cell':
-                                              foreignKeys[0]?.column_names?.length > 0 &&
-                                              foreignKeys[0]?.column_names[0] === cell?.column?.Header,
+                                            'foreignkey-cell': isMatchingForeignKeyColumn(cell.column.Header),
                                           })}
                                         >
                                           <div className="cell-text">
                                             {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                                           </div>
-                                          <ToolTip
+                                          {/* <ToolTip
                                             message={'Open referenced table'}
                                             placement="top"
                                             tooltipClassName="tootip-table"
@@ -1413,7 +1437,7 @@ const Table = ({ collapseSidebar }) => {
                                                   <Maximize />
                                                 )}
                                             </div>
-                                          </ToolTip>
+                                          </ToolTip> */}
                                         </div>
                                       )}
                                     </>

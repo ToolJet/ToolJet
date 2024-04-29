@@ -187,6 +187,19 @@ function ForeignKeyRelation({
     });
   };
 
+  function checkMatchingColumnNamesInForeignKey(foreignKeys, columns) {
+    const columnNamesSet = new Set(Object.values(columns).map((column) => column.column_name));
+    for (const foreignKey of foreignKeys) {
+      const foreignKeyColumnName = foreignKey.column_names[0];
+      if (columnNamesSet.has(foreignKeyColumnName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  const isMatchingForeignKeyColumns = checkMatchingColumnNamesInForeignKey(existingForeignKeyDetails, columns);
+
   return (
     <>
       <div className="foreignkey-relation-container">
@@ -194,7 +207,7 @@ function ForeignKeyRelation({
           <span>Foreign key relation</span>
         </div>
 
-        {foreignKeyDetails?.length === 0 ? (
+        {foreignKeyDetails?.length === 0 || !isMatchingForeignKeyColumns ? (
           <div className="empty-foreignkey-container d-flex align-items-center justify-content-center rounded mt-2 p-2">
             <Information width="20" />
             <p style={{ marginLeft: '6px', color: '#687076' }} className="mb-0">
@@ -203,6 +216,7 @@ function ForeignKeyRelation({
           </div>
         ) : (
           foreignKeyDetails?.length > 0 &&
+          isMatchingForeignKeyColumns &&
           foreignKeyDetails?.map((item, index) => (
             <div className="foreignKey-details" onClick={() => onMouseHoverFunction(item.column_names)} key={index}>
               <span className="foreignKey-text">{item.column_names}</span>

@@ -30,7 +30,7 @@ const ColumnForm = ({
   selectedColumn,
   setColumns,
   rows,
-  isEditColumn,
+  isEditColumn = true,
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
@@ -175,8 +175,9 @@ const ColumnForm = ({
           is_unique: isUniqueConstraint,
         },
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
-        ...(!isForeignKey && { foreignKeyIdToDelete: foreignKeys[selectedForeignkeyIndex]?.constraint_name }),
       },
+
+      ...(isForeignKey === false && { foreignKeyIdToDelete: foreignKeys[selectedForeignkeyIndex]?.constraint_name }),
     };
 
     if (
@@ -336,8 +337,17 @@ const ColumnForm = ({
   useEffect(() => {
     const existingForeignKeyIndex = foreignKeyDetails?.findIndex((obj) => obj.column_names[0] === columnName);
     setSelectedForeignKeyIndex(existingForeignKeyIndex);
-    foreignKeyDetails?.length > 0 ? setIsForeignKey(true) : setIsForeignKey(false);
+    isMatchingForeignKeyColumn(columnName) ? setIsForeignKey(true) : setIsForeignKey(false);
   }, []);
+
+  function isMatchingForeignKeyColumn(columnName) {
+    return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
+  }
+
+  function isMatchingForeignKeyColumnDetails(columnHeader) {
+    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    return matchingColumn;
+  }
 
   return (
     <>
@@ -345,34 +355,28 @@ const ColumnForm = ({
         <div className="drawer-card-title ">
           <h3 className="primaryKey-indication-container" data-cy="create-new-column-header">
             Edit column
-            {foreignKeys.length > 0 &&
-              (foreignKeys[0]?.column_names[0] || foreignKeyDetails?.column_names?.value) === columnName && (
-                <ToolTip
-                  message={
-                    <div>
-                      <span>Foreign key relation</span>
-                      <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                        <span>{foreignKeys[0]?.column_names[0] || foreignKeyDetails?.column_names?.value}</span>
-                        <ArrowRight />
-                        <span>{`${
-                          foreignKeys[0]?.referenced_table_name || foreignKeyDetails?.referenced_table_name?.value
-                        }.${
-                          foreignKeys[0]?.referenced_column_names[0] ||
-                          foreignKeyDetails?.referenced_column_names?.value
-                        }`}</span>
-                      </div>
-                    </div>
-                  }
-                  placement="right"
-                  tooltipClassName="tootip-table"
-                >
+            {foreignKeys.length > 0 && foreignKeys[selectedForeignkeyIndex]?.column_names[0] === columnName && (
+              <ToolTip
+                message={
                   <div>
-                    <span>
-                      <ForeignKeyIndicator />
-                    </span>
+                    <span>Foreign key relation</span>
+                    <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                      <span>{foreignKeys[selectedForeignkeyIndex]?.column_names[0]}</span>
+                      <ArrowRight />
+                      <span>{`${foreignKeys[selectedForeignkeyIndex]?.referenced_table_name}.${foreignKeys[selectedForeignkeyIndex]?.referenced_column_names[0]}`}</span>
+                    </div>
                   </div>
-                </ToolTip>
-              )}
+                }
+                placement="right"
+                tooltipClassName="tootip-table"
+              >
+                <div>
+                  <span className="primaryKey-indication">
+                    <ForeignKeyIndicator />
+                  </span>
+                </div>
+              </ToolTip>
+            )}
             {selectedColumn.constraints_type.is_primary_key === true && (
               <ToolTip
                 message={'Primary key'}
@@ -380,9 +384,9 @@ const ColumnForm = ({
                 tooltipClassName="primary-key-tooltip"
                 show={selectedColumn.constraints_type.is_primary_key === true}
               >
-                <div className="primaryKey-indication">
+                <span className="primaryKey-indication">
                   <SolidIcon name="primarykey" />
-                </div>
+                </span>
               </ToolTip>
             )}
           </h3>
@@ -447,7 +451,7 @@ const ColumnForm = ({
               show={selectedColumn?.dataType === 'serial'}
             >
               <div>
-                {isEmpty(foreignKeyDetails) ? (
+                {!isMatchingForeignKeyColumn(columnName) ? (
                   <input
                     value={selectedColumn?.dataType !== 'serial' ? defaultValue : null}
                     type="text"
@@ -483,6 +487,7 @@ const ColumnForm = ({
                     addBtnLabel={'Open referenced table'}
                     foreignKeys={foreignKeys}
                     setReferencedColumnDetails={setReferencedColumnDetails}
+                    scrollEventForColumnValus={true}
                   />
                 )}
               </div>
@@ -500,7 +505,7 @@ const ColumnForm = ({
 
           {/* foreign key toggle */}
 
-          <div className="row">
+          <div className="row mb-2">
             <div className="col-1">
               <label className={`form-switch`}>
                 <input
@@ -508,7 +513,7 @@ const ColumnForm = ({
                   type="checkbox"
                   checked={isForeignKey}
                   onChange={(e) => {
-                    if (foreignKeyDetails?.length > 0) {
+                    if (isMatchingForeignKeyColumn(columnName)) {
                       setIsForeignKey(e.target.checked);
                       setIsForeignKeyDraweOpen(false);
                     } else {
@@ -524,17 +529,21 @@ const ColumnForm = ({
             <div className="col d-flex flex-column">
               <p className="m-0 p-0 fw-500">Foreign Key relation</p>
               <p className="fw-400 secondary-text mb-2">Add foreign key to check referral integrity</p>
-              {foreignKeyDetails?.length > 0 && (
+              {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(columnName) && (
                 <div className="foreignKey-details mt-0">
-                  <span className="foreignKey-text">{foreignKeys[selectedForeignkeyIndex]?.column_names[0]}</span>
+                  <span className="foreignKey-text">
+                    {isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]}
+                  </span>
                   <div className="foreign-key-relation">
                     <ForeignKeyRelationIcon width="13" height="13" />
                   </div>
-                  <span className="foreignKey-text">{`${foreignKeys[selectedForeignkeyIndex]?.referenced_table_name}.${foreignKeys[selectedForeignkeyIndex]?.referenced_column_names[0]}`}</span>
+                  <span className="foreignKey-text">{`${
+                    isMatchingForeignKeyColumnDetails(columnName)?.referenced_table_name
+                  }.${isMatchingForeignKeyColumnDetails(columnName)?.referenced_column_names[0]}`}</span>
                   <div
                     className="editForeignkey"
                     onClick={() => {
-                      openEditForeignKey(foreignKeys[selectedForeignkeyIndex]?.column_names[0]);
+                      openEditForeignKey(isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]);
                     }}
                   >
                     <EditIcon width="17" height="18" />

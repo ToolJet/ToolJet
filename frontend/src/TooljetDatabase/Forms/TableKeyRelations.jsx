@@ -9,6 +9,8 @@ import Actions from '../Icons/Actions.svg';
 import Serial from '../Icons/Serial.svg';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
+import { getPrivateRoute } from '@/_helpers/routes';
 import { dataTypes, getColumnDataType } from '../constants';
 
 function SourceKeyRelation({
@@ -97,26 +99,28 @@ function SourceKeyRelation({
     },
   ];
 
-  const handleSelectColumn = (table_name) => {
-    tooljetDatabaseService.viewTable(organizationId, table_name).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-        return;
-      }
+  const handleSelectColumn = (table_name = '') => {
+    if (table_name?.length > 0) {
+      tooljetDatabaseService.viewTable(organizationId, table_name).then(({ data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+          return;
+        }
 
-      const { foreign_keys = [] } = data?.result || {};
-      if (data?.result?.columns?.length > 0) {
-        setTargetColumnList(
-          data?.result?.columns.map((item) => ({
-            name: item.column_name,
-            label: item.column_name,
-            icon: dataTypes.filter((obj) => obj.value === item.data_type)[0].icon,
-            value: item.column_name,
-            dataType: item?.data_type,
-          }))
-        );
-      }
-    });
+        const { foreign_keys = [] } = data?.result || {};
+        if (data?.result?.columns?.length > 0) {
+          setTargetColumnList(
+            data?.result?.columns.map((item) => ({
+              name: item.column_name,
+              label: item.column_name,
+              icon: dataTypes.filter((obj) => obj.value === item.data_type)[0].icon,
+              value: item.column_name,
+              dataType: item?.data_type,
+            }))
+          );
+        }
+      });
+    }
   };
 
   const targetTableColumns =
@@ -127,10 +131,12 @@ function SourceKeyRelation({
       : [];
 
   useEffect(() => {
-    if ((isEditMode && !createForeignKeyInEdit) || isEditColumn) {
-      handleSelectColumn(targetTable?.value);
+    if ((isEditMode && !createForeignKeyInEdit) || !createForeignKeyInEdit) {
+      handleSelectColumn(targetTable?.value || '');
+    } else {
+      return;
     }
-  }, [isEditColumn, isEditMode]);
+  }, [createForeignKeyInEdit, isEditMode]);
 
   useEffect(() => {
     if (isEditColumn || isCreateColumn) {

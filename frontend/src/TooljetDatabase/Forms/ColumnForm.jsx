@@ -175,13 +175,20 @@ const ColumnForm = ({
     toast.success(`Foreign key Added successfully for selected column`);
   };
 
-  const referenceTableDetails = referencedColumnDetails.map((item) => {
+  const referenceTableDetails = referencedColumnDetails?.map((item) => {
     const [key, value] = Object.entries(item);
     return {
       label: key[1],
       value: key[1],
     };
   });
+
+  function isMatchingForeignKeyColumn(columnName) {
+    return (
+      foreignKeyDetails?.length > 0 &&
+      foreignKeyDetails?.some((foreignKey) => foreignKey.column_names[0] === columnName)
+    );
+  }
 
   return (
     <div className="drawer-card-wrapper ">
@@ -232,9 +239,7 @@ const ColumnForm = ({
             show={dataType === 'serial'}
           >
             <div>
-              {isEmpty(foreignKeyDetails?.column_names) ||
-              isEmpty(foreignKeyDetails?.referenced_column_names) ||
-              isEmpty(foreignKeyDetails?.referenced_table_name) ? (
+              {!isMatchingForeignKeyColumn(columnName) ? (
                 <input
                   value={defaultValue}
                   type="text"
@@ -272,6 +277,7 @@ const ColumnForm = ({
                   addBtnLabel={'Open referenced table'}
                   foreignKeys={foreignKeys}
                   setReferencedColumnDetails={setReferencedColumnDetails}
+                  scrollEventForColumnValus={true}
                 />
               )}
             </div>

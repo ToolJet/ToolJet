@@ -26,7 +26,6 @@ const EditRowForm = ({
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
-  const isForeignKey = foreignKeys?.length > 0 && foreignKeys[0]?.column_names.length > 0 ? true : false;
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
@@ -95,6 +94,15 @@ const EditRowForm = ({
       value: key[1],
     };
   });
+
+  function isMatchingForeignKeyColumn(columnName) {
+    return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
+  }
+
+  function isMatchingForeignKeyColumnDetails(columnHeader) {
+    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    return matchingColumn;
+  }
 
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
     const newActiveTabs = [...activeTab];
@@ -199,7 +207,7 @@ const EditRowForm = ({
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            {isForeignKey && foreignKeys[0]?.column_names[0] === columnName ? (
+            {isMatchingForeignKeyColumn(columnName) ? (
               <DropDownSelect
                 buttonClasses="border border-end-1 foreignKeyAcces-container"
                 showPlaceHolder={true}
@@ -224,6 +232,7 @@ const EditRowForm = ({
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeys}
                 setReferencedColumnDetails={setReferencedColumnDetails}
+                scrollEventForColumnValus={true}
               />
             ) : (
               <input
@@ -291,13 +300,13 @@ const EditRowForm = ({
     }
   });
 
-  const isSubset = Object.entries(matchingObject).every(([key, value]) => currentValue[key] === value);
+  const isSubset = Object.entries(matchingObject).every(([key, value]) => currentValue[key] == value);
   const isSubsetForCharacter = Object.entries(matchingObjectForCharacter).every(
-    ([key, value]) => currentValue[key] === value
+    ([key, value]) => currentValue[key] == value
   );
 
-  const handleNavigateToReferencedtable = () => {
-    const data = { id: foreignKeys[0]?.referenced_table_id, table_name: foreignKeys[0]?.referenced_table_name };
+  const handleNavigateToReferencedtable = (id, name) => {
+    const data = { id: id, table_name: name };
     localStorage.setItem('tableDetails', JSON.stringify(data));
   };
 
@@ -308,19 +317,21 @@ const EditRowForm = ({
           <h3 className="card-title" data-cy="edit-row-header">
             Edit row
           </h3>
-          {foreignKeys.length > 0 && (
-            <ToolTip message="Open referenced table" placement="right" tooltipClassName="tootip-table">
-              <Link
-                target="_blank"
-                to={getPrivateRoute('database')}
-                // state={{ id: 'e8d56181-5c36-4a71-8d29-71418c954deb', name: 'details' }}
-              >
-                <div className="edit-row-tableName" onClick={handleNavigateToReferencedtable}>
-                  <span>{foreignKeys[0].referenced_table_name}</span> <Maximize />
-                </div>
-              </Link>
-            </ToolTip>
-          )}
+          {foreignKeys.length > 0 &&
+            foreignKeys.map((foreignKey, index) => (
+              <ToolTip key={index} message="Open referenced table" placement="right" tooltipClassName="tootip-table">
+                <Link target="_blank" to={getPrivateRoute('database')}>
+                  <div
+                    className="edit-row-tableName"
+                    onClick={() =>
+                      handleNavigateToReferencedtable(foreignKey.referenced_table_id, foreignKey.referenced_table_name)
+                    }
+                  >
+                    <span>{foreignKey.referenced_table_name}</span> <Maximize />
+                  </div>
+                </Link>
+              </ToolTip>
+            ))}
         </div>
       </div>
       <div className="card-body">
@@ -354,15 +365,15 @@ const EditRowForm = ({
                         )}
                         <ToolTip
                           message={
-                            isForeignKey === true &&
-                            foreignKeys.length > 0 &&
-                            foreignKeys[0]?.column_names[0] === Header ? (
+                            isMatchingForeignKeyColumn(Header) ? (
                               <div>
                                 <span>Foreign key relation</span>
                                 <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                                  <span>{foreignKeys[0]?.column_names[0]}</span>
+                                  <span>{isMatchingForeignKeyColumnDetails(Header)?.column_names[0]}</span>
                                   <ArrowRight />
-                                  <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
+                                  <span>{`${isMatchingForeignKeyColumnDetails(Header)?.referenced_table_name}.${
+                                    isMatchingForeignKeyColumnDetails(Header)?.referenced_column_names[0]
+                                  }`}</span>
                                 </div>
                               </div>
                             ) : null
@@ -371,13 +382,11 @@ const EditRowForm = ({
                           tooltipClassName="tootip-table"
                         >
                           <div>
-                            {isForeignKey === true &&
-                              foreignKeys.length > 0 &&
-                              foreignKeys[0]?.column_names[0] === Header && (
-                                <span>
-                                  <ForeignKeyIndicator />
-                                </span>
-                              )}
+                            {isMatchingForeignKeyColumn(Header) && (
+                              <span>
+                                <ForeignKeyIndicator />
+                              </span>
+                            )}
                           </div>
                         </ToolTip>
                       </div>

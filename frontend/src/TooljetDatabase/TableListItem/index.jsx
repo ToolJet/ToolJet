@@ -29,6 +29,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
   const [focused, setFocused] = useState(false);
   const [isAddNewColumnDrawerOpen, setIsAddNewColumnDrawerOpen] = useState(false);
+  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -207,6 +208,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isCreateColumnDrawerOpen={isAddNewColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsAddNewColumnDrawerOpen}
         rows={selectedTableData}
+        referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
       />
     </div>
   );

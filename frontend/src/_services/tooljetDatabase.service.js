@@ -104,6 +104,7 @@ function updateRows(headers, tableId, data, query = '') {
 }
 
 function updateColumn(organizationId, tableName, columns) {
+  console.log('first', columns);
   return tooljetAdapter.patch(
     `/tooljet-db/organizations/${organizationId}/table/${tableName}/column`,
     columns,

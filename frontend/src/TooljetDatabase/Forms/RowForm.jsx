@@ -16,7 +16,7 @@ import './styles.scss';
 const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
-  const isForeignKey = foreignKeys?.length > 0 && foreignKeys[0]?.column_names.length > 0 ? true : false;
+
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     if (Array.isArray(columns)) {
@@ -80,6 +80,15 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
       value: key[1],
     };
   });
+
+  function isMatchingForeignKeyColumn(columnName) {
+    return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
+  }
+
+  function isMatchingForeignKeyColumnDetails(columnHeader) {
+    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    return matchingColumn;
+  }
 
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType) => {
     const newActiveTabs = [...activeTab];
@@ -176,7 +185,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     toast.success(`Row created successfully`);
     onCreate && onCreate();
   };
-  // console.log('first', foreignKeys.length > 0 && foreignKeys[0]?.column_names[0] === 'sequenceNo');
+
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
     const isSerialDataTypeColumn = dataType === 'serial';
     switch (dataType) {
@@ -187,7 +196,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            {isForeignKey && foreignKeys[0]?.column_names[0] === columnName ? (
+            {isMatchingForeignKeyColumn(columnName) ? (
               <DropDownSelect
                 buttonClasses="border border-end-1 foreignKeyAcces-container"
                 showPlaceHolder={true}
@@ -212,6 +221,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeys}
                 setReferencedColumnDetails={setReferencedColumnDetails}
+                scrollEventForColumnValus={true}
               />
             ) : (
               <input
@@ -306,15 +316,15 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                       )}
                       <ToolTip
                         message={
-                          isForeignKey === true &&
-                          foreignKeys.length > 0 &&
-                          foreignKeys[0]?.column_names[0] === Header ? (
+                          isMatchingForeignKeyColumn(Header) ? (
                             <div>
                               <span>Foreign key relation</span>
                               <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                                <span>{foreignKeys[0]?.column_names[0]}</span>
+                                <span>{isMatchingForeignKeyColumnDetails(Header)?.column_names[0]}</span>
                                 <ArrowRight />
-                                <span>{`${foreignKeys[0]?.referenced_table_name}.${foreignKeys[0]?.referenced_column_names[0]}`}</span>
+                                <span>{`${isMatchingForeignKeyColumnDetails(Header)?.referenced_table_name}.${
+                                  isMatchingForeignKeyColumnDetails(Header)?.referenced_column_names[0]
+                                }`}</span>
                               </div>
                             </div>
                           ) : null
@@ -323,13 +333,11 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                         tooltipClassName="tootip-table"
                       >
                         <div>
-                          {isForeignKey === true &&
-                            foreignKeys.length > 0 &&
-                            foreignKeys[0]?.column_names[0] === Header && (
-                              <span>
-                                <ForeignKeyIndicator />
-                              </span>
-                            )}
+                          {isMatchingForeignKeyColumn(Header) && (
+                            <span>
+                              <ForeignKeyIndicator />
+                            </span>
+                          )}
                         </div>
                       </ToolTip>
                     </div>
