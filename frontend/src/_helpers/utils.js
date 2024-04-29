@@ -14,6 +14,8 @@ import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')}|this)\\b`, 'i');
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -514,7 +516,7 @@ export function validateEmail(email) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  if ([...reservedKeyword, 'this'].some((keyword) => code.includes(keyword))) {
+  if (keywordRegex.test(code)) {
     const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
     const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
 
