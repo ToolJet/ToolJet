@@ -67,7 +67,6 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import { useModuleName } from '../_contexts/ModuleContext';
 import { isPDFSupported } from '@/_stores/utils';
 
 export const AllComponents = {
@@ -164,7 +163,6 @@ export const Box = memo(
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-    const moduleName = useModuleName();
     const { events } = useAppInfo();
     const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 

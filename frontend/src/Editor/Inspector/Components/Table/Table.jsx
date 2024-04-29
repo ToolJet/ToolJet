@@ -17,14 +17,12 @@ import { capitalize, has, unset } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
-import { ModuleContext } from '../../../../_contexts/ModuleContext';
-import { useSuperStore } from '@/_stores/superStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
+
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
-  static contextType = ModuleContext;
-
   constructor(props) {
     super(props);
 
@@ -195,19 +193,13 @@ class TableComponent extends React.Component {
   };
 
   deleteEvents = (ref, eventTarget) => {
-    const events = useSuperStore
-      .getState()
-      .modules[this.context].useAppDataStore.getState()
-      .events.filter((event) => event.target === eventTarget);
+    const events = useAppDataStore.getState().events.filter((event) => event.target === eventTarget);
 
     const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
 
     return new Promise.all(
       toDelete?.forEach((e) => {
-        return useSuperStore
-          .getState()
-          .modules[this.context].useAppDataStore.getState()
-          .actions.deleteAppVersionEventHandler(e.id);
+        return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
       })
     );
   };
