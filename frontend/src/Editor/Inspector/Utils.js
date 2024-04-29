@@ -43,19 +43,40 @@ export function renderCustomStyles(
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
-    componentConfig.component == 'PasswordInput'
+    componentConfig.component == 'PasswordInput' ||
+    componentConfig.component == 'Table'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
-    if (conditionallyRender) {
-      const { key, value } = conditionallyRender;
-      if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+    const getResolvedValue = (key) => {
+      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+    };
 
-        if (resolvedValue?.value !== value) {
-          return;
+    const utilFuncForMultipleChecks = (conditionallyRender) => {
+      return conditionallyRender.reduce((acc, condition) => {
+        const { key, value } = condition;
+        if (paramTypeDefinition?.[key] ?? value) {
+          const resolvedValue = getResolvedValue(key);
+          acc.push(resolvedValue?.value !== value);
+        }
+        return acc;
+      }, []);
+    };
+
+    if (conditionallyRender) {
+      const isConditionallyRenderArray = Array.isArray(conditionallyRender);
+
+      if (isConditionallyRenderArray && utilFuncForMultipleChecks(conditionallyRender).includes(true)) {
+        return;
+      } else {
+        const { key, value } = conditionallyRender;
+        if (paramTypeDefinition?.[key] ?? value) {
+          const resolvedValue = getResolvedValue(key);
+          if (resolvedValue?.value !== value) {
+            return;
+          }
         }
       }
     }
@@ -135,7 +156,7 @@ export function renderElement(
       componentMeta={componentMeta}
       darkMode={darkMode}
       componentName={component.component.name || null}
-      type={meta.type}
+      type={meta?.type}
       fxActive={definition.fxActive ?? false}
       onFxPress={(active) => {
         paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
