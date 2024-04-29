@@ -3,13 +3,6 @@ import { ToolTip } from '@/_components/ToolTip';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import DropdownInformation from '../Icons/dropdownInfo.svg';
-import tjdbDropdownStyles, {
-  dataTypes,
-  formatOptionLabel,
-  serialDataType,
-  getColumnDataType,
-  renderDatatypeIcon,
-} from '../constants';
 
 function TableDetailsDropdown({
   firstColumnName,
@@ -24,7 +17,7 @@ function TableDetailsDropdown({
   isEditColumn,
   isCreateColumn,
   defaultValue = [],
-  onAdd = false,
+  onAdd,
   actions,
   setForeignKeyDetails,
   foreignKeyDetails,
@@ -117,8 +110,8 @@ function TableDetailsDropdown({
                   setTargetColumn(value);
                 }
               }}
-              onAdd={onAdd}
-              addBtnLabel={'Add new column'}
+              // onAdd={onAdd}
+              // addBtnLabel={'Add new column'}
               columnInfoForTable={
                 <div className="columnInfoForTable m-2 d-flex align-items-center">
                   <DropdownInformation />

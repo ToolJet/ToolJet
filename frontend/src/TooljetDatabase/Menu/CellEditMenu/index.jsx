@@ -32,6 +32,7 @@ export const CellEditMenu = ({
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
+  cellHeader,
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -130,7 +131,14 @@ export const CellEditMenu = ({
   }, [cellValue]);
 
   const popover = (
-    <Popover className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}>
+    <Popover
+      className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}
+      onClick={(event) => {
+        if (event.target.closest('.react-select-container')) {
+          event.preventDefault(); // Prevent the Popover from closing
+        }
+      }}
+    >
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className={`d-flex flex-column ${isBoolean ? 'gap-4' : 'gap-3'}`}>
           {isForeignKey && (
@@ -157,6 +165,7 @@ export const CellEditMenu = ({
               organizationId={organizationId}
               foreignKeys={foreignKeys}
               setReferencedColumnDetails={setReferencedColumnDetails}
+              cellColumnName={cellHeader}
             />
           )}
           {/*  Boolean View */}

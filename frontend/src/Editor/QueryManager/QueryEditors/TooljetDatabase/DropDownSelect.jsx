@@ -37,6 +37,7 @@ const DropDownSelect = ({
   foreignKeys,
   setReferencedColumnDetails,
   shouldShowForeignKeyIcon = false,
+  cellColumnName,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -121,14 +122,14 @@ const DropDownSelect = ({
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{
             width: foreignKeyAccess
-              ? '355px'
+              ? '403px'
               : foreignKeyAccessInRowForm === true
               ? '494px'
               : isCellEdit
               ? '266px'
               : '244px',
             maxWidth: foreignKeyAccess
-              ? '355px'
+              ? '403px'
               : foreignKeyAccessInRowForm === true
               ? '494px'
               : isCellEdit
@@ -164,6 +165,7 @@ const DropDownSelect = ({
             foreignKeys={foreignKeys}
             setReferencedColumnDetails={setReferencedColumnDetails}
             shouldShowForeignKeyIcon={shouldShowForeignKeyIcon}
+            cellColumnName={cellColumnName}
           />
         </Popover>
       }

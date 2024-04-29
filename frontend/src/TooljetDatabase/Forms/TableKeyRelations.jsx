@@ -9,7 +9,6 @@ import Actions from '../Icons/Actions.svg';
 import Serial from '../Icons/Serial.svg';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { dataTypes, getColumnDataType } from '../constants';
 
@@ -69,7 +68,7 @@ function SourceKeyRelation({
 
   const tableList = tables
     .filter((item) => item?.table_name !== tableName)
-    .map((item) => ({ value: item?.table_name, label: item?.table_name }));
+    .map((item) => ({ value: item?.table_name, label: item?.table_name, id: item.id }));
 
   const onUpdateOptions = [
     {
@@ -144,6 +143,10 @@ function SourceKeyRelation({
     }
   }, [isEditColumn, isCreateColumn]);
 
+  const handleNavigateToToolJetDatabase = () => {
+    window.open(getPrivateRoute('database'), '_blank');
+  };
+
   return (
     <div className="relations-container">
       <div className="d-flex align-items-center mb-1">
@@ -192,7 +195,7 @@ function SourceKeyRelation({
           handleSelectColumn={handleSelectColumn}
           showColumnInfo={true}
           showRedirection={true}
-          onAdd={true}
+          onAdd={handleNavigateToToolJetDatabase}
           foreignKeyDetails={foreignKeyDetails}
           setForeignKeyDetails={setForeignKeyDetails}
           setTargetTable={setTargetTable}
