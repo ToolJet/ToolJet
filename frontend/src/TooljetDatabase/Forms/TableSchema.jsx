@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
@@ -9,7 +9,8 @@ import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Tick from '../Icons/Tick.svg';
-import ForeignKeyActive from '../Icons/ForeignKeyActiveRelation.svg';
+import Information from '@/_ui/Icon/solidIcons/Information';
+import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
 
@@ -21,11 +22,13 @@ function TableSchema({
   setColumnSelection,
   handleDelete,
   isEditMode,
-  isActiveForeignKey = false,
   indexHover,
   editColumns,
   foreignKeyDetails,
+  existingForeignKeyDetails,
 }) {
+  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+
   const { Option } = components;
 
   const darkDisabledBackground = '#1f2936';
@@ -47,6 +50,13 @@ function TableSchema({
   const dropdownContainerWidth = '360px';
 
   const columnDetails = isEditMode ? editColumns : columns;
+
+  const [defaultValue, setDefaultValue] = useState(
+    Object.keys(columnDetails).map((key, index) => ({
+      label: columnDetails[index]?.column_default,
+      value: columnDetails[index]?.column_default,
+    }))
+  );
 
   const CustomSelectOption = (props) => {
     return (
@@ -108,6 +118,18 @@ function TableSchema({
   const indexOfActiveForeignKey = Object.values(columns).findIndex((obj) =>
     Object.values(obj).includes(foreignKeyDetails?.column_names?.value)
   );
+
+  function checkMatchingColumnNamesInForeignKey(foreignKeys, columnName) {
+    return foreignKeys.some((foreignKey) => foreignKey.column_names.includes(columnName));
+  }
+
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
+    const [key, value] = Object.entries(item);
+    return {
+      label: key[1],
+      value: key[1],
+    };
+  });
 
   return (
     <div className="column-schema-container">
@@ -243,49 +265,98 @@ function TableSchema({
                 />
               </div>
             </ToolTip>
-
-            <ToolTip
-              message={
-                columnDetails[index]?.data_type === 'serial' ? 'Serial data type values cannot be modified' : null
-              }
-              placement="top"
-              tooltipClassName="tootip-table"
-              style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
-              show={columnDetails[index]?.data_type === 'serial'}
-            >
-              <div className="m-0" data-cy="column-default-input-field">
-                <input
-                  onChange={(e) => {
-                    e.persist();
-                    const prevColumns = { ...columnDetails };
-                    prevColumns[index].column_default = e.target.value;
-                    setColumns(prevColumns);
-                  }}
-                  value={
-                    columnDetails[index].data_type === 'serial'
-                      ? 'Auto-generated'
-                      : // : checkDefaultValue(columnDetails[index].column_default)
-                        // ? null
-                        columnDetails[index].column_default
-                  }
-                  type="text"
-                  className="form-control defaultValue"
-                  data-cy="default-input-field"
-                  placeholder={
-                    (columnDetails[index].data_type === 'serial' &&
-                      columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                    columnDetails[index].data_type === 'serial'
-                      ? 'Auto-generated'
-                      : 'Null'
-                  }
-                  disabled={
-                    (columnDetails[index].data_type === 'serial' &&
-                      columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                    columnDetails[index].data_type === 'serial'
-                  }
-                />
-              </div>
-            </ToolTip>
+            {checkMatchingColumnNamesInForeignKey(foreignKeyDetails, columnDetails[index].column_name) ? (
+              <DropDownSelect
+                buttonClasses="border border-end-1 foreignKeyAcces-container"
+                showPlaceHolder={true}
+                options={referenceTableDetails}
+                darkMode={darkMode}
+                emptyError={
+                  <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                    <Information />
+                    No table selected
+                  </div>
+                }
+                value={
+                  columnDetails[index].column_default !== null
+                    ? { value: columnDetails[index].column_default, label: columnDetails[index].column_default }
+                    : defaultValue[index]
+                }
+                // foreignKeyAccessInRowForm={true}
+                disabled={
+                  (columnDetails[index].data_type === 'serial' &&
+                    columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                  columnDetails[index].data_type === 'serial'
+                }
+                topPlaceHolder={
+                  (columnDetails[index].data_type === 'serial' &&
+                    columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                  columnDetails[index].data_type === 'serial'
+                    ? 'Auto-generated'
+                    : 'Null'
+                }
+                onChange={(value) => {
+                  setDefaultValue((prevState) => {
+                    const newState = [...prevState];
+                    newState[index].value = value;
+                    newState[index].label = value;
+                    return newState;
+                  });
+                  const prevColumns = { ...columnDetails };
+                  prevColumns[index].column_default = value.value;
+                  setColumns(prevColumns);
+                }}
+                onAdd={true}
+                addBtnLabel={'Open referenced table'}
+                foreignKeys={existingForeignKeyDetails}
+                setReferencedColumnDetails={setReferencedColumnDetails}
+                scrollEventForColumnValus={true}
+                cellColumnName={columnDetails[index].column_name}
+              />
+            ) : (
+              <ToolTip
+                message={
+                  columnDetails[index]?.data_type === 'serial' ? 'Serial data type values cannot be modified' : null
+                }
+                placement="top"
+                tooltipClassName="tootip-table"
+                style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
+                show={columnDetails[index]?.data_type === 'serial'}
+              >
+                <div className="m-0" data-cy="column-default-input-field">
+                  <input
+                    onChange={(e) => {
+                      e.persist();
+                      const prevColumns = { ...columnDetails };
+                      prevColumns[index].column_default = e.target.value;
+                      setColumns(prevColumns);
+                    }}
+                    value={
+                      columnDetails[index].data_type === 'serial'
+                        ? 'Auto-generated'
+                        : // : checkDefaultValue(columnDetails[index].column_default)
+                          // ? null
+                          columnDetails[index].column_default
+                    }
+                    type="text"
+                    className="form-control defaultValue"
+                    data-cy="default-input-field"
+                    placeholder={
+                      (columnDetails[index].data_type === 'serial' &&
+                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                      columnDetails[index].data_type === 'serial'
+                        ? 'Auto-generated'
+                        : 'Null'
+                    }
+                    disabled={
+                      (columnDetails[index].data_type === 'serial' &&
+                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                      columnDetails[index].data_type === 'serial'
+                    }
+                  />
+                </div>
+              </ToolTip>
+            )}
 
             <ToolTip
               message={'There must be atleast one Primary key'}

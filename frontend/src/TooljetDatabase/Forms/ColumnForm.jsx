@@ -278,6 +278,7 @@ const ColumnForm = ({
                   foreignKeys={foreignKeys}
                   setReferencedColumnDetails={setReferencedColumnDetails}
                   scrollEventForColumnValus={true}
+                  cellColumnName={columnName}
                 />
               )}
             </div>

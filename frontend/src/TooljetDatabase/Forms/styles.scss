@@ -318,6 +318,15 @@
 
       }
 
+      .foreignKeyAcces-container {
+        width: 125px;
+        height: 36px;
+
+        button {
+          height: 100%;
+        }
+      }
+
       .foreign-key-relation-active {
         width: 20px !important;
         height: 22px;

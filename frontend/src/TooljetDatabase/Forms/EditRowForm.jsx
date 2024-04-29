@@ -233,6 +233,7 @@ const EditRowForm = ({
                 foreignKeys={foreignKeys}
                 setReferencedColumnDetails={setReferencedColumnDetails}
                 scrollEventForColumnValus={true}
+                cellColumnName={columnName}
               />
             ) : (
               <input

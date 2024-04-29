@@ -64,7 +64,17 @@ function ForeignKeyRelation({
       toast.error(error?.message ?? `Failed to edit foreign key`);
       return;
     }
-
+    // if (existingForeignKeyDetails?.length === 0) {
+    //   setForeignKeyDetails([
+    //     {
+    //       column_names: [sourceColumn?.value],
+    //       referenced_table_name: targetTable?.value,
+    //       referenced_column_names: [targetColumn?.value],
+    //       on_delete: onDelete?.value,
+    //       on_update: onUpdate?.value,
+    //     },
+    //   ]);
+    // }
     toast.success(`Foreign key created successfully`);
 
     setIsForeignKeyDraweOpen(false);
@@ -198,7 +208,7 @@ function ForeignKeyRelation({
     return false;
   }
 
-  const isMatchingForeignKeyColumns = checkMatchingColumnNamesInForeignKey(existingForeignKeyDetails, columns);
+  const isMatchingForeignKeyColumns = checkMatchingColumnNamesInForeignKey(foreignKeyDetails, columns);
 
   return (
     <>
@@ -207,16 +217,7 @@ function ForeignKeyRelation({
           <span>Foreign key relation</span>
         </div>
 
-        {foreignKeyDetails?.length === 0 || !isMatchingForeignKeyColumns ? (
-          <div className="empty-foreignkey-container d-flex align-items-center justify-content-center rounded mt-2 p-2">
-            <Information width="20" />
-            <p style={{ marginLeft: '6px', color: '#687076' }} className="mb-0">
-              No relation added yet
-            </p>
-          </div>
-        ) : (
-          foreignKeyDetails?.length > 0 &&
-          isMatchingForeignKeyColumns &&
+        {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumns ? (
           foreignKeyDetails?.map((item, index) => (
             <div className="foreignKey-details" onClick={() => onMouseHoverFunction(item.column_names)} key={index}>
               <span className="foreignKey-text">{item.column_names}</span>
@@ -230,6 +231,13 @@ function ForeignKeyRelation({
               </div>
             </div>
           ))
+        ) : (
+          <div className="empty-foreignkey-container d-flex align-items-center justify-content-center rounded mt-2 p-2">
+            <Information width="20" />
+            <p style={{ marginLeft: '6px', color: '#687076' }} className="mb-0">
+              No relation added yet
+            </p>
+          </div>
         )}
 
         <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>

@@ -116,6 +116,7 @@ const ColumnsForm = ({
           }
           indexHover={hoveredColumn}
           foreignKeyDetails={foreignKeyDetails}
+          existingForeignKeyDetails={existingForeignKeyDetails} // foreignKeys from context state
         />
 
         <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
