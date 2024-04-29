@@ -36,6 +36,10 @@ export class AppSignupDto {
   @IsOptional()
   @IsUUID()
   organizationId: string;
+
+  @IsString()
+  @IsOptional()
+  redirectTo: string;
 }
 
 export class AppForgotPasswordDto {

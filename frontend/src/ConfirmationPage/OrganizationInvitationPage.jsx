@@ -19,6 +19,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
+    this.organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
     this.source = new URLSearchParams(props?.location?.search).get('source');
   }
 
@@ -40,8 +41,9 @@ class OrganizationInvitationPageComponent extends React.Component {
       this.setState({ isGettingConfigs: false });
     }
 
+    /* Workspace signup organization token */
     authenticationService
-      .verifyOrganizationToken(this.props?.params?.token)
+      .verifyOrganizationToken(this.organizationToken)
       .then((data) => {
         this.setState({ userDetails: data });
         if (data?.email !== '') {
