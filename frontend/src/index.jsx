@@ -10,7 +10,6 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 // import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
-import { ModuleContext } from './_contexts/ModuleContext';
 
 const AppWithProfiler = Sentry.withProfiler(App);
 
@@ -63,12 +62,5 @@ appService
       });
     }
   })
-  .then(() =>
-    render(
-      <ModuleContext.Provider value={'#main'}>
-        <AppWithProfiler />
-      </ModuleContext.Provider>,
-      document.getElementById('app')
-    )
-  );
+  .then(() => render(<AppWithProfiler />, document.getElementById('app')));
 // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
