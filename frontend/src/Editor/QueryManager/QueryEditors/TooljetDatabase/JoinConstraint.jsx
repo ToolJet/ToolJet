@@ -47,28 +47,46 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   tableSet.add(selectedTableId);
 
   // In Joins-Query, the table on the LHS should be the ones which we already selected for base table or the tables which we selected on RHS
-  const leftTableList = [...tableSet]
+  const leftTableList = [];
+  [...tableSet]
     .filter((table) => table !== rightFieldTable)
-    .map((t) => {
+    .forEach((t) => {
       const tableDetails = findTableDetails(t);
       const targetTableFKListWithAdjacentTable = checkIfAdjacentTableHasForeignKey(true, t?.table_id);
-      return {
-        label: tableDetails?.table_name ?? '',
-        value: t,
-        isTargetTable: !!targetTableFKListWithAdjacentTable.length,
-      };
+      if (targetTableFKListWithAdjacentTable.length) {
+        leftTableList.unshift({
+          label: tableDetails?.table_name ?? '',
+          value: t,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      } else {
+        leftTableList.push({
+          label: tableDetails?.table_name ?? '',
+          value: t,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      }
     });
 
   // Tables to list on Right-Hand-Side of Join operation, Omits already selected table
-  const tableList = tables
+  const tableList = [];
+  tables
     .filter((table) => ![...tableSet, leftFieldTable].includes(table.table_id))
-    .map((t) => {
+    .forEach((t) => {
       const targetTableFKListWithAdjacentTable = checkIfAdjacentTableHasForeignKey(false, t?.table_id);
-      return {
-        label: t?.table_name ?? '',
-        value: t?.table_id,
-        isTargetTable: !!targetTableFKListWithAdjacentTable.length,
-      };
+      if (targetTableFKListWithAdjacentTable.length) {
+        tableList.unshift({
+          label: t?.table_name ?? '',
+          value: t?.table_id,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      } else {
+        tableList.push({
+          label: t?.table_name ?? '',
+          value: t?.table_id,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      }
     });
 
   // OnSelecting LHS ro RHS table on Join Operation, Checking if Adjacent table has FK relation and Auto Fill the column values
