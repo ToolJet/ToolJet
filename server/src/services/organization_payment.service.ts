@@ -16,6 +16,8 @@ import { Terms } from '@ee/licensing/types';
 import { User } from 'src/entities/user.entity';
 import { PaymentRedirectDto } from '@dto/subscription-redirect.dto';
 import { LicenseService } from './license.service';
+import { ProrationDto } from '@dto/proration.dto';
+import { PortalDto } from '@dto/portal.dto';
 
 @Injectable()
 export class OrganizationPaymentService {
@@ -25,6 +27,40 @@ export class OrganizationPaymentService {
     private emailService: EmailService,
     private licenseService: LicenseService
   ) {}
+
+  private get PRICES_ITEM_MAP(): Readonly<any> {
+    return {
+      monthly: {
+        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_VIEWER')]: 'viewersCount',
+        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_EDITOR')]: 'editorsCount',
+      },
+      yearly: {
+        [this.configService.get<string>('STRIPE_PRICE_ID_YEARLY_VIEWER')]: 'viewersCount',
+        [this.configService.get<string>('STRIPE_PRICE_ID_YEARLY_EDITOR')]: 'editorsCount',
+      },
+    };
+  }
+
+  private get MONTHLY_TO_YEARLY_MAP(): Readonly<any> {
+    return {
+      yearly: {
+        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_VIEWER')]: this.configService.get<string>(
+          'STRIPE_PRICE_ID_YEARLY_VIEWER'
+        ),
+        [this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_EDITOR')]: this.configService.get<string>(
+          'STRIPE_PRICE_ID_YEARLY_EDITOR'
+        ),
+      },
+      monthly: {
+        [this.configService.get<string>('STRIPE_PRICE_ID_YEARLY_VIEWER')]: this.configService.get<string>(
+          'STRIPE_PRICE_ID_MONTHLY_VIEWER'
+        ),
+        [this.configService.get<string>('STRIPE_PRICE_ID_YEARLY_EDITOR')]: this.configService.get<string>(
+          'STRIPE_PRICE_ID_MONTHLY_EDITOR'
+        ),
+      },
+    };
+  }
 
   private get STRIPE_PRICE_CODE_ITEM_MAPPING(): Readonly<any> {
     return {
@@ -41,10 +77,18 @@ export class OrganizationPaymentService {
 
   async getUpcomingInvoice(organizationId: string): Promise<OrganizationSubscriptionInvoice> {
     return dbTransactionWrap((manager: EntityManager) => {
-      return manager.findOne(OrganizationSubscriptionInvoice, {
-        where: { organizationId: organizationId },
-        order: { createdAt: 'DESC' },
-      });
+      return manager
+        .createQueryBuilder(OrganizationSubscriptionInvoice, 'organization_subscription_invoices')
+        .innerJoin(
+          'organization_subscription_invoices.organizationSubscription',
+          'organization_subscriptions',
+          'organization_subscriptions.organizationId = :organizationId',
+          {
+            organizationId,
+          }
+        )
+        .orderBy('organization_subscription_invoices.createdAt', 'DESC')
+        .getOne();
     });
   }
 
@@ -70,8 +114,21 @@ export class OrganizationPaymentService {
     });
   }
 
-  async getProration(organizationId: string, prorationDto) {
-    const { items, prorationDate, includeChange } = prorationDto;
+  async getProration(organizationId: string, prorationDto: ProrationDto) {
+    const { items, prorationDate, includeChange, planForm } = prorationDto;
+    const { subscriptionType } = planForm ?? {};
+    const subscriptionItems = items?.map((item) => {
+      let price;
+      const isSubscriptionTypeChanged = subscriptionType !== item.interval;
+      if (isSubscriptionTypeChanged) {
+        price = this.MONTHLY_TO_YEARLY_MAP[subscriptionType][item.planId];
+      }
+      return {
+        quantity: planForm[this.PRICES_ITEM_MAP[item.interval][item.planId]],
+        id: item.id,
+        price,
+      };
+    });
     const stripeAPIKey = this.configService.get<string>('STRIPE_API_KEY');
     const stripe = new Stripe(stripeAPIKey);
 
@@ -83,7 +140,7 @@ export class OrganizationPaymentService {
       const invoice = await stripe.invoices.retrieveUpcoming({
         customer: organizationSubscription.customerId,
         subscription: organizationSubscription.subscriptionId,
-        subscription_items: items,
+        subscription_items: subscriptionItems,
         ...(!includeChange && { subscription_proration_date: prorationDate }),
         subscription_proration_behavior: includeChange ? 'none' : 'always_invoice',
       });
@@ -92,7 +149,7 @@ export class OrganizationPaymentService {
     });
   }
 
-  async getPortalLink(portalDto) {
+  async getPortalLink(portalDto: PortalDto) {
     const stripeAPIKey = this.configService.get<string>('STRIPE_API_KEY');
     const stripe = new Stripe(stripeAPIKey);
     const { customerId, returnUrl } = portalDto;
@@ -109,9 +166,23 @@ export class OrganizationPaymentService {
   }
 
   async updateSubscription(organizationId: string, updatedSubscription: UpdateSubscriptionDto) {
-    const { items, prorationDate, includeChange } = updatedSubscription;
     const stripeAPIKey = this.configService.get<string>('STRIPE_API_KEY');
     const stripe = new Stripe(stripeAPIKey);
+
+    const { items, prorationDate, includeChange, planForm } = updatedSubscription;
+    const { subscriptionType } = planForm ?? {};
+    const subscriptionItems = items?.map((item) => {
+      let price;
+      const isSubscriptionTypeChanged = subscriptionType !== item.interval;
+      if (isSubscriptionTypeChanged) {
+        price = this.MONTHLY_TO_YEARLY_MAP[subscriptionType][item.planId];
+      }
+      return {
+        quantity: planForm[this.PRICES_ITEM_MAP[item.interval][item.planId]],
+        id: item.id,
+        price,
+      };
+    });
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       const organizationSubscription = await manager.findOne(OrganizationSubscription, {
@@ -120,7 +191,7 @@ export class OrganizationPaymentService {
       });
       const subscription = await stripe.subscriptions.update(organizationSubscription.subscriptionId, {
         proration_behavior: includeChange ? 'none' : 'always_invoice',
-        items,
+        items: subscriptionItems,
         ...(!includeChange && { proration_date: prorationDate }),
       });
       return { ...subscription, ...organizationSubscription };
@@ -274,7 +345,7 @@ export class OrganizationPaymentService {
   async upcomingInvoiceHandler(invoiceObject) {
     const { subscription: subscriptionId, status, period_end, hosted_invoice_url, id: invoiceId } = invoiceObject;
     const organizationLicensePayments = await this.getOrganizationLicensePayments(undefined, subscriptionId);
-    const { customerId, organizationId, userId, id } = organizationLicensePayments;
+    const { customerId, userId, id } = organizationLicensePayments;
     const dueDate = new Date(period_end * 1000);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -283,7 +354,6 @@ export class OrganizationPaymentService {
           organizationSubscriptionId: id,
           customerId,
           status,
-          organizationId,
           userId,
           invoiceDue: dueDate,
           invoiceLink: hosted_invoice_url,
@@ -372,7 +442,6 @@ export class OrganizationPaymentService {
               organizationSubscriptionId: organizationPayment.id,
               customerId,
               status: invoiceObject.status,
-              organizationId: organizationPayment.organizationId,
               invoiceDue: dueDate,
               userId: organizationPayment.userId,
               invoiceLink: invoiceObject.hosted_invoice_url,
@@ -461,7 +530,6 @@ export class OrganizationPaymentService {
             organizationSubscriptionId: subscription.id,
             customerId,
             status: invoiceObject.status,
-            organizationId: subscription.organizationId,
             invoiceDue: dueDate,
             userId: subscription.userId,
             invoiceLink: invoiceObject.hosted_invoice_url,

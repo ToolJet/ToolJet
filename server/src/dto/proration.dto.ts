@@ -1,7 +1,7 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class Item {
+class ItemDto {
   @IsString()
   @IsNotEmpty()
   id: string;
@@ -19,17 +19,17 @@ class Item {
   planId: string;
 }
 
-export class UpdateSubscriptionDto {
+export class ProrationDto {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => Item)
-  items: Item[];
-
-  @IsNumber()
-  prorationDate: number;
+  @Type(() => ItemDto)
+  items: ItemDto[];
 
   @IsBoolean()
   includeChange: boolean;
+
+  @IsNotEmpty()
+  prorationDate: number;
 
   @IsNotEmpty()
   planForm: any;

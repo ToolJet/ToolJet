@@ -1,3 +1,5 @@
+import { PortalDto } from '@dto/portal.dto';
+import { ProrationDto } from '@dto/proration.dto';
 import { PaymentRedirectDto } from '@dto/subscription-redirect.dto';
 import { UpdateSubscriptionDto } from '@dto/update-subscription.dto';
 import { OrganizationLicenseAccessGuard } from '@ee/licensing/guards/organizationLicenseAccess.guard';
@@ -34,14 +36,14 @@ export class OrganizationPaymentController {
 
   @UseGuards(JwtAuthGuard, OrganizationLicenseAccessGuard)
   @Post(':organizationId/proration')
-  async getProration(@Param('organizationId') organizationId: string, @Body() prorationDto) {
+  async getProration(@Param('organizationId') organizationId: string, @Body() prorationDto: ProrationDto) {
     const result = await this.organizationPaymentService.getProration(organizationId, prorationDto);
     return result;
   }
 
   @UseGuards(JwtAuthGuard, OrganizationLicenseAccessGuard)
   @Post(':organizationId/portal-link')
-  async createPortalLink(@Body() portalDto) {
+  async createPortalLink(@Body() portalDto: PortalDto) {
     const result = await this.organizationPaymentService.getPortalLink(portalDto);
     return result;
   }

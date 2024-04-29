@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Organization } from './organization.entity';
 import { User } from './user.entity';
 import { OrganizationSubscription } from './organization_subscription.entity';
 
@@ -15,9 +14,6 @@ import { OrganizationSubscription } from './organization_subscription.entity';
 export class OrganizationSubscriptionInvoice {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
-
-  @Column({ name: 'organization_id' })
-  organizationId: string;
 
   @Column({ name: 'user_id' })
   userId: string;
@@ -72,10 +68,6 @@ export class OrganizationSubscriptionInvoice {
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
-
-  @ManyToOne(() => Organization, (organization) => organization.id)
-  @JoinColumn({ name: 'organization_id' })
-  organization: Organization;
 
   @ManyToOne(() => OrganizationSubscription, (organizationSubscription) => organizationSubscription.id)
   @JoinColumn({ name: 'organization_subscription_id' })
