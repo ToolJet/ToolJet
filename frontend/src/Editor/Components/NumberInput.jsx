@@ -39,7 +39,7 @@ export const NumberInput = function NumberInput({
     accentColor,
   } = styles;
 
-  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
+  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#CFD3D8' : styles.textColor;
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
   const minValue = resolveReferences(component?.definition?.validation?.minValue?.value, currentState) ?? null;
   const maxValue = resolveReferences(component?.definition?.validation?.maxValue?.value, currentState) ?? null;
@@ -165,22 +165,34 @@ export const NumberInput = function NumberInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-    borderColor: isFocused
-      ? accentColor
-      : ['#D7DBDF'].includes(borderColor)
-      ? darkMode
-        ? '#6D757D7A'
-        : '#6A727C47'
-      : borderColor,
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    backgroundColor:
-      darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
-
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles.iconVisibility
+      ? height < 20
+        ? '0px 10px 0px 29px'
+        : '8px 10px 8px 29px'
+      : height < 20
+      ? '0px 10px'
+      : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
+    borderColor: isFocused
+      ? accentColor != '4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : borderColor != '#CCD1D5'
+      ? borderColor
+      : disable || loading
+      ? 'var(--borders-disabled-on-white-dimmed)'
+      : 'var(--borders-default)',
+    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(backgroundColor)
+      ? backgroundColor
+      : disable || loading
+      ? darkMode
+        ? 'var(--surfaces-app-bg-default)'
+        : 'var(--surfaces-surface-03)'
+      : 'var(--surfaces-surface-01)',
   };
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -278,7 +290,6 @@ export const NumberInput = function NumberInput({
       <>
         <div
           data-cy={`label-${String(component.name).toLowerCase()}`}
-          data-disabled={disable || loading}
           className={`text-input tj-number-input-widget  d-flex  ${
             defaultAlignment === 'top' &&
             ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -293,6 +304,7 @@ export const NumberInput = function NumberInput({
             display: !visibility ? 'none' : 'flex',
             whiteSpace: 'nowrap',
           }}
+          data-disabled={disable || loading}
         >
           <Label
             label={label}
@@ -320,7 +332,7 @@ export const NumberInput = function NumberInput({
                     ? '11px'
                     : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
                     ? `${labelWidth + 11}px`
-                    : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
+                    : '11px', //11 ::  is 10 px inside the input + 1 px border + 12px margin right
                 position: 'absolute',
                 top: `${
                   defaultAlignment === 'side'
@@ -330,7 +342,7 @@ export const NumberInput = function NumberInput({
                     : '50%'
                 }`,
                 transform: ' translateY(-50%)',
-                color: iconColor,
+                color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
                 zIndex: 3,
               }}
               stroke={1.5}
@@ -369,7 +381,8 @@ export const NumberInput = function NumberInput({
               <div onClick={(e) => handleIncrement(e)}>
                 <SolidIcon
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${height / 2}px`}
+                  height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  fill={'var(--icons-default)'}
                   style={{
                     top: defaultAlignment === 'top' && label?.length > 0 && width > 0 ? '21px' : '1px',
                     right:
@@ -378,19 +391,26 @@ export const NumberInput = function NumberInput({
                         : alignment == 'side' && direction === 'right'
                         ? `${labelWidth + 1}px`
                         : '1px',
-                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                    borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
+                    borderLeft:
+                      disable || loading
+                        ? '1px solid var(--borders-weak-disabled)'
+                        : '1px solid var(--borders-default)',
+                    borderBottom:
+                      disable || loading
+                        ? '1px solid var(--borders-weak-disabled)'
+                        : '.5px solid var(--borders-default)',
                     borderTopRightRadius: borderRadius - 1,
-                    backgroundColor: !darkMode ? 'white' : 'black',
+                    backgroundColor: 'transparent',
                     zIndex: 3,
                   }}
-                  className="numberinput-up-arrow arrow"
-                  name="cheveronup"
+                  className="numberinput-up-arrow arrow number-input-arrow"
+                  name="TriangleDownCenter"
                 ></SolidIcon>
               </div>
 
               <div onClick={(e) => handleDecrement(e)}>
                 <SolidIcon
+                  fill={'var(--icons-default)'}
                   style={{
                     right:
                       labelWidth == 0
@@ -399,30 +419,37 @@ export const NumberInput = function NumberInput({
                         ? `${labelWidth + 1}px`
                         : '1px',
                     bottom: '1px',
-                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                    borderTop: darkMode ? '0.5px solid #313538' : '0.5px solid #D7D7D7',
+                    borderLeft:
+                      disable || loading
+                        ? '1px solid var(--borders-weak-disabled)'
+                        : '1px solid var(--borders-default)',
+                    borderTop:
+                      disable || loading
+                        ? '1px solid var(--borders-weak-disabled)'
+                        : '.5px solid var(--borders-default)',
                     borderBottomRightRadius: borderRadius - 1,
-                    backgroundColor: !darkMode ? 'white' : 'black',
+                    backgroundColor: 'transparent',
                     zIndex: 3,
                   }}
                   width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-                  height={`${height / 2}px`}
-                  className="numberinput-down-arrow arrow"
-                  name="cheverondown"
+                  height={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  className="numberinput-down-arrow arrow number-input-arrow"
+                  name="TriangleUpCenter"
                 ></SolidIcon>
               </div>
             </>
           )}
-
           {loading && <Loader style={{ ...loaderStyle }} width="16" />}
         </div>
         {showValidationError && visibility && (
           <div
-            className="tj-text-sm"
             data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
             style={{
-              color: errTextColor,
+              color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
               textAlign: direction == 'left' && 'end',
+              fontSize: '11px',
+              fontWeight: '400',
+              lineHeight: '16px',
             }}
           >
             {showValidationError && validationError}
