@@ -42,6 +42,7 @@ export const Modal = function Modal({
     boxShadow,
   } = styles;
   const parentRef = useRef(null);
+  const isInitialRender = useRef(true);
 
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
@@ -62,13 +63,23 @@ export const Modal = function Modal({
   }, [setShowModal]);
 
   useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
     const canShowModal = exposedVariables.show ?? false;
-    setShowModal(exposedVariables.show ?? false);
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
+    setShowModal(exposedVariables.show ?? false);
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
+
+  function hideModal() {
+    setShowModal(false);
+    setExposedVariable('show', false);
+    fireEvent('onClose');
+  }
 
   useEffect(() => {
     const handleModalOpen = () => {
@@ -127,11 +138,6 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal, modalHeight]);
 
-  function hideModal() {
-    setShowModal(false);
-    setExposedVariable('show', false);
-    fireEvent('onClose');
-  }
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
