@@ -55,6 +55,7 @@ import WorkspaceConstants from '@/WorkspaceConstants';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
+import { OpenIdLoginPage } from '@/LoginPage/OpenId';
 
 const AppWrapper = (props) => {
   return (
@@ -261,6 +262,8 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
+              <Route path="/login/:organizationId/sso/openid" exact element={<OpenIdLoginPage />} />
+              <Route path="/login/sso/openid" exact element={<OpenIdLoginPage />} />
               <Route path="/login/:organizationId" exact element={<LoginPage />} />
               <Route path="/login" exact element={<LoginPage />} />
               <Route path="/login/super-admin" exact element={<SuperadminLoginPage />} />

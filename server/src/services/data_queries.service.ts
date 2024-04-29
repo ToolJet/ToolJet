@@ -186,6 +186,8 @@ export class DataQueriesService {
           }
         }
 
+        queryStatus.setStart();
+
         result = await service.run(
           sourceOptions,
           parsedQueryOptions,
