@@ -95,6 +95,9 @@ const isThisExistedRoute = () => {
   const subpath = getSubpath();
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const pathnames = pathnameToArray();
+  if (pathnames.includes('login') && pathnames.includes('sso')) {
+    return true;
+  }
   const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
   return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
 };
