@@ -1,57 +1,40 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import { omit } from 'lodash';
-import { useContext } from 'react';
-import { useSuperStore } from './superStore';
-import { ModuleContext } from '../_contexts/ModuleContext';
-
-export function createCurrentStateStore(moduleName) {
-  const initialState = {
-    queries: {},
-    components: {},
-    globals: {
-      theme: { name: 'light' },
-      urlparams: null,
-    },
-    errors: {},
+const initialState = {
+  queries: {},
+  components: {},
+  globals: {
+    theme: { name: 'light' },
+    urlparams: null,
+  },
+  errors: {},
+  variables: {},
+  client: {},
+  server: {},
+  page: {
+    handle: '',
     variables: {},
-    client: {},
-    server: {},
-    page: {
-      handle: '',
-      variables: {},
-    },
-    succededQuery: {},
-    moduleName,
-  };
-
-  return create(
-    zustandDevTools(
-      (set, get) => ({
-        ...initialState,
-        actions: {
-          setCurrentState: (currentState) => {
-            set({ ...currentState }, false, { type: 'SET_CURRENT_STATE', currentState });
-          },
-          setErrors: (error) => {
-            set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });
-          },
-        },
-      }),
-      { name: 'Current State' }
-    )
-  );
-}
-
-export const useCurrentStateStore = (callback, shallow) => {
-  const moduleName = useContext(ModuleContext);
-
-  if (!moduleName) throw Error('module context not available');
-
-  const _useCurrentStateStore = useSuperStore((state) => state.modules[moduleName].useCurrentStateStore);
-
-  return _useCurrentStateStore(callback, shallow);
+  },
+  succededQuery: {},
 };
+
+export const useCurrentStateStore = create(
+  zustandDevTools(
+    (set, get) => ({
+      ...initialState,
+      actions: {
+        setCurrentState: (currentState) => {
+          set({ ...currentState }, false, { type: 'SET_CURRENT_STATE', currentState });
+        },
+        setErrors: (error) => {
+          set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });
+        },
+      },
+    }),
+    { name: 'Current State' }
+  )
+);
 
 export const useCurrentState = () =>
   // Omitting 'actions' here because we don't want to expose it to user
@@ -71,6 +54,6 @@ export const useCurrentState = () =>
     };
   }, shallow);
 
-export const getCurrentState = (moduleName) => {
-  return omit(useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState(), 'actions');
+export const getCurrentState = () => {
+  return omit(useCurrentStateStore.getState(), 'actions');
 };
