@@ -44,7 +44,7 @@ The **If condition** node triggers one of the outgoing flows depending on the gi
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Data Sources 
-In the flow builder of ToolJet, all the data sources you've set up will appear as nodes. These nodes can be utilised to perform intricate queries on your data sources, establish connections with APIs, send emails and messages, and more.
+In the flow builder of ToolJet, all the data sources you've set up will appear as nodes. These nodes can be utilized to perform intricate queries on your data sources, establish connections with APIs, send emails and messages, and more.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/nodes/datasources-nodes.png" alt="Datasources and Other Services" />

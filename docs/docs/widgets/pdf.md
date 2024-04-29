@@ -5,7 +5,7 @@ title: PDF
 
 # PDF
 
-The PDF component can be used to embed PDF files either by URL or through Base64 code.
+The **PDF** component can be used to embed PDF files either by URL or through Base64 code.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

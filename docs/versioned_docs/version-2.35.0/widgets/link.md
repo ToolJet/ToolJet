@@ -5,7 +5,7 @@ title: Link
 
 # Link
 
-Link widget allows you to add a hyperlink and navigate to the external URL.
+The **Link** widget allows you to add a hyperlink and navigate to the external URL.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -14,8 +14,8 @@ Link widget allows you to add a hyperlink and navigate to the external URL.
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:-------------- |
 | Link target | This property sets the URL where the user needs to be taken on clicking the link | example: `https://dev.to/tooljet` or `{{queries.xyz.data.url}}` | 
-| Link text | This property sets the text for the link widget  | example: `Click here` or `Open webpage` | 
-| Target type | This property specifies the link to be opened in the same tab or new tab on clickinh the link | Options: `New Tab` & `Same Tab` |
+| Link text | This property sets the text for the Link widget  | example: `Click here` or `Open webpage` | 
+| Target type | This property specifies the link to be opened in the same tab or new tab on clicking the link | Options: `New Tab` & `Same Tab` |
 
 </div>
 
@@ -43,7 +43,7 @@ Following actions of link component can be controlled using the component specif
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:------------ |
-| click | You can trigger the click action of the link component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.link1.click()` |
+| click | You can trigger the click action of the Link component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.link1.click()` |
 
 </div>
 
