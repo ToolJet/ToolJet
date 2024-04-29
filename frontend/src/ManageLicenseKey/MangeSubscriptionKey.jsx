@@ -29,28 +29,6 @@ const MODAL_MODE = {
   UPGRADE: 'upgrade',
 };
 
-const PRICES_ITEM_MAP = {
-  monthly: {
-    price_1OIRFKE67rQ5743Ah2HmDERq: 'viewersCount',
-    price_1OIRFlE67rQ5743AguxSuphU: 'editorsCount',
-  },
-  yearly: {
-    price_1OIRCTE67rQ5743A7kQQsJM2: 'viewersCount',
-    price_1OIREkE67rQ5743Ag0BYgVKq: 'editorsCount',
-  },
-};
-
-const MONTHLY_TO_YEARLY_MAP = {
-  yearly: {
-    price_1OIRFKE67rQ5743Ah2HmDERq: 'price_1OIRCTE67rQ5743A7kQQsJM2',
-    price_1OIRFlE67rQ5743AguxSuphU: 'price_1OIREkE67rQ5743Ag0BYgVKq',
-  },
-  monthly: {
-    price_1OIRCTE67rQ5743A7kQQsJM2: 'price_1OIRFKE67rQ5743Ah2HmDERq',
-    price_1OIREkE67rQ5743Ag0BYgVKq: 'price_1OIRFlE67rQ5743AguxSuphU',
-  },
-};
-
 function ManageSubscriptionKey({ darkMode }) {
   const isExpired = featureAccess?.licenseStatus?.isExpired;
 
@@ -174,22 +152,18 @@ function ManageSubscriptionKey({ darkMode }) {
   }, [selectedTab, paymentStatus, currentTab]);
 
   useEffect(() => {
-    const { subscriptionType, includeChange } = planForm ?? {};
+    const { includeChange } = planForm ?? {};
     if (upgradeEnabled && !includeChange) {
       licenseService
         .getProration({
           prorationDate,
           includeChange,
+          planForm: planForm,
           items: planForm?.items?.data.map((item) => {
-            let price;
-            const isSubscriptionTypeChanged = subscriptionType !== `${item.plan.interval}ly`;
-            if (isSubscriptionTypeChanged) {
-              price = MONTHLY_TO_YEARLY_MAP[subscriptionType][item.plan.id];
-            }
             return {
-              quantity: planForm[PRICES_ITEM_MAP[`${item.plan.interval}ly`][item.plan.id]],
               id: item.id,
-              price,
+              interval: `${item.plan.interval}ly`,
+              planId: item.plan.id,
             };
           }),
         })
@@ -267,16 +241,12 @@ function ManageSubscriptionKey({ darkMode }) {
     setUpgradeLoading(true);
     const { subscriptionType, includeChange } = planForm;
     const subscriptionDetails = {
+      planForm: planForm,
       items: planForm?.items?.data.map((item) => {
-        let price;
-        const isSubscriptionTypeChanged = subscriptionType !== `${item.plan.interval}ly`;
-        if (isSubscriptionTypeChanged) {
-          price = MONTHLY_TO_YEARLY_MAP[subscriptionType][item.plan.id];
-        }
         return {
-          quantity: +planForm[PRICES_ITEM_MAP[`${item.plan.interval}ly`][item.plan.id]],
           id: item.id,
-          price: price,
+          interval: `${item.plan.interval}ly`,
+          planId: item.plan.id,
         };
       }),
       prorationDate,
