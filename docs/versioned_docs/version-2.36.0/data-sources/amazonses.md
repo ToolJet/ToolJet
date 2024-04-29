@@ -3,12 +3,16 @@ id: amazonses
 title: Amazon SES
 ---
 
-# Amazon SES
+<div style={{paddingBottom:'24px'}}>
 
 ToolJet can connect to your Amazon SES account to send emails.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
-To add a new Amazon SES API datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select Amazon SES from the modal that pops up.
+To add a new **Amazon SES** API data source, click the **Data sources** icon on the left-sidebar of the app builder and click on the **+Add** button, then select Amazon SES from the modal that pops up.
 
 ToolJet requires the following to connect to Amazon SES:
 
@@ -18,13 +22,17 @@ ToolJet requires the following to connect to Amazon SES:
 
 It is recommended to create a new IAM user for the database so that you can control the access levels of ToolJet.
 
-Click on the 'Save' button to save the data source.
+Click on the **Save** button to save the data source.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/amazonses/connection.png" alt="Amazon SES" width="600" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/amazonses/connection.png" alt="Amazon SES" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported operations
 1.  Email service
@@ -59,3 +67,5 @@ For example: `admin@tooljet.io`
 :::info Note
 Query should be saved before running.
 :::
+
+</div>
