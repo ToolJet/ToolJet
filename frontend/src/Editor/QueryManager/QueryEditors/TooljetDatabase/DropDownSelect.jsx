@@ -36,6 +36,7 @@ const DropDownSelect = ({
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
+  shouldShowForeignKeyIcon = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -162,6 +163,7 @@ const DropDownSelect = ({
             organizationId={organizationId}
             foreignKeys={foreignKeys}
             setReferencedColumnDetails={setReferencedColumnDetails}
+            shouldShowForeignKeyIcon={shouldShowForeignKeyIcon}
           />
         </Popover>
       }

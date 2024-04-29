@@ -45,9 +45,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
   ];
 
-  console.log('tableInfo', tableInfo);
-  console.log('tableForeignKeyInfo', tableForeignKeyInfo);
-
   const setJoinOptions = (values) => {
     const tableSet = new Set();
     (values || []).forEach((join) => {

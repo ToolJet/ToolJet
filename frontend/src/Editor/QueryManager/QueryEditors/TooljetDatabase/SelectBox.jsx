@@ -35,6 +35,7 @@ function DataSourceSelect({
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
+  shouldShowForeignKeyIcon = false,
 }) {
   const [loadingForeignKey, setLoadingForeignkey] = useState(false);
   const [totalRecords, setTotalRecords] = useState(1);
@@ -199,9 +200,14 @@ function DataSourceSelect({
                     <SolidIcon
                       fill="var(--indigo9)"
                       name="tick"
-                      style={{ height: 16, width: 16 }}
+                      style={{ height: 16, width: 16, marginTop: '-4px' }}
                       viewBox="0 0 20 20"
+                      className="mx-1"
                     />
+                  )}
+
+                  {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
+                    <SolidIcon name="foreignkey" height={'14'} width={'24'} />
                   )}
                 </div>
               </components.Option>
