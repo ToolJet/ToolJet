@@ -9,7 +9,7 @@ import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { generateHints } from './autocompleteExtensionConfig';
+import { findNearestSubstring, generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
@@ -88,45 +88,13 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
-    /*
-     ** This script determines a context-specific auto-completion suggestion based on the user's current position within a document in a text editor.
-     ** It identifies the last word before the cursor and generates completion suggestions relevant to that word, specifically tailored for JavaScript language hints.
-     * - `currentCursor`: Retrieves the current cursor position within the document.
-     * - `lineNum`: Determines the line number at the current cursor position.
-     * - `contentAsPerLine`: Fetches the text on the current line and normalizes spaces.
-     * - `lastSpaceIndexFromCurrentCursor`: Finds the last space before the cursor across the entire document to help isolate the word near the cursor.
-     * - `substring`: Extracts a substring around the cursor position to identify the nearby text context.
-     * - `indexOfSubstringInLine`: Locates this substring within the normalized line content.
-     * - `indexOfLeftSpaceBeforeTheSubstring` and `indexEndOfSubstring`: Determine the bounds of the substring in the line to isolate words for the search query.
-     * - `searchQuery`: Extracts the actual query string from the line based on calculated indices, trimming any extra spaces.
-     * - `finalQuery`: Identifies the last word in the search query to use for fetching suggestions.
-     * - `JSLangHints`: If the language is JavaScript, this array is populated with method suggestions from a predefined `hints['jsHints']` object that match the `finalQuery`.
-     * - `appHints`: Holds application-specific hints not necessarily related to JavaScript.
-     * - `autoSuggestionList`: Filters `appHints` based on whether they include the `finalQuery`, providing relevant auto-completion options.
-     *
-     * The result is a list of suggested completions based on the user's current typing context, enhancing the coding experience by suggesting relevant methods and commands.
-     */
-
     const currentCursor = context.pos;
 
-    const lineNum = context.state.doc.lineAt(currentCursor).number;
+    const currentString = context.state.doc.text;
 
-    let contentAsPerLine = context.state.doc.text[lineNum - 1].replace(/\s+/g, ' ');
-
-    let lastSpaceIndexFromCurrentCursor = context.state.doc.text.join(' ').lastIndexOf(' ', currentCursor);
-
-    const substring = context.state.doc.text
-      .join(' ')
-      .slice(lastSpaceIndexFromCurrentCursor - 10, lastSpaceIndexFromCurrentCursor);
-    const indexOfSubstringInLine = contentAsPerLine.indexOf(substring);
-
-    const indexOfLeftSpaceBeforeTheSubstring = contentAsPerLine.lastIndexOf(' ', indexOfSubstringInLine - 1);
-
-    const indexEndOfSubstring = contentAsPerLine.indexOf(substring) + substring.length;
-    const searchQuery = contentAsPerLine.substring(indexOfLeftSpaceBeforeTheSubstring, indexEndOfSubstring).trim();
-
-    const finalQuery = searchQuery.split(' ').pop();
-    console.log('--arpit:: finalQuery', { finalQuery });
+    const inputStr = currentString.join(' ');
+    const currentCurosorPos = currentCursor;
+    const nearestSubstring = findNearestSubstring(inputStr, currentCurosorPos);
 
     let JSLangHints = [];
     if (lang === 'javascript') {
@@ -140,7 +108,7 @@ const MultiLineCodeEditor = (props) => {
         .flat();
 
       JSLangHints = JSLangHints.filter((cm) => {
-        let lastWordAfterDot = finalQuery.split('.');
+        let lastWordAfterDot = nearestSubstring.split('.');
 
         lastWordAfterDot = lastWordAfterDot[lastWordAfterDot.length - 1];
 
@@ -151,61 +119,61 @@ const MultiLineCodeEditor = (props) => {
     const appHints = hints['appHints'];
 
     let autoSuggestionList = appHints.filter((suggestion) => {
-      const find = finalQuery;
-
-      return suggestion.hint.includes(find);
+      return suggestion.hint.includes(nearestSubstring);
     });
 
-    const suggestions = generateHints([...JSLangHints, ...autoSuggestionList, ...suggestionList], null, finalQuery).map(
-      (hint) => {
-        delete hint['apply'];
+    const suggestions = generateHints(
+      [...JSLangHints, ...autoSuggestionList, ...suggestionList],
+      null,
+      nearestSubstring
+    ).map((hint) => {
+      delete hint['apply'];
 
-        hint.apply = (view, completion, from, to) => {
-          /**
-           * This function applies an auto-completion logic to a text editing view based on user interaction.
-           * It uses a pre-defined completion object and modifies the document's content accordingly.
-           *
-           * Parameters:
-           * - view: The editor view where the changes will be applied.
-           * - completion: An object containing details about the completion to be applied. Includes properties like 'label' (the text to insert) and 'type' (e.g., 'js_methods').
-           * - from: The initial position (index) in the document where the completion starts.
-           * - to: The position (index) in the document where the completion ends.
-           *
-           * Logic:
-           * - The function calculates the start index for the change by subtracting the length of the word to be replaced (finalQuery) from the 'from' index.
-           * - It configures the completion details such as where to insert the text and the exact text to insert.
-           * - If the completion type is 'js_methods', it adjusts the insertion point to the 'to' index and sets the cursor position after the inserted text.
-           * - Finally, it dispatches these configurations to the editor view to apply the changes.
-           *
-           * The dispatch configuration (dispacthConfig) includes changes and, optionally, the cursor selection position if the type is 'js_methods'.
-           */
+      hint.apply = (view, completion, from, to) => {
+        /**
+         * This function applies an auto-completion logic to a text editing view based on user interaction.
+         * It uses a pre-defined completion object and modifies the document's content accordingly.
+         *
+         * Parameters:
+         * - view: The editor view where the changes will be applied.
+         * - completion: An object containing details about the completion to be applied. Includes properties like 'label' (the text to insert) and 'type' (e.g., 'js_methods').
+         * - from: The initial position (index) in the document where the completion starts.
+         * - to: The position (index) in the document where the completion ends.
+         *
+         * Logic:
+         * - The function calculates the start index for the change by subtracting the length of the word to be replaced (finalQuery) from the 'from' index.
+         * - It configures the completion details such as where to insert the text and the exact text to insert.
+         * - If the completion type is 'js_methods', it adjusts the insertion point to the 'to' index and sets the cursor position after the inserted text.
+         * - Finally, it dispatches these configurations to the editor view to apply the changes.
+         *
+         * The dispatch configuration (dispacthConfig) includes changes and, optionally, the cursor selection position if the type is 'js_methods'.
+         */
 
-          const wordToReplace = finalQuery;
-          const fromIndex = from - wordToReplace.length;
+        const wordToReplace = nearestSubstring;
+        const fromIndex = from - wordToReplace.length;
 
-          const pickedCompletionConfig = {
-            from: fromIndex === 1 ? 0 : fromIndex,
-            to: to,
-            insert: completion.label,
-          };
-
-          const dispacthConfig = {
-            changes: pickedCompletionConfig,
-          };
-
-          if (completion.type === 'js_methods') {
-            pickedCompletionConfig.from = to;
-
-            dispacthConfig.selection = {
-              anchor: pickedCompletionConfig.to + completion.label.length - 1,
-            };
-          }
-
-          view.dispatch(dispacthConfig);
+        const pickedCompletionConfig = {
+          from: fromIndex === 1 ? 0 : fromIndex,
+          to: to,
+          insert: completion.label,
         };
-        return hint;
-      }
-    );
+
+        const dispacthConfig = {
+          changes: pickedCompletionConfig,
+        };
+
+        if (completion.type === 'js_methods') {
+          pickedCompletionConfig.from = to;
+
+          dispacthConfig.selection = {
+            anchor: pickedCompletionConfig.to + completion.label.length - 1,
+          };
+        }
+
+        view.dispatch(dispacthConfig);
+      };
+      return hint;
+    });
 
     return {
       from: context.pos,

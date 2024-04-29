@@ -154,3 +154,23 @@ function findRelativeHints(input, hints) {
 
   return filteredHints;
 }
+
+export function findNearestSubstring(inputStr, currentCurosorPos) {
+  let end = currentCurosorPos - 1; // Adjust for zero-based indexing
+  let substring = '';
+  const inputSubstring = inputStr.substring(0, end + 1);
+
+  console.log(`Initial cursor position: ${currentCurosorPos}`);
+  console.log(`Character at cursor: '${inputStr[end]}'`);
+  console.log(`Input substring: '${inputSubstring}'`);
+
+  // Iterate backwards from the character before the cursor
+  for (let i = end; i >= 0; i--) {
+    if (inputStr[i] === ' ') {
+      break; // Stop if a space is found
+    }
+    substring = inputStr[i] + substring;
+  }
+
+  return substring;
+}
