@@ -6,12 +6,12 @@ import JSON5 from 'json5';
 import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
-import { useSuperStore } from '../_stores/superStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -520,7 +520,7 @@ export async function executeMultilineJS(
   parameters = {},
   hasParamSupport = false
 ) {
-  const currentState = getCurrentState(_ref.moduleName);
+  const currentState = getCurrentState();
   let result = {},
     error = null;
 
@@ -531,10 +531,7 @@ export async function executeMultilineJS(
 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
-  const queryDetails = useSuperStore
-    .getState()
-    .modules[_ref.moduleName].useDataQueriesStore.getState()
-    .dataQueries.find((q) => q.id === queryId);
+  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
 
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
@@ -564,10 +561,7 @@ export async function executeMultilineJS(
           params = {};
         }
         const processedParams = {};
-        const query = useSuperStore
-          .getState()
-          .modules.modules[_ref.moduleName].useDataQueriesStore.getState()
-          .dataQueries.find((q) => q.name === key);
+        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
       },
@@ -696,17 +690,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     : {};
 
   const runQuery = (queryName = '', parameters) => {
-    const query = useSuperStore
-      .getState()
-      .modules[_ref.moduleName].useDataQueriesStore.getState()
-      .dataQueries.find((query) => {
-        const isFound = query.name === queryName;
-        if (isPreview) {
-          return isFound;
-        } else {
-          return isFound && isQueryRunnable(query);
-        }
-      });
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
+      const isFound = query.name === queryName;
+      if (isPreview) {
+        return isFound;
+      } else {
+        return isFound && isQueryRunnable(query);
+      }
+    });
 
     const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {

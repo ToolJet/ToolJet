@@ -38,7 +38,7 @@ This operation lets you analyze the document using the document data in **base64
 
 #### Required Parameters: 
 
-- **Document**: Supply the document data in base64 format. File Picker component can be used here to pick the document from the local system and retrieve the base64 data dynamically using exposed variables. Example: **{{components.filepicker1.file[0].base64Data}}**.
+- **Document**: Supply the document data in base64 format. File Picker component can be used here to pick the document from the local system and retrieve the base64 data dynamically using exposed variables. Example: `{{components.filepicker1.file[0].base64Data}}`.
 - **Data Output**: Choose the desired data output types for the document analysis. Options include: 
   1. **Forms**: Extract key and value pairs from forms.
   2. **Tables**: Extract data from tables, including headers and cell content.

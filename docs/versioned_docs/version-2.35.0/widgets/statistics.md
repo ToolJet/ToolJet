@@ -5,7 +5,7 @@ title: Statistics
 
 # Statistics
 
-Statistics can be used to display different statistical information.
+**Statistics** can be used to display different statistical information.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -14,11 +14,11 @@ Statistics can be used to display different statistical information.
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
 |:------------ |:-------------|
 | Primary value label | This property lets you add and remove primary value label. | 
-| Primary value | This property lets you add and remove primary value,the actual amount can be represented here. |
+| Primary value | This property lets you add and remove primary value, the actual amount can be represented here. |
 | Hide secondary value | This property lets you show/hide the secondary value from the statistics component. By default, this property is disabled. Toggle it on to hide the secondary value, you can also click on the `Fx` button next to it to dynamically set the value to `{{true}}` or `{{false}}`. |
 | Secondary value label | This property lets you add and remove secondary value label. |
-| Secondary value | This property lets you add and remove secondary value,the change in value can be represented here. |
-| Secondary sign display | This property lets you add and secondary sign either positive or negative,can be used to represent positive(increase) or negative(decrease) movement.Default value is positive. |
+| Secondary value | This property lets you add and remove secondary value, the change in value can be represented here. |
+| Secondary sign display | This property lets you add and secondary sign either positive or negative,can be used to represent positive(increase) or negative(decrease) movement. Default value is positive. |
 | Loading state | Loading state can be used to show a spinner on the statistics. Loading state is commonly used with `isLoading` property of the queries to show a loading status while a query is being run. Switch the toggle **On** or click on `fx` to programmatically set the value `{{true}}` or `{{false}}`. |
 
 </div>

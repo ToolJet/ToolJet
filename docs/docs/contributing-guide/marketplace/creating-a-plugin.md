@@ -279,7 +279,7 @@ The **manifest.json** file is utilized by the connection modal component, which 
 ```
 The operations.json file specifies the available operations that can be executed on the data source. It provides details about the operation type, required fields to execute the operation, and the data type of each field. The label, key, type, description, and hint properties are used to define the specific fields and their types required to establish a connection with the API or data source.
 
-## Step 4: Add the npm package of Gitub to the plugin dependencies
+## Step 4: Add the npm package of GitHub to the plugin dependencies
 
 - Change directory to the plugin directory where the npm package needs to be installed and then install the package
   ```bash
