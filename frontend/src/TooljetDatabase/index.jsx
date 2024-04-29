@@ -141,6 +141,7 @@ export const TooljetDatabase = (props) => {
       totalRecords,
       queryFilters,
       sortFilters,
+      foreignKeys,
     ]
   );
 

@@ -26,6 +26,7 @@ const CreateColumnDrawer = ({
                 toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
                 return;
               }
+
               const { foreign_keys = [] } = data?.result || {};
               if (data?.result?.columns?.length > 0) {
                 setColumns(
