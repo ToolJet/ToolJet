@@ -1,10 +1,10 @@
 import { schemaUnavailableOptions } from '@/Editor/QueryManager/constants';
 import { allOperations } from '@tooljet/plugins/client';
 import { capitalize } from 'lodash';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { useSuperStore } from './superStore';
 
-export const getDefaultOptions = (source, moduleName) => {
+export const getDefaultOptions = (source) => {
   const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
   let options = {};
 
@@ -37,12 +37,12 @@ export const getDefaultOptions = (source, moduleName) => {
     }
   }
 
-  return { options, name: computeQueryName(source, moduleName) };
+  return { options, name: computeQueryName(source) };
 };
 
-const computeQueryName = (source, moduleName) => {
+const computeQueryName = (source) => {
   const { kind, type } = source;
-  const dataQueries = useSuperStore.getState().modules[moduleName].useDataQueriesStore.getState().dataQueries;
+  const dataQueries = useDataQueriesStore.getState().dataQueries;
   let currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
   if (type == DATA_SOURCE_TYPE.SAMPLE) {
     currentQueriesForKind = currentQueriesForKind.filter((query) => query.data_source_id === source.id);

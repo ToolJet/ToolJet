@@ -4,9 +4,9 @@ title: Toggle Switch
 ---
 # Toggle Switch
 
-The toggle switch widget allows the user to change a setting between two states.
+The **Toggle Switch** widget allows the user to change a setting between two states.
 
-The Toggle switch widget should be used if we want to make a binary choice, such as turning something **on or off** or **enable or disable**.
+The **Toggle Switch** widget should be used if we want to make a binary choice, such as turning something **on or off** or **enable or disable**.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -79,8 +79,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 |  <div style={{ width:"100px"}}> Style </div> |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"100px"}}> Default Value </div>|
 |:----- |:---------  |:------------- |
-| Text color | Change the color of the text in the widget by providig the `Hex color code` or choosing a color from the picker. |  |
-| Toggle switch color | Change the color of the toggle switch in the widget by providig the `Hex color code` or choosing a color from the picker. |  |
+| Text color | Change the color of the text in the widget by providing the `Hex color code` or choosing a color from the picker. |  |
+| Toggle switch color | Change the color of the toggle switch in the widget by providing the `Hex color code` or choosing a color from the picker. |  |
 | Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}` |
 | Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. | By default, its value is set to `{{false}}` |
 

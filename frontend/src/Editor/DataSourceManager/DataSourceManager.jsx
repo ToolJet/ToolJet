@@ -28,12 +28,9 @@ import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
-import { useSuperStore } from '@/_stores/superStore';
-import { ModuleContext } from '@/_contexts/ModuleContext';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 class DataSourceManagerComponent extends React.Component {
-  static contextType = ModuleContext;
-
   constructor(props) {
     super(props);
 
@@ -202,8 +199,7 @@ class DataSourceManagerComponent extends React.Component {
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
-    const appVersionId = useSuperStore.getState().modules[this.context].useAppVersionStore?.getState()
-      ?.editingVersion?.id;
+    const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentEnvironment = this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
