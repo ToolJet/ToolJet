@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import TableDetailsDropdown from './TableDetailsDropdown';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
@@ -17,14 +17,23 @@ function SourceKeyRelation({
   isEditMode,
   isEditColumn,
   isCreateColumn,
-  setTargetColumn,
-  targetColumn,
   setForeignKeyDetails,
   foreignKeyDetails,
   createForeignKeyInEdit,
   isForeignKeyDraweOpen,
+  setSourceColumn,
+  sourceColumn,
+  setTargetTable,
+  targetTable,
+  setTargetColumn,
+  targetColumn,
+  setOnDelete,
+  onDelete,
+  setOnUpdate,
+  onUpdate,
 }) {
-  const { tables, organizationId, selectedTable, setForeignKeys } = useContext(TooljetDatabaseContext);
+  const { tables, organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const [targetColumnList, setTargetColumnList] = useState([]);
 
   const sourceTable = [
     {
@@ -56,12 +65,9 @@ function SourceKeyRelation({
           };
         });
 
-  const tableList = tables.map((item) => {
-    return {
-      value: item?.table_name,
-      label: item?.table_name,
-    };
-  });
+  const tableList = tables
+    .filter((item) => item?.table_name !== tableName)
+    .map((item) => ({ value: item?.table_name, label: item?.table_name }));
 
   const onUpdateOptions = [
     {
@@ -100,7 +106,7 @@ function SourceKeyRelation({
 
       const { foreign_keys = [] } = data?.result || {};
       if (data?.result?.columns?.length > 0) {
-        setTargetColumn(
+        setTargetColumnList(
           data?.result?.columns.map((item) => ({
             name: item.column_name,
             label: item.column_name,
@@ -110,33 +116,27 @@ function SourceKeyRelation({
           }))
         );
       }
-      // if (foreign_keys.length) setForeignKeys([...foreign_keys]);
     });
   };
 
   const targetTableColumns =
-    targetColumn.length > 0 && (!isEditColumn || !isCreateColumn)
-      ? targetColumn?.filter((item) => foreignKeyDetails?.column_names?.dataType === item?.dataType)
-      : (isEditColumn || isCreateColumn) && targetColumn.length > 0
-      ? targetColumn?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
+    targetColumnList.length > 0 && (!isEditColumn || !isCreateColumn)
+      ? targetColumnList?.filter((item) => sourceColumns.some((sourceItem) => sourceItem.dataType === item.dataType))
+      : (isEditColumn || isCreateColumn) && targetColumnList.length > 0
+      ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
       : [];
 
   useEffect(() => {
-    if ((isEditMode && !createForeignKeyInEdit && isForeignKeyDraweOpen) || isEditColumn) {
-      handleSelectColumn(foreignKeyDetails?.referenced_table_name?.value);
+    if ((isEditMode && !createForeignKeyInEdit) || isEditColumn) {
+      handleSelectColumn(targetTable?.value);
     }
-  }, [isForeignKeyDraweOpen, isEditColumn]);
+  }, [isEditColumn, isEditMode]);
 
   useEffect(() => {
     if (isEditColumn || isCreateColumn) {
-      setForeignKeyDetails((prevDetails) => ({
-        ...prevDetails,
-        column_names: sourceColumns[0],
-      }));
+      setSourceColumn(sourceColumns[0]);
     }
   }, [isEditColumn, isCreateColumn]);
-
-  console.log('first', targetTableColumns);
 
   return (
     <div className="relations-container">
@@ -159,13 +159,14 @@ function SourceKeyRelation({
           tableList={sourceTable}
           tableColumns={sourceColumns}
           source={true}
-          setTargetColumn={setTargetColumn}
           isEditColumn={isEditColumn}
           isCreateColumn={isCreateColumn}
           defaultValue={isEditColumn || isCreateColumn ? sourceColumns[0] : []}
           onAdd={true}
           foreignKeyDetails={foreignKeyDetails}
           setForeignKeyDetails={setForeignKeyDetails}
+          setSourceColumn={setSourceColumn}
+          sourceColumn={sourceColumn}
         />
       </div>
       <div className="target mt-4">
@@ -188,6 +189,10 @@ function SourceKeyRelation({
           onAdd={true}
           foreignKeyDetails={foreignKeyDetails}
           setForeignKeyDetails={setForeignKeyDetails}
+          setTargetTable={setTargetTable}
+          targetTable={targetTable}
+          targetColumn={targetColumn}
+          setTargetColumn={setTargetColumn}
         />
       </div>
       <div className="actions mt-4">
@@ -208,6 +213,10 @@ function SourceKeyRelation({
           actions={true}
           foreignKeyDetails={foreignKeyDetails}
           setForeignKeyDetails={setForeignKeyDetails}
+          setOnDelete={setOnDelete}
+          onDelete={onDelete}
+          setOnUpdate={setOnUpdate}
+          onUpdate={onUpdate}
         />
       </div>
     </div>

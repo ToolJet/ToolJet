@@ -33,19 +33,23 @@ const ColumnForm = ({
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
   const [isNotNull, setIsNotNull] = useState(false);
-  // const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(false);
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
+  const [sourceColumn, setSourceColumn] = useState([]);
+  const [targetTable, setTargetTable] = useState([]);
+  const [targetColumn, setTargetColumn] = useState([]);
+  const [onDelete, setOnDelete] = useState([]);
+  const [onUpdate, setOnUpdate] = useState([]);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
 
   const [foreignKeyDetails, setForeignKeyDetails] = useState({
-    column_names: {},
-    referenced_table_name: {},
-    referenced_column_names: {},
-    on_delete: {},
-    on_update: {},
+    column_names: [],
+    referenced_table_name: [],
+    referenced_column_names: [],
+    on_delete: [],
+    on_update: [],
   });
 
   const columns = {
@@ -141,24 +145,8 @@ const ColumnForm = ({
       toast.error('Data type cannot be empty');
       return;
     }
-    const foreignKeyArray = [
-      {
-        column_names: [foreignKeyDetails.column_names?.value],
-        referenced_table_name: foreignKeyDetails.referenced_table_name?.value,
-        referenced_column_names: [foreignKeyDetails.referenced_column_names?.value],
-        on_delete: foreignKeyDetails.on_delete?.value,
-        on_update: foreignKeyDetails.on_update?.value,
-      },
-    ];
 
-    const isCheckingValues =
-      Object.keys(foreignKeyDetails.column_names).length === 0 &&
-      Object.keys(foreignKeyDetails.referenced_column_names).length === 0 &&
-      Object.keys(foreignKeyDetails.referenced_table_name).length === 0 &&
-      Object.keys(foreignKeyDetails.on_delete).length === 0 &&
-      Object.keys(foreignKeyDetails.on_update).length === 0
-        ? false
-        : true;
+    const isCheckingValues = foreignKeyDetails?.length > 0 && isForeignKey ? true : false;
 
     setFetching(true);
     const { error } = await tooljetDatabaseService.createColumn(
@@ -171,7 +159,7 @@ const ColumnForm = ({
       isUniqueConstraint,
       isSerialType,
       isCheckingValues,
-      foreignKeyArray
+      foreignKeyDetails
     );
     setFetching(false);
     if (error) {
@@ -184,7 +172,7 @@ const ColumnForm = ({
 
   const handleCreateForeignKey = () => {
     setIsForeignKeyDraweOpen(false);
-    toast.success(`Foreign key created successfully`);
+    toast.success(`Foreign key Added successfully for selected column`);
   };
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
@@ -303,18 +291,13 @@ const ColumnForm = ({
                 type="checkbox"
                 checked={isForeignKey}
                 onChange={(e) => {
-                  if (isForeignKey === false && foreignKeyDetails.length > 0) {
-                    setIsForeignKey(false);
-                    setForeignKeyDetails({});
-                  }
-                  if (
-                    isEmpty(foreignKeyDetails?.column_names) ||
-                    isEmpty(foreignKeyDetails?.referenced_column_names) ||
-                    isEmpty(foreignKeyDetails?.referenced_table_name)
-                  ) {
+                  if (foreignKeyDetails?.length > 0) {
+                    setIsForeignKey(e.target.checked);
+                    setIsForeignKeyDraweOpen(false);
+                  } else {
+                    setIsForeignKey(e.target.checked);
                     setIsForeignKeyDraweOpen(e.target.checked);
                   }
-                  setIsForeignKey(e.target.checked);
                 }}
                 disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
               />
@@ -323,17 +306,14 @@ const ColumnForm = ({
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">Foreign Key relation</p>
             <p className="fw-400 secondary-text mb-2">Add foreign key to check referral integrity</p>
-            {!isEmpty(foreignKeyDetails?.column_names) &&
-              !isEmpty(foreignKeyDetails?.referenced_column_names) &&
-              !isEmpty(foreignKeyDetails?.referenced_table_name) &&
-              !isEmpty(foreignKeyDetails?.on_delete) &&
-              !isEmpty(foreignKeyDetails?.on_update) && (
-                <div className="foreignKey-details mt-0" onClick={() => {}}>
-                  <span className="foreignKey-text">{foreignKeyDetails?.column_names?.value}</span>
+            {foreignKeyDetails?.length > 0 &&
+              foreignKeyDetails?.map((detail, index) => (
+                <div className="foreignKey-details mt-0" key={index} onClick={() => {}}>
+                  <span className="foreignKey-text">{detail.column_names[0]}</span>
                   <div className="foreign-key-relation">
                     <ForeignKeyRelationIcon width="13" height="13" />
                   </div>
-                  <span className="foreignKey-text">{`${foreignKeyDetails?.referenced_table_name?.value}.${foreignKeyDetails?.referenced_column_names?.value}`}</span>
+                  <span className="foreignKey-text">{`${detail.referenced_table_name}.${detail.referenced_column_names[0]}`}</span>
                   <div
                     className="editForeignkey"
                     onClick={() => {
@@ -343,7 +323,7 @@ const ColumnForm = ({
                     <EditIcon width="17" height="18" />
                   </div>
                 </div>
-              )}
+              ))}
           </div>
         </div>
 
@@ -372,6 +352,16 @@ const ColumnForm = ({
             foreignKeyDetails={foreignKeyDetails}
             organizationId={organizationId}
             existingForeignKeyDetails={foreignKeys}
+            setSourceColumn={setSourceColumn}
+            sourceColumn={sourceColumn}
+            setTargetTable={setTargetTable}
+            targetTable={targetTable}
+            setTargetColumn={setTargetColumn}
+            targetColumn={targetColumn}
+            setOnDelete={setOnDelete}
+            onDelete={onDelete}
+            setOnUpdate={setOnUpdate}
+            onUpdate={onUpdate}
           />
         </Drawer>
 

@@ -29,7 +29,7 @@ const TableForm = ({
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
-  const arrayOfTableColumns = Object.values(selectedTableColumns);
+  const selectedTableColumnDetails = Object.values(selectedTableColumns);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [fetching, setFetching] = useState(false);
@@ -40,101 +40,23 @@ const TableForm = ({
   const { organizationId, foreignKeys } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const existingForeignKeyColumnDetails = Object.values(columns)?.filter((item) => {
-    return item?.column_name === foreignKeys[0]?.column_names[0];
-  });
-
-  const existingColumnName =
-    isEditMode &&
-    existingForeignKeyColumnDetails.length > 0 &&
-    existingForeignKeyColumnDetails?.map((item) => {
+  const [foreignKeyDetails, setForeignKeyDetails] = useState(
+    foreignKeys?.map((item) => {
       return {
-        name: item?.column_name,
-        label: item?.column_name,
-        icon: item?.dataTypeDetails[0]?.icon,
-        value: item?.column_name,
-        dataType: item?.data_type,
+        column_names: isEditMode ? (!createForeignKeyInEdit ? item.column_names : []) : [],
+        referenced_table_name: isEditMode ? (!createForeignKeyInEdit ? item.referenced_table_name : '') : '',
+        referenced_column_names: isEditMode ? (!createForeignKeyInEdit ? item.referenced_column_names : []) : [],
+        on_delete: isEditMode ? (!createForeignKeyInEdit ? item.on_delete : '') : '',
+        on_update: isEditMode ? (!createForeignKeyInEdit ? item.on_update : '') : '',
       };
-    });
-
-  const referencedColumnName =
-    isEditMode &&
-    existingForeignKeyColumnDetails.length > 0 &&
-    existingForeignKeyColumnDetails?.map((item) => {
-      return {
-        name: foreignKeys[0]?.referenced_column_names[0],
-        label: foreignKeys[0]?.referenced_column_names[0],
-        icon: item?.dataTypeDetails[0]?.icon,
-        value: foreignKeys[0]?.referenced_column_names[0],
-        dataType: item?.data_type,
-      };
-    });
-
-  const [foreignKeyDetails, setForeignKeyDetails] = useState({
-    column_names: isEditMode ? (!createForeignKeyInEdit ? existingColumnName[0] : {}) : {},
-    referenced_table_name: isEditMode
-      ? !createForeignKeyInEdit
-        ? {
-            name: foreignKeys[0]?.referenced_table_name,
-            label: foreignKeys[0]?.referenced_table_name,
-            value: foreignKeys[0]?.referenced_table_name,
-          }
-        : {}
-      : {},
-    referenced_column_names: isEditMode ? (!createForeignKeyInEdit ? referencedColumnName[0] : {}) : {},
-    on_delete: isEditMode
-      ? !createForeignKeyInEdit
-        ? {
-            name: foreignKeys[0]?.on_delete,
-            label: foreignKeys[0]?.on_delete,
-            value: foreignKeys[0]?.on_delete,
-          }
-        : {}
-      : {},
-    on_update: isEditMode
-      ? !createForeignKeyInEdit
-        ? {
-            name: foreignKeys[0]?.on_update,
-            label: foreignKeys[0]?.on_update,
-            value: foreignKeys[0]?.on_update,
-          }
-        : {}
-      : {},
-  });
+    })
+  );
 
   useEffect(() => {
     toast.dismiss();
   }, []);
 
-  // const primaryKeyColumns = [];
-  // const nonPrimaryKeyColumns = [];
-  // Object.values(columns).forEach((column) => {
-  //   // this is for old_column object which we need to send in edit table api tracked (old column with primary columns are in top order) deep cloned object
-  //   if (column?.constraints_type?.is_primary_key) {
-  //     primaryKeyColumns.push({ ...column });
-  //   } else {
-  //     nonPrimaryKeyColumns.push({ ...column });
-  //   }
-  // });
-
-  // const editPrimaryKeyColumns = [];
-  // const editNonPrimaryKeyColumns = [];
-  // arrayOfTableColumns.forEach((column) => {
-  //   // this is for new_column object which we need to send in edit table api
-  //   if (column?.constraints_type?.is_primary_key) {
-  //     editPrimaryKeyColumns.push({ ...column });
-  //   } else {
-  //     editNonPrimaryKeyColumns.push({ ...column });
-  //   }
-  // });
-
-  // const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
-
-  // let data = isEditMode
-  //   ? bodyColumns(editColumns, _.cloneDeep([...editPrimaryKeyColumns, ...editNonPrimaryKeyColumns]))
-  //   : bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
-
-  function bodyColumns(columns, arrayOfTableColumns) {
+  function bodyColumns(columns, selectedTableColumnDetails) {
     let newArray = [];
 
     for (const key in columns) {
@@ -143,7 +65,7 @@ const TableForm = ({
         let old_column = {};
 
         new_column = columns[key];
-        old_column = arrayOfTableColumns[key];
+        old_column = selectedTableColumnDetails[key];
 
         if (old_column !== undefined) {
           newArray.push({ new_column, old_column });
@@ -153,7 +75,7 @@ const TableForm = ({
       }
     }
 
-    arrayOfTableColumns.forEach((col, index) => {
+    selectedTableColumnDetails.forEach((col, index) => {
       if (!columns.hasOwnProperty(index)) {
         let old_column = {};
         old_column = col;
@@ -162,7 +84,7 @@ const TableForm = ({
     });
 
     Object.values(columns).forEach((col, index) => {
-      if (!arrayOfTableColumns.hasOwnProperty(index)) {
+      if (!selectedTableColumnDetails.hasOwnProperty(index)) {
         let new_column = col;
         if (!newArray.some((item) => JSON.stringify(item.new_column) === JSON.stringify(new_column))) {
           newArray.push({ new_column });
@@ -172,7 +94,7 @@ const TableForm = ({
     return newArray;
   }
 
-  let data = bodyColumns(columns, arrayOfTableColumns);
+  let data = bodyColumns(columns, selectedTableColumnDetails);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -194,10 +116,6 @@ const TableForm = ({
     return true;
   };
 
-  // const handleCreateForeignKey = (foreignKeyColumns) => {
-  //  setForeignKeys(foreignKeyColumns)
-  // }
-
   const handleCreate = async () => {
     if (!validateTableName()) return;
 
@@ -207,31 +125,14 @@ const TableForm = ({
       return;
     }
 
-    const foreignKeyArray = [
-      {
-        column_names: [foreignKeyDetails.column_names?.value],
-        referenced_table_name: foreignKeyDetails.referenced_table_name?.value,
-        referenced_column_names: [foreignKeyDetails.referenced_column_names?.value],
-        on_delete: foreignKeyDetails.on_delete?.value,
-        on_update: foreignKeyDetails.on_update?.value,
-      },
-    ];
-
-    const checkingValues =
-      Object.keys(foreignKeyDetails.column_names).length === 0 &&
-      Object.keys(foreignKeyDetails.referenced_column_names).length === 0 &&
-      Object.keys(foreignKeyDetails.referenced_table_name).length === 0 &&
-      Object.keys(foreignKeyDetails.on_delete).length === 0 &&
-      Object.keys(foreignKeyDetails.on_update).length === 0
-        ? false
-        : true;
+    const checkingValues = isEmpty(foreignKeyDetails) ? false : true;
 
     setFetching(true);
     const { error, data } = await tooljetDatabaseService.createTable(
       organizationId,
       tableName,
       Object.values(columns),
-      foreignKeyArray,
+      foreignKeyDetails,
       checkingValues
     );
     setFetching(false);
@@ -297,7 +198,7 @@ const TableForm = ({
 
   const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
 
-  const existingPrimaryKeyObjects = arrayOfTableColumns.filter((item) => item.constraints_type.is_primary_key);
+  const existingPrimaryKeyObjects = selectedTableColumnDetails.filter((item) => item.constraints_type.is_primary_key);
 
   const primaryKeyObjects = Object.values(columns).filter((item) => item.constraints_type?.is_primary_key === true);
 

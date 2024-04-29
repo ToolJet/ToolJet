@@ -28,6 +28,16 @@ function TableDetailsDropdown({
   actions,
   setForeignKeyDetails,
   foreignKeyDetails,
+  setSourceColumn,
+  sourceColumn,
+  setTargetTable,
+  targetTable,
+  setOnDelete,
+  onDelete,
+  setOnUpdate,
+  onUpdate,
+  targetColumn,
+  setTargetColumn,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
@@ -48,28 +58,14 @@ function TableDetailsDropdown({
                   No table selected
                 </div>
               }
-              value={
-                source
-                  ? tableList[0]
-                  : actions
-                  ? foreignKeyDetails?.on_update
-                  : foreignKeyDetails?.referenced_table_name
-              }
+              value={source ? tableList[0] : actions ? onUpdate : targetTable}
               foreignKeyAccess={true}
               disabled={source || isEditColumn || isCreateColumn ? true : false}
               onChange={(value) => {
                 if (actions) {
-                  setForeignKeyDetails((prevDetails) => ({
-                    ...prevDetails,
-                    on_update: value,
-                  }));
+                  setOnUpdate(value);
                 } else {
-                  setForeignKeyDetails((prevDetails) => ({
-                    ...prevDetails,
-                    referenced_table_name: value,
-                    referenced_column_names: {},
-                  }));
-                  // setTable(value);
+                  setTargetTable(value);
                   handleSelectColumn(value?.value);
                 }
               }}
@@ -99,31 +95,21 @@ function TableDetailsDropdown({
               }
               value={
                 source && (!isEditColumn || !isCreateColumn)
-                  ? foreignKeyDetails?.column_names
+                  ? sourceColumn
                   : source && (isEditColumn || isCreateColumn)
                   ? defaultValue
                   : actions
-                  ? foreignKeyDetails?.on_delete
-                  : foreignKeyDetails?.referenced_column_names
+                  ? onDelete
+                  : targetColumn
               }
               foreignKeyAccess={true}
               onChange={(value) => {
                 if (source) {
-                  // updateSelectedSourceColumns(value);
-                  setForeignKeyDetails((prevDetails) => ({
-                    ...prevDetails,
-                    column_names: value,
-                  }));
+                  setSourceColumn(value);
                 } else if (actions) {
-                  setForeignKeyDetails((prevDetails) => ({
-                    ...prevDetails,
-                    on_delete: value,
-                  }));
+                  setOnDelete(value);
                 } else {
-                  setForeignKeyDetails((prevDetails) => ({
-                    ...prevDetails,
-                    referenced_column_names: value,
-                  }));
+                  setTargetColumn(value);
                 }
               }}
               onAdd={onAdd}

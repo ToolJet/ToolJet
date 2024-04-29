@@ -21,35 +21,41 @@ function ForeignKeyRelation({
   isRequiredFieldsExistForCreateTableOperation,
   foreignKeyDetails,
   organizationId,
-  existingForeignKeyDetails,
+  existingForeignKeyDetails, // context state foreignKeys
   setCreateForeignKeyInEdit,
   createForeignKeyInEdit,
   selectedTable,
   setIsForeignKeyDraweOpen,
   isForeignKeyDraweOpen,
 }) {
-  const [onDelete, setOnDelete] = useState(false);
+  const [onDeletePopup, setOnDeletePopup] = useState(false);
   const [onChangeInForeignKey, setOnChangeInForeignKey] = useState(false);
+  const [selectedForeignkeyIndex, setSelectedForeignKeyIndex] = useState([]);
+  const [sourceColumn, setSourceColumn] = useState([]);
+  const [targetTable, setTargetTable] = useState([]);
+  const [targetColumn, setTargetColumn] = useState([]);
+  const [onDelete, setOnDelete] = useState([]);
+  const [onUpdate, setOnUpdate] = useState([]);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const existingReferencedTableName = existingForeignKeyDetails[0]?.referenced_table_name;
-  const existingReferencedColumnName = existingForeignKeyDetails[0]?.referenced_column_names[0];
-  const currentReferencedTableName = foreignKeyDetails?.referenced_table_name?.value;
-  const currentReferencedColumnName = foreignKeyDetails?.referenced_column_names?.value;
+  const existingReferencedTableName = existingForeignKeyDetails[selectedForeignkeyIndex]?.referenced_table_name;
+  const existingReferencedColumnName = existingForeignKeyDetails[selectedForeignkeyIndex]?.referenced_column_names[0];
+  const currentReferencedTableName = targetTable?.value;
+  const currentReferencedColumnName = targetColumn?.value;
 
   const handleCreateForeignKey = () => {
     setIsForeignKeyDraweOpen(false);
-    toast.success(`Foreign key created successfully`);
+    toast.success(`Foreign key Added successfully for selected column`);
   };
 
   const handleCreateForeignKeyinEditMode = async () => {
     const data = [
       {
-        column_names: [foreignKeyDetails?.column_names?.value],
-        referenced_table_name: foreignKeyDetails?.referenced_table_name?.value,
-        referenced_column_names: [foreignKeyDetails?.referenced_column_names?.value],
-        on_delete: foreignKeyDetails?.on_delete?.value,
-        on_update: foreignKeyDetails?.on_update?.value,
+        column_names: [sourceColumn?.value],
+        referenced_table_name: targetTable?.value,
+        referenced_column_names: [targetColumn?.value],
+        on_delete: onDelete?.value,
+        on_update: onUpdate?.value,
       },
     ];
     const { error } = await tooljetDatabaseService.createForeignKey(organizationId, tableName, data);
@@ -60,20 +66,23 @@ function ForeignKeyRelation({
     }
 
     toast.success(`Foreign key created successfully`);
+
     setIsForeignKeyDraweOpen(false);
   };
 
   const handleEditForeignKey = async () => {
     const id = existingForeignKeyDetails[0]?.constraint_name;
+
     const data = [
       {
-        column_names: [foreignKeyDetails?.column_names?.value],
-        referenced_table_name: foreignKeyDetails?.referenced_table_name?.value,
-        referenced_column_names: [foreignKeyDetails?.referenced_column_names?.value],
-        on_delete: foreignKeyDetails?.on_delete?.value,
-        on_update: foreignKeyDetails?.on_update?.value,
+        column_names: [sourceColumn?.value],
+        referenced_table_name: targetTable?.value,
+        referenced_column_names: [targetColumn?.value],
+        on_delete: onDelete?.value,
+        on_update: onUpdate?.value,
       },
     ];
+
     const { error } = await tooljetDatabaseService.editForeignKey(organizationId, tableName, id, data);
 
     if (error) {
@@ -83,11 +92,24 @@ function ForeignKeyRelation({
 
     toast.success(`Foreign key edited successfully`);
 
+    if (!error) {
+      setForeignKeyDetails((prevValues) => {
+        const updatedDetails = [...prevValues]; // Create a copy of the array
+        updatedDetails[selectedForeignkeyIndex] = {
+          column_names: [sourceColumn?.value],
+          referenced_table_name: targetTable?.value,
+          referenced_column_names: [targetColumn?.value],
+          on_delete: onDelete?.value,
+          on_update: onUpdate?.value,
+        };
+        return updatedDetails;
+      });
+    }
     setIsForeignKeyDraweOpen(false);
   };
 
   const handleOpenDeletePopup = () => {
-    setOnDelete(true);
+    setOnDeletePopup(true);
   };
 
   const handleDeleteColumn = async () => {
@@ -99,8 +121,12 @@ function ForeignKeyRelation({
       return;
     }
 
-    setForeignKeyDetails({});
-    setOnDelete(false);
+    setForeignKeyDetails((prevValues) => {
+      const updatedDetails = [...prevValues]; // Create a copy of the array
+      updatedDetails.splice(selectedForeignkeyIndex, 1); // Remove the item at the specified index
+      return updatedDetails; // Update the state with the modified array
+    });
+    setOnDeletePopup(false);
     setIsForeignKeyDraweOpen(false);
     toast.success(`Foreign key deleted successfully`);
   };
@@ -134,6 +160,33 @@ function ForeignKeyRelation({
 
   const newChangesInForeignKey = changesInForeignKey();
 
+  const openEditForeignKey = (sourceColumnName) => {
+    setIsForeignKeyDraweOpen(true);
+    const existingForeignKeyColumn = foreignKeyDetails?.filter((obj) => obj.column_names === sourceColumnName);
+    const existingForeignKeyIndex = foreignKeyDetails?.findIndex((obj) => obj.column_names === sourceColumnName);
+    setSelectedForeignKeyIndex(existingForeignKeyIndex);
+    setSourceColumn({
+      value: existingForeignKeyColumn[0]?.column_names[0],
+      label: existingForeignKeyColumn[0]?.column_names[0],
+    });
+    setTargetTable({
+      value: existingForeignKeyColumn[0]?.referenced_table_name,
+      label: existingForeignKeyColumn[0]?.referenced_table_name,
+    });
+    setTargetColumn({
+      value: existingForeignKeyColumn[0]?.referenced_column_names[0],
+      label: existingForeignKeyColumn[0]?.referenced_column_names[0],
+    });
+    setOnDelete({
+      value: existingForeignKeyColumn[0]?.on_delete,
+      label: existingForeignKeyColumn[0]?.on_delete,
+    });
+    setOnUpdate({
+      value: existingForeignKeyColumn[0]?.on_update,
+      label: existingForeignKeyColumn[0]?.on_update,
+    });
+  };
+
   return (
     <>
       <div className="foreignkey-relation-container">
@@ -141,11 +194,7 @@ function ForeignKeyRelation({
           <span>Foreign key relation</span>
         </div>
 
-        {isEmpty(foreignKeyDetails?.column_names) ||
-        isEmpty(foreignKeyDetails?.referenced_column_names) ||
-        isEmpty(foreignKeyDetails?.referenced_table_name) ||
-        isEmpty(foreignKeyDetails?.on_delete) ||
-        isEmpty(foreignKeyDetails?.on_update) ? (
+        {foreignKeyDetails?.length === 0 ? (
           <div className="empty-foreignkey-container d-flex align-items-center justify-content-center rounded mt-2 p-2">
             <Information width="20" />
             <p style={{ marginLeft: '6px', color: '#687076' }} className="mb-0">
@@ -153,47 +202,42 @@ function ForeignKeyRelation({
             </p>
           </div>
         ) : (
-          <div
-            className="foreignKey-details"
-            onClick={() => onMouseHoverFunction(foreignKeyDetails.column_names.value)}
-          >
-            <span className="foreignKey-text">{foreignKeyDetails.column_names.value}</span>
-            <div className="foreign-key-relation">
-              <ForeignKeyRelationIcon width="13" height="13" />
+          foreignKeyDetails?.length > 0 &&
+          foreignKeyDetails?.map((item, index) => (
+            <div className="foreignKey-details" onClick={() => onMouseHoverFunction(item.column_names)} key={index}>
+              <span className="foreignKey-text">{item.column_names}</span>
+
+              <div className="foreign-key-relation">
+                <ForeignKeyRelationIcon width="13" height="13" />
+              </div>
+              <span className="foreignKey-text">{`${item.referenced_table_name}.${item.referenced_column_names}`}</span>
+              <div className="editForeignkey" onClick={() => openEditForeignKey(item.column_names)}>
+                <EditIcon width="17" height="18" />
+              </div>
             </div>
-            <span className="foreignKey-text">{`${foreignKeyDetails.referenced_table_name.value}.${foreignKeyDetails.referenced_column_names.value}`}</span>
-            <div className="editForeignkey" onClick={() => setIsForeignKeyDraweOpen(true)}>
-              <EditIcon width="17" height="18" />
-            </div>
-          </div>
+          ))
         )}
 
-        {(isEmpty(foreignKeyDetails?.column_names) ||
-          isEmpty(foreignKeyDetails?.referenced_column_names) ||
-          isEmpty(foreignKeyDetails?.referenced_table_name) ||
-          isEmpty(foreignKeyDetails?.on_delete) ||
-          isEmpty(foreignKeyDetails?.on_update)) && (
-          <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
-            <ButtonSolid
-              variant="ghostBlue"
-              size="sm"
-              style={{ fontSize: '14px' }}
-              onClick={() => {
-                setIsForeignKeyDraweOpen(true);
-                setCreateForeignKeyInEdit(true);
-              }}
-              disabled={
-                isEmpty(tableName) ||
-                (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
-                isEmpty(columns) ||
-                (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
-              }
-            >
-              <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-              &nbsp;&nbsp; Add relation
-            </ButtonSolid>
-          </div>
-        )}
+        <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            style={{ fontSize: '14px' }}
+            onClick={() => {
+              setIsForeignKeyDraweOpen(true);
+              setCreateForeignKeyInEdit(true);
+            }}
+            disabled={
+              isEmpty(tableName) ||
+              (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
+              isEmpty(columns) ||
+              (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
+            }
+          >
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp; Add relation
+          </ButtonSolid>
+        </div>
       </div>
       <Drawer
         isOpen={isForeignKeyDraweOpen}
@@ -226,21 +270,31 @@ function ForeignKeyRelation({
           selectedTable={selectedTable}
           isForeignKeyDraweOpen={isForeignKeyDraweOpen}
           onDeletePopup={handleOpenDeletePopup}
+          setSourceColumn={setSourceColumn}
+          sourceColumn={sourceColumn}
+          setTargetTable={setTargetTable}
+          targetTable={targetTable}
+          setTargetColumn={setTargetColumn}
+          targetColumn={targetColumn}
+          setOnDelete={setOnDelete}
+          onDelete={onDelete}
+          setOnUpdate={setOnUpdate}
+          onUpdate={onUpdate}
         />
       </Drawer>
       <ConfirmDialog
         title={'Delete foreign key'}
-        show={onDelete}
+        show={onDeletePopup}
         message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
         onConfirm={handleDeleteColumn}
         onCancel={() => {
-          setOnDelete(false);
+          setOnDeletePopup(false);
         }}
         darkMode={darkMode}
         confirmButtonType="dangerPrimary"
         cancelButtonType="tertiary"
         onCloseIconClick={() => {
-          setOnDelete(false);
+          setOnDeletePopup(false);
         }}
         confirmButtonText={'Continue'}
         cancelButtonText={'Cancel'}

@@ -23,7 +23,7 @@ const ColumnsForm = ({
   selectedTable,
 }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
-  const [indexHoveredColumn, setIndexHoveredColumn] = useState(null);
+  const [hoveredColumn, setHoveredColumn] = useState(null);
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
 
   const handleDelete = (index) => {
@@ -32,16 +32,26 @@ const ColumnsForm = ({
     setColumns(newColumns);
   };
 
-  const onMouseHover = (char = 'date') => {
-    const isNameAvailable = Object.values(columns).some((obj) => Object.values(obj).includes(char));
-    const index = Object.values(columns).findIndex((obj) => Object.values(obj).includes(char));
+  const onMouseHover = (char = []) => {
+    const isNameAvailable = Object.values(columns).some((obj) => {
+      return Object.values(obj).some((value) => {
+        return char.includes(value);
+      });
+    });
+
+    const index = Object.values(columns).findIndex((obj) => {
+      return Object.values(obj).some((value) => {
+        return char.includes(value);
+      });
+    });
+
     if (isNameAvailable === true) {
-      setIndexHoveredColumn(index);
+      setHoveredColumn(index);
       setTimeout(() => {
-        setIndexHoveredColumn(null);
+        setHoveredColumn(null);
       }, 3000);
     } else {
-      setIndexHoveredColumn(null);
+      setHoveredColumn(null);
     }
   };
   // const handleDeleteEditColumn = (index) => {
@@ -98,13 +108,13 @@ const ColumnsForm = ({
           handleDelete={handleDelete}
           isEditMode={isEditMode}
           isActiveForeignKey={
-            !isEmpty(foreignKeyDetails?.column_names) ||
-            !isEmpty(foreignKeyDetails?.referenced_column_names) ||
-            !isEmpty(foreignKeyDetails?.referenced_table_name) ||
-            !isEmpty(foreignKeyDetails?.on_delete) ||
+            !isEmpty(foreignKeyDetails?.column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_table_name) &&
+            !isEmpty(foreignKeyDetails?.on_delete) &&
             !isEmpty(foreignKeyDetails?.on_update)
           }
-          indexHover={indexHoveredColumn}
+          indexHover={hoveredColumn}
           foreignKeyDetails={foreignKeyDetails}
         />
 
@@ -126,7 +136,7 @@ const ColumnsForm = ({
 
         <ForeignKeyRelation
           onMouseHoverFunction={onMouseHover}
-          setIndexHoveredColumn={setIndexHoveredColumn}
+          setHoveredColumn={setHoveredColumn}
           tableName={tableName}
           columns={columns}
           isEditMode={isEditMode}
