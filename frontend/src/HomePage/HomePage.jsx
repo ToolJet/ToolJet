@@ -886,7 +886,7 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {meta.total_count > 0 && (
+                {(isLoading || meta.total_count > 0) && (
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}
