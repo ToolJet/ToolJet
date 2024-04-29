@@ -3,10 +3,16 @@ import { SourceOptions, QueryOptions } from './types';
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as https from 'https';
 
 
 export default class Documentdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
+    const pemPath = path.join(process.cwd(), 'global-bundle.pem');
+    await this.ensureFileExists(pemPath);
+
     const { db, close } = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;
@@ -139,6 +145,29 @@ export default class Documentdb implements QueryService {
     };
   }
 
+  async ensureFileExists(filePath: string): Promise<void> {
+    if (!fs.existsSync(filePath)) {
+      console.log('global-bundle.pem file is missing. Attempting to download...');
+      const url = 'https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem';
+      
+      return new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(filePath);
+        https.get(url, (response) => {
+          response.pipe(file);
+          file.on('finish', () => {
+            file.close();
+            console.log('Downloaded the global-bundle.pem file successfully.');
+            resolve();
+          });
+        }).on('error', (err) => {
+          fs.unlink(filePath, () => {});
+          console.error('Error downloading the global-bundle.pem file:', err.message);
+          reject(err);
+        });
+      });
+    }
+  }
+
   parseEJSON(maybeEJSON?: string): any {
     if (!maybeEJSON) return {};
 
@@ -173,7 +202,7 @@ export default class Documentdb implements QueryService {
         : `mongodb://${host}:${port}`;
 
       client = new MongoClient(uri, {
-        directConnection: true,
+        tlsCAFile: "global-bundle.pem"
       });
       await client.connect();
 
@@ -187,7 +216,7 @@ export default class Documentdb implements QueryService {
 
       const encodedConnectionString = connectionString.replace(password, encodedPassword);
 
-      client = new MongoClient(encodedConnectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+      client = new MongoClient(encodedConnectionString, { useNewUrlParser: true, useUnifiedTopology: true, tlsCAFile: "global-bundle.pem" });
       await client.connect();
       db = client.db();
     }
