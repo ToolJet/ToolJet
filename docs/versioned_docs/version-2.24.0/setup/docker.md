@@ -75,6 +75,24 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   `sudo docker-compose up -d`
   :::
 
+### Docker Backup (Only For In-Built PostgreSQL)
+
+The below bash script will help with taking back-up and as well as restoring:
+
+1. Download the script:
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
+```
+
+2. Run the script with the following command:
+```bash
+./backup-restore.sh 
+```
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
+</div>
+
 
 
   </TabItem>
@@ -133,24 +151,6 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 </TabItem>
 </Tabs>
 
-## Docker Backup
-
-The below bash script will help with taking back-up and as well as restoring:
-
-1. Download the script:
-```bash
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
-```
-
-2. Run the script with the following command:
-```bash
-./backup-restore.sh 
-```
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
-</div>
-
 
 ## Upgrading to the Latest Version
 
@@ -162,9 +162,9 @@ If this is a new installation of the application, you may start directly with th
 
 - It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
 
