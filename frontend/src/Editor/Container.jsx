@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo, useContext } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -41,16 +41,17 @@ export const Container = ({
   zoomLevel,
   removeComponent,
   deviceWindowWidth,
-  darkMode,
   socket,
   handleUndo,
   handleRedo,
   sideBarDebugger,
   currentPageId,
+  darkMode,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
+
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,

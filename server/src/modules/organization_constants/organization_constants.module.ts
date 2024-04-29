@@ -35,6 +35,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   controllers: [OrganizationConstantController],
@@ -57,6 +58,7 @@ import { PostgrestProxyService } from '@services/postgrest_proxy.service';
       Credential,
     ]),
     CaslModule,
+    TooljetDbModule,
   ],
   providers: [
     OrganizationConstantsService,
