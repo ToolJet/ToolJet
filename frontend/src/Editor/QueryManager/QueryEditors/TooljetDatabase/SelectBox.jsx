@@ -9,6 +9,7 @@ import Search from '@/_ui/Icon/solidIcons/Search';
 import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 import { Form } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { getPrivateRoute } from '@/_helpers/routes';
 import cx from 'classnames';
 
 function DataSourceSelect({
@@ -36,6 +37,7 @@ function DataSourceSelect({
   foreignKeys,
   setReferencedColumnDetails,
   shouldShowForeignKeyIcon = false,
+  cellColumnName,
 }) {
   const [loadingForeignKey, setLoadingForeignkey] = useState(false);
   const [totalRecords, setTotalRecords] = useState(1);
@@ -57,10 +59,8 @@ function DataSourceSelect({
   const getForeignKeyDetails = (add) => {
     setLoadingForeignkey(true);
     const selectQuery = new PostgrestQueryBuilder();
-    const referencedColumns = foreignKeys?.length > 0 ? foreignKeys[0]?.referenced_column_names : [];
-    referencedColumns?.forEach((col) => {
-      selectQuery.select(col);
-    });
+    const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+    selectQuery.select(referencedColumns?.referenced_column_names[0]);
     const limit = 15;
     const offset = (totalRecords - 1) * limit;
     tooljetDatabaseService
@@ -111,6 +111,7 @@ function DataSourceSelect({
   return (
     <div>
       <Select
+        onClick={(e) => e.stopPropagation()}
         onChange={(option) => handleChangeDataSource(option)}
         classNames={{
           menu: () =>
@@ -124,11 +125,9 @@ function DataSourceSelect({
         }}
         ref={selectRef}
         controlShouldRenderValue={false}
-        // onMenuScroll={handleScroll}
         menuPlacement="auto"
         menuIsOpen
         hideSelectedOptions={false}
-        // onMenuOpen={handleSelectOpen}
         components={{
           // ...(isMulti && {
           Option: ({ children, ...props }) => {
@@ -193,6 +192,11 @@ function DataSourceSelect({
                             marginRight: '10px',
                             marginTop: '3px',
                           }),
+                      }}
+                      onClick={() => {
+                        const data = { id: props.data.id, table_name: props.data.value };
+                        localStorage.setItem('tableDetails', JSON.stringify(data));
+                        window.open(getPrivateRoute('database'), '_blank');
                       }}
                     />
                   )}
@@ -397,6 +401,7 @@ const MenuList = ({
           ref={scrollEventForColumnValus ? scrollContainerRef : innerRef}
           style={menuListStyles}
           id="query-ds-select-menu"
+          onClick={(e) => e.stopPropagation()}
         >
           {children}
         </div>
@@ -409,7 +414,7 @@ const MenuList = ({
           })}
         >
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={onAdd}>
-            {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}{' '}
+            {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}
           </ButtonSolid>
         </div>

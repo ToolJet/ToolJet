@@ -774,7 +774,14 @@ const Table = ({ collapseSidebar }) => {
 
   const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
     if (
-      ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
+      [
+        'table-editable-parent-cell',
+        'tjdb-td-wrapper',
+        'table-cell',
+        'cell-text',
+        'css-18kmycr-Input',
+        ' css-18kmycr-Input',
+      ].includes(e.target.classList.value)
     ) {
       const isCellValueDefault =
         headerGroups[0].headers[cellIndex]?.column_default === cellVal?.toString() ? true : false;
@@ -791,8 +798,8 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setDefaultValue(isCellValueDefault);
       setEditPopover(false);
-      // getForeignKeyDetails(1);
     }
+    console.log('first', cellClick.editable);
   };
 
   const closeEditPopover = (previousValue, _cellIndex) => {
@@ -1284,6 +1291,7 @@ const Table = ({ collapseSidebar }) => {
                                       organizationId={organizationId}
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
+                                      cellHeader={cell.column.Header}
                                     >
                                       <div
                                         className="input-cell-parent"

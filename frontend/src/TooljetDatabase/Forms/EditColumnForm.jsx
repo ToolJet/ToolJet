@@ -505,7 +505,7 @@ const ColumnForm = ({
 
           {/* foreign key toggle */}
 
-          <div className="row mb-2">
+          <div className="row mb-3">
             <div className="col-1">
               <label className={`form-switch`}>
                 <input
