@@ -207,7 +207,7 @@ class ViewerComponent extends React.Component {
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
 
-        computeComponentState(components, this.context).then(async () => {
+        computeComponentState(components).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
           this.runQueries(dataQueries);
 
@@ -456,10 +456,7 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(
-            this.state.appDefinition?.pages[this.state.currentPageId].components,
-            this.context
-          ).then(async () => {
+          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
             const currentPageEvents = this.state.events.filter(
               (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
             );
@@ -735,11 +732,9 @@ class ViewerComponent extends React.Component {
                                   onComponentClick(this, id, component, 'view');
                                 }}
                                 onComponentOptionChanged={(component, optionName, value) => {
-                                  return onComponentOptionChanged(this.context, component, optionName, value);
+                                  return onComponentOptionChanged(component, optionName, value);
                                 }}
-                                onComponentOptionsChanged={(...props) =>
-                                  onComponentOptionsChanged(this.context, ...props)
-                                }
+                                onComponentOptionsChanged={onComponentOptionsChanged}
                                 canvasWidth={this.getCanvasWidth()}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
