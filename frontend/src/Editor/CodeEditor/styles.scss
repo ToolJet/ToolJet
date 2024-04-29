@@ -307,7 +307,7 @@
 .cm-editor {
     border: 1px solid var(--slate7);
     border-radius: 4px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: box-shadow 0.15s ease-in-out;
 }
 
 .fields-container {
