@@ -565,11 +565,7 @@ export class AuthService {
     const signupUser = await this.usersService.findByEmail(email);
     const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(organizationToken);
 
-    // Check if the configs allows user signups
-    if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
-      throw new NotAcceptableException('Signup has been disabled for this workspace. Please contact admin');
-    }
-
+    /* Server level check for this API */
     if (!signupUser || invitedUser.email !== signupUser.email) {
       const { type, message, inputError } = SIGNUP_ERRORS.INCORRECT_INVITED_EMAIL;
       const errorResponse = {
