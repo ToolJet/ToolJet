@@ -524,8 +524,6 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    useResolveStore.getState().actions.updateJSHints();
-
     await runForInitialLoad();
     await fetchOrgEnvironmentVariables();
 
@@ -803,6 +801,7 @@ const EditorComponent = (props) => {
     onComplete,
     extraGlobals = {}
   ) => {
+    useResolveStore.getState().actions.updateJSHints();
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -958,6 +957,7 @@ const EditorComponent = (props) => {
     }
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
+    removeUndefined(diffPatches);
 
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
@@ -997,6 +997,13 @@ const EditorComponent = (props) => {
 
       if (opts?.widgetMovedWithKeyboard === true) {
         updatingEditorStateInProcess = false;
+      }
+
+      if (opts?.addNewPage) {
+        updatedAppDefinition.pages[currentPageId] = {
+          ...updatedAppDefinition.pages[currentPageId],
+          components: {},
+        };
       }
 
       updateEditorState({

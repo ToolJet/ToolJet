@@ -22,7 +22,6 @@ import CodeHinter from './CodeHinter';
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
-
   const [isFocused, setIsFocused] = useState(false);
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
@@ -31,7 +30,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
   //! Re render the component when the componentName changes as the initialValue is not updated
-
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
     setCurrentValue(initialValue);
@@ -55,7 +53,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, portalProps?.isOpen, cursorInsidePreview]);
-
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
   return (
@@ -74,10 +71,10 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
-        // fxActive={fxActive}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
+        isPortalOpen={restProps?.portalProps?.isOpen}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
@@ -290,6 +287,7 @@ const DynamicEditorBridge = (props) => {
     cyLabel = '',
     onChange,
     styleDefinition,
+    onVisibilityChange,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -350,6 +348,7 @@ const DynamicEditorBridge = (props) => {
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 styleDefinition={styleDefinition}
+                onVisibilityChange={onVisibilityChange}
               />
             )}
           </div>
