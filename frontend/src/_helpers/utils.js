@@ -14,9 +14,9 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
-import { validateMultilineCode } from './utility';
 
-const reservedKeyword = ['app', 'window', 'this'];
+const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')}|this)\\b`, 'i');
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -438,10 +438,17 @@ export function constructSearchParams(params = {}) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  const isValidCode = validateMultilineCode(code);
+  if (keywordRegex.test(code)) {
+    const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
+    const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
 
-  if (isValidCode.status === 'failed') {
-    return isValidCode;
+    return {
+      status: 'failed',
+      data: {
+        message,
+        description,
+      },
+    };
   }
 
   const currentState = getCurrentState();
