@@ -263,7 +263,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         ) : (
                           <>
                             <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" />
+                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
                           </>
                         )}
                       </ButtonSolid>
