@@ -51,7 +51,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
           Columns
         </label>
 
-        <div className="field-container flex-grow-1">
+        <div className="field-container flex-grow-1 col">
           {Object.entries(columnOptions).map(([key, value]) => (
             <RenderColumnOptions
               key={key}
