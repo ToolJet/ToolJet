@@ -425,7 +425,6 @@ describe('organizations controller', () => {
               configs: {
                 client_id: 'git-client-id',
                 client_secret: '',
-                host_name: '',
               },
               enabled: true,
             },
