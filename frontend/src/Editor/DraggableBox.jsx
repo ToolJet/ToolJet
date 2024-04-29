@@ -303,7 +303,7 @@ export const DraggableBox = React.memo(
                 setDragging(false);
                 onDragStop(e, id, direction, currentLayout, layoutData);
               }}
-              cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container, div.real-canvas`}
+              cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container, div.real-canvas, .overlay-cell-table`}
               onResizeStop={(e, direction, ref, d, position) => {
                 setResizing(false);
                 onResizeStop(id, e, direction, ref, d, position);
