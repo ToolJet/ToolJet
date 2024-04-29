@@ -5,7 +5,7 @@ title: Bounded Box
 
 # Bounded Box
 
-A **bounded box** is an infinitely customizable image annotation component that can be used to select and tag areas within an image. It supports selection using specific points (landmarking) or drawing rectangular areas (bounding boxes). It can be used to create datasets for machine learning models or to annotate images for other purposes.
+A **Bounded Box** is an infinitely customizable image annotation component that can be used to select and tag areas within an image. It supports selection using specific points (landmarking) or drawing rectangular areas (bounding boxes). It can be used to create datasets for machine learning models or to annotate images for other purposes.
 
 <div style={{textAlign: 'center'}}>
 
@@ -38,12 +38,12 @@ Provide the data that will load the default bounding boxes over the image when t
 
 | <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div> | <div style={{ width:"150px"}}> **Expected Value** </div> |
 | :-------- | :------ | :-------- |
-| type | Sets the type of the bounded box. | `RECTANGLE` or `POINT` |
-| width | Sets the width of the bounded box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0` |
-| height | Sets the height of the bounded box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0` |
-| x | Sets the x-coordinate(horizontal) position of the bounded box in the image. | Numerical value ex: `41` |
-| y | Sets the y-coordinate(vertical) position of the bounded box in the image. | Numerical value ex: `22` |
-| text | Sets the text value of the bounded box. | It should be one of the labels provided in the **[List of labels](#properties)** property |
+| type | Sets the type of the Bounded Box. | `RECTANGLE` or `POINT` |
+| width | Sets the width of the Bounded Box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0` |
+| height | Sets the height of the Bounded Box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0` |
+| x | Sets the x-coordinate(horizontal) position of the Bounded Box in the image. | Numerical value ex: `41` |
+| y | Sets the y-coordinate(vertical) position of the Bounded Box in the image. | Numerical value ex: `22` |
+| text | Sets the text value of the Bounded Box. | It should be one of the labels provided in the **[List of labels](#properties)** property |
 
 **Example of default values:**
 
@@ -80,7 +80,7 @@ Events are actions that can be triggered programmatically when the user interact
 
 | <div style={{ width:"100px"}}> **Event** </div> | <div style={{ width:"100px"}}> **Description** </div> |
 | :----------- | :----------- |
-| On change | Triggered when the label from the dropdown in the selector is changed in the bounded box. |
+| On change | Triggered when the label from the dropdown in the selector is changed in the Bounded Box. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.

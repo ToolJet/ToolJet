@@ -414,7 +414,7 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 
 ### Allow Selection
 
-This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible. 
+This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is disabled, the ability to highlight selected rows and perform bulk selection will not be accessible. 
 
 If the option for allowing selection is enabled, a new option called **[Default selected row](#default-selected-row)** will become visible. However, if the option for allowing selection is disabled, the **[Default selected row](#default-selected-row)** option will not be displayed.
 
@@ -444,7 +444,7 @@ Enabling the `Make editable` property for a column allows the app users to edit 
 
 ## Component Specific Actions (CSA)
 
-Following actions of color picker component can be controlled using the component specific actions(CSA):
+The following actions of the component can be controlled using component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
@@ -471,7 +471,7 @@ Following actions of color picker component can be controlled using the componen
 | selectedRow | Contains the data of the row that was most recently clicked. When an action button is clicked, `selectedRow` is also updated. Its initial value is set to the data of the first row when the app is loaded. |
 | selectedRowId | Stores the ID of the row that was last clicked. Similar to `selectedRow`, it gets updated when an action button is clicked. You can access its value using `{{components.table1.selectedRowId}}`. By default, it is set to `0`, representing the ID of the first row when the app is loaded. |
 | selectedCell | The data of the cell that was last clicked on the table. |
-| searchText | The value of the search field if server-side pagination is enabled |
+| searchText | The value of the search field if server-side pagination is enabled. |
 | newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
 
 ## Validation
@@ -487,7 +487,7 @@ Under column properties, expand the detailed view of a column type to access a t
 
 ## Action Buttons
 
-Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
+Action buttons will be displayed as the last column of the table. The styles of these buttons can be customized and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
 |:-------- |:------------ |
@@ -543,7 +543,7 @@ When Server-side pagination is enabled, you'll be able to set three other table 
 Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
 :::
 
-## Addional Actions
+## Additional Actions
 
 ### Show Add New Row Button
 
@@ -569,8 +569,8 @@ It's enabled by default. Table footer will show two update buttons **Save change
 
 |  <div style={{ width:"135px"}}> Option </div> |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:----------- |
-| Show on desktop | Toggle on or off to show or hide the component on desktop devices | `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to show or hide the component on mobile devices | `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to show or hide the component on desktop devices. | `{{true}}` or `{{false}}` |
+| Show on mobile | Toggle on or off to show or hide the component on mobile devices. | `{{true}}` or `{{false}}` |
 
 ## Styles
 

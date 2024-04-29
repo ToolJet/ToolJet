@@ -46,7 +46,7 @@ For example: `SERVE_CLIENT=false TOOLJET_SERVER_URL=https://server.tooljet.io np
 Tooljet client can be hosted from Cloud Storage bucket just like hosting any other static website.
 Follow the instructions from google documentation [here](https://cloud.google.com/storage/docs/hosting-static-website).
 
-Summarising the steps below:
+Summarizing the steps below:
 1. Create a bucket and upload files within the build folder such that the `index.html` is at the bucket root.
 
 2. Edit permissions for the bucket to assign *New principal* as `allUsers` with role as `Storage Object Viewer` and permit for public access for the bucket.

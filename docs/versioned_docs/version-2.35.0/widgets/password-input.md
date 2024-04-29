@@ -4,7 +4,7 @@ title: Password Input
 ---
 # Password Input
 
-The Password Input component allows users to enter passwords securely. In this component, passwords are concealed, displaying each character as an asterisk to ensure privacy. In this document, we'll go through all the configuration options for the **Password Input** component. 
+The **Password Input** component allows users to enter passwords securely. In this component, passwords are concealed, displaying each character as an asterisk to ensure privacy. In this document, we'll go through all the configuration options for the **Password Input** component. 
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
