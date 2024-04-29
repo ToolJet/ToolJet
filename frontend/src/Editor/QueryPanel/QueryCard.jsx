@@ -10,10 +10,8 @@ import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable } from '@/_helpers/utils';
-import { useModuleName } from '@/_contexts/ModuleContext';
 
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
-  const moduleName = useModuleName();
   const selectedQuery = useSelectedQuery();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
@@ -44,7 +42,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
     if (name === newName) {
       return setRenamingQuery(false);
     }
-    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName, moduleName);
+    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
       renameQuery(dataQuery?.id, newName, editorRef);
       setRenamingQuery(false);
