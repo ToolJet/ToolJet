@@ -70,8 +70,6 @@ https://fakestoreapi.com/products
 
 ## Conditional Formatting using Cell Value
 
-</div>
-
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Example 1: Changing Text Color Based on Cell Value
@@ -110,11 +108,11 @@ The above condition will change the cell background color to lightgreen if the c
 
 </div>
 
+</div>
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Conditional Formatting using Row Data
-
-</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -154,14 +152,7 @@ The above condition will change the cell background color of the `Title` column 
 
 </div>
 
-
-
-
-
-
-
-
-
+</div>
 
 ---
 
