@@ -233,6 +233,8 @@ function DataSourceSelect({
                 getForeignKeyDetails={getForeignKeyDetails}
                 loadingForeignKey={loadingForeignKey}
                 scrollContainerRef={scrollContainerRef}
+                foreignKeys={foreignKeys}
+                cellColumnName={cellColumnName}
               />
             ),
             [onAdd, addBtnLabel, emptyError]
@@ -380,9 +382,21 @@ const MenuList = ({
   getForeignKeyDetails,
   loadingForeignKey,
   scrollContainerRef,
+  foreignKeys,
+  cellColumnName,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
+  const referencedColumnDetails = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+
+  const handleNavigateToReferencedTable = () => {
+    const data = {
+      id: referencedColumnDetails?.referenced_table_id,
+      table_name: referencedColumnDetails?.referenced_table_name,
+    };
+    localStorage.setItem('tableDetails', JSON.stringify(data));
+    window.open(getPrivateRoute('database'), '_blank');
+  };
 
   const { admin } = authenticationService.currentSessionValue;
   if (admin) {
@@ -413,7 +427,12 @@ const MenuList = ({
             'p-2': !foreignKeyAccess || !foreignKeyAccessInRowForm,
           })}
         >
-          <ButtonSolid variant="secondary" size="md" className="w-100" onClick={onAdd}>
+          <ButtonSolid
+            variant="secondary"
+            size="md"
+            className="w-100"
+            onClick={scrollEventForColumnValus ? handleNavigateToReferencedTable : onAdd}
+          >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}
           </ButtonSolid>
