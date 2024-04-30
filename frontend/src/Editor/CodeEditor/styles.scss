@@ -421,9 +421,7 @@
         border-top: none;
     }
 
-    .cm-content {
-        background-color: var(--surfaces-surface-02) !important;
-    }
+
 }
 
 .transformation-container {
@@ -445,4 +443,30 @@
 
 .resize-modal-portal .resize-modal .resize-handle {
     border-bottom: none !important;
+}
+
+.cm-line {
+    word-break: break-all !important;
+    max-width: 100% !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-all !important;
+}
+
+
+.cm-content {
+    max-width: 98%;
+}
+
+.runjs-editor {
+    .cm-line {
+        padding: 0 6px 0 6px !important;
+    }
+}
+
+.cm-selectionLayer {
+    width: 100%;
+}
+
+.cm-selectionBackground {
+    width: 100% !important;
 }
