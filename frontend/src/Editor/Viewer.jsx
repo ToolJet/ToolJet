@@ -42,13 +42,12 @@ import { ERROR_TYPES } from '@/_helpers/constants';
 import { useSuperStore } from '../_stores/superStore';
 import { ModuleContext, useModuleName } from '../_contexts/ModuleContext';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
-import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
 import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import TooljetBanner from './Viewer/TooljetBanner';
 
 class ViewerComponent extends React.Component {
   static contextType = ModuleContext;
@@ -664,6 +663,7 @@ class ViewerComponent extends React.Component {
             {this.props.currentLayout !== 'mobile' && (
               <DesktopHeader
                 showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                isAppLoaded={isAppLoaded}
                 appName={this.state.app?.name ?? null}
                 changeDarkMode={this.changeDarkMode}
                 darkMode={this.props.darkMode}
@@ -779,22 +779,7 @@ class ViewerComponent extends React.Component {
                           </>
                         )}
                       </div>
-                      <div
-                        className="powered-with-tj"
-                        onClick={() => {
-                          const url = `https://tooljet.com/?utm_source=powered_by_banner&utm_medium=${
-                            useSuperStore.getState().modules[this.context].useAppDataStore.getState()?.metadata
-                              ?.instance_id
-                          }&utm_campaign=self_hosted`;
-                          window.open(url, '_blank');
-                        }}
-                      >
-                        Built with
-                        <span className={'powered-with-tj-icon'}>
-                          <TooljetLogoIcon />
-                        </span>
-                        <TooljetLogoText fill={this.props.darkMode ? '#ECEDEE' : '#11181C'} />
-                      </div>
+                      {isAppLoaded && <TooljetBanner isDarkMode={this.props.darkMode} />}
                       {/* Following div is a hack to prevent showing mobile drawer navigation coming from left*/}
                       {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                       {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
