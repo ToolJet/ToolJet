@@ -174,7 +174,10 @@ export function resolveReferences(
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          if (reservedKeyword.includes(code)) {
+          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
+          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+
+          if (code.match(keywordRegex)) {
             error = `${code} is a reserved keyword`;
             return [{}, error];
           }
