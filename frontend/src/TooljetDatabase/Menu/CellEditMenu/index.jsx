@@ -36,6 +36,10 @@ export const CellEditMenu = ({
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
+  const [selectedForeignKeyValue, setSelectedForeignKeyValue] = useState({
+    value: previousCellValue,
+    label: previousCellValue,
+  });
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
@@ -67,6 +71,7 @@ export const CellEditMenu = ({
   };
 
   const closePopover = () => {
+    setReferencedColumnDetails([]);
     setSelectedValue(previousCellValue);
     close();
   };
@@ -153,11 +158,11 @@ export const CellEditMenu = ({
                   No table selected
                 </div>
               }
-              value={referencedColumnDetails[0]}
-              // onChange={(value) => {
-              //   setTable(value);
-              //   handleSelectColumn(value?.value);
-              // }}
+              value={selectedForeignKeyValue}
+              onChange={(value) => {
+                setSelectedForeignKeyValue(value);
+                setCellValue(value.value);
+              }}
               onAdd={true}
               addBtnLabel={'Open referenced table'}
               isCellEdit={true}

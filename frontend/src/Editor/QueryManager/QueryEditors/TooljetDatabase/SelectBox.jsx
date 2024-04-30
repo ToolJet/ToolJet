@@ -39,8 +39,8 @@ function DataSourceSelect({
   shouldShowForeignKeyIcon = false,
   cellColumnName,
 }) {
-  const [loadingForeignKey, setLoadingForeignkey] = useState(false);
-  const [totalRecords, setTotalRecords] = useState(1);
+  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
+  const [totalFKRecords, setTotalFKRecords] = useState(1);
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
@@ -57,33 +57,33 @@ function DataSourceSelect({
   });
 
   const getForeignKeyDetails = (add) => {
-    setLoadingForeignkey(true);
+    setIsLoadingFKDetails(true);
     const selectQuery = new PostgrestQueryBuilder();
+    // Checking that the selected column is available in ForeignKey
     const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
     selectQuery.select(referencedColumns?.referenced_column_names[0]);
     const limit = 15;
-    const offset = (totalRecords - 1) * limit;
+    const offset = (totalFKRecords - 1) * limit;
     tooljetDatabaseService
       .findOne(
         organizationId,
-        foreignKeys?.length > 0 && foreignKeys[0]?.referenced_table_id,
+        foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
         `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
       )
-      .then(({ headers, data = [], error }) => {
+      .then(({ _headers, data = [], error }) => {
         if (error) {
           toast.error(
             error?.message ??
               `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
           );
-          setLoadingForeignkey(false);
+          setIsLoadingFKDetails(false);
           return;
         }
 
         if (Array.isArray(data) && data?.length > 0) {
-          setTotalRecords((prevTotalRecords) => prevTotalRecords + add);
+          setTotalFKRecords((prevTotalRecords) => prevTotalRecords + add);
           setReferencedColumnDetails((prevData) => [...prevData, ...data]);
-          setLoadingForeignkey(false);
-          // console.log('first', 1);
+          setIsLoadingFKDetails(false);
         }
       });
   };
@@ -105,13 +105,15 @@ function DataSourceSelect({
       getForeignKeyDetails(1);
     }
 
-    // console.log('first', foreignKeys);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <Select
-        onChange={(option) => handleChangeDataSource(option)}
+        onChange={(option) => {
+          handleChangeDataSource(option);
+        }}
         classNames={{
           menu: () =>
             foreignKeyAccess
@@ -230,12 +232,13 @@ function DataSourceSelect({
                 foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
                 scrollEventForColumnValus={scrollEventForColumnValus}
                 getForeignKeyDetails={getForeignKeyDetails}
-                loadingForeignKey={loadingForeignKey}
+                loadingForeignKey={isLoadingFKDetails}
                 scrollContainerRef={scrollContainerRef}
                 foreignKeys={foreignKeys}
                 cellColumnName={cellColumnName}
               />
             ),
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             [onAdd, addBtnLabel, emptyError]
           ),
           IndicatorSeparator: () => null,
@@ -291,7 +294,7 @@ function DataSourceSelect({
             lineHeight: '20px',
             textTransform: 'uppercase',
           }),
-          option: (style, { data: { isNested }, isFocused, isDisabled, isSelected }) => ({
+          option: (style, { data: { isNested }, isFocused, _isDisabled, isSelected }) => ({
             ...style,
             cursor: 'pointer',
             color: 'inherit',
@@ -378,8 +381,6 @@ const MenuList = ({
   options,
   foreignKeyAccessInRowForm,
   scrollEventForColumnValus,
-  getForeignKeyDetails,
-  loadingForeignKey,
   scrollContainerRef,
   foreignKeys,
   cellColumnName,
