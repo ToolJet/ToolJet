@@ -12,9 +12,9 @@ import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { validateMultilineCode } from './utility';
 
-const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
-const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')}|this)\\b`, 'i');
+const reservedKeyword = ['app', 'window'];
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -516,17 +516,10 @@ export function validateEmail(email) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  if (keywordRegex.test(code)) {
-    const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
-    const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
+  const isValidCode = validateMultilineCode(code);
 
-    return {
-      status: 'failed',
-      data: {
-        message,
-        description,
-      },
-    };
+  if (isValidCode.status === 'failed') {
+    return isValidCode;
   }
 
   const currentState = getCurrentState();
