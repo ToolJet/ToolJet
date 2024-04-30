@@ -126,7 +126,9 @@ function DataSourceSelect({
   return (
     <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <Select
-        onChange={(option) => handleChangeDataSource(option)}
+        onChange={(option) => {
+          handleChangeDataSource(option);
+        }}
         classNames={{
           menu: () =>
             foreignKeyAccess
