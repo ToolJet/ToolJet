@@ -67,6 +67,7 @@ export const CellEditMenu = ({
   };
 
   const closePopover = () => {
+    setReferencedColumnDetails([]);
     setSelectedValue(previousCellValue);
     close();
   };

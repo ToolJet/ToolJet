@@ -557,6 +557,7 @@ const Table = ({ collapseSidebar }) => {
       }));
       updateCellNavigationRefToDefault();
       handleOnCloseEditMenu();
+      setReferencedColumnDetails([]);
     }
     event.stopPropagation();
   };
@@ -799,7 +800,6 @@ const Table = ({ collapseSidebar }) => {
       setDefaultValue(isCellValueDefault);
       setEditPopover(false);
     }
-    console.log('first', cellClick.editable);
   };
 
   const closeEditPopover = (previousValue, _cellIndex) => {
