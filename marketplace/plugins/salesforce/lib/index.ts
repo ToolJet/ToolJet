@@ -10,10 +10,13 @@ export default class Salesforce implements QueryService {
 
     const client_id = sourceOptions.client_id;
     const client_secret = sourceOptions.client_secret;
-    const redirect_uri = sourceOptions.redirect_uri;
+    const instanceUrl = sourceOptions.instanceUrl;
+    const access_token = sourceOptions.access_token;
     const operation = queryOptions.operation;
-    // eslint-disable-next-line prettier/prettier
-    console.log("Operation from salesforce: ", operation);
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const redirect_uri = `${fullUrl}oauth2/authorize`;
 
     const oauth2 = new jsforce.OAuth2({
       clientId: client_id,
@@ -21,7 +24,11 @@ export default class Salesforce implements QueryService {
       redirectUri: redirect_uri,
     });
 
-    const conn = new jsforce.Connection({ oauth2: oauth2 });
+    const conn = new jsforce.Connection({
+      oauth2: oauth2,
+      instanceUrl: instanceUrl,
+      accessToken: access_token,
+    });
 
     try {
       switch (operation) {
@@ -35,7 +42,6 @@ export default class Salesforce implements QueryService {
           const resource_name = queryOptions.resource_name;
           const resource_id = queryOptions.resource_id;
           const resource_body = queryOptions.resource_body;
-          const parsedBody = JSON.parse(resource_body);
 
           switch (actiontype) {
             case 'retrieve':
@@ -44,12 +50,12 @@ export default class Salesforce implements QueryService {
               break;
 
             case 'create':
-              response = await conn.sobject(resource_name).create(parsedBody);
+              response = await conn.sobject('Account').create(resource_body);
               result = response;
               break;
 
             case 'update':
-              response = await conn.sobject(resource_name).update({ Id: resource_id, ...parsedBody });
+              response = await conn.sobject(resource_name).update({ Id: resource_id, ...resource_body });
               result = response;
               break;
 
@@ -96,7 +102,7 @@ export default class Salesforce implements QueryService {
         case 'apexRestQuery': {
           const methodtype = queryOptions.methodtype;
           const path = queryOptions.path;
-          const body = queryOptions.body ? JSON.parse(queryOptions.body) : {};
+          const body = queryOptions.body ? queryOptions.body : {};
 
           try {
             switch (methodtype) {
@@ -135,7 +141,6 @@ export default class Salesforce implements QueryService {
   }
 
   authUrl(source_options): string {
-    console.log(source_options, 'source_options from authUrl');
     const client_id = source_options.client_id.value;
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
@@ -164,8 +169,7 @@ export default class Salesforce implements QueryService {
         client_secret = item.value;
       }
     }
-    console.log(client_id, 'client_id');
-    console.log(client_secret, 'client_secret');
+
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
@@ -176,13 +180,13 @@ export default class Salesforce implements QueryService {
       redirectUri: redirectUri,
     });
     const conn = new jsforce.Connection({ oauth2: oauth2 });
-    let response;
 
     try {
-      response = await conn.authorize(authCode);
+      await conn.authorize(authCode);
     } catch (error) {
       throw new QueryError('Authorization Error', error.message, {});
     }
+
     const authDetails = [];
     if (conn['accessToken']) {
       authDetails.push(['access_token', conn['accessToken']]);
@@ -190,9 +194,9 @@ export default class Salesforce implements QueryService {
     if (conn['refreshToken']) {
       authDetails.push(['refresh_token', conn['refreshToken']]);
     }
-    return {
-      authDetails,
-      response,
-    };
+    if (conn['instanceUrl']) {
+      authDetails.push(['instanceUrl', conn['instanceUrl']]);
+    }
+    return authDetails;
   }
 }

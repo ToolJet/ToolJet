@@ -2,6 +2,8 @@ export type SourceOptions = {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
+  instanceUrl: string;
+  access_token: string;
 };
 export type QueryOptions = {
   operation: string;
@@ -10,7 +12,7 @@ export type QueryOptions = {
   actiontype: string;
   resource_id: string;
   resource_name: string;
-  resource_body: string;
+  resource_body: object;
   crud_action: 'insert' | 'update' | 'upsert' | 'delete' | 'hardDelete' | 'query';
   object_type: string;
   options: string;
