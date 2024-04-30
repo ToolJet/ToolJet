@@ -79,7 +79,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
           Filter
         </label>
 
-        <div className="field-container flex-grow-1">
+        <div className="field-container flex-grow-1 col">
           {Object.values(updateRowsOptions?.where_filters || {}).map((filter) => (
             <RenderFilterFields
               key={filter.id}
@@ -115,7 +115,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
         <label className="form-label" data-cy="label-column-filter">
           Columns
         </label>
-        <div className="field-container flex-grow-1">
+        <div className="field-container flex-grow-1 col">
           {Object.entries(updateRowsOptions?.columns).map(([key, value]) => {
             return (
               <RenderColumnOptions
@@ -184,8 +184,8 @@ const RenderFilterFields = ({
 
   return (
     <div className="mt-1 row-container">
-      <div className="d-flex fields-container">
-        <div className="field col">
+      <div className="d-flex fields-container ">
+        <div className="field col-4">
           <Select
             useMenuPortal={true}
             placeholder="Select column"
@@ -195,7 +195,7 @@ const RenderFilterFields = ({
             width="auto"
           />
         </div>
-        <div className="field col mx-1">
+        <div className="field col-4 mx-1">
           <Select
             useMenuPortal={true}
             placeholder="Select operation"
