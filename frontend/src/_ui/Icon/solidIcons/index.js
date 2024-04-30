@@ -158,6 +158,7 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import PrimaryKey from './PrimaryKey.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -351,6 +352,8 @@ const Icon = (props) => {
       return <Plus01 {...props} />;
     case 'plusrectangle':
       return <PlusRectangle {...props} />;
+    case 'primarykey':
+      return <PrimaryKey {...props} />;
     case 'reload':
       return <Reload {...props} />;
     case 'reloaderror':

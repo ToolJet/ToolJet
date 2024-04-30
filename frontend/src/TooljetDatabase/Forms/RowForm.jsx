@@ -3,12 +3,10 @@ import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
-import BigInt from '../Icons/Biginteger.svg';
-import Float from '../Icons/Float.svg';
-import Integer from '../Icons/Integer.svg';
-import CharacterVar from '../Icons/Text.svg';
-import Boolean from '../Icons/Toggle.svg';
-import Serial from '../Icons/Serial.svg';
+import { renderDatatypeIcon } from '../constants';
+import { ToolTip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+
 import './styles.scss';
 
 const RowForm = ({ onCreate, onClose }) => {
@@ -127,22 +125,23 @@ const RowForm = ({ onCreate, onClose }) => {
     setData({ ...data, [columnName]: value });
   };
 
-  const checkDataTypeIcons = (type) => {
-    switch (type) {
-      case 'integer':
-        return <Integer width="18" height="18" className="tjdb-column-header-name" />;
-      case 'bigint':
-        return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
-      case 'character varying':
-        return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
-      case 'boolean':
-        return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
-      case 'double precision':
-        return <Float width="18" height="18" className="tjdb-column-header-name" />;
-      default:
-        return type;
-    }
-  };
+  useEffect(() => {
+    toast.dismiss();
+    setData(
+      columns.reduce((result, column) => {
+        const { dataType, column_default } = column;
+        if (dataType !== 'serial') {
+          if (column.dataType === 'boolean') {
+            result[column.accessor] = false;
+          } else {
+            result[column.accessor] = '';
+          }
+        }
+        return result;
+      }, {})
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async () => {
     setFetching(true);
@@ -157,6 +156,7 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
+    const isSerialDataTypeColumn = dataType === 'serial';
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -170,12 +170,14 @@ const RowForm = ({ onCreate, onClose }) => {
               type="text"
               value={inputValues[index]?.value === null ? '' : inputValues[index]?.value}
               onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-              disabled={isPrimaryKey || inputValues[index]?.disabled}
-              placeholder={isPrimaryKey ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'}
+              disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
+              placeholder={
+                isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
+              }
               className={
-                isPrimaryKey && !darkMode
+                isSerialDataTypeColumn && !darkMode
                   ? 'primary-idKey-light'
-                  : isPrimaryKey && darkMode
+                  : isSerialDataTypeColumn && darkMode
                   ? 'primary-idKey-dark'
                   : !darkMode
                   ? 'form-control'
@@ -212,12 +214,11 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   let matchingObject = {};
-
   columns.forEach((obj) => {
-    const keyName = Object.values(obj)[0];
-    const dataType = Object.values(obj)[2];
+    const { dataType = '', accessor, column_default } = obj;
+    const keyName = accessor;
 
-    if (data[keyName] !== undefined && dataType !== 'character varying') {
+    if (data[keyName] !== undefined && dataType !== 'character varying' && dataType !== 'serial') {
       matchingObject[keyName] = data[keyName];
     }
   });
@@ -226,7 +227,7 @@ const RowForm = ({ onCreate, onClose }) => {
     <div className="drawer-card-wrapper ">
       <div className="card-header">
         <h3 className="card-title" data-cy="create-new-row-header">
-          Create a new row
+          Create row
         </h3>
       </div>
       <div className="card-body tj-app-input">
@@ -235,6 +236,7 @@ const RowForm = ({ onCreate, onClose }) => {
             const isPrimaryKey = constraints_type.is_primary_key;
             const isNullable = !constraints_type.is_not_null;
             const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
+            const isSerialDataTypeColumn = dataType === 'serial';
             return (
               <div className="mb-3 " key={index}>
                 <div className="d-flex align-items-center justify-content-between">
@@ -244,67 +246,62 @@ const RowForm = ({ onCreate, onClose }) => {
                   >
                     <div className="headerText-withIcon d-flex align-items-center justify-content-start">
                       <span style={{ width: '24px' }}>
-                        {isPrimaryKey === true ? (
-                          <Serial width="18" height="14" className="tjdb-column-header-name" />
-                        ) : (
-                          checkDataTypeIcons(dataType)
-                        )}
+                        {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                       </span>
-                      <span>{headerText}</span>
+                      <span style={{ marginRight: '5px' }}>{headerText}</span>
+                      {constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
                     </div>
                   </div>
-                  {index > 0 && (
-                    <div
-                      className={`${
-                        darkMode ? 'row-tabs-dark' : 'row-tabs'
-                      } d-flex align-items-center justify-content-start gap-2`}
-                    >
-                      {isNullable && (
-                        <div
-                          onClick={() => handleTabClick(index, 'Null', column_default, isNullable, accessor, dataType)}
-                          style={{
-                            backgroundColor:
-                              activeTab[index] === 'Null' && !darkMode
-                                ? 'white'
-                                : activeTab[index] === 'Null' && darkMode
-                                ? '#242f3c'
-                                : 'transparent',
-                            color:
-                              activeTab[index] === 'Null' && !darkMode
-                                ? '#3E63DD'
-                                : activeTab[index] === 'Null' && darkMode
-                                ? 'white'
-                                : '#687076',
-                          }}
-                          className="row-tab-content"
-                        >
-                          Null
-                        </div>
-                      )}
-                      {column_default !== null && (
-                        <div
-                          onClick={() =>
-                            handleTabClick(index, 'Default', column_default, isNullable, accessor, dataType)
-                          }
-                          style={{
-                            backgroundColor:
-                              activeTab[index] === 'Default' && !darkMode
-                                ? 'white'
-                                : activeTab[index] === 'Default' && darkMode
-                                ? '#242f3c'
-                                : 'transparent',
-                            color:
-                              activeTab[index] === 'Default' && !darkMode
-                                ? '#3E63DD'
-                                : activeTab[index] === 'Default' && darkMode
-                                ? 'white'
-                                : '#687076',
-                          }}
-                          className="row-tab-content"
-                        >
-                          Default value
-                        </div>
-                      )}
+                  <div
+                    className={`${
+                      darkMode ? 'row-tabs-dark' : 'row-tabs'
+                    } d-flex align-items-center justify-content-start gap-2`}
+                  >
+                    {isNullable && !isPrimaryKey && (
+                      <div
+                        onClick={() => handleTabClick(index, 'Null', column_default, isNullable, accessor, dataType)}
+                        style={{
+                          backgroundColor:
+                            activeTab[index] === 'Null' && !darkMode
+                              ? 'white'
+                              : activeTab[index] === 'Null' && darkMode
+                              ? '#242f3c'
+                              : 'transparent',
+                          color:
+                            activeTab[index] === 'Null' && !darkMode
+                              ? '#3E63DD'
+                              : activeTab[index] === 'Null' && darkMode
+                              ? 'white'
+                              : '#687076',
+                        }}
+                        className="row-tab-content"
+                      >
+                        Null
+                      </div>
+                    )}
+                    {column_default !== null && !isSerialDataTypeColumn && (
+                      <div
+                        onClick={() => handleTabClick(index, 'Default', column_default, isNullable, accessor, dataType)}
+                        style={{
+                          backgroundColor:
+                            activeTab[index] === 'Default' && !darkMode
+                              ? 'white'
+                              : activeTab[index] === 'Default' && darkMode
+                              ? '#242f3c'
+                              : 'transparent',
+                          color:
+                            activeTab[index] === 'Default' && !darkMode
+                              ? '#3E63DD'
+                              : activeTab[index] === 'Default' && darkMode
+                              ? 'white'
+                              : '#687076',
+                        }}
+                        className="row-tab-content"
+                      >
+                        Default value
+                      </div>
+                    )}
+                    {!isSerialDataTypeColumn && (
                       <div
                         onClick={() => handleTabClick(index, 'Custom', column_default, isNullable, accessor, dataType)}
                         style={{
@@ -325,10 +322,17 @@ const RowForm = ({ onCreate, onClose }) => {
                       >
                         Custom
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-                {renderElement(accessor, dataType, isPrimaryKey, column_default, index)}
+                <ToolTip
+                  message="Serial data type value is auto-generated and cannot be edited"
+                  placement="top"
+                  tooltipClassName="tootip-table"
+                  show={dataType === 'serial'}
+                >
+                  {renderElement(accessor, dataType, isPrimaryKey, column_default, index)}
+                </ToolTip>
               </div>
             );
           })}

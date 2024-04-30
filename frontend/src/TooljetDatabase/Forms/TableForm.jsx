@@ -4,28 +4,110 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
+// import ArrowRight from '../Icons/ArrowRight.svg';
+import { ConfirmDialog } from '@/_components';
 
 const TableForm = ({
   selectedTable = {},
-  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraints_type: { is_primary_key: true } } },
+  selectedColumns = {
+    0: {
+      column_name: 'id',
+      data_type: 'serial',
+      constraints_type: { is_primary_key: true, is_not_null: true, is_unique: true },
+    },
+  },
+  selectedTableData = {},
   onCreate,
   onEdit,
   onClose,
   updateSelectedTable,
 }) => {
-  const [fetching, setFetching] = useState(false);
-  const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(selectedColumns);
-  const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
+  const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
+  const arrayOfTableColumns = Object.values(selectedTableColumns);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const [fetching, setFetching] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [tableName, setTableName] = useState(selectedTable.table_name);
+  const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
+  const { organizationId } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
     toast.dismiss();
   }, []);
+
+  // const primaryKeyColumns = [];
+  // const nonPrimaryKeyColumns = [];
+  // Object.values(columns).forEach((column) => {
+  //   // this is for old_column object which we need to send in edit table api tracked (old column with primary columns are in top order) deep cloned object
+  //   if (column?.constraints_type?.is_primary_key) {
+  //     primaryKeyColumns.push({ ...column });
+  //   } else {
+  //     nonPrimaryKeyColumns.push({ ...column });
+  //   }
+  // });
+
+  // const editPrimaryKeyColumns = [];
+  // const editNonPrimaryKeyColumns = [];
+  // arrayOfTableColumns.forEach((column) => {
+  //   // this is for new_column object which we need to send in edit table api
+  //   if (column?.constraints_type?.is_primary_key) {
+  //     editPrimaryKeyColumns.push({ ...column });
+  //   } else {
+  //     editNonPrimaryKeyColumns.push({ ...column });
+  //   }
+  // });
+
+  // const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+
+  function bodyColumns(columns, arrayOfTableColumns) {
+    let newArray = [];
+
+    for (const key in columns) {
+      if (columns.hasOwnProperty(key)) {
+        let new_column = {};
+        let old_column = {};
+
+        new_column = columns[key];
+        old_column = arrayOfTableColumns[key];
+
+        if (old_column !== undefined) {
+          newArray.push({ new_column, old_column });
+        } else {
+          newArray.push({ new_column });
+        }
+      }
+    }
+
+    arrayOfTableColumns.forEach((col, index) => {
+      if (!columns.hasOwnProperty(index)) {
+        let old_column = {};
+        old_column = col;
+        newArray.push({ old_column });
+      }
+    });
+
+    Object.values(columns).forEach((col, index) => {
+      if (!arrayOfTableColumns.hasOwnProperty(index)) {
+        let new_column = col;
+        if (!newArray.some((item) => JSON.stringify(item.new_column) === JSON.stringify(new_column))) {
+          newArray.push({ new_column });
+        }
+      }
+    });
+    return newArray;
+  }
+
+  // let data = isEditMode
+  //   ? bodyColumns(editColumns, _.cloneDeep([...editPrimaryKeyColumns, ...editNonPrimaryKeyColumns]))
+  //   : bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
+
+  let data = bodyColumns(columns, arrayOfTableColumns);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -80,7 +162,12 @@ const TableForm = ({
     if (!validateTableName()) return;
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.renameTable(organizationId, selectedTable.table_name, tableName);
+    const { error } = await tooljetDatabaseService.renameTable(
+      organizationId,
+      selectedTable.table_name,
+      tableName,
+      data
+    );
     setFetching(false);
 
     if (error) {
@@ -88,7 +175,7 @@ const TableForm = ({
       return;
     }
 
-    toast.success(`${tableName} edited successfully`);
+    toast.success(`${tableName} updated successfully`);
     updateSidebarNAV(tableName);
     updateSelectedTable({ ...selectedTable, table_name: tableName });
 
@@ -105,6 +192,40 @@ const TableForm = ({
       return false;
     return true;
   };
+
+  const footerStyle = {
+    borderTop: '1px solid var(--slate5)',
+    paddingTop: '12px',
+    marginTop: '0px',
+  };
+
+  const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
+
+  const existingPrimaryKeyObjects = arrayOfTableColumns.filter((item) => item.constraints_type.is_primary_key);
+
+  const primaryKeyObjects = Object.values(columns).filter((item) => item.constraints_type?.is_primary_key === true);
+
+  const newPrimaryKeyChanges = Object.values(columns).filter((item) => {
+    if (item.constraints_type?.is_primary_key === true) {
+      return !existingPrimaryKeyObjects.some((obj) => obj.column_name === item.column_name);
+    } else {
+      return existingPrimaryKeyObjects.some((obj) => obj.column_name === item.column_name);
+    }
+  });
+
+  const currentPrimaryKeyIcons = existingPrimaryKeyObjects?.map((item) => {
+    return {
+      columnName: item.column_name,
+      icon: item.data_type,
+    };
+  });
+
+  const newPrimaryKeyIcons = primaryKeyObjects?.map((item) => {
+    return {
+      columnName: item.column_name,
+      icon: item.data_type,
+    };
+  });
 
   return (
     <div className="drawer-card-wrapper">
@@ -127,12 +248,12 @@ const TableForm = ({
               <div className="edit-warning-icon">
                 <WarningInfo />
               </div>
-              <span className="edit-warning-text">
+              <span className="edit-warning-text" style={{ marginTop: '0.1rem' }}>
                 Editing the table name could break queries and apps connected with this table.
               </span>
             </div>
           )}
-          <div className="mb-3">
+          <div className="">
             <div className="form-label" data-cy="table-name-label">
               Table name
             </div>
@@ -154,18 +275,46 @@ const TableForm = ({
             </div>
           </div>
         </div>
-        {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
+        <CreateColumnsForm columns={columns} setColumns={setColumns} isEditMode={isEditMode} editColumns={columns} />
       </div>
       <DrawerFooter
         fetching={fetching}
         isEditMode={isEditMode}
         onClose={onClose}
-        onEdit={handleEdit}
+        onEdit={() => {
+          if (newPrimaryKeyChanges.length > 0) {
+            setShowModal(true);
+          } else {
+            handleEdit();
+          }
+        }}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
           isEmpty(tableName) ||
-          (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
+          (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
+          isEmpty(columns) ||
+          hasPrimaryKey !== true ||
+          (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
+      />
+      <ConfirmDialog
+        title={'Change in primary key'}
+        show={showModal}
+        message={
+          'Updating the table will drop the current primary key contraints and add the new one. This action is cannot be reversed. Are you sure you want to continue?'
+        }
+        onConfirm={handleEdit}
+        onCancel={() => setShowModal(false)}
+        darkMode={darkMode}
+        confirmButtonType="primary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => setShowModal(false)}
+        confirmButtonText={'Continue'}
+        cancelButtonText={'Cancel'}
+        footerStyle={footerStyle}
+        currentPrimaryKeyIcons={currentPrimaryKeyIcons}
+        newPrimaryKeyIcons={newPrimaryKeyIcons}
+        isEditToolJetDbTable={true}
       />
     </div>
   );
