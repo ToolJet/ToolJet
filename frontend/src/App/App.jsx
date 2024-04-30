@@ -31,14 +31,13 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
-import { useSuperStore } from '../_stores/superStore';
-import { ModuleContext } from '../_contexts/ModuleContext';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { ManageOrgVars } from '@/ManageOrgVars';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -52,7 +51,6 @@ const AppWrapper = (props) => {
 };
 
 class AppComponent extends React.Component {
-  static contextType = ModuleContext;
   constructor(props) {
     super(props);
 
@@ -68,7 +66,7 @@ class AppComponent extends React.Component {
   };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
-      useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setMetadata(data);
+      useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
@@ -104,7 +102,7 @@ class AppComponent extends React.Component {
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
-    useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.updateIsTJDarkMode(newMode);
+    useAppDataStore.getState().actions.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
   };
 
