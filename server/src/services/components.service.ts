@@ -185,6 +185,18 @@ export class ComponentsService {
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
         .where('component.pageId = :pageId', { pageId })
+        .andWhere((qb) => {
+          const subQuery = qb
+            .subQuery()
+            .select('layout.id')
+            .from('layouts', 'layout')
+            .where('layout.componentId = component.id')
+            .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
+            .orderBy('layout.updatedAt', 'DESC')
+            .limit(2)
+            .getQuery();
+          return `layout.id IN ${subQuery}`;
+        })
         .getMany()
         .then((components) => {
           return components.reduce((acc, component) => {

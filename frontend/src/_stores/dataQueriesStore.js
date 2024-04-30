@@ -3,17 +3,16 @@ import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
 // import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
-import { useEditorStore } from './editorStore';
 import { shallow } from 'zustand/shallow';
 import { getCurrentState, useCurrentStateStore } from './currentStateStore';
 import { useResolveStore } from './resolverStore';
 import { handleReferenceTransactions } from './handleReferenceTransactions';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 
 const initialState = {
   dataQueries: [],
@@ -462,15 +461,11 @@ export const useDataQueriesStore = create(
                   useAppDataStore.getState().actions?.createAppVersionEventHandlers(newEvent);
                 })
               );
-            })
-            .catch((error) => {
-              console.error('error', error);
-              set({
-                creatingQueryInProcessId: null,
-              });
-            })
-            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+            });
         },
+
+        // createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
+
         saveData: throttle((newValues) => {
           /** If query creation in progress, skips call and pushes the update to queue */
           if (get().creatingQueryInProcessId && get().creatingQueryInProcessId === newValues.id) {

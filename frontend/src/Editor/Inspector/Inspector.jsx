@@ -53,6 +53,8 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
+const NEW_REVAMPED_COMPONENTS = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
+
 export const Inspector = ({
   componentDefinitionChanged,
   allComponents,
@@ -83,7 +85,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+  const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -204,6 +206,22 @@ export const Inspector = ({
     } else {
       allParams[param.name] = value;
     }
+
+    if (
+      component.component.component === 'Table' &&
+      param.name === 'contentWrap' &&
+      !resolveReferences(value, currentState) &&
+      newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
+    ) {
+      const updatedColumns = newDefinition.properties.columns.value.map((item) => {
+        return item.columnType === 'image' ? { ...item, height: '' } : item; // Create a new object for image columns
+      });
+
+      // Update the columns value with the updated columns
+      newDefinition.properties.columns.value = updatedColumns;
+      isParamFromTableColumn = true;
+    }
+
     newDefinition[paramType] = allParams;
     newComponent.component.definition = newDefinition;
     componentDefinitionChanged(newComponent, {
@@ -318,15 +336,7 @@ export const Inspector = ({
   );
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
-      <div
-        className={
-          component.component.component !== 'TextInput' &&
-          component.component.component !== 'PasswordInput' &&
-          component.component.component !== 'NumberInput' &&
-          component.component.component !== 'Text' &&
-          'p-3'
-        }
-      >
+      <div className={!isRevampedComponent && 'p-3'}>
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
           component={component}
@@ -336,7 +346,7 @@ export const Inspector = ({
           allComponents={allComponents}
         />
       </div>
-      {!shouldAddBoxShadow.includes(component.component.component) && buildGeneralStyle()}
+      {!isRevampedComponent && buildGeneralStyle()}
     </div>
   );
 
@@ -474,18 +484,22 @@ const widgetsWithStyleConditions = {
       },
     ],
   },
+  Table: {
+    conditions: [
+      {
+        definition: 'styles',
+        property: 'contentWrap',
+        conditionStyles: ['maxRowHeight', 'autoHeight'],
+        type: 'toggle',
+      },
+    ],
+  },
 };
-const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
-  if (
-    component.component.component === 'TextInput' ||
-    component.component.component === 'PasswordInput' ||
-    component.component.component === 'NumberInput' ||
-    component.component.component === 'Text'
-  ) {
+  if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
     // Iterate over the properties in componentMeta.styles
     for (const key in componentMeta.styles) {
       const property = componentMeta.styles[key];
@@ -502,12 +516,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   }
 
   return Object.keys(
-    component.component.component === 'TextInput' ||
-      component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput' ||
-      component.component.component === 'Text'
-      ? groupedProperties
-      : componentMeta.styles
+    NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles
   ).map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
@@ -531,12 +540,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 
     const items = [];
 
-    if (
-      component.component.component === 'TextInput' ||
-      component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput' ||
-      component.component.component === 'Text'
-    ) {
+    if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
       items.push({
         title: `${style}`,
         children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
@@ -572,7 +576,14 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 const resolveConditionalStyle = (definition, condition, currentState) => {
   const conditionExistsInDefinition = definition[condition] ?? false;
   if (conditionExistsInDefinition) {
-    return resolveReferences(definition[condition]?.value ?? false, currentState);
+    switch (condition) {
+      case 'cellSize': {
+        const cellSize = resolveReferences(definition[condition]?.value ?? false, currentState) === 'hugContent';
+        return cellSize;
+      }
+      default:
+        return resolveReferences(definition[condition]?.value ?? false, currentState);
+    }
   }
 };
 

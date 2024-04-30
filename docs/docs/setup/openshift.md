@@ -55,7 +55,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/setup/openshift/toplogy.png" alt="toplogy" />
+<img className="screenshot-full" src="/img/setup/openshift/toplogy.png" alt="topology" />
  
 </div>
 

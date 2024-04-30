@@ -26,6 +26,30 @@ export const ProgramaticallyHandleProperties = ({
         return props.columnVisibility;
       case 'linkTarget':
         return props.linkTarget;
+      case 'isAllColumnsEditable':
+        return props?.isAllColumnsEditable;
+      case 'underlineColor':
+        return props.underlineColor;
+      case 'linkColor':
+        return props.linkColor;
+      case 'useDynamicOptions':
+        return props?.useDynamicOptions;
+      case 'makeDefaultOption':
+        return props?.[index]?.makeDefaultOption;
+      case 'textColor':
+        return props?.textColor;
+      case 'cellBackgroundColor':
+        return props?.cellBackgroundColor;
+      case 'optionsLoadingState':
+        return props?.optionsLoadingState;
+      case 'isTimeChecked':
+        return props?.isTimeChecked;
+      case 'isTwentyFourHrFormatEnabled':
+        return props?.isTwentyFourHrFormatEnabled;
+      case 'parseInUnixTimestamp':
+        return props?.parseInUnixTimestamp;
+      case 'isDateSelectionEnabled':
+        return props?.isDateSelectionEnabled;
       default:
         return;
     }
@@ -36,16 +60,41 @@ export const ProgramaticallyHandleProperties = ({
       return definitionObj?.value ?? `{{true}}`;
     }
     if (property === 'linkTarget') {
-      return definitionObj?.value ?? '_blank';
+      const value = definitionObj?.value;
+      if (value === '_self' || value === '{{false}}' || value === '') {
+        return '{{false}}';
+      }
+      return value || '{{true}}';
+    }
+    if (property === 'cellBackgroundColor') {
+      return definitionObj?.value ?? '';
+    }
+    if (property === 'textColor') {
+      return definitionObj?.value ?? '#11181C';
+    }
+    if (property === 'underlineColor') {
+      return definitionObj?.value ?? '#4368E3';
+    }
+    if (property === 'underline') {
+      return definitionObj?.value ?? 'hover';
+    }
+    if (property === 'linkColor') {
+      return definitionObj?.value ?? '#1B1F24';
     }
     return definitionObj?.value ?? `{{false}}`;
   };
 
   const value = getValueBasedOnProperty(property, props);
-  const param = { name: property };
-  const definition = { value, fxActive: props.fxActive };
-  const initialValue = getInitialValue(property, definition);
-
+  const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
+  let definition;
+  let initialValue;
+  if (Array.isArray(props)) {
+    definition = { value, fxActive: props?.[index]?.fxActive };
+    initialValue = getInitialValue(property, definition);
+  } else {
+    definition = { value, fxActive: props.fxActive };
+    initialValue = getInitialValue(property, definition);
+  }
   const options = {};
 
   const calcFxActiveState = (props, property) => {
@@ -94,7 +143,7 @@ export const ProgramaticallyHandleProperties = ({
   };
 
   return (
-    <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
+    <div className={`field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
         type="fxEditor"
         initialValue={initialValue}
