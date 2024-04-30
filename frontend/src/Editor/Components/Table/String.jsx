@@ -93,7 +93,7 @@ const String = ({
         e.stopPropagation();
       }}
     >
-      <span>{cellValue}</span>
+      {cellValue && <span>{cellValue}</span>}
     </div>
   );
 
