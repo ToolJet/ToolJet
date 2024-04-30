@@ -10,6 +10,7 @@ import ForeignKeyTableForm from './ForeignKeyTableForm';
 import EditIcon from '../Icons/EditColumn.svg';
 import _, { isEmpty } from 'lodash';
 import { ConfirmDialog } from '@/_components';
+import { Tooltip } from 'react-tooltip';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -210,6 +211,12 @@ function ForeignKeyRelation({
 
   const isMatchingForeignKeyColumns = checkMatchingColumnNamesInForeignKey(foreignKeyDetails, columns);
 
+  const isAddRelationBtnDisabled =
+    isEmpty(tableName) ||
+    (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
+    isEmpty(columns) ||
+    (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation));
+
   return (
     <>
       <div className="foreignkey-relation-container">
@@ -249,15 +256,13 @@ function ForeignKeyRelation({
               setIsForeignKeyDraweOpen(true);
               setCreateForeignKeyInEdit(true);
             }}
-            disabled={
-              isEmpty(tableName) ||
-              (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
-              isEmpty(columns) ||
-              (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
-            }
+            disabled={isAddRelationBtnDisabled}
+            data-tooltip-id="add-relation-tooltip"
+            data-tooltip-content="At least 1 table required to add foreign key relation"
           >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp; Add relation
+            {isAddRelationBtnDisabled && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
       </div>
