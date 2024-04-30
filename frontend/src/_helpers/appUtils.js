@@ -1439,6 +1439,7 @@ export const debuggerActions = {
           generalProps.message = value.data.message;
           generalProps.property = key.split('- ')[1];
           error.resolvedProperties = value.resolvedProperties;
+          error.componentId = value.componentId;
           break;
         case 'navToDisablePage':
           generalProps.message = value.data.message;
