@@ -8369,8 +8369,6 @@ tbody {
   &[data-name="Audit logs"], &[data-name="Profile settings"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
-    display: flex;
-    align-items: center;
 
     .paid-feature-banner {
       margin-left: 15px;
