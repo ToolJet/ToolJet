@@ -44,6 +44,12 @@ const ColumnForm = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
 
+  //  this is for DropDownDetails component which is react select
+  const [foreignKeyDefaultValue, setForeignKeyDefaultValue] = useState({
+    value: '',
+    label: '',
+  });
+
   const [foreignKeyDetails, setForeignKeyDetails] = useState({
     column_names: [],
     referenced_table_name: [],
@@ -266,11 +272,12 @@ const ColumnForm = ({
                       No table selected
                     </div>
                   }
-                  value={defaultValue ? { value: defaultValue, label: defaultValue } : {}}
+                  value={foreignKeyDefaultValue}
                   foreignKeyAccessInRowForm={true}
                   disabled={dataType === 'serial'}
                   topPlaceHolder={dataType === 'serial' ? 'Auto-generated' : 'Enter a value'}
                   onChange={(value) => {
+                    setForeignKeyDefaultValue(value);
                     setDefaultValue(value?.value);
                   }}
                   onAdd={true}

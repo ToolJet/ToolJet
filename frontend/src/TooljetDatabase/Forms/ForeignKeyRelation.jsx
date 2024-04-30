@@ -10,7 +10,7 @@ import ForeignKeyTableForm from './ForeignKeyTableForm';
 import EditIcon from '../Icons/EditColumn.svg';
 import _, { isEmpty } from 'lodash';
 import { ConfirmDialog } from '@/_components';
-import { getColumnDataType } from '../constants';
+import { getColumnDataType, dataTypes } from '../constants';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -71,12 +71,17 @@ function ForeignKeyRelation({
       const { foreign_keys = [] } = data?.result || {};
       if (data?.result?.columns?.length > 0) {
         setColumns(
-          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-            ...rest,
-          }))
+          data?.result?.columns.reduce((acc, { column_name, data_type, constraints_type, ...rest }, index) => {
+            acc[index] = {
+              column_name: column_name,
+              data_type: getColumnDataType({ column_default: rest.column_default, data_type }),
+              constraints_type: constraints_type,
+              dataTypeDetails: dataTypes.filter((item) => item.value === data_type),
+              column_default: rest.column_default,
+              ...rest,
+            };
+            return acc;
+          }, {})
         );
       }
       if (foreign_keys.length > 0) {

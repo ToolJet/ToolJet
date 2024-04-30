@@ -67,6 +67,26 @@ const ColumnForm = ({
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
 
+  //  this is for DropDownDetails component which is react select
+  const [foreignKeyDefaultValue, setForeignKeyDefaultValue] = useState(() => {
+    if (dataType === 'integer' || dataType === 'bigint' || dataType === 'double precision') {
+      return {
+        value: parseInt(selectedColumn?.column_default),
+        label: parseInt(selectedColumn?.column_default),
+      };
+    } else if (dataType === 'booolean') {
+      return {
+        value: selectedColumn?.column_default === 'true' ? true : false,
+        label: selectedColumn?.column_default === 'true' ? true : false,
+      };
+    } else {
+      return {
+        value: selectedColumn?.column_default,
+        label: selectedColumn?.column_default,
+      };
+    }
+  });
+
   const [foreignKeyDetails, setForeignKeyDetails] = useState(
     foreignKeys?.map((item) => {
       return {
@@ -333,7 +353,7 @@ const ColumnForm = ({
       label: existingForeignKeyColumn[0]?.on_update,
     });
   };
-
+  // console.log('first', selectedForeignkeyIndex);
   useEffect(() => {
     const existingForeignKeyIndex = foreignKeyDetails?.findIndex((obj) => obj.column_names[0] === columnName);
     setSelectedForeignKeyIndex(existingForeignKeyIndex);
@@ -474,13 +494,14 @@ const ColumnForm = ({
                         No table selected
                       </div>
                     }
-                    value={defaultValue ? { value: defaultValue, label: defaultValue } : {}}
+                    value={foreignKeyDefaultValue}
                     foreignKeyAccessInRowForm={true}
                     disabled={
                       selectedColumn?.dataType === 'serial' || selectedColumn.constraints_type.is_primary_key === true
                     }
                     topPlaceHolder={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : 'Enter a value'}
                     onChange={(value) => {
+                      setForeignKeyDefaultValue(value);
                       setDefaultValue(value?.value);
                     }}
                     onAdd={true}
