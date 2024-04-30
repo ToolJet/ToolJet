@@ -64,8 +64,4 @@ For example: `admin@tooljet.io`
 **Send a single email to multiple recipients** - The `Send mail to` field can contain an array of recipients, which will send a single email with all of the recipients in the field.
 :::
 
-:::info Note
-Query should be saved before running.
-:::
-
 </div>
