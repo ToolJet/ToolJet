@@ -129,18 +129,27 @@ function filterHintsByDepth(input, hints) {
 
   const inputDepth = input.split('.').length;
 
+  if (inputDepth === 1) {
+    return findRelativeHints(input, hints);
+  }
+
   const filteredHints = hints.filter((cm) => {
     const hintParts = cm.hint.split('.');
 
-    let shouldInclude =
-      (cm.hint.startsWith(input) && hintParts.length === inputDepth + 1) ||
-      (cm.hint.startsWith(input) && hintParts.length === inputDepth);
+    let shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth + 1;
 
     if (input.endsWith('.')) {
       shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth;
     }
 
     return shouldInclude;
+  });
+  return filteredHints;
+}
+
+function findRelativeHints(input, hints) {
+  const filteredHints = hints.filter(({ hint }) => {
+    return hint.includes(input);
   });
 
   return filteredHints;
