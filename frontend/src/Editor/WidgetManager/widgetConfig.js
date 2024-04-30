@@ -623,7 +623,7 @@ export const widgets = [
         borderRadius: { value: '8' },
         tableType: { value: 'table-classic' },
         maxRowHeight: { value: 'auto' },
-        maxRowHeightValue: { value: 0 },
+        maxRowHeightValue: { value: 0 }, // Setting it here as 0 since TableRowHeightInput component will set the value
         contentWrap: { value: '{{true}}' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         padding: { value: 'default' },
