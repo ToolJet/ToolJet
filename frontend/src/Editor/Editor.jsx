@@ -515,8 +515,6 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    useResolveStore.getState().actions.updateJSHints();
-
     props.setEditorOrViewer('editor');
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
@@ -722,6 +720,7 @@ const EditorComponent = (props) => {
   };
 
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
+    useResolveStore.getState().actions.updateJSHints();
     setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
 
