@@ -158,7 +158,10 @@ class SignupPageComponent extends React.Component {
                           {this.props.t('loginSignupPage.signUp', `Sign up`)}
                         </h2>
                         {this.inviteOrganizationId && (
-                          <span className="mb-2">{`Sign up to the workspace - ${configs?.name}`}</span>
+                          <span
+                            className="mb-2"
+                            data-cy="workspace-signup-header"
+                          >{`Sign up to the workspace - ${configs?.name}`}</span>
                         )}
                         <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
                           {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
@@ -226,7 +229,7 @@ class SignupPageComponent extends React.Component {
                                     emailError={this.state.emailError}
                                     t={this.props.t}
                                   />
-                                  <label className="tj-text-input-label" data-cy="passwor-label">
+                                  <label className="tj-text-input-label" data-cy="create-a-password-label">
                                     {passwordLabelText}
                                   </label>
                                   <div className="login-password signup-password-wrapper">
