@@ -1,11 +1,9 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { useTranslation } from 'react-i18next';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import { useSuperStore } from '@/_stores/superStore';
-import { ModuleContext } from '@/_contexts/ModuleContext';
-// import { ModuleContext } from '../_contexts/ModuleContext';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 const APP_MODES = [
   { label: 'Auto', value: 'auto' },
@@ -14,7 +12,6 @@ const APP_MODES = [
 ];
 
 const AppModeToggle = ({ globalSettingsChanged }) => {
-  const moduleName = useContext(ModuleContext);
   const { onAppModeChange, appMode } = useAppDarkMode();
   const { t } = useTranslation();
 
@@ -29,15 +26,12 @@ const AppModeToggle = ({ globalSettingsChanged }) => {
             if (value === 'auto') {
               exposedTheme = localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
             }
-            useSuperStore
-              .getState()
-              .modules[moduleName].useCurrentStateStore.getState()
-              .actions.setCurrentState({
-                globals: {
-                  ...useSuperStore.getState().modules[moduleName].useCurrentStateStore.getState().globals,
-                  theme: { name: exposedTheme },
-                },
-              });
+            useCurrentStateStore.getState().actions.setCurrentState({
+              globals: {
+                ...useCurrentStateStore.getState().globals,
+                theme: { name: exposedTheme },
+              },
+            });
             globalSettingsChanged({ appMode: value });
           }}
           defaultValue={appMode}
