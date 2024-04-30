@@ -5,7 +5,9 @@ import {
   verifyandModifyUserRole,
   verifyandModifySizeOftheCompany,
 } from "Support/utils/selfHostSignUp";
-import { navigateToManageUsers } from "Support/utils/common";
+import { navigateToManageUsers, logout } from "Support/utils/common";
+import { ssoSelector } from "Selectors/manageSSO";
+import { ssoText } from "Texts/manageSSO";
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -208,9 +210,12 @@ export const fetchAndVisitInviteLink = (email) => {
 export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
-  cy.wait(1000)
-  cy.get(commonSelectors.passwordInputField).should("be.visible")
+  cy.wait(1000);
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.intercept("GET", "/api/organizations").as("org");
+  cy.get(commonSelectors.signUpButton).click();
+  cy.wait("@org");
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
@@ -262,5 +267,97 @@ export const updateWorkspaceName = (email, workspaceName = email) => {
         });
       });
     });
+  });
+};
+
+export const visitWorkspaceInvitation = (email, workspaceName) => {
+  let workspaceId, userId, url, organizationToken;
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from organizations where name='${workspaceName}';`,
+  }).then((resp) => {
+    workspaceId = resp.rows[0].id;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `select id from users where email='${email}';`,
+    }).then((resp) => {
+      userId = resp.rows[0].id;
+
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select invitation_token from organization_users where organization_id= '${workspaceId}' AND user_id='${userId}';`,
+      }).then((resp) => {
+        if (resp.rows.length === 1) {
+          organizationToken = resp.rows[0].invitation_token;
+          url = `/organization-invitations/${organizationToken}?oid=${workspaceId}`;
+
+          cy.contains("td", email)
+            .parent()
+            .within(() => {
+              cy.get("td small").should("have.text", "invited");
+            });
+
+          logout();
+          cy.visit(url);
+        } else {
+          // Handle case where user belongs to multiple organizations with the same workspaceId
+          // For example, you might display an error message or log a warning
+          console.warn(`User '${email}' belongs to multiple organizations with workspaceId '${workspaceId}'.`);
+        }
+      });
+    });
+  });
+};
+
+export const SignUpPageElements = () => {
+  cy.get(commonSelectors.pageLogo).should("be.visible");
+  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
+    "have.text",
+    "Sign up"
+  );
+  cy.get(commonSelectors.signUpButton).verifyVisibleElement(
+    "have.text",
+    commonText.getStartedButton
+  );
+  cy.get(commonSelectors.signInRedirectText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signInRedirectText
+    );
+  });
+  cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
+    "have.text",
+    commonText.signInRedirectLink
+  );
+  cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signUpTermsHelperText
+    );
+  });
+  cy.get(commonSelectors.termsOfServiceLink)
+    .verifyVisibleElement("have.text", commonText.termsOfServiceLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/terms");
+  cy.get(commonSelectors.privacyPolicyLink)
+    .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/privacy");
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSignUpText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignUpText
+      );
+      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
+      cy.get(commonSelectors.onboardingSeperatorText).verifyVisibleElement(
+        "have.text",
+        commonText.onboardingSeperatorText
+      );
+    }
   });
 };
