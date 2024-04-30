@@ -67,6 +67,7 @@ jobs:
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
+
   try-tooljet-image-build:
     runs-on: ubuntu-latest
     needs: build-tooljet-image
@@ -136,6 +137,7 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
   #Below code helps to trigger the workflow manually
 
