@@ -27,7 +27,7 @@ Similar to **to_js()**, **to_py()** facilitates the mapping and conversion of da
 To test the working of `to_py`function, follow the steps mentioned below:
 
 - From the ToolJet dashboard, create a new app by clicking **Create an app** button.
-- Once the app is created, navigate to the Query Panel, click on the **+ Add** and choose **Run Python Code** as the Data Source.
+- Once the app is created, navigate to the Query Panel, click on the **+ Add** button and choose **Run Python Code** as the Data Source.
 - Use the code given below, in the *runpy* query code editor:
 
 ```python
