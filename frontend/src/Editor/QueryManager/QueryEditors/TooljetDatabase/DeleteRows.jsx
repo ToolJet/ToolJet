@@ -53,7 +53,7 @@ export const DeleteRows = React.memo(({ darkMode }) => {
           Filter
         </label>
 
-        <div className="field-container flex-grow-1  mb-2">
+        <div className="field-container flex-grow-1  mb-2 col">
           {Object.values(deleteRowsOptions?.where_filters || {}).map((filter) => (
             <RenderFilterFields
               key={filter.id}
@@ -133,7 +133,7 @@ const RenderFilterFields = ({
   return (
     <div className="mt-1 row-container w-100">
       <div className="d-flex fields-container delete-filter">
-        <div className="field col">
+        <div className="field col-4">
           <Select
             useMenuPortal={true}
             placeholder="Select column"
@@ -143,7 +143,7 @@ const RenderFilterFields = ({
             width="auto"
           />
         </div>
-        <div className="field mx-1 col">
+        <div className="field mx-1 col-4">
           <Select
             useMenuPortal={true}
             placeholder="Select operation"
@@ -153,7 +153,7 @@ const RenderFilterFields = ({
             width="auto"
           />
         </div>
-        <div className="field col">
+        <div className="field col-4">
           {operator === 'is' ? (
             <Select
               useMenuPortal={true}
