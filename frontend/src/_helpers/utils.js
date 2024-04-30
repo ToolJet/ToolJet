@@ -1260,6 +1260,7 @@ export const setWindowTitle = async (pageDetails, location) => {
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
     settings: pageTitles.SETTINGS,
     'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+    invitations: '',
   };
   const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
   let pageTitleKey = pageDetails?.page || '';
