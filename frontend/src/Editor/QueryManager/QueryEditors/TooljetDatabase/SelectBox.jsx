@@ -66,7 +66,7 @@ function DataSourceSelect({
     tooljetDatabaseService
       .findOne(
         organizationId,
-        foreignKeys?.length > 0 && foreignKeys[0]?.referenced_table_id,
+        foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
         `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
       )
       .then(({ headers, data = [], error }) => {

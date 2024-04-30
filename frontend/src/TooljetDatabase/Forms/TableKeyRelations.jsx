@@ -60,7 +60,7 @@ function SourceKeyRelation({
           return {
             name: item?.column_name,
             label: item?.column_name,
-            icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
+            // icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
             value: item?.column_name,
             dataType: item?.data_type,
           };
@@ -112,7 +112,7 @@ function SourceKeyRelation({
             data?.result?.columns.map((item) => ({
               name: item.column_name,
               label: item.column_name,
-              icon: dataTypes.filter((obj) => obj.value === item.data_type)[0].icon,
+              icon: dataTypes.filter((obj) => obj.value === item.data_type)[0]?.icon,
               value: item.column_name,
               dataType: item?.data_type,
             }))

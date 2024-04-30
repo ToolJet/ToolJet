@@ -21,6 +21,7 @@ const ColumnsForm = ({
   setCreateForeignKeyInEdit,
   createForeignKeyInEdit = false,
   selectedTable,
+  setForeignKeys,
 }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
   const [hoveredColumn, setHoveredColumn] = useState(null);
@@ -140,12 +141,14 @@ const ColumnsForm = ({
           setHoveredColumn={setHoveredColumn}
           tableName={tableName}
           columns={columns}
+          setColumns={setColumns}
           isEditMode={isEditMode}
           setForeignKeyDetails={setForeignKeyDetails}
           isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
           foreignKeyDetails={foreignKeyDetails}
           organizationId={organizationId}
           existingForeignKeyDetails={existingForeignKeyDetails}
+          setForeignKeys={setForeignKeys}
           setCreateForeignKeyInEdit={setCreateForeignKeyInEdit}
           createForeignKeyInEdit={createForeignKeyInEdit}
           selectedTable={selectedTable}
