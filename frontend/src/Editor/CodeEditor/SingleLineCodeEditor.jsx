@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -18,8 +18,9 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
+import { EditorContext } from '../Context/EditorContextWrapper';
 
-const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
   const [isFocused, setIsFocused] = useState(false);
@@ -30,8 +31,20 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
   //! Re render the component when the componentName changes as the initialValue is not updated
+
+  const { variablesExposedForPreview } = useContext(EditorContext);
+
+  const customVariables = variablesExposedForPreview?.[componentId] ?? {};
+
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
+
+    const [valid, _error] = resolveReferences(initialValue, validation, customVariables);
+
+    if (!valid) {
+      setErrorStateActive(true);
+    }
+
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentName, initialValue]);
@@ -53,8 +66,10 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, portalProps?.isOpen, cursorInsidePreview]);
+
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   return (
     <div
       ref={wrapperRef}
@@ -174,15 +189,9 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    if (ignoreValidation) {
-      return onBlurUpdate(currentValue);
-    }
     setTimeout(() => {
       setFirstTimeFocus(false);
-      if (!error || currentValue == '') {
-        const _value = currentValue;
-        onBlurUpdate(_value);
-      }
+      onBlurUpdate(currentValue);
     }, 0);
   };
 
