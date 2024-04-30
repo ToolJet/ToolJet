@@ -152,9 +152,9 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
   const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 
   return (
-    <div class={`d-flex flex-column align-content-between flex-wrap`}>
-      <div class="p-2">
-        <span class={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
+    <div className={`d-flex flex-column align-content-between flex-wrap`}>
+      <div className="p-2">
+        <span className={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
       </div>
 
       <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
@@ -213,7 +213,7 @@ const PreviewContainer = ({
                 imgWidth={18}
               >
                 <div className="d-flex align-items-center">
-                  <div class="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
+                  <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
               </Alert>
             </div>
@@ -241,9 +241,12 @@ const PreviewContainer = ({
                     maxHeight: '100px',
                   }}
                 >
-                  <div class="d-flex flex-column align-content-between flex-wrap p-0">
-                    <div class="p-2">
-                      <span class="badge bg-light-gray font-500 mute-text text-capitalize">
+                  <div className="d-flex flex-column align-content-between flex-wrap p-0">
+                    <div className="p-2">
+                      <span
+                        className={`badge bg-light-gray font-500 mute-text text-capitalize`}
+                        style={{ fontSize: '12px', background: 'var(--interactive-default)' }}
+                      >
                         {validationSchema?.schema?.type}
                       </span>
                     </div>
@@ -354,7 +357,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
     );
   }
   return (
-    <div class="p-2 pt-0">
+    <div className="p-2 pt-0">
       <pre
         className="text-secondary"
         style={{

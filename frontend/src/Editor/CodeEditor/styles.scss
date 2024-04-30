@@ -28,19 +28,22 @@
     display: none !important;
 }
 
-
+.inspector {
+    .cm-base-autocomplete {
+        left: auto !important;
+    }
+}
 
 .cm-base-autocomplete {
     height: 300px !important;
     color: var(--Text-default, #1B1F24);
     background: var(--slate1) !important;
-    border: 1px solid var(--Border-week, #E4E7EB) !important;
+    border: 1px solid var(--borders-disabled-on-white, #E4E7EB) !important;
     border-radius: 6px !important;
     box-shadow: 0px 4px 8px 0px rgba(48, 49, 51, 0.10), 0px 0px 1px 0px rgba(48, 49, 51, 0.05);
     z-index: 99999 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    // left: 0px !important;
 
 
     ul {
@@ -82,8 +85,6 @@
                 width: 16px;
                 height: 16px;
                 border: none;
-                // border-radius: 50%;
-                // background-color: red;
             }
 
             .cm-completionIcon-object::after {
@@ -356,13 +357,16 @@
 
 
 .codehinter-error-banner {
-    color: #D72D39;
-    background-color: #FCEEEF;
+    color: #D72D39 !important;
+    background-color: #FCEEEF !important;
+    font-size: 12px !important;
 }
 
 .codehinter-success-banner {
-    color: #1E823B;
-    background-color: #E8F3EB;
+    color: #1E823B !important;
+    background-color: #E8F3EB !important;
+    font-size: 12px !important;
+
 }
 
 .cm-gutterElement {
