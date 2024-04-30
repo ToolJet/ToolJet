@@ -37,24 +37,43 @@ const TableForm = ({
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
   const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
-  const { organizationId, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, foreignKeys, setForeignKeys } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const [foreignKeyDetails, setForeignKeyDetails] = useState(
-    foreignKeys?.map((item) => {
-      return {
-        column_names: isEditMode ? (!createForeignKeyInEdit ? item.column_names : []) : [],
-        referenced_table_name: isEditMode ? (!createForeignKeyInEdit ? item.referenced_table_name : '') : '',
-        referenced_column_names: isEditMode ? (!createForeignKeyInEdit ? item.referenced_column_names : []) : [],
-        on_delete: isEditMode ? (!createForeignKeyInEdit ? item.on_delete : '') : '',
-        on_update: isEditMode ? (!createForeignKeyInEdit ? item.on_update : '') : '',
-      };
-    })
-  );
+  const [foreignKeyDetails, setForeignKeyDetails] = useState([]);
 
   useEffect(() => {
     toast.dismiss();
+    if (isEditMode) {
+      setForeignKeyDetails(
+        foreignKeys?.map((item) => {
+          return {
+            column_names: item.column_names,
+            referenced_table_name: item.referenced_table_name,
+            referenced_column_names: item.referenced_column_names,
+            on_delete: item.on_delete,
+            on_update: item.on_update,
+          };
+        })
+      );
+    }
   }, []);
+
+  useEffect(() => {
+    if (isEditMode) {
+      setForeignKeyDetails(
+        foreignKeys?.map((item) => {
+          return {
+            column_names: item.column_names,
+            referenced_table_name: item.referenced_table_name,
+            referenced_column_names: item.referenced_column_names,
+            on_delete: item.on_delete,
+            on_update: item.on_update,
+          };
+        })
+      );
+    }
+  }, [foreignKeys]);
 
   function bodyColumns(columns, selectedTableColumnDetails) {
     let newArray = [];
@@ -286,6 +305,7 @@ const TableForm = ({
           setCreateForeignKeyInEdit={setCreateForeignKeyInEdit}
           createForeignKeyInEdit={createForeignKeyInEdit}
           selectedTable={selectedTable}
+          setForeignKeys={setForeignKeys}
         />
       </div>
       <DrawerFooter
