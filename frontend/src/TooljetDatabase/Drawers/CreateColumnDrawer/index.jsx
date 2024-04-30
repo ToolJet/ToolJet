@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
+import { getColumnDataType } from '../../constants';
 
 const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen, rows }) => {
   const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize } =
@@ -25,7 +26,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                   data?.result.map(({ column_name, data_type, ...rest }) => ({
                     Header: column_name,
                     accessor: column_name,
-                    dataType: data_type,
+                    dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
                     ...rest,
                   }))
                 );
