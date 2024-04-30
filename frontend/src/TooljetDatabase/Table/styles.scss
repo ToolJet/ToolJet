@@ -109,7 +109,7 @@
   }
 
   .tjdb-selected-cell {
-    border-color: var(--Indigo-09, #3E63DD);
+    border: 1.5px solid var(--Indigo-09, #3E63DD) !important;
   }
 
   .card-table tr td:last-child {
