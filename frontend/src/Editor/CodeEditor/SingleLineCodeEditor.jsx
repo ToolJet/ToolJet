@@ -181,6 +181,11 @@ const EditorInput = ({
     },
     aboveCursor: false,
     defaultKeymap: true,
+    positionInfo: () => {
+      return {
+        class: 'cm-completionInfo-top cm-custom-completion-info',
+      };
+    },
   });
 
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
