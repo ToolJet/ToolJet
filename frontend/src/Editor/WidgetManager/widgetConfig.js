@@ -623,7 +623,7 @@ export const widgets = [
         borderRadius: { value: '8' },
         tableType: { value: 'table-classic' },
         maxRowHeight: { value: 'auto' },
-        maxRowHeightValue: { value: '80px' },
+        maxRowHeightValue: { value: 0 },
         contentWrap: { value: '{{true}}' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         padding: { value: 'default' },
