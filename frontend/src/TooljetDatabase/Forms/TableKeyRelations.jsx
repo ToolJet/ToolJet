@@ -98,6 +98,16 @@ function SourceKeyRelation({
     },
   ];
 
+  useEffect(() => {
+    // When this component is mounted by default we are setting onDelete and onUpdate action with first value of onUpdateOptions, so that by default no action is selected for the actions dropdown
+    if (_.isEmpty(onDelete)) {
+      setOnDelete(onUpdateOptions[0]);
+    }
+    if (_.isEmpty(onUpdate)) {
+      setOnUpdate(onUpdateOptions[0]);
+    }
+  }, []);
+
   const handleSelectColumn = (table_name = '') => {
     if (table_name?.length > 0) {
       tooljetDatabaseService.viewTable(organizationId, table_name).then(({ data = [], error }) => {
