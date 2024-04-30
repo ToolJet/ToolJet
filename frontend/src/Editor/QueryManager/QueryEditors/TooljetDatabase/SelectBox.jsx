@@ -109,9 +109,8 @@ function DataSourceSelect({
   }, []);
 
   return (
-    <div>
+    <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <Select
-        onClick={(e) => e.stopPropagation()}
         onChange={(option) => handleChangeDataSource(option)}
         classNames={{
           menu: () =>
