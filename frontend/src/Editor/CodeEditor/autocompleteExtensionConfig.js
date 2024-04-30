@@ -69,14 +69,14 @@ export const generateHints = (hints, totalReferences = 1, input) => {
   const suggestions = hints.map(({ hint, type }) => {
     let displayedHint = type === 'js_method' || type === 'Function' ? `${hint}()` : hint;
 
-    const maxHintLength = 20;
+    const maxHintLength = 25;
     const hintLength = displayedHint.length;
-    const _hint =
-      displayedHint.length > maxHintLength ? '...' + displayedHint.slice(hintLength - maxHintLength) : displayedHint;
+    const _hint = displayedHint.length > maxHintLength ? displayedHint.slice(0, maxHintLength) + '...' : displayedHint;
 
     return {
       displayLabel: _hint,
       label: displayedHint,
+      info: displayedHint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
       section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'Suggestions', rank: 1 },
       detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
