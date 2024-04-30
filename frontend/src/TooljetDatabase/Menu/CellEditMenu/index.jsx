@@ -110,7 +110,7 @@ export const CellEditMenu = ({
     e.stopPropagation();
   };
 
-  const referenceTableDetails = referencedColumnDetails.map((item) => {
+  const referencedFKDataList = referencedColumnDetails.map((item) => {
     const [key, value] = Object.entries(item);
     return {
       label: key[1],
@@ -146,7 +146,7 @@ export const CellEditMenu = ({
             <DropDownSelect
               buttonClasses="border border-end-1 foreignKeyAcces-container"
               showPlaceHolder={true}
-              options={referenceTableDetails}
+              options={referencedFKDataList}
               darkMode={darkMode}
               emptyError={
                 <div className="dd-select-alert-error m-2 d-flex align-items-center">

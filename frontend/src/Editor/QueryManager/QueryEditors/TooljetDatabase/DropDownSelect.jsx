@@ -45,6 +45,16 @@ const DropDownSelect = ({
   const [selected, setSelected] = useState(value);
   const selectRef = useRef();
   const [isOverflown, setIsOverflown] = useState(false);
+  // Applicable when drop down is used to list FK data
+  const [isInitialForeignKeyDataLoaded, setIsInitialForeignKeyDataLoaded] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [pageNumber, setPageNumber] = useState(1);
+
+  function makeFKPaginationDataToDefault() {
+    setIsInitialForeignKeyDataLoaded(false);
+    setTotalRecords(0);
+    setPageNumber(1);
+  }
 
   useEffect(() => {
     if (showMenu) {
@@ -84,14 +94,9 @@ const DropDownSelect = ({
     }
 
     const elementRect = selectControl.getBoundingClientRect();
-
     // Check proximity to top
     const halfScreenHeight = window.innerHeight / 2;
-
-    if (elementRect.top <= halfScreenHeight) {
-      return 'bottom-start';
-    }
-
+    if (elementRect.top <= halfScreenHeight) return 'bottom-start';
     return 'top-start';
   }
 
@@ -112,9 +117,6 @@ const DropDownSelect = ({
     <OverlayTrigger
       show={showMenu && !disabled}
       placement={checkElementPosition()}
-      // placement="auto"
-      // arrowOffsetTop={90}
-      // arrowOffsetLeft={90}
       overlay={
         <Popover
           key={'page.i'}
@@ -166,6 +168,12 @@ const DropDownSelect = ({
             setReferencedColumnDetails={setReferencedColumnDetails}
             shouldShowForeignKeyIcon={shouldShowForeignKeyIcon}
             cellColumnName={cellColumnName}
+            isInitialForeignKeyDataLoaded={isInitialForeignKeyDataLoaded}
+            setIsInitialForeignKeyDataLoaded={setIsInitialForeignKeyDataLoaded}
+            totalRecords={totalRecords}
+            setTotalRecords={setTotalRecords}
+            pageNumber={pageNumber}
+            setPageNumber={setPageNumber}
           />
         </Popover>
       }

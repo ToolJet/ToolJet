@@ -1,6 +1,6 @@
 import React, { isValidElement, useCallback, useState, useRef, useEffect } from 'react';
 import Select, { components } from 'react-select';
-import { isEmpty, debounce } from 'lodash';
+import { isEmpty, debounce, throttle } from 'lodash';
 import { authenticationService, tooljetDatabaseService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
@@ -38,9 +38,14 @@ function DataSourceSelect({
   setReferencedColumnDetails,
   shouldShowForeignKeyIcon = false,
   cellColumnName,
+  isInitialForeignKeyDataLoaded = false,
+  setIsInitialForeignKeyDataLoaded,
+  totalRecords,
+  setTotalRecords,
+  pageNumber,
+  setPageNumber,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
-  const [totalFKRecords, setTotalFKRecords] = useState(1);
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
@@ -58,19 +63,25 @@ function DataSourceSelect({
 
   const getForeignKeyDetails = (add) => {
     setIsLoadingFKDetails(true);
+    const limit = 15;
+    const offset = (pageNumber - 1) * limit;
+
+    if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
+      setIsLoadingFKDetails(false);
+      return;
+    }
+
     const selectQuery = new PostgrestQueryBuilder();
     // Checking that the selected column is available in ForeignKey
     const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
     selectQuery.select(referencedColumns?.referenced_column_names[0]);
-    const limit = 15;
-    const offset = (totalFKRecords - 1) * limit;
     tooljetDatabaseService
       .findOne(
         organizationId,
         foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
         `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
       )
-      .then(({ _headers, data = [], error }) => {
+      .then(({ headers, data = [], error }) => {
         if (error) {
           toast.error(
             error?.message ??
@@ -80,31 +91,35 @@ function DataSourceSelect({
           return;
         }
 
+        const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+
         if (Array.isArray(data) && data?.length > 0) {
-          setTotalFKRecords((prevTotalRecords) => prevTotalRecords + add);
+          if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
           setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+          setPageNumber((prevPageNumber) => prevPageNumber + add);
+          if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
           setIsLoadingFKDetails(false);
         }
       });
   };
 
-  // const handleScroll = (event) => {
-  //   const target = scrollContainerRef?.current;
-  //   let scrollTop = target?.scrollTop;
-  //   console.log('scroll', loadingForeignKey);
-  //   const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+  // Only for rendering ForeignKey data in the drop down
+  const handleScrollThrottled = throttle(() => {
+    const target = scrollContainerRef?.current;
+    let scrollTop = target?.scrollTop;
+    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
 
-  //   if (scrollPercentage > 98 && !loadingForeignKey) {
-  //     getForeignKeyDetails(1);
-  //   }
-  // };
-  // // scrollContainerRef?.current?.addEventListener('scroll', handleScroll);
-
-  useEffect(() => {
-    if (scrollEventForColumnValus) {
+    if (scrollPercentage > 90 && !isLoadingFKDetails) {
       getForeignKeyDetails(1);
     }
+  }, 500);
 
+  if (scrollEventForColumnValus) scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
+
+  useEffect(() => {
+    if (scrollEventForColumnValus && !isInitialForeignKeyDataLoaded) {
+      getForeignKeyDetails(1);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -229,8 +244,6 @@ function DataSourceSelect({
                 showColumnInfo={showColumnInfo}
                 foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
                 scrollEventForColumnValus={scrollEventForColumnValus}
-                getForeignKeyDetails={getForeignKeyDetails}
-                loadingForeignKey={isLoadingFKDetails}
                 scrollContainerRef={scrollContainerRef}
                 foreignKeys={foreignKeys}
                 cellColumnName={cellColumnName}
