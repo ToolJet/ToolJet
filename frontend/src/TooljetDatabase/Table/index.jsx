@@ -418,6 +418,7 @@ const Table = ({ collapseSidebar }) => {
       const cellDataType =
         rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
 
+      setReferencedColumnDetails([]);
       setCellClick((prevValue) => ({
         ...prevValue,
         rowIndex: selectedCellRef.current.rowIndex,
@@ -799,6 +800,7 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setDefaultValue(isCellValueDefault);
       setEditPopover(false);
+      setReferencedColumnDetails([]);
     }
   };
 
