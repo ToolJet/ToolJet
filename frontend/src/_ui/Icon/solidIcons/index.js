@@ -142,6 +142,8 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import ArrowUpTriangle from './ArrowUpTriangle.jsx';
+import ArrowDownTriangle from './ArrowDownTriangle.jsx';
 import EnterButtonIcon from './EnterButtonIcon.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
@@ -158,6 +160,8 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import TriangleUpCenter from './TriangleUpCenter.jsx';
+import TriangleDownCenter from './TriangleDownCenter.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -465,6 +469,10 @@ const Icon = (props) => {
       return <Save {...props} />;
     case 'cross':
       return <Cross {...props} />;
+    case 'arrowUpTriangle':
+      return <ArrowUpTriangle {...props} />;
+    case 'arrowDownTriangle':
+      return <ArrowDownTriangle {...props} />;
     case 'underline':
       return <Underline {...props} />;
     case 'overline':
@@ -479,6 +487,10 @@ const Icon = (props) => {
       return <Capitalize {...props} />;
     case 'oblique':
       return <Oblique {...props} />;
+    case 'TriangleUpCenter':
+      return <TriangleUpCenter {...props} />;
+    case 'TriangleDownCenter':
+      return <TriangleDownCenter {...props} />;
     default:
       return <Apps {...props} />;
   }
