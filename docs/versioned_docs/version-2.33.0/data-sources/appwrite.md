@@ -24,11 +24,11 @@ You'll find the Secret Key and other credentials on your Appwrite's project sett
 You should also set the scope for access to a particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
 :::
 
-To establish a connection with the Appwrite data source, you can either click on the **+Add new Data Source** button located on the query panel or navigate to the **[Data Sources](https://docs.tooljet.com/docs/data-sources/overview)** page from the ToolJet dashboard.
+To establish a connection with the Appwrite data source, you can either click on the **+Add new Data source** button located on the query panel or navigate to the **[Data Sources](https://docs.tooljet.com/docs/data-sources/overview)** page from the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/connectv2-v3.png" alt="Appwrite intro"/>
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/connect-v3.png" alt="Appwrite intro"/>
 
 </div>
 
@@ -44,7 +44,7 @@ To establish a connection with the Appwrite data source, you can either click on
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/queryingv2-v3.png" alt="Appwrite intro"/>
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/querying-v3.png" alt="Appwrite intro"/>
 
 </div> 
 
@@ -86,7 +86,7 @@ This operation is used to get a list of all the user documents.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/listv2-v3.png" alt="Appwrite List" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/list-v3.png" alt="Appwrite List" />
 
 </div>
 
@@ -106,7 +106,7 @@ Use this operation to get a document from a collection by its unique ID.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/getv2-v3.png" alt="Appwrite get" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/get-v3.png" alt="Appwrite get" />
 
 </div>
 
@@ -126,7 +126,7 @@ Use this operation to create a new document in a collection.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/addv2-v3.png" alt="Appwrite add" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/add-v3.png" alt="Appwrite add" />
 
 </div>
 
@@ -148,7 +148,7 @@ Use this operation to update a document.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/updv2-v3.png" alt="Appwrite update" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/upd-v3.png" alt="Appwrite update" />
 
 </div>
 
@@ -171,7 +171,7 @@ and these objects must contain a key-value pair to point unique record in the da
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/bulkv2-v3.png" alt="Appwrite bulk update" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/bulk-v3.png" alt="Appwrite bulk update" />
 
 </div>
 
@@ -191,7 +191,7 @@ Use this operation for deleting a document in the collection.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/delv2-v3.png" alt="Appwrite delete"/>
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/appwrite/del-v3.png" alt="Appwrite delete"/>
 
 </div>
 
