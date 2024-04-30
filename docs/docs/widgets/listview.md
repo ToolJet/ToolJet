@@ -39,8 +39,6 @@ Similarly, for an Image component inside List View, you can use the below code t
 {{listItem.imageURL}}
 ```
 
-<div style={{textAlign: 'center', marginBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/widgets/list-view/listviewapp.png" alt="ToolJet - List view component" />
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
