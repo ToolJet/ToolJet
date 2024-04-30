@@ -28,7 +28,7 @@ import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
 import {
   CreatePostgrestTableDto,
-  RenamePostgrestTableDto,
+  EditTableDto,
   PostgrestTableColumnDto,
   EditColumnTableDto,
 } from '@dto/tooljet-db.dto';
@@ -38,10 +38,12 @@ import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.ser
 import { TooljetDbJoinDto } from '@dto/tooljet-db-join.dto';
 import { TooljetDbJoinExceptionFilter } from 'src/filters/tooljetdb-join-exceptions-filter';
 import { Logger } from 'nestjs-pino';
+import { TooljetDbExceptionFilter } from 'src/filters/tooljetdb-exception-filter';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('tooljet-db')
+@UseFilters(new TooljetDbExceptionFilter())
 export class TooljetDbController {
   private readonly pinoLogger: Logger;
   constructor(
@@ -95,8 +97,8 @@ export class TooljetDbController {
   @Patch('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.RenameTable, 'all'))
-  async renameTable(@Body() renameTableDto: RenamePostgrestTableDto, @Param('organizationId') organizationId) {
-    const result = await this.tooljetDbService.perform(organizationId, 'rename_table', renameTableDto);
+  async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
+    const result = await this.tooljetDbService.perform(organizationId, 'edit_table', editTableBody);
     return decamelizeKeys({ result });
   }
 
