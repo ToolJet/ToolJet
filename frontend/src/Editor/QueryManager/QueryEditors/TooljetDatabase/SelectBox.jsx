@@ -59,6 +59,7 @@ function DataSourceSelect({
   const getForeignKeyDetails = (add) => {
     setLoadingForeignkey(true);
     const selectQuery = new PostgrestQueryBuilder();
+    // Checking that the selected column is available in ForeignKey
     const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
     selectQuery.select(referencedColumns?.referenced_column_names[0]);
     const limit = 15;
@@ -66,7 +67,7 @@ function DataSourceSelect({
     tooljetDatabaseService
       .findOne(
         organizationId,
-        foreignKeys?.length > 0 && foreignKeys[0]?.referenced_table_id,
+        foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
         `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
       )
       .then(({ headers, data = [], error }) => {
