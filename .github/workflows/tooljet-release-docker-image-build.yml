@@ -2,6 +2,9 @@ name: Tooljet release docker images build
 
 on:
 
+  release:
+    types: [published]
+
   workflow_dispatch:
     inputs:
       job-to-run:
@@ -64,7 +67,6 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
 
 
   #Below code helps to trigger the workflow manually
