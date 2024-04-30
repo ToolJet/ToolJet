@@ -62,15 +62,14 @@ function DataSourceSelect({
   });
 
   const getForeignKeyDetails = (add) => {
-    setIsLoadingFKDetails(true);
     const limit = 15;
     const offset = (pageNumber - 1) * limit;
 
     if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
-      setIsLoadingFKDetails(false);
       return;
     }
 
+    setIsLoadingFKDetails(true);
     const selectQuery = new PostgrestQueryBuilder();
     // Checking that the selected column is available in ForeignKey
     const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
