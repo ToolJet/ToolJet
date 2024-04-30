@@ -39,7 +39,9 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
 
-    const [valid, _error] = resolveReferences(initialValue, validation, customVariables);
+    const [valid, _error] = !isEmpty(validation)
+      ? resolveReferences(initialValue, validation, customVariables)
+      : [true, null];
 
     if (!valid) {
       setErrorStateActive(true);
