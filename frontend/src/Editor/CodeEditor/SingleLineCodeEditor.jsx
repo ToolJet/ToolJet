@@ -74,7 +74,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
-        type={restProps?.type}
         isPortalOpen={restProps?.portalProps?.isOpen}
       >
         <div className="code-editor-basic-wrapper d-flex">
