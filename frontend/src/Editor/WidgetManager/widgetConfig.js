@@ -694,7 +694,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background',
         validation: {
           schema: { type: 'string' },
           defaultValue: false,
@@ -789,8 +789,23 @@ export const widgets = [
       },
       {
         handle: 'setText',
-        displayName: 'Set Text',
+        displayName: 'Set text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'setVisibility',
+        displayName: 'Set visibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'Set disable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'Set loading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'disable',
@@ -806,21 +821,6 @@ export const widgets = [
         handle: 'loading',
         displayName: 'Loading(deprecated)',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
-      },
-      {
-        handle: 'setVisibility',
-        displayName: 'setVisibility',
-        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-      },
-      {
-        handle: 'setDisable',
-        displayName: 'setDisable',
-        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-      },
-      {
-        handle: 'setLoading',
-        displayName: 'setLoading',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
     definition: {

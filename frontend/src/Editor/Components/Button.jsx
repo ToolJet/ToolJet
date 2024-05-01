@@ -51,10 +51,11 @@ export const Button = function Button(props) {
 
   const computedIconColor =
     getCssVariableValue('--icons-on-solid') === iconColor
-      ? type == 'primary'
+      ? type === 'primary'
         ? getCssVariableValue('--icons-on-solid')
         : getCssVariableValue('--icons-strong')
       : iconColor;
+
   const computedTextColor =
     getCssVariableValue('--text-on-solid') === textColor
       ? type == 'primary'
