@@ -73,7 +73,7 @@ function Header({
         {!collapseSidebar && (
           <div className="tj-dashboard-section-header" data-name={pathname}>
             <div className="row">
-              <div className="col-9">
+              <div className="col-9 title-and-banner-wrapper">
                 <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
                   {pathname}
                 </p>
@@ -102,11 +102,11 @@ function Header({
                         display: 'flex',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        background: 'var(--indigo3)',
-                        borderColor: `${darkMode ? '#ecedee' : '#AEC0F5'} `,
+                        background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
+                        borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
                       }}
                       leftIcon="cheveronleftdouble"
-                      fill={darkMode ? '#ecedee' : '#3E63DD'}
+                      fill="#3E63DD"
                       iconWidth="14"
                       size="md"
                       onClick={toggleCollapsibleSidebar}
@@ -133,11 +133,11 @@ function Header({
                       display: 'flex',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      background: 'var(--indigo3)',
-                      borderColor: `${darkMode ? '#ecedee' : '#AEC0F5'} `,
+                      background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
+                      borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
                     }}
                     leftIcon="cheveronrightdouble"
-                    fill={darkMode ? '#ecedee' : '#3E63DD'}
+                    fill="#3E63DD"
                     iconWidth="14"
                     size="md"
                     onClick={toggleCollapsibleSidebar}

@@ -19,6 +19,7 @@ export const AppVersionsManager = function ({
   isEditable = true,
   isViewer,
   fetchEnvironments,
+  darkMode,
 }) {
   const [appVersions, setAppVersions] = useState([]);
   const [appVersionStatus, setGetAppVersionStatus] = useState('');
@@ -41,7 +42,6 @@ export const AppVersionsManager = function ({
     }),
     shallow
   );
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     setGetAppVersionStatus('loading');
@@ -238,10 +238,10 @@ export const AppVersionsManager = function ({
             value={editingVersion?.id}
             onChange={(id) => handleOnSelectVersion(id)}
             {...customSelectProps}
-            className={` ${darkMode && 'dark-theme'}`}
             isEditable={isEditable}
             currentEnvironment={currentEnvironment}
             onSelectVersion={handleOnSelectVersion}
+            darkMode={darkMode}
           />
         </div>
       </div>

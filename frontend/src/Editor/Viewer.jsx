@@ -56,6 +56,7 @@ import './Viewer/viewer.scss';
 import TooljetBanner from './Viewer/TooljetBanner';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -65,7 +66,7 @@ class ViewerComponent extends React.Component {
 
     const slug = this.props.params.slug;
     this.subscription = null;
-
+    this.props.setEditorOrViewer('viewer');
     this.state = {
       slug,
       deviceWindowWidth,
@@ -116,8 +117,10 @@ class ViewerComponent extends React.Component {
       appDefData.homePageId = data.homePageId;
       appDefData.showViewerNavigation = data.showViewerNavigation;
     }
+    const appMode = data.globalSettings?.appMode || data?.editing_version?.globalSettings?.appMode;
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     useAppVersionStore.getState().actions.updateReleasedVersionId(data.currentVersionId);
+    useEditorStore.getState().actions.setAppMode(appMode);
     this.setState({
       app: data,
       isLoading: false,
@@ -688,6 +691,7 @@ class ViewerComponent extends React.Component {
       canvasWidth,
       organizationId,
     } = this.state;
+
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
@@ -756,7 +760,12 @@ class ViewerComponent extends React.Component {
         );
       }
       return (
-        <div className={`viewer wrapper ${this.props.currentLayout === 'mobile' ? 'mobile-layout' : ''}`}>
+        <div
+          className={cx('viewer wrapper', {
+            'mobile-layout': this.props.currentLayout,
+            'theme-dark dark-theme': this.props.darkMode,
+          })}
+        >
           <Confirm
             show={queryConfirmationList.length > 0}
             message={'Do you want to run this query?'}
@@ -766,6 +775,7 @@ class ViewerComponent extends React.Component {
             onCancel={() => onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationList[0], false, 'view')}
             queryConfirmationData={queryConfirmationList[0]}
             key={queryConfirmationList[0]?.queryName}
+            darkMode={this.props.darkMode}
           />
           <DndProvider backend={HTML5Backend}>
             {this.props.currentLayout !== 'mobile' && (
@@ -812,7 +822,6 @@ class ViewerComponent extends React.Component {
                       <ViewerSidebarNavigation
                         showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}
-                        canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                         pages={pages}
                         currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                         switchPage={this.switchPage}
@@ -868,7 +877,6 @@ class ViewerComponent extends React.Component {
                                 appDefinitionChanged={() => false} // function not relevant in viewer
                                 snapToGrid={true}
                                 appLoading={isLoading}
-                                darkMode={this.props.darkMode}
                                 onEvent={this.handleEvent}
                                 mode="view"
                                 deviceWindowWidth={isMobilePreviewMode ? '450px' : deviceWindowWidth}
@@ -886,6 +894,7 @@ class ViewerComponent extends React.Component {
                                 canvasWidth={this.getCanvasWidth()}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
+                                darkMode={this.props.darkMode}
                               />
                             )}
                           </>
@@ -923,6 +932,7 @@ const withStore = (Component) => (props) => {
     shallow
   );
   const { updateState } = useAppDataActions();
+  const { isAppDarkMode } = useAppDarkMode();
   return (
     <Component
       {...props}
@@ -932,6 +942,7 @@ const withStore = (Component) => (props) => {
       updateState={updateState}
       queryConfirmationList={queryConfirmationList}
       currentAppVersionEnvironment={currentAppVersionEnvironment}
+      darkMode={isAppDarkMode}
     />
   );
 };

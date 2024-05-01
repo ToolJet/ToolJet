@@ -28,11 +28,13 @@ import { File } from 'src/entities/file.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 const imports = [
   PluginsModule,
   CaslModule,
   TypeOrmModule.forFeature([User, Organization, File, AppUser, AppVersion, App, Credential, Plugin, DataSource]),
+  TooljetDbModule,
 ];
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
