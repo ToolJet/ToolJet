@@ -17,6 +17,8 @@ module.exports = {
         'plugin:import/errors',
         'plugin:import/warnings',
         'plugin:prettier/recommended',
+        'plugin:react-perf/all',
+        'plugin:sonarjs/recommended',
       ],
       parser: '@babel/eslint-parser',
       parserOptions: {
@@ -30,7 +32,7 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
       },
-      plugins: ['react', 'prettier', 'jest'],
+      plugins: ['react', 'prettier', 'jest', 'complexity', 'react-perf', 'sonarjs'],
       rules: {
         'prettier/prettier': [
           'error',
@@ -66,6 +68,11 @@ module.exports = {
           },
         ],
         'react/no-unknown-property': 'off',
+        'react-hooks/rules-of-hooks': 'error',
+        'react-hooks/exhaustive-deps': 'warn',
+        // 'max-lines-per-function': ['warn', 50], // Limits the number of lines per function
+        'react/jsx-key': ['error', { checkFragmentShorthand: true }], // Ensures key prop is present in JSX arrays
+        'max-lines': ['warn', { max: 150, skipBlankLines: true, skipComments: true }],
       },
       settings: {
         react: {

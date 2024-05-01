@@ -9,6 +9,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
     'plugin:cypress/recommended',
+    'plugin:sonarjs/recommended',
   ],
   ignorePatterns: ['.eslintrc.js'],
   parser: '@typescript-eslint/parser',
@@ -27,7 +28,7 @@ module.exports = {
       },
     },
   ],
-  plugins: ['@typescript-eslint', 'jest', 'prettier'],
+  plugins: ['@typescript-eslint', 'jest', 'prettier', 'sonarjs'],
   rules: {
     'prettier/prettier': [
       'error',
@@ -39,13 +40,13 @@ module.exports = {
       },
     ],
     '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
+    "@typescript-eslint/explicit-function-return-type": "error",
+    '@typescript-eslint/explicit-module-boundary-types': 'warn',
+    '@typescript-eslint/no-explicit-any': ['warn', { ignoreRestArgs: true }],
     '@typescript-eslint/no-unused-vars': ['error', { vars: 'all', args: 'none' }],
-    '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-empty-function': 0,
-    'no-unsafe-optional-chaining': 'off',
+    '@typescript-eslint/no-var-requires': 'error',
+    '@typescript-eslint/no-empty-function': 'error',
+    'no-unsafe-optional-chaining': 'warn',
     '@typescript-eslint/ban-types': [
       'error',
       {
@@ -55,5 +56,9 @@ module.exports = {
         extendDefaults: true,
       },
     ],
+    'max-lines-per-function': ['error', 50], // Enforces function length
+    'complexity': ['error', { 'max': 10 }], // Limits cyclomatic complexity (number of linearly independent paths)
+    '@typescript-eslint/no-floating-promises': 'error', // Requires handling of promises appropriately
+    '@typescript-eslint/consistent-type-imports': 'warn' // Enforce consistent type-only imports
   },
 };
