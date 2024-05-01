@@ -429,16 +429,13 @@ export default function generateColumnsData({
                   readOnly={!isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
-                      () => {
-                        fireEvent('OnTableToggleCellChanged', {
-                          column: column,
-                          rowId: cell.row.id,
-                          row: cell.row.original,
-                          tableColumnEvents,
-                        });
-                      }
-                    );
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    fireEvent('OnTableToggleCellChanged', {
+                      column: column,
+                      rowId: cell.row.id,
+                      row: cell.row.original,
+                      tableColumnEvents,
+                    });
                   }}
                 />
               </div>
