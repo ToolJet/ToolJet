@@ -46,6 +46,7 @@ function DataSourceSelect({
   setPageNumber,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
@@ -60,6 +61,41 @@ function DataSourceSelect({
       optionsCount += item.options.length;
     }
   });
+
+  const handleSearchInSelectBox = () => {
+    if (searchValue !== '' || searchValue.length > 0) {
+      const selectQuery = new PostgrestQueryBuilder();
+      const filterQuery = new PostgrestQueryBuilder();
+      const limit = 15;
+      const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+      selectQuery.select(referencedColumns?.referenced_column_names[0]);
+      if (scrollEventForColumnValus) {
+        filterQuery.filter(referencedColumns?.referenced_column_names[0], 'eq', searchValue);
+      }
+      const query = `${filterQuery.url.toString()}&limit=${limit}&offset=${0}`;
+      tooljetDatabaseService
+        .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
+        .then(({ headers, data = [], error }) => {
+          if (error) {
+            toast.error(
+              error?.message ??
+                `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+            );
+            setIsLoadingFKDetails(false);
+            return;
+          }
+
+          if (Array.isArray(data) && data?.length > 0) {
+            setReferencedColumnDetails(
+              data.map((item) => ({
+                value: item[referencedColumns?.referenced_column_names[0]],
+                label: item[referencedColumns?.referenced_column_names[0]],
+              }))
+            );
+          }
+        });
+    }
+  };
 
   const getForeignKeyDetails = (add) => {
     const limit = 15;
@@ -121,6 +157,17 @@ function DataSourceSelect({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const debouncedHandleSearchInSelectBox = debounce(() => {
+      handleSearchInSelectBox();
+    }, 500);
+
+    debouncedHandleSearchInSelectBox();
+
+    return debouncedHandleSearchInSelectBox.cancel;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchValue]);
 
   return (
     <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
@@ -256,7 +303,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && { Control: () => '' }),
+          ...(optionsCount < 0 && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
@@ -359,8 +406,9 @@ function DataSourceSelect({
         minMenuHeight={300}
         value={selected}
         // onKeyDown={handleKeyDown}
-        onInputChange={() => {
+        onInputChange={(value) => {
           const _queryDsSelectMenu = document.getElementById('query-ds-select-menu');
+          setSearchValue(value);
           // if (queryDsSelectMenu && !queryDsSelectMenu?.style?.height) {
           //   queryDsSelectMenu.style.height = queryDsSelectMenu.offsetHeight + 'px';
           // }

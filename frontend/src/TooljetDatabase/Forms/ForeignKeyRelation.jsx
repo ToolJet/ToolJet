@@ -110,7 +110,6 @@ function ForeignKeyRelation({
     }
 
     fetchMetaDataApi();
-
     toast.success(`Foreign key created successfully`);
     onCloseForeignKeyDrawer();
   };

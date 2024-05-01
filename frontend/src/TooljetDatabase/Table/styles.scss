@@ -364,3 +364,19 @@
     cursor: not-allowed !important;
   }
 }
+
+.tjdb-table-tooltip {
+  width: max-content !important;
+
+  .tooltip-inner {
+    max-width: max-content !important;
+    width: max-content !important;
+
+    .foreignKey-relation-tooltip {
+      span {
+        text-align: left;
+      }
+    }
+
+  }
+}

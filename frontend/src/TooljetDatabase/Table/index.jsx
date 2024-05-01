@@ -866,7 +866,7 @@ const Table = ({ collapseSidebar }) => {
             <span>{column.render('Header')}</span>
           </div>
           <div className="d-flex align-items-center">
-            <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
+            <ToolTip message="Primary key" placement="top" tooltipClassName="tjdb-table-tooltip" show={true}>
               <div>
                 <span
                   style={{
@@ -881,7 +881,7 @@ const Table = ({ collapseSidebar }) => {
               <ToolTip
                 message={
                   isMatchingForeignKeyColumn(column.Header) ? (
-                    <div>
+                    <div className="foreignKey-relation-tooltip">
                       <span>Foreign key relation</span>
                       <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
                         <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
@@ -894,7 +894,7 @@ const Table = ({ collapseSidebar }) => {
                   ) : null
                 }
                 placement="top"
-                tooltipClassName="tootip-table"
+                tooltipClassName="tjdb-table-tooltip"
                 show={true}
               >
                 <div>
@@ -923,7 +923,7 @@ const Table = ({ collapseSidebar }) => {
         <ToolTip
           message={
             isMatchingForeignKeyColumn(column.Header) ? (
-              <div>
+              <div className="foreignKey-relation-tooltip">
                 <span>Foreign key relation</span>
                 <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
                   <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
@@ -936,7 +936,7 @@ const Table = ({ collapseSidebar }) => {
             ) : null
           }
           placement="top"
-          tooltipClassName="tootip-table"
+          tooltipClassName="tjdb-table-tooltip"
           show={true}
         >
           <div>
@@ -1345,7 +1345,7 @@ const Table = ({ collapseSidebar }) => {
                                             {/* <ToolTip
                                               message={'Open referenced table'}
                                               placement="top"
-                                              tooltipClassName="tootip-table"
+                                              tooltipClassName="tjdb-table-tooltip"
                                             >
                                               <div className="cursor-pointer">
                                                 {isMatchingForeignKeyColumn(cell.column.Header) && <Maximize />}
@@ -1377,7 +1377,7 @@ const Table = ({ collapseSidebar }) => {
                                             {/* <ToolTip
                                               message={'Open referenced table'}
                                               placement="top"
-                                              tooltipClassName="tootip-table"
+                                              tooltipClassName="tjdb-table-tooltip"
                                             >
                                               <div className="cursor-pointer">
                                                 {foreignKeys[0]?.column_names?.length > 0 &&
@@ -1423,7 +1423,7 @@ const Table = ({ collapseSidebar }) => {
                                         //   <ToolTip
                                         //     message={'Open referenced table'}
                                         //     placement="top"
-                                        //     tooltipClassName="tootip-table"
+                                        //     tooltipClassName="tjdb-table-tooltip"
                                         //   >
                                         //     <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
                                         //   </ToolTip>
@@ -1439,7 +1439,7 @@ const Table = ({ collapseSidebar }) => {
                                           {/* <ToolTip
                                             message={'Open referenced table'}
                                             placement="top"
-                                            tooltipClassName="tootip-table"
+                                            tooltipClassName="tjdb-table-tooltip"
                                           >
                                             <div className="cursor-pointer">
                                               {foreignKeys[0]?.column_names?.length > 0 &&

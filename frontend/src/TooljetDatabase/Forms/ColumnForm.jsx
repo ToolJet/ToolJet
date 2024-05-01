@@ -282,7 +282,7 @@ const ColumnForm = ({
                   }}
                   onAdd={true}
                   addBtnLabel={'Open referenced table'}
-                  foreignKeys={foreignKeys}
+                  foreignKeys={foreignKeyDetails}
                   setReferencedColumnDetails={setReferencedColumnDetails}
                   scrollEventForColumnValus={true}
                   cellColumnName={columnName}

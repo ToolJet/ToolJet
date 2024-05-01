@@ -308,7 +308,7 @@ function TableSchema({
                 }}
                 onAdd={true}
                 addBtnLabel={'Open referenced table'}
-                foreignKeys={existingForeignKeyDetails}
+                foreignKeys={foreignKeyDetails}
                 setReferencedColumnDetails={setReferencedColumnDetails}
                 scrollEventForColumnValus={true}
                 cellColumnName={columnDetails[index].column_name}
