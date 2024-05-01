@@ -135,6 +135,7 @@ class SignupPageComponent extends React.Component {
     const shouldShowSignupDisabledCard =
       !this.organizationToken && !configs?.enable_sign_up && !configs?.form?.enable_sign_up;
     const passwordLabelText = this.organizationToken ? 'Create a password' : 'Password';
+    const shouldShowSignInCTA = !this.organizationToken;
 
     return (
       <div className="page common-auth-section-whole-wrapper">
@@ -163,18 +164,22 @@ class SignupPageComponent extends React.Component {
                             data-cy="workspace-signup-header"
                           >{`Sign up to the workspace - ${configs?.name}`}</span>
                         )}
-                        <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
-                          {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
-                          <Link
-                            to={`/login${
-                              this.paramInviteOrganizationSlug ? `/${this.paramInviteOrganizationSlug}` : ''
-                            }`}
-                            tabIndex="-1"
-                            data-cy="signin-redirect-link"
-                          >
-                            {this.props.t('loginSignupPage.signIn', `Sign in`)}
-                          </Link>
-                        </div>
+                        {shouldShowSignInCTA ? (
+                          <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
+                            {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
+                            <Link
+                              to={`/login${
+                                this.paramInviteOrganizationSlug ? `/${this.paramInviteOrganizationSlug}` : ''
+                              }`}
+                              tabIndex="-1"
+                              data-cy="signin-redirect-link"
+                            >
+                              {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="mb-3"></div>
+                        )}
                         {shouldShowSignupDisabledCard ? (
                           <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
                         ) : (
