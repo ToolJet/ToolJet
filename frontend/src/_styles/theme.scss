@@ -8392,6 +8392,12 @@ tbody {
       margin-left: 15px;
     }
   }
+  &[data-name="Audit logs"] {
+    .title-and-banner-wrapper {
+      display: flex;
+      width: auto;
+    }
+  }
 }
 
 .layout-sidebar-icon {
