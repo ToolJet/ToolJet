@@ -164,6 +164,8 @@ import Support from './Support.jsx';
 import Outbound from './Outbound.jsx';
 import Danger from './Danger.jsx';
 import DangerDark from './DangerDark.jsx';
+import ArrowUpTriangle from './ArrowUpTriangle.jsx';
+import ArrowDownTriangle from './ArrowDownTriangle.jsx';
 import EnterButtonIcon from './EnterButtonIcon.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
@@ -180,6 +182,8 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import TriangleUpCenter from './TriangleUpCenter.jsx';
+import TriangleDownCenter from './TriangleDownCenter.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -531,6 +535,10 @@ const Icon = (props) => {
       return <Support {...props} />;
     case 'oubound':
       return <Outbound {...props} />;
+    case 'arrowUpTriangle':
+      return <ArrowUpTriangle {...props} />;
+    case 'arrowDownTriangle':
+      return <ArrowDownTriangle {...props} />;
     case 'underline':
       return <Underline {...props} />;
     case 'overline':
@@ -545,6 +553,10 @@ const Icon = (props) => {
       return <Capitalize {...props} />;
     case 'oblique':
       return <Oblique {...props} />;
+    case 'TriangleUpCenter':
+      return <TriangleUpCenter {...props} />;
+    case 'TriangleDownCenter':
+      return <TriangleDownCenter {...props} />;
     default:
       return <Apps {...props} />;
   }

@@ -34,34 +34,37 @@ import initPosthog from '../_helpers/initPosthog';
 import { ManageAllUsers } from '@/ManageAllUsers';
 import { ManageInstanceSettings, ManageWhiteLabelling } from '@/ManageInstanceSettings';
 import { ManageLicenseKey } from '@/ManageLicenseKey';
+export const BreadCrumbContext = React.createContext({});
+import 'react-tooltip/dist/react-tooltip.css';
+import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import WorkspaceConstants from '@/WorkspaceConstants';
+import cx from 'classnames';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { CopilotSetting } from '@/CopilotSettings';
 import { CustomStylesEditor } from '@/CustomStylesEditor';
 import { ManageOrgConstants } from '@/ManageOrgConstants';
-export const BreadCrumbContext = React.createContext({});
-import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
-import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { Settings } from '@/Settings';
-import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { SubscriptionKey } from '@/ManageLicenseKey/SubscriptionKey';
 import InstanceLogin from '@/ManageInstanceSettings/InstanceLogin';
 import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
-import WorkspaceConstants from '@/WorkspaceConstants';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
 import { OpenIdLoginPage } from '@/LoginPage/OpenId';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const AppWrapper = (props) => {
+  const { isAppDarkMode } = useAppDarkMode();
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter props={props} />
+        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} />
       </BrowserRouter>
     </Suspense>
   );
@@ -75,6 +78,7 @@ class AppComponent extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       darkMode: localStorage.getItem('darkMode') === 'true',
+      isEditorOrViewer: '',
     };
   }
   updateSidebarNAV = (val) => {
@@ -207,19 +211,19 @@ class AppComponent extends React.Component {
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
+    useAppDataStore.getState().actions.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
   };
 
   render() {
-    const { updateAvailable, darkMode } = this.state;
-
+    const { updateAvailable, darkMode, isEditorOrViewer } = this.state;
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
       },
     };
 
-    if (darkMode) {
+    if (isEditorOrViewer === 'viewer' ? this.props.isAppDarkMode : darkMode) {
       toastOptions = {
         className: 'toast-dark-mode',
         style: {
@@ -234,7 +238,12 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     return (
       <>
-        <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`} data-cy="main-wrapper">
+        <div
+          className={cx('main-wrapper', {
+            'theme-dark dark-theme': !isEditorOrViewer && darkMode,
+          })}
+          data-cy="main-wrapper"
+        >
           {updateAvailable && (
             <div className="alert alert-info alert-dismissible" role="alert">
               <h3 className="mb-1">Update available</h3>
@@ -294,7 +303,11 @@ class AppComponent extends React.Component {
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
                 element={
                   <PrivateRoute>
-                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <AppLoader
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -312,7 +325,11 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={this.props.isAppDarkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -321,7 +338,11 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={this.props.isAppDarkMode}
+                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
+                    />
                   </PrivateRoute>
                 }
               />

@@ -80,7 +80,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         pagesMapping: {},
         componentsMapping: {},
       };
-      if (definition?.pages) {
+      if (definition?.pages && Object.keys(definition?.pages).length > 0) {
         for (const pageId of Object.keys(definition?.pages)) {
           const page = definition.pages[pageId];
           const pagePositionInTheList = Object.keys(definition?.pages).indexOf(pageId);
@@ -318,11 +318,13 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     componentEvents: any[],
     componentsMapping: Record<string, string>
   ): Component[] {
-    if (!data) return [];
+    if (!data || Object.keys(data).length == 0) return [];
 
     const transformedComponents: Component[] = [];
 
     const allComponents = Object.keys(data).map((key) => {
+      if (!key) return;
+
       return {
         id: key,
         ...data[key],
@@ -332,9 +334,9 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     if (!allComponents || allComponents.length === 0) return [];
 
     for (const componentId in data) {
-      const component = data[componentId];
+      if (!componentId || !data[componentId]) return;
 
-      if (!component) return;
+      const component = data[componentId];
 
       const componentData = component['component'];
 
@@ -343,7 +345,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       let skipComponent = false;
       const transformedComponent: Component = new Component();
 
-      let parentId = component.parent ? component.parent : null;
+      let parentId = component?.parent ? component.parent : null;
 
       const isParentTabOrCalendar = this.isChildOfTabsOrCalendar(component, allComponents, parentId);
 
@@ -352,17 +354,17 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
         const mappedParentId = componentsMapping[_parentId];
 
-        parentId = `${mappedParentId}-${childTabId}`;
+        parentId = mappedParentId ? `${mappedParentId}-${childTabId}` : null;
       } else if (this.isChildOfKanbanModal(component, allComponents, parentId)) {
         const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
         const mappedParentId = componentsMapping[_parentId];
 
-        parentId = `${mappedParentId}-modal`;
+        parentId = mappedParentId ? `${mappedParentId}-modal` : null;
       } else {
         if (component.parent && !componentsMapping[parentId]) {
           skipComponent = true;
         }
-        parentId = componentsMapping[parentId];
+        parentId = componentsMapping[parentId] ? componentsMapping[parentId] : null;
       }
 
       if (!skipComponent) {
@@ -391,7 +393,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   }
 
   isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-    if (allComponents.length === 0) return false;
+    if (!component || allComponents.length === 0) return false;
 
     if (componentParentId && component) {
       const parentId = component?.parent?.split('-').slice(0, -1).join('-');
@@ -399,7 +401,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
       if (parentComponent) {
-        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+        return parentComponent?.component?.component === 'Tabs' || parentComponent?.component?.component === 'Calendar';
       }
     }
 
@@ -407,10 +409,15 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   };
 
   isChildOfKanbanModal = (component, allComponents = [], componentParentId = undefined) => {
-    if (!componentParentId || !componentParentId.includes('modal')) return false;
+    if (!component || !componentParentId || !componentParentId.includes('modal')) return false;
     const parentId = component?.parent?.split('-').slice(0, -1).join('-');
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
-    return parentComponent.component.component === 'Kanban';
+
+    if (parentComponent) {
+      return parentComponent?.component?.component === 'Kanban';
+    }
+
+    return false;
   };
 
   public async down(queryRunner: QueryRunner): Promise<void> {

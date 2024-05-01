@@ -26,28 +26,33 @@ export class PluginsHelper {
   }
 
   async getService(pluginId: string, kind: string) {
-    const isMarketPlaceDev = process.env.ENABLE_MARKETPLACE_DEV_MODE === 'true';
+    const isToolJetDatabaseKind = kind === 'tooljetdb';
+    const isMarketplacePlugin = !!pluginId;
 
     try {
-      if (pluginId) {
-        let decoded: string;
+      if (isToolJetDatabaseKind) return this.tooljetDbOperationsService;
+      if (isMarketplacePlugin) return await this.findMarketplacePluginService(pluginId);
 
-        if (!isMarketPlaceDev && this.plugins[pluginId]) {
-          decoded = this.plugins[pluginId];
-        } else {
-          const plugin = await this.pluginsRepository.findOne({ where: { id: pluginId }, relations: ['indexFile'] });
-          decoded = decode(plugin.indexFile.data.toString());
-          this.plugins[pluginId] = decoded;
-        }
-        const code = requireFromString(decoded, { useCurrentGlobal: true });
-        const service = new code.default();
-        return service;
-      } else {
-        if (kind === 'tooljetdb') return this.tooljetDbOperationsService;
-        return new allPlugins[kind]();
-      }
+      return new allPlugins[kind]();
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
+  }
+
+  private async findMarketplacePluginService(pluginId: string) {
+    const isMarketplaceDev = process.env.ENABLE_MARKETPLACE_DEV_MODE === 'true';
+    let decoded: string;
+
+    if (!isMarketplaceDev && this.plugins[pluginId]) {
+      decoded = this.plugins[pluginId];
+    } else {
+      const plugin = await this.pluginsRepository.findOne({ where: { id: pluginId }, relations: ['indexFile'] });
+      decoded = decode(plugin.indexFile.data.toString());
+      this.plugins[pluginId] = decoded;
+    }
+    const code = requireFromString(decoded, { useCurrentGlobal: true });
+    const service = new code.default();
+
+    return service;
   }
 }
