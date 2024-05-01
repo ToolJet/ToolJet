@@ -1,0 +1,23 @@
+{
+  "name": "Patient records management",
+  "description": "Securely store, manage, and access patient medical data.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    },
+    {
+      "name": "AWS S3",
+      "id": "s3"
+    }
+  ],
+  "id": "patient-records-management",
+  "category": "healthcare"
+}
