@@ -2,7 +2,7 @@ import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ormconfig } from '../ormconfig';
+import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
 import { getEnvVars } from '../scripts/database-config-utils';
 
 import { SeedsModule } from './modules/seeds/seeds.module';
@@ -163,6 +163,10 @@ if (process.env.APM_VENDOR == 'sentry') {
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
+}
+
+if (process.env.ENABLE_TOOLJET_DB === 'true') {
+  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
 }
 
 @Module({
