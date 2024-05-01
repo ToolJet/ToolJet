@@ -104,11 +104,11 @@ class OrganizationInvitationPageComponent extends React.Component {
               <div className="common-auth-section-left-wrapper-grid">
                 <form action="." method="get" autoComplete="off">
                   <div className="common-auth-container-wrapper">
-                    <h2 className="common-auth-section-header org-invite-header" data-cy="workspace-invite-page-header">
+                    <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
                       Join {organizationName ? organizationName : 'ToolJet'}
                     </h2>
 
-                    <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
+                    <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         organizationName
                           ? `a workspace ${organizationName}. Accept the invite to join the workspace.`
@@ -117,13 +117,21 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </div>
 
                     <div className="org-page-inputs-wrapper">
-                      <label className="tj-text-input-label">Name</label>
-                      <p className="tj-text-input onbaording-disabled-field">{name}</p>
+                      <label className="tj-text-input-label" data-cy="name-label">
+                        Name
+                      </label>
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-name">
+                        {name}
+                      </p>
                     </div>
 
                     <div className="signup-inputs-wrap">
-                      <label className="tj-text-input-label">Email</label>
-                      <p className="tj-text-input onbaording-disabled-field">{email}</p>
+                      <label className="tj-text-input-label" data-cy="email-label">
+                        Email
+                      </label>
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-email">
+                        {email}
+                      </p>
                     </div>
 
                     <div>
