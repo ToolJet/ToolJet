@@ -1796,7 +1796,9 @@ const EditorComponent = (props) => {
 
     setCurrentPageId(pageId);
 
-    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === page.id);
+    const currentPageEvents = useAppDataStore
+      .getState()
+      .events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
   };
