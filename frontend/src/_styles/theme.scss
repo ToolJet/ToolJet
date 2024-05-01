@@ -6721,14 +6721,16 @@ tbody {
         color: white;
       }
 
-      .react-datepicker__month-select,
-      .react-datepicker__year-select {
-        background-color: transparent;
+     .react-datepicker__month-select,
+      .react-datepicker__year-select{
+        background-color: #232e3c;
       }
+
     }
 
     .react-datepicker__month {
       background-color: #232e3c;
+      color: white;
 
       .react-datepicker__day {
         color: white;
@@ -6746,15 +6748,46 @@ tbody {
     .react-datepicker {
       background-color: #232e3c;
     }
+    
+
+
+    
+
   }
 }
+.tj-timepicker-popper.theme-dark {
+  background-color:#232e3c ;
+  .react-datepicker__time-container {
+    background-color:#232e3c ;
+    color: white;
+  .react-datepicker__time {
+    background-color:#232e3c ;
+    color: white;
+  }
+}
+}
+
+.tj-timepicker.theme-dark {
+  input {
+      background-color: #232e3c;
+  }
+}
+
+input.react-datepicker-time__input.theme-dark {
+  background-color: #232e3c;
+  color: white;
+}
+.react-datepicker-time__input.theme-dark {
+  background-color: #232e3c;
+  color: white;
+}
+
 
 .theme-dark .list-group-item {
   &:hover {
     background-color: #232e3c;
   }
 }
-
 .theme-dark {
 
   .CalendarMonth,
