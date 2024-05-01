@@ -4,7 +4,6 @@ import jsforce from 'jsforce';
 
 export default class Salesforce implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    //sourceOptions.redirect_uri = this.authUrl();
     let result = {};
     let response = null;
 
@@ -50,7 +49,7 @@ export default class Salesforce implements QueryService {
               break;
 
             case 'create':
-              response = await conn.sobject('Account').create(resource_body);
+              response = await conn.sobject(resource_name).create(resource_body);
               result = response;
               break;
 
@@ -59,11 +58,6 @@ export default class Salesforce implements QueryService {
               result = response;
               break;
 
-            // TODO -> extIdField is not present in the upsert
-            // case 'upsert':
-            //   response = await conn.sobject(resource_name).upsert(resource_body)
-            //   break;
-
             case 'delete':
               response = await conn.sobject(resource_name).destroy(resource_id);
               result = response;
@@ -71,62 +65,6 @@ export default class Salesforce implements QueryService {
 
             default:
               throw new QueryError('Invalid CRUD operation', 'Please specify a valid operation', {});
-          }
-          break;
-        }
-        case 'bulkLoad': {
-          const crud_action = queryOptions.crud_action;
-          const object_type = queryOptions.object_type;
-          const records = queryOptions.records;
-          const job = conn.bulk.createJob(object_type, crud_action);
-          const batch = job.createBatch();
-
-          batch.execute(records);
-
-          batch.on('error', function (err) {
-            throw new QueryError('Bulk Load Error', err.message, {});
-          });
-
-          batch.on('queue', function (batchInfo) {
-            console.log('Batch Queued:', batchInfo);
-            batch.poll(1000, 20000);
-          });
-
-          batch.on('response', function (rets) {
-            console.log('Batch Response:', rets);
-            result = rets;
-          });
-
-          break;
-        }
-        case 'apexRestQuery': {
-          const methodtype = queryOptions.methodtype;
-          const path = queryOptions.path;
-          const body = queryOptions.body ? queryOptions.body : {};
-
-          try {
-            switch (methodtype) {
-              case 'get':
-                response = await conn.apex.get(path);
-                break;
-              case 'post':
-                response = await conn.apex.post(path, body);
-                break;
-              case 'patch':
-                response = await conn.apex.patch(path, body);
-                break;
-              case 'put':
-                response = await conn.apex.put(path, body);
-                break;
-              case 'delete':
-                response = await conn.apex.del(path, body);
-                break;
-              default:
-                throw new QueryError('Invalid HTTP method', 'Please specify a valid HTTP method', {});
-            }
-            result = response;
-          } catch (error) {
-            throw new QueryError('Apex REST API Error', error.message, {});
           }
           break;
         }

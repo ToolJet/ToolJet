@@ -19,288 +19,8 @@
         {
           "value": "crud",
           "name": "CRUD Action"
-        },
-        {
-          "value": "bulkLoad",
-          "name": "Bulk Load"
-        },
-        {
-          "value": "apexRestQuery",
-          "name": "APEX REST Query"
         }
       ]
-    },
-    "bulkLoad":{
-      "crud_action":{
-        "label": "CRUD Action",
-        "key": "crud_action",
-        "type": "dropdown-component-flip",
-        "description": "Select the crud action",
-        "list": [
-          {
-            "value": "insert",
-            "name": "Insert"
-          },
-          {
-            "value": "retrieve",
-            "name": "Retrieve"
-          },
-          {
-            "value": "upsert",
-            "name": "Upsert"
-          },
-          {
-            "value": "delete",
-            "name": "Delete"
-          }
-        ]
-      },
-      "insert":{
-        "object_type": {
-          "label": "Object Type",
-          "key": "object_type",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "Object Type"
-        },
-        "options": {
-          "label": "Options",
-          "key": "options",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ extFieldId: ”Id” }}",
-          "description": "Enter the options",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        },
-        "records": {
-          "label": "Records",
-          "key": "records",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ name : “ToolJet”, ...}}",
-          "description": "Enter the records, records should be an array",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        }
-      },
-      "retrieve":{
-        "object_type": {
-          "label": "Object Type",
-          "key": "object_type",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "Object Type"
-        },
-        "options": {
-          "label": "Options",
-          "key": "options",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ extFieldId: ”Id” }}",
-          "description": "Enter the options",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        },
-        "records": {
-          "label": "Records",
-          "key": "records",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ name : “ToolJet”, ...}}",
-          "description": "Enter the records, records should be an array",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        }
-      },
-      "upsert":{
-        "object_type": {
-          "label": "Object Type",
-          "key": "object_type",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "Object Type"
-        },
-        "options": {
-          "label": "Options",
-          "key": "options",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ extFieldId: ”Id” }}",
-          "description": "Enter the options",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        },
-        "records": {
-          "label": "Records",
-          "key": "records",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ name : “ToolJet”, ...}}",
-          "description": "Enter the records, records should be an array",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        }
-      },
-      "delete":{
-        "object_type": {
-          "label": "Object Type",
-          "key": "object_type",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "Object Type"
-        },
-        "options": {
-          "label": "Options",
-          "key": "options",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ extFieldId: ”Id” }}",
-          "description": "Enter the options",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        },
-        "records": {
-          "label": "Records",
-          "key": "records",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ name : “ToolJet”, ...}}",
-          "description": "Enter the records, records should be an array",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        }
-      }
-
-    },
-    "apexRestQuery":{
-      "methodtype":{
-        "label": "Method Type",
-        "key": "methodtype",
-        "type": "dropdown-component-flip",
-        "description": "Select the method type",
-        "list": [
-          {
-            "value": "get",
-            "name": "GET"
-          },
-          {
-            "value": "post",
-            "name": "POST"
-          },
-          {
-            "value": "patch",
-            "name": "PATCH"
-          },
-          {
-            "value": "put",
-            "name": "PUT"
-          },
-          {
-            "value": "delete",
-            "name": "DELETE"
-          }
-        ]
-      },
-      "get":{
-        "path":{
-          "label": "Path",
-          "key": "path",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "/MyTestRestApexQuery"
-        }
-      },
-      "post":{
-        "path":{
-          "label": "Path",
-          "key": "path",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "/MyTestRestApexQuery"
-        },
-        "body":{
-          "label": "Body",
-          "key": "body",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "{{ extFieldId: ”Id” }}"
-        }
-      },
-      "put":{
-        "path":{
-          "label": "Path",
-          "key": "path",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "/MyTestRestApexQuery"
-        },
-        "body":{
-          "label": "Body",
-          "key": "body",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "{{ extFieldId: ”Id” }}"
-        }
-      },
-      "patch":{
-        "path":{
-          "label": "Path",
-          "key": "path",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "/MyTestRestApexQuery"
-        },
-        "body":{
-          "label": "Body",
-          "key": "body",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "{{ extFieldId: ”Id” }}"
-        }
-      },
-      "delete":{
-        "path":{
-          "label": "Path",
-          "key": "path",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "/MyTestRestApexQuery"
-        },
-        "body":{
-          "label": "Body",
-          "key": "body",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "{{ extFieldId: ”Id” }}"
-        }
-      }
     },
     "soql":{
       "language": {
@@ -340,10 +60,6 @@
             "name": "Retrieve"
           },
           {
-            "value": "upsert",
-            "name": "Upsert"
-          },
-          {
             "value": "update",
             "name": "Update"
           },
@@ -357,39 +73,24 @@
         "resource_name": {
           "label": "Resource Name",
           "key": "resource_name",
-          "type": "codehinter",
+          "type": "dropdown",
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account"
+          "placeholder": "Account",
+          "list": [
+            {
+              "value": "Account",
+              "name": "Account"
+            }
+          ]
         },
         "resource_body": {
           "label": "Resource Body",
           "key": "resource_body",
           "type": "codehinter",
           "lineNumbers": false,
-          "placeholder": "{{ id:”0012F3E4R56487900N” , name : “ToolJet”}}",
-          "description": "Enter the resource body",
-          "height": "36px",
-          "className": "codehinter-plugins"
-        }
-      },
-      "upsert":{
-        "resource_name": {
-          "label": "Resource Name",
-          "key": "resource_name",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "placeholder": "Account"
-        },
-        "resource_body": {
-          "label": "Resource Body",
-          "key": "resource_body",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "placeholder": "{{ id:”0012F3E4R56487900N” , name : “ToolJet”}}",
+          "placeholder": "{{ name : “ToolJet” }}",
           "description": "Enter the resource body",
           "height": "36px",
           "className": "codehinter-plugins"
@@ -410,7 +111,7 @@
           "key": "resource_body",
           "type": "codehinter",
           "lineNumbers": false,
-          "placeholder": "{{ id:”0012F3E4R56487900N” , name : “ToolJet”}}",
+          "placeholder": "{{ Id:”0012F3E4R56487900N” , name : “ToolJet” }}",
           "description": "Enter the resource body",
           "height": "36px",
           "className": "codehinter-plugins"
