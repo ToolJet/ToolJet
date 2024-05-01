@@ -445,7 +445,7 @@ export class GroupPermissionsService {
       .getMany();
 
     let newName = `${groupToDuplicate.group}_copy`;
-    const number = getMaxCopyNumber(existNameList);
+    const number = getMaxCopyNumber(existNameList.map((group) => group.group));
     if (number) newName = `${groupToDuplicate.group}_copy_${number}`;
     await dbTransactionWrap(async (manager: EntityManager) => {
       newGroup = manager.create(GroupPermission, {
