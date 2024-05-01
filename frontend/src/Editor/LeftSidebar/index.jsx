@@ -21,6 +21,7 @@ import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import cx from 'classnames';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -73,9 +74,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
-  const { showComments } = useEditorStore(
+  const { showComments, appMode } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
+      appMode: state?.appMode,
     }),
     shallow
   );
@@ -86,7 +88,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     currentPageId,
     isDebuggerOpen: !!selectedSidebarItem,
   });
-
   const sideBarBtnRefs = useRef({});
 
   useEffect(() => {
@@ -237,7 +238,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, currentState))]);
 
   return (
-    <div className="left-sidebar" data-cy="left-sidebar-inspector">
+    <div className={cx('left-sidebar', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('page')}
@@ -317,7 +318,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
           </div>
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
-        {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
       </div>
     </div>
   );

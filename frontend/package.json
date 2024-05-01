@@ -64,7 +64,7 @@
     "react-circular-progressbar": "^2.1.0",
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "^5.1.0",
-    "react-datepicker": "^4.10.0",
+    "react-datepicker": "^4.25.0",
     "react-dates": "^21.8.0",
     "react-datetime": "^3.2.0",
     "react-dnd": "^16.0.1",
