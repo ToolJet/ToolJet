@@ -30,6 +30,10 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+}
+
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -832,7 +836,7 @@ class DataSourceManagerComponent extends React.Component {
                           type="text"
                           onChange={(e) => this.onNameChanged(e.target.value)}
                           className="form-control-plaintext form-control-plaintext-sm color-slate12"
-                          value={selectedDataSource.name}
+                          value={decodeEntities(selectedDataSource.name)}
                           style={{ width: '160px' }}
                           data-cy="data-source-name-input-filed"
                           autoFocus
