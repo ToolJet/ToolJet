@@ -86,7 +86,14 @@ const sidebars = {
                 'widgets/button',
                 'widgets/button-group',
                 'widgets/calendar',
-                'widgets/chart',
+                {
+                  'type': 'category',
+                  'label': 'Chart',
+                  'items': [
+                    'widgets/chart/chart-properties',
+                    'widgets/chart/chart-examples'
+                  ]
+                },
                 'widgets/checkbox',
                 'widgets/circular-progress-bar',
                 'widgets/code-editor',
@@ -121,7 +128,15 @@ const sidebars = {
                 'widgets/statistics',
                 'widgets/steps',
                 'widgets/svg-image',
-                'widgets/table',
+                {
+                  'type': 'category',
+                  'label': 'Table',
+                  'items': [
+                    'widgets/table/table-properties',
+                    'widgets/table/table-columns',
+                    'widgets/table/table-csa-and-variables',
+                  ]
+                },
                 'widgets/tabs',
                 'widgets/tags',
                 'widgets/text-input',
@@ -219,6 +234,7 @@ const sidebars = {
       'label': 'Data Sources',
       'items': [
         'data-sources/overview',
+        'data-sources/sample-data-sources',
         {
           'type': 'category',
           'label': 'Datasources library',

@@ -3,13 +3,13 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
-
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelStore, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '@/_ui/Icon/solidIcons/Maximize';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import cx from 'classnames';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -145,7 +145,7 @@ const QueryPanel = ({
   }, []);
 
   return (
-    <>
+    <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
         className="query-pane"
         style={{
@@ -212,7 +212,7 @@ const QueryPanel = ({
         </div>
       </div>
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />
-    </>
+    </div>
   );
 };
 
