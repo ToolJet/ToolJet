@@ -70,6 +70,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       AppEnvironment,
       AppVersion,
       Metadata,
+      DataSource,
     ]),
     InstanceSettingsModule,
     AppEnvironmentsModule,

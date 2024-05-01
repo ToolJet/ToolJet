@@ -29,6 +29,7 @@ import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
 import { GroupPermissionsService } from './group_permissions.service';
 import { OrganizationUsersService } from './organization_users.service';
+import { DataSourcesService } from './data_sources.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
@@ -52,6 +53,10 @@ import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
 import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 import { IsNull } from 'typeorm';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { DataSource } from 'src/entities/data_source.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 const MAX_ROW_COUNT = 500;
 
@@ -106,6 +111,7 @@ export class OrganizationsService {
     @InjectRepository(SSOConfigs)
     private ssoConfigRepository: Repository<SSOConfigs>,
     private usersService: UsersService,
+    private dataSourceService: DataSourcesService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
     private appEnvironmentService: AppEnvironmentService,
@@ -1167,5 +1173,64 @@ export class OrganizationsService {
     });
     if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
     return;
+  }
+
+  async createSampleDB(organizationId, manager: EntityManager) {
+    const config = {
+      name: 'Sample Data Source',
+      kind: 'postgresql',
+      type: DataSourceTypes.SAMPLE,
+      scope: DataSourceScopes.GLOBAL,
+      organizationId,
+    };
+    const options = [
+      {
+        key: 'host',
+        value: this.configService.get<string>('PG_HOST'),
+        encrypted: true,
+      },
+      {
+        key: 'port',
+        value: this.configService.get<string>('PG_PORT'),
+        encrypted: true,
+      },
+      {
+        key: 'database',
+        value: 'sample_db',
+      },
+      {
+        key: 'username',
+        value: this.configService.get<string>('PG_USER'),
+        encrypted: true,
+      },
+      {
+        key: 'password',
+        value: this.configService.get<string>('PG_PASS'),
+        encrypted: true,
+      },
+      {
+        key: 'ssl_enabled',
+        value: false,
+        encrypted: true,
+      },
+      { key: 'ssl_certificate', value: 'none', encrypted: false },
+    ];
+    const dataSource = manager.create(DataSource, config);
+    await manager.save(dataSource);
+
+    const allEnvs: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
+
+    await Promise.all(
+      allEnvs?.map(async (env) => {
+        const parsedOptions = await this.dataSourceService.parseOptionsForCreate(options);
+        await manager.save(
+          manager.create(DataSourceOptions, {
+            environmentId: env.id,
+            dataSourceId: dataSource.id,
+            options: parsedOptions,
+          })
+        );
+      })
+    );
   }
 }

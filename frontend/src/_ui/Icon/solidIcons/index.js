@@ -179,6 +179,7 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import TooljetIcon from './TooljetIcon.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
 
@@ -336,6 +337,8 @@ const Icon = (props) => {
       return <InRectangle {...props} />;
     case 'instancesettings':
       return <InstanceSettings {...props} />;
+    case 'informationcircle':
+      return <InformationCircle {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
     case 'idea':
@@ -368,8 +371,6 @@ const Icon = (props) => {
       return <Minus01 {...props} />;
     case 'mobile':
       return <Mobile {...props} />;
-    case 'informationcircle':
-      return <InformationCircle {...props} />;
     case 'morehorizontal':
       return <MoreHorizontal {...props} />;
     case 'morevertical':
@@ -464,6 +465,8 @@ const Icon = (props) => {
       return <Table {...props} />;
     case 'tick':
       return <Tick {...props} />;
+    case 'tooljet':
+      return <TooljetIcon {...props} />;
     case 'trash':
       return <Trash {...props} />;
     case 'uparrow':
