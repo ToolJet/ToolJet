@@ -64,7 +64,7 @@ export const getPathname = (path, excludeSlug = false) => {
 
 export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
 
-export const DashboardUrl = (data) => {
+export const dashboardUrl = (data) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
   const id_slug = data
     ? data?.current_organization_slug || data?.current_organization_id
@@ -73,7 +73,7 @@ export const DashboardUrl = (data) => {
 };
 
 export const redirectToDashboard = (data) => {
-  window.location = DashboardUrl(data); //Get URL from DashBoardUrl
+  window.location = dashboardUrl(data); //Get URL from DashBoardUrl
 };
 
 export const appendWorkspaceId = (slug, path, replaceId = false) => {
