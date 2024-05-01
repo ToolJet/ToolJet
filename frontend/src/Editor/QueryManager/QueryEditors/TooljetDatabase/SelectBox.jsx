@@ -303,7 +303,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 0 && { Control: () => '' }),
+          ...(optionsCount < 5 && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
@@ -408,7 +408,9 @@ function DataSourceSelect({
         // onKeyDown={handleKeyDown}
         onInputChange={(value) => {
           const _queryDsSelectMenu = document.getElementById('query-ds-select-menu');
-          setSearchValue(value);
+          if (scrollEventForColumnValus) {
+            setSearchValue(value);
+          }
           // if (queryDsSelectMenu && !queryDsSelectMenu?.style?.height) {
           //   queryDsSelectMenu.style.height = queryDsSelectMenu.offsetHeight + 'px';
           // }
