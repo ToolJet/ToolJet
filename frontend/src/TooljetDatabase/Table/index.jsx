@@ -14,22 +14,17 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { isSerialDataType } from '../constants';
-import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
-import BigInt from '../Icons/Biginteger.svg';
-import Float from '../Icons/Float.svg';
-import Integer from '../Icons/Integer.svg';
-import CharacterVar from '../Icons/Text.svg';
-import Boolean from '../Icons/Toggle.svg';
-import Serial from '../Icons/Serial.svg';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
+import WarningDark from '../Icons/warning-dark.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
 import './styles.scss';
 
@@ -39,6 +34,7 @@ const Table = ({ collapseSidebar }) => {
     columns,
     selectedTable,
     selectedTableData,
+    setSelectedTableData,
     setColumns,
     queryFilters,
     setQueryFilters,
@@ -49,8 +45,6 @@ const Table = ({ collapseSidebar }) => {
     pageCount,
     handleRefetchQuery,
     loadingState,
-    setLoadingState,
-    totalRecords,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -76,7 +70,11 @@ const Table = ({ collapseSidebar }) => {
     errorState: false,
   });
   const [filterEnable, setFilterEnable] = useState(false);
-  const selectedCellRef = useRef({ rowIndex: null, columnIndex: null, editable: false });
+  const selectedCellRef = useRef({
+    rowIndex: null,
+    columnIndex: null,
+    editable: false,
+  });
 
   const [cellVal, setCellVal] = useState('');
   const [editPopover, setEditPopover] = useState(false);
@@ -93,7 +91,11 @@ const Table = ({ collapseSidebar }) => {
   const updateCellNavigationRefToDefault = () => {
     if (selectedCellRef.current.rowIndex !== null && selectedCellRef.current.columnIndex !== null)
       removeCellSelectionClassNames(selectedCellRef.current.rowIndex, selectedCellRef.current.columnIndex);
-    selectedCellRef.current = { rowIndex: null, columnIndex: null, editable: false };
+    selectedCellRef.current = {
+      rowIndex: null,
+      columnIndex: null,
+      editable: false,
+    };
   };
 
   const toggleSelectOrDeSelectAllRows = (totalRowsCount) => {
@@ -174,9 +176,9 @@ const Table = ({ collapseSidebar }) => {
       }
 
       // Scroll when we reach left end of the table and if content gets overflow. Added 296 for width of two sticky columns
-      if (cellBoundingRect.left < tableBoundingRect.left + 216) {
+      if (cellBoundingRect.left < tableBoundingRect.left + 296) {
         tooljetDbTableRef.current.scrollTo({
-          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 216)),
+          left: tooljetDbTableRef.current.scrollLeft + (cellBoundingRect.left - (tableBoundingRect.left + 296)),
           behavior: 'instant',
         });
       }
@@ -281,7 +283,7 @@ const Table = ({ collapseSidebar }) => {
             data?.result.map(({ column_name, data_type, ...rest }) => ({
               Header: column_name,
               accessor: column_name,
-              dataType: data_type,
+              dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
               ...rest,
             }))
           );
@@ -314,33 +316,25 @@ const Table = ({ collapseSidebar }) => {
     [loading, selectedTableData]
   );
 
-  const tableColumns = React.useMemo(
-    () =>
-      loading
-        ? columns.map((column) => ({
-            ...column,
-            Cell: <Skeleton />,
-          }))
-        : columns,
-    [loading, columns]
-  );
-
-  const checkDataType = (type) => {
-    switch (type) {
-      case 'integer':
-        return <Integer width="18" height="18" className="tjdb-column-header-name" />;
-      case 'bigint':
-        return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
-      case 'character varying':
-        return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
-      case 'boolean':
-        return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
-      case 'double precision':
-        return <Float width="18" height="18" className="tjdb-column-header-name" />;
-      default:
-        return type;
+  const tableColumns = React.useMemo(() => {
+    if (loading) {
+      return columns.map((column) => ({
+        ...column,
+        Cell: <Skeleton />,
+      }));
+    } else {
+      const primaryKeyArray = [];
+      const nonPrimaryKeyArray = [];
+      columns.forEach((column) => {
+        if (column.constraints_type.is_primary_key) {
+          primaryKeyArray.push({ ...column });
+        } else {
+          nonPrimaryKeyArray.push({ ...column });
+        }
+      });
+      return [...primaryKeyArray, ...nonPrimaryKeyArray];
     }
-  };
+  }, [loading, columns]);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
@@ -403,7 +397,7 @@ const Table = ({ collapseSidebar }) => {
       !cellClick.errorState &&
       !isCellUpdateInProgress &&
       allowListForKeys.includes(e.keyCode) &&
-      selectedCellRef.current.columnIndex !== 0
+      shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)
     ) {
       e.preventDefault();
       const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex].value;
@@ -467,7 +461,7 @@ const Table = ({ collapseSidebar }) => {
         const newRowIndex =
           selectedCellRef.current.rowIndex === rows.length - 1 ? rows.length - 1 : selectedCellRef.current.rowIndex + 1;
         patchCellNavigationRef(newRowIndex, 'row', true);
-      } else if (e.key === 'Enter' && selectedCellRef.current.columnIndex !== 0) {
+      } else if (e.key === 'Enter' && shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)) {
         setSelectedRowIds({});
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         const isCellValueDefault =
@@ -485,7 +479,7 @@ const Table = ({ collapseSidebar }) => {
         setDefaultValue(isCellValueDefault);
         setEditPopover(true);
         document.getElementById('edit-input-blur').focus();
-      } else if (e.key === 'Backspace' && !editPopover && selectedCellRef.current.columnIndex !== 0) {
+      } else if (e.key === 'Backspace' && !editPopover && shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)) {
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         const cellDataType =
           rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
@@ -629,10 +623,22 @@ const Table = ({ collapseSidebar }) => {
     requestAnimationFrame(updateProgress);
   };
 
+  // Invoked when the boolean toggle is clicked and the save button in the Cell edit menu is clicked.
   const handleToggleCellEdit = async (cellValue, rowId, index, rIndex, directToggle, oldValue) => {
+    const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
+    const filterQuery = new PostgrestQueryBuilder();
+    const sortQuery = new PostgrestQueryBuilder();
+
+    primaryKeyColumns.forEach((primaryKeyColumnName) => {
+      if (rows[rIndex]?.values[primaryKeyColumnName]) {
+        filterQuery.filter(primaryKeyColumnName, 'eq', rows[rIndex]?.values[primaryKeyColumnName]);
+        sortQuery.order(primaryKeyColumnName, 'desc');
+      }
+    });
+
     setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
-    const query = `id=eq.${rowId}&order=id`;
+    const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
 
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
@@ -666,7 +672,14 @@ const Table = ({ collapseSidebar }) => {
       return;
     }
 
-    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+    // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
+    const selectedTableDataCopy = [...selectedTableData];
+    if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
+      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellVal;
+      setSelectedTableData([...selectedTableDataCopy]);
+    }
+
+    // handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     setEditPopover(false);
     handleOnCloseEditMenu();
     setCellClick((prev) => ({
@@ -692,12 +705,6 @@ const Table = ({ collapseSidebar }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [editColumnHeader.columnEditPopover]);
-
-  // useEffect(() => {
-  //   const isCellValueDefault =
-  //     headerGroups[0]?.headers[cellClick.cellIndex]?.column_default === cellVal.toString() ? true : false;
-  //   setDefaultValue(isCellValueDefault);
-  // }, [cellClick.cellIndex]);
 
   const handleDelete = (column) => {
     setEditColumnHeader((prevState) => ({
@@ -773,32 +780,72 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const closeEditPopover = (previousValue, cellIndex) => {
+  const closeEditPopover = (previousValue, _cellIndex) => {
     setEditPopover(false);
     previousValue === null ? setNullValue(true) : setNullValue(false);
     setCellVal(previousValue);
     document.getElementById('edit-input-blur').blur();
   };
 
-  function showTooltipForId(column) {
-    return (
-      <ToolTip message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
-        <div className="primaryKeyTooltip">
+  function shouldOpenCellEditMenu(cellColumnIndex) {
+    // Should not be Primary Key & Serial Data-type
+    if (headerGroups.length && headerGroups[0].headers.length) {
+      const tableHeaderList = headerGroups[0].headers;
+      const { constraints_type = {}, dataType = '' } = tableHeaderList[cellColumnIndex];
+      if (constraints_type.is_primary_key) return false;
+      if (dataType === 'serial') return false;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const getTooltipTextForCell = (cellValue, cellColumnIndex) => {
+    if (headerGroups.length && headerGroups[0].headers.length) {
+      const tableHeaderList = headerGroups[0].headers;
+      const { constraints_type = {}, dataType = '' } = tableHeaderList[cellColumnIndex];
+      if (constraints_type.is_primary_key) return 'Cannot edit primary key values';
+      if (dataType === 'serial') return 'Serial type values cannot be modified';
+      return cellValue || '';
+    } else {
+      return cellValue || '';
+    }
+  };
+
+  function tableHeaderContent(column, index) {
+    const { constraints_type = {}, dataType = '' } = column;
+    const { is_primary_key } = constraints_type;
+
+    return is_primary_key ? (
+      <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
+        <div
+          className={cx({
+            'header-primaryKey-container':
+              editColumnHeader?.hoveredColumn === index ||
+              (editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index),
+            primaryKeyTooltip: true,
+          })}
+        >
           <div>
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
-              {isSerialDataType(column) ? (
-                <Serial width="18" height="14" className="tjdb-column-header-name" />
-              ) : (
-                checkDataType(column?.dataType)
-              )}
+              {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
             </span>
-            {column.render('Header')}
+            <span>{column.render('Header')}</span>
           </div>
-          <div className="tjdb-primary-key-parent" data-cy="primary-key-label">
-            <span className="primary-key-text">Primary key</span>
-          </div>
+          <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
+            <div>
+              <SolidIcon name="primarykey" />
+            </div>
+          </ToolTip>
         </div>
       </ToolTip>
+    ) : (
+      <div className="tj-db-headerText">
+        <span className="tj-text-xsm tj-db-dataype text-lowercase">
+          {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
+        </span>
+        {column.render('Header')}
+      </div>
     );
   }
 
@@ -821,15 +868,21 @@ const Table = ({ collapseSidebar }) => {
     ? 'No data found matching the criteria specified in current filters.'
     : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
   const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
-  function isSerialDataType(columnDetails) {
-    const { dataType = '', column_default = '' } = columnDetails;
-    const serialDatatypeDefaultValuePattern = 'nextval(';
 
-    if (dataType === 'integer' && column_default) {
-      if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
-    }
-    return false;
-  }
+  const footerStyle = {
+    borderTop: '1px solid var(--slate5)',
+    paddingTop: '12px',
+    marginTop: '0px',
+  };
+
+  // primary key column should come in front row of table
+  // headerGroups.forEach((item) => {
+  //   item.headers.sort((a, b) => {
+  //     if (a.constraints_type && a.constraints_type.is_primary_key) return -1;
+  //     if (b.constraints_type && b.constraints_type.is_primary_key) return 1;
+  //     return 0;
+  //   });
+  // });
 
   return (
     <div>
@@ -936,9 +989,9 @@ const Table = ({ collapseSidebar }) => {
                   {headerGroup.headers.map((column, index) => (
                     <th
                       key={column.Header}
-                      width={isSerialDataType(column) ? 150 : 230}
+                      width={230}
                       style={{ height: index === 0 ? '32px' : '' }}
-                      title={index === 0 ? '' : column?.Header}
+                      title={column?.constraints_type?.is_primary_key ?? false ? '' : column?.Header}
                       className={
                         darkMode
                           ? 'table-header-dark tj-database-column-header tj-text-xsm'
@@ -953,54 +1006,32 @@ const Table = ({ collapseSidebar }) => {
                       onMouseOver={() => handleMouseOver(index)}
                       onMouseOut={() => handleMouseOut()}
                     >
-                      {column.Header !== 'id' && index > 0 ? (
-                        <div className="d-flex align-items-center justify-content-between">
-                          <div className="tj-db-headerText">
-                            <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                              {isSerialDataType(column) ? (
-                                <Serial width="18" height="18" className="tjdb-column-header-name" />
-                              ) : (
-                                checkDataType(column?.dataType)
-                              )}
-                            </span>
-                            {column.render('Header')}
+                      <div className="d-flex align-items-center justify-content-between">
+                        {tableHeaderContent(column, index)}
+
+                        <TablePopover
+                          onEdit={() => {
+                            setSelectedColumn(column);
+                            setIsEditColumnDrawerOpen(true);
+                            closeMenu();
+                          }}
+                          onDelete={() => handleDelete(column.Header)}
+                          // disabled={column.isPrimaryKey}
+                          show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                          className="column-popover-parent"
+                          darkMode={darkMode}
+                          showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
+                        >
+                          <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
+                            <Menu
+                              width="20"
+                              height="20"
+                              className="tjdb-menu-icon"
+                              onClick={(e) => onMenuClick(index, e)}
+                            />
                           </div>
-                          <TablePopover
-                            onEdit={() => {
-                              setSelectedColumn(column);
-                              setIsEditColumnDrawerOpen(true);
-                              closeMenu();
-                            }}
-                            onDelete={() => handleDelete(column.Header)}
-                            disabled={index === 0 || column.isPrimaryKey}
-                            show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
-                            className="column-popover-parent"
-                            darkMode={darkMode}
-                          >
-                            <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
-                              <Menu
-                                width="20"
-                                height="20"
-                                className="tjdb-menu-icon"
-                                onClick={(e) => onMenuClick(index, e)}
-                              />
-                            </div>
-                          </TablePopover>
-                        </div>
-                      ) : isSerialDataType(column) ? (
-                        showTooltipForId(column)
-                      ) : (
-                        <>
-                          <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                            {isSerialDataType(column) ? (
-                              <Serial width="18" height="18" className="tjdb-column-header-name" />
-                            ) : (
-                              checkDataType(column?.dataType)
-                            )}
-                          </span>
-                          {/* {column.render('Header')} */}
-                        </>
-                      )}
+                        </TablePopover>
+                      </div>
                     </th>
                   ))}
                   <th
@@ -1065,7 +1096,6 @@ const Table = ({ collapseSidebar }) => {
                           </div>
                         </div>
                       </td>
-
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
@@ -1093,6 +1123,8 @@ const Table = ({ collapseSidebar }) => {
                                     cellClick.cellIndex === index &&
                                     cellClick.editable === true
                                   ? 'table-editable-parent-cell'
+                                  : darkMode
+                                  ? `table-cell table-cell-dark`
                                   : `table-cell`
                               }`,
                               {
@@ -1105,7 +1137,7 @@ const Table = ({ collapseSidebar }) => {
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             <ToolTip
-                              message={index === 0 ? 'Cannot edit primary key values' : cell.value || ''}
+                              message={getTooltipTextForCell(cell.value, index)}
                               placement="bottom"
                               delay={{ show: 200, hide: 0 }}
                               show={
@@ -1119,26 +1151,27 @@ const Table = ({ collapseSidebar }) => {
                                 cell.value !== ''
                               }
                             >
-                              <div className="tjdb-column-select-border">
-                                <div
-                                  className={cx('tjdb-td-wrapper', {
-                                    'tjdb-selected-cell':
-                                      cellClick.rowIndex === rIndex &&
+                              <div
+                                className={`${
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.errorState === true
+                                    ? 'tjdb-cell-error'
+                                    : cellClick.rowIndex === rIndex &&
                                       cellClick.cellIndex === index &&
                                       cellClick.editable === true &&
-                                      !isCellUpdateInProgress,
-                                    'tjdb-cell-error':
-                                      cellClick.rowIndex === rIndex &&
-                                      cellClick.cellIndex === index &&
-                                      cellClick.errorState === true,
-                                  })}
-                                  id={`tjdb-cell-row${rIndex}-column${index}`}
-                                >
+                                      !isCellUpdateInProgress
+                                    ? 'tjdb-selected-cell'
+                                    : 'tjdb-column-select-border'
+                                }`}
+                                id={`tjdb-cell-row${rIndex}-column${index}`}
+                              >
+                                <div className="tjdb-td-wrapper">
                                   {cellClick.editable &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index ? (
                                     <CellEditMenu
-                                      show={index === 0 ? false : editPopover}
+                                      show={shouldOpenCellEditMenu(index) ? editPopover : false}
                                       close={() => closeEditPopover(cell.value, index)}
                                       columnDetails={headerGroups[0].headers[index]}
                                       saveFunction={(newValue) => {
@@ -1157,7 +1190,7 @@ const Table = ({ collapseSidebar }) => {
                                       <div
                                         className="input-cell-parent"
                                         onClick={() => {
-                                          if (index !== 0) setEditPopover(true);
+                                          if (shouldOpenCellEditMenu(index)) setEditPopover(true);
                                         }}
                                       >
                                         {cellVal === null ? (
@@ -1167,7 +1200,7 @@ const Table = ({ collapseSidebar }) => {
                                             className="row"
                                             style={{ marginLeft: '0px' }}
                                             onClick={() => {
-                                              if (index !== 0) setEditPopover(true);
+                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
                                             }}
                                           >
                                             <div className="col-1 p-0">
@@ -1179,7 +1212,7 @@ const Table = ({ collapseSidebar }) => {
                                                   type="checkbox"
                                                   checked={editPopover ? cellVal : cell.value}
                                                   onChange={() => {
-                                                    if (!editPopover && index !== 0)
+                                                    if (!editPopover && shouldOpenCellEditMenu(index))
                                                       handleToggleCellEdit(
                                                         cell.value,
                                                         row.values.id,
@@ -1207,7 +1240,7 @@ const Table = ({ collapseSidebar }) => {
                                             id="edit-input-blur"
                                             value={cellVal === null ? '' : cellVal}
                                             onChange={(e) => {
-                                              if (index !== 0) setCellVal(e.target.value);
+                                              if (shouldOpenCellEditMenu(index)) setCellVal(e.target.value);
                                               if (e.target.value !== headerGroups[0].headers[index].column_default) {
                                                 setDefaultValue(false);
                                               } else {
@@ -1215,9 +1248,11 @@ const Table = ({ collapseSidebar }) => {
                                               }
                                             }}
                                             onFocus={() => {
-                                              if (index !== 0) setEditPopover(true);
+                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
                                             }}
-                                            disabled={nullValue === true || index === 0 ? true : false}
+                                            disabled={
+                                              nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
+                                            }
                                           />
                                         )}
                                       </div>
@@ -1235,7 +1270,7 @@ const Table = ({ collapseSidebar }) => {
                                                 type="checkbox"
                                                 checked={cell.value}
                                                 onChange={() => {
-                                                  if (index !== 0) {
+                                                  if (shouldOpenCellEditMenu(index)) {
                                                     handleToggleCellEdit(
                                                       cell.value,
                                                       row.values.id,
@@ -1257,7 +1292,7 @@ const Table = ({ collapseSidebar }) => {
                                       )}
                                     </>
                                   )}
-                                  {cellClick.cellIndex !== 0 &&
+                                  {shouldOpenCellEditMenu(index) &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index &&
                                   isCellUpdateInProgress ? (
@@ -1299,8 +1334,8 @@ const Table = ({ collapseSidebar }) => {
         {rows.length === 0 && !loadingState && (
           <div className="empty-table-container">
             <div>
-              <div className="warning-icon-container">
-                <Warning />
+              <div className={darkMode ? 'warning-icon-container-dark' : 'warning-icon-container'}>
+                {darkMode ? <WarningDark /> : <Warning />}
               </div>
               <div
                 className="text-h3"
@@ -1321,7 +1356,7 @@ const Table = ({ collapseSidebar }) => {
                 >
                   <span className="col-auto">
                     <ButtonSolid
-                      variant="tertiary"
+                      variant={`${darkMode ? 'zBlack' : 'tertiary'}`}
                       disabled={false}
                       onClick={() => toggleAddNewDataMenu(true)}
                       size="sm"
@@ -1391,6 +1426,7 @@ const Table = ({ collapseSidebar }) => {
         confirmButtonText={'Delete Column'}
         cancelButtonText={'Cancel'}
         confirmIcon={<DeleteIcon />}
+        footerStyle={footerStyle}
       />
     </div>
   );

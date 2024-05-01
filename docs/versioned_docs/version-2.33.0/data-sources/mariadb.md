@@ -13,7 +13,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/gdsmaria.gif" alt="MariaDB" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/gdsmaria-v2.png" alt="MariaDB" />
 
 </div>
 
@@ -26,7 +26,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
 - **Port:** The port number of the MariaDB server.
 - **Database:** The name of the database that you want to connect to.
 - **SSL:** Whether or not to use SSL to connect to the MariaDB server.
-- **SSL Certificate:**  There are three options for the SSL Certificate connection detail:
+- **SSL Certificate:** There are three options for the SSL Certificate connection detail:
   - **CA Certificate:** This option allows you to use a certificate issued by a Certificate Authority (CA). This is the most secure option, as it ensures that the identity of the MariaDB server has been verified by a trusted third party.
   - **Self-Signed Certificate:** This option allows you to use a self-signed certificate. This is less secure than using a CA certificate, as it does not ensure the identity of the MariaDB server has been verified by a trusted third party. However, it is a good option if you do not have access to a CA certificate.
   - **None:** This option does not use SSL. This is the least secure option, as it allows anyone to intercept your communications with the MariaDB server.
@@ -85,7 +85,9 @@ CREATE TABLE user(
 Here are the CRUD commands for this table in MariaDB:
 
 ### Create (Insert)
+
 - To insert a single user:
+
 ```sql
 INSERT INTO user (name, age, email)
 VALUES ('John Doe', 25, 'john@example.com');
@@ -98,6 +100,7 @@ VALUES ('John Doe', 25, 'john@example.com');
 </div>
 
 - To insert multiple users:
+
 ```sql
 INSERT INTO user (name, age, email)
 VALUES
@@ -113,7 +116,9 @@ VALUES
 </div>
 
 ### Read (Select)
+
 - To retrieve all users:
+
 ```sql
 SELECT * FROM user;
 ```
@@ -125,6 +130,7 @@ SELECT * FROM user;
 </div>
 
 - To retrieve specific columns from users:
+
 ```sql
 SELECT name, age, email FROM user;
 ```
@@ -136,6 +142,7 @@ SELECT name, age, email FROM user;
 </div>
 
 - To add conditions and filters to the selection:
+
 ```sql
 SELECT name, age, email
 FROM user
@@ -149,7 +156,9 @@ WHERE age > 25;
 </div>
 
 ### Update
+
 - To update the age of a user:
+
 ```sql
 UPDATE user
 SET age = 26
@@ -163,7 +172,9 @@ WHERE id = 1;
 </div>
 
 ### Delete
+
 - To delete a user:
+
 ```sql
 DELETE FROM user WHERE id = 1;
 ```
@@ -177,7 +188,9 @@ DELETE FROM user WHERE id = 1;
 Remember to adjust the values and conditions based on your specific needs. These commands will allow you to create the table, insert data, retrieve data, update data, and delete data in the "users" table in MariaDB.
 
 ## Troubleshooting tips
+
 If you are having trouble connecting a MariaDB data source to ToolJet, try the following:
+
 - Make sure that your MariaDB server is running and accessible from the ToolJet server.
 - Check the spelling and capitalization of your credentials.
 - Try restarting the ToolJet server.

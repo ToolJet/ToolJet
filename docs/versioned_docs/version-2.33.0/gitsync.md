@@ -61,12 +61,6 @@ Obtain the **SSH URL** of the repository. When a repository is created, GitHub s
 ### Step 3: Configure the GitSync feature on ToolJet
 
 Go to the **Workspace settings**, and click on the **Configure git** tab.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/gitsync.png" alt="GitSync" />
-</div>
-<br/>
-
 Enter the **SSH URL** of the repository (obtained in Step 2) in the **Git repository URL** field. Click on the **Generate SSH key** button, and copy the SSH key that is generated. The SSH key is used to authenticate ToolJet with the repository.
 
 There are two types of generated SSH keys: **
@@ -74,7 +68,7 @@ There are two types of generated SSH keys: **
 - **RSA**: This is an older algorithm that is used for generating SSH keys. It is not recommended to use this key type. Older VCS providers like Bitbucket recommend using this key type.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/ssh2.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/ssh2-v2.png" alt="GitSync" />
 </div>
 
 ### Step 4: Deploy the SSH key to GitHub repository
@@ -96,7 +90,7 @@ Enter a title for the SSH key in the **Title** field. Paste the SSH key that you
 Go back to the **Configure git** tab on ToolJet, and click on the **Finalize setup** button. If the SSH key is configured correctly, you will see a success message.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/git55.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/finalize-ssh2-configuration-v2.png" alt="GitSync" />
 </div>
 <br/>
 
@@ -112,7 +106,7 @@ When you promote an environment, from **Developement to Staging** or from **Stag
 This option can be enabled or disabled from the **Configure git** tab on the **Workspace settings** page. By default, this option is disabled.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/autocommit.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/autocommit-v2.png" alt="GitSync" />
 </div>
 <br/>
 
@@ -129,7 +123,7 @@ On clicking the GitSync button, the users will be able to commit changes to the 
 2. For admin users: The users will see a dialogue box with a link to configure the GitSync feature.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/connect.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/connect-v2.png" alt="GitSync" />
 </div>
 <br/>
 
@@ -141,7 +135,7 @@ To delete the GitSync configuration, go to the **Configure git** tab on the **Wo
 - Deleting the GitSync configuration will not delete the apps from the git repository. The apps will still be available in the git repository in the same state as they were before the GitSync configuration was deleted.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/deleteconfig.png" alt="GitSync" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/deleteconfig-v2.png" alt="GitSync" />
 </div>
 <br/>
 

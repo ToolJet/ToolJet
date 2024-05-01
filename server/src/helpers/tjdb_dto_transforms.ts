@@ -10,6 +10,7 @@ const transformationsByVersion = {
       col.constraints_type = {
         is_primary_key: col.constraint_type === 'PRIMARY KEY',
         is_not_null: col.is_nullable === 'NO',
+        is_unique: false,
       };
       return col;
     });

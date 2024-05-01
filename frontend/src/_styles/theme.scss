@@ -5378,6 +5378,7 @@ div#driver-page-overlay {
       margin-bottom: 4px !important;
       color: var(--slate12);
     }
+
     .card-footer {
       display: flex;
       justify-content: flex-end;
@@ -5390,13 +5391,15 @@ div#driver-page-overlay {
       align-Self: 'stretch';
       height: 88px;
     }
+
     .card-body {
       height: 467px;
       padding: 24px;
-      .form-group{
-        .tj-app-input{
-          .form-control{
-            &:disabled{
+
+      .form-group {
+        .tj-app-input {
+          .form-control {
+            &:disabled {
               background: var(--slate3) !important;
             }
           }
@@ -6954,7 +6957,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 80%;
+    width: 78%;
   }
 
   .table-header,
@@ -6969,6 +6972,10 @@ tbody {
       border: none;
       padding: 0px !important;
     }
+  }
+
+  .table-cell-dark{
+    color: #ffffff;
   }
 
   .table-cell-hover-background {
@@ -6987,6 +6994,7 @@ tbody {
     background-color: #242f3c;
     padding: 0rem;
     max-width: 230px;
+    color: #ffffff;
 
     input.form-control {
       border: none;
@@ -6997,12 +7005,12 @@ tbody {
 
   .table-editable-parent-cell {
     max-width: 230px;
-    background-color: var(--indigo2);
+    background-color: var(--indigo2) !important;
     cursor: pointer;
     padding: 0rem;
 
     .form-control {
-      background-color: var(--indigo2);
+      background-color: var(--indigo2) !important;
       border: none;
       padding: 0;
       border-radius: 0px;
@@ -7015,12 +7023,17 @@ tbody {
 
   .tjdb-cell-error {
     padding: 0rem;
-    border-color: var(--Tomato-09, #E54D2E) !important;
+    border-top: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-bottom: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-right: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-left: 1.5px solid var(--Tomato-09, #E54D2E) !important;
   }
 
   .tjdb-column-select-border {
-    border-left: 1px solid transparent;
-    border-right: 1px solid transparent;
+    border-left: 1.5px solid transparent;
+    border-right: 1.5px solid transparent;
+    border-top: 1.5px solid transparent;
+    border-bottom: 1.5px solid transparent;
   }
 
   .table-columnHeader-click {
@@ -7059,7 +7072,7 @@ tbody {
 
   .row-tj:first-child {
     .tjdb-column-select-border {
-      border-top: 1px solid transparent;
+      border-top: 1.5px solid transparent;
     }
 
     .table-columnHeader-click {
@@ -7077,7 +7090,7 @@ tbody {
 
   .row-tj:last-of-type {
     .tjdb-column-select-border {
-      border-bottom: 1px solid transparent;
+      border-bottom: 1.5px solid transparent;
     }
 
     .table-columnHeader-click {
@@ -10850,6 +10863,7 @@ tbody {
     width: 100% !important;
     height: 100% !important;
     background: #1c252f !important;
+    border: 1px solid #374150 !important;
     font-size: 14px !important;
     font-weight: 400;
     color: white;
@@ -10887,7 +10901,7 @@ tbody {
   border-style: solid;
   border-radius: 0px;
   background: #1c252f !important;
-  border: 0.4px solid white !important;
+  border: 1px solid #374150 !important;
   font-size: 14px !important;
   font-weight: 400;
   color: white;
@@ -12638,8 +12652,10 @@ tbody {
 }
 
 .modal-custom-height {
-  height: 700px !important; /* Set the desired width */
+  height: 700px !important;
+  /* Set the desired width */
 }
+
 .tj-text-input-widget {
   border: 1px solid var(--tj-text-input-widget-border-default);
   background-color: var(--tj-text-input-widget-field-default);
