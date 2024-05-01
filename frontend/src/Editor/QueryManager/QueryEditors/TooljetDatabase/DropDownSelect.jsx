@@ -43,18 +43,11 @@ const DropDownSelect = ({
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
   const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
   const [selected, setSelected] = useState(value);
-  const selectRef = useRef();
   const [isOverflown, setIsOverflown] = useState(false);
   // Applicable when drop down is used to list FK data
   const [isInitialForeignKeyDataLoaded, setIsInitialForeignKeyDataLoaded] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
-
-  function makeFKPaginationDataToDefault() {
-    setIsInitialForeignKeyDataLoaded(false);
-    setTotalRecords(0);
-    setPageNumber(1);
-  }
 
   useEffect(() => {
     if (showMenu) {
@@ -66,6 +59,7 @@ const DropDownSelect = ({
     if (Array.isArray(value) || selected?.value !== value?.value || selected?.label !== value?.label) {
       setSelected(value);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
@@ -85,6 +79,7 @@ const DropDownSelect = ({
     if (isNewOverFlown !== isOverflown) {
       setIsOverflown(isNewOverFlown);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
   function checkElementPosition() {

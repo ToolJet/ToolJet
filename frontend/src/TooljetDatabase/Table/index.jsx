@@ -24,7 +24,6 @@ import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
-import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
@@ -49,7 +48,6 @@ const Table = ({ collapseSidebar }) => {
     handleRefetchQuery,
     loadingState,
     setForeignKeys,
-    tables,
     foreignKeys,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);

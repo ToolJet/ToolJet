@@ -115,7 +115,7 @@ export const CellEditMenu = ({
   };
 
   const referencedFKDataList = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1],
       value: key[1],
@@ -129,10 +129,12 @@ export const CellEditMenu = ({
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, isBoolean, selectedValue, cellValue]);
 
   useEffect(() => {
     if (selectedValue !== cellValue) setSelectedValue(cellValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellValue]);
 
   const popover = (
