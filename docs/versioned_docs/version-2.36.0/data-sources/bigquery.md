@@ -35,12 +35,12 @@ ToolJet can connect to **BigQuery** databases to run BigQuery queries.
   "project_id": "long-sonar-324407",
   "private_key_id": "<PRIVATE_KEY_ID>",
   "private_key": "<PRIVATE_KEY>",
-  "client_email": "tooljettest@long-sonar-324407.iam.gserviceaccount.com",
-  "client_id": "103664451567222591066",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/tooljettest%40long-sonar-324407.iam.gserviceaccount.com",
+  "client_email": "<CLIENT_EMAIL>",
+  "client_id": "<CLIENT_ID>",
+  "auth_uri": "<AUTH_URI>",
+  "token_uri": "<TOKEN_URI>",
+  "auth_provider_x509_cert_url": "<AUTH_PROVIDER_X%)(_CERT_URL",
+  "client_x509_cert_url": "CLIENT_X509_CERT_URL",
   "universe_domain": "googleapis.com"
 }
 ```
