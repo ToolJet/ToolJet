@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
-import { getPrivateRoute, redirectToDashboard, DashboardUrl } from '@/_helpers/routes';
+import { getPrivateRoute, redirectToDashboard, dashboardUrl } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from './AppLogo';
 import { useEditorActions } from '@/_stores/editorStore';
@@ -24,7 +24,7 @@ export default function LogoNavDropdown({ darkMode }) {
           className="dropdown-item tj-text tj-text-xsm"
           data-cy="back-to-app-option"
           onClick={handleBackClick}
-          to={DashboardUrl()}
+          to={dashboardUrl()}
         >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
           <span>Back to apps</span>
