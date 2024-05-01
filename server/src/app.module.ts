@@ -2,7 +2,7 @@ import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
+import { ormconfig } from '../ormconfig';
 import { getEnvVars } from '../scripts/database-config-utils';
 
 import { SeedsModule } from './modules/seeds/seeds.module';
@@ -138,6 +138,7 @@ const imports = [
   ImportExportResourcesModule,
   CopilotModule,
   OrganizationConstantModule,
+  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
@@ -162,11 +163,6 @@ if (process.env.APM_VENDOR == 'sentry') {
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
-}
-
-if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TooljetDbModule);
-  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
 }
 
 @Module({
