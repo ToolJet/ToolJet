@@ -1473,7 +1473,7 @@ export const cloneComponents = (
   });
 };
 
-const getAllChildComponents = (allComponents, parentId) => {
+export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {

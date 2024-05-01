@@ -30,6 +30,7 @@ import {
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
+  getAllChildComponents,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
@@ -48,13 +49,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import {
-  getWorkspaceId,
-  setWindowTitle,
-  defaultWhiteLabellingSettings,
-  pageTitles,
-  getChildComponentIds,
-} from '@/_helpers/utils';
+import { getWorkspaceId, setWindowTitle, defaultWhiteLabellingSettings, pageTitles } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -1168,13 +1163,9 @@ const EditorComponent = (props) => {
 
       let childComponents = [];
 
-      const componentList = Object.entries(newDefinition.pages[currentPageId].components).map(([id, component]) => ({
-        ...component,
-        id,
-      }));
-      childComponents = getChildComponentIds(componentList, componentId);
+      childComponents = getAllChildComponents(newDefinition.pages[currentPageId].components, componentId);
 
-      childComponents.forEach((componentId) => {
+      childComponents.forEach(({ componentId }) => {
         delete newDefinition.pages[currentPageId].components[componentId];
       });
 
