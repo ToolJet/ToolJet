@@ -120,7 +120,7 @@ function TableSchema({
   );
 
   function checkMatchingColumnNamesInForeignKey(foreignKeys, columnName) {
-    return foreignKeys.some((foreignKey) => foreignKey.column_names.includes(columnName));
+    return foreignKeys?.some((foreignKey) => foreignKey?.column_names?.includes(columnName));
   }
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
@@ -222,7 +222,10 @@ function TableSchema({
                     columnConstraints.is_unique =
                       value.value === 'serial' ||
                       (prevColumns[index].constraints_type?.is_primary_key &&
-                        prevColumns[index]?.data_type !== 'serial');
+                        prevColumns[index]?.data_type !== 'serial') ||
+                      (value.value === 'boolean' && false);
+
+                    columnConstraints.is_primary_key = value.value === 'boolean' && false;
                     prevColumns[index].constraints_type = { ...columnConstraints };
                     setColumns(prevColumns);
                   }}
@@ -366,7 +369,14 @@ function TableSchema({
             >
               <div className="primary-check">
                 <IndeterminateCheckbox
-                  checked={columnDetails[index]?.constraints_type?.is_primary_key ?? false}
+                  checked={
+                    columnDetails[index]?.constraints_type?.is_primary_key &&
+                    columnDetails[index]?.data_type === 'boolean'
+                      ? false
+                      : columnDetails[index]?.constraints_type?.is_primary_key
+                      ? true
+                      : false
+                  }
                   onChange={(e) => {
                     const prevColumns = { ...columnDetails };
                     const columnConstraints = prevColumns[index]?.constraints_type ?? {};
@@ -380,7 +390,10 @@ function TableSchema({
                     // prevColumns[index].data_type = data === false && '';
                     setColumns(prevColumns);
                   }}
-                  disabled={primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true}
+                  disabled={
+                    (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                    columnDetails[index].data_type === 'boolean'
+                  }
                 />
               </div>
             </ToolTip>

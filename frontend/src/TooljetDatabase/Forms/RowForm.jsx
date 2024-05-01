@@ -70,9 +70,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     });
     return data;
   });
-
-  // const referenceColumn = 'Name';
-
+  console.log('first', inputValues, data);
   const referenceTableDetails = referencedColumnDetails.map((item) => {
     const [key, value] = Object.entries(item);
     return {
@@ -165,7 +163,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           if (column.dataType === 'boolean') {
             result[column.accessor] = false;
           } else {
-            result[column.accessor] = '';
+            result[column.accessor] = column_default ? column_default : '';
           }
         }
         return result;

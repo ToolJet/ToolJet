@@ -51,6 +51,8 @@ export const UniqueConstraintPopOver = ({
                       columns[index]?.constraints_type?.is_unique === false &&
                       columns[index]?.constraints_type?.is_primary_key
                         ? true
+                        : columns[index]?.data_type === 'boolean'
+                        ? false
                         : columns[index]?.constraints_type?.is_unique
                         ? true
                         : false
@@ -64,7 +66,8 @@ export const UniqueConstraintPopOver = ({
                     }}
                     disabled={
                       columns[index]?.constraints_type?.is_primary_key === true ||
-                      columns[index]?.data_type === 'serial'
+                      columns[index]?.data_type === 'serial' ||
+                      columns[index]?.data_type === 'boolean'
                     }
                   />
                 </label>

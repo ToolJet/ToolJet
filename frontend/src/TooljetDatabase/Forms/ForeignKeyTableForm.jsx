@@ -28,6 +28,7 @@ const ForeignKeyTableForm = ({
   onDelete,
   setOnUpdate,
   onUpdate,
+  editForeignKeyInCreateTable,
 }) => {
   const createForeignKey = () => {
     handleCreateForeignKey();
@@ -104,6 +105,7 @@ const ForeignKeyTableForm = ({
         createForeignKeyInEdit={createForeignKeyInEdit}
         isCreateColumn={isCreateColumn}
         isForeignKeyForColumnDrawer={isForeignKeyForColumnDrawer}
+        editForeignKeyInCreateTable={editForeignKeyInCreateTable}
       />
     </div>
   );

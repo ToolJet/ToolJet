@@ -196,7 +196,7 @@ const TableForm = ({
     updateSidebarNAV(tableName);
     updateSelectedTable({ ...selectedTable, table_name: tableName });
 
-    onEdit && onEdit();
+    onEdit && onEdit(tableName);
     setCreateForeignKeyInEdit(false);
   };
 
