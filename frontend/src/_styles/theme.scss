@@ -3322,6 +3322,10 @@ input:focus-visible {
         #4c5b79 80%);
   }
 
+  .app-icon-skeleton {
+    background-color: #3A4251 !important;
+  }
+
   .folder-icon-skeleton::after {
     background-image: linear-gradient(to right,
         #566177 0,
@@ -6242,6 +6246,7 @@ a.step-item-disabled {
 
 .notification-center {
   max-height: 500px;
+  min-width: 420px;
   overflow: auto;
   margin-left: 11px !important;
 
@@ -7942,7 +7947,6 @@ tbody {
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
 
-  &[data-name="Workspace constants"],
   &[data-name="Profile settings"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
@@ -8401,6 +8405,9 @@ tbody {
   .react-loading-skeleton {
     background-color: #2F3C4C !important;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
+  }
+  .react-loading-skeleton::after {
+    background-image: linear-gradient(90deg, #2F3C4C, #3A4251, #2F3C4C) !important;
   }
 }
 
