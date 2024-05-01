@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 export default function FolderFilter({ disabled, options, onChange, value }) {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
 
   const updateFolderQuery = (name, id) => {
     const path = `${id ? `?folder=${name}` : ''}`;
-    navigate({ pathname: location.pathname, search: path }, { replace: true });
+    navigate({ pathname: `/${getWorkspaceId()}`, search: path }, { replace: true });
   };
 
   useEffect(() => {

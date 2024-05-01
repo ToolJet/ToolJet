@@ -53,6 +53,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       Credential,
       Plugin,
       Metadata,
+      DataSource,
     ]),
     CaslModule,
     MetaModule,

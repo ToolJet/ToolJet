@@ -69,3 +69,14 @@ export const ERROR_MESSAGES = {
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
 };
+
+export const DATA_SOURCE_TYPE = {
+  SAMPLE: 'sample',
+  LOCAL: 'local',
+  GLOBAL: 'global',
+};
+
+export const SAMPLE_DB_KIND = {
+  POSTGRESQL: 'postgresql',
+  TOOLJET_DB: 'tooljetdb',
+};
