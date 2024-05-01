@@ -40,8 +40,6 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
 
     :::info 
     Required only if ToolJet Database is being used. 
-
-    Please use PostgREST version 10.1.1.x
     :::       
 
     ```bash
@@ -75,7 +73,7 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
     NODE_ENV=development
     # DATABASE CONFIG
-    PG_HOST=localhost <--- changed here
+    PG_HOST=localhost
     PG_PORT=5432
     PG_USER=postgres
     PG_PASS=postgres
