@@ -89,11 +89,10 @@
           "label": "Resource Body",
           "key": "resource_body",
           "type": "codehinter",
-          "lineNumbers": false,
+          "lineNumbers": true,
           "placeholder": "{{ name : “ToolJet” }}",
           "description": "Enter the resource body",
-          "height": "36px",
-          "className": "codehinter-plugins"
+          "height": "100px"
         }
       },
       "update":{
@@ -110,11 +109,9 @@
           "label": "Resource Body",
           "key": "resource_body",
           "type": "codehinter",
-          "lineNumbers": false,
           "placeholder": "{{ Id:”0012F3E4R56487900N” , name : “ToolJet” }}",
           "description": "Enter the resource body",
-          "height": "36px",
-          "className": "codehinter-plugins"
+          "height": "100px"
         }
       },
       "delete":{
