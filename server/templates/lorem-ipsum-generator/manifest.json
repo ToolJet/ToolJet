@@ -1,6 +1,6 @@
 {
-  "name": "Lorem Ipsum generator",
-  "description": "Generate placeholder text, names, emails, URLs with customizable options for prototyping or testing purposes.",
+  "name": "Lorem ipsum generator",
+  "description": "Generate placeholder text instantly for your design projects with our user-friendly lorem ipsum generator.",
   "widgets": [
     "Table",
     "Chart"
