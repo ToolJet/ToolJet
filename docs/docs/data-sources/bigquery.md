@@ -33,14 +33,14 @@ ToolJet can connect to **BigQuery** databases to run BigQuery queries.
 {
   "type": "service_account",
   "project_id": "long-sonar-324407",
-  "private_key_id": "<PRIVATE_KEY_ID>",
-  "private_key": "<PRIVATE_KEY>",
-  "client_email": "<CLIENT_EMAIL>",
-  "client_id": "<CLIENT_ID>",
-  "auth_uri": "<AUTH_URI>",
-  "token_uri": "<TOKEN_URI>",
-  "auth_provider_x509_cert_url": "<AUTH_PROVIDER_X%)(_CERT_URL",
-  "client_x509_cert_url": "CLIENT_X509_CERT_URL",
+  "private_key_id": "63f4415e600bd7879bc14fd1157a4aabe227c204",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDRGgDmfwYcKp4q\n3ce4DkrKv0vTn/Jn2Z2vEHp+oOz5ebZqmE3v56c6YIvtVRblANILPrOsB5ZvkF5f\nEzZBXn7ZI3+dqKBrpxbJqF6bKTLENdgFZRTbXHtGDpmwX4A+ufir9QNoezRw0i5L\nnVZiVC54f/Qt/cKT8794qSnrxNX1TneZLGxJWou9VAl3xT9h2HdL56gYIuleWXDK\nnXkb3Leh9AMZCdFPMyC24MWefWrUbNkqJ7V8FHo7bMrAcFNuSoF2NfK1v6IPLkEs\nwAU0CJ9VSg6rrahQOqIJ04cdYs2OUh4lRvRB6pqlVvtl6EdJB6dHln1nDzpgHbnb\n+acfwEDnAgMBAAECggEAGs/mSKgGDQuL73wztU6j2X6RBwhN6XIWjZGj22PgLxcj\nxGRWLgp6v3oMxzhvcJrb1BRMrqTkbdbJuxA4F0a6JjaukPVD6Lnqqp37z5KHT3CG\nDB8LfxtLNU7+9wYv6Bspn0cSEk4mCcdxp0F8B6y6rrndgh41WopZRWwPk4tQUh1r\nor67AAYd3rtzGMLoghs+8UE+UYa8wbpsbmHEYgqvXQAkNsl8WdNwqmI0G4lf+pgx\n7Rm27LJrtdBBHc48RUhg2eiN05HLCsnwkrnSj0rLL/L7T1yoSfCSUuv1mTUesxQ1\nXUEsPQQTTsNsqKOxT71CzQLElrPfwZkN4Y/IOJqX3QKBgQD6u0idi2r54hMjBSuk\npLgXygH5AWfHc4QqMCui7HZrFOJ4U4AreI/zZrM3Gemgs+1l27wsUjoxADW2Egyq\nX5AVe94RKSV3cCIIty38VOUBVsgyxj38d8yWkpJKJ2FcAgqEzPDDo0TCaOEq01oA\nYqjkgBz7Sh4XhQ5xwzfnOPRPtQKBgQDVfsly/k03wAJo1xlUZeq9mAnba5Hz07x9\nJ3REAwrtOaD891rKbkqDZKdGHTMweFGeEW2Hx7Q5iRS4WDKFO14wgSHFTkkVoSKR\n2W7XMomUQPFojQwgkDhrxsGE8O1DqfQ0+A5AJn2ASv/cyVGE3V2xg2rGr/HWi6Wq\nUp4FxebXqwKBgQDNIcCNNG03N6EUe7xzHViIDfuDL4UqhvXQVky9JNzVSubmLtqj\ntiV/q7xgDlE36z0EorvXPwbg5B0NcsLt+PU2vnq2a4V9rD4MB2IWGZaqe8ea0toP\n3iuB3TTWelWLIxhcAhfQ15j/vTLLCNOPkShAmhgb902bTH6+0ErCX7RyKQKBgQCe\nDOeLpvF5VT8zaBILZgva4eRiOQdqz5RZvsyW0P3U0vX4cBIZjH7DOM+Q22sa9efO\nMi6490HX2kCpnDmCYon/NInQrHz0cz7JZINm8rXhOBa/hLO2o63xM8nt5gJwNjBg\nykaafSQpxtwWEj+0McD7+kMg5f4OC4HQTqtHsNONUwKBgAoWGGRPja068BPIiUMB\nezsdYPP5TdASiBeAEPaQXQHlJxPDu9KoKqM5xvWIdR8eH1z7cuQ3RP89hYT03/UT\nBvWXHk2MJQZK7BZDw9KMZAKexK9/qxwHS6i7HhErD+Au3UaRX8dfjJzX8WAwuAwp\nVDwHncN3n4mPFQl7eijnQZ/F\n-----END PRIVATE KEY-----\n",
+  "client_email": "tooljettest@long-sonar-324407.iam.gserviceaccount.com",
+  "client_id": "103664451567222591066",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/tooljettest%40long-sonar-324407.iam.gserviceaccount.com",
   "universe_domain": "googleapis.com"
 }
 ```
