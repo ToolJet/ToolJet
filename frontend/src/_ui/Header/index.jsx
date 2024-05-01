@@ -73,7 +73,7 @@ function Header({
         {!collapseSidebar && (
           <div className="tj-dashboard-section-header" data-name={pathname}>
             <div className="row">
-              <div className="col-9">
+              <div className="col-9 title-and-banner-wrapper">
                 <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
                   {pathname}
                 </p>
