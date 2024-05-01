@@ -139,6 +139,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
+    if (showJoinWorkspace && !showOnboarding) {
+      e.preventDefault();
+      userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
+        ? (setShowOnboarding(true), setShowJoinWorkspace(false))
+        : setUpAccount(e);
+      return;
+    }
+
     userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
       ? setShowOnboarding(true)
       : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
