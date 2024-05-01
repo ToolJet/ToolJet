@@ -279,6 +279,16 @@ export const widgets = [
         },
         accordian: 'Data',
       },
+      columnHeaderType: {
+        type: 'switch',
+        displayName: 'Column header',
+        validation: { schema: { type: 'string' } },
+        accordian: 'Data',
+        options: [
+          { displayName: 'Fixed', value: 'fixed' },
+          { displayName: 'Wrap', value: 'wrap' },
+        ],
+      },
       tableType: {
         type: 'select',
         displayName: 'Row style',
@@ -618,6 +628,7 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        columnHeaderType: { value: 'fixed' },
         actionButtonRadius: { value: '0' },
         cellSize: { value: 'regular' },
         borderRadius: { value: '8' },
