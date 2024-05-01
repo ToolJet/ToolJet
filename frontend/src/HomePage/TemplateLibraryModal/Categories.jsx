@@ -5,7 +5,6 @@ const categoryTitles = {
   all: 'All categories',
   'customer-support': 'Customer support',
   finance: 'Finance',
-  healthcare: 'Healthcare',
   'human-resources': 'Human resources',
   operations: 'Operations',
   'product-management': 'Product management',
