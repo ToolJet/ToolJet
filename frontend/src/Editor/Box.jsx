@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useContext, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -42,7 +42,6 @@ import { Html } from './Components/Html';
 import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
-import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Kanban } from './Components/Kanban/Kanban';
@@ -68,8 +67,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import WidgetIcon from '@/../assets/images/icons/widgets';
-import { useModuleName } from '../_contexts/ModuleContext';
+import { isPDFSupported } from '@/_stores/utils';
 
 export const AllComponents = {
   Button,
@@ -114,7 +112,6 @@ export const AllComponents = {
   ButtonGroup,
   CustomComponent,
   VerticalDivider,
-  PDF,
   ColorPicker,
   KanbanBoard,
   Kanban,
@@ -125,6 +122,14 @@ export const AllComponents = {
   Form,
   BoundedBox,
 };
+
+/**
+ * Conditionally importing PDF component since importing it breaks app in older versions of browsers.
+ * refer: https://github.com/wojtekmaj/react-pdf?tab=readme-ov-file#compatibility
+ **/
+if (isPDFSupported()) {
+  AllComponents.PDF = await import('./Components/PDF').then((module) => module.PDF);
+}
 
 export const Box = memo(
   ({
@@ -153,11 +158,11 @@ export const Box = memo(
     isResizing,
     adjustHeightBasedOnAlignment,
     currentLayout,
+    darkMode,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-    const moduleName = useModuleName();
     const { events } = useAppInfo();
     const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Button'];
 
@@ -200,7 +205,6 @@ export const Box = memo(
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
         : [resolvedGeneralStyles, []];
 
-    const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
     let styles = {
@@ -284,6 +288,9 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
+
+    const shouldHideWidget = component.component === 'PDF' && !isPDFSupported();
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -318,7 +325,7 @@ export const Box = memo(
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
-          {!resetComponent ? (
+          {!resetComponent && !shouldHideWidget ? (
             <ComponentToRender
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}

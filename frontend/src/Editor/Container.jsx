@@ -17,13 +17,13 @@ import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
-import { useSuperStore } from '@/_stores/superStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
-import { ModuleContext } from '../_contexts/ModuleContext';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { isPDFSupported } from '@/_stores/utils';
+import toast from 'react-hot-toast';
 
 const NO_OF_GRIDS = 43;
 
@@ -42,18 +42,16 @@ export const Container = ({
   zoomLevel,
   removeComponent,
   deviceWindowWidth,
-  darkMode,
   socket,
   handleUndo,
   handleRedo,
   sideBarDebugger,
   currentPageId,
+  darkMode,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
-
-  const moduleName = useContext(ModuleContext);
 
   const { showComments, currentLayout } = useEditorStore(
     (state) => ({
@@ -261,6 +259,13 @@ export const Container = ({
           return;
         }
 
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
+          return;
+        }
+
         if (item.name === 'comment') {
           const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
           const offsetFromTopOfWindow = canvasBoundingRect.top;
@@ -337,8 +342,7 @@ export const Container = ({
 
       let newBoxes = { ...boxes };
 
-      for (const selectedComponent of useSuperStore.getState().modules[moduleName].useEditorStore.getState()
-        .selectedComponents) {
+      for (const selectedComponent of useEditorStore.getState().selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
           if (draft[selectedComponent.id]) {
             const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
