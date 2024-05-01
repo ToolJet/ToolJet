@@ -4,20 +4,72 @@ title: Chart
 ---
 # Chart
 
-The Chart component allows you to visualize your data. In this document, we'll go through all the configuration options for the **Chart** component.  
+The Chart component allows you to visualize your data. In this document, we'll go through all the configuration options for the **Chart** component. 
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Title
 
 Under the `Title` property, you can enter a title that displays at the top of the chart component.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Plotly JSON Chart Schema
 
 You can use the toggle to enable or disable `Use Ploty JSON Schema`. Additional, you can enable or disable it dynamically configure the value by clicking on `fx` and entering a logical expression.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Properties
 
-#### Chart type
-You can select the type from the dropdown options or dynamically configure the value by clicking on `fx` and entering a logical expression that returns `line`, `pie` or `bar`.
+| <div style={{ width:"100px"}}> Property </div>     | <div style={{ width:"100px"}}> Description </div> |
+|:----------- |:----------- |
+| Chart type | You can select the type from the dropdown options or dynamically configure the value by clicking on `fx` and entering a logical expression that returns `line`, `pie` or `bar`. |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Events
+
+| <div style={{ width:"100px"}}> Event </div>     | <div style={{ width:"100px"}}> Description </div> |
+|:----------- |:----------- |
+| On data point click | Triggers whenever the user clicks on data points. | 
+| On double click | Triggers whenever the user double clicks on the chart area. | 
+
+:::info
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+:::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Component Specific Actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+
+| Variable|  Description  | How To Access  |
+| ------- | ------------- | -------------- |
+| chartTitle | Holds the title of the chart component.  | Accessible dynamically with JS (for e.g., `{{components.chart1.chartTitle}}`).|
+| xAxisTitle  | Contains the title for the X-axis of the chart. | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`). |
+| yAxisTitle  | Contains the title for the Y-axis of the chart. | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`). |
+| clickedDataPoints  | Stores details about the data points that were clicked.| Accessible dynamically with JS (for e.g., `{{components.chart1.clickedDataPoints}}`). Each data point includes `xAxisLabel`, `yAxisLabel`, `dataLabel`, `dataValue`, and `dataPercent`. |
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Chart data
 The data needs to be in JSON format and should have `x` and `y` keys. The component supports string and object JSON data types. 
@@ -34,8 +86,16 @@ The data needs to be in JSON format and should have `x` and `y` keys. The compon
 ]
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Marker Color
 Available for line and bar charts, `Marker Color` defines the color of the line or bars on the chart.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Options
 | <div style={{ width:"100px"}}> Option </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
@@ -44,27 +104,20 @@ Available for line and bar charts, `Marker Color` defines the color of the line 
 | Show axis      | Hides or displays the axes on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 | Show grid lines      | Hides or displays the grid lines on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
-## Events
+</div>
 
-**On data point click** <br/>
-Triggers whenever the user clicks on data points.
-
-**On double click** <br/>
-Triggers whenever the user double clicks on the chart area.
-
-:::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
-:::
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Devices
 
-**Show on desktop**
+| <div style={{ width:"135px"}}> Device </div>     | <div style={{ width:"100px"}}> Description </div> |
+|:----------- |:----------- |
+| Show on desktop | Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
-Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+</div>
 
-**Show on mobile**
-
-Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Plotly Configuration
 
@@ -290,9 +343,13 @@ In the **JSON description**, the value needs to be the `data` array with x and y
 Check the **[Plotly documentation](https://plotly.com/chart-studio-help/json-chart-schema/#more-examples)** to explore the all type of charts available.
 :::
 
+</div>
 
 ---
-# Styles
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Styles
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
@@ -302,18 +359,4 @@ Check the **[Plotly documentation](https://plotly.com/chart-studio-help/json-cha
 | Visibility   | Sets the visibility of the component.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
 | Disables   | Allows you to enable/disable a component. The component is not interactive when it is disabled.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
 
-
-## Exposed variables
-
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| chartTitle       | Holds the title of the chart component. | Accessible dynamically with JS (for e.g., `{{components.chart1.chartTitle}}`). |
-| xAxisTitle         | Contains the title for the X-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`). |
-| yAxisTitle         | Contains the title for the Y-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`). |
-| clickedDataPoints  | Stores details about the data points that were clicked.| Accessible dynamically with JS (for e.g., `{{components.chart1.clickedDataPoints}}`). Each data point includes `xAxisLabel`, `yAxisLabel`, `dataLabel`, `dataValue`, and `dataPercent`. |
-
-
-
-## Component specific actions (CSA)
-
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+</div>

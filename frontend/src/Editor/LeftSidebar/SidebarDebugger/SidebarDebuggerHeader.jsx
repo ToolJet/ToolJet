@@ -10,13 +10,13 @@ export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, setPinned, pin
         <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
           <ButtonSolid
             onClick={clearErrorLogs}
-            leftIcon="alignright"
+            leftIcon="trash"
             variant="tertiary"
             className="tj-text-xsm left-sidebar-header-btn"
             style={{ width: '76px', height: '28px' }}
-            iconWidth="20"
+            iconWidth="14"
             title={'Clear'}
-            fill={`var(--slate12)`}
+            fill={`var(--icons-strong)`}
           >
             Clear
           </ButtonSolid>

@@ -9,7 +9,21 @@ import _ from 'lodash';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { Alert } from '@/_ui/Alert/Alert';
 import { Button } from '@/_ui/LeftSidebar';
-class ManageOrgVarsComponent extends React.Component {
+import { useNavigate, useParams } from 'react-router-dom';
+
+function useWorkspaceRouting() {
+  const navigate = useNavigate();
+  const { workspaceId } = useParams();
+  return { workspaceId, navigate };
+}
+
+function withWorkspaceRouting(WrappedComponent) {
+  return function (props) {
+    const { workspaceId, navigate } = useWorkspaceRouting();
+    return <WrappedComponent {...props} workspaceId={workspaceId} navigate={navigate} />;
+  };
+}
+class RawManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -238,19 +252,24 @@ class ManageOrgVarsComponent extends React.Component {
     this.setState({ isManageVarDrawerOpen: val });
   };
 
+  goToOrgConstantsDashboard = () => {
+    const { workspaceId, navigate } = this.props;
+    navigate(`/${workspaceId}/workspace-constants`);
+  };
+
   render() {
     const { isLoading, addingVar, variables, isManageVarDrawerOpen } = this.state;
 
     const renderDeprecationText =
       variables?.length > 0 ? (
         <div class="text-muted">
-          Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use Workspace constant
-          instead.
+          Workspace variables will no longer be supported after April 30, 2024. To maintain optimal performance, please
+          make the switch to Workspace constants
         </div>
       ) : (
         <div className="text-muted">
-          Workspace variables will no longer be supported after April 30, 2024. To maintain optimal performance, please
-          make the switch to Workspace constants
+          Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use Workspace constant
+          instead.
         </div>
       );
 
@@ -284,7 +303,7 @@ class ManageOrgVarsComponent extends React.Component {
                       {renderDeprecationText}
                       <div>
                         <Button
-                          onClick={this.props.goTooOrgConstantsDashboard}
+                          onClick={this.goToOrgConstantsDashboard}
                           darkMode={this.props.darkMode}
                           size="sm"
                           styles={{
@@ -295,7 +314,7 @@ class ManageOrgVarsComponent extends React.Component {
                         >
                           <Button.Content
                             iconSrc="assets/images/icons/arrow-right.svg"
-                            title={'Go to workspace constants'}
+                            title={'Go to Workspace constants'}
                             direction="right"
                           />
                         </Button>
@@ -341,5 +360,7 @@ class ManageOrgVarsComponent extends React.Component {
     );
   }
 }
+
+const ManageOrgVarsComponent = withWorkspaceRouting(RawManageOrgVarsComponent);
 
 export const ManageOrgVars = withTranslation()(ManageOrgVarsComponent);
