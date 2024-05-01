@@ -4,8 +4,12 @@ export const EmailComponent = ({ prefilledEmail, email, handleChange, emailError
   if (prefilledEmail) {
     return (
       <div className="signup-inputs-wrap">
-        <label className="tj-text-input-label">Email</label>
-        <p className="tj-text-input onbaording-disabled-field">{prefilledEmail}</p>
+        <label className="tj-text-input-label" data-cy="email-label">
+          Email
+        </label>
+        <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-email">
+          {prefilledEmail}
+        </p>
       </div>
     );
   } else {
