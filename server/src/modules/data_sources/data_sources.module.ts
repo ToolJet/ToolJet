@@ -36,6 +36,7 @@ import { TooljetDbOperationsService } from '@services/tooljet_db_operations.serv
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { SampleDBScheduler } from 'src/schedulers/sampleDB.scheduler';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
     TooljetDbOperationsService,
     TooljetDbService,
     PostgrestProxyService,
+    SampleDBScheduler,
   ],
   controllers: [DataSourcesController, GlobalDataSourcesController],
 })
