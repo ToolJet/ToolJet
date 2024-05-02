@@ -361,6 +361,20 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .tjdb-th-bg {
+    height: 32px;
+    background: #ECEEF0;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    border-top: 1px solid rgba(101, 109, 119, 0.16) !important;
+    border-bottom: 1px solid rgba(101, 109, 119, 0.16) !important;
+  }
+
+  .tjdb-th-bg-dark {
+    background: #1C252F !important;
+  }
 }
 
 .create-table-list-items {
