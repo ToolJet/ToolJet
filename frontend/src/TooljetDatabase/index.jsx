@@ -5,7 +5,7 @@ import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
 import { pageTitles, setWindowTitle } from '@/_helpers/utils';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,

@@ -60,7 +60,7 @@ export const getColumnDataType = (columnDetails) => {
   const { data_type = '', column_default = '' } = columnDetails;
   const result = checkDefaultValue(column_default);
 
-  if (data_type === 'integer' && column_default) {
+  if (data_type === 'integer' && result) {
     if (result) return 'serial';
   }
   return data_type;

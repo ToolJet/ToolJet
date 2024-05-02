@@ -17,6 +17,7 @@ function DrawerFooter({
   createForeignKeyInEdit,
   isCreateColumn,
   isForeignKeyForColumnDrawer,
+  editForeignKeyInCreateTable,
 }) {
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
@@ -26,7 +27,8 @@ function DrawerFooter({
           <a className="read-documentation">Read documentation</a>
         </div>
         <div className="d-flex action-btns">
-          {isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit)) ? (
+          {(isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit))) ||
+          (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ? (
             <ButtonSolid variant="dangerTertiary" onClick={onDeletePopup}>
               <DeleteIcon />
               &nbsp; Delete
@@ -71,6 +73,18 @@ function DrawerFooter({
                 }}
               >
                 Create
+              </ButtonSolid>
+            </>
+          ) : isForeignKeyDraweOpen && editForeignKeyInCreateTable ? (
+            <>
+              <ButtonSolid
+                disabled={shouldDisableCreateBtn || fetching}
+                data-cy={`save-changes-button`}
+                onClick={onEdit}
+                fill="#fff"
+                leftIcon="floppydisk"
+              >
+                Save changes
               </ButtonSolid>
             </>
           ) : (

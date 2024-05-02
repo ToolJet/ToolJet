@@ -92,6 +92,7 @@ const ColumnForm = ({
       return {
         column_names: isEditColumn ? (!createForeignKeyInEdit ? item.column_names : []) : [],
         referenced_table_name: isEditColumn ? (!createForeignKeyInEdit ? item.referenced_table_name : '') : '',
+        referenced_table_id: isEditColumn ? (!createForeignKeyInEdit ? item.referenced_table_id : '') : '',
         referenced_column_names: isEditColumn ? (!createForeignKeyInEdit ? item.referenced_column_names : []) : [],
         on_delete: isEditColumn ? (!createForeignKeyInEdit ? item.on_delete : '') : '',
         on_update: isEditColumn ? (!createForeignKeyInEdit ? item.on_update : '') : '',
@@ -183,6 +184,43 @@ const ColumnForm = ({
     setDataType(value);
   };
 
+  const fetchMetaDataApi = async () => {
+    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
+      if (error) {
+        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+        return;
+      }
+
+      const { foreign_keys = [] } = data?.result || {};
+      if (data?.result?.columns?.length > 0) {
+        setColumns(
+          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
+            Header: column_name,
+            accessor: column_name,
+            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+            ...rest,
+          }))
+        );
+      }
+      if (foreign_keys.length > 0) {
+        setForeignKeys([...foreign_keys]);
+      } else {
+        setForeignKeys([]);
+      }
+    });
+  };
+
+  const onCloseForeignKeyDrawer = () => {
+    setIsForeignKeyDraweOpen(false);
+    setIsForeignKey(false);
+    setCreateForeignKeyInEdit(false);
+    setSourceColumn([]);
+    setTargetTable([]);
+    setTargetColumn([]);
+    setOnDelete([]);
+    setOnUpdate([]);
+  };
+
   const handleEdit = async () => {
     const colDetails = {
       column: {
@@ -216,29 +254,7 @@ const ColumnForm = ({
       }
     }
 
-    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-        return;
-      }
-
-      const { foreign_keys = [] } = data?.result || {};
-      if (data?.result?.columns?.length > 0) {
-        setColumns(
-          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-            ...rest,
-          }))
-        );
-      }
-      if (foreign_keys.length > 0) {
-        setForeignKeys([...foreign_keys]);
-      } else {
-        setForeignKeys([]);
-      }
-    });
+    fetchMetaDataApi();
     handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     toast.success(`Column edited successfully`);
     onClose && onClose();
@@ -256,14 +272,9 @@ const ColumnForm = ({
       toast.error(error?.message ?? `Failed to delete foreign key`);
       return;
     }
-
-    setForeignKeyDetails((prevValues) => {
-      const updatedDetails = [...prevValues]; // Create a copy of the array
-      updatedDetails.splice(selectedForeignkeyIndex, 1); // Remove the item at the specified index
-      return updatedDetails; // Update the state with the modified array
-    });
+    onCloseForeignKeyDrawer();
+    fetchMetaDataApi();
     setOnDeletePopup(false);
-    setIsForeignKeyDraweOpen(false);
     toast.success(`Foreign key deleted successfully`);
   };
 
@@ -292,9 +303,9 @@ const ColumnForm = ({
       return;
     }
 
+    fetchMetaDataApi();
+    onCloseForeignKeyDrawer();
     toast.success(`Foreign key edited successfully`);
-
-    setIsForeignKeyDraweOpen(false);
   };
 
   const changesInForeignKey = () => {
@@ -353,7 +364,7 @@ const ColumnForm = ({
       label: existingForeignKeyColumn[0]?.on_update,
     });
   };
-  // console.log('first', selectedForeignkeyIndex);
+
   useEffect(() => {
     const existingForeignKeyIndex = foreignKeyDetails?.findIndex((obj) => obj.column_names[0] === columnName);
     setSelectedForeignKeyIndex(existingForeignKeyIndex);
@@ -581,18 +592,14 @@ const ColumnForm = ({
             drawerStyle={{ width: '560px' }}
             isForeignKeyRelation={true}
             onClose={() => {
-              setIsForeignKeyDraweOpen(false);
-              setIsForeignKey(false);
-              setCreateForeignKeyInEdit(false);
+              onCloseForeignKeyDrawer();
             }}
           >
             <ForeignKeyTableForm
               tableName={selectedTable.table_name}
               columns={columns}
               onClose={() => {
-                setIsForeignKeyDraweOpen(false);
-                setIsForeignKey(false);
-                setCreateForeignKeyInEdit(false);
+                onCloseForeignKeyDrawer();
               }}
               isEditColumn={isEditColumn}
               isForeignKeyForColumnDrawer={true}

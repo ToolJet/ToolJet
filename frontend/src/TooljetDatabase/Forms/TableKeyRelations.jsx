@@ -182,7 +182,7 @@ function SourceKeyRelation({
               label: item.column_name,
               icon: dataTypes.filter((obj) => obj.value === item.data_type)[0]?.icon,
               value: item.column_name,
-              dataType: item?.data_type,
+              dataType: getColumnDataType({ column_default: item.column_default, data_type: item.data_type }),
             }))
           );
         }
@@ -192,7 +192,7 @@ function SourceKeyRelation({
 
   const targetTableColumns =
     targetColumnList.length > 0 && (!isEditColumn || !isCreateColumn)
-      ? targetColumnList?.filter((item) => sourceColumns.some((sourceItem) => sourceItem.dataType === item.dataType))
+      ? targetColumnList?.filter((item) => sourceColumn.dataType === item.dataType)
       : (isEditColumn || isCreateColumn) && targetColumnList.length > 0
       ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
       : [];
@@ -203,12 +203,14 @@ function SourceKeyRelation({
     } else {
       return;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createForeignKeyInEdit, isEditMode]);
 
   useEffect(() => {
     if (isEditColumn || isCreateColumn) {
       setSourceColumn(sourceColumns[0]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditColumn, isCreateColumn]);
 
   const handleNavigateToToolJetDatabase = () => {

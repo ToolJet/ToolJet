@@ -114,8 +114,8 @@ export const CellEditMenu = ({
     e.stopPropagation();
   };
 
-  const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+  const referencedFKDataList = referencedColumnDetails.map((item) => {
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1],
       value: key[1],
@@ -129,10 +129,12 @@ export const CellEditMenu = ({
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, isBoolean, selectedValue, cellValue]);
 
   useEffect(() => {
     if (selectedValue !== cellValue) setSelectedValue(cellValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellValue]);
 
   const popover = (
@@ -150,7 +152,7 @@ export const CellEditMenu = ({
             <DropDownSelect
               buttonClasses="border border-end-1 foreignKeyAcces-container"
               showPlaceHolder={true}
-              options={referenceTableDetails}
+              options={referencedFKDataList}
               darkMode={darkMode}
               emptyError={
                 <div className="dd-select-alert-error m-2 d-flex align-items-center">

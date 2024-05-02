@@ -50,6 +50,7 @@ const TableForm = ({
           return {
             column_names: item.column_names,
             referenced_table_name: item.referenced_table_name,
+            referenced_table_id: item.referenced_table_id,
             referenced_column_names: item.referenced_column_names,
             on_delete: item.on_delete,
             on_update: item.on_update,
@@ -66,6 +67,7 @@ const TableForm = ({
           return {
             column_names: item.column_names,
             referenced_table_name: item.referenced_table_name,
+            referenced_table_id: item.referenced_table_id,
             referenced_column_names: item.referenced_column_names,
             on_delete: item.on_delete,
             on_update: item.on_update,
@@ -194,7 +196,7 @@ const TableForm = ({
     updateSidebarNAV(tableName);
     updateSelectedTable({ ...selectedTable, table_name: tableName });
 
-    onEdit && onEdit();
+    onEdit && onEdit(tableName);
     setCreateForeignKeyInEdit(false);
   };
 

@@ -63,8 +63,6 @@ const ColumnsForm = ({
 
   // const isNameAvailable = Object.values(columns).some((obj) => Object.values(obj).includes(char));
 
-  // console.log('first', index);
-
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
