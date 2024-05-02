@@ -139,7 +139,9 @@ class OrganizationInvitationPageComponent extends React.Component {
                 <div className="common-auth-section-left-wrapper-grid">
                   <form action="." method="get" autoComplete="off">
                     {isGettingConfigs ? (
-                      <ShowLoading />
+                      <div className="loader-wrapper">
+                        <ShowLoading />
+                      </div>
                     ) : (
                       <div className="common-auth-container-wrapper">
                         <h2
