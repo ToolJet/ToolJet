@@ -35,8 +35,8 @@
 }
 
 .cm-base-hint-info {
-    color: var(--Text-default, #1B1F24) !important;
-    background-color: var(--slate3);
+    color: var(--text-default, #1B1F24) !important;
+    background-color: var(--surfaces-surface-02);
     border: 1px solid var(--borders-disabled-on-white, #E4E7EB) !important;
     border-radius: 0px 0px 6px 6px !important;
     box-shadow: 0px 4px 8px 0px rgba(48, 49, 51, 0.10), 0px 0px 1px 0px rgba(48, 49, 51, 0.05);
@@ -45,7 +45,7 @@
 
 .cm-base-autocomplete {
     // height: 300px !important;
-    color: var(--Text-default, #1B1F24);
+    color: var(--text-default, #1B1F24);
     background: var(--slate1) !important;
     border: 1px solid var(--borders-disabled-on-white, #E4E7EB) !important;
     border-radius: 6px !important;
@@ -62,9 +62,9 @@
         max-height: 300px !important;
 
         completion-section {
-            color: var(--Text-default, #1B1F24) !important;
+            color: var(--text-placeholder, #1B1F24) !important;
             border-bottom: none !important;
-            background-color: var(--slate3);
+            background-color: var(--surfaces-surface-02) !important;
             font-size: 13px !important;
             line-height: 20px !important;
             font-weight: 500 !important;
@@ -85,7 +85,7 @@
             font-style: normal !important;
             font-weight: 400 !important;
             line-height: 16px !important;
-            color: var(--Text-default, #1B1F24) !important;
+            color: var(--text-default, #1B1F24) !important;
 
             .cm-completionIcon-js_methods::after {
                 content: '';
@@ -141,8 +141,8 @@
         }
 
         li[aria-selected="true"] {
-            background-color: #CCD1D5 !important;
-            color: var(--Text-default, #1B1F24) !important;
+            background-color: var(--interactive-hover) !important;
+            color: var(--text-default, #1B1F24) !important;
         }
 
 
@@ -170,6 +170,7 @@
         @extend .cm-base-hint-info;
         position: relative !important;
         width: 100% !important;
+        background-color: var(--surfaces-surface-03) !important;
     }
 }
 
@@ -274,7 +275,7 @@
 
 
 .suggest-list-item {
-    color: var(--Text-default, #1B1F24);
+    color: var(--text-default, #1B1F24);
     font-family: IBM Plex Sans;
     font-size: 11px;
     font-style: normal;
@@ -307,7 +308,7 @@
     }
 
     .cm-tooltip-autocomplete>ul>li {
-        background: var(--slate3);
+        background: var(--surfaces-surface-02);
         color: #c9cbcf !important;
     }
 }
