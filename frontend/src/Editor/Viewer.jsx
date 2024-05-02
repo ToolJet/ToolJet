@@ -252,6 +252,19 @@ class ViewerComponent extends React.Component {
       dataQueries = data.data_queries;
     }
     const queryConfirmationList = [];
+    const referencesManager = useResolveStore.getState().referenceMapper;
+    const newQueries = dataQueries
+      .map((dq) => {
+        if (!referencesManager.get(dq.id)) {
+          return {
+            id: dq.id,
+            name: dq.name,
+          };
+        }
+      })
+      .filter((c) => c !== undefined);
+
+    useResolveStore.getState().actions.addEntitiesToMap(newQueries);
 
     if (dataQueries.length > 0) {
       dataQueries.forEach((query) => {
@@ -1003,7 +1016,9 @@ const withStore = (Component) => (props) => {
       const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
 
       if (componentIdsWithReferences.length > 0) {
-        batchUpdateComponents(componentIdsWithReferences);
+        setTimeout(() => {
+          batchUpdateComponents(componentIdsWithReferences);
+        }, 400);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
