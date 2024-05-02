@@ -144,11 +144,19 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       : setUpAccount(e);
   };
 
+  <div className="loader-wrapper">
+    <ShowLoading />
+  </div>;
+
   return (
     <div>
       {isGettingConfigs && (
-        <div className="loader-wrapper">
-          <ShowLoading />
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <div className="loader-wrapper">
+              <ShowLoading />
+            </div>
+          </div>
         </div>
       )}
 
