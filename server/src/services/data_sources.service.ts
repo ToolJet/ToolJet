@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import { Injectable, MethodNotAllowedException, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
@@ -332,6 +332,10 @@ export class DataSourcesService {
   ): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
 
+    if (dataSource.type == DataSourceTypes.SAMPLE) {
+      throw new MethodNotAllowedException('Cannot update configuration of sample data source');
+    }
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
       const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
@@ -377,6 +381,10 @@ export class DataSourcesService {
   }
 
   async delete(dataSourceId: string) {
+    const dataSource = await this.findOne(dataSourceId);
+    if (dataSource.type == DataSourceTypes.SAMPLE) {
+      throw new MethodNotAllowedException('Cannod delete sample data source');
+    }
     return await this.dataSourcesRepository.delete(dataSourceId);
   }
 
