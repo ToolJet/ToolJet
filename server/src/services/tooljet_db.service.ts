@@ -760,7 +760,7 @@ export class TooljetDbService {
 
       const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
         const { data_type, column_default = undefined } = column;
-        const isSerial = data_type === 'integer' && /^nextval\(.+::regclass\)$/.test(column_default);
+        const isSerial = data_type === 'integer' && /^nextval\(/.test(column_default);
         const isCharacterVarying = 'character varying';
 
         if (isSerial) return { data_type: 'serial', column_default: undefined };
