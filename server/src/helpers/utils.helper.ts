@@ -200,22 +200,34 @@ export const generateInviteURL = (
   invitationToken: string,
   organizationToken?: string,
   organizationId?: string,
-  source?: string
+  source?: string,
+  redirectTo?: string
 ) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-
-  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${
-    organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
-  }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
+  const baseURL = `${host}${subpath ? subpath : '/'}`;
+  const inviteSupath = `invitations/${invitationToken}`;
+  const organizationSupath = `${organizationToken ? `/workspaces/${organizationToken}` : ''}`;
+  let queryString = new URLSearchParams({
+    ...(organizationId && { oid: organizationId }),
+    ...(source && { source }),
+    ...(redirectTo && { redirectTo }),
+  }).toString();
+  queryString = queryString ? `?${queryString}` : '';
+  return `${baseURL}${inviteSupath}${organizationSupath}${queryString}`;
 };
 
-export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
+export const generateOrgInviteURL = (
+  organizationToken: string,
+  organizationId?: string,
+  fullUrl = true,
+  redirectTo?: string
+) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
-  }`;
+  }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
 
 export function extractMajorVersion(version) {
@@ -277,4 +289,30 @@ export const getMaxCopyNumber = (existNameList, splitChar = '_') => {
   // Creating the new name with maxNumber + 1
   const maxNumber = Math.max(...numbers, 0);
   return maxNumber + 1;
+};
+
+export const fullName = (firstName: string, lastName: string) => `${firstName || ''}${lastName ? ` ${lastName}` : ''}`;
+
+export const isValidDomain = (email: string, restrictedDomain: string): boolean => {
+  if (!email) {
+    return false;
+  }
+  const domain = email.substring(email.lastIndexOf('@') + 1);
+
+  if (!restrictedDomain) {
+    return true;
+  }
+  if (!domain) {
+    return false;
+  }
+  if (
+    !restrictedDomain
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e)
+      .includes(domain)
+  ) {
+    return false;
+  }
+  return true;
 };
