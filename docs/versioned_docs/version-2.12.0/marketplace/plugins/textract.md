@@ -49,7 +49,7 @@ This operation let's you to analyze the document by providing the document data 
 
 #### Required parameters: 
 
-- **Document**: Provide the document data in base64 scheme. Components like filepicker can be used to pick the document from local system and retrieve the base64 data dynamically using exposed variables. ex: **{{components.filepicker1.file[0].base64Data}}**
+- **Document**: Provide the document data in base64 scheme. Components like filepicker can be used to pick the document from local system and retrieve the base64 data dynamically using exposed variables. ex: `{{components.filepicker1.file[0].base64Data}}`
 - **Data Output**: Select one or more type of data output of the document. The 4 types of data outputs are: 
   1. **Forms**: Extracted data and text from forms, including field keys and values.
   2. **Tables**: Extracted table data, including column and row headers and cell contents.
