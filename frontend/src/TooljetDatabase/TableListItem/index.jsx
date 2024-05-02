@@ -103,8 +103,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     return filteredDataTypes;
   };
 
-  const isEditTable = () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
+  const isEditTable = (tableName) => {
+    tooljetDatabaseService.viewTable(organizationId, tableName).then(({ data = [], error }) => {
       if (error) {
         toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
         return;

@@ -28,23 +28,12 @@ const ForeignKeyTableForm = ({
   onDelete,
   setOnUpdate,
   onUpdate,
+  editForeignKeyInCreateTable,
 }) => {
   const createForeignKey = () => {
     handleCreateForeignKey();
     if (isCreateColumn || isEditColumn) {
       setForeignKeyDetails(() => [
-        {
-          column_names: [sourceColumn?.value],
-          referenced_table_name: targetTable?.value,
-          referenced_table_id: targetTable?.id,
-          referenced_column_names: [targetColumn?.value],
-          on_delete: onDelete?.value,
-          on_update: onUpdate?.value,
-        },
-      ]);
-    } else {
-      setForeignKeyDetails((prevValues) => [
-        ...prevValues, // Spread previous values
         {
           column_names: [sourceColumn?.value],
           referenced_table_name: targetTable?.value,
@@ -104,6 +93,7 @@ const ForeignKeyTableForm = ({
         createForeignKeyInEdit={createForeignKeyInEdit}
         isCreateColumn={isCreateColumn}
         isForeignKeyForColumnDrawer={isForeignKeyForColumnDrawer}
+        editForeignKeyInCreateTable={editForeignKeyInCreateTable}
       />
     </div>
   );

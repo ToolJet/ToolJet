@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { ToolTip } from '@/_components/ToolTip';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
@@ -33,6 +33,7 @@ function TableDetailsDropdown({
   setTargetColumn,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div className="mt-3">
       <div className="d-flex align-items-center justify-content-between">

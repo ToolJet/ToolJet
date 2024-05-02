@@ -17,10 +17,22 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
 
+  const primaryKeyColumns = [];
+  const nonPrimaryKeyColumns = [];
+  columns.forEach((column) => {
+    if (column?.constraints_type?.is_primary_key) {
+      primaryKeyColumns.push({ ...column });
+    } else {
+      nonPrimaryKeyColumns.push({ ...column });
+    }
+  });
+
+  const editRowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
+
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
-    if (Array.isArray(columns)) {
-      return columns.map((item) => {
+    if (Array.isArray(editRowColumns)) {
+      return editRowColumns.map((item) => {
         if (item.column_default === null) {
           return 'Custom';
         } else {
@@ -33,8 +45,8 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   });
 
   const [inputValues, setInputValues] = useState(
-    Array.isArray(columns)
-      ? columns.map((item, index) => {
+    Array.isArray(editRowColumns)
+      ? editRowColumns.map((item, index) => {
           if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
@@ -54,14 +66,14 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   );
 
   useEffect(() => {
-    columns.map(({ accessor, dataType, column_default }, index) => {
+    editRowColumns.map(({ accessor, dataType, column_default }, index) => {
       saveData(dataType, accessor, inputValues, index, column_default);
     });
   }, []);
 
   const [data, setData] = useState(() => {
     const data = {};
-    columns.forEach(({ accessor, dataType }) => {
+    editRowColumns.forEach(({ accessor, dataType }) => {
       if (dataType === 'boolean') {
         if (!accessor) {
           data[accessor] = false;
@@ -70,8 +82,6 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     });
     return data;
   });
-
-  // const referenceColumn = 'Name';
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
     const [key, value] = Object.entries(item);
@@ -159,13 +169,13 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   useEffect(() => {
     toast.dismiss();
     setData(
-      columns.reduce((result, column) => {
+      editRowColumns.reduce((result, column) => {
         const { dataType, column_default } = column;
         if (dataType !== 'serial') {
           if (column.dataType === 'boolean') {
             result[column.accessor] = false;
           } else {
-            result[column.accessor] = '';
+            result[column.accessor] = column_default ? column_default : '';
           }
         }
         return result;
@@ -275,7 +285,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   };
 
   let matchingObject = {};
-  columns.forEach((obj) => {
+  editRowColumns.forEach((obj) => {
     const { dataType = '', accessor, column_default } = obj;
     const keyName = accessor;
 
@@ -283,6 +293,9 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
       matchingObject[keyName] = data[keyName];
     }
   });
+
+  console.log('firstc', columns);
+  console.log('firste', editRowColumns);
 
   return (
     <div className="drawer-card-wrapper ">
@@ -292,8 +305,8 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
         </h3>
       </div>
       <div className="card-body tj-app-input">
-        {Array.isArray(columns) &&
-          columns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
+        {Array.isArray(editRowColumns) &&
+          editRowColumns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;
             const isNullable = !constraints_type.is_not_null;
             const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
