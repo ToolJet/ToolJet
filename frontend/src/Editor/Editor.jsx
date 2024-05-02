@@ -905,7 +905,11 @@ const EditorComponent = (props) => {
     }
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
-    removeUndefined(diffPatches);
+
+    // Component deletion provides an undefined key and escaping it to update the deletion in the database
+    if (!opts?.componentDeleted) {
+      removeUndefined(diffPatches);
+    }
 
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
