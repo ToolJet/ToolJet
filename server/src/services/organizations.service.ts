@@ -10,6 +10,7 @@ import {
   cleanObject,
   dbTransactionWrap,
   isPlural,
+  fullName,
   generateNextNameAndSlug,
 } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
@@ -155,14 +156,22 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
-  async fetchOrganization(slug: string): Promise<Organization> {
-    let organization: Organization;
-    try {
-      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
-    } catch (error) {
-      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug'] });
-    }
-    return organization;
+  async fetchOrganization(slug: string, manager?: EntityManager): Promise<Organization> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      let organization: Organization;
+      try {
+        organization = await manager.findOneOrFail(Organization, {
+          where: { slug },
+          select: ['id', 'slug', 'name'],
+        });
+      } catch (error) {
+        organization = await manager.findOneOrFail(Organization, {
+          where: { id: slug },
+          select: ['id', 'slug', 'name'],
+        });
+      }
+      return organization;
+    }, manager);
   }
 
   async getSingleOrganization(): Promise<Organization> {
@@ -285,7 +294,7 @@ export class OrganizationsService {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName ?? '',
         lastName: orgUser.user.lastName ?? '',
-        name: `${orgUser.user.firstName ?? ''} ${orgUser.user.lastName ?? ''}`,
+        name: fullName(orgUser.user.firstName, orgUser.user.lastName),
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
@@ -620,6 +629,7 @@ export class OrganizationsService {
         // User not setup
         shouldSendWelcomeMail = true;
       }
+
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
@@ -647,6 +657,7 @@ export class OrganizationsService {
         manager
       );
 
+      const name = fullName(currentUser.firstName, currentUser.lastName);
       if (shouldSendWelcomeMail) {
         this.emailService
           .sendWelcomeEmail(
@@ -656,7 +667,7 @@ export class OrganizationsService {
             organizationUser.invitationToken,
             organizationUser.organizationId,
             currentOrganization.name,
-            `${currentUser.firstName} ${currentUser.lastName ?? ''}`
+            name
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       } else {
@@ -664,9 +675,10 @@ export class OrganizationsService {
           .sendOrganizationUserWelcomeEmail(
             user.email,
             user.firstName,
-            `${currentUser.firstName} ${currentUser.lastName ?? ''}`,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
-            currentOrganization.name
+            name,
+            organizationUser.invitationToken,
+            currentOrganization.name,
+            organizationUser.organizationId
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       }
