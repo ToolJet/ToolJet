@@ -4,6 +4,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 const categoryTitles = {
   all: 'All categories',
   'customer-support': 'Customer support',
+  finance: 'Finance',
   'human-resources': 'Human resources',
   operations: 'Operations',
   'product-management': 'Product management',

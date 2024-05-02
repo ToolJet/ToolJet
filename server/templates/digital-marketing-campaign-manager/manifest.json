@@ -1,0 +1,16 @@
+{
+  "name": "Digital marketing campaign manager",
+  "description": "Plan, execute, and analyze your digital marketing campaigns with precision using our comprehensive UTM campaign manager.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "digital-marketing-campaign-manager",
+  "category": "sales-and-marketing"
+}
