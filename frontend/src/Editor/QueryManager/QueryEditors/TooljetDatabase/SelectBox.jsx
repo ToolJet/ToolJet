@@ -47,6 +47,8 @@ function DataSourceSelect({
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isInitialForeignKeSearchDataLoaded, setIsInitialForeignKeSearchDataLoaded] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
@@ -62,110 +64,132 @@ function DataSourceSelect({
     }
   });
 
-  const handleSearchInSelectBox = () => {
-    if (searchValue !== '' || searchValue.length > 0) {
-      const selectQuery = new PostgrestQueryBuilder();
-      const filterQuery = new PostgrestQueryBuilder();
-      const limit = 15;
-      const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-      selectQuery.select(referencedColumns?.referenced_column_names[0]);
-      if (scrollEventForColumnValus) {
-        filterQuery.filter(referencedColumns?.referenced_column_names[0], 'eq', searchValue);
-      }
-      const query = `${filterQuery.url.toString()}&limit=${limit}&offset=${0}`;
-      tooljetDatabaseService
-        .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
-        .then(({ headers, data = [], error }) => {
-          if (error) {
-            toast.error(
-              error?.message ??
-                `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-            );
-            setIsLoadingFKDetails(false);
-            return;
-          }
+  useEffect(() => {
+    function getForeignKeyDetails(incrementPageBy) {
+      if (isEmpty(searchValue)) {
+        const limit = 15;
+        const offset = (pageNumber - 1) * limit;
 
-          if (Array.isArray(data) && data?.length > 0) {
-            setReferencedColumnDetails(
-              data.map((item) => ({
-                value: item[referencedColumns?.referenced_column_names[0]],
-                label: item[referencedColumns?.referenced_column_names[0]],
-              }))
-            );
-          }
-        });
-    }
-  };
-
-  const getForeignKeyDetails = (add) => {
-    const limit = 15;
-    const offset = (pageNumber - 1) * limit;
-
-    if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
-      return;
-    }
-
-    setIsLoadingFKDetails(true);
-    const selectQuery = new PostgrestQueryBuilder();
-    // Checking that the selected column is available in ForeignKey
-    const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-    selectQuery.select(referencedColumns?.referenced_column_names[0]);
-    tooljetDatabaseService
-      .findOne(
-        organizationId,
-        foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
-        `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
-      )
-      .then(({ headers, data = [], error }) => {
-        if (error) {
-          toast.error(
-            error?.message ??
-              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-          );
-          setIsLoadingFKDetails(false);
+        if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
           return;
         }
 
-        const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+        setIsLoadingFKDetails(true);
+        const selectQuery = new PostgrestQueryBuilder();
+        // Checking that the selected column is available in ForeignKey
+        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
 
-        if (Array.isArray(data) && data?.length > 0) {
-          if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
-          setReferencedColumnDetails((prevData) => [...prevData, ...data]);
-          setPageNumber((prevPageNumber) => prevPageNumber + add);
-          if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
-          setIsLoadingFKDetails(false);
-        }
-      });
-  };
+        selectQuery.select(referencedColumns?.referenced_column_names[0]);
+        tooljetDatabaseService
+          .findOne(
+            organizationId,
+            foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
+            `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
+          )
+          .then(({ headers, data = [], error }) => {
+            if (error) {
+              toast.error(
+                error?.message ??
+                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+              );
+              setIsLoadingFKDetails(false);
+              return;
+            }
 
-  // Only for rendering ForeignKey data in the drop down
-  const handleScrollThrottled = throttle(() => {
-    const target = scrollContainerRef?.current;
-    let scrollTop = target?.scrollTop;
-    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
-
-    if (scrollPercentage > 90 && !isLoadingFKDetails) {
-      getForeignKeyDetails(1);
+            const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+            if (Array.isArray(data) && data?.length > 0) {
+              if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
+              setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+              setPageNumber((prevPageNumber) => prevPageNumber + incrementPageBy);
+              if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
+            }
+            setIsLoadingFKDetails(false);
+          });
+      }
     }
-  }, 500);
 
-  if (scrollEventForColumnValus) scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
+    function handleScroll() {
+      const target = scrollContainerRef?.current;
+      let scrollTop = target?.scrollTop;
+      const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
 
-  useEffect(() => {
-    if (scrollEventForColumnValus && !isInitialForeignKeyDataLoaded) {
-      getForeignKeyDetails(1);
+      if (scrollPercentage > 90 && !isLoadingFKDetails) {
+        if (isEmpty(searchValue)) getForeignKeyDetails(1);
+      }
     }
+
+    const handleScrollThrottled = throttle(handleScroll, 500);
+
+    if (scrollEventForColumnValus && !searchValue) {
+      if (!isInitialForeignKeyDataLoaded && !isLoadingFKDetails) getForeignKeyDetails(1);
+      scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
+    }
+
+    return () => {
+      scrollContainerRef?.current?.removeEventListener('scroll', handleScrollThrottled);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchValue, pageNumber, totalRecords, isLoadingFKDetails]);
 
   useEffect(() => {
-    const debouncedHandleSearchInSelectBox = debounce(() => {
-      handleSearchInSelectBox();
-    }, 500);
+    function handleSearchInSelectBox() {
+      if (!isEmpty(searchValue)) {
+        const limit = 100;
+        // Only first page will be loaded - for Search
+        const offset = (1 - 1) * limit;
 
-    debouncedHandleSearchInSelectBox();
+        if (isInitialForeignKeSearchDataLoaded) return;
+        setIsLoadingFKDetails(true);
+        const selectQuery = new PostgrestQueryBuilder();
+        const filterQuery = new PostgrestQueryBuilder();
 
-    return debouncedHandleSearchInSelectBox.cancel;
+        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+
+        selectQuery.select(referencedColumns?.referenced_column_names[0]);
+        if (scrollEventForColumnValus) {
+          filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
+        }
+
+        const query = `${selectQuery.url.toString()}&${filterQuery.url.toString()}&limit=${limit}&offset=${offset}`;
+
+        tooljetDatabaseService
+          .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
+          .then(({ _headers, data = [], error }) => {
+            if (error) {
+              toast.error(
+                error?.message ??
+                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+              );
+              setIsLoadingFKDetails(false);
+              return;
+            }
+
+            if (Array.isArray(data) && data?.length > 0) {
+              setIsInitialForeignKeSearchDataLoaded(true);
+              const currentSearchResultList = data.map((item) => ({
+                value: item[referencedColumns?.referenced_column_names[0]],
+                label: item[referencedColumns?.referenced_column_names[0]],
+              }));
+              setSearchResults([...currentSearchResultList]);
+            }
+            setIsLoadingFKDetails(false);
+          });
+      }
+    }
+    let debouncedHandleSearchInSelectBox;
+    if (scrollEventForColumnValus) {
+      debouncedHandleSearchInSelectBox = debounce(() => {
+        // Making the values to default
+        if (searchResults.length) setSearchResults([]);
+        setIsInitialForeignKeSearchDataLoaded(false);
+
+        if (!isLoadingFKDetails) handleSearchInSelectBox(1, true);
+      }, 500);
+
+      debouncedHandleSearchInSelectBox();
+    }
+
+    return debouncedHandleSearchInSelectBox?.cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
@@ -189,6 +213,7 @@ function DataSourceSelect({
         controlShouldRenderValue={false}
         menuPlacement="auto"
         menuIsOpen
+        autoFocus
         hideSelectedOptions={false}
         components={{
           // ...(isMulti && {
@@ -295,6 +320,7 @@ function DataSourceSelect({
                 scrollContainerRef={scrollContainerRef}
                 foreignKeys={foreignKeys}
                 cellColumnName={cellColumnName}
+                isLoadingFKDetails={isLoadingFKDetails}
               />
             ),
             // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -303,7 +329,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && { Control: () => '' }),
+          ...(optionsCount < 5 && !scrollEventForColumnValus && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
@@ -388,8 +414,6 @@ function DataSourceSelect({
           container: (styles) => ({
             ...styles,
             borderRadius: '6px',
-            // border: '1px solid var(--slate3)',
-            // boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }),
           valueContainer: (styles) => ({
             ...styles,
@@ -397,34 +421,19 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={options}
+        options={scrollEventForColumnValus && searchValue ? searchResults : options}
         isDisabled={isDisabled}
         isClearable={false}
-        // menuIsOpen
         isMulti={isMulti}
         maxMenuHeight={400}
         minMenuHeight={300}
         value={selected}
-        // onKeyDown={handleKeyDown}
+        inputValue={searchValue}
         onInputChange={(value) => {
-          const _queryDsSelectMenu = document.getElementById('query-ds-select-menu');
           if (scrollEventForColumnValus) {
             setSearchValue(value);
           }
-          // if (queryDsSelectMenu && !queryDsSelectMenu?.style?.height) {
-          //   queryDsSelectMenu.style.height = queryDsSelectMenu.offsetHeight + 'px';
-          // }
         }}
-        // filterOption={(data, search) => {
-        //   if (data?.data?.source) {
-        //     //Disabled below eslint check since already checking in above line)
-        //     // eslint-disable-next-line no-unsafe-optional-chaining
-        //     const { name, kind } = data?.data?.source;
-        //     const searchTerm = search.toLowerCase();
-        //     return name.toLowerCase().includes(searchTerm) || kind.toLowerCase().includes(searchTerm);
-        //   }
-        //   return true;
-        // }}
       />
     </div>
   );
@@ -446,6 +455,7 @@ const MenuList = ({
   scrollContainerRef,
   foreignKeys,
   cellColumnName,
+  isLoadingFKDetails = false,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -470,7 +480,7 @@ const MenuList = ({
   return (
     <>
       {!isEmpty(options) && showColumnInfo && columnInfoForTable}
-      {isEmpty(options) && emptyError ? (
+      {isEmpty(options) && emptyError && !isLoadingFKDetails ? (
         emptyError
       ) : (
         <div
