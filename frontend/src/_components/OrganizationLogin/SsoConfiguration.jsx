@@ -259,7 +259,7 @@ class SSOConfiguration extends React.Component {
               </span>
               {
                 <img
-                  src="/assets/images/EditIcon.png"
+                  src="assets/images/EditIcon.png"
                   className="option-icon"
                   style={{ width: '14px', height: '14px', marginLeft: '8px' }}
                   data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-edit-icon`}
