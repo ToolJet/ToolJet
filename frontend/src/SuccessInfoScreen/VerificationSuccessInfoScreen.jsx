@@ -146,6 +146,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
+      {isGettingConfigs && (
+        <div className="loader-wrapper">
+          <ShowLoading />
+        </div>
+      )}
+
       {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
