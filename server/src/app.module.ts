@@ -60,6 +60,7 @@ import { logfileTransportConfig, logFormat } from './helpers/logger.helper';
 import { InstanceLoginConfigsModule } from './modules/instance_login_configs/instance_login_configs.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { SampleDBScheduler } from './schedulers/sampleDB.scheduler';
 
 const imports = [
   EventEmitterModule.forRoot({
@@ -219,7 +220,7 @@ if (process.env.DISABLE_WEBHOOKS !== 'true') {
 @Module({
   imports,
   controllers: [AppController],
-  providers: [EmailService, SeedsService],
+  providers: [EmailService, SeedsService, SampleDBScheduler],
 })
 export class AppModule implements OnModuleInit {
   constructor(private connection: Connection) {}
