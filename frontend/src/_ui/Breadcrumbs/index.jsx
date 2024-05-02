@@ -4,6 +4,10 @@ import SolidIcon from '../Icon/SolidIcons';
 import { BreadCrumbContext } from '../../App/App';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}
+
 export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const { sidebarNav } = useContext(BreadCrumbContext);
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
@@ -20,7 +24,7 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
               {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
               <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
                 {' '}
-                {sidebarNav}
+                {sidebarNav && decodeEntities(sidebarNav)}
               </li>
               {beta && <span className="badge bg-color-primary mx-3">beta</span>}
             </div>

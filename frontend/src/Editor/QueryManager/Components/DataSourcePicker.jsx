@@ -16,6 +16,10 @@ import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '../queryManager.theme.scss';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}
+
 function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, darkMode, globalDataSources }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources];
   const [searchTerm, setSearchTerm] = useState();
@@ -178,7 +182,7 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
                     data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                   >
                     <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
-                    <span className="text-truncate">{source.name}</span>
+                    <span className="text-truncate">{decodeEntities(source.name)}</span>
                     <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
                   </ButtonSolid>
                 </Col>
