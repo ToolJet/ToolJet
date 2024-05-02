@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { tooljetDatabaseService } from '@/_services';
 import Information from '../Icons/information.svg';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
@@ -12,6 +12,7 @@ import _, { isEmpty } from 'lodash';
 import { ConfirmDialog } from '@/_components';
 import { Tooltip } from 'react-tooltip';
 import { getColumnDataType, dataTypes } from '../constants';
+import { TooljetDatabaseContext } from '../index';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -228,11 +229,22 @@ function ForeignKeyRelation({
 
   // const isMatchingForeignKeyColumns = checkMatchingColumnNamesInForeignKey(foreignKeyDetails, columns);
 
-  const isAddRelationBtnDisabled =
-    isEmpty(tableName) ||
-    (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
-    isEmpty(columns) ||
-    (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation));
+  const { tables } = useContext(TooljetDatabaseContext);
+
+  const disableAddRelationButton = tables?.length < 1 || isEmpty(tableName) || isEmpty(columns);
+  // (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
+  // (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation));
+  const getTooltipContentFordisableAddRelationButton = (tableLength, tableName, columns) => {
+    if (tableLength < 1) {
+      return 'At least 1 table is required to add foreign key relation';
+    } else if (isEmpty(tableName)) {
+      return 'Table name is required to add foreign key relation';
+    } else if (isEmpty(columns)) {
+      return 'At least 1 column is required to add foreign key relation';
+    } else {
+      return '';
+    }
+  };
 
   return (
     <>
@@ -273,13 +285,13 @@ function ForeignKeyRelation({
               setIsForeignKeyDraweOpen(true);
               setCreateForeignKeyInEdit(true);
             }}
-            disabled={isAddRelationBtnDisabled}
+            disabled={disableAddRelationButton}
             data-tooltip-id="add-relation-tooltip"
-            data-tooltip-content="At least 1 table required to add foreign key relation"
+            data-tooltip-content={getTooltipContentFordisableAddRelationButton(tables?.length, tableName, columns)}
           >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp; Add relation
-            {isAddRelationBtnDisabled && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
+            {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
       </div>
