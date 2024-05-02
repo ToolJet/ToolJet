@@ -59,6 +59,18 @@ function ForeignKeyRelation({
   };
 
   const handleCreateForeignKey = () => {
+    setForeignKeyDetails((prevValues) => [
+      ...prevValues, // Spread previous values
+      {
+        column_names: [sourceColumn?.value],
+        referenced_table_name: targetTable?.value,
+        referenced_table_id: targetTable?.id,
+        referenced_column_names: [targetColumn?.value],
+        on_delete: onDelete?.value,
+        on_update: onUpdate?.value,
+      },
+    ]);
+
     onCloseForeignKeyDrawer();
     toast.success(`Foreign key Added successfully for selected column`);
   };
@@ -109,6 +121,20 @@ function ForeignKeyRelation({
     if (error) {
       toast.error(error?.message ?? `Failed to edit foreign key`);
       return;
+    }
+
+    if (!error) {
+      setForeignKeyDetails((prevValues) => [
+        ...prevValues, // Spread previous values
+        {
+          column_names: [sourceColumn?.value],
+          referenced_table_name: targetTable?.value,
+          referenced_table_id: targetTable?.id,
+          referenced_column_names: [targetColumn?.value],
+          on_delete: onDelete?.value,
+          on_update: onUpdate?.value,
+        },
+      ]);
     }
 
     fetchMetaDataApi();
