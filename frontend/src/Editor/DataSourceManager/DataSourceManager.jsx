@@ -934,7 +934,7 @@ class DataSourceManagerComponent extends React.Component {
                   </span>
                 )}
               </div>
-              {this.renderEnvironmentsTab(selectedDataSource)}
+              {!isSampleDb && this.renderEnvironmentsTab(selectedDataSource)}
             </Modal.Header>
             {this.props.environmentLoading ? (
               <ModalBody>
@@ -1039,19 +1039,21 @@ class DataSourceManagerComponent extends React.Component {
                         environmentId={this.props.currentEnvironment?.id}
                       />
                     </div>
-                    <div className="col-auto" data-cy="db-connection-save-button">
-                      <ButtonSolid
-                        className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                        isLoading={isSaving}
-                        disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-                        variant="primary"
-                        onClick={this.createDataSource}
-                        leftIcon="floppydisk"
-                        fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
-                      >
-                        {this.props.t('globals.save', 'Save')}
-                      </ButtonSolid>
-                    </div>
+                    {!isSampleDb && (
+                      <div className="col-auto" data-cy="db-connection-save-button">
+                        <ButtonSolid
+                          className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                          isLoading={isSaving}
+                          disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                          variant="primary"
+                          onClick={this.createDataSource}
+                          leftIcon="floppydisk"
+                          fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
+                        >
+                          {this.props.t('globals.save', 'Save')}
+                        </ButtonSolid>
+                      </div>
+                    )}
                   </Modal.Footer>
                 )}
 
