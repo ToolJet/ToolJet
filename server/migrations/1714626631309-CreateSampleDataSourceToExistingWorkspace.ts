@@ -99,22 +99,25 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
         })
       );
 
-      const allUserGroupPermission: GroupPermission = await entityManager.query(
+      const GroupPermissionList: GroupPermission[] = await entityManager.query(
         `
         SELECT *
         FROM group_permissions
-        WHERE group = $1
-      `,
-        ['all_user']
+        WHERE "group" = $1
+        AND organization_id = $2
+        `,
+        ['all_users', organizationId]
       );
+
+      const allUserGroupPermissions = GroupPermissionList[0];
 
       await entityManager.query(
         `
-        INSERT INTO data_source_group_permission (data_source_id, group_permission_id, read)
+        INSERT INTO data_source_group_permissions (data_source_id, group_permission_id, read)
         VALUES ($1, $2, $3)
         RETURNING *;
         `,
-        [dataSource.id, allUserGroupPermission.id, true]
+        [dataSource.id, allUserGroupPermissions.id, true]
       );
     }
   }
