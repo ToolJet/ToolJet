@@ -760,11 +760,11 @@ export class TooljetDbService {
 
       const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
         const { data_type, column_default = undefined } = column;
-        const isSerial = data_type === 'integer' && /^nextval\(/.test(column_default);
-        const isCharacterVarying = 'character varying';
+        const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
+        const isCharacterVarying = () => data_type === 'character varying';
 
-        if (isSerial) return { data_type: 'serial', column_default: undefined };
-        if (isCharacterVarying && !isEmpty(column_default))
+        if (isSerial()) return { data_type: 'serial', column_default: undefined };
+        if (isCharacterVarying() && !isEmpty(column_default))
           return { data_type, column_default: this.addQuotesIfString(column_default) };
 
         return { data_type, column_default };
