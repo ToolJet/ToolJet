@@ -36,6 +36,27 @@
     border-right: 1px solid;
     border-bottom: 1px solid;
     border-color: inherit;
+
+    &:nth-last-child(2) {
+      border-right: 0px;
+      border-color: inherit;
+    }
+
+    &:last-child {
+      &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 0px;
+        left: -1px;
+        width: 1px;
+        height: 100%;
+        background-color: rgba(101, 109, 119, 0.16) !important;
+      }
+
+      border-right: 0px;
+      border-color: inherit;
+    }
   }
 
   td {
@@ -70,6 +91,27 @@
     border-right: 1px solid;
     border-bottom: 1px solid;
     border-color: inherit;
+
+    &:nth-last-child(2) {
+      border-right: 0px;
+      border-color: inherit;
+    }
+
+    &:last-child {
+      &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 0px;
+        left: -1px;
+        width: 1px;
+        height: 100%;
+        background-color: rgba(101, 109, 119, 0.16) !important;
+      }
+
+      border-right: 0px;
+      border-color: inherit;
+    }
   }
 
   td {
@@ -124,7 +166,7 @@
   }
 
   .tjdb-selected-cell {
-    border-color: var(--Indigo-09, #3E63DD);
+    border: 1.5px solid var(--Indigo-09, #3E63DD) !important;
   }
 
   .card-table tr td:last-child {
@@ -191,7 +233,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100% - 63px);
+  height: calc(100% - 95px);
 }
 
 .tjdb-create-new-table {
@@ -279,6 +321,7 @@
 }
 
 .tj-db-table {
+  position: relative;
   scroll-behavior: smooth;
 
   .table-cell {

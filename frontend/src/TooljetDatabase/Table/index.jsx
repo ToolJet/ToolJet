@@ -907,6 +907,11 @@ const Table = ({ collapseSidebar }) => {
               </ToolTip>
             )}
           </div>
+          <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
+            <div>
+              <SolidIcon name="primarykey" />
+            </div>
+          </ToolTip>
         </div>
       </ToolTip>
     ) : (
@@ -979,6 +984,15 @@ const Table = ({ collapseSidebar }) => {
     marginTop: '0px',
   };
 
+  // primary key column should come in front row of table
+  // headerGroups.forEach((item) => {
+  //   item.headers.sort((a, b) => {
+  //     if (a.constraints_type && a.constraints_type.is_primary_key) return -1;
+  //     if (b.constraints_type && b.constraints_type.is_primary_key) return 1;
+  //     return 0;
+  //   });
+  // });
+
   return (
     <div>
       <TjdbTableHeader
@@ -1008,12 +1022,17 @@ const Table = ({ collapseSidebar }) => {
         )}
         ref={tooljetDbTableRef}
       >
+        <div
+          className={cx(`tjdb-th-bg`, {
+            'tjdb-th-bg-dark': darkMode,
+          })}
+        />
         {loadingState ? (
           <table
             className={`table card-table loading-table table-vcenter text-nowrap datatable ${
               darkMode && 'dark-background'
             }`}
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', top: '-32px' }}
           >
             <thead>
               <tr>
@@ -1049,7 +1068,7 @@ const Table = ({ collapseSidebar }) => {
           <table
             {...getTableProps()}
             className={`table card-table table-vcenter text-nowrap datatable ${darkMode && 'dark-background'}`}
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', top: '-32px' }}
           >
             <thead>
               {headerGroups.map((headerGroup, index) => (
@@ -1246,21 +1265,22 @@ const Table = ({ collapseSidebar }) => {
                                 cell.value !== ''
                               }
                             >
-                              <div className="tjdb-column-select-border">
-                                <div
-                                  className={cx('tjdb-td-wrapper', {
-                                    'tjdb-selected-cell':
-                                      cellClick.rowIndex === rIndex &&
+                              <div
+                                className={`${
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.errorState === true
+                                    ? 'tjdb-cell-error'
+                                    : cellClick.rowIndex === rIndex &&
                                       cellClick.cellIndex === index &&
                                       cellClick.editable === true &&
-                                      !isCellUpdateInProgress,
-                                    'tjdb-cell-error':
-                                      cellClick.rowIndex === rIndex &&
-                                      cellClick.cellIndex === index &&
-                                      cellClick.errorState === true,
-                                  })}
-                                  id={`tjdb-cell-row${rIndex}-column${index}`}
-                                >
+                                      !isCellUpdateInProgress
+                                    ? 'tjdb-selected-cell'
+                                    : 'tjdb-column-select-border'
+                                }`}
+                                id={`tjdb-cell-row${rIndex}-column${index}`}
+                              >
+                                <div className="tjdb-td-wrapper">
                                   {cellClick.editable &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index ? (

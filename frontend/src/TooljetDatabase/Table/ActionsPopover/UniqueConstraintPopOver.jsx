@@ -72,13 +72,15 @@ export const UniqueConstraintPopOver = ({
                   />
                 </label>
                 <span className="unique-tag">
-                  {columns[index]?.constraints_type?.is_unique ? 'UNIQUE' : 'NOT UNIQUE'}
+                  {columns[index]?.constraints_type?.is_primary_key || columns[index]?.constraints_type?.is_unique
+                    ? 'UNIQUE'
+                    : 'NOT UNIQUE'}
                 </span>
               </div>
             </ToolTip>
           </div>
-          <div className="col text-truncate unique-helper-text px-2 py-1">
-            {columns[index]?.constraints_type?.is_unique
+          <div className="col unique-helper-text px-2 py-1">
+            {columns[index]?.constraints_type?.is_primary_key || columns[index]?.constraints_type?.is_unique
               ? 'Unique value constraint is added'
               : 'Unique value constraint is not added'}
           </div>
