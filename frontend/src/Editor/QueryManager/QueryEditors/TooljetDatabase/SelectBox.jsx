@@ -137,10 +137,10 @@ function DataSourceSelect({
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: showRedirection || showDescription ? 'space-between' : 'flex-start',
+                    justifyContent: showRedirection ? 'space-between' : 'flex-start',
                     alignItems: 'center',
                   }}
-                  className="dd-select-option"
+                  className={`dd-select-option ${showDescription && 'h-100'}`}
                 >
                   {isMulti && (
                     <div
@@ -179,9 +179,6 @@ function DataSourceSelect({
                     })}
                   >
                     {children}
-                    {foreignKeyAccess && showDescription && (
-                      <span className="action-description">{props.data.label}</span>
-                    )}
                   </span>
 
                   {foreignKeyAccess && showRedirection && props.isFocused && (
@@ -220,24 +217,63 @@ function DataSourceSelect({
           },
           // }),
           MenuList: useCallback(
-            (props) => (
-              <MenuList
-                {...props}
-                onAdd={onAdd}
-                addBtnLabel={addBtnLabel}
-                emptyError={emptyError}
-                foreignKeyAccess={foreignKeyAccess}
-                columnInfoForTable={columnInfoForTable}
-                showColumnInfo={showColumnInfo}
-                foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                scrollEventForColumnValus={scrollEventForColumnValus}
-                getForeignKeyDetails={getForeignKeyDetails}
-                loadingForeignKey={isLoadingFKDetails}
-                scrollContainerRef={scrollContainerRef}
-                foreignKeys={foreignKeys}
-                cellColumnName={cellColumnName}
-              />
-            ),
+            (props) => {
+              const selectedOption = props.children.reduce((accumulator, reactElement) => {
+                const props = reactElement?.props ?? {};
+                if (props?.isSelected) {
+                  accumulator = { ...props?.data };
+                }
+                return accumulator;
+              }, {});
+              const focusedOption = props.children.reduce((accumulator, reactElement) => {
+                const props = reactElement?.props ?? {};
+                if (props?.isFocused) {
+                  accumulator = { ...props?.data };
+                }
+                return accumulator;
+              }, {});
+
+              return (
+                <React.Fragment>
+                  <MenuList
+                    {...props}
+                    onAdd={onAdd}
+                    addBtnLabel={addBtnLabel}
+                    emptyError={emptyError}
+                    foreignKeyAccess={foreignKeyAccess}
+                    columnInfoForTable={columnInfoForTable}
+                    showColumnInfo={showColumnInfo}
+                    foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
+                    scrollEventForColumnValus={scrollEventForColumnValus}
+                    getForeignKeyDetails={getForeignKeyDetails}
+                    loadingForeignKey={isLoadingFKDetails}
+                    scrollContainerRef={scrollContainerRef}
+                    foreignKeys={foreignKeys}
+                    cellColumnName={cellColumnName}
+                    showDescription={showDescription}
+                  />
+                  {foreignKeyAccess && showDescription && (
+                    <>
+                      <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+                      <div
+                        style={{
+                          minHeight: '140px',
+                          height: 'fit-content',
+                          padding: '8px 12px',
+                        }}
+                      >
+                        <div className="tj-header-h8 tj-text">
+                          {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                        </div>
+                        <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+                          {!isEmpty(focusedOption) ? focusedOption?.description : selectedOption?.description}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            },
             // eslint-disable-next-line react-hooks/exhaustive-deps
             [onAdd, addBtnLabel, emptyError]
           ),

@@ -75,33 +75,91 @@ function SourceKeyRelation({
       name: 'NO ACTION',
       label: 'NO ACTION',
       value: 'NO ACTION',
+      description: `Updating a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will not be permitted for any records that references it in ${tableName} table.`,
     },
     {
       name: 'CASCADE',
       label: 'CASCADE',
       value: 'CASCADE',
+      description: `Updating a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will also update any records that references it in ${tableName} table`,
     },
     {
       name: 'RESTRICT',
       label: 'RESTRICT',
       value: 'RESTRICT',
+      description: `Updating a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will not be permitted for any records that references it in ${tableName} table. It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas RESTRICT does not.`,
     },
     {
       name: 'SET NULL',
       label: 'SET NULL',
       value: 'SET NULL',
+      description: `Updating a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will set the NULL value for any records that references it in ${tableName} table.`,
     },
     {
       name: 'SET DEFAULT',
       label: 'SET DEFAULT',
       value: 'SET DEFAULT',
+      description: `Updating a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will set the default value for any records that references it in ${tableName} table`,
     },
   ];
+  const onDeleteOptions = [
+    {
+      name: 'NO ACTION',
+      label: 'NO ACTION',
+      value: 'NO ACTION',
+      description: `Updating a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will not be permitted for any records that references it in ${tableName} table.`,
+    },
+    {
+      name: 'CASCADE',
+      label: 'CASCADE',
+      value: 'CASCADE',
+      description: `Deleting a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will also delete any records that references it in ${tableName} table`,
+    },
+    {
+      name: 'RESTRICT',
+      label: 'RESTRICT',
+      value: 'RESTRICT',
+      description: `Deleting a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will not be permitted for any records that references it in ${tableName} table. It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas RESTRICT does not.`,
+    },
+    {
+      name: 'SET NULL',
+      label: 'SET NULL',
+      value: 'SET NULL',
+      description: `Deleting a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will set the NULL value for any records that references it in ${tableName} table.`,
+    },
+    {
+      name: 'SET DEFAULT',
+      label: 'SET DEFAULT',
+      value: 'SET DEFAULT',
+      description: `Deleting a record from ${
+        targetTable?.value ?? '< target table name >'
+      } table will set the default value for any records that references it in ${tableName} table`,
+    },
+  ];
+  console.log('naman ::', { targetTable, onUpdateOptions, onDeleteOptions });
 
   useEffect(() => {
     // When this component is mounted by default we are setting onDelete and onUpdate action with first value of onUpdateOptions, so that by default no action is selected for the actions dropdown
     if (_.isEmpty(onDelete)) {
-      setOnDelete(onUpdateOptions[0]);
+      setOnDelete(onDeleteOptions[0]);
     }
     if (_.isEmpty(onUpdate)) {
       setOnUpdate(onUpdateOptions[0]);
@@ -226,7 +284,7 @@ function SourceKeyRelation({
           firstColumnName={'On update'}
           secondColumnName={'On remove'}
           tableList={onUpdateOptions}
-          tableColumns={onUpdateOptions}
+          tableColumns={onDeleteOptions}
           source={false}
           showDescription={true}
           actions={true}
