@@ -276,7 +276,7 @@ const EditorInput = ({
               completionKeymap: true,
               searchKeymap: false,
             }}
-            onFocus={() => handleFocus()}
+            onMouseDown={() => handleFocus()}
             onBlur={() => handleOnBlur()}
             className={customClassNames}
             theme={theme}
