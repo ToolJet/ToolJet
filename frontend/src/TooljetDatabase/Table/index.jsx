@@ -907,11 +907,6 @@ const Table = ({ collapseSidebar }) => {
               </ToolTip>
             )}
           </div>
-          <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
-            <div>
-              <SolidIcon name="primarykey" />
-            </div>
-          </ToolTip>
         </div>
       </ToolTip>
     ) : (
@@ -983,15 +978,6 @@ const Table = ({ collapseSidebar }) => {
     paddingTop: '12px',
     marginTop: '0px',
   };
-
-  // primary key column should come in front row of table
-  // headerGroups.forEach((item) => {
-  //   item.headers.sort((a, b) => {
-  //     if (a.constraints_type && a.constraints_type.is_primary_key) return -1;
-  //     if (b.constraints_type && b.constraints_type.is_primary_key) return 1;
-  //     return 0;
-  //   });
-  // });
 
   return (
     <div>
@@ -1265,22 +1251,21 @@ const Table = ({ collapseSidebar }) => {
                                 cell.value !== ''
                               }
                             >
-                              <div
-                                className={`${
-                                  cellClick.rowIndex === rIndex &&
-                                  cellClick.cellIndex === index &&
-                                  cellClick.errorState === true
-                                    ? 'tjdb-cell-error'
-                                    : cellClick.rowIndex === rIndex &&
+                              <div className="tjdb-column-select-border">
+                                <div
+                                  className={cx('tjdb-td-wrapper', {
+                                    'tjdb-selected-cell':
+                                      cellClick.rowIndex === rIndex &&
                                       cellClick.cellIndex === index &&
                                       cellClick.editable === true &&
-                                      !isCellUpdateInProgress
-                                    ? 'tjdb-selected-cell'
-                                    : 'tjdb-column-select-border'
-                                }`}
-                                id={`tjdb-cell-row${rIndex}-column${index}`}
-                              >
-                                <div className="tjdb-td-wrapper">
+                                      !isCellUpdateInProgress,
+                                    'tjdb-cell-error':
+                                      cellClick.rowIndex === rIndex &&
+                                      cellClick.cellIndex === index &&
+                                      cellClick.errorState === true,
+                                  })}
+                                  id={`tjdb-cell-row${rIndex}-column${index}`}
+                                >
                                   {cellClick.editable &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index ? (
