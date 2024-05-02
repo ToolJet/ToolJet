@@ -30,6 +30,7 @@ import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import { LicenseTooltip } from '@/LicenseTooltip';
+
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -40,7 +41,6 @@ class DataSourceManagerComponent extends React.Component {
     let options = {};
     let dataSourceMeta = {};
     let datasourceName = '';
-
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;

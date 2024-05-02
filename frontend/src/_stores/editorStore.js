@@ -25,7 +25,7 @@ const initialState = {
   showComments: false,
   hoveredComponent: '',
   selectionInProgress: false,
-  selectedComponents: EMPTY_ARRAY,
+  selectedComponents: [],
   isEditorActive: false,
   selectedComponent: null,
   canUndo: false,
@@ -45,6 +45,7 @@ const initialState = {
   currentAppEnvironmentId: null,
   featureAccess: null,
   componentsNeedsUpdateOnNextRender: [],
+  appMode: 'auto',
 };
 
 export const useEditorStore = create(
@@ -117,6 +118,7 @@ export const useEditorStore = create(
           set({ featureAccess: data });
         });
       },
+      setAppMode: (appMode) => set({ appMode }),
     },
   }),
   { name: STORE_NAME }

@@ -48,6 +48,7 @@ import { SSOGuard } from '@ee/licensing/guards/sso.guard';
 import { LDAPGuard } from '@ee/licensing/guards/ldap.guard';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 import { SAMLGuard } from '@ee/licensing/guards/saml.guard';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { SAMLGuard } from '@ee/licensing/guards/saml.guard';
       },
       inject: [ConfigService],
     }),
+    TooljetDbModule,
   ],
   providers: [
     OrganizationsService,

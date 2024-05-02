@@ -50,6 +50,7 @@ import { ClearSSOResponseScheduler } from 'src/schedulers/clear_sso_response.sch
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { PostgrestProxyService } from '@services/postgrest_proxy.service';
       },
       inject: [ConfigService],
     }),
+    TooljetDbModule,
   ],
   providers: [
     AuthService,
