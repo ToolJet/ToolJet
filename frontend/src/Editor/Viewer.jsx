@@ -39,8 +39,6 @@ import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
-import { useSuperStore } from '../_stores/superStore';
-import { ModuleContext, useModuleName } from '../_contexts/ModuleContext';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
@@ -50,8 +48,6 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import TooljetBanner from './Viewer/TooljetBanner';
 
 class ViewerComponent extends React.Component {
-  static contextType = ModuleContext;
-
   constructor(props) {
     super(props);
 
@@ -81,7 +77,6 @@ class ViewerComponent extends React.Component {
       navigate: this.props.navigate,
       switchPage: this.switchPage,
       currentPageId: this.state.currentPageId,
-      moduleName: this.context,
     };
   }
 
@@ -93,15 +88,9 @@ class ViewerComponent extends React.Component {
       appDefData.showViewerNavigation = data.showViewerNavigation;
     }
     const appMode = data.globalSettings?.appMode || data?.editing_version?.globalSettings?.appMode;
-    useSuperStore
-      .getState()
-      .modules[this.context].useAppVersionStore.getState()
-      .actions.updateEditingVersion(data.editing_version);
-    useSuperStore
-      .getState()
-      .modules[this.context].useAppVersionStore.getState()
-      .actions.updateReleasedVersionId(data.currentVersionId);
-    useSuperStore.getState().modules[this.context].useEditorStore.getState().actions.setAppMode(appMode);
+    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+    useAppVersionStore.getState().actions.updateReleasedVersionId(data.currentVersionId);
+    useEditorStore.getState().actions.setAppMode(appMode);
     this.setState({
       app: data,
       isLoading: false,
@@ -174,7 +163,7 @@ class ViewerComponent extends React.Component {
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    useSuperStore.getState().modules[this.context].useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
+    useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -196,10 +185,7 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useSuperStore
-      .getState()
-      .modules[this.context].useEditorStore.getState()
-      .actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -220,7 +206,7 @@ class ViewerComponent extends React.Component {
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
 
-        computeComponentState(components, this.context).then(async () => {
+        computeComponentState(components).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
           this.runQueries(dataQueries);
 
@@ -290,10 +276,7 @@ class ViewerComponent extends React.Component {
 
   fetchAppVersions = async (appId) => {
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(appId);
-    useSuperStore
-      .getState()
-      .modules[this.context].useAppVersionStore.getState()
-      .actions.setAppVersions(appVersions.appVersions);
+    useAppVersionStore.getState().actions.setAppVersions(appVersions.appVersions);
   };
 
   loadApplicationBySlug = (slug, authentication_failed = false) => {
@@ -350,10 +333,7 @@ class ViewerComponent extends React.Component {
   };
 
   updateQueryConfirmationList = (queryConfirmationList) =>
-    useSuperStore
-      .getState()
-      .modules[this.context].useEditorStore.getState()
-      .actions.updateQueryConfirmationList(queryConfirmationList);
+    useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
 
   setupViewer() {
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
@@ -363,7 +343,7 @@ class ViewerComponent extends React.Component {
 
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
-          useSuperStore.getState().modules[this.context].useAppDataStore.getState().actions.setAppId(appId);
+          useAppDataStore.getState().actions.setAppId(appId);
 
           const currentUser = currentSession.current_user;
           const userVars = {
@@ -412,10 +392,7 @@ class ViewerComponent extends React.Component {
   componentDidMount() {
     this.setupViewer();
     const isMobileDevice = this.state.deviceWindowWidth < 600;
-    useSuperStore
-      .getState()
-      .modules[this.context].useEditorStore.getState()
-      .actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     window.addEventListener('message', this.handleMessage);
   }
 
@@ -425,14 +402,8 @@ class ViewerComponent extends React.Component {
       this.loadApplicationBySlug(this.props.params.slug);
     }
     if (prevProps.currentLayout !== this.props.currentLayout) {
-      if (
-        this.props.id &&
-        useSuperStore.getState().modules[this.context].useAppVersionStore.getState()?.editingVersion?.id
-      ) {
-        this.loadApplicationByVersion(
-          this.props.id,
-          useSuperStore.getState().modules[this.context].useAppVersionStore.getState().editingVersion.id
-        );
+      if (this.props.id && useAppVersionStore.getState()?.editingVersion?.id) {
+        this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
       }
     }
 
@@ -484,10 +455,7 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(
-            this.state.appDefinition?.pages[this.state.currentPageId].components,
-            this.context
-          ).then(async () => {
+          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
             const currentPageEvents = this.state.events.filter(
               (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
             );
@@ -607,7 +575,6 @@ class ViewerComponent extends React.Component {
       canvasWidth,
     } = this.state;
 
-    const moduleName = this.context;
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
@@ -765,11 +732,9 @@ class ViewerComponent extends React.Component {
                                   onComponentClick(this, id, component, 'view');
                                 }}
                                 onComponentOptionChanged={(component, optionName, value) => {
-                                  return onComponentOptionChanged(this.context, component, optionName, value);
+                                  return onComponentOptionChanged(component, optionName, value);
                                 }}
-                                onComponentOptionsChanged={(...props) =>
-                                  onComponentOptionsChanged(this.context, ...props)
-                                }
+                                onComponentOptionsChanged={onComponentOptionsChanged}
                                 canvasWidth={this.getCanvasWidth()}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
