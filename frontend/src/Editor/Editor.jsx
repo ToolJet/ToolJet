@@ -77,6 +77,8 @@ enablePatches();
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
+const maskedWorkspaceConstantStr = '**************';
+
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
@@ -373,7 +375,7 @@ const EditorComponent = (props) => {
       const orgConstants = {};
       constants.map((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = constantValue;
+        orgConstants[constant.name] = maskedWorkspaceConstantStr;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({

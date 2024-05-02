@@ -9,6 +9,7 @@ import {
   Delete,
   ForbiddenException,
   Query,
+  Req,
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
@@ -20,6 +21,7 @@ import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/
 import { AppDecorator as App } from 'src/decorators/app.decorator';
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { OrganizationConstant } from 'src/entities/organization_constants.entity';
 
 @Controller('organization-constants')
 export class OrganizationConstantController {
@@ -31,24 +33,43 @@ export class OrganizationConstantController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async get(@User() user) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId);
+  async get(@User() user, @Req() req) {
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
+    const { decryptValue } = req.query;
+    const decrypt =
+      decryptValue === 'true' &&
+      (ability.can('createOrganizationConstant', OrganizationConstant) ||
+        ability.can('deleteOrganizationConstant', OrganizationConstant));
+    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, decrypt);
     return { constants: result };
   }
 
   @UseGuards(IsPublicGuard)
   @Get(':app_slug')
-  async getConstantsFromApp(@App() app) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId);
+  async getConstantsFromApp(@App() app, @User() user, @Req() req) {
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
+    const { decryptValue } = req.query;
+    const decrypt =
+      decryptValue === 'true' &&
+      (ability.can('createOrganizationConstant', OrganizationConstant) ||
+        ability.can('deleteOrganizationConstant', OrganizationConstant));
+    const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId, decrypt);
     return { constants: result };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/environment/:environmentId')
-  async getConstantsFromEnvironment(@User() user, @Param('environmentId') environmentId) {
+  async getConstantsFromEnvironment(@User() user, @Param('environmentId') environmentId, @Req() req) {
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
+    const { decryptValue } = req.query;
+    const decrypt =
+      decryptValue === 'true' &&
+      (ability.can('createOrganizationConstant', OrganizationConstant) ||
+        ability.can('deleteOrganizationConstant', OrganizationConstant));
     const result = await this.organizationConstantsService.getConstantsForEnvironment(
       user.organizationId,
-      environmentId
+      environmentId,
+      decrypt
     );
     return { constants: result };
   }

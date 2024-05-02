@@ -17,7 +17,7 @@ export class OrganizationConstantsService {
     private appEnvironmentService: AppEnvironmentService
   ) {}
 
-  async allEnvironmentConstants(organizationId: string): Promise<OrganizationConstant[]> {
+  async allEnvironmentConstants(organizationId: string, decryptValue: boolean): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
@@ -35,7 +35,12 @@ export class OrganizationConstantsService {
 
               return {
                 environmentName: env.name,
-                value: value && value.value.length > 0 ? await this.decryptSecret(organizationId, value.value) : '',
+                value:
+                  value && value.value.length > 0
+                    ? decryptValue
+                      ? await this.decryptSecret(organizationId, value.value)
+                      : value.value
+                    : '',
                 id: value.environmentId,
               };
             })
@@ -54,7 +59,11 @@ export class OrganizationConstantsService {
     });
   }
 
-  async getConstantsForEnvironment(organizationId: string, environmentId: string): Promise<OrganizationConstant[]> {
+  async getConstantsForEnvironment(
+    organizationId: string,
+    environmentId: string,
+    decryptValue: boolean
+  ): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
@@ -64,11 +73,13 @@ export class OrganizationConstantsService {
       const result = await query.getMany();
 
       const constantsWithValues = result.map(async (constant) => {
-        const decryptedValue = await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value);
+        const value = decryptValue
+          ? await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value)
+          : constant.orgEnvironmentConstantValues[0].value;
         return {
           id: constant.id,
           name: constant.constantName,
-          value: decryptedValue,
+          value: value,
         };
       });
 

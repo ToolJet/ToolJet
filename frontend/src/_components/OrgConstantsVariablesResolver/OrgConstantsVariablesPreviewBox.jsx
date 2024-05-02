@@ -23,6 +23,8 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
     return null;
   };
 
+  const workspaceConstantInfo = 'Workspace constants values are hidden';
+
   const shouldResolve =
     typeof value === 'string' &&
     ((value.includes('%%') && (value.includes('client.') || value.includes('server.'))) ||
@@ -101,10 +103,10 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
           <div className="alert-banner-type-text">
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 800, textTransform: 'capitalize' }}>
-                {isValidError ? 'Error' : ` ${type} - ${previewType}`}
+                {isValidError ? 'Error' : isConstant ? null : ` ${type} - ${previewType}`}
               </div>
             </div>
-            {getPreviewContent(resolvedValue, previewType)}
+            {isConstant ? this.workspaceConstantInfo : getPreviewContent(resolvedValue, previewType)}
           </div>
         </div>
         <DepericatedAlerForWorkspaceVariable text="Workspace variables deprecating soon" shouldShow={!isConstant} />
