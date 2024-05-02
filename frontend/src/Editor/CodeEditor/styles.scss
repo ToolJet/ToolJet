@@ -264,6 +264,7 @@
     .cm-tooltip-autocomplete {
         @extend .cm-base-autocomplete;
         top: content-box !important;
+
         .cm-completionInfo {
             @extend .cm-base-hint-info;
         }
@@ -470,7 +471,7 @@
     border-bottom: none !important;
 }
 
-.cm-line {
+.cm-content {
     word-break: break-all !important;
     max-width: 100% !important;
     white-space: pre-wrap !important;
@@ -490,8 +491,4 @@
 
 .cm-selectionLayer {
     width: 100%;
-}
-
-.cm-selectionBackground {
-    width: 100% !important;
 }
