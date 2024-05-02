@@ -129,7 +129,7 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
         ? any()
         : generateSchemaFromValidationDefinition(validationDefinition);
 
-      const reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
+      const reservedKeyword = ['app', 'window']; // Case-sensitive reserved keywords
       const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')})\\b`, 'i');
       const hasReservedkeyword = keywordRegex.test(value);
 
