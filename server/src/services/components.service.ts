@@ -174,27 +174,13 @@ export class ComponentsService {
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       return manager
-        .query(
-          `SELECT
-          component.*,
-          layout.*
-        FROM 
-          components component
-        LEFT JOIN (
-          SELECT
-            *,
-            ROW_NUMBER() OVER (PARTITION BY component_id, type ORDER BY updated_at DESC) as rn
-          FROM
-            layouts
-          WHERE
-            type IN ('desktop', 'mobile')
-        ) layout ON component.id = layout.component_id AND layout.rn = 1
-        WHERE 
-          component.page_id = ${pageId}
-        ORDER BY 
-          layout.updated_at DESC;
-        `
-        )
+        .createQueryBuilder(Component, 'component')
+        .leftJoinAndSelect('component.layouts', 'layout', 'layout.type IN (:...types)', {
+          types: ['desktop', 'mobile'],
+        })
+        .where('component.pageId = :pageId', { pageId })
+        .orderBy('layout.updatedAt', 'DESC')
+        .getMany()
         .then((components) => {
           return components.reduce((acc, component) => {
             const componentId = component.id;
