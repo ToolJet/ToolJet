@@ -69,7 +69,7 @@ export const generateHints = (hints, totalReferences = 1, input) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
-    let displayedHint = type === 'js_method' || type === 'Function' ? `${hint}()` : hint;
+    let displayedHint = type === 'js_method' || (type === 'Function' && !hint.endsWith('.run()')) ? `${hint}()` : hint;
 
     const currentWord = input.split('{{').pop().split('}}')[0];
     const hasDepth = currentWord.includes('.');
