@@ -52,7 +52,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) 
   });
 
   const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences, input);
-  return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
+  return orderSuggestions(suggestions, fieldType);
 };
 
 function orderSuggestions(suggestions, validationType) {
@@ -134,7 +134,7 @@ export const generateHints = (hints, totalReferences = 1, input) => {
 function filterHintsByDepth(input, hints) {
   if (input === '') return hints;
 
-  const inputDepth = input.split('.').length;
+  const inputDepth = input.includes('.') ? input.split('.').length : 0;
 
   const filteredHints = hints.filter((cm) => {
     const hintParts = cm.hint.split('.');
@@ -143,7 +143,22 @@ function filterHintsByDepth(input, hints) {
       (cm.hint.startsWith(input) && hintParts.length === inputDepth + 1) ||
       (cm.hint.startsWith(input) && hintParts.length === inputDepth);
 
-    if (input.endsWith('.')) {
+    const shouldFuzzyMatch = !shouldInclude ? hintParts.length > inputDepth : false;
+
+    if (shouldFuzzyMatch) {
+      // fuzzy match
+      let matchedDepth = -1;
+      for (let i = 0; i < hintParts.length; i++) {
+        if (hintParts[i].includes(input)) {
+          matchedDepth = i;
+          break;
+        }
+      }
+
+      if (matchedDepth !== -1) {
+        shouldInclude = hintParts.length === matchedDepth + 1;
+      }
+    } else if (input.endsWith('.')) {
       shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth;
     }
 
