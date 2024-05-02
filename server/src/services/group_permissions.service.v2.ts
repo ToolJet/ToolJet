@@ -94,16 +94,28 @@ export class GroupPermissionsServiceV2 {
     });
   }
 
-  //Need more work
   async updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto) {
+    const group = await this.getGroup(id);
+    const { editable, name } = group;
+    const { name: newName } = updateGroupPermissionDto;
+
+    if (newName && newName in USER_ROLE) {
+      throw new MethodNotAllowedException(ERROR_HANDLER.NON_EDITABLE_GROUP_UPDATE);
+    }
+
+    if (!editable) {
+      throw new MethodNotAllowedException(ERROR_HANDLER.NON_EDITABLE_GROUP_UPDATE);
+    }
+
+    if (name in [USER_ROLE.ADMIN, USER_ROLE.END_USER]) {
+      throw new MethodNotAllowedException(ERROR_HANDLER.NON_EDITABLE_GROUP_UPDATE);
+    }
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const group = await this.getGroup(id, manager);
       const { editable } = group;
       //add complex logic for only builder
       // this.validateUpdatePermissions(onlyBuilders,updateGroupPermissionDto);
-      if (!editable) throw new MethodNotAllowedException(ERROR_HANDLER.NON_EDITABLE_GROUP_UPDATE);
-
-      return await manager.delete(GroupPermissions, id);
+      if (!editable) return await manager.delete(GroupPermissions, id);
     });
     //Is editable only in paid plan builder group
   }
@@ -116,6 +128,16 @@ export class GroupPermissionsServiceV2 {
     if (!isOnlyBuilder && trueValues.length > 1)
       throw new BadRequestException(ERROR_HANDLER.NON_BUILDER_PERMISSION_UPDATE);
   }
+
+  // async getUsersWithRole(role:USER_ROLE):Promise<GroupUsers[]>{
+  //   const manager: EntityManager =  getManager();
+  //   return await manager
+  //       .createQueryBuilder(GroupUsers, 'group_users')
+  //       .innerJoinAndSelect('group_users.group', 'group')
+  //       .where('group.type = :role', {
+  //         versionId: appVersions.map((v) => v.id),
+  //       })
+  // }
 
   async getGroup(
     id: string,
