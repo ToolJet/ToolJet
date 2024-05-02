@@ -154,6 +154,22 @@ export class OrganizationUsersService {
       await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
     }, manager);
 
+    if (organizationUser.user.invitationToken) {
+      /* User is not activated in instance level. Send setup/welcome email */
+      this.emailService
+        .sendWelcomeEmail(
+          organizationUser.user.email,
+          organizationUser.user.firstName,
+          organizationUser.user.invitationToken,
+          invitationToken,
+          organizationUser.organizationId,
+          organizationUser.organization.name,
+          user.firstName
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+      return;
+    }
+
     this.emailService
       .sendOrganizationUserWelcomeEmail(
         organizationUser.user.email,
