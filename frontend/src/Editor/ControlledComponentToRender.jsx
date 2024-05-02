@@ -31,6 +31,7 @@ export const shouldUpdate = (prevProps, nextProps) => {
     deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition) &&
     prevProps?.width === nextProps?.width &&
     prevProps?.height === nextProps?.height &&
+    prevProps?.darkMode === nextProps?.darkMode &&
     !needToRender
   );
 };
