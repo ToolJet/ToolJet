@@ -28,7 +28,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
   function filterComponents(value) {
     if (value !== '') {
-      const fuse = new Fuse(componentTypes, { keys: ['component'] });
+      const fuse = new Fuse(componentTypes, { keys: ['displayName'], shouldSort: true, threshold: 0.4 });
       const results = fuse.search(value);
       setFilteredComponents(results.map((result) => result.item));
     } else {
@@ -82,7 +82,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
     const allWidgets = [];
 
-    const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
+    const commonItems = ['Table', 'Button', 'Text', 'TextInput', 'Datepicker', 'Form'];
     const formItems = [
       'Form',
       'TextInput',

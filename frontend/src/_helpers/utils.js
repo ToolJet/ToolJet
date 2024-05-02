@@ -17,6 +17,7 @@ import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { validateMultilineCode } from './utility';
 
 const reservedKeyword = ['app', 'window'];
+import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -415,6 +416,97 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     if (!widgetValue) {
       return { isValid: false, validationError: `Field cannot be empty` };
     }
+  }
+  return {
+    isValid,
+    validationError,
+  };
+}
+
+export function validateDates({ validationObject, widgetValue, currentState, customResolveObjects }) {
+  let isValid = true;
+  let validationError = null;
+  const validationDateFormat = validationObject?.dateFormat?.value || 'MM/DD/YYYY';
+  const validationTimeFormat = validationObject?.timeFormat?.value || 'HH:mm';
+  const customRule = validationObject?.customRule?.value;
+  const parsedDateFormat = validationObject?.parseDateFormat?.value;
+  const isTwentyFourHrFormatEnabled = validationObject?.isTwentyFourHrFormatEnabled?.value ?? false;
+  const isDateSelectionEnabled = validationObject?.isDateSelectionEnabled?.value ?? true;
+  const _widgetDateValue = moment(widgetValue, parsedDateFormat);
+  const _widgetTimeValue = moment(
+    widgetValue,
+    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled, isDateSelectionEnabled)
+  ).format(validationTimeFormat);
+
+  const resolvedMinDate = resolveWidgetFieldValue(
+    validationObject?.minDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxDate = resolveWidgetFieldValue(
+    validationObject?.maxDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMinTime = resolveWidgetFieldValue(
+    validationObject?.minTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxTime = resolveWidgetFieldValue(
+    validationObject?.maxTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+
+  // Minimum date validation
+  if (resolvedMinDate !== undefined && moment(resolvedMinDate).isValid()) {
+    if (!moment(resolvedMinDate, validationDateFormat).isBefore(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum date is ${resolvedMinDate}`,
+      };
+    }
+  }
+
+  // Maximum date validation
+  if (resolvedMaxDate !== undefined && moment(resolvedMaxDate).isValid()) {
+    if (!moment(resolvedMaxDate, validationDateFormat).isAfter(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum date is ${resolvedMaxDate}`,
+      };
+    }
+  }
+
+  // Minimum time validation
+  if (resolvedMinTime !== undefined && moment(resolvedMinTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMinTime, validationTimeFormat).isBefore(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum time is ${resolvedMinTime}`,
+      };
+    }
+  }
+
+  // Maximum time validation
+  if (resolvedMaxTime !== undefined && moment(resolvedMaxTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMaxTime, validationTimeFormat).isAfter(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum time is ${resolvedMaxTime}`,
+      };
+    }
+  }
+
+  //Custom rule validation
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+    return { isValid: false, validationError: resolvedCustomRule };
   }
   return {
     isValid,

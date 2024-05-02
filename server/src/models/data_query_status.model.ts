@@ -1,11 +1,15 @@
 export class DataQueryStatus {
   constructor(
-    private readonly _startTime = new Date().getTime(),
+    private _startTime = new Date().getTime(),
     private _status = 'failure',
     private _error = {},
     private _duration?: number,
     private _options?: any
   ) {}
+
+  setStart() {
+    this._startTime = new Date().getTime();
+  }
 
   setSuccess(status?) {
     this.setDuration();

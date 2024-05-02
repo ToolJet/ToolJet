@@ -31,6 +31,7 @@ import {
   runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
+// eslint-disable-next-line import/no-unresolved
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
@@ -73,6 +74,7 @@ import EditorSelecto from './EditorSelecto';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 import { getQueryParams } from '@/_helpers/routes';
@@ -84,6 +86,7 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import cx from 'classnames';
 
 setAutoFreeze(false);
 enablePatches();
@@ -207,6 +210,7 @@ const EditorComponent = (props) => {
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
   const [showGitSyncModal, setShowGitSyncModal] = useState(false);
+  const { isAppDarkMode, appMode, onAppModeChange } = useAppDarkMode();
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -272,6 +276,7 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
       prevAppDefinition.current = null;
+      props.setEditorOrViewer('');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -541,6 +546,7 @@ const EditorComponent = (props) => {
     window.addEventListener('message', handleMessage);
 
     onEditorFreeze(true, false);
+    props.setEditorOrViewer('editor');
     await fetchApp(props.params.pageHandle);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
@@ -654,12 +660,14 @@ const EditorComponent = (props) => {
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
   const changeDarkMode = (newMode) => {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      globals: {
-        ...getCurrentState().globals,
-        theme: { name: newMode ? 'dark' : 'light' },
-      },
-    });
+    if (appMode === 'auto') {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        globals: {
+          ...getCurrentState().globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      });
+    }
     props.switchDarkMode(newMode);
   };
 
@@ -706,9 +714,11 @@ const EditorComponent = (props) => {
   };
 
   const computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = appDefinition?.globalSettings ?? '#edeff5';
+    const canvasBackgroundColor = appDefinition?.globalSettings?.canvasBackgroundColor
+      ? appDefinition?.globalSettings?.canvasBackgroundColor
+      : '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-      return props.darkMode ? '#2f3c4c' : '#edeff5';
+      return isAppDarkMode ? '#2f3c4c' : '#edeff5';
     }
     return canvasBackgroundColor;
   };
@@ -828,6 +838,7 @@ const EditorComponent = (props) => {
     };
 
     setCurrentPageId(homePageId);
+    onAppModeChange(appJson?.globalSettings?.appMode);
 
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
@@ -999,7 +1010,11 @@ const EditorComponent = (props) => {
     }
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
-    removeUndefined(diffPatches);
+
+    // Component deletion provides an undefined key and escaping it to update the deletion in the database
+    if (!opts?.componentDeleted) {
+      removeUndefined(diffPatches);
+    }
 
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
@@ -2070,7 +2085,7 @@ const EditorComponent = (props) => {
 
   if (isLoading && !isEditorReady) {
     return (
-      <div className="apploader">
+      <div className={cx('apploader', { 'dark-theme theme-dark': props.darkMode })}>
         <div className="col col-* editor-center-wrapper">
           <div className="editor-center">
             <div className="canvas">
@@ -2213,19 +2228,23 @@ const EditorComponent = (props) => {
                 id="main-editor-canvas"
               >
                 <div
-                  className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'} page-container`}
+                  className={cx(
+                    'canvas-container align-items-center page-container',
+                    { 'dark-theme theme-dark': isAppDarkMode },
+                    { 'hide-sidebar': !showLeftSidebar }
+                  )}
                   style={{
                     transform: `scale(${zoomLevel})`,
                     borderLeft:
                       (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                       `px solid ${computeCanvasBackgroundColor()}`,
                     height: computeCanvasContainerHeight(),
-                    background: !props.darkMode ? '#EBEBEF' : '#2E3035',
+                    background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
                   }}
                   onMouseUp={handleCanvasContainerMouseUp}
                   ref={canvasContainerRef}
                   onScroll={() => {
-                    selectionRef.current?.checkScroll();
+                    selectionRef.current.checkScroll();
                   }}
                 >
                   <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }} className={`app-${appId}`}>
@@ -2274,7 +2293,7 @@ const EditorComponent = (props) => {
                             socket={socket}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
-                            darkMode={props.darkMode}
+                            darkMode={isAppDarkMode}
                             mode={
                               appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'
                                 ? 'view'
@@ -2318,7 +2337,7 @@ const EditorComponent = (props) => {
                 />
                 <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>
-              <div className="editor-sidebar">
+              <div className={cx('editor-sidebar', { 'dark-theme theme-dark': props.darkMode })}>
                 <EditorKeyHooks
                   moveComponents={moveComponents}
                   cloneComponents={cloningComponents}
@@ -2353,7 +2372,9 @@ const EditorComponent = (props) => {
                 />
               </div>
               {config.COMMENT_FEATURE_ENABLE && showComments && (
-                <CommentNotifications socket={socket} pageId={currentPageId} />
+                <div className={cx({ 'dark-theme theme-dark': props.darkMode })}>
+                  <CommentNotifications socket={socket} pageId={currentPageId} />
+                </div>
               )}
             </div>
           </DndProvider>

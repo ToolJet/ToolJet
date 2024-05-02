@@ -10,6 +10,7 @@ import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 import AppLogo from '@/_components/AppLogo';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const DesktopHeader = ({
   showHeader,
@@ -26,6 +27,13 @@ const DesktopHeader = ({
     }),
     shallow
   );
+  const { showDarkModeToggle } = useEditorStore(
+    (state) => ({
+      showDarkModeToggle: state.appMode === 'auto' || !state.appMode,
+    }),
+    shallow
+  );
+
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}
@@ -72,9 +80,11 @@ const DesktopHeader = ({
             onAppEnvironmentChanged={handleAppEnvironmentChanged}
           />
         )}
-        <span className="released-version-no-header-dark-mode-icon">
-          <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-        </span>
+        {showDarkModeToggle && (
+          <span className="released-version-no-header-dark-mode-icon">
+            <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+          </span>
+        )}
       </>
     );
   }
@@ -87,9 +97,11 @@ const DesktopHeader = ({
     >
       {_renderAppNameAndLogo()}
       {!isVersionReleased && !isEmpty(editingVersion) && _renderPreviewSettings()}
-      <div className="d-flex align-items-center">
-        <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-      </div>
+      {showDarkModeToggle && (
+        <div className="d-flex align-items-center">
+          <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+        </div>
+      )}
     </Header>
   );
 };
