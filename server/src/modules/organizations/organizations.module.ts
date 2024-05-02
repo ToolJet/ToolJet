@@ -86,6 +86,6 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
     SessionService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
-  exports: [OrganizationsService],
+  exports: [OrganizationsService, OrganizationUsersService],
 })
 export class OrganizationsModule {}
