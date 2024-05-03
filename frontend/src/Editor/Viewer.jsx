@@ -687,13 +687,7 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
-            const currentPageEvents = this.state.events.filter(
-              (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
-            );
-
-            await this.handleEvent('onPageLoad', currentPageEvents);
-          });
+          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components);
         }
       );
     }
