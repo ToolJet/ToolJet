@@ -10,7 +10,6 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
-import { ShowLoading } from '@/_components';
 
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
@@ -72,7 +71,6 @@ class ResetPasswordComponent extends React.Component {
       <div className="common-auth-section-whole-wrapper page">
         <div className="common-auth-section-left-wrapper">
           <OnboardingNavbar darkMode={this.darkMode} />
-          {console.log(showResponseScreen)}
           <div className="common-auth-section-left-wrapper-grid">
             <form action="." method="get" autoComplete="off">
               <div className="common-auth-container-wrapper ">
