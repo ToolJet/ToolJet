@@ -103,12 +103,10 @@ export const generateHints = (hints, totalReferences = 1, input) => {
           pickedCompletionConfig.from = from;
         }
 
-        if (totalReferences > 0 && completion.type !== 'js_methods') {
+        if (totalReferences > 1 && completion.type !== 'js_methods') {
           let queryInput = input;
           const currentWord = queryInput.split('{{').pop().split('}}')[0];
           pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
-
-          anchorSelection = queryInput.length + currentWord.length;
         }
 
         const dispatchConfig = {
