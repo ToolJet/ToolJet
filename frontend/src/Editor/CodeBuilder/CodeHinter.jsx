@@ -118,6 +118,7 @@ export function CodeHinter({
     placeholder,
   };
   const currentState = useCurrentState();
+  const definedConstants = currentState?.constants;
   const [realState, setRealState] = useState({ ...currentState, ..._currentState, ...context });
 
   const [currentValue, setCurrentValue] = useState('');
@@ -136,7 +137,9 @@ export function CodeHinter({
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
 
-  const isWorkspaceConstant = typeof currentValue === 'string' && currentValue.includes('constants');
+  const isWorkspaceConstant = typeof currentValue === 'string' && currentValue.includes('constants.');
+
+  const constantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
 
   const slideInStyles = useSpring({
     config: { ...config.stiff },
@@ -184,8 +187,27 @@ export function CodeHinter({
 
   const getPreviewAndErrorFromValue = (value) => {
     const customResolvables = getCustomResolvables();
+    const invalidConstants = verifyConstant(value);
+    if (invalidConstants?.length) {
+      return [value, `${invalidConstants} are undefined`];
+    }
     const [preview, error] = resolveReferences(value, realState, null, customResolvables, true, true);
     return [preview, error];
+  };
+
+  const verifyConstant = (value) => {
+    const matches = value.match(constantRegex);
+    if (!matches) {
+      return [];
+    }
+    const resolvedMatches = matches.map((match) => {
+      const cleanedMatch = match.replace(/{{constants\./, '').replace(/}}/, '');
+      return Object.keys(definedConstants).includes(cleanedMatch) ? null : cleanedMatch;
+    });
+    const invalidConstants = resolvedMatches?.filter((item) => item != null);
+    if (invalidConstants?.length) {
+      return invalidConstants;
+    }
   };
 
   useEffect(() => {
