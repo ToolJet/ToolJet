@@ -123,7 +123,6 @@ const ConstantTable = ({
                               />
                             )}
                           </div>
-                          {/* <SolidIcon className="eye-icon" name={'eye'} /> */}
                           <ButtonSolid
                             variant="secondary"
                             style={{ minWidth: '100px' }}

@@ -103,7 +103,7 @@ export function CodeHinter({
 }) {
   const context = useContext(CodeHinterContext);
 
-  const hiddenWorkspaceConstant = 'Workspace constant values are hidden';
+  const hiddenWorkspaceConstantText = 'Workspace constant values are hidden';
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -244,7 +244,7 @@ export function CodeHinter({
       globalPreviewCopy = preview;
       globalErrorCopy = null;
       setResolvingError(null);
-      setResolvedValue(isWorkspaceConstant ? hiddenWorkspaceConstant : preview);
+      setResolvedValue(isWorkspaceConstant ? hiddenWorkspaceConstantText : preview);
     }
 
     return [globalPreviewCopy, globalErrorCopy];
@@ -256,7 +256,7 @@ export function CodeHinter({
     return () => {
       if (enablePreview) {
         setPrevCurrentValue(null);
-        setResolvedValue(isWorkspaceConstant ? hiddenWorkspaceConstant : globalPreviewCopy);
+        setResolvedValue(isWorkspaceConstant ? hiddenWorkspaceConstantText : globalPreviewCopy);
         setResolvingError(globalErrorCopy);
       }
     };

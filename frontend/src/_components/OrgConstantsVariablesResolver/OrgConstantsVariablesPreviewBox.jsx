@@ -22,9 +22,6 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
 
     return null;
   };
-
-  const workspaceConstantInfo = 'Workspace constants values are hidden';
-
   const shouldResolve =
     typeof value === 'string' &&
     ((value.includes('%%') && (value.includes('client.') || value.includes('server.'))) ||
@@ -93,6 +90,8 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     },
   });
 
+  const hiddenWorkspaceConstantText = 'Workspace constant values are hidden';
+
   return (
     <React.Fragment>
       <animated.div className={themeCls} style={{ ...slideInStyles, overflow: 'hidden' }}>
@@ -106,7 +105,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
                 {isValidError ? 'Error' : isConstant ? null : ` ${type} - ${previewType}`}
               </div>
             </div>
-            {isConstant ? this.workspaceConstantInfo : getPreviewContent(resolvedValue, previewType)}
+            {isConstant ? hiddenWorkspaceConstantText : getPreviewContent(resolvedValue, previewType)}
           </div>
         </div>
         <DepericatedAlerForWorkspaceVariable text="Workspace variables deprecating soon" shouldShow={!isConstant} />
