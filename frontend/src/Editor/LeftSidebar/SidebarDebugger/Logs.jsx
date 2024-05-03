@@ -53,8 +53,6 @@ function Logs({ logProps, idx }) {
     },
   ];
 
-  console.log('--arpit::', { logProps });
-
   const renderNavToDisabledPageMessage = () => {
     const text = message.split(logProps.page);
     return (
