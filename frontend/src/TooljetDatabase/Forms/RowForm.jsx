@@ -294,9 +294,6 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     }
   });
 
-  console.log('firstc', columns);
-  console.log('firste', editRowColumns);
-
   return (
     <div className="drawer-card-wrapper ">
       <div className="card-header">

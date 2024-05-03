@@ -134,6 +134,7 @@ const ColumnForm = ({
       return;
     }
 
+    await fetchMetaDataApi();
     toast.success(`Foreign key created successfully`);
     setCreateForeignKeyInEdit(false);
     setIsForeignKeyDraweOpen(false);
