@@ -37,6 +37,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
+import { updateParentNodes } from './utility';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -134,9 +135,11 @@ export function onComponentOptionChanged(component, option_name, value) {
 
       if (shouldUpdateRef) {
         handleLowPriorityWork(() => {
-          useResolveStore
-            .getState()
-            .actions.updateResolvedRefsOfHints([{ hint: path, newRef: componentData[option_name] }]);
+          const toUpdateHints = updateParentNodes(path, componentData[option_name], option_name);
+
+          toUpdateHints.push({ hint: path, newRef: componentData[option_name] });
+
+          useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateHints);
         });
       }
     }
