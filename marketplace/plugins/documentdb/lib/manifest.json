@@ -45,12 +45,6 @@
         "type": "text",
         "description": "Enter port"
       },
-      "database": {
-        "label": "Database Name",
-        "key": "database",
-        "type": "text",
-        "description": "Name of the database"
-      },
       "username": {
         "label": "Username",
         "key": "username",
