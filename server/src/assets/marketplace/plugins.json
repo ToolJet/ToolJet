@@ -82,7 +82,7 @@
   },
   {
     "name": "documentdb",
-    "description": "database plugin from documentdb",
+    "description": "Plugin for Amazon DocumentDB",
     "version": "1.0.0",
     "id": "documentdb",
     "author": "Tooljet",
