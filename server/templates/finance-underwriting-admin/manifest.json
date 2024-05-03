@@ -2,13 +2,16 @@
   "name": "Finance underwriting - Admin",
   "description": "Efficiently evaluate and approve financial applications with our robust underwriting admin platform.",
   "widgets": [
-    "Table",
-    "Chart"
+    "Table"
   ],
   "sources": [
     {
       "name": "ToolJet Database",
       "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
     }
   ],
   "id": "finance-underwriting-admin",

@@ -2,7 +2,7 @@
   "name": "Simple marketplace",
   "description": "Discover a world of products and enjoy a seamless internal shopping experience on our user-friendly marketplace.",
   "widgets": [
-    "Table"
+    "Listview"
   ],
   "sources": [
     {

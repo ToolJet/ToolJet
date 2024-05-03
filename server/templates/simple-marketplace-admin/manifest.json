@@ -2,7 +2,7 @@
   "name": "Simple marketplace - Admin",
   "description": "Take complete control of your online marketplace with our comprehensive admin interface.",
   "widgets": [
-    "Table"
+    "Listview"
   ],
   "sources": [
     {
