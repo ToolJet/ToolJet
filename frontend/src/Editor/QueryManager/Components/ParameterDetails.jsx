@@ -51,7 +51,6 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       trigger="click"
       placement="bottom-end"
       rootClose={true}
-      container={document.getElementsByClassName('query-details ')[0]}
       show={showModal}
       overlay={
         <Popover
