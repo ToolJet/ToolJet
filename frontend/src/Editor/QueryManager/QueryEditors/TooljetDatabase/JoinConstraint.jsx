@@ -172,6 +172,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           return newCondition;
         });
         set(newData, 'conditions.conditionsList', newConditionsList);
+        set(newData, 'table', tableId);
         onChange(newData);
       } else {
         const newData = cloneDeep({ ...data });
