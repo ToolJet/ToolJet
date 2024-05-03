@@ -60,10 +60,10 @@ const MultiLineCodeEditor = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleOnBlur = React.useCallback(() => {
+  const handleOnBlur = () => {
     onChange(currentValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
+  };
 
   useEffect(() => {
     setCurrentValue(initialValue);
