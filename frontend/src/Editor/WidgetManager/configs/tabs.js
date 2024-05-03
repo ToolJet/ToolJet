@@ -174,7 +174,7 @@ export const tabsConfig = {
     },
     events: [],
     styles: {
-      highlightColor: { value: '' },
+      highlightColor: { value: '#375FCF' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tabWidth: { value: 'auto' },

@@ -49,6 +49,7 @@ import { treeSelectConfig } from './treeSelect';
 import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
+import { kanbanBoardConfig } from './kanbanBoard';
 
 export {
   buttonConfig,
@@ -97,6 +98,7 @@ export {
   pdfConfig,
   stepsConfig,
   kanbanConfig,
+  kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
   linkConfig,

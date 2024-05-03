@@ -52,7 +52,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) 
   });
 
   const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences, input);
-  return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
+  return orderSuggestions(suggestions, fieldType);
 };
 
 function orderSuggestions(suggestions, validationType) {
@@ -69,7 +69,7 @@ export const generateHints = (hints, totalReferences = 1, input) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
-    let displayedHint = type === 'js_method' || type === 'Function' ? `${hint}()` : hint;
+    let displayedHint = type === 'js_method' || (type === 'Function' && !hint.endsWith('.run()')) ? `${hint}()` : hint;
 
     const currentWord = input.split('{{').pop().split('}}')[0];
     const hasDepth = currentWord.includes('.');
@@ -103,12 +103,10 @@ export const generateHints = (hints, totalReferences = 1, input) => {
           pickedCompletionConfig.from = from;
         }
 
-        if (totalReferences > 0 && completion.type !== 'js_methods') {
+        if (totalReferences > 1 && completion.type !== 'js_methods') {
           let queryInput = input;
           const currentWord = queryInput.split('{{').pop().split('}}')[0];
           pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
-
-          anchorSelection = queryInput.length + currentWord.length;
         }
 
         const dispatchConfig = {
@@ -134,7 +132,7 @@ export const generateHints = (hints, totalReferences = 1, input) => {
 function filterHintsByDepth(input, hints) {
   if (input === '') return hints;
 
-  const inputDepth = input.split('.').length;
+  const inputDepth = input.includes('.') ? input.split('.').length : 0;
 
   const filteredHints = hints.filter((cm) => {
     const hintParts = cm.hint.split('.');
@@ -143,7 +141,22 @@ function filterHintsByDepth(input, hints) {
       (cm.hint.startsWith(input) && hintParts.length === inputDepth + 1) ||
       (cm.hint.startsWith(input) && hintParts.length === inputDepth);
 
-    if (input.endsWith('.')) {
+    const shouldFuzzyMatch = !shouldInclude ? hintParts.length > inputDepth : false;
+
+    if (shouldFuzzyMatch) {
+      // fuzzy match
+      let matchedDepth = -1;
+      for (let i = 0; i < hintParts.length; i++) {
+        if (hintParts[i].includes(input)) {
+          matchedDepth = i;
+          break;
+        }
+      }
+
+      if (matchedDepth !== -1) {
+        shouldInclude = hintParts.length === matchedDepth + 1;
+      }
+    } else if (input.endsWith('.')) {
       shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth;
     }
 
