@@ -3,16 +3,11 @@ import { SourceOptions, QueryOptions } from './types';
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as https from 'https';
 
+const tlsCAFilePath = process.env.TLS_CA_FILE_PATH || 'global-bundle.pem';
 
 export default class Documentdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const pemPath = path.join(process.cwd(), 'global-bundle.pem');
-    await this.ensureFileExists(pemPath);
-
     const { db, close } = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;
@@ -145,43 +140,27 @@ export default class Documentdb implements QueryService {
     };
   }
 
-  async ensureFileExists(filePath: string): Promise<void> {
-    if (!fs.existsSync(filePath)) {
-      console.log('global-bundle.pem file is missing. Attempting to download...');
-      const url = 'https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem';
-      
-      return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(filePath);
-        https.get(url, (response) => {
-          response.pipe(file);
-          file.on('finish', () => {
-            file.close();
-            console.log('Downloaded the global-bundle.pem file successfully.');
-            resolve();
-          });
-        }).on('error', (err) => {
-          fs.unlink(filePath, () => {});
-          console.error('Error downloading the global-bundle.pem file:', err.message);
-          reject(err);
-        });
-      });
-    }
-  }
-
   parseEJSON(maybeEJSON?: string): any {
     if (!maybeEJSON) return {};
-
     return EJSON.parse(JSON.stringify(JSON5.parse(maybeEJSON)));
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const { db, close } = await this.getConnection(sourceOptions);
-    await db.listCollections().toArray();
-    await close();
-
-    return {
-      status: 'ok',
-    };
+    try {
+      await db.listCollections().toArray();
+      return {
+        status: 'ok',
+      };
+    } catch (error) {
+      console.error('Failed to test connection:', error);
+      return {
+        status: 'failed',
+        message: `Error testing connection: ${error.message}`,
+      };
+    } finally {
+      await close();
+    }
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
@@ -196,13 +175,10 @@ export default class Documentdb implements QueryService {
       const username = encodeURIComponent(sourceOptions.username);
       const password = encodeURIComponent(sourceOptions.password);
 
-      const needsAuthentication = username !== '' && password !== '';
-      const uri = needsAuthentication
-        ? `mongodb://${username}:${password}@${host}:${port}`
-        : `mongodb://${host}:${port}`;
+      const uri = `mongodb://${username}:${password}@${host}:${port}`
 
       client = new MongoClient(uri, {
-        tlsCAFile: "global-bundle.pem"
+        tlsCAFile: tlsCAFilePath,
       });
       await client.connect();
 
@@ -216,7 +192,7 @@ export default class Documentdb implements QueryService {
 
       const encodedConnectionString = connectionString.replace(password, encodedPassword);
 
-      client = new MongoClient(encodedConnectionString, { useNewUrlParser: true, useUnifiedTopology: true, tlsCAFile: "global-bundle.pem" });
+      client = new MongoClient(encodedConnectionString, { tlsCAFile: tlsCAFilePath });
       await client.connect();
       db = client.db();
     }
