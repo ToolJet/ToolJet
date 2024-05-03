@@ -7,6 +7,10 @@ import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}
+
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
   loaded: 'loaded',
@@ -80,7 +84,7 @@ export const AppVersionsManager = function ({
       .del(appId, versionId)
       .then(() => {
         toast.dismiss(deleteingToastId);
-        toast.success(`Version - ${versionName} Deleted`);
+        toast.success(`Version - ${decodeEntities(versionName)} Deleted`);
         resetDeleteModal();
         setGetAppVersionStatus(appVersionLoadingStatus.loading);
       })
@@ -111,7 +115,7 @@ export const AppVersionsManager = function ({
             })}
             style={{ maxWidth: '100%' }}
           >
-            {appVersion.name}
+            {decodeEntities(appVersion.name)}
           </div>
         </div>
         {isEditable && appVersion.id !== releasedVersionId && (

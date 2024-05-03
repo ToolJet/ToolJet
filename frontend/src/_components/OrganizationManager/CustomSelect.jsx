@@ -8,6 +8,10 @@ import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}
+
 const Menu = (props) => {
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
@@ -56,7 +60,7 @@ const SingleValue = ({ selectProps }) => {
     <ToolTip message={selectProps?.value?.name}>
       <div className="d-inline-flex align-items-center">
         <div data-cy="workspace-name" className="tj-text-xsm">
-          {selectProps.value.name}
+          {decodeEntities(selectProps.value.name)}
         </div>
       </div>
     </ToolTip>

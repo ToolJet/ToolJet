@@ -5,6 +5,10 @@ import { getAvatar } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}
+
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentSessionValue;
   const [organizationList, setOrganizationList] = useState([]);
@@ -44,7 +48,7 @@ export const OrganizationList = function () {
         </div>
         <ToolTip message={org.name} placement="right">
           <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
-            {org.name}
+            {decodeEntities(org.name)}
           </div>
         </ToolTip>
       </div>

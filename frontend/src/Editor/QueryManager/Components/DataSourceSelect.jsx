@@ -18,7 +18,7 @@ import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
 }
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup }) {

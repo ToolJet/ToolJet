@@ -25,7 +25,7 @@ import { cloneDeep } from 'lodash';
 import ParameterList from './ParameterList';
 
 function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
 }
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {

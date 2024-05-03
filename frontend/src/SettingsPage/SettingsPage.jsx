@@ -6,6 +6,10 @@ import Layout from '@/_ui/Layout';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}
+
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
   const email = currentSession?.current_user.email;
@@ -161,7 +165,7 @@ function SettingsPage(props) {
                           className="form-control"
                           name="first-name"
                           placeholder={'Enter full name'}
-                          value={fullName}
+                          value={decodeEntities(fullName)}
                           onChange={(event) => setFullName(event.target.value)}
                           autoComplete="off"
                           data-cy="name-input-field"

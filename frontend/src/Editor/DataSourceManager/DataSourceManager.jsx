@@ -31,7 +31,7 @@ import './dataSourceManager.theme.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
 }
 
 class DataSourceManagerComponent extends React.Component {

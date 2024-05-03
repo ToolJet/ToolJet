@@ -12,7 +12,7 @@ import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable } from '@/_helpers/utils';
 
 function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
 }
 
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {

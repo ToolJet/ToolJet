@@ -9,7 +9,7 @@ import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
 }
 
 export const ListItem = ({

@@ -15,6 +15,10 @@ import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName } from '@/_helpers/utils';
 const { defaultIcon } = configs;
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}
+
 export default function AppCard({
   app,
   canCreateApp,
@@ -104,7 +108,7 @@ export default function AppCard({
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
             >
-              {app.name}
+              {decodeEntities(app.name)}
             </h3>
           </ToolTip>
         </div>
