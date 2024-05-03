@@ -103,7 +103,7 @@ export const linkConfig = {
     events: [],
     styles: {
       textColor: { value: '#375FCF' },
-      textSize: { value: 14 },
+      textSize: { value: '{{14}}' },
       underline: { value: 'on-hover' },
       visibility: { value: '{{true}}' },
     },
