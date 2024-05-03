@@ -208,7 +208,12 @@ export const ValidationProperties = ({
         );
       default:
         return (
-          <div data-cy={validation.dataCy} className="field flex-fill" key={validation.property}>
+          <div
+            data-cy={validation.dataCy}
+            className="field flex-fill"
+            key={validation.property}
+            style={validation?.property === 'minValue' || validation?.property === 'maxValue' ? { width: '50%' } : null}
+          >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <CodeHinter
               currentState={currentState}
