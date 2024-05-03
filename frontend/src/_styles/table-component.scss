@@ -657,11 +657,11 @@
       border-top: 0 !important;
       padding: 6px 12px;
       align-items: center;
-      color: var(--text-primary) !important;
-      font-weight: 500 !important;
-      font-size: 14px !important;
+      color: var(--slate12) !important;
+      font-weight: 400 !important;
+      font-size: 12px !important;
       width: 100%;
-      text-transform: capitalize;
+      text-transform: uppercase;
 
       &:hover {
 
@@ -1409,18 +1409,6 @@
   text-decoration: underline;
 }
 
-.react-datepicker__time-list-item,
-.react-datepicker__time-list-item--selected {
-  margin-bottom: 3px !important;
-}
-
-.react-datepicker__time-box {
-  display: flex;
-
-  ul {
-    padding: 0px 10px 0px 10px !important;
-  }
-}
 
 .is-invalid.content-editing~.invalid-feedback {
   padding: 0px 12px 8px;

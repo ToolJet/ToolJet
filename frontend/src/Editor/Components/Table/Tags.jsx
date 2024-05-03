@@ -114,21 +114,11 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
         }}
         onMouseOut={() => setHovered(false)}
       >
-        {/* Container for + button */}
-        {!showForm && !readOnly && (
-          <div className="add-tag-container" style={{ width: '20%' }}>
-            <span className="col-auto">
-              <span className="badge bg-green-lt mx-1 add-tag-button" onClick={() => setShowForm(true)}>
-                {'+'}
-              </span>
-            </span>
-          </div>
-        )}
         {/* Container for renderTags */}
         {!showForm && (
           <div
             className="render-tags-container table-tags-col-container h-100 d-flex flex-wrap custom-gap-3"
-            style={{ width: '80%', overflow: 'hidden' }}
+            style={{ width: readOnly ? '100' : '95%', overflow: 'hidden' }}
           >
             {value.map((item, index) => (
               <span key={index} className="col-auto tag-wrapper">
@@ -137,6 +127,17 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
             ))}
           </div>
         )}
+        {/* Container for + button */}
+        {!showForm && !readOnly && (
+          <div className="add-tag-container" style={{ width: '5%' }}>
+            <span className="col-auto">
+              <span className="badge bg-green-lt mx-1 add-tag-button" onClick={() => setShowForm(true)}>
+                {'+'}
+              </span>
+            </span>
+          </div>
+        )}
+
         {/* Input element */}
         {showForm && (
           <div className="col-auto badge bg-green-lt mx-1">
