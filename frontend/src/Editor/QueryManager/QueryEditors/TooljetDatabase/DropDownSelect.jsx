@@ -38,6 +38,10 @@ const DropDownSelect = ({
   setReferencedColumnDetails,
   shouldShowForeignKeyIcon = false,
   cellColumnName,
+  tableName,
+  targetTable,
+  actions,
+  actionName,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -169,6 +173,10 @@ const DropDownSelect = ({
             setTotalRecords={setTotalRecords}
             pageNumber={pageNumber}
             setPageNumber={setPageNumber}
+            tableName={tableName}
+            targetTable={targetTable}
+            actions={actions}
+            actionName={actionName}
           />
         </Popover>
       }

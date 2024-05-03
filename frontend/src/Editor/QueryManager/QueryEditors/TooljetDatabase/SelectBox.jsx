@@ -44,6 +44,10 @@ function DataSourceSelect({
   setTotalRecords,
   pageNumber,
   setPageNumber,
+  tableName,
+  targetTable,
+  actions,
+  actionName,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -310,7 +314,7 @@ function DataSourceSelect({
                     foreignKeys={foreignKeys}
                     cellColumnName={cellColumnName}
                   />
-                  {foreignKeyAccess && showDescription && (
+                  {foreignKeyAccess && showDescription && actions && (
                     <>
                       <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
                       <div
@@ -324,7 +328,14 @@ function DataSourceSelect({
                           {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
                         </div>
                         <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
-                          {!isEmpty(focusedOption) ? focusedOption?.description : selectedOption?.description}
+                          {
+                            <GenerateActionsDescription
+                              targetTable={targetTable?.value || targetTable?.label || targetTable?.name}
+                              sourceTable={tableName}
+                              actionName={actionName}
+                              label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                            />
+                          }
                         </span>
                       </div>
                     </>
@@ -576,6 +587,115 @@ const CustomGroupHeading = (props) => {
       <SolidIcon name={isGroupListCollapsed ? 'cheverondown' : 'cheveronup'} height={20} />
     </div>
   );
+};
+
+const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '', label }) => {
+  const isActionOnUpdate = actionName === 'On update';
+
+  const Description = Object.freeze({
+    noAction: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ),
+    cascade: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will also update any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table
+      </>
+    ) : (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will also delete any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table
+      </>
+    ),
+    restrict: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table. It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction,
+        whereas RESTRICT does not.
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table. It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction,
+        whereas RESTRICT does not.
+      </>
+    ),
+    setNull: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the NULL value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the NULL value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ),
+    setDefault: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the default value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the default value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table
+      </>
+    ),
+  });
+
+  switch (label) {
+    case 'NO ACTION':
+      return Description.noAction;
+    case 'RESTRICT':
+      return Description.restrict;
+    case 'CASCADE':
+      return Description.cascade;
+    case 'SET NULL':
+      return Description.setNull;
+    case 'SET DEFAULT':
+      return Description.setDefault;
+    default:
+      break;
+  }
 };
 
 export default DataSourceSelect;

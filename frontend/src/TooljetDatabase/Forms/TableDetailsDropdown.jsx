@@ -31,6 +31,7 @@ function TableDetailsDropdown({
   onUpdate,
   targetColumn,
   setTargetColumn,
+  tableName,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -67,6 +68,10 @@ function TableDetailsDropdown({
               addBtnLabel={'Add new table'}
               showRedirection={showRedirection}
               showDescription={showDescription}
+              tableName={tableName}
+              targetTable={targetTable}
+              actions={actions}
+              actionName={firstColumnName}
             />
           </div>
         </ToolTip>
@@ -122,6 +127,10 @@ function TableDetailsDropdown({
               showColumnInfo={showColumnInfo}
               showDescription={showDescription}
               disabled={isEditColumn || isCreateColumn}
+              tableName={tableName}
+              targetTable={targetTable}
+              actions={actions}
+              actionName={secondColumnName}
             />
           </div>
         </div>
