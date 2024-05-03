@@ -276,7 +276,7 @@ export const textConfig = {
     styles: {
       backgroundColor: { value: '#fff00000' },
       textColor: { value: '#000000' },
-      textSize: { value: '{{ 14}}' },
+      textSize: { value: '{{14}}' },
       textAlign: { value: 'left' },
       fontWeight: { value: 'normal' },
       decoration: { value: 'none' },
