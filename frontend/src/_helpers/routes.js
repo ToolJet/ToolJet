@@ -4,6 +4,7 @@ import { ERROR_TYPES } from './constants';
 import { authenticationService } from '@/_services/authentication.service';
 import queryString from 'query-string';
 import _ from 'lodash';
+import { eraseCookie, getCookie } from '.';
 
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
@@ -67,14 +68,14 @@ export const getPathname = (path, excludeSlug = false) => {
 
 export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
 
-export const redirectToDashboard = (data, relativePath = null) => {
+export const redirectToDashboard = (data, redirectTo, relativePath = null) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
   const id_slug = data
     ? data?.current_organization_slug || data?.current_organization_id
     : current_organization_slug || current_organization_id || '';
   window.location = getSubpath()
-    ? `${getSubpath()}/${id_slug}${relativePath ? relativePath : ''}`
-    : `/${id_slug}${relativePath ? relativePath : ''}`;
+    ? `${getSubpath()}/${id_slug}${relativePath ? relativePath : ''}${redirectTo || ''}`
+    : `/${id_slug}${relativePath ? relativePath : ''}${redirectTo || ''}`;
 };
 
 export const redirectToSwitchOrArchivedAppPage = (data) => {
@@ -168,13 +169,17 @@ export const getSubpath = () =>
 
 export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
-    return !['/applications/', '/integrations', '/instance-settings'].find((subpath) => path.includes(subpath))
-      ? `/${getWorkspaceId()}`
-      : '';
+    const paths = [
+      '/applications/',
+      '/integrations',
+      '/instance-settings',
+      '/organization-invitations/',
+      '/invitations/',
+    ];
+    return !paths.find((subpath) => path.includes(subpath)) ? `/${getWorkspaceId()}` : '';
   }
   return `/${getWorkspaceId()}`;
 };
-
 export const getRedirectURL = (path) => {
   let redirectLoc = '/';
   if (path) {
@@ -223,4 +228,10 @@ const constructQueryParamsInOrder = (shouldAddCustomParams = false) => {
   const queryStr = shouldAddCustomParams && !_.isEmpty(rest) ? queryString.stringify(rest) : '';
   const previewParams = `${version ? `?version=${version}` : ''}`;
   return `${previewParams}${queryStr ? `${previewParams ? '&' : '?'}${queryStr}` : ''}`;
+};
+
+export const eraseRedirectUrl = () => {
+  const redirectPath = getCookie('redirectPath');
+  redirectPath && eraseCookie('redirectPath');
+  return redirectPath;
 };
