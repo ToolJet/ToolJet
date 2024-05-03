@@ -18,7 +18,13 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, isSuperAdmin, generateNextNameAndSlug } from 'src/helpers/utils.helper';
+import {
+  dbTransactionWrap,
+  generateInviteURL,
+  isSuperAdmin,
+  generateNextNameAndSlug,
+  isValidDomain,
+} from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -32,6 +38,8 @@ import { SAMLService } from './saml.service';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 import { InstanceSSOConfigMap } from '@services/organizations.service';
 import { INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
+const uuid = require('uuid');
 
 @Injectable()
 export class OauthService {
@@ -49,30 +57,6 @@ export class OauthService {
     private readonly samlService: SAMLService,
     private configService: ConfigService
   ) {}
-
-  #isValidDomain = (email: string, restrictedDomain: string): boolean => {
-    if (!email) {
-      return false;
-    }
-    const domain = email.substring(email.lastIndexOf('@') + 1);
-
-    if (!restrictedDomain) {
-      return true;
-    }
-    if (!domain) {
-      return false;
-    }
-    if (
-      !restrictedDomain
-        .split(',')
-        .map((e) => e && e.trim())
-        .filter((e) => !!e)
-        .includes(domain)
-    ) {
-      return false;
-    }
-    return true;
-  };
 
   async #findOrCreateUser(
     { firstName, lastName, email, sso, groups: ssoGroups, profilePhoto }: any,
@@ -101,8 +85,9 @@ export class OauthService {
     }
 
     const groups = ['all_users', ...(ssoGroups ? ssoGroups : [])];
+    const password = uuid.v4();
     user = await this.usersService.create(
-      { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
+      { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso), password },
       organization.id,
       groups,
       user,
@@ -191,9 +176,16 @@ export class OauthService {
     user?: User,
     cookies?: object
   ): Promise<any> {
-    const { organizationId, samlResponseId } = ssoResponse;
+    const {
+      organizationId: loginOrganiaztionId,
+      signupOrganizationId,
+      invitationToken: signUpInvitationToken,
+      redirectTo,
+      samlResponseId,
+    } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
+    const organizationId = loginOrganiaztionId || signupOrganizationId;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
     const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
     //Specific SSO configId from organization SSO Configs
@@ -262,6 +254,23 @@ export class OauthService {
         break;
     }
 
+    if (signUpInvitationToken && signupOrganizationId) {
+      /* Validate the invite session. */
+      const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(signUpInvitationToken);
+      if (invitedUser.email !== userResponse.email) {
+        const { type, message, inputError } = SIGNUP_ERRORS.INCORRECT_INVITED_EMAIL;
+        const errorResponse = {
+          message: {
+            message,
+            type,
+            inputError,
+            inviteeEmail: invitedUser.email,
+          },
+        };
+        throw new UnauthorizedException(errorResponse);
+      }
+    }
+
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -274,7 +283,7 @@ export class OauthService {
       throw new NotAcceptableException('User has been archived, please contact the administrator');
     }
 
-    if (!isSuperAdmin(userDetails) && !this.#isValidDomain(userResponse.email, domain)) {
+    if (!isSuperAdmin(userDetails) && isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
@@ -288,6 +297,9 @@ export class OauthService {
       const allowPersonalWorkspace =
         isSuperAdmin(userDetails) ||
         (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
+
+      const isInviteRedirect =
+        redirectTo?.startsWith('/organization-invitations/') || redirectTo?.startsWith('/invitations/');
 
       if (isInstanceSSOLogin) {
         // Login from main login page - Multi-Workspace enabled
@@ -335,10 +347,12 @@ export class OauthService {
           const defaultOrgDetails: Organization = organizationList?.find(
             (og) => og.id === userDetails.defaultOrganizationId
           );
+          const personalWorkspaceCount = await this.organizationUsersService.personalWorkspaceCount(userDetails.id);
+
           if (defaultOrgDetails) {
             // default organization SSO login enabled
             organizationDetails = defaultOrgDetails;
-          } else if (organizationList?.length > 0) {
+          } else if (organizationList?.length > 0 && personalWorkspaceCount > 0) {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
           } else if (allowPersonalWorkspace) {
@@ -346,6 +360,17 @@ export class OauthService {
             const { name, slug } = generateNextNameAndSlug('My workspace');
             organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
           } else {
+            if (!isInviteRedirect) {
+              // no SSO login enabled organization available for user - creating new one
+              const { name, slug } = generateNextNameAndSlug('My workspace');
+              organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
+              await this.usersService.updateUser(
+                userDetails.id,
+                { defaultOrganizationId: organizationDetails.id },
+                manager
+              );
+            }
+
             throw new UnauthorizedException(
               'User not included in any workspace or workspace does not supports SSO login'
             );
@@ -366,6 +391,7 @@ export class OauthService {
         if (userDetails) {
           // user already exist
           if (
+            !isInviteRedirect &&
             !userDetails.invitationToken &&
             userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED
           ) {
@@ -388,12 +414,33 @@ export class OauthService {
         );
 
         if (userDetails.invitationToken) {
+          const updatableUserParams = {
+            ...getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso),
+            ...{ invitationToken: null },
+            ...(!userDetails?.password && { password: uuid.v4() }), // Default password for sso-signed workspace user
+          };
+
+          // Activate the personal workspace if the user is invited to another organization
+          const defaultOrganizationId = userDetails.defaultOrganizationId;
+          const shouldActivatePersonalWorkspace =
+            signUpInvitationToken &&
+            signupOrganizationId &&
+            defaultOrganizationId &&
+            signupOrganizationId !== defaultOrganizationId;
+          let personalWorkspace: Organization;
+          if (shouldActivatePersonalWorkspace) {
+            const defaultOrganizationUser = await this.organizationUsersService.getOrganizationUser(
+              defaultOrganizationId
+            );
+            await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
+          }
+
+          if (defaultOrganizationId) {
+            personalWorkspace = await this.organizationService.fetchOrganization(defaultOrganizationId, manager);
+          }
+
           // User account setup not done, updating source and status
-          await this.usersService.updateUser(
-            userDetails.id,
-            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
-            manager
-          );
+          await this.usersService.updateUser(userDetails.id, updatableUserParams, manager);
           // New user created and invited to the organization
           const organizationToken = userDetails.organizationUsers?.find(
             (ou) => ou.organizationId === organization.id
@@ -404,14 +451,14 @@ export class OauthService {
             await this.usersService.updateSSOUserInfo(manager, userDetails.id, userResponse.userinfoResponse);
           }
           return await this.validateLicense(
-            decamelizeKeys({
-              redirectUrl: generateInviteURL(
-                userDetails.invitationToken,
-                organizationToken,
-                organization.id,
-                URL_SSO_SOURCE
-              ),
-            }),
+            this.authService.processOrganizationSignup(
+              response,
+              userDetails,
+              { invitationToken: organizationToken, organizationId: organization.id },
+              manager,
+              personalWorkspace,
+              'sso'
+            ),
             manager
           );
         }
@@ -436,6 +483,12 @@ export class OauthService {
           manager
         );
       }
+
+      if (isInviteRedirect && userDetails.defaultOrganizationId) {
+        /* Assign defaultOrganization instead of invited organization details */
+        organizationDetails = await this.organizationService.fetchOrganization(userDetails.defaultOrganizationId);
+      }
+
       return await this.authService.generateLoginResultPayload(
         response,
         userDetails,
@@ -461,4 +514,7 @@ interface SSOResponse {
   codeVerifier?: string;
   organizationId?: string;
   samlResponseId?: string;
+  signupOrganizationId?: string;
+  invitationToken?: string;
+  redirectTo?: string;
 }

@@ -8,6 +8,7 @@ export enum lifecycleEvents {
   USER_SSO_VERIFY = 'USER_SSO_VERIFY',
   USER_SSO_ACTIVATE = 'USER_SSO_ACTIVATE',
   USER_ADMIN_SETUP = 'USER_ADMIN_SETUP',
+  USER_SIGNUP_ACTIVATE = 'USER_SIGNUP_ACTIVATE',
 }
 
 export enum SOURCE {
@@ -84,6 +85,11 @@ export function getUserStatusAndSource(event: string, source?: any): { source?: 
       };
     case lifecycleEvents.USER_SSO_ACTIVATE:
       return {
+        status: USER_STATUS.ACTIVE,
+      };
+    case lifecycleEvents.USER_SIGNUP_ACTIVATE:
+      return {
+        source: SOURCE.SIGNUP,
         status: USER_STATUS.ACTIVE,
       };
     case lifecycleEvents.USER_ADMIN_SETUP:

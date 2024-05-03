@@ -143,6 +143,7 @@ export class User extends BaseEntity {
   userDetails: UserDetails;
 
   organizationId: string;
+  invitedOrganizationId: string;
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;

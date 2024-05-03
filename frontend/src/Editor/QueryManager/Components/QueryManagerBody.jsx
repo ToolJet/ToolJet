@@ -13,7 +13,7 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, defaultSources } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
-import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -26,6 +26,8 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
+  const sampleDataSource = useSampleDataSource();
+
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
@@ -110,6 +112,7 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
           dataSources={dataSources}
           staticDataSources={staticDataSources}
           globalDataSources={globalDataSources}
+          sampleDataSource={sampleDataSource}
           darkMode={darkMode}
         />
       </div>
@@ -235,9 +238,9 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
   };
 
   const renderChangeDataSource = () => {
-    const selectableDataSources = [...globalDataSources, ...dataSources].filter(
-      (ds) => ds.kind === selectedQuery?.kind
-    );
+    const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
+      .filter(Boolean)
+      .filter((ds) => ds.kind === selectedQuery?.kind);
     if (isEmpty(selectableDataSources)) {
       return '';
     }

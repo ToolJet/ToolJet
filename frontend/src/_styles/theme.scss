@@ -7085,7 +7085,7 @@ tbody {
     }
   }
 
-  .table-cell-dark{
+  .table-cell-dark {
     color: #ffffff;
   }
 
@@ -14024,9 +14024,11 @@ flex-direction: row;
 .custom-gap-2 {
   gap: 2px
 }
-.custom-gap-3{
+
+.custom-gap-3 {
   gap: 3px;
 }
+
 .custom-gap-4 {
   gap: 4px;
 }
@@ -14038,10 +14040,12 @@ flex-direction: row;
 .custom-gap-12 {
   gap: 12px
 }
-.custom-gap-16{
+
+.custom-gap-16 {
   gap: 16px;
 }
-.text-black-000{
+
+.text-black-000 {
   color: var(--text-black-000) !important;
 }
 
@@ -14050,6 +14054,7 @@ flex-direction: row;
     max-width: 100%;
   }
 }
+
 .tooltip-inner {
   border-radius: 8px;
 }
@@ -14238,6 +14243,10 @@ flex-direction: row;
       fill: var(--slate12);
     }
   }
+}
+
+.custom-gap-7 {
+  gap: 7px
 }
 
 .card-table {
@@ -14653,8 +14662,12 @@ flex-direction: row;
   }
 }
 
+.change-margin {
+  margin-bottom: 10px !important;
+}
+
 .inspector-validation-date-picker {
-  .react-datepicker-wrapper { 
+  .react-datepicker-wrapper {
     input {
       width: 100%;
       border: 1px solid var(--slate7);
@@ -14662,7 +14675,7 @@ flex-direction: row;
       background-color: var(--base);
       color: var(--slate12)
     }
-}
+  }
 
   .dark-theme {
     .react-datepicker__day {
@@ -14678,20 +14691,25 @@ flex-direction: row;
 .canvas-container {
   scrollbar-color: transparent;
   scrollbar-width: thin;
+
   &::-webkit-scrollbar {
     background-color: transparent;
     width: 6px;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-track {
     background-color: transparent;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-thumb {
     background-color: transparent;
   }
-  &:hover{
+
+  &:hover {
     scrollbar-color: #6a727c4d;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -14699,8 +14717,9 @@ flex-direction: row;
 }
 
 .jet-listview {
-  &:hover{
+  &:hover {
     scrollbar-color: #6a727c4d;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -14728,6 +14747,7 @@ flex-direction: row;
     }
   }
 }
+
 .number-input-arrow {
   &:hover {
     background-color: var(--interactive-overlays-fill-hover) !important;

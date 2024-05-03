@@ -175,8 +175,8 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
+  async findOne(where = {}): Promise<User> {
+    return this.usersRepository.findOne({ where });
   }
 
   async findSelfhostOnboardingDetails(): Promise<User> {
