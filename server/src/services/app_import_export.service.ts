@@ -518,7 +518,6 @@ export class AppImportExportService {
                         ? resolveGridPositionForComponent(layout.left, type)
                         : layout.left;
                     newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-                    // newLayout.left = layout.left;
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];

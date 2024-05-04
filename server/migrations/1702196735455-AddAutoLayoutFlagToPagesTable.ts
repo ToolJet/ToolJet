@@ -21,7 +21,7 @@ export class AddAutoLayoutFlagToPagesTable1702196735455 implements MigrationInte
         enumName: 'dimension_unit',
         enum: ['count', 'percent'],
         isNullable: false,
-        default: `'count'`,
+        default: `'percent'`,
       })
     );
   }
