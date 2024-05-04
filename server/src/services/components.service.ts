@@ -54,6 +54,7 @@ export class ComponentsService {
             newLayout.width = layout.width;
             newLayout.height = layout.height;
             newLayout.component = component;
+            newLayout.dimensionUnit = LayoutDimensionUnits.PERCENT;
 
             componentLayouts.push(newLayout);
           }

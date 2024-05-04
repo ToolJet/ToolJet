@@ -45,6 +45,7 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
+import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 
 const uuid = require('uuid');
 
@@ -733,6 +734,7 @@ export class AppsService {
           newLayout.width = layout.width;
           newLayout.height = layout.height;
           newLayout.componentId = layout.componentId;
+          newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
           newLayout.component = newComponent;
 
