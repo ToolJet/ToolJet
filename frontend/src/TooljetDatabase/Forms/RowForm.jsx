@@ -46,7 +46,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
 
   const [inputValues, setInputValues] = useState(
     Array.isArray(editRowColumns)
-      ? editRowColumns.map((item, index) => {
+      ? editRowColumns.map((item, _index) => {
           if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
@@ -69,6 +69,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     editRowColumns.map(({ accessor, dataType, column_default }, index) => {
       saveData(dataType, accessor, inputValues, index, column_default);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [data, setData] = useState(() => {
@@ -84,7 +85,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   });
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1],
       value: key[1],
@@ -238,7 +239,13 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
               <input
                 //defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
                 type="text"
-                value={inputValues[index]?.value === null ? '' : inputValues[index]?.value}
+                value={
+                  isSerialDataTypeColumn
+                    ? 'Auto-generated'
+                    : inputValues[index]?.value === null
+                    ? ''
+                    : inputValues[index]?.value
+                }
                 onChange={(e) => handleInputChange(index, e.target.value, columnName)}
                 disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
                 placeholder={
