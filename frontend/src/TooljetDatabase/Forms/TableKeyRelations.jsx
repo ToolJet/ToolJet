@@ -147,6 +147,8 @@ function SourceKeyRelation({
       ? targetColumnList?.filter((item) => {
           if (sourceColumn.dataType === 'integer') {
             return item.dataType === 'integer' || item.dataType === 'serial';
+          } else if (sourceColumn.dataType === 'bigint') {
+            return item.dataType === 'integer' || item.dataType === 'bigint';
           } else {
             return item.dataType === sourceColumn.dataType;
           }
@@ -178,6 +180,9 @@ function SourceKeyRelation({
   const isSameDataTypeColumns =
     sourceColumn?.dataType === 'integer' &&
     (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'serial')
+      ? true
+      : sourceColumn?.dataType === 'bigint' &&
+        (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'bigint')
       ? true
       : sourceColumn?.dataType === targetColumn?.dataType
       ? true

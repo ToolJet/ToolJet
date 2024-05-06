@@ -543,26 +543,39 @@ const ColumnForm = ({
           {/* foreign key toggle */}
 
           <div className="row mb-3">
-            <div className="col-1">
-              <label className={`form-switch`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={isForeignKey}
-                  onChange={(e) => {
-                    if (isMatchingForeignKeyColumn(columnName)) {
-                      setIsForeignKey(e.target.checked);
-                      setIsForeignKeyDraweOpen(false);
-                    } else {
-                      setIsForeignKey(e.target.checked);
-                      setIsForeignKeyDraweOpen(e.target.checked);
-                      setCreateForeignKeyInEdit(e.target.checked);
+            <ToolTip
+              message={
+                dataType === 'serial'
+                  ? 'Foreign key relation cannot be created for serial type column'
+                  : 'Fill in column details to create a foreign key relation'
+              }
+              placement="top"
+              tooltipClassName="tootip-table"
+              show={dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
+            >
+              <div className="col-1">
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={isForeignKey}
+                    onChange={(e) => {
+                      if (isMatchingForeignKeyColumn(columnName)) {
+                        setIsForeignKey(e.target.checked);
+                        setIsForeignKeyDraweOpen(false);
+                      } else {
+                        setIsForeignKey(e.target.checked);
+                        setIsForeignKeyDraweOpen(e.target.checked);
+                        setCreateForeignKeyInEdit(e.target.checked);
+                      }
+                    }}
+                    disabled={
+                      dataType?.value === 'serial' || dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName)
                     }
-                  }}
-                  disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
-                />
-              </label>
-            </div>
+                  />
+                </label>
+              </div>
+            </ToolTip>
             <div className="col d-flex flex-column">
               <p className="m-0 p-0 fw-500">Foreign Key relation</p>
               <p className="fw-400 secondary-text mb-2">Add foreign key to check referral integrity</p>

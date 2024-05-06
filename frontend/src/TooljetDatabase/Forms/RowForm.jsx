@@ -205,8 +205,6 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     onCreate && onCreate();
   };
 
-  console.log('first', referenceTableDetails);
-
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
     const isSerialDataTypeColumn = dataType === 'serial';
     switch (dataType) {
