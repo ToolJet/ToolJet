@@ -948,7 +948,7 @@ const WidgetWrapper = ({
   const width = gridWidth * layoutData.width;
 
   const calculateMoveableBoxHeight = () => {
-    // Early return for non-text input components
+    // Early return for non input components
     if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
       return layoutData?.height;
     }
