@@ -298,29 +298,37 @@ const ColumnForm = ({
         </div>
 
         <div className="row mb-3">
-          <div className="col-1">
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={isForeignKey}
-                onChange={(e) => {
-                  if (foreignKeyDetails?.length > 0) {
-                    setIsForeignKey(e.target.checked);
-                    setIsForeignKeyDraweOpen(false);
-                  } else {
-                    setIsForeignKey(e.target.checked);
-                    setIsForeignKeyDraweOpen(e.target.checked);
-                  }
-                }}
-                disabled={dataType?.value === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
-              />
-            </label>
-          </div>
+          <ToolTip
+            message={'Fill in column details to create a foreign key relation'}
+            placement="top"
+            tooltipClassName="tootip-table"
+            show={isEmpty(dataType) || isEmpty(columnName)}
+          >
+            <div className="col-1">
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isForeignKey}
+                  onChange={(e) => {
+                    if (foreignKeyDetails?.length > 0) {
+                      setIsForeignKey(e.target.checked);
+                      setIsForeignKeyDraweOpen(false);
+                    } else {
+                      setIsForeignKey(e.target.checked);
+                      setIsForeignKeyDraweOpen(e.target.checked);
+                    }
+                  }}
+                  disabled={isEmpty(dataType) || isEmpty(columnName)}
+                />
+              </label>
+            </div>
+          </ToolTip>
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">Foreign Key relation</p>
             <p className="fw-400 secondary-text mb-2">Add foreign key to check referral integrity</p>
             {foreignKeyDetails?.length > 0 &&
+              isForeignKey &&
               foreignKeyDetails?.map((detail, index) => (
                 <div className="foreignKey-details mt-0" key={index} onClick={() => {}}>
                   <span className="foreignKey-text">{detail.column_names[0]}</span>

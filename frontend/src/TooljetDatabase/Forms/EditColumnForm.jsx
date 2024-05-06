@@ -244,7 +244,8 @@ const ColumnForm = ({
       defaultValue?.length > 0 ||
       defaultValue !== selectedColumn?.column_default ||
       nullValue !== isNotNull ||
-      uniqueConstraintValue !== isUniqueConstraint
+      uniqueConstraintValue !== isUniqueConstraint ||
+      (foreignKeyDetails[selectedForeignkeyIndex] && !isForeignKey)
     ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
@@ -563,7 +564,7 @@ const ColumnForm = ({
             <div className="col d-flex flex-column">
               <p className="m-0 p-0 fw-500">Foreign Key relation</p>
               <p className="fw-400 secondary-text mb-2">Add foreign key to check referral integrity</p>
-              {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(columnName) && (
+              {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(columnName) && isForeignKey && (
                 <div className="foreignKey-details mt-0">
                   <span className="foreignKey-text">
                     {isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]}
@@ -625,6 +626,7 @@ const ColumnForm = ({
               createForeignKeyInEdit={createForeignKeyInEdit}
               isForeignKeyDraweOpen={isForeignKeyDraweOpen}
               onDeletePopup={() => setOnDeletePopup(true)}
+              selectedForeignkeyIndex={selectedForeignkeyIndex}
             />
           </Drawer>
 

@@ -27,13 +27,13 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     }
   });
 
-  const editRowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
+  const rowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
 
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
-    if (Array.isArray(editRowColumns)) {
-      return editRowColumns.map((item) => {
-        if (item.column_default === null) {
+    if (Array.isArray(rowColumns)) {
+      return rowColumns.map((item) => {
+        if (item.column_default === null || item.constraints_type.is_primary_key === true) {
           return 'Custom';
         } else {
           return 'Default';
@@ -45,18 +45,21 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   });
 
   const [inputValues, setInputValues] = useState(
-    Array.isArray(editRowColumns)
-      ? editRowColumns.map((item, _index) => {
+    Array.isArray(rowColumns)
+      ? rowColumns.map((item, _index) => {
           if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
-          if (item.column_default !== null) {
+          if (item.column_default !== null && item.constraints_type.is_primary_key !== true) {
             return {
               value: item.column_default || '',
               checkboxValue: item.column_default === 'true' ? true : false,
               disabled: true,
               label: item.column_default || '',
             };
+          }
+          if (item.column_default !== null && item.constraints_type.is_primary_key === true) {
+            return { value: '', checkboxValue: false, disabled: false, label: '' };
           } else if (item.constraints_type.is_not_null === false) {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
@@ -66,7 +69,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   );
 
   useEffect(() => {
-    editRowColumns.map(({ accessor, dataType, column_default }, index) => {
+    rowColumns.map(({ accessor, dataType, column_default }, index) => {
       saveData(dataType, accessor, inputValues, index, column_default);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,7 +77,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
 
   const [data, setData] = useState(() => {
     const data = {};
-    editRowColumns.forEach(({ accessor, dataType }) => {
+    rowColumns.forEach(({ accessor, dataType }) => {
       if (dataType === 'boolean') {
         if (!accessor) {
           data[accessor] = false;
@@ -87,8 +90,8 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   const referenceTableDetails = referencedColumnDetails.map((item) => {
     const [key, _value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
 
@@ -150,9 +153,14 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
-    newInputValues[index] = { value, checkboxValue: inputValues[index].checkboxValue, disabled: false, label: value };
+    newInputValues[index] = {
+      value: value === 'Null' ? null : value,
+      checkboxValue: inputValues[index].checkboxValue,
+      disabled: false,
+      label: value === 'Null' ? null : value,
+    };
     setInputValues(newInputValues);
-    setData({ ...data, [columnName]: value });
+    setData({ ...data, [columnName]: value === 'Null' ? null : value });
   };
 
   const handleCheckboxChange = (index, value, columnName) => {
@@ -170,7 +178,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   useEffect(() => {
     toast.dismiss();
     setData(
-      editRowColumns.reduce((result, column) => {
+      rowColumns.reduce((result, column) => {
         const { dataType, column_default } = column;
         if (dataType !== 'serial') {
           if (column.dataType === 'boolean') {
@@ -196,6 +204,8 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     toast.success(`Row created successfully`);
     onCreate && onCreate();
   };
+
+  console.log('first', referenceTableDetails);
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
     const isSerialDataTypeColumn = dataType === 'serial';
@@ -292,7 +302,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   };
 
   let matchingObject = {};
-  editRowColumns.forEach((obj) => {
+  rowColumns.forEach((obj) => {
     const { dataType = '', accessor, column_default } = obj;
     const keyName = accessor;
 
@@ -309,8 +319,8 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
         </h3>
       </div>
       <div className="card-body tj-app-input">
-        {Array.isArray(editRowColumns) &&
-          editRowColumns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
+        {Array.isArray(rowColumns) &&
+          rowColumns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;
             const isNullable = !constraints_type.is_not_null;
             const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);

@@ -90,8 +90,8 @@ const EditRowForm = ({
   const referenceTableDetails = referencedColumnDetails.map((item) => {
     const [key, value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
 
@@ -164,9 +164,13 @@ const EditRowForm = ({
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
-    newInputValues[index] = { value: value, disabled: false, label: value };
+    newInputValues[index] = {
+      value: value === 'Null' ? null : value,
+      disabled: false,
+      label: value === 'Null' ? null : value,
+    };
     setInputValues(newInputValues);
-    setRowData({ ...rowData, [columnName]: value });
+    setRowData({ ...rowData, [columnName]: value === 'Null' ? null : value });
   };
 
   useEffect(() => {

@@ -115,9 +115,17 @@ function TableSchema({
   }
 
   const primaryKeyLength = countPrimaryKeyLength(columnDetails);
-  const indexOfActiveForeignKey = Object.values(columns).findIndex((obj) =>
-    Object.values(obj).includes(foreignKeyDetails?.column_names?.value)
-  );
+  // const indexOfActiveForeignKey = Object.values(columnDetails).findIndex((obj) =>
+  //   Object.values(obj).includes(foreignKeyDetails?.column_names?.value)
+  // );
+  const indexesOfForeignKey = foreignKeyDetails.flatMap((foreignKey) => {
+    return Object.values(columnDetails).reduce((acc, column, index) => {
+      if (foreignKey.column_names[0] === column.column_name) {
+        acc.push(index);
+      }
+      return acc;
+    }, []);
+  });
 
   function checkMatchingColumnNamesInForeignKey(foreignKeys, columnName) {
     return foreignKeys?.some((foreignKey) => foreignKey?.column_names?.includes(columnName));
@@ -126,10 +134,12 @@ function TableSchema({
   const referenceTableDetails = referencedColumnDetails.map((item) => {
     const [key, value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
+
+  // const objectsAtIndexes = indexesOfForeignKey.map((index) => columnDetails[index]);
 
   return (
     <div className="column-schema-container">
@@ -161,13 +171,24 @@ function TableSchema({
 
             <ToolTip
               message={
-                index == indexOfActiveForeignKey ? (
+                foreignKeyDetails.some((item) => item.column_names[0] === columnDetails[index]?.column_name) ? (
                   <div>
                     <span>Foreign key relation</span>
                     <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                      <span>{foreignKeyDetails?.column_names?.value}</span>
+                      <span>
+                        {
+                          foreignKeyDetails.find((item) => item.column_names[0] === columnDetails[index]?.column_name)
+                            ?.column_names[0]
+                        }
+                      </span>
                       <ArrowRight />
-                      <span>{`${foreignKeyDetails?.referenced_table_name?.value}.${foreignKeyDetails?.referenced_column_names?.value}`}</span>
+                      <span>{`${
+                        foreignKeyDetails.find((item) => item.column_names[0] === columnDetails[index]?.column_name)
+                          ?.referenced_table_name
+                      }.${
+                        foreignKeyDetails.find((item) => item.column_names[0] === columnDetails[index]?.column_name)
+                          ?.referenced_column_names[0]
+                      }`}</span>
                     </div>
                   </div>
                 ) : (
@@ -179,8 +200,12 @@ function TableSchema({
             >
               <div
                 className={cx({
-                  'foreign-key-relation-active': index == indexOfActiveForeignKey,
-                  'foreign-key-relation': index != indexOfActiveForeignKey,
+                  'foreign-key-relation-active': foreignKeyDetails?.some(
+                    (item) => item.column_names[0] === columnDetails[index]?.column_name
+                  ),
+                  'foreign-key-relation': foreignKeyDetails?.some(
+                    (item) => item.column_names[0] !== columnDetails[index]?.column_name
+                  ),
                 })}
               >
                 <ForeignKeyRelation width="13" height="13" />
@@ -301,8 +326,8 @@ function TableSchema({
                 onChange={(value) => {
                   setDefaultValue((prevState) => {
                     const newState = [...prevState];
-                    newState[index].value = value;
-                    newState[index].label = value;
+                    newState[index].value = value.value === 'Null' ? null : value.value;
+                    newState[index].label = value.value === 'Null' ? null : value.value;
                     return newState;
                   });
                   const prevColumns = { ...columnDetails };

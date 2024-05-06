@@ -37,8 +37,8 @@ export const CellEditMenu = ({
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
   const [selectedForeignKeyValue, setSelectedForeignKeyValue] = useState({
-    value: previousCellValue,
-    label: previousCellValue,
+    value: previousCellValue === 'Null' ? null : previousCellValue,
+    label: previousCellValue === 'Null' ? null : previousCellValue,
   });
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
@@ -117,8 +117,8 @@ export const CellEditMenu = ({
   const referencedFKDataList = referencedColumnDetails.map((item) => {
     const [key, _value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
 
@@ -162,8 +162,11 @@ export const CellEditMenu = ({
               }
               value={selectedForeignKeyValue}
               onChange={(value) => {
-                setSelectedForeignKeyValue(value);
-                setCellValue(value.value);
+                setSelectedForeignKeyValue({
+                  label: value.value === 'Null' ? null : value.value,
+                  value: value.value === 'Null' ? null : value.value,
+                });
+                setCellValue(value.value === 'Null' ? null : value.value);
               }}
               onAdd={true}
               addBtnLabel={'Open referenced table'}

@@ -230,6 +230,7 @@ function ForeignKeyRelation({
   };
 
   const newChangesInForeignKey = changesInForeignKey();
+
   const openEditForeignKey = (sourceColumnName) => {
     if (!isEdit) {
       setEditForeignKeyInCreateTable(true);
@@ -253,6 +254,7 @@ function ForeignKeyRelation({
     setTargetColumn({
       value: existingForeignKeyColumn[0]?.referenced_column_names[0],
       label: existingForeignKeyColumn[0]?.referenced_column_names[0],
+      dataType: isMatchedDataType[0]?.data_type,
     });
     setOnDelete({
       value: existingForeignKeyColumn[0]?.on_delete,
@@ -367,6 +369,8 @@ function ForeignKeyRelation({
           setOnUpdate={setOnUpdate}
           onUpdate={onUpdate}
           editForeignKeyInCreateTable={editForeignKeyInCreateTable}
+          selectedForeignkeyIndex={selectedForeignkeyIndex}
+          setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}
         />
       </Drawer>
       <ConfirmDialog
