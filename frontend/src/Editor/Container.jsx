@@ -868,6 +868,9 @@ export const Container = ({
                   gridWidth={gridWidth}
                   currentLayout={currentLayout}
                   mode={mode}
+                  propertiesDefinition={box?.component?.definition?.properties}
+                  stylesDefinition={box?.component?.definition?.styles}
+                  componentType={box?.component?.component}
                 >
                   <DraggableBox
                     className={showComments && 'pointer-events-none'}
@@ -979,7 +982,18 @@ export const Container = ({
   );
 };
 
-const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResizing, mode }) => {
+const WidgetWrapper = ({
+  children,
+  widget,
+  id,
+  gridWidth,
+  currentLayout,
+  isResizing,
+  mode,
+  propertiesDefinition,
+  stylesDefinition,
+  componentType,
+}) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
@@ -1000,10 +1014,37 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
   // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
   const width = gridWidth * layoutData.width;
 
+  const calculateMoveableBoxHeight = () => {
+    // Early return for non-text input components
+    if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
+      return layoutData?.height;
+    }
+
+    // Destructure stylesDefinition once
+    const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+
+    // Resolve values only once per dependency
+    const resolvedLabel = label?.value?.length ?? 0; // Use nullish coalescing for label length
+    const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
+    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false; // Default to false
+
+    // Calculate new height based on conditions
+    let newHeight = layoutData?.height;
+    if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
+      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
+        newHeight += 20; // Use += for in-place modification
+      }
+    }
+
+    return newHeight;
+  };
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+
+  const { label = { value: null } } = propertiesDefinition ?? {};
+
   const styles = {
     width: width + 'px',
-    height: layoutData.height + 'px',
+    height: calculateMoveableBoxHeight() + 'px', // Removed function call here
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
