@@ -270,7 +270,14 @@ class RawManageOrgVarsComponent extends React.Component {
         <div className="text-muted">
           We have launched workspace constants and sunsetting workspace variables very soon. Please migrate workspace
           variables immediately to safeguard your applications from this breaking change. Please refer to the migration
-          guide
+          guide{' '}
+          <a
+            href="https://docs.tooljet.com/docs/org-management/workspaces/workspace-variables-migration"
+            target="_blank"
+            rel="noreferrer"
+          >
+            here
+          </a>
         </div>
       );
 
