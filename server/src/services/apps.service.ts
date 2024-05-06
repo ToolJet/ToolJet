@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, MoreThan, Repository } from 'typeorm';
+import { EntityManager, Like, MoreThan, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -239,6 +239,12 @@ export class AppsService {
     }
 
     return await viewableAppsQb.getMany();
+  }
+
+  async findAll(organizationId: string, searchParam): Promise<App[]> {
+    return await this.appsRepository.find({
+      where: { organizationId, ...(searchParam.name && { name: Like(`${searchParam.name} %`) }) },
+    });
   }
 
   async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
