@@ -246,7 +246,11 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
         return result;
       }
 
-      const metaDiff = diff(componentMeta, component.component);
+      const metaDiff = JSON.parse(JSON.stringify(component.component));
+      /** Below values are not saved in the database and are only required in FE */
+      delete metaDiff.actions;
+      delete metaDiff.description;
+      delete metaDiff.displayName;
 
       result[id] = _.defaultsDeep(metaDiff, defaultComponent);
 
