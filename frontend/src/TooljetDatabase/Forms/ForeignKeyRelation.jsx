@@ -74,7 +74,7 @@ function ForeignKeyRelation({
     ]);
 
     onCloseForeignKeyDrawer();
-    toast.success(`Foreign key Added successfully for selected column`);
+    // toast.success(`Foreign key Added successfully for selected column`);
   };
 
   const fetchMetaDataApi = async () => {

@@ -178,7 +178,7 @@ const ColumnForm = ({
 
   const handleCreateForeignKey = () => {
     setIsForeignKeyDraweOpen(false);
-    toast.success(`Foreign key Added successfully for selected column`);
+    // toast.success(`Foreign key Added successfully for selected column`);
   };
 
   const referenceTableDetails = referencedColumnDetails?.map((item) => {
