@@ -107,7 +107,7 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
       }
     >
       <div
-        className="tags row h-100"
+        className={`tags row h-100 ${readOnly ? 'm-0 tj-table-tag-col-readonly' : ''}`}
         style={{ display: 'flex', alignItems: 'center' }}
         onMouseMove={() => {
           if (!hovered) setHovered(true);
@@ -117,7 +117,9 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
         {/* Container for renderTags */}
         {!showForm && (
           <div
-            className="render-tags-container table-tags-col-container h-100 d-flex flex-wrap custom-gap-3"
+            className={`render-tags-container table-tags-col-container h-100 d-flex flex-wrap custom-gap-3 ${
+              readOnly ? 'p-0' : 0
+            }`}
             style={{ width: readOnly ? '100' : '80%', overflow: 'hidden' }}
           >
             {value.map((item, index) => (

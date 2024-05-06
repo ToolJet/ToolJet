@@ -1438,3 +1438,7 @@
 .table-column-type-input-element[type="number"] {
   -moz-appearance: textfield !important;
 }
+
+.tj-table-tag-col-readonly {
+  margin-left: -2px !important;  //this -ve margin offset for the margin given to each tags in overall column width
+}
