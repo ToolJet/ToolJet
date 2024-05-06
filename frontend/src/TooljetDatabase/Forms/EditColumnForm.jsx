@@ -725,6 +725,7 @@ const ColumnForm = ({
           onClose={onClose}
           onEdit={handleEdit}
           shouldDisableCreateBtn={columnName === ''}
+          showToolTipForFkOnReadDocsSection={true}
         />
       </div>
       <ConfirmDialog

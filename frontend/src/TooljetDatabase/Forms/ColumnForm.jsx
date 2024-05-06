@@ -432,6 +432,7 @@ const ColumnForm = ({
           isEmpty(dataType) ||
           (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
         }
+        showToolTipForFkOnReadDocsSection={true}
       />
     </div>
   );
