@@ -788,15 +788,27 @@ export class TooljetDbService {
 
   private prepareColumnListForCreateTable(columns) {
     const columnList = columns.map((column) => {
-      const { column_name, data_type, column_default = undefined, constraints_type = {} } = column;
+      const { column_name, constraints_type = {} } = column;
       const is_primary_key_column = constraints_type?.is_primary_key || false;
+
+      const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
+        const { data_type, column_default = undefined } = column;
+        const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
+        const isCharacterVarying = () => data_type === 'character varying';
+
+        if (isSerial()) return { data_type: 'serial', column_default: undefined };
+        if (isCharacterVarying() && !isEmpty(column_default))
+          return { data_type, column_default: this.addQuotesIfString(column_default) };
+
+        return { data_type, column_default };
+      };
+
+      const { data_type, column_default } = prepareDataTypeAndDefault(column);
 
       return {
         name: column_name,
         type: data_type,
-        ...(column_default && {
-          default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
-        }),
+        default: column_default,
         isNullable: constraints_type?.is_not_null ? false : true,
         isUnique: constraints_type?.is_unique && !is_primary_key_column ? true : false,
       };
