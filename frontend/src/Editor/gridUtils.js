@@ -1,4 +1,5 @@
 import { useGridStore } from '@/_stores/gridStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
@@ -281,4 +282,25 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
     e.target.style.height = `${e.height}px`;
   }
   e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+};
+
+export const calculateMoveableBoxHeight = (componentType, stylesDefinition, layoutData, label) => {
+  // Early return for non input components
+  if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
+    return layoutData?.height;
+  }
+  const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+
+  const resolvedLabel = label?.value?.length ?? 0;
+  const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
+  const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
+
+  let newHeight = layoutData?.height;
+  if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
+    if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
+      newHeight += 20;
+    }
+  }
+
+  return newHeight;
 };

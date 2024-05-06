@@ -21,7 +21,7 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
-import { compact, correctBounds } from './gridUtils';
+import { compact, correctBounds, calculateMoveableBoxHeight } from './gridUtils';
 import toast from 'react-hot-toast';
 import { isOnlyLayoutUpdate, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import GhostWidget from './GhostWidget';
@@ -946,34 +946,13 @@ const WidgetWrapper = ({
   }
   // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
   const width = gridWidth * layoutData.width;
-
-  const calculateMoveableBoxHeight = () => {
-    // Early return for non input components
-    if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
-      return layoutData?.height;
-    }
-    const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
-
-    const resolvedLabel = label?.value?.length ?? 0;
-    const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
-    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
-
-    let newHeight = layoutData?.height;
-    if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
-      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += 20;
-      }
-    }
-
-    return newHeight;
-  };
-  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
-
   const { label = { value: null } } = propertiesDefinition ?? {};
+
+  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   const styles = {
     width: width + 'px',
-    height: calculateMoveableBoxHeight() + 'px',
+    height: calculateMoveableBoxHeight(componentType, stylesDefinition, layoutData, label) + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),

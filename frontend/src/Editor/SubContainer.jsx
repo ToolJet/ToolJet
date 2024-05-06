@@ -25,6 +25,7 @@ import { diff } from 'deep-object-diff';
 // eslint-disable-next-line import/namespace
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
+import { calculateMoveableBoxHeight } from './gridUtils';
 
 export const SubContainer = ({
   mode,
@@ -469,6 +470,9 @@ export const SubContainer = ({
                     gridWidth={gridWidth}
                     isGhostComponent={key === 'resizingComponentId'}
                     mode={mode}
+                    propertiesDefinition={box?.component?.definition?.properties}
+                    stylesDefinition={box?.component?.definition?.styles}
+                    componentType={box?.component?.component}
                   >
                     <DraggableBox
                       onComponentClick={onComponentClick}
@@ -575,6 +579,9 @@ const SubWidgetWrapper = ({
   isResizing,
   isGhostComponent,
   mode,
+  propertiesDefinition,
+  stylesDefinition,
+  componentType,
 }) => {
   const { layouts } = widget;
   const widgetRef = useRef();
@@ -590,9 +597,12 @@ const SubWidgetWrapper = ({
 
   let width = (canvasWidth * layoutData.width) / 43;
   width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
+
+  const { label = { value: null } } = propertiesDefinition ?? {};
+
   const styles = {
     width: width + 'px',
-    height: layoutData.height + 'px',
+    height: calculateMoveableBoxHeight(componentType, stylesDefinition, layoutData, label) + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };
