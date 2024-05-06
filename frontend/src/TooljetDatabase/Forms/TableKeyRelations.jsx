@@ -127,7 +127,10 @@ function SourceKeyRelation({
             data?.result?.columns.map((item) => ({
               name: item.column_name,
               label: item.column_name,
-              icon: dataTypes.filter((obj) => obj.value === item.data_type)[0]?.icon,
+              icon: dataTypes.filter(
+                (obj) =>
+                  obj.value === getColumnDataType({ column_default: item.column_default, data_type: item.data_type })
+              )[0]?.icon,
               value: item.column_name,
               dataType: getColumnDataType({ column_default: item.column_default, data_type: item.data_type }),
             }))

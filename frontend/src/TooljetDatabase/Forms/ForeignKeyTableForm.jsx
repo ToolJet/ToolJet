@@ -72,8 +72,6 @@ const ForeignKeyTableForm = ({
       selectedForeignKey?.referenced_column_names?.[0] === targetColumn?.value &&
       selectedForeignKey?.referenced_table_name === targetTable?.value);
 
-  console.log('first', foreignKeyDetails);
-
   return (
     <div className="foreignKeyRelation-form-container">
       <div className="card-header">
