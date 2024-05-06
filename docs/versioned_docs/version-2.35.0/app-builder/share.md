@@ -3,25 +3,25 @@ id: share
 title: Share
 ---
 
-ToolJet apps offer two sharing options: they can either be shared privately with workspace users or publicly by generating a shareable link. To obtain the shareable URL, you can easily do so by clicking on the Share button located on the top bar of the App builder.
+ToolJet apps offer two sharing options: private sharing with workspace users or public sharing via a generated link. To obtain the shareable URL, click the **Share** icon on the top bar of the App Builder.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/sharenew1.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/share-app-v2.gif" alt="Share modal" />
 
 </div>
 
 ### Making the app public
 
-To share the app with external end users and make it accessible to anyone on the internet without requiring a ToolJet login, you can toggle on the Switch for "Make application public" in the Share modal.
+To share the app publicly and make it accessible to anyone on the internet without requiring a ToolJet login, toggle the **Make application public** switch in the Share modal.
 
 :::info
 Only released apps can be accessed using the Shareable app link.
 :::
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/publicnew1.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/make-application-public-v2.png" alt="Make Application Public" width='700'/>
 
 </div>
 
@@ -29,9 +29,9 @@ Only released apps can be accessed using the Shareable app link.
 
 By default, ToolJet will generate a unique URL for your application. However, you also have the option to edit the slug of the URL to make it more customized and user-friendly.
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/edit1.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/edit-slug-v2.png" alt="Edit Slug/URL" width='700'/>
 
 </div>
 
