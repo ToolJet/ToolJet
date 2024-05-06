@@ -1040,7 +1040,7 @@ const WidgetWrapper = ({
 
   const styles = {
     width: width + 'px',
-    height: calculateMoveableBoxHeight() + 'px', // Removed function call here
+    height: calculateMoveableBoxHeight() + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
