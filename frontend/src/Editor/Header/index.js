@@ -49,7 +49,7 @@ export default function EditorHeader({
   );
 
   return (
-    <div className="header" style={{ width: '100%' }}>
+    <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
@@ -89,6 +89,7 @@ export default function EditorHeader({
                   handleRedo={handleRedo}
                   showToggleLayoutBtn
                   showUndoRedoBtn
+                  darkMode={darkMode}
                 />
                 <div className="d-flex align-items-center">
                   <div style={{ width: '100px', marginRight: '20px' }}>
@@ -143,6 +144,7 @@ export default function EditorHeader({
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       isPublic={isPublic ?? false}
                       appCreationMode={creationMode}
+                      darkMode={darkMode}
                     />
                   )}
                 </div>

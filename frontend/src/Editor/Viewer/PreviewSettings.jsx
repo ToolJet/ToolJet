@@ -58,6 +58,7 @@ const PreviewSettings = ({
         appCreationMode={creationMode}
         isEditable={false}
         isViewer
+        darkMode={darkMode}
       />
     );
   };

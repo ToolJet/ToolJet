@@ -5,10 +5,9 @@ import * as Slider from '@radix-ui/react-slider';
 import './Slider.scss';
 import { debounce } from 'lodash';
 
-function Slider1({ value, onChange, component }) {
+function Slider1({ value, onChange, component, styleDefinition }) {
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
-
-  const isDisbaled = component?.component?.definition?.styles?.auto?.value || false;
+  const isDisbaled = styleDefinition?.auto?.value || false;
   useEffect(() => {
     setSliderValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -31,7 +30,7 @@ function Slider1({ value, onChange, component }) {
   };
 
   return (
-    <div className="d-flex flex-column " style={{ width: '142px', position: 'relative' }}>
+    <div className="d-flex flex-column " style={{ width: '142px', marginBottom: '16px', position: 'relative' }}>
       <CustomInput
         disabled={isDisbaled}
         value={sliderValue}

@@ -11,7 +11,6 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { CredentialsService } from '@services/credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
-import { tooljetDbOrmconfig } from '../../../ormconfig';
 import { PluginsModule } from '../plugins/plugins.module';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from '../../../src/entities/credential.entity';
@@ -28,16 +27,14 @@ import { File } from 'src/entities/file.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 const imports = [
   PluginsModule,
   CaslModule,
   TypeOrmModule.forFeature([User, Organization, File, AppUser, AppVersion, App, Credential, Plugin, DataSource]),
+  TooljetDbModule,
 ];
-
-if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
-}
 
 @Module({
   imports,

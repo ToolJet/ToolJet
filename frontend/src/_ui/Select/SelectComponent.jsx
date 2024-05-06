@@ -3,8 +3,8 @@ import _ from 'lodash';
 import Select from 'react-select';
 import defaultStyles from './styles';
 
-export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, ...restProps }) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
+export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
+  const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
   const {
     isMulti = false,
     styles = {},
@@ -23,18 +23,18 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     isDisabled = false,
   } = restProps;
 
-  const customStyles = useCustomStyles ? styles : defaultStyles(darkMode, width, height, styles);
+  const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
-      : options.map((option) => {
+      : options?.map((option) => {
           if (!option.hasOwnProperty('label')) {
             return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
           }
           return option;
         });
 
-  const currentValue = selectOptions.find((option) => option.value === value) || value;
+  const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
 
   const handleOnChange = (data) => {
     if (isMulti) {
@@ -55,7 +55,6 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
   return (
     <Select
       {...restProps}
-      defaultValue={defaultValue}
       isLoading={isLoading}
       isDisabled={isDisabled || isLoading}
       options={selectOptions}
@@ -69,7 +68,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
-      classNamePrefix={`${darkMode && 'dark-theme'} ${'react-select'}`}
+      classNamePrefix={`${isDarkMode && 'dark-theme'} ${'react-select'}`}
     />
   );
 };

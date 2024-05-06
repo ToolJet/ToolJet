@@ -21,6 +21,7 @@ export const AppVersionsManager = function ({
   isEditable = true,
   isViewer,
   appCreationMode,
+  darkMode,
 }) {
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
   const [deleteVersion, setDeleteVersion] = useState({
@@ -43,8 +44,6 @@ export const AppVersionsManager = function ({
     }),
     shallow
   );
-
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const {
     initializedEnvironmentDropdown,
@@ -247,12 +246,12 @@ export const AppVersionsManager = function ({
             value={selectedVersion?.id}
             onChange={(id) => selectVersion(id)}
             {...customSelectProps}
-            className={` ${darkMode && 'dark-theme'}`}
             isEditable={isEditable}
             onMenuOpen={onMenuOpen}
             onMenuClose={() => setForceMenuOpen(false)}
             menuIsOpen={forceMenuOpen}
             currentEnvironment={selectedEnvironment}
+            darkMode={darkMode}
           />
         </div>
       </div>

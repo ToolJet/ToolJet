@@ -101,6 +101,8 @@ export class AppsControllerV2 {
     response['pages'] = pagesForVersion;
     response['events'] = eventsForVersion;
 
+    console.log({ app });
+
     //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {
       response['editing_version'] = {
@@ -120,7 +122,7 @@ export class AppsControllerV2 {
         );
         shouldFreezeEditor = appVersionEnvironment.priority > 1;
       } else {
-        const appVersionEnvironment = await this.appEnvironmentService.getByPriority(user.organizationId);
+        appVersionEnvironment = await this.appEnvironmentService.getByPriority(user.organizationId);
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
       response['should_freeze_editor'] = app.creationMode === 'GIT' || shouldFreezeEditor;

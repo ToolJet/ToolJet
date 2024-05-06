@@ -198,9 +198,11 @@ export class TooljetDbOperationsService implements QueryService {
     if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
       delete sanitizedJoinTableJson.order_by;
 
-    return await this.tooljetDbService.perform(organizationId, 'join_tables', {
+    const result = await this.tooljetDbService.perform(organizationId, 'join_tables', {
       joinQueryJson: sanitizedJoinTableJson,
     });
+
+    return { status: 'ok', data: { result } };
   }
 }
 

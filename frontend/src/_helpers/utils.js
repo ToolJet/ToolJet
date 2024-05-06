@@ -14,8 +14,11 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { validateMultilineCode } from './utility';
 
-const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+const reservedKeyword = ['app', 'window'];
+import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -175,7 +178,10 @@ export function resolveReferences(
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          if (reservedKeyword.includes(code)) {
+          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
+          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+
+          if (code.match(keywordRegex)) {
             error = `${code} is a reserved keyword`;
             return [{}, error];
           }
@@ -417,6 +423,97 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   };
 }
 
+export function validateDates({ validationObject, widgetValue, currentState, customResolveObjects }) {
+  let isValid = true;
+  let validationError = null;
+  const validationDateFormat = validationObject?.dateFormat?.value || 'MM/DD/YYYY';
+  const validationTimeFormat = validationObject?.timeFormat?.value || 'HH:mm';
+  const customRule = validationObject?.customRule?.value;
+  const parsedDateFormat = validationObject?.parseDateFormat?.value;
+  const isTwentyFourHrFormatEnabled = validationObject?.isTwentyFourHrFormatEnabled?.value ?? false;
+  const isDateSelectionEnabled = validationObject?.isDateSelectionEnabled?.value ?? true;
+  const _widgetDateValue = moment(widgetValue, parsedDateFormat);
+  const _widgetTimeValue = moment(
+    widgetValue,
+    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled, isDateSelectionEnabled)
+  ).format(validationTimeFormat);
+
+  const resolvedMinDate = resolveWidgetFieldValue(
+    validationObject?.minDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxDate = resolveWidgetFieldValue(
+    validationObject?.maxDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMinTime = resolveWidgetFieldValue(
+    validationObject?.minTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxTime = resolveWidgetFieldValue(
+    validationObject?.maxTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+
+  // Minimum date validation
+  if (resolvedMinDate !== undefined && moment(resolvedMinDate).isValid()) {
+    if (!moment(resolvedMinDate, validationDateFormat).isBefore(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum date is ${resolvedMinDate}`,
+      };
+    }
+  }
+
+  // Maximum date validation
+  if (resolvedMaxDate !== undefined && moment(resolvedMaxDate).isValid()) {
+    if (!moment(resolvedMaxDate, validationDateFormat).isAfter(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum date is ${resolvedMaxDate}`,
+      };
+    }
+  }
+
+  // Minimum time validation
+  if (resolvedMinTime !== undefined && moment(resolvedMinTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMinTime, validationTimeFormat).isBefore(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum time is ${resolvedMinTime}`,
+      };
+    }
+  }
+
+  // Maximum time validation
+  if (resolvedMaxTime !== undefined && moment(resolvedMaxTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMaxTime, validationTimeFormat).isAfter(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum time is ${resolvedMaxTime}`,
+      };
+    }
+  }
+
+  //Custom rule validation
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+    return { isValid: false, validationError: resolvedCustomRule };
+  }
+  return {
+    isValid,
+    validationError,
+  };
+}
+
 export function validateEmail(email) {
   const emailRegex =
     /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -436,17 +533,10 @@ export function constructSearchParams(params = {}) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  if ([...reservedKeyword, 'this'].some((keyword) => code.includes(keyword))) {
-    const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
-    const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
+  const isValidCode = validateMultilineCode(code);
 
-    return {
-      status: 'failed',
-      data: {
-        message,
-        description,
-      },
-    };
+  if (isValidCode.status === 'failed') {
+    return isValidCode;
   }
 
   const currentState = getCurrentState();

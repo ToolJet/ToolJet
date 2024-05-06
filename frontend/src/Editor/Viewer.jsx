@@ -59,6 +59,7 @@ import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -68,7 +69,7 @@ class ViewerComponent extends React.Component {
 
     const slug = this.props.params.slug;
     this.subscription = null;
-
+    this.props.setEditorOrViewer('viewer');
     this.state = {
       slug,
       deviceWindowWidth,
@@ -103,8 +104,10 @@ class ViewerComponent extends React.Component {
       appDefData.homePageId = data.homePageId;
       appDefData.showViewerNavigation = data.showViewerNavigation;
     }
+    const appMode = data.globalSettings?.appMode || data?.editing_version?.globalSettings?.appMode;
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     useAppVersionStore.getState().actions.updateReleasedVersionId(data.currentVersionId);
+    useEditorStore.getState().actions.setAppMode(appMode);
     this.setState({
       app: data,
       isLoading: false,
@@ -262,6 +265,19 @@ class ViewerComponent extends React.Component {
       dataQueries = data.data_queries;
     }
     const queryConfirmationList = [];
+    const referencesManager = useResolveStore.getState().referenceMapper;
+    const newQueries = dataQueries
+      .map((dq) => {
+        if (!referencesManager.get(dq.id)) {
+          return {
+            id: dq.id,
+            name: dq.name,
+          };
+        }
+      })
+      .filter((c) => c !== undefined);
+
+    useResolveStore.getState().actions.addEntitiesToMap(newQueries);
 
     if (dataQueries.length > 0) {
       dataQueries.forEach((query) => {
@@ -495,6 +511,12 @@ class ViewerComponent extends React.Component {
       .then((data) => {
         this.setStateForApp(data);
         this.setStateForContainer(data, versionId);
+        const preview = !!queryString.parse(this.props?.location?.search)?.version;
+        fetchAndSetWindowTitle({
+          page: pageTitles.VIEWER,
+          appName: data.name,
+          preview,
+        });
       })
       .catch(() => {
         this.setState({
@@ -651,13 +673,7 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
-            const currentPageEvents = this.state.events.filter(
-              (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
-            );
-
-            await this.handleEvent('onPageLoad', currentPageEvents);
-          });
+          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components);
         }
       );
     }
@@ -821,6 +837,7 @@ class ViewerComponent extends React.Component {
       dataQueries,
       canvasWidth,
     } = this.state;
+
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
@@ -889,7 +906,12 @@ class ViewerComponent extends React.Component {
         );
       }
       return (
-        <div className={`viewer wrapper ${this.props.currentLayout === 'mobile' ? 'mobile-layout' : ''}`}>
+        <div
+          className={cx('viewer wrapper', {
+            'mobile-layout': this.props.currentLayout,
+            'theme-dark dark-theme': this.props.darkMode,
+          })}
+        >
           <Confirm
             show={queryConfirmationList.length > 0}
             message={'Do you want to run this query?'}
@@ -899,6 +921,7 @@ class ViewerComponent extends React.Component {
             onCancel={() => onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationList[0], false, 'view')}
             queryConfirmationData={queryConfirmationList[0]}
             key={queryConfirmationList[0]?.queryName}
+            darkMode={this.props.darkMode}
           />
           <DndProvider backend={HTML5Backend}>
             {this.props.currentLayout !== 'mobile' && (
@@ -943,7 +966,6 @@ class ViewerComponent extends React.Component {
                       <ViewerSidebarNavigation
                         showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}
-                        canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                         pages={pages}
                         currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                         switchPage={this.switchPage}
@@ -999,7 +1021,6 @@ class ViewerComponent extends React.Component {
                                 appDefinitionChanged={() => false} // function not relevant in viewer
                                 snapToGrid={true}
                                 appLoading={isLoading}
-                                darkMode={this.props.darkMode}
                                 onEvent={this.handleEvent}
                                 mode="view"
                                 deviceWindowWidth={isMobilePreviewMode ? '450px' : deviceWindowWidth}
@@ -1017,6 +1038,7 @@ class ViewerComponent extends React.Component {
                                 canvasWidth={this.getCanvasWidth()}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
+                                darkMode={this.props.darkMode}
                               />
                             )}
                           </>
@@ -1085,12 +1107,15 @@ const withStore = (Component) => (props) => {
       const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
 
       if (componentIdsWithReferences.length > 0) {
-        batchUpdateComponents(componentIdsWithReferences);
+        setTimeout(() => {
+          batchUpdateComponents(componentIdsWithReferences);
+        }, 400);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastUpdatedRef]);
 
+  const { isAppDarkMode } = useAppDarkMode();
   return (
     <Component
       {...props}
@@ -1100,6 +1125,7 @@ const withStore = (Component) => (props) => {
       updateState={updateState}
       queryConfirmationList={queryConfirmationList}
       currentAppVersionEnvironment={currentAppVersionEnvironment}
+      darkMode={isAppDarkMode}
     />
   );
 };

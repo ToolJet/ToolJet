@@ -21,7 +21,7 @@ export const numberinputConfig = {
       type: 'code',
       displayName: 'Default value',
       validation: {
-        schema: { type: 'number' },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         defaultValue: 0,
       },
     },
@@ -77,7 +77,7 @@ export const numberinputConfig = {
     color: {
       type: 'color',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#11181C' },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
     alignment: {
@@ -135,7 +135,7 @@ export const numberinputConfig = {
     borderColor: {
       type: 'color',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#6A727C47' },
+      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
@@ -147,13 +147,13 @@ export const numberinputConfig = {
     textColor: {
       type: 'color',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#232e3c' },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
       type: 'color',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#DB4324' },
+      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
     },
     icon: {
@@ -166,7 +166,7 @@ export const numberinputConfig = {
     iconColor: {
       type: 'color',
       displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: '#C1C8CD' },
+      validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
       accordian: 'field',
       visibility: false,
       showLabel: false,
@@ -281,15 +281,15 @@ export const numberinputConfig = {
     styles: {
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: '#fff' },
-      borderColor: { value: '#6A727C47' },
+      borderColor: { value: '#CCD1D5' },
       accentColor: { value: '#4368E3' },
-      errTextColor: { value: '#DB4324' },
-      textColor: { value: '#232e3c' },
-      iconColor: { value: '#C1C8CD' },
+      errTextColor: { value: '#D72D39' },
+      textColor: { value: '#1B1F24' },
+      color: { value: '#1B1F24' },
+      iconColor: { value: '#CFD3D859' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
-      color: { value: '#11181C' },
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

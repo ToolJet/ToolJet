@@ -48,6 +48,7 @@ import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'sr
 import { isEmpty } from 'lodash';
 import { PromoteVersionDto } from '@dto/promote-version.dto';
 import { AppBase } from 'src/entities/app_base.entity';
+import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 
 const uuid = require('uuid');
 
@@ -183,6 +184,7 @@ export class AppsService {
           canvasMaxHeight: 2400,
           canvasBackgroundColor: '#edeff5',
           backgroundFxQuery: '',
+          appMode: 'auto',
         };
         await manager.save(appVersion);
 
@@ -735,6 +737,7 @@ export class AppsService {
           newLayout.width = layout.width;
           newLayout.height = layout.height;
           newLayout.componentId = layout.componentId;
+          newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
           newLayout.component = newComponent;
 

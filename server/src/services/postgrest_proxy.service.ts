@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { QueryError } from 'src/modules/data_sources/query.errors';
 import got from 'got';
 
 @Injectable()
@@ -43,20 +44,6 @@ export class PostgrestProxyService {
       });
     }
 
-    const tableId = req.url.split('?')[0].split('/').pop();
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: {
-        organizationId,
-        id: tableId,
-      },
-    });
-
-    if (internalTable.tableName) {
-      const tableInfo = {};
-      tableInfo[tableId] = internalTable.tableName;
-      req.headers['tableInfo'] = tableInfo;
-    }
-
     return this.httpProxy(req, res, next);
   }
 
@@ -86,27 +73,11 @@ export class PostgrestProxyService {
 
       return response.body;
     } catch (error) {
-      return error;
+      throw new QueryError('Query could not be completed', error.message, {});
     }
   }
 
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
-    userResDecorator: function (proxyRes, proxyResData, userReq, _userRes) {
-      if (userReq?.headers?.tableInfo && proxyRes.statusCode >= 400) {
-        const customErrorObj = Buffer.isBuffer(proxyResData) ? JSON.parse(proxyResData.toString('utf8')) : proxyResData;
-
-        let customErrorMessage = customErrorObj?.message ?? '';
-        if (customErrorMessage) {
-          Object.entries(userReq.headers.tableInfo).forEach(([key, value]) => {
-            customErrorMessage = customErrorMessage.replace(key, value as string);
-          });
-          customErrorObj.message = customErrorMessage;
-        }
-        proxyResData = Buffer.from(JSON.stringify(customErrorObj), 'utf-8');
-      }
-
-      return proxyResData;
-    },
     proxyReqPathResolver: function (req) {
       return replaceUrlForPostgrest(req.url);
     },

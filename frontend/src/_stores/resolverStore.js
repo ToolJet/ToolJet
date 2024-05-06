@@ -184,7 +184,12 @@ export const useResolveStore = create(
         const updatedList = [];
 
         resolvedRefs.forEach((ref) => {
-          if (!ref.hint || (ref.newRef !== '' && !ref.newRef) || !hintsMap.has(ref.hint)) return;
+          if (
+            !ref.hint ||
+            (typeof ref.newRef === 'string' && ref.newRef !== '' && !ref.newRef) ||
+            !hintsMap.has(ref.hint)
+          )
+            return;
 
           const refId = hintsMap.get(ref.hint);
           const currentRef = lookupResolvedRefs.get(refId);

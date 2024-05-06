@@ -1,3 +1,5 @@
+import { getLastDepth, getLastSubstring } from './autocompleteUtils';
+
 export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) => {
   if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
@@ -50,7 +52,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) 
   });
 
   const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences, input);
-  return orderSuggestions(suggestions, fieldType).map((cm, index) => ({ ...cm, boost: 100 - index }));
+  return orderSuggestions(suggestions, fieldType);
 };
 
 function orderSuggestions(suggestions, validationType) {
@@ -67,18 +69,23 @@ export const generateHints = (hints, totalReferences = 1, input) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
-    let displayedHint = type === 'js_method' || type === 'Function' ? `${hint}()` : hint;
+    let displayedHint = type === 'js_method' || (type === 'Function' && !hint.endsWith('.run()')) ? `${hint}()` : hint;
 
-    const maxHintLength = 20;
-    const hintLength = displayedHint.length;
-    const _hint =
-      displayedHint.length > maxHintLength ? '...' + displayedHint.slice(hintLength - maxHintLength) : displayedHint;
+    const currentWord = input.split('{{').pop().split('}}')[0];
+    const hasDepth = currentWord.includes('.');
+    const lastDepth = getLastSubstring(currentWord);
+
+    const displayLabel = getLastDepth(displayedHint);
 
     return {
-      displayLabel: _hint,
+      displayLabel: lastDepth === '' ? displayedHint : displayLabel,
       label: displayedHint,
+      info: displayedHint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
-      section: type === 'js_method' ? { name: 'JS methods', rank: 2 } : { name: 'Suggestions', rank: 1 },
+      section:
+        type === 'js_method'
+          ? { name: 'JS methods', rank: 2 }
+          : { name: !hasDepth ? 'Suggestions' : lastDepth, rank: 1 },
       detail: type === 'js_method' ? 'method' : type?.toLowerCase() || '',
       apply: (view, completion, from, to) => {
         const doc = view.state.doc;
@@ -96,12 +103,10 @@ export const generateHints = (hints, totalReferences = 1, input) => {
           pickedCompletionConfig.from = from;
         }
 
-        if (totalReferences > 0 && completion.type !== 'js_methods') {
+        if (totalReferences > 1 && completion.type !== 'js_methods') {
           let queryInput = input;
           const currentWord = queryInput.split('{{').pop().split('}}')[0];
           pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
-
-          anchorSelection = queryInput.length + currentWord.length;
         }
 
         const dispatchConfig = {
@@ -127,30 +132,56 @@ export const generateHints = (hints, totalReferences = 1, input) => {
 function filterHintsByDepth(input, hints) {
   if (input === '') return hints;
 
-  const inputDepth = input.split('.').length;
-
-  if (inputDepth === 1) {
-    return findRelativeHints(input, hints);
-  }
+  const inputDepth = input.includes('.') ? input.split('.').length : 0;
 
   const filteredHints = hints.filter((cm) => {
     const hintParts = cm.hint.split('.');
 
-    let shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth + 1;
+    let shouldInclude =
+      (cm.hint.startsWith(input) && hintParts.length === inputDepth + 1) ||
+      (cm.hint.startsWith(input) && hintParts.length === inputDepth);
 
-    if (input.endsWith('.')) {
+    const shouldFuzzyMatch = !shouldInclude ? hintParts.length > inputDepth : false;
+
+    if (shouldFuzzyMatch) {
+      // fuzzy match
+      let matchedDepth = -1;
+      for (let i = 0; i < hintParts.length; i++) {
+        if (hintParts[i].includes(input)) {
+          matchedDepth = i;
+          break;
+        }
+      }
+
+      if (matchedDepth !== -1) {
+        shouldInclude = hintParts.length === matchedDepth + 1;
+      }
+    } else if (input.endsWith('.')) {
       shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth;
     }
 
     return shouldInclude;
   });
+
   return filteredHints;
 }
 
-function findRelativeHints(input, hints) {
-  const filteredHints = hints.filter(({ hint }) => {
-    return hint.includes(input);
-  });
+export function findNearestSubstring(inputStr, currentCurosorPos) {
+  let end = currentCurosorPos - 1; // Adjust for zero-based indexing
+  let substring = '';
+  const inputSubstring = inputStr.substring(0, end + 1);
 
-  return filteredHints;
+  console.log(`Initial cursor position: ${currentCurosorPos}`);
+  console.log(`Character at cursor: '${inputStr[end]}'`);
+  console.log(`Input substring: '${inputSubstring}'`);
+
+  // Iterate backwards from the character before the cursor
+  for (let i = end; i >= 0; i--) {
+    if (inputStr[i] === ' ') {
+      break; // Stop if a space is found
+    }
+    substring = inputStr[i] + substring;
+  }
+
+  return substring;
 }

@@ -37,8 +37,8 @@ const initialState = {
   eventsCreatedLoader: false,
   actionsUpdatedLoader: false,
   eventToDeleteLoaderIndex: null,
+  isTJDarkMode: localStorage.getItem('darkMode') === 'true',
 };
-
 export const useAppDataStore = create(
   zustandDevTools(
     (set, get) => ({
@@ -50,7 +50,7 @@ export const useAppDataStore = create(
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
           return new Promise((resolve, reject) => {
-            useAppDataStore.getState().actions.setIsSaving(true);
+            get().actions.setIsSaving(true);
             const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
 
             let updateDiff = appDefinitionDiff.updateDiff;
@@ -71,17 +71,17 @@ export const useAppDataStore = create(
                 isComponentCutProcess
               )
               .then(() => {
-                useAppDataStore.getState().actions.setIsSaving(false);
+                get().actions.setIsSaving(false);
               })
               .catch((error) => {
-                useAppDataStore.getState().actions.setIsSaving(false);
+                get().actions.setIsSaving(false);
                 reject(error);
               })
               .finally(() => resolve());
           });
         },
         updateAppVersionEventHandlers: async (events, updateType = 'update', param) => {
-          useAppDataStore.getState().actions.setIsSaving(true);
+          get().actions.setIsSaving(true);
           if (param === 'actionId') {
             set({ actionsUpdatedLoader: true });
           }
@@ -100,7 +100,7 @@ export const useAppDataStore = create(
             updateType
           );
 
-          useAppDataStore.getState().actions.setIsSaving(false);
+          get().actions.setIsSaving(false);
           set({ eventsUpdatedLoader: false, actionsUpdatedLoader: false });
           const updatedEvents = get().events;
 
@@ -131,7 +131,7 @@ export const useAppDataStore = create(
         },
 
         createAppVersionEventHandlers: async (event) => {
-          useAppDataStore.getState().actions.setIsSaving(true);
+          get().actions.setIsSaving(true);
           set({ eventsCreatedLoader: true });
 
           const appId = get().appId;
@@ -139,7 +139,7 @@ export const useAppDataStore = create(
 
           const updatedEvents = get().events;
           const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
-          useAppDataStore.getState().actions.setIsSaving(false);
+          get().actions.setIsSaving(false);
           set({ eventsCreatedLoader: false });
 
           updatedEvents.push(response);
@@ -148,14 +148,14 @@ export const useAppDataStore = create(
         },
 
         deleteAppVersionEventHandler: async (eventId) => {
-          useAppDataStore.getState().actions.setIsSaving(true);
+          get().actions.setIsSaving(true);
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const updatedEvents = get().events;
 
           const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
-          useAppDataStore.getState().actions.setIsSaving(false);
+          get().actions.setIsSaving(false);
 
           set({ eventToDeleteLoaderIndex: null });
           if (response?.affected === 1) {
@@ -167,6 +167,7 @@ export const useAppDataStore = create(
             set(() => ({ events: updatedEvents }));
           }
         },
+
         autoUpdateEventStore: async (versionId) => {
           const appId = get().appId;
           const response = await appVersionService.findAllEventsWithSourceId(appId, versionId);
@@ -179,6 +180,7 @@ export const useAppDataStore = create(
         setComponents: (components) => set(() => ({ components })),
         setMetadata: (metadata) => set(() => ({ metadata })),
         setEventToDeleteLoaderIndex: (index) => set(() => ({ eventToDeleteLoaderIndex: index })),
+        updateIsTJDarkMode: (isTJDarkMode) => set({ isTJDarkMode }),
       },
     }),
     { name: 'App Data Store' }

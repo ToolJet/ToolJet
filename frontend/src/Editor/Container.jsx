@@ -21,7 +21,7 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
-import { compact, correctBounds } from './gridUtils';
+import { compact, correctBounds, calculateMoveableBoxHeight } from './gridUtils';
 import toast from 'react-hot-toast';
 import { isOnlyLayoutUpdate, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import GhostWidget from './GhostWidget';
@@ -839,6 +839,9 @@ export const Container = ({
                   gridWidth={gridWidth}
                   currentLayout={currentLayout}
                   mode={mode}
+                  propertiesDefinition={box?.component?.definition?.properties}
+                  stylesDefinition={box?.component?.definition?.styles}
+                  componentType={box?.component?.component}
                 >
                   <DraggableBox
                     className={showComments && 'pointer-events-none'}
@@ -912,7 +915,18 @@ export const Container = ({
   );
 };
 
-const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResizing, mode }) => {
+const WidgetWrapper = ({
+  children,
+  widget,
+  id,
+  gridWidth,
+  currentLayout,
+  isResizing,
+  mode,
+  propertiesDefinition,
+  stylesDefinition,
+  componentType,
+}) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
@@ -932,11 +946,13 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
   }
   // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
   const width = gridWidth * layoutData.width;
+  const { label = { value: null } } = propertiesDefinition ?? {};
 
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+
   const styles = {
     width: width + 'px',
-    height: layoutData.height + 'px',
+    height: calculateMoveableBoxHeight(componentType, stylesDefinition, layoutData, label) + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
