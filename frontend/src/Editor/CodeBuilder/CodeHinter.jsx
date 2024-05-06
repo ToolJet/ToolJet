@@ -189,13 +189,16 @@ export function CodeHinter({
     const customResolvables = getCustomResolvables();
     const invalidConstants = verifyConstant(value);
     if (invalidConstants?.length) {
-      return [value, `${invalidConstants} are undefined`];
+      return [value, `undefined constants: ${invalidConstants}`];
     }
     const [preview, error] = resolveReferences(value, realState, null, customResolvables, true, true);
     return [preview, error];
   };
 
   const verifyConstant = (value) => {
+    if (typeof value !== 'string') {
+      return [];
+    }
     const matches = value.match(constantRegex);
     if (!matches) {
       return [];
