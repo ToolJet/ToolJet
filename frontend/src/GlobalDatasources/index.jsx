@@ -22,7 +22,7 @@ export const GlobalDatasources = (props) => {
   const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
-  const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
+  const [activeDatasourceList, setActiveDatasourceList] = useState('#commonlyused');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
@@ -31,13 +31,13 @@ export const GlobalDatasources = (props) => {
   }
 
   useEffect(() => {
-    if (dataSources?.length == 0) updateSidebarNAV('Databases');
+    if (dataSources?.length == 0) updateSidebarNAV('Commonly used');
   }, []);
 
   useEffect(() => {
     selectedDataSource
       ? updateSidebarNAV(selectedDataSource.name)
-      : !activeDatasourceList && updateSidebarNAV('Databases');
+      : !activeDatasourceList && updateSidebarNAV('Commonly used');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
@@ -82,10 +82,10 @@ export const GlobalDatasources = (props) => {
           toggleDataSourceManagerModal(true);
         }
         if (orderedDataSources.length && resetSelection) {
-          setActiveDatasourceList('#databases');
+          setActiveDatasourceList('#commonlyused');
         }
         if (!orderedDataSources.length) {
-          setActiveDatasourceList('#databases');
+          setActiveDatasourceList('#commonlyused');
         }
         setLoading(false);
       })
