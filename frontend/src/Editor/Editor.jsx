@@ -113,6 +113,7 @@ const EditorComponent = (props) => {
     setCurrentAppEnvironmentId,
     setCurrentAppEnvironmentDetails,
     updateComponentsNeedsUpdateOnNextRender,
+    setCanvasWidth,
   } = useEditorActions();
 
   const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
@@ -145,6 +146,7 @@ const EditorComponent = (props) => {
     currentAppEnvironment,
     currentAppEnvironmentId,
     featureAccess,
+    editorCanvasWidth,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
@@ -161,6 +163,7 @@ const EditorComponent = (props) => {
       currentAppEnvironment: state.currentAppEnvironment,
       currentAppEnvironmentId: state.currentAppEnvironmentId,
       featureAccess: state.featureAccess,
+      editorCanvasWidth: state.editorCanvasWidth,
     }),
     shallow
   );
@@ -380,7 +383,14 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setCurrentState({
         layout: currentLayout,
       });
+
+      const canvasWidth = getCanvasWidth();
+
+      if (typeof canvasWidth === 'number') {
+        setCanvasWidth(canvasWidth);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, mounted]);
 
   const handleYmapEventUpdates = () => {
@@ -2289,7 +2299,7 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            widthOfCanvas={getCanvasWidth()}
+                            widthOfCanvas={editorCanvasWidth}
                             socket={socket}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
@@ -2311,7 +2321,7 @@ const EditorComponent = (props) => {
                           />
                           <CustomDragLayer
                             snapToGrid={true}
-                            canvasWidth={getCanvasWidth()}
+                            canvasWidth={editorCanvasWidth}
                             onDragging={(isDragging) => setIsDragging(isDragging)}
                           />
                         </>

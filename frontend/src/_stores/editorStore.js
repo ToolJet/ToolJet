@@ -2,10 +2,7 @@ import _ from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
 import { licenseService } from '@/_services';
-import { shallow } from 'zustand/shallow';
-import { useAppDataStore } from './appDataStore';
 import { useResolveStore } from './resolverStore';
-import { useCurrentState, useCurrentStateStore } from './currentStateStore';
 const STORE_NAME = 'Editor';
 
 export const EMPTY_ARRAY = [];
@@ -46,6 +43,7 @@ const initialState = {
   featureAccess: null,
   componentsNeedsUpdateOnNextRender: [],
   appMode: 'auto',
+  editorCanvasWidth: 1092,
 };
 
 export const useEditorStore = create(
@@ -58,6 +56,7 @@ export const useEditorStore = create(
           type: ACTIONS.SET_HOVERED_COMPONENT,
           showComments,
         }),
+      setCanvasWidth: (editorCanvasWidth) => set({ editorCanvasWidth }),
       toggleComments: () =>
         set({ showComments: !get().showComments }, false, {
           type: ACTIONS.TOGGLE_COMMENTS,
