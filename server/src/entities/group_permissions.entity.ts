@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { Organization } from './organization.entity';
 import { GroupUsers } from './group_users.entity';
-import { GROUP_PERMISSIONS_TYPE } from '@module/group_permissions/constants/group-permissions.constant';
+import { GROUP_PERMISSIONS_TYPE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { GranularPermissions } from './granular_permissions.entity';
 
 @Entity({ name: 'group_permissions' })
@@ -27,12 +27,6 @@ export class GroupPermissions extends BaseEntity {
 
   @Column({ name: 'type', nullable: false, type: 'enum', enum: GROUP_PERMISSIONS_TYPE })
   type: GROUP_PERMISSIONS_TYPE;
-
-  @Column({ name: 'editable', nullable: false })
-  editable: boolean;
-
-  @Column({ name: 'only_builders', nullable: false })
-  onlyBuilders: boolean;
 
   @Column({ name: 'app_create', default: false })
   appCreate: boolean;

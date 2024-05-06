@@ -11,7 +11,7 @@ export class AddGranularPermissionsTable1714015564318 implements MigrationInterf
     await queryRunner.query(
       `
       CREATE TABLE granular_permissions (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         group_id UUID,
         name VARCHAR NOT NULL,
         type resource_type NOT NULL,

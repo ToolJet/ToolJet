@@ -5,7 +5,7 @@ export class AddAppsGroupPermissionsTable1714015596201 implements MigrationInter
     await queryRunner.query(
       `
         CREATE TABLE IF NOT EXISTS apps_group_permissions (
-            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             granular_permission_id UUID,
             can_edit BOOLEAN DEFAULT false,
             can_view BOOLEAN DEFAULT false,

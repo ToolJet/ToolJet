@@ -47,6 +47,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { UserResourcePermissions } from '@module/user_resource_permissions/user_resource_permissions.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -131,6 +132,7 @@ const imports = [
   MetaModule,
   LibraryAppModule,
   GroupPermissionsModule,
+  UserResourcePermissions,
   FilesModule,
   PluginsModule,
   EventsModule,

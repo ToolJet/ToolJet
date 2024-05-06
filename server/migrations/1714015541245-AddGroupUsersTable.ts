@@ -5,7 +5,7 @@ export class AddGroupUsersTable1714015541245 implements MigrationInterface {
     await queryRunner.query(
       `
     CREATE TABLE IF NOT EXISTS group_users (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID,
         group_id UUID,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

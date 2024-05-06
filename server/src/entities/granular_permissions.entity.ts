@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ResourceType } from '@module/group_permissions/constants/granular-permissions.constant';
+import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 import { GroupPermissions } from './group_permissions.entity';
 
 @Entity({ name: 'granular_permissions' })

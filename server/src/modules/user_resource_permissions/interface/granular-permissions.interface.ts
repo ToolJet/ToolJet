@@ -23,4 +23,12 @@ export interface GranularPermissionQuerySearchParam {
   type?: string;
 }
 
+export interface CreateAppsPermissionsObject {
+  canEdit?: boolean;
+  canView?: boolean;
+  hideFromDashboard?: boolean;
+}
+
+export type CreateResourcePermissionObject = CreateAppsPermissionsObject;
+
 export type GranularResourcePermissions = AppsGroupPermissions;

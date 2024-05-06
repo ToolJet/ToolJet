@@ -13,6 +13,7 @@ import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
 import { AppEnvironment } from './app_environments.entity';
 import { GroupPermissions } from './group_permissions.entity';
+import { GroupPermission } from './group_permission.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -41,7 +42,12 @@ export class Organization extends BaseEntity {
   updatedAt: Date;
 
   @OneToMany(() => GroupPermissions, (groupPermissions) => groupPermissions.organization, { onDelete: 'CASCADE' })
-  groupPermissions: GroupPermissions[];
+  permissionGroups: GroupPermissions[];
+
+  //Depreciated
+  @OneToMany(() => GroupPermission, (groupPermission) => groupPermission.organization, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'organization_id' })
+  groupPermissions: GroupPermission[];
 
   @OneToMany(() => SSOConfigs, (ssoConfigs) => ssoConfigs.organization, { cascade: ['insert'] })
   ssoConfigs: SSOConfigs[];

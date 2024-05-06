@@ -1,4 +1,4 @@
-import { GROUP_PERMISSIONS_TYPE } from '../constants/group-permissions.constant';
+import { GROUP_PERMISSIONS_TYPE, USER_ROLE } from '../constants/group-permissions.constant';
 import { SearchParamItem } from '@helpers/db-utility/db-utility.interface';
 
 export interface CreateDefaultGroupObject {
@@ -20,4 +20,9 @@ export interface GroupQuerySearchParamObject {
   type?: string;
   editable?: boolean;
   onlyBuilder?: boolean;
+}
+
+export interface AddUserRoleObject {
+  role: USER_ROLE;
+  userId: string;
 }
