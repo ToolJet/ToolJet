@@ -846,6 +846,9 @@ const Table = ({ collapseSidebar }) => {
   function tableHeaderContent(column, index) {
     const { constraints_type = {}, dataType = '' } = column;
     const { is_primary_key } = constraints_type;
+    const primaryKeyCount = headerGroups[0]?.headers.filter(
+      (obj) => obj.constraints_type.is_primary_key === true
+    ).length;
 
     return is_primary_key ? (
       <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
@@ -864,7 +867,12 @@ const Table = ({ collapseSidebar }) => {
             <span>{column.render('Header')}</span>
           </div>
           <div className="d-flex align-items-center">
-            <ToolTip message="Primary key" placement="top" tooltipClassName="tjdb-table-tooltip" show={true}>
+            <ToolTip
+              message={primaryKeyCount === 1 ? 'Primary key' : 'Composite primary key'}
+              placement="top"
+              tooltipClassName="tjdb-table-tooltip"
+              show={true}
+            >
               <div>
                 <span
                   style={{

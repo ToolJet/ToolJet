@@ -348,6 +348,7 @@ const ColumnForm = ({
     setSourceColumn({
       value: existingForeignKeyColumn[0]?.column_names[0],
       label: existingForeignKeyColumn[0]?.column_names[0],
+      dataType: selectedColumn?.dataType,
     });
     setTargetTable({
       value: existingForeignKeyColumn[0]?.referenced_table_name,
@@ -356,6 +357,7 @@ const ColumnForm = ({
     setTargetColumn({
       value: existingForeignKeyColumn[0]?.referenced_column_names[0],
       label: existingForeignKeyColumn[0]?.referenced_column_names[0],
+      dataType: selectedColumn?.dataType,
     });
     setOnDelete({
       value: existingForeignKeyColumn[0]?.on_delete,

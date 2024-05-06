@@ -245,10 +245,7 @@ function TableSchema({
                         prevColumns[index]?.data_type !== 'serial');
 
                     columnConstraints.is_unique =
-                      value.value === 'serial' ||
-                      (prevColumns[index].constraints_type?.is_primary_key &&
-                        prevColumns[index]?.data_type !== 'serial') ||
-                      (value.value === 'boolean' && false);
+                      prevColumns[index].constraints_type?.is_primary_key || (value.value === 'boolean' && false);
 
                     columnConstraints.is_primary_key = value.value === 'boolean' && false;
                     prevColumns[index].constraints_type = { ...columnConstraints };
@@ -387,10 +384,17 @@ function TableSchema({
             )}
 
             <ToolTip
-              message={'There must be atleast one Primary key'}
+              message={
+                columnDetails[index]?.data_type === 'boolean'
+                  ? 'Boolean data type cannot be a primary key'
+                  : 'There must be atleast one Primary key'
+              }
               placement="top"
               tooltipClassName="tootip-table"
-              show={primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true}
+              show={
+                (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                columnDetails[index]?.data_type === 'boolean'
+              }
             >
               <div className="primary-check">
                 <IndeterminateCheckbox
