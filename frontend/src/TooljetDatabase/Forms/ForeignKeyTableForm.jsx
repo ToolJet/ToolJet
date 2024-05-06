@@ -65,12 +65,12 @@ const ForeignKeyTableForm = ({
   const selectedForeignKey = foreignKeyDetails[selectedForeignkeyIndex];
 
   const isDisableSaveBtn =
-    (selectedForeignKey?.length > 0 &&
-      (selectedForeignKey?.column_names?.[0] === sourceColumn?.value || targetColumn?.value === '')) ||
     (selectedForeignKey?.on_update === onUpdate?.value &&
       selectedForeignKey?.on_delete === onDelete?.value &&
       selectedForeignKey?.referenced_column_names?.[0] === targetColumn?.value &&
-      selectedForeignKey?.referenced_table_name === targetTable?.value);
+      selectedForeignKey?.referenced_table_name === targetTable?.value &&
+      selectedForeignKey?.column_names?.[0] === sourceColumn?.value) ||
+    targetColumn?.value === '';
 
   return (
     <div className="foreignKeyRelation-form-container">

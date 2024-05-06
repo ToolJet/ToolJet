@@ -126,7 +126,7 @@ function TableDetailsDropdown({
               showColumnInfo={showColumnInfo}
               showDescription={showDescription}
               disabled={isEditColumn || isCreateColumn}
-              onTableClick={onTableClick}
+              onTableClick={false}
             />
           </div>
         </div>
