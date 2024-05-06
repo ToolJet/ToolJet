@@ -121,6 +121,7 @@ const ForeignKeyTableForm = ({
         isCreateColumn={isCreateColumn}
         isForeignKeyForColumnDrawer={isForeignKeyForColumnDrawer}
         editForeignKeyInCreateTable={editForeignKeyInCreateTable}
+        foreignKeyDetails={foreignKeyDetails}
       />
     </div>
   );

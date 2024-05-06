@@ -14,6 +14,7 @@ import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
+import { ConfirmDialog } from '@/_components';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
@@ -32,6 +33,7 @@ const ColumnForm = ({
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
+  const [onDeletePopup, setOnDeletePopup] = useState(false);
   const [isNotNull, setIsNotNull] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(false);
@@ -134,9 +136,6 @@ const ColumnForm = ({
     if (value.value === 'serial') {
       setIsUniqueConstraint(true);
       setIsNotNull(true);
-    } else {
-      setIsUniqueConstraint(false);
-      setIsNotNull(false);
     }
     setDataType(value);
   };
@@ -195,6 +194,25 @@ const ColumnForm = ({
       foreignKeyDetails?.some((foreignKey) => foreignKey.column_names[0] === columnName)
     );
   }
+
+  const handleDeleteForeignKeyRelationInCreate = () => {
+    const newForeignKeyDetails = [...foreignKeyDetails]; // Make a copy of the existing array
+    newForeignKeyDetails.splice(0, 1); // Remove the item at the specified index
+    setForeignKeyDetails(newForeignKeyDetails);
+    setIsForeignKeyDraweOpen(false);
+    setIsForeignKey(false);
+    setOnDeletePopup(false);
+  };
+
+  const footerStyle = {
+    borderTop: '1px solid var(--slate5)',
+    paddingTop: '12px',
+    marginTop: '0px',
+  };
+
+  const handleOpenDeletePopup = () => {
+    setOnDeletePopup(true);
+  };
 
   return (
     <div className="drawer-card-wrapper ">
@@ -367,7 +385,6 @@ const ColumnForm = ({
             columns={columns}
             onClose={() => {
               setIsForeignKeyDraweOpen(false);
-              setIsForeignKey(false);
             }}
             isCreateColumn={true}
             isForeignKeyForColumnDrawer={true}
@@ -377,6 +394,7 @@ const ColumnForm = ({
             foreignKeyDetails={foreignKeyDetails}
             organizationId={organizationId}
             existingForeignKeyDetails={foreignKeys}
+            onDeletePopup={handleOpenDeletePopup}
             setSourceColumn={setSourceColumn}
             sourceColumn={sourceColumn}
             setTargetTable={setTargetTable}
@@ -443,6 +461,27 @@ const ColumnForm = ({
           isEmpty(dataType) ||
           (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
         }
+      />
+      <ConfirmDialog
+        title={'Delete foreign key'}
+        show={onDeletePopup}
+        message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
+        onConfirm={() => {
+          handleDeleteForeignKeyRelationInCreate();
+        }}
+        onCancel={() => {
+          setOnDeletePopup(false);
+        }}
+        darkMode={darkMode}
+        confirmButtonType="dangerPrimary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => {
+          setOnDeletePopup(false);
+        }}
+        confirmButtonText={'Continue'}
+        cancelButtonText={'Cancel'}
+        // confirmIcon={<DeleteIcon />}
+        footerStyle={footerStyle}
       />
     </div>
   );
