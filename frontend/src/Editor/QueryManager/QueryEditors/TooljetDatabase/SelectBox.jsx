@@ -308,20 +308,28 @@ function DataSourceSelect({
           // }),
           MenuList: useCallback(
             (props) => {
-              const selectedOption = props.children.reduce((accumulator, reactElement) => {
-                const props = reactElement?.props ?? {};
-                if (props?.isSelected) {
-                  accumulator = { ...props?.data };
-                }
-                return accumulator;
-              }, {});
-              const focusedOption = props.children.reduce((accumulator, reactElement) => {
-                const props = reactElement?.props ?? {};
-                if (props?.isFocused) {
-                  accumulator = { ...props?.data };
-                }
-                return accumulator;
-              }, {});
+              const selectedOption =
+                props &&
+                props.children &&
+                Array.isArray(props.children) &&
+                props?.children?.reduce((accumulator, reactElement) => {
+                  const props = reactElement?.props ?? {};
+                  if (props?.isSelected) {
+                    accumulator = { ...props?.data };
+                  }
+                  return accumulator;
+                }, {});
+              const focusedOption =
+                props &&
+                props.children &&
+                Array.isArray(props.children) &&
+                props?.children?.reduce((accumulator, reactElement) => {
+                  const props = reactElement?.props ?? {};
+                  if (props?.isFocused) {
+                    accumulator = { ...props?.data };
+                  }
+                  return accumulator;
+                }, {});
 
               return (
                 <React.Fragment>
