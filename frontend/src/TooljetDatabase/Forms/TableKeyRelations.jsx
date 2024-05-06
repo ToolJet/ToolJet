@@ -69,6 +69,7 @@ function SourceKeyRelation({
             icon: columns?.dataTypeDetails?.icon ?? columns?.dataTypeDetails[0]?.icon,
             value: columns?.column_name,
             dataType: columns?.data_type,
+            isDisabled: columns?.data_type === 'serial' ? true : false,
           },
         ]
       : Object.values(columns).map((item) => {
@@ -78,6 +79,7 @@ function SourceKeyRelation({
             icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
             value: item?.column_name,
             dataType: item?.data_type,
+            isDisabled: item?.data_type === 'serial' ? true : false,
           };
         });
 
@@ -179,7 +181,15 @@ function SourceKeyRelation({
 
   const targetTableColumns =
     targetColumnList.length > 0 && (!isEditColumn || !isCreateColumn)
-      ? targetColumnList?.filter((item) => sourceColumn.dataType === item.dataType)
+      ? targetColumnList?.filter((item) => {
+          if (sourceColumn.dataType === 'integer') {
+            return item.dataType === 'integer' || item.dataType === 'serial';
+          } else if (sourceColumn.dataType === 'bigint') {
+            return item.dataType === 'integer' || item.dataType === 'bigint';
+          } else {
+            return item.dataType === sourceColumn.dataType;
+          }
+        })
       : (isEditColumn || isCreateColumn) && targetColumnList.length > 0
       ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
       : [];
@@ -204,7 +214,16 @@ function SourceKeyRelation({
     window.open(getPrivateRoute('database'), '_blank');
   };
 
-  const isSameDataTypeColumns = sourceColumn?.dataType === targetColumn?.dataType;
+  const isSameDataTypeColumns =
+    sourceColumn?.dataType === 'integer' &&
+    (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'serial')
+      ? true
+      : sourceColumn?.dataType === 'bigint' &&
+        (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'bigint')
+      ? true
+      : sourceColumn?.dataType === targetColumn?.dataType
+      ? true
+      : false;
 
   useEffect(() => {
     if (!isSameDataTypeColumns) {

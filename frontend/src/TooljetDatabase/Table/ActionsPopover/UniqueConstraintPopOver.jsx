@@ -48,16 +48,15 @@ export const UniqueConstraintPopOver = ({
               message={
                 columns[index]?.constraints_type?.is_primary_key === true
                   ? 'Primary key values must be unique'
-                  : columns[index]?.data_type === 'serial' && columns[index]?.constraints_type?.is_primary_key !== true
-                  ? 'Serial data type value must be unique'
+                  : columns[index]?.data_type === 'boolean'
+                  ? 'Boolean data type cannot be unique'
                   : null
               }
               placement="top"
               tooltipClassName="tootip-table"
               style={toolTipPlacementStyle}
               show={
-                columns[index]?.constraints_type?.is_primary_key === true ||
-                (columns[index]?.data_type === 'serial' && columns[index]?.constraints_type?.is_primary_key !== true)
+                columns[index]?.constraints_type?.is_primary_key === true || columns[index]?.data_type === 'boolean'
               }
             >
               <div className="d-flex not-null-toggle">
@@ -85,7 +84,6 @@ export const UniqueConstraintPopOver = ({
                     }}
                     disabled={
                       columns[index]?.constraints_type?.is_primary_key === true ||
-                      columns[index]?.data_type === 'serial' ||
                       columns[index]?.data_type === 'boolean'
                     }
                   />

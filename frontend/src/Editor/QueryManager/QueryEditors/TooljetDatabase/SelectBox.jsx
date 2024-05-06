@@ -201,13 +201,15 @@ function DataSourceSelect({
   useEffect(() => {
     // Making the Infinite scroll pagination API to default state
     return () => {
-      setIsInitialForeignKeyDataLoaded(false);
-      setIsInitialForeignKeSearchDataLoaded(false);
-      setTotalRecords(0);
-      setPageNumber(1);
-      setSearchValue('');
-      setSearchResults([]);
-      setReferencedColumnDetails([]);
+      if (scrollEventForColumnValus) {
+        setIsInitialForeignKeyDataLoaded(false);
+        setIsInitialForeignKeSearchDataLoaded(false);
+        setTotalRecords(0);
+        setPageNumber(1);
+        setSearchValue('');
+        setSearchResults([]);
+        setReferencedColumnDetails([]);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -244,6 +246,7 @@ function DataSourceSelect({
                     display: 'flex',
                     justifyContent: showRedirection ? 'space-between' : 'flex-start',
                     alignItems: 'center',
+                    cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
                   }}
                   className={`dd-select-option ${showDescription && 'h-100'}`}
                 >
@@ -317,6 +320,11 @@ function DataSourceSelect({
                     <SolidIcon name="foreignkey" height={'14'} width={'24'} />
                   )}
                 </div>
+                {foreignKeyAccess && props.data.isDisabled && (
+                  <div style={{ fontSize: '12px', color: '#889096', cursor: 'not-allowed' }}>
+                    Foreign key relation cannot be created for serial type column
+                  </div>
+                )}
               </components.Option>
             );
           },
@@ -448,15 +456,19 @@ function DataSourceSelect({
             lineHeight: '20px',
             textTransform: 'uppercase',
           }),
-          option: (style, { data: { isNested }, isFocused, _isDisabled, isSelected }) => ({
+          option: (style, { data: { isNested }, isFocused, isDisabled, isSelected }) => ({
             ...style,
             cursor: 'pointer',
-            color: 'inherit',
+            color: isDisabled ? 'var(--slate8, #c1c8cd)' : 'inherit',
             backgroundColor:
               isSelected && highlightSelected
                 ? 'var(--indigo3, #F0F4FF)'
                 : isFocused && !isNested
                 ? 'var(--slate4)'
+                : isDisabled
+                ? 'var(--slate3, #f1f3f5)'
+                : isDisabled && isFocused
+                ? 'var(--slate3, #f1f3f5)'
                 : 'transparent',
             ...(isNested
               ? { padding: '0 8px', marginLeft: '19px', borderLeft: '1px solid var(--slate5)', width: 'auto' }

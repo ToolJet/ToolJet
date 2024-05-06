@@ -135,7 +135,7 @@ function TableDetailsDropdown({
               targetTable={targetTable}
               actions={actions}
               actionName={secondColumnName}
-              onTableClick={onTableClick}
+              onTableClick={false}
             />
           </div>
         </div>
