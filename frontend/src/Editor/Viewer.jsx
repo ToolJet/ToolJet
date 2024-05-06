@@ -473,12 +473,6 @@ class ViewerComponent extends React.Component {
         });
         this.setStateForApp(data);
         this.setStateForContainer(data, versionId);
-        const preview = !!queryString.parse(this.props?.location?.search)?.version;
-        fetchAndSetWindowTitle({
-          page: pageTitles.VIEWER,
-          appName: data.name,
-          preview,
-        });
       })
       .catch(() => {
         this.setState({
