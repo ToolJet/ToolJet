@@ -298,11 +298,9 @@ function ForeignKeyRelation({
     (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
     (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation));
 
-  const getTooltipContentFordisableAddRelationButton = (tableLength, tableName, columns, isEditMode) => {
-    if (isEditMode && tableLength < 2) {
-      return 'At least 2 table is required to add foreign key relation while editing a existing table';
-    } else if (!isEditMode && tableLength < 1) {
-      return 'At least 1 table is required to add foreign key relation while creating a new table';
+  const getTooltipContentFordisableAddRelationButton = (tableLength, tableName, columns) => {
+    if (tableLength < 2) {
+      return 'At least 2 tables are required to add foreign key relation (source table and target table)';
     } else if (isEmpty(tableName)) {
       return 'Table name is required to add foreign key relation';
     } else if (isEmpty(columns)) {
@@ -360,12 +358,7 @@ function ForeignKeyRelation({
             }}
             disabled={disableAddRelationButton}
             data-tooltip-id="add-relation-tooltip"
-            data-tooltip-content={getTooltipContentFordisableAddRelationButton(
-              tables?.length,
-              tableName,
-              columns,
-              isEditMode
-            )}
+            data-tooltip-content={getTooltipContentFordisableAddRelationButton(tables?.length, tableName, columns)}
           >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp; Add relation

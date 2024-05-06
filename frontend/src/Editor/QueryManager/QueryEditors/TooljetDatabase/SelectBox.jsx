@@ -634,7 +634,7 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
         table will also update any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
-        table
+        table.
       </>
     ) : (
       <>
@@ -642,7 +642,7 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
         table will also delete any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
-        table
+        table.
       </>
     ),
     restrict: isActionOnUpdate ? (
@@ -651,8 +651,10 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
         table will not be permitted for any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
-        table. It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction,
-        whereas RESTRICT does not.
+        table.
+        <br />
+        It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas
+        RESTRICT does not.
       </>
     ) : (
       <>
@@ -660,8 +662,9 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
         table will not be permitted for any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
-        table. It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction,
-        whereas RESTRICT does not.
+        table. <br />
+        It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas
+        RESTRICT does not.
       </>
     ),
     setNull: isActionOnUpdate ? (
@@ -687,7 +690,7 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
         table will set the default value for any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
-        table
+        table.
       </>
     ) : (
       <>
@@ -695,7 +698,7 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
         table will set the default value for any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
-        table
+        table.
       </>
     ),
   });
