@@ -113,6 +113,7 @@ const EditorComponent = (props) => {
     setSelectedComponents,
     setCurrentPageId,
     updateComponentsNeedsUpdateOnNextRender,
+    setCanvasWidth,
   } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
@@ -138,6 +139,7 @@ const EditorComponent = (props) => {
     queryConfirmationList,
     currentPageId,
     currentSessionId,
+    editorCanvasWidth,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
@@ -151,6 +153,7 @@ const EditorComponent = (props) => {
       queryConfirmationList: state.queryConfirmationList,
       currentPageId: state.currentPageId,
       currentSessionId: state.currentSessionId,
+      editorCanvasWidth: state.editorCanvasWidth,
     }),
     shallow
   );
@@ -370,7 +373,14 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setCurrentState({
         layout: currentLayout,
       });
+
+      const canvasWidth = getCanvasWidth();
+
+      if (typeof canvasWidth === 'number') {
+        setCanvasWidth(canvasWidth);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, mounted]);
 
   const handleYmapEventUpdates = () => {
@@ -2113,7 +2123,7 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <div>
                           <Container
-                            widthOfCanvas={getCanvasWidth()}
+                            widthOfCanvas={editorCanvasWidth}
                             socket={socket}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
@@ -2135,7 +2145,7 @@ const EditorComponent = (props) => {
                           />
                           <CustomDragLayer
                             snapToGrid={true}
-                            canvasWidth={getCanvasWidth()}
+                            canvasWidth={editorCanvasWidth}
                             onDragging={(isDragging) => setIsDragging(isDragging)}
                           />
                         </div>

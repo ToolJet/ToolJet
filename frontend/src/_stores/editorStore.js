@@ -39,6 +39,7 @@ const initialState = {
   currentSessionId: uuid(),
   componentsNeedsUpdateOnNextRender: [],
   appMode: 'auto',
+  editorCanvasWidth: 1092,
 };
 
 export const useEditorStore = create(
@@ -51,6 +52,7 @@ export const useEditorStore = create(
           type: ACTIONS.SET_HOVERED_COMPONENT,
           showComments,
         }),
+      setCanvasWidth: (editorCanvasWidth) => set({ editorCanvasWidth }),
       toggleComments: () =>
         set({ showComments: !get().showComments }, false, {
           type: ACTIONS.TOGGLE_COMMENTS,

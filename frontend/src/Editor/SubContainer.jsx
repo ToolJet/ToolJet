@@ -323,15 +323,7 @@ export const SubContainer = ({
       else return containerCanvasWidth - 2;
     }
 
-    let width = 0;
-    if (parentRef.current) {
-      const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
-      if (realCanvas) {
-        const canvasBoundingRect = realCanvas.getBoundingClientRect();
-        width = canvasBoundingRect.width;
-      }
-    }
-    return width;
+    return useEditorStore.getState().editorCanvasWidth;
   }
 
   function paramUpdated(id, param, value) {
@@ -452,8 +444,9 @@ export const SubContainer = ({
             Object.entries({
               ...childWidgets,
             }).map(([key, box]) => {
+              const activeLayout = useEditorStore.getState().currentLayout;
               const canShowInCurrentLayout =
-                box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+                box.component.definition.others[activeLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
 
               if (box.component.parent && resolveWidgetFieldValue(canShowInCurrentLayout)) {
                 return (
@@ -464,7 +457,7 @@ export const SubContainer = ({
                     parent={parent}
                     widget={box}
                     readOnly={readOnly}
-                    currentLayout={currentLayout}
+                    currentLayout={activeLayout}
                     canvasWidth={_containerCanvasWidth}
                     gridWidth={gridWidth}
                     isGhostComponent={key === 'resizingComponentId'}
@@ -580,7 +573,7 @@ const SubWidgetWrapper = ({
   const widgetRef = useRef();
   const isOnScreen = useOnScreen(widgetRef);
 
-  const layoutData = layouts?.[currentLayout] || layouts?.['desktop'];
+  const layoutData = layouts[currentLayout] || layouts['desktop'] || {};
   const isSelected = useEditorStore((state) => {
     const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
     return state?.hoveredComponent == id || isSelected;
