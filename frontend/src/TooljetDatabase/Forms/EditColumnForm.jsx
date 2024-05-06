@@ -213,7 +213,6 @@ const ColumnForm = ({
 
   const onCloseForeignKeyDrawer = () => {
     setIsForeignKeyDraweOpen(false);
-    setIsForeignKey(false);
     setCreateForeignKeyInEdit(false);
     setSourceColumn([]);
     setTargetTable([]);

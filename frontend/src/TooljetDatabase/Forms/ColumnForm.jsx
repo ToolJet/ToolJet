@@ -360,7 +360,6 @@ const ColumnForm = ({
           isForeignKeyRelation={true}
           onClose={() => {
             setIsForeignKeyDraweOpen(false);
-            setIsForeignKey(false);
           }}
         >
           <ForeignKeyTableForm
