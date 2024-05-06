@@ -371,6 +371,10 @@ function ForeignKeyRelation({
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
+        {!isEditMode && foreignKeyDetails.length >= 1 && (
+          <span className="tj-text-xsm"> Create table to add foreign key relation</span>
+        )}
+        <div></div>
       </div>
       <Drawer
         isOpen={isForeignKeyDraweOpen}
