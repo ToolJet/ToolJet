@@ -373,7 +373,7 @@ export const Container = ({
           monitor,
           boxes,
           canvasBoundingRect,
-          item.currentLayout,
+          currentLayout,
           snapToGrid,
           zoomLevel
         );
