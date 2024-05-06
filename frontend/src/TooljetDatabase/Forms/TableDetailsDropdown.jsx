@@ -32,6 +32,8 @@ function TableDetailsDropdown({
   targetColumn,
   setTargetColumn,
   tableName,
+  fetchTables = () => {},
+  onTableClick = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -72,6 +74,8 @@ function TableDetailsDropdown({
               targetTable={targetTable}
               actions={actions}
               actionName={firstColumnName}
+              fetchTables={fetchTables}
+              onTableClick={onTableClick}
             />
           </div>
         </ToolTip>
@@ -131,6 +135,7 @@ function TableDetailsDropdown({
               targetTable={targetTable}
               actions={actions}
               actionName={secondColumnName}
+              onTableClick={onTableClick}
             />
           </div>
         </div>

@@ -42,6 +42,8 @@ const DropDownSelect = ({
   targetTable,
   actions,
   actionName,
+  fetchTables,
+  onTableClick,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -192,6 +194,9 @@ const DropDownSelect = ({
               return;
             }
             setShowMenu((show) => !show);
+            if (onTableClick === true) {
+              fetchTables();
+            }
           }}
           className={cx(
             {

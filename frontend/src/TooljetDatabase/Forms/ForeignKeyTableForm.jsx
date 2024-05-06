@@ -29,6 +29,8 @@ const ForeignKeyTableForm = ({
   setOnUpdate,
   onUpdate,
   editForeignKeyInCreateTable,
+  selectedForeignkeyIndex,
+  setIsForeignKeyDraweOpen,
 }) => {
   const createForeignKey = () => {
     handleCreateForeignKey();
@@ -45,6 +47,30 @@ const ForeignKeyTableForm = ({
       ]);
     }
   };
+
+  const onEditInCreateMode = () => {
+    setForeignKeyDetails(() => [
+      {
+        column_names: [sourceColumn?.value],
+        referenced_table_name: targetTable?.value,
+        referenced_table_id: targetTable?.id,
+        referenced_column_names: [targetColumn?.value],
+        on_delete: onDelete?.value,
+        on_update: onUpdate?.value,
+      },
+    ]);
+    setIsForeignKeyDraweOpen(false);
+  };
+
+  const selectedForeignKey = foreignKeyDetails[selectedForeignkeyIndex];
+
+  const isDisableSaveBtn =
+    (selectedForeignKey?.length > 0 &&
+      (selectedForeignKey?.column_names?.[0] === sourceColumn?.value || targetColumn?.value === '')) ||
+    (selectedForeignKey?.on_update === onUpdate?.value &&
+      selectedForeignKey?.on_delete === onDelete?.value &&
+      selectedForeignKey?.referenced_column_names?.[0] === targetColumn?.value &&
+      selectedForeignKey?.referenced_table_name === targetTable?.value);
 
   return (
     <div className="foreignKeyRelation-form-container">
@@ -78,14 +104,15 @@ const ForeignKeyTableForm = ({
         fetching={false}
         isEditMode={isEditMode}
         onClose={onClose}
-        onEdit={handleEditForeignKey}
+        onEdit={editForeignKeyInCreateTable ? onEditInCreateMode : handleEditForeignKey}
         onCreate={createForeignKey}
         shouldDisableCreateBtn={
           isEmpty(sourceColumn) ||
           isEmpty(targetColumn) ||
           isEmpty(targetTable) ||
           isEmpty(onDelete) ||
-          isEmpty(onUpdate)
+          isEmpty(onUpdate) ||
+          isDisableSaveBtn
         }
         isForeignKeyDraweOpen={isForeignKeyDraweOpen}
         onDeletePopup={onDeletePopup}

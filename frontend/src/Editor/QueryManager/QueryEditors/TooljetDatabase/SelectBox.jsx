@@ -151,7 +151,8 @@ function DataSourceSelect({
 
         selectQuery.select(referencedColumns?.referenced_column_names[0]);
         if (scrollEventForColumnValus) {
-          filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
+          filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
+          // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
         }
 
         const query = `${selectQuery.url.toString()}&${filterQuery.url.toString()}&limit=${limit}&offset=${offset}`;
@@ -196,6 +197,20 @@ function DataSourceSelect({
     return debouncedHandleSearchInSelectBox?.cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
+
+  useEffect(() => {
+    // Making the Infinite scroll pagination API to default state
+    return () => {
+      setIsInitialForeignKeyDataLoaded(false);
+      setIsInitialForeignKeSearchDataLoaded(false);
+      setTotalRecords(0);
+      setPageNumber(1);
+      setSearchValue('');
+      setSearchResults([]);
+      setReferencedColumnDetails([]);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
@@ -484,9 +499,7 @@ function DataSourceSelect({
         value={selected}
         inputValue={searchValue}
         onInputChange={(value) => {
-          if (scrollEventForColumnValus) {
-            setSearchValue(value);
-          }
+          setSearchValue(value);
         }}
       />
     </div>

@@ -7,7 +7,7 @@ import Setting from '../Icons/setting.svg';
 import Target from '../Icons/Target.svg';
 import Actions from '../Icons/Actions.svg';
 import Serial from '../Icons/Serial.svg';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { dataTypes, getColumnDataType } from '../constants';
@@ -33,8 +33,23 @@ function SourceKeyRelation({
   setOnUpdate,
   onUpdate,
 }) {
-  const { tables, organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const { tables, organizationId, selectedTable, setTables } = useContext(TooljetDatabaseContext);
   const [targetColumnList, setTargetColumnList] = useState([]);
+
+  async function fetchTables() {
+    const { error, data } = await tooljetDatabaseService.findAll(organizationId);
+
+    if (error) {
+      toast.error(error?.message ?? 'Failed to fetch tables');
+      return;
+    }
+
+    if (!isEmpty(data?.result)) {
+      setTables(data.result || []);
+    } else {
+      setTables([]);
+    }
+  }
 
   const sourceTable = [
     {
@@ -149,7 +164,10 @@ function SourceKeyRelation({
             data?.result?.columns.map((item) => ({
               name: item.column_name,
               label: item.column_name,
-              icon: dataTypes.filter((obj) => obj.value === item.data_type)[0]?.icon,
+              icon: dataTypes.filter(
+                (obj) =>
+                  obj.value === getColumnDataType({ column_default: item.column_default, data_type: item.data_type })
+              )[0]?.icon,
               value: item.column_name,
               dataType: getColumnDataType({ column_default: item.column_default, data_type: item.data_type }),
             }))
@@ -186,6 +204,14 @@ function SourceKeyRelation({
     window.open(getPrivateRoute('database'), '_blank');
   };
 
+  const isSameDataTypeColumns = sourceColumn?.dataType === targetColumn?.dataType;
+
+  useEffect(() => {
+    if (!isSameDataTypeColumns) {
+      setTargetColumn({ value: '', label: '', dataType: '' });
+    }
+  }, [isSameDataTypeColumns]);
+
   return (
     <div className="relations-container">
       <div className="d-flex align-items-center mb-1">
@@ -215,6 +241,8 @@ function SourceKeyRelation({
           setForeignKeyDetails={setForeignKeyDetails}
           setSourceColumn={setSourceColumn}
           sourceColumn={sourceColumn}
+          fetchTables={fetchTables}
+          onTableClick={false}
         />
       </div>
       <div className="target mt-4">
@@ -241,6 +269,8 @@ function SourceKeyRelation({
           targetTable={targetTable}
           targetColumn={targetColumn}
           setTargetColumn={setTargetColumn}
+          fetchTables={fetchTables}
+          onTableClick={true}
         />
       </div>
       <div className="actions mt-4">
@@ -267,6 +297,8 @@ function SourceKeyRelation({
           onUpdate={onUpdate}
           tableName={tableName}
           targetTable={targetTable}
+          fetchTables={fetchTables}
+          onTableClick={false}
         />
       </div>
     </div>

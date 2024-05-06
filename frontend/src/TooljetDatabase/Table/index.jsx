@@ -875,27 +875,28 @@ const Table = ({ collapseSidebar }) => {
                 </span>
               </div>
             </ToolTip>
-            {isMatchingForeignKeyColumn(column.Header) && (
-              <ToolTip
-                message={
-                  isMatchingForeignKeyColumn(column.Header) ? (
-                    <div className="foreignKey-relation-tooltip">
-                      <span>Foreign key relation</span>
-                      <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                        <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
-                        <ArrowRight />
-                        <span>{`${isMatchingForeignKeyColumnDetails(column.Header)?.referenced_table_name}.${
-                          isMatchingForeignKeyColumnDetails(column.Header)?.referenced_column_names[0]
-                        }`}</span>
-                      </div>
+
+            <ToolTip
+              message={
+                isMatchingForeignKeyColumn(column.Header) ? (
+                  <div className="foreignKey-relation-tooltip">
+                    <span>Foreign key relation</span>
+                    <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                      <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
+                      <ArrowRight />
+                      <span>{`${isMatchingForeignKeyColumnDetails(column.Header)?.referenced_table_name}.${
+                        isMatchingForeignKeyColumnDetails(column.Header)?.referenced_column_names[0]
+                      }`}</span>
                     </div>
-                  ) : null
-                }
-                placement="top"
-                tooltipClassName="tjdb-table-tooltip"
-                show={true}
-              >
-                <div>
+                  </div>
+                ) : null
+              }
+              placement="top"
+              tooltipClassName="tjdb-table-tooltip"
+              show={true}
+            >
+              <div>
+                {isMatchingForeignKeyColumn(column.Header) && (
                   <span
                     style={{
                       marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
@@ -903,9 +904,9 @@ const Table = ({ collapseSidebar }) => {
                   >
                     <ForeignKeyIndicator />
                   </span>
-                </div>
-              </ToolTip>
-            )}
+                )}
+              </div>
+            </ToolTip>
           </div>
         </div>
       </ToolTip>

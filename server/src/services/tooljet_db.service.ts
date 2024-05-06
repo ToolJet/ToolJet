@@ -391,8 +391,41 @@ export class TooljetDbService {
                 }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
             })
           );
+
+          // To Sync with Other States - Adding it to the Update Array as well
+          columnstoBeUpdated.push({
+            oldColumn: new TableColumn({
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
+            }),
+            newColumn: new TableColumn({
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
+            }),
+          });
         }
 
         // Columns to be updated
@@ -411,6 +444,7 @@ export class TooljetDbService {
                 }),
               isNullable: !old_column?.constraints_type.is_not_null,
               isUnique: old_column?.constraints_type.is_unique,
+              isPrimary: old_column?.constraints_type.is_primary_key || false,
             }),
             newColumn: new TableColumn({
               name: new_column.column_name,
@@ -424,6 +458,7 @@ export class TooljetDbService {
                 }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
             }),
           });
         }
@@ -431,11 +466,9 @@ export class TooljetDbService {
 
       if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
 
-      if (!isEmpty(updatedPrimaryKeys)) await tjdbQueryRunner.dropPrimaryKey(internalTable.id);
       if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(internalTable.id, columnsToBeDeleted);
       if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(internalTable.id, columnsToBeInserted);
       if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(internalTable.id, columnstoBeUpdated);
-      if (!isEmpty(updatedPrimaryKeys)) await tjdbQueryRunner.updatePrimaryKeys(internalTable.id, updatedPrimaryKeys);
 
       if (params.new_table_name) {
         const { new_table_name } = params;
@@ -755,15 +788,27 @@ export class TooljetDbService {
 
   private prepareColumnListForCreateTable(columns) {
     const columnList = columns.map((column) => {
-      const { column_name, data_type, column_default = undefined, constraints_type = {} } = column;
+      const { column_name, constraints_type = {} } = column;
       const is_primary_key_column = constraints_type?.is_primary_key || false;
+
+      const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
+        const { data_type, column_default = undefined } = column;
+        const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
+        const isCharacterVarying = () => data_type === 'character varying';
+
+        if (isSerial()) return { data_type: 'serial', column_default: undefined };
+        if (isCharacterVarying() && !isEmpty(column_default))
+          return { data_type, column_default: this.addQuotesIfString(column_default) };
+
+        return { data_type, column_default };
+      };
+
+      const { data_type, column_default } = prepareDataTypeAndDefault(column);
 
       return {
         name: column_name,
         type: data_type,
-        ...(column_default && {
-          default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
-        }),
+        default: column_default,
         isNullable: constraints_type?.is_not_null ? false : true,
         isUnique: constraints_type?.is_unique && !is_primary_key_column ? true : false,
       };
