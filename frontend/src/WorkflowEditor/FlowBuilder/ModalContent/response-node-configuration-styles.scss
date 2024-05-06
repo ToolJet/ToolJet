@@ -1,0 +1,48 @@
+.result-section {
+  width: 98%;
+  height: 100%;
+  margin: auto;
+  margin-top: 24px;
+  background: #F8F9FA;
+  border-radius: 8px 8px 0px 0px;
+  padding: 0px;
+  overflow: hidden;
+
+  .result-label {
+    height: 44px;
+    padding: 8px 16px;
+    background: #F8F9FA;
+    font-family: 'IBM Plex Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    color: #889096;
+    border-bottom: 1px solid #ECEEF0;
+  }
+}
+
+.response-modal-content {
+  padding: 30px 24px;
+  flex-direction: column;
+  height: 100%;
+
+  span.title {
+      font-weight: bold;
+      padding-bottom: 12px;
+  }
+
+  .fx-button {
+    height: 22px;
+    margin-left: 3px;
+  }
+
+  .fx-active-codehinter {
+    .CodeMirror {
+      background-color: rgb(255, 255, 255);
+      border: solid #D7DBDF 0.5px;
+    }
+  }
+}

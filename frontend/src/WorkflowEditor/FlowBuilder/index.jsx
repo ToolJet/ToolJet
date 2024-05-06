@@ -180,7 +180,8 @@ function FlowBuilder(props) {
       let nodeData = node;
       nodeData.pluginId = data?.pluginId;
       nodeData.plugin = data?.plugin;
-      if (node.type !== 'input' && node.type !== 'output') setSelectedNode(nodeData);
+      if (node.type !== 'input') setSelectedNode(nodeData);
+
     },
     [editorSession.dataSources]
   );
