@@ -326,7 +326,9 @@ const ColumnForm = ({
           </ToolTip>
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">Foreign Key relation</p>
-            <p className="fw-400 secondary-text mb-2">Add foreign key to check referral integrity</p>
+            <p className="fw-400 secondary-text tj-text=xsm mb-2">
+              Adding a foreign key relation will link this column with a column in an existing table.
+            </p>
             {foreignKeyDetails?.length > 0 &&
               isForeignKey &&
               foreignKeyDetails?.map((detail, index) => (
@@ -403,7 +405,7 @@ const ColumnForm = ({
           </div>
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
-            <p className="fw-400 secondary-text">
+            <p className="fw-400 secondary-text tj-text-xsm mb-2">
               {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
             </p>
           </div>
@@ -425,7 +427,7 @@ const ColumnForm = ({
           </div>
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
-            <p className="fw-400 secondary-text">
+            <p className="fw-400 secondary-text tj-text-xsm">
               {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
             </p>
           </div>
