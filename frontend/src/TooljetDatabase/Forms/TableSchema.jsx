@@ -408,7 +408,11 @@ function TableSchema({
                     // const data = e.target.checked === true ? true : false;
                     columnConstraints.is_primary_key = e.target.checked;
                     columnConstraints.is_not_null =
-                      e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
+                      isEditMode && e.target.checked === false
+                        ? true
+                        : e.target.checked === true || prevColumns[index].data_type === 'serial'
+                        ? true
+                        : false;
                     columnConstraints.is_unique =
                       e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
                     prevColumns[index].constraints_type = { ...columnConstraints };
