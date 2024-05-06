@@ -1019,20 +1019,16 @@ const WidgetWrapper = ({
     if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
       return layoutData?.height;
     }
-
-    // Destructure stylesDefinition once
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
 
-    // Resolve values only once per dependency
-    const resolvedLabel = label?.value?.length ?? 0; // Use nullish coalescing for label length
+    const resolvedLabel = label?.value?.length ?? 0;
     const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
-    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false; // Default to false
+    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
 
-    // Calculate new height based on conditions
     let newHeight = layoutData?.height;
     if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
       if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += 20; // Use += for in-place modification
+        newHeight += 20;
       }
     }
 
