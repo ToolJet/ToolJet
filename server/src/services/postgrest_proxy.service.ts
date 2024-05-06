@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { isEmpty } from 'lodash';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
+import { PostgrestError, TooljetDatabaseError, TooljetDbOperations } from 'src/modules/tooljet_db/tooljet-db.types';
 
 @Injectable()
 export class PostgrestProxyService {
@@ -40,17 +41,25 @@ export class PostgrestProxyService {
 
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
     userResDecorator: function (proxyRes, proxyResData, userReq, _userRes) {
-      if (userReq?.headers?.tableInfo && proxyRes.statusCode >= 400) {
-        const customErrorObj = Buffer.isBuffer(proxyResData) ? JSON.parse(proxyResData.toString('utf8')) : proxyResData;
+      if (proxyRes.statusCode < 200 || proxyRes.statusCode >= 300) {
+        const postgrestResponse = Buffer.isBuffer(proxyResData)
+          ? JSON.parse(proxyResData.toString('utf8'))
+          : proxyResData;
 
-        let customErrorMessage = customErrorObj?.message ?? '';
-        if (customErrorMessage) {
-          Object.entries(userReq.headers.tableInfo).forEach(([key, value]) => {
-            customErrorMessage = customErrorMessage.replace(key, value as string);
-          });
-          customErrorObj.message = customErrorMessage;
-        }
-        proxyResData = Buffer.from(JSON.stringify(customErrorObj), 'utf-8');
+        const errorMessage = postgrestResponse.message;
+        const errorContext: {
+          origin: TooljetDbOperations;
+          internalTables: { id: string; tableName: string }[];
+        } = {
+          origin: 'postgrest',
+          internalTables: Object.entries(userReq.headers.tableInfo).map(([key, value]) => ({
+            id: key,
+            tableName: value,
+          })),
+        };
+        const errorObj = new QueryFailedError(postgrestResponse, [], new PostgrestError(postgrestResponse));
+
+        throw new TooljetDatabaseError(errorMessage, errorContext, errorObj);
       }
 
       return proxyResData;

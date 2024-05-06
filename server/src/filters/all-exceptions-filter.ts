@@ -1,5 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
+import { TooljetDatabaseError } from 'src/modules/tooljet_db/tooljet-db.types';
 import { QueryFailedError } from 'typeorm';
 
 interface ErrorResponse {
@@ -30,6 +31,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       if (exception instanceof HttpException) {
         errorResponse = { status: exception.getStatus(), message };
+      } else if (exception instanceof TooljetDatabaseError) {
+        errorResponse = { status: HttpStatus.CONFLICT, message: exception.toString() };
       } else if (exception instanceof QueryFailedError) {
         errorResponse = this.handleQueryExceptions(exception);
       } else {

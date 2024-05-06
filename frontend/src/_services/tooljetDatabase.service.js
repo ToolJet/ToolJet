@@ -75,7 +75,6 @@ function renameTable(organizationId, tableName, newTableName, data = []) {
     });
   });
   return tooljetAdapter.patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
-    action: 'rename_table',
     table_name: tableName,
     ...(newTableName !== tableName && { new_table_name: newTableName }),
     columns: bodyData,

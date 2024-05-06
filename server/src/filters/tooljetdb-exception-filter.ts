@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
-import { QueryFailedError } from 'typeorm';
+import { TooljetDatabaseError } from 'src/modules/tooljet_db/tooljet-db.types';
 
 @Catch()
 export class TooljetDbExceptionFilter implements ExceptionFilter {
@@ -8,9 +8,9 @@ export class TooljetDbExceptionFilter implements ExceptionFilter {
     const next = ctx.getNext();
     const response = ctx.getResponse();
 
-    if (exception instanceof QueryFailedError) {
+    if (exception instanceof TooljetDatabaseError) {
       const statusCode = HttpStatus.CONFLICT;
-      const message = (exception as QueryFailedError).message;
+      const message = exception.toString();
 
       response.status(statusCode).json({
         statusCode: statusCode,
