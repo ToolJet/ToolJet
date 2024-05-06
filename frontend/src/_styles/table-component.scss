@@ -886,7 +886,7 @@
 
       }
 
-      &:focus-within {
+      &:focus-within:not(.has-actions) {
         border: 1px solid var(--interactive-overlays-focus-outline);
         background-color: var(--surfaces-surface-01) !important;
         box-shadow: var(--elevation-200-box-shadow);
