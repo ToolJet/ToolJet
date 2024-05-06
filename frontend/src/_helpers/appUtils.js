@@ -1082,12 +1082,7 @@ export function runQuery(
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode, queryState);
       } else {
-        queryExecutionPromise = dataqueryService.run(
-          queryId,
-          options,
-          query?.options,
-          currentAppEnvironmentId ?? environmentId
-        );
+        queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
       }
 
       queryExecutionPromise
