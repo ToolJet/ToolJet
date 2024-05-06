@@ -11,7 +11,7 @@ Components are used to build the user interface(UI) of the applications. They ca
 
 ## Adding Components
 
-Components can be dragged and dropped from the **Component Library**(from the right side on app builder) on to the canvas. Components can be moved by simply click and hold, and can be resized from edges or borders.
+Components can be dragged and dropped from the **Component Library**(from the right side on app builder) on to the canvas. You can reposition components by clicking and dragging them around the canvas. To resize a component, drag its edges or borders.
 
 <div style={{textAlign: 'center'}}>
 
