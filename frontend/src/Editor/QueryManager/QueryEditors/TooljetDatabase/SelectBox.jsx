@@ -82,8 +82,9 @@ function DataSourceSelect({
         const selectQuery = new PostgrestQueryBuilder();
         // Checking that the selected column is available in ForeignKey
         const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-
+        if (!referencedColumns?.referenced_column_names?.length) return;
         selectQuery.select(referencedColumns?.referenced_column_names[0]);
+
         tooljetDatabaseService
           .findOne(
             organizationId,
@@ -148,8 +149,9 @@ function DataSourceSelect({
         const filterQuery = new PostgrestQueryBuilder();
 
         const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-
+        if (!referencedColumns?.referenced_column_names?.length) return;
         selectQuery.select(referencedColumns?.referenced_column_names[0]);
+
         if (scrollEventForColumnValus) {
           filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
           // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);

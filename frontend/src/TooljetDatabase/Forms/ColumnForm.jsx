@@ -12,8 +12,6 @@ import ForeignKeyTableForm from './ForeignKeyTableForm';
 import Tick from '../Icons/Tick.svg';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
-import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
-import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { ToolTip } from '@/_components/ToolTip';
@@ -181,7 +179,7 @@ const ColumnForm = ({
   };
 
   const referenceTableDetails = referencedColumnDetails?.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1],
       value: key[1],
@@ -233,7 +231,14 @@ const ColumnForm = ({
             className="form-control"
             data-cy="column-name-input-field"
             autoComplete="off"
-            onChange={(e) => setColumnName(e.target.value)}
+            onChange={(e) => {
+              if (isForeignKey && foreignKeyDetails.length)
+                setForeignKeyDetails((prevFkDetails) => {
+                  const fkDetailsRef = prevFkDetails[0];
+                  return [{ ...fkDetailsRef, column_names: [e.target.value] }];
+                });
+              setColumnName(e.target.value);
+            }}
             autoFocus
           />
         </div>
