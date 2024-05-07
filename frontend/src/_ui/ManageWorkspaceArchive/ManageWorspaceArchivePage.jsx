@@ -12,6 +12,7 @@ import WorkspaceListingTable from './WorkspaceListingTable';
 import { SearchBox } from '@/_components/SearchBox';
 import ModalBase from '@/_ui/Modal';
 import { Spinner } from 'react-bootstrap';
+import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
 
 const WORKSPACE_STATUS = {
   ARCHIVED: 'archived',
@@ -98,8 +99,8 @@ class ManageWorkspaceArchivePage extends Component {
       this.setState({
         currentOrganizations: organizations,
       });
+      useCurrentSessionStore.getState().actions.setOrganizations(organizations);
       updateCurrentSession({
-        organizations: organizations,
         current_organization: currentOrganization,
       });
     });

@@ -1,14 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import moment from 'moment';
-import {
-  appsService,
-  folderService,
-  authenticationService,
-  libraryAppService,
-  licenseService,
-  gitSyncService,
-} from '@/_services';
+import { appsService, folderService, authenticationService, libraryAppService, gitSyncService } from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
@@ -36,6 +29,8 @@ import ModalBase from '@/_ui/Modal';
 import Skeleton from 'react-loading-skeleton';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
 
 const { iconList, defaultIcon } = configs;
 
@@ -77,7 +72,7 @@ class HomePageComponent extends React.Component {
       showTemplateLibraryModal: false,
       app: {},
       appsLimit: {},
-      featureAccess: {},
+      featureAccess: null,
       newAppName: '',
       commitEnabled: false,
       fetchingOrgGit: false,
@@ -122,6 +117,9 @@ class HomePageComponent extends React.Component {
       this.fetchFolders();
       this.fetchApps(1);
     }
+    if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
+      this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
+    }
   }
 
   fetchAppsLimit() {
@@ -141,15 +139,6 @@ class HomePageComponent extends React.Component {
       this.setState({ workflowWorkspaceLevelLimit: data?.appsCount });
     });
   }
-
-  fetchFeatureAccesss = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      this.setState({
-        featureAccess: data,
-        featuresLoaded: true,
-      });
-    });
-  };
 
   fetchApps = (page = 1, folder, searchKey) => {
     const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
@@ -461,7 +450,6 @@ class HomePageComponent extends React.Component {
         );
         this.fetchFolders();
         this.fetchAppsLimit();
-        this.fetchFeatureAccesss();
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
@@ -1304,4 +1292,16 @@ class HomePageComponent extends React.Component {
   }
 }
 
-export const HomePage = withTranslation()(withRouter(HomePageComponent));
+const withStore = (Component) => (props) => {
+  const { featureAccess, featuresLoaded } = useLicenseStore(
+    (state) => ({
+      featureAccess: state.featureAccess,
+      featuresLoaded: state.featuresLoaded,
+    }),
+    shallow
+  );
+
+  return <Component {...props} featureAccess={featureAccess} featuresLoaded={featuresLoaded} />;
+};
+
+export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));

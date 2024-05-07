@@ -58,6 +58,7 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
+import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
 class ViewerComponent extends React.Component {
@@ -469,18 +470,6 @@ class ViewerComponent extends React.Component {
     }
   };
 
-  fetchAppVersions = async (appId) => {
-    const appVersions = await appEnvironmentService.getVersionsByEnvironment(appId);
-    useAppVersionStore.getState().actions.setAppVersions(appVersions.appVersions);
-  };
-
-  fetchEnvironments = async (appId) => {
-    await appEnvironmentService.getAllEnvironments(appId).then((data) => {
-      const envArray = data?.environments;
-      useAppDataStore.getState().actions.setEnvironments(envArray);
-    });
-  };
-
   loadApplicationBySlug = (slug, authentication_failed) => {
     appService
       .fetchAppBySlug(slug)
@@ -543,17 +532,15 @@ class ViewerComponent extends React.Component {
     this.loadApplicationByVersion(this.props.id, data.editing_version.id);
   };
 
-  updateEnvironmentDetails = async (environmentId) => {
-    const { environment } = await this.getEnvironmentDetails(environmentId);
-    useEditorStore.getState()?.actions?.setCurrentAppEnvironmentId(environmentId);
-    useEditorStore.getState()?.actions?.setCurrentAppEnvironmentDetails(environment);
-    useAppVersionStore.getState().actions.setAppVersionCurrentEnvironment(environment);
-  };
-
-  handleAppEnvironmentChanged = async (currentEnvironment, envSelection) => {
-    const environmentId = currentEnvironment.id;
+  handleAppEnvironmentChanged = async (newData) => {
+    const { selectedEnvironment, selectedVersionDef } = newData;
+    const { id: environmentId } = selectedEnvironment;
     this.setState({ environmentId });
-    this.updateEnvironmentDetails(environmentId);
+    if (selectedVersionDef) {
+      this.setAppDefinitionFromVersion(selectedVersionDef);
+    } else {
+      this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
+    }
   };
 
   updateQueryConfirmationList = (queryConfirmationList) =>
@@ -587,13 +574,12 @@ class ViewerComponent extends React.Component {
             currentUser,
             userVars,
             versionId,
+            environmentId,
           });
+          useEnvironmentsAndVersionsStore.getState().actions.setPreviewInitialEnvironmentId(environmentId);
           licenseService.getFeatureAccess().then((data) => {
             useEditorStore.getState().actions.updateFeatureAccess(data);
           });
-          this.fetchEnvironments(appId);
-          this.fetchAppVersions(appId);
-          this.updateEnvironmentDetails(environmentId);
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug, true);

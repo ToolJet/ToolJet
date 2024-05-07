@@ -36,14 +36,9 @@ export const LeftSidebarComment = forwardRef(
     const [basicPlan, setBasicPlan] = useState(false);
 
     React.useEffect(() => {
-      if (appVersionsId && appId) {
-        commentsService.getNotifications(appId, false, appVersionsId, currentPageId).then(({ data }) => {
-          setNotifications(data);
-        });
-      }
       async function fetchData() {
         try {
-          const data = await licenseService.getFeatureAccess();
+          const data = useEditorStore.getState().featureAccess;
           setBasicPlan(data?.licenseStatus?.isExpired || !data?.licenseStatus?.isLicenseValid);
         } catch (error) {
           console.error('Error:', error);
@@ -51,7 +46,17 @@ export const LeftSidebarComment = forwardRef(
       }
       fetchData();
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [appVersionsId, currentPageId, appId]);
+    }, []);
+
+    React.useEffect(() => {
+      if (isActive) {
+        commentsService.getNotifications(appId, false, appVersionsId, currentPageId).then(({ data }) => {
+          setNotifications(data);
+        });
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isActive]);
+
     const tooltipContent = 'Comments are available only in paid plans'; // Tooltip content
 
     const tooltip = <Tooltip id="tooltip-disabled">{tooltipContent}</Tooltip>;

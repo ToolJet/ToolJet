@@ -15,6 +15,8 @@ import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsav
 import Beta from '../Beta';
 import Settings from '@/_components/Settings';
 import './styles.scss';
+import { useLicenseState, useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
 
 function Layout({
   children,
@@ -24,23 +26,20 @@ function Layout({
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
 }) {
+  const [licenseValid, setLicenseValid] = useState(false);
   const router = useRouter();
-  const [featureAccess, setFeatureAccess] = useState({});
-  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
-
+  const { featureAccess } = useLicenseStore(
+    (state) => ({
+      featureAccess: state.featureAccess,
+    }),
+    shallow
+  );
   const canAnyGroupPerformAction = (action, permissions) => {
     if (!permissions) {
       return false;
     }
 
     return permissions.some((p) => p[action]);
-  };
-
-  const fetchFeatureAccess = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      setFeatureAccess({ ...data });
-    });
-    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   const canCreateDataSource = () => {
@@ -68,8 +67,13 @@ function Layout({
   };
 
   useEffect(() => {
-    fetchFeatureAccess();
+    useLicenseStore.getState().actions.fetchFeatureAccess();
   }, []);
+
+  useEffect(() => {
+    let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+    setLicenseValid(licenseValid);
+  }, [featureAccess]);
 
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
