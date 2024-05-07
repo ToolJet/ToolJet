@@ -1,19 +1,19 @@
 ---
 id: system-requirements
-title: System Requirements for Self-Hosting
+title: System Requirements
 ---
 
 This document covers all the system requirements for self-hosting ToolJet. 
 
 ## Operating Systems
 
-### Microsoft Windows
-
-ToolJet is developed for Linux-based operating systems. Please consider using a virtual machine or Windows Subsystem for Linux 2 (WSL2) to run ToolJet on Windows.
-
 ### Supported Linux distribution
 
 [ToolJet images](https://hub.docker.com/r/tooljet/tooljet/tags) can run on any Linux machine with x86 architecture (64-bit). Ensure that your system meets the minimum requirements specified below before installing ToolJet.
+
+### Microsoft Windows
+
+ToolJet is developed for Linux-based operating systems. Please consider using a virtual machine or Windows Subsystem for Linux 2 (WSL2) to run ToolJet on Windows.
 
 
 ## VM deployments:
