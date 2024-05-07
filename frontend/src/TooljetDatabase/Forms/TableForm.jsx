@@ -17,7 +17,7 @@ const TableForm = ({
     0: {
       column_name: 'id',
       data_type: 'serial',
-      constraints_type: { is_primary_key: true, is_not_null: true, is_unique: true },
+      constraints_type: { is_primary_key: true, is_not_null: true, is_unique: false },
       dataTypeDetails: serialDataType,
     },
   },
@@ -329,6 +329,7 @@ const TableForm = ({
           hasPrimaryKey !== true ||
           (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
+        showToolTipForFkOnReadDocsSection={true}
       />
       <ConfirmDialog
         title={'Change in primary key'}

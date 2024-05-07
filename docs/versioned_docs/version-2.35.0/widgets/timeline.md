@@ -4,7 +4,7 @@ title: Timeline
 ---
 # Timeline
 
-The Timeline component can be used to do a visual representation of a sequence of events.
+The **Timeline** component can be used to do a visual representation of a sequence of events.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -34,7 +34,7 @@ The Timeline component can be used to do a visual representation of a sequence o
 
 ### Hide date
 
-Hide date can be used to hide the date time of the timeline component.
+Hide date can be used to hide the date time of the Timeline component.
 
 </div>
 

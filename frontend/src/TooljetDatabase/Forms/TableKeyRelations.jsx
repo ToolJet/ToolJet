@@ -69,6 +69,7 @@ function SourceKeyRelation({
             icon: columns?.dataTypeDetails?.icon ?? columns?.dataTypeDetails[0]?.icon,
             value: columns?.column_name,
             dataType: columns?.data_type,
+            isDisabled: columns?.data_type === 'serial' ? true : false,
           },
         ]
       : Object.values(columns).map((item) => {
@@ -78,6 +79,7 @@ function SourceKeyRelation({
             icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
             value: item?.column_name,
             dataType: item?.data_type,
+            isDisabled: item?.data_type === 'serial' ? true : false,
           };
         });
 
@@ -112,6 +114,43 @@ function SourceKeyRelation({
       value: 'SET DEFAULT',
     },
   ];
+  const onDeleteOptions = [
+    {
+      name: 'NO ACTION',
+      label: 'NO ACTION',
+      value: 'NO ACTION',
+    },
+    {
+      name: 'CASCADE',
+      label: 'CASCADE',
+      value: 'CASCADE',
+    },
+    {
+      name: 'RESTRICT',
+      label: 'RESTRICT',
+      value: 'RESTRICT',
+    },
+    {
+      name: 'SET NULL',
+      label: 'SET NULL',
+      value: 'SET NULL',
+    },
+    {
+      name: 'SET DEFAULT',
+      label: 'SET DEFAULT',
+      value: 'SET DEFAULT',
+    },
+  ];
+
+  useEffect(() => {
+    // When this component is mounted by default we are setting onDelete and onUpdate action with first value of onUpdateOptions, so that by default no action is selected for the actions dropdown
+    if (_.isEmpty(onDelete)) {
+      setOnDelete(onDeleteOptions[0]);
+    }
+    if (_.isEmpty(onUpdate)) {
+      setOnUpdate(onUpdateOptions[0]);
+    }
+  }, []);
 
   const handleSelectColumn = (table_name = '') => {
     if (table_name?.length > 0) {
@@ -137,12 +176,21 @@ function SourceKeyRelation({
           );
         }
       });
+      // setTargetColumn({ value: '', label: '', dataType: '' });
     }
   };
 
   const targetTableColumns =
     targetColumnList.length > 0 && (!isEditColumn || !isCreateColumn)
-      ? targetColumnList?.filter((item) => sourceColumn.dataType === item.dataType)
+      ? targetColumnList?.filter((item) => {
+          if (sourceColumn.dataType === 'integer') {
+            return item.dataType === 'integer' || item.dataType === 'serial';
+          } else if (sourceColumn.dataType === 'bigint') {
+            return item.dataType === 'integer' || item.dataType === 'bigint';
+          } else {
+            return item.dataType === sourceColumn.dataType;
+          }
+        })
       : (isEditColumn || isCreateColumn) && targetColumnList.length > 0
       ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
       : [];
@@ -167,7 +215,16 @@ function SourceKeyRelation({
     window.open(getPrivateRoute('database'), '_blank');
   };
 
-  const isSameDataTypeColumns = sourceColumn?.dataType === targetColumn?.dataType;
+  const isSameDataTypeColumns =
+    sourceColumn?.dataType === 'integer' &&
+    (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'serial')
+      ? true
+      : sourceColumn?.dataType === 'bigint' &&
+        (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'bigint')
+      ? true
+      : sourceColumn?.dataType === targetColumn?.dataType
+      ? true
+      : false;
 
   useEffect(() => {
     if (!isSameDataTypeColumns) {
@@ -248,7 +305,7 @@ function SourceKeyRelation({
           firstColumnName={'On update'}
           secondColumnName={'On remove'}
           tableList={onUpdateOptions}
-          tableColumns={onUpdateOptions}
+          tableColumns={onDeleteOptions}
           source={false}
           showDescription={true}
           actions={true}
@@ -258,6 +315,8 @@ function SourceKeyRelation({
           onDelete={onDelete}
           setOnUpdate={setOnUpdate}
           onUpdate={onUpdate}
+          tableName={tableName}
+          targetTable={targetTable}
           fetchTables={fetchTables}
           onTableClick={false}
         />

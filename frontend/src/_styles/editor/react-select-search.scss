@@ -45,13 +45,17 @@
 }
 
 .popover.popover-dark-themed .select-search-container,
-.main-wrapper.theme-dark .select-search-container {
-    --select-search-background: #272822;
-    --select-search-border: #333c48;
-    --select-search-selected: #89b4fa;
-    --select-search-text: #fff;
-    --select-search-subtle-text: #a6adc8;
-    --select-search-highlight: #1e1e2e;
+.main-wrapper {
+    .theme-dark {
+        .select-search-container {
+            --select-search-background: #272822;
+            --select-search-border: #333c48;
+            --select-search-selected: #89b4fa;
+            --select-search-text: #fff;
+            --select-search-subtle-text: #a6adc8;
+            --select-search-highlight: #1e1e2e;
+        }
+    }
 }
 
 .select-search-container *,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { tooljetDatabaseService } from '@/_services';
 import Information from '../Icons/information.svg';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
@@ -10,7 +10,9 @@ import ForeignKeyTableForm from './ForeignKeyTableForm';
 import EditIcon from '../Icons/EditColumn.svg';
 import _, { isEmpty } from 'lodash';
 import { ConfirmDialog } from '@/_components';
+import { Tooltip } from 'react-tooltip';
 import { getColumnDataType, dataTypes } from '../constants';
+import { TooljetDatabaseContext } from '../index';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -72,7 +74,7 @@ function ForeignKeyRelation({
     ]);
 
     onCloseForeignKeyDrawer();
-    toast.success(`Foreign key Added successfully for selected column`);
+    // toast.success(`Foreign key Added successfully for selected column`);
   };
 
   const fetchMetaDataApi = async () => {
@@ -266,6 +268,50 @@ function ForeignKeyRelation({
     });
   };
 
+  // function checkMatchingColumnNamesInForeignKey(foreignKeys, columns) {
+  //   const columnNamesSet = new Set(Object.values(columns).map((column) => column.column_name));
+  //   for (const foreignKey of foreignKeys) {
+  //     const foreignKeyColumnName = foreignKey.column_names[0];
+  //     if (columnNamesSet.has(foreignKeyColumnName)) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+
+  // const isMatchingForeignKeyColumns = checkMatchingColumnNamesInForeignKey(foreignKeyDetails, columns);
+
+  const { tables } = useContext(TooljetDatabaseContext);
+
+  const checkTablelength = (tableLength, editMode) => {
+    if (editMode) {
+      //In edit mode if tables are less than 2 then this will return true , which will disable add-relation button below
+      return tableLength < 2;
+    } else {
+      //In create mode if tables are less than 2 then this will return true , which will disable add-relation button below
+      return tableLength < 1;
+    }
+  };
+
+  const disableAddRelationButton =
+    checkTablelength(tables?.length, isEditMode) ||
+    isEmpty(tableName) ||
+    isEmpty(columns) ||
+    (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
+    (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation));
+
+  const getTooltipContentFordisableAddRelationButton = (tableLength, tableName, columns) => {
+    if (tableLength < 2) {
+      return 'At least 2 tables are required to add foreign key relation (source table and target table)';
+    } else if (isEmpty(tableName)) {
+      return 'Table name is required to add foreign key relation';
+    } else if (isEmpty(columns)) {
+      return 'At least 1 column is required to add foreign key relation';
+    } else {
+      return '';
+    }
+  };
+
   const handleDeleteForeignKeyRelationInCreate = (index) => {
     const newForeignKeyDetails = [...foreignKeyDetails]; // Make a copy of the existing array
     newForeignKeyDetails.splice(index, 1); // Remove the item at the specified index
@@ -278,6 +324,10 @@ function ForeignKeyRelation({
       <div className="foreignkey-relation-container">
         <div className="foreign-key-heading">
           <span>Foreign key relation</span>
+          <p className="tj-text-xsm">
+            A foreign key relation helps to link rows from existing tables with rows in this table based on a common
+            column.
+          </p>
         </div>
 
         {foreignKeyDetails?.length > 0 ? (
@@ -312,17 +362,19 @@ function ForeignKeyRelation({
               setIsForeignKeyDraweOpen(true);
               setCreateForeignKeyInEdit(true);
             }}
-            disabled={
-              isEmpty(tableName) ||
-              (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
-              isEmpty(columns) ||
-              (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
-            }
+            disabled={disableAddRelationButton}
+            data-tooltip-id="add-relation-tooltip"
+            data-tooltip-content={getTooltipContentFordisableAddRelationButton(tables?.length, tableName, columns)}
           >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp; Add relation
+            {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
+        {!isEditMode && foreignKeyDetails.length >= 1 && (
+          <span className="tj-text-xsm"> Create table to add foreign key relation</span>
+        )}
+        <div></div>
       </div>
       <Drawer
         isOpen={isForeignKeyDraweOpen}

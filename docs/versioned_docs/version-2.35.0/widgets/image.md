@@ -4,7 +4,7 @@ title: Image
 ---
 # Image
 
-Image widget is used to display images in your app.
+The **Image** widget is used to display images in your app.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

@@ -4,7 +4,7 @@ title: Setup Log File Generation (Rsyslog)
 ---
 <div style={{paddingBottom:'24px'}}>
 
-The log file serves as a comprehensive record of audit logs, capturing crucial information about various activities within the ToolJet. Follow the guide below to set up and utilize the log file feature effectively.
+The **log file** serves as a comprehensive record of audit logs, capturing crucial information about various activities within the ToolJet. Follow the guide below to set up and utilize the log file feature effectively.
 
 </div>
 
@@ -12,7 +12,7 @@ The log file serves as a comprehensive record of audit logs, capturing crucial i
 
 ## Activation and Configuration
 
-### 1. Environment Variable Setup
+### Environment Variable Setup
 
 - To **activate** the log file feature, simply set the environment variable `LOG_FILE_PATH` to specify the desired path for the log file. For instance, if you want to use `rsyslog` as the log file path, set `LOG_FILE_PATH` to `rsyslog`.
 
@@ -26,7 +26,7 @@ The log file serves as a comprehensive record of audit logs, capturing crucial i
 
 - The log file path is relative to the home directory of the machine. For instance, if the home directory is `/home/tooljet`, the log file path will be `/home/tooljet/rsyslog`.
 
-### 2. Server Restart
+### Server Restart
    
 - After configuring the log file environment variable, it's essential to **restart the server** to initiate the log file generation process.
 
@@ -38,11 +38,11 @@ The log file serves as a comprehensive record of audit logs, capturing crucial i
 
 ## Log Rotation and Organization
 
-### 3. Daily Log Rotation
+### Daily Log Rotation
 
 - The log file is designed to rotate on a daily basis, creating a new log file each day. This configuration aids in efficient management and organization of audit data.
 
-### 4. Log File Path Structure
+### Log File Path Structure
 
 - The log file path is determined by the `LOG_FILE_PATH` variable. It is crucial to understand that this path is relative to the home directory of the machine. For instance, if `LOG_FILE_PATH` is set to `rsyslog`, the resulting log file path will be structured as follows:  
 
@@ -59,7 +59,7 @@ The log file serves as a comprehensive record of audit logs, capturing crucial i
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/setup-rsyslog/timestamp.png" alt="Setup log file generation" />
   </div>
 
-### 5. Example Log Data
+### Example Log Data
    
 The log data captures essential details, such as user ID, organization ID, resource ID, resource type, action type, resource name, IP address, and additional metadata.
 
@@ -90,7 +90,7 @@ The log data captures essential details, such as user ID, organization ID, resou
 
 </details>
 
-### 6. Folder Creation:
+### Folder Creation
 
 The log file feature automatically creates a folder in the home path with the specified name (e.g., `rsyslog`). This folder serves as the root directory for the organized storage of audit logs.
 

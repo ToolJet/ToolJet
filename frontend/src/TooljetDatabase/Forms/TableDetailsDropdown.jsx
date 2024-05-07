@@ -31,6 +31,7 @@ function TableDetailsDropdown({
   onUpdate,
   targetColumn,
   setTargetColumn,
+  tableName,
   fetchTables = () => {},
   onTableClick = false,
 }) {
@@ -63,12 +64,17 @@ function TableDetailsDropdown({
                 } else {
                   setTargetTable(value);
                   handleSelectColumn(value?.value);
+                  setTargetColumn({ value: '', label: '', dataType: '' });
                 }
               }}
               onAdd={onAdd}
               addBtnLabel={'Add new table'}
               showRedirection={showRedirection}
               showDescription={showDescription}
+              tableName={tableName}
+              targetTable={targetTable}
+              actions={actions}
+              actionName={firstColumnName}
               fetchTables={fetchTables}
               onTableClick={onTableClick}
             />
@@ -126,7 +132,11 @@ function TableDetailsDropdown({
               showColumnInfo={showColumnInfo}
               showDescription={showDescription}
               disabled={isEditColumn || isCreateColumn}
-              onTableClick={onTableClick}
+              tableName={tableName}
+              targetTable={targetTable}
+              actions={actions}
+              actionName={secondColumnName}
+              onTableClick={false}
             />
           </div>
         </div>

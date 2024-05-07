@@ -205,8 +205,6 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     onCreate && onCreate();
   };
 
-  console.log('first', referenceTableDetails);
-
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
     const isSerialDataTypeColumn = dataType === 'serial';
     switch (dataType) {
@@ -323,7 +321,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           rowColumns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;
             const isNullable = !constraints_type.is_not_null;
-            const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
+            const headerText = Header;
             const isSerialDataTypeColumn = dataType === 'serial';
             return (
               <div className="mb-3 " key={index}>

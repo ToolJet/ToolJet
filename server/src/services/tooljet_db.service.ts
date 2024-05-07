@@ -1,4 +1,11 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+  Optional,
+  ConflictException,
+} from '@nestjs/common';
 import {
   EntityManager,
   In,
@@ -59,6 +66,8 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
+    // TODO: remove optional decorator when
+    // ENABLE_TOOLJET_DB flag is deprecated
     @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
@@ -253,6 +262,16 @@ export class TooljetDbService {
         'TABLENAME'
       );
     }
+
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
 
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
@@ -509,6 +528,16 @@ export class TooljetDbService {
       );
     }
 
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
+
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunnner.connect();
     await tjdbQueryRunnner.startTransaction();
@@ -564,7 +593,7 @@ export class TooljetDbService {
     return result;
   }
 
-  private async joinTable(organizationId: string, params) {
+  private async joinTable(organizationId: string, params: Record<string, unknown>) {
     const { joinQueryJson } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
 
@@ -887,6 +916,16 @@ export class TooljetDbService {
       'TABLENAME'
     );
 
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
+
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
@@ -926,6 +965,16 @@ export class TooljetDbService {
       'TABLENAME'
     );
 
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
+
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
@@ -959,5 +1008,31 @@ export class TooljetDbService {
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
     return { statusCode: 200, message: 'Foreign key relation deleted successfully!' };
+  }
+
+  private async checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(foreignKeys, organizationId) {
+    if (!foreignKeys.length) return;
+    let isFKfromCompositePK = false;
+    for (const foreignKeyDetails of foreignKeys) {
+      const { referenced_table_name = '', referenced_column_names = [] } = foreignKeyDetails;
+      const referencedTableMetaData = await this.viewTable(organizationId, { table_name: referenced_table_name });
+      const { columns = [] } = referencedTableMetaData;
+      const pkColumnList = [];
+
+      if (columns.length) {
+        columns.forEach((column: any) => {
+          const { constraints_type = {} } = column;
+          if (constraints_type?.is_primary_key) pkColumnList.push(column.column_name);
+        });
+      }
+
+      if (
+        pkColumnList.length > 1 &&
+        referenced_column_names.some((referencedColumnName) => pkColumnList.includes(referencedColumnName))
+      ) {
+        isFKfromCompositePK = true;
+      }
+    }
+    return isFKfromCompositePK;
   }
 }

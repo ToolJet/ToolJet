@@ -3,7 +3,8 @@ Cypress.Commands.add(
   (
     userEmail = "dev@tooljet.io",
     userPassword = "password",
-    workspaceId = ""
+    workspaceId = "",
+    redirection = "/"
   ) => {
     cy.request({
       url: `http://localhost:3000/api/authenticate/${workspaceId}`,
@@ -11,6 +12,7 @@ Cypress.Commands.add(
       body: {
         email: userEmail,
         password: userPassword,
+        redirectTo: redirection
       },
     })
       .its("body")

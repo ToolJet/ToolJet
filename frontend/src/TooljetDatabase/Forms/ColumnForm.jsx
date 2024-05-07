@@ -14,6 +14,7 @@ import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
+import { ConfirmDialog } from '@/_components';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
@@ -32,6 +33,7 @@ const ColumnForm = ({
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
+  const [onDeletePopup, setOnDeletePopup] = useState(false);
   const [isNotNull, setIsNotNull] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(false);
@@ -134,9 +136,6 @@ const ColumnForm = ({
     if (value.value === 'serial') {
       setIsUniqueConstraint(true);
       setIsNotNull(true);
-    } else {
-      setIsUniqueConstraint(false);
-      setIsNotNull(false);
     }
     setDataType(value);
   };
@@ -178,7 +177,7 @@ const ColumnForm = ({
 
   const handleCreateForeignKey = () => {
     setIsForeignKeyDraweOpen(false);
-    toast.success(`Foreign key Added successfully for selected column`);
+    // toast.success(`Foreign key Added successfully for selected column`);
   };
 
   const referenceTableDetails = referencedColumnDetails?.map((item) => {
@@ -195,6 +194,25 @@ const ColumnForm = ({
       foreignKeyDetails?.some((foreignKey) => foreignKey.column_names[0] === columnName)
     );
   }
+
+  const handleDeleteForeignKeyRelationInCreate = () => {
+    const newForeignKeyDetails = [...foreignKeyDetails]; // Make a copy of the existing array
+    newForeignKeyDetails.splice(0, 1); // Remove the item at the specified index
+    setForeignKeyDetails(newForeignKeyDetails);
+    setIsForeignKeyDraweOpen(false);
+    setIsForeignKey(false);
+    setOnDeletePopup(false);
+  };
+
+  const footerStyle = {
+    borderTop: '1px solid var(--slate5)',
+    paddingTop: '12px',
+    marginTop: '0px',
+  };
+
+  const handleOpenDeletePopup = () => {
+    setOnDeletePopup(true);
+  };
 
   return (
     <div className="drawer-card-wrapper ">
@@ -245,7 +263,7 @@ const ColumnForm = ({
             show={dataType === 'serial'}
           >
             <div>
-              {!isMatchingForeignKeyColumn(columnName) ? (
+              {!foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input
                   value={defaultValue}
                   type="text"
@@ -299,10 +317,14 @@ const ColumnForm = ({
 
         <div className="row mb-3">
           <ToolTip
-            message={'Fill in column details to create a foreign key relation'}
+            message={
+              dataType?.value === 'serial'
+                ? 'Foreign key relation cannot be created for serial type column'
+                : 'Fill in column details to create a foreign key relation'
+            }
             placement="top"
             tooltipClassName="tootip-table"
-            show={isEmpty(dataType) || isEmpty(columnName)}
+            show={isEmpty(dataType) || isEmpty(columnName) || dataType?.value === 'serial'}
           >
             <div className="col-1">
               <label className={`form-switch`}>
@@ -319,14 +341,16 @@ const ColumnForm = ({
                       setIsForeignKeyDraweOpen(e.target.checked);
                     }
                   }}
-                  disabled={isEmpty(dataType) || isEmpty(columnName)}
+                  disabled={isEmpty(dataType) || isEmpty(columnName) || dataType?.value === 'serial'}
                 />
               </label>
             </div>
           </ToolTip>
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">Foreign Key relation</p>
-            <p className="fw-400 secondary-text mb-2">Add foreign key to check referral integrity</p>
+            <p className="fw-400 secondary-text tj-text-xsm mb-2">
+              Adding a foreign key relation will link this column with a column in an existing table.
+            </p>
             {foreignKeyDetails?.length > 0 &&
               isForeignKey &&
               foreignKeyDetails?.map((detail, index) => (
@@ -346,6 +370,9 @@ const ColumnForm = ({
                   </div>
                 </div>
               ))}
+            {foreignKeyDetails?.length > 0 && (
+              <p className="fw-400 secondary-text tj-text-xsm mb-2">Create column to add foreign key relation</p>
+            )}
           </div>
         </div>
 
@@ -356,7 +383,6 @@ const ColumnForm = ({
           isForeignKeyRelation={true}
           onClose={() => {
             setIsForeignKeyDraweOpen(false);
-            setIsForeignKey(false);
           }}
         >
           <ForeignKeyTableForm
@@ -364,7 +390,6 @@ const ColumnForm = ({
             columns={columns}
             onClose={() => {
               setIsForeignKeyDraweOpen(false);
-              setIsForeignKey(false);
             }}
             isCreateColumn={true}
             isForeignKeyForColumnDrawer={true}
@@ -374,6 +399,7 @@ const ColumnForm = ({
             foreignKeyDetails={foreignKeyDetails}
             organizationId={organizationId}
             existingForeignKeyDetails={foreignKeys}
+            onDeletePopup={handleOpenDeletePopup}
             setSourceColumn={setSourceColumn}
             sourceColumn={sourceColumn}
             setTargetTable={setTargetTable}
@@ -403,7 +429,7 @@ const ColumnForm = ({
           </div>
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
-            <p className="fw-400 secondary-text">
+            <p className="fw-400 secondary-text tj-text-xsm mb-2">
               {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
             </p>
           </div>
@@ -425,7 +451,7 @@ const ColumnForm = ({
           </div>
           <div className="col d-flex flex-column">
             <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
-            <p className="fw-400 secondary-text">
+            <p className="fw-400 secondary-text tj-text-xsm">
               {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
             </p>
           </div>
@@ -440,6 +466,28 @@ const ColumnForm = ({
           isEmpty(dataType) ||
           (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
         }
+        showToolTipForFkOnReadDocsSection={true}
+      />
+      <ConfirmDialog
+        title={'Delete foreign key'}
+        show={onDeletePopup}
+        message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
+        onConfirm={() => {
+          handleDeleteForeignKeyRelationInCreate();
+        }}
+        onCancel={() => {
+          setOnDeletePopup(false);
+        }}
+        darkMode={darkMode}
+        confirmButtonType="dangerPrimary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => {
+          setOnDeletePopup(false);
+        }}
+        confirmButtonText={'Continue'}
+        cancelButtonText={'Cancel'}
+        // confirmIcon={<DeleteIcon />}
+        footerStyle={footerStyle}
       />
     </div>
   );
