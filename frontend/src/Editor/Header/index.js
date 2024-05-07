@@ -16,7 +16,7 @@ import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
 import RightTopHeaderButtons from './RightTopHeaderButtons';
-import EnvironmentManager from './RightTopHeaderButtons/EnvironmentManager';
+import EnvironmentManager from './EnvironmentManager';
 
 export default function EditorHeader({
   M,
@@ -28,7 +28,6 @@ export default function EditorHeader({
   onNameChanged,
   setAppDefinitionFromVersion,
   onVersionRelease,
-  onVersionDelete,
   slug,
   darkMode,
 }) {
@@ -149,7 +148,6 @@ export default function EditorHeader({
                 <AppVersionsManager
                   appId={appId}
                   setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                  onVersionDelete={onVersionDelete}
                   isPublic={isPublic ?? false}
                 />
               )}

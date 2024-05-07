@@ -24,10 +24,10 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
     setShowPageDeletionConfirmation(false);
     setIsReleasing(true);
 
-    const { id: versionToBeReleased, name, app_id } = editingVersion;
+    const { id: versionToBeReleased, name, app_id, appId } = editingVersion;
 
     appsService
-      .releaseVersion(app_id, versionToBeReleased)
+      .releaseVersion(app_id || appId, versionToBeReleased)
       .then(() => {
         toast(`Version ${name} released`, {
           icon: '🚀',
