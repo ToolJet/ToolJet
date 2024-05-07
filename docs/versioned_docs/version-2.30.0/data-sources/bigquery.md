@@ -95,7 +95,7 @@ This operation returns the data based on the `Query`.
 
 - **Query**: Choose the query.
 - **Query options:** The JSON object specifies additional options for the query.
-- **Query results options:** The { wrapIntegers: true } option instructs how integers in the results should be handled, particularly relevant for languages or interfaces that may have issues with large integers.
+- **Query results options:** The `{ wrapIntegers: true }` option instructs how integers in the results should be handled, particularly relevant for languages or interfaces that may have issues with large integers.
 
 <div style={{textAlign: 'center'}}>
 
