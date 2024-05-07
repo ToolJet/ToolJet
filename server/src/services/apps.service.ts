@@ -27,6 +27,8 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
 import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { VersionReleaseDto } from '@dto/version-release.dto';
+
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
@@ -1123,5 +1125,26 @@ export class AppsService {
         return { table_id };
       });
     });
+  }
+
+  async releaseVersion(appId: string, versionReleaseDto: VersionReleaseDto, manager?: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { versionToBeReleased } = versionReleaseDto;
+      //check if the app version is eligible for release
+      const currentEnvironment: AppEnvironment = await manager
+        .createQueryBuilder(AppEnvironment, 'app_environments')
+        .select(['app_environments.id', 'app_environments.isDefault'])
+        .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
+        .where('app_versions.id = :versionToBeReleased', {
+          versionToBeReleased,
+        })
+        .getOne();
+
+      if (!currentEnvironment?.isDefault) {
+        throw new BadRequestException('You can only release when the version is promoted to production');
+      }
+
+      return await manager.update(App, appId, { currentVersionId: versionToBeReleased });
+    }, manager);
   }
 }
