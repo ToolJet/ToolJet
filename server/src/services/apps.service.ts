@@ -1400,21 +1400,62 @@ export class AppsService {
       ),
     };
   }
-  async releaseVersion(appId: string, versionReleaseDto: VersionReleaseDto, manager?: EntityManager) {
+  async releaseVersion(app: App, versionReleaseDto: VersionReleaseDto, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { versionToBeReleased } = versionReleaseDto;
+      const { id: appId, currentVersionId: lastReleasedVersion, organizationId } = app;
       //check if the app version is eligible for release
       const currentEnvironment: AppEnvironment = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .select(['app_environments.id', 'app_environments.isDefault'])
+        .select(['app_environments.id', 'app_environments.isDefault', 'app_environments.priority'])
         .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
         .where('app_versions.id = :versionToBeReleased', {
           versionToBeReleased,
         })
         .getOne();
 
-      if (!currentEnvironment?.isDefault) {
+      const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      /* 
+        Allow version release only if the environment is on 
+        production with a valid license or 
+        expired license and development environment (priority no.1) (CE rollback) 
+        */
+
+      if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
         throw new BadRequestException('You can only release when the version is promoted to production');
+      }
+
+      let promotedFromQuery: string;
+      if (!isMultiEnvironmentEnabled) {
+        if (!currentEnvironment.isDefault) {
+          /* For basic plan users, Promote to the production environment first then release it */
+          const productionEnv = await this.appEnvironmentService.get(organizationId, null, false, manager);
+          await manager.update(AppVersion, versionToBeReleased, {
+            currentEnvironmentId: productionEnv.id,
+            promotedFrom: currentEnvironment.id,
+          });
+        }
+
+        /* demote the last released environment back to the promoted_from (if not null) */
+        if (lastReleasedVersion) {
+          promotedFromQuery = `
+            UPDATE app_versions
+            SET current_environment_id = promoted_from
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+        }
+      } else {
+        if (lastReleasedVersion) {
+          promotedFromQuery = `
+            UPDATE app_versions
+            SET promoted_from = NULL
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+        }
+      }
+
+      if (promotedFromQuery) {
+        await manager.query(promotedFromQuery, [lastReleasedVersion]);
       }
 
       return await manager.update(App, appId, { currentVersionId: versionToBeReleased });

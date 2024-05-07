@@ -244,10 +244,11 @@ export const useEnvironmentsAndVersionsStore = create(
 const calculatePromoteAndReleaseButtonVisibility = (selectedVersionId, selectedEnvironment) => {
   const isVersionReleased = useAppVersionStore.getState().releasedVersionId === selectedVersionId;
   const isLastEnvironment = selectedEnvironment.isDefault;
+  const featureAccess = useEditorStore.getState().featureAccess;
 
   return {
-    shouldRenderPromoteButton: !isLastEnvironment && !isVersionReleased,
-    shouldRenderReleaseButton: isLastEnvironment || isVersionReleased,
+    shouldRenderPromoteButton: featureAccess?.multiEnvironment && !isLastEnvironment && !isVersionReleased,
+    shouldRenderReleaseButton: !featureAccess?.multiEnvironment || isLastEnvironment || isVersionReleased,
   };
 };
 

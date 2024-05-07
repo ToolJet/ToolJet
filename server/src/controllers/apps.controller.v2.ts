@@ -566,7 +566,7 @@ export class AppsControllerV2 {
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    return await this.appsService.releaseVersion(app.id, versionReleaseDto);
+    return await this.appsService.releaseVersion(app, versionReleaseDto);
   }
 
   @UseGuards(JwtAuthGuard)
