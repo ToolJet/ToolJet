@@ -23,7 +23,8 @@ export class PostgrestProxyService {
     const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
     req.headers = {};
     req.headers['Authorization'] = authToken;
-    req.headers['Prefer'] = 'count=exact'; // To get the total count of records
+    // https://postgrest.org/en/v12/references/api/preferences.html#prefer-header
+    req.headers['Prefer'] = 'count=exact, return=representation';
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
 
@@ -45,7 +46,12 @@ export class PostgrestProxyService {
     return this.httpProxy(req, res, next);
   }
 
-  async perform(url, method, headers, body) {
+  async perform(
+    url: string,
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    headers: Record<string, any>,
+    body: Record<string, any> = {}
+  ) {
     try {
       const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
       const updatedPath = replaceUrlForPostgrest(url);
@@ -73,7 +79,7 @@ export class PostgrestProxyService {
       const reqHeaders = {
         ...headers,
         Authorization: authToken,
-        Prefer: 'count=exact', // get the total no of records
+        Prefer: 'count=exact, return=representation',
       };
 
       const response = await got(postgrestUrl, {
