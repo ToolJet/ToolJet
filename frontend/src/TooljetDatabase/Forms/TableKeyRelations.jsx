@@ -139,6 +139,7 @@ function SourceKeyRelation({
           );
         }
       });
+      // setTargetColumn({ value: '', label: '', dataType: '' });
     }
   };
 

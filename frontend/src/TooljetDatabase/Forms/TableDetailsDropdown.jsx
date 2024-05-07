@@ -63,6 +63,7 @@ function TableDetailsDropdown({
                 } else {
                   setTargetTable(value);
                   handleSelectColumn(value?.value);
+                  setTargetColumn({ value: '', label: '', dataType: '' });
                 }
               }}
               onAdd={onAdd}
