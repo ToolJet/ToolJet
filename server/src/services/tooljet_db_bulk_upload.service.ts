@@ -30,9 +30,10 @@ export class TooljetDbBulkUploadService {
       throw new NotFoundException(`Table ${tableName} not found`);
     }
 
-    const internalTableColumnSchema = await this.tooljetDbService.perform(organizationId, 'view_table', {
-      table_name: tableName,
-    });
+    const { columns: internalTableColumnSchema }: { columns: TableColumnSchema[] } =
+      await this.tooljetDbService.perform(organizationId, 'view_table', {
+        table_name: tableName,
+      });
 
     return await this.bulkUploadCsv(internalTable.id, internalTableColumnSchema, fileBuffer);
   }
@@ -148,10 +149,12 @@ export class TooljetDbBulkUploadService {
       .map((col) => `"${col}" = EXCLUDED."${col}"`)
       .join(', ');
 
+    const primaryKeyColumnsQuoted = primaryKeyColumns.map((column) => `"${column}"`);
+    const columnsQuoted = allColumns.map((column) => `"${column}"`);
     const queryText =
-      `INSERT INTO "${internalTableId}" ("${allColumns.join('", "')}") ` +
+      `INSERT INTO "${internalTableId}" (${columnsQuoted.join(', ')}) ` +
       `VALUES ${allValueSets.join(', ')} ` +
-      `ON CONFLICT (${primaryKeyColumns.join(', ')}) ` +
+      `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
       `DO UPDATE SET ${onConflictUpdate};`;
 
     await tooljetDbManager.query(queryText, allPlaceholders);
