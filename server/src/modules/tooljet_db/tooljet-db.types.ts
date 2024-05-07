@@ -74,7 +74,7 @@ export class TooljetDatabaseError extends QueryFailedError {
   public readonly code: string;
   public readonly context: {
     origin: TooljetDbActions;
-    internalTables: InternalTable | { id: string; tableName: string }[];
+    internalTables: (InternalTable | { id: string; tableName: string })[];
   };
   public readonly queryError: QueryFailedError;
 

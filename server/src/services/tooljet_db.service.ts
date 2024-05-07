@@ -297,7 +297,14 @@ export class TooljetDbService {
       await queryRunner.release();
       await tjdbQueryRunner.release();
 
-      throw err;
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'create_table',
+          internalTables: [],
+        },
+        err
+      );
     }
   }
 
