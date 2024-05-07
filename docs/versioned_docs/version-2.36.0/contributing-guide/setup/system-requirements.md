@@ -1,6 +1,6 @@
 ---
 id: system-requirements-for-contributing
-title: System Requirements for Contributing 
+title: System Requirements 
 ---
 
 This page details the system requirements for setting up and running ToolJet on both Docker local and Bare-Metal setups. 
