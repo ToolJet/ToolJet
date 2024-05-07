@@ -263,7 +263,7 @@ const ColumnForm = ({
             show={dataType === 'serial'}
           >
             <div>
-              {!isMatchingForeignKeyColumn(columnName) ? (
+              {!foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input
                   value={defaultValue}
                   type="text"
