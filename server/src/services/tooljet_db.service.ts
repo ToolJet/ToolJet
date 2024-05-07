@@ -941,8 +941,8 @@ export class TooljetDbService {
       await tjdbQueryRunner.release();
 
       const referencedTables = Object.entries(referenced_tables_info).map(([key, value]) => ({
-        id: key,
-        tableName: value as string,
+        tableName: key,
+        id: value as string,
       }));
 
       throw new TooljetDatabaseError(
