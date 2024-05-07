@@ -1,6 +1,6 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
-import _, { omit } from 'lodash';
+import _, { debounce, merge, omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
