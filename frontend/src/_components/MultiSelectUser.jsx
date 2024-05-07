@@ -19,7 +19,7 @@ function MultiSelectUser({
   const listOfOptions = useRef([]);
 
   useEffect(() => {
-    setOptions(filterOptions(listOfOptions.current));
+    setOptions(listOfOptions.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedValues, listOfOptions.current]);
 
@@ -68,7 +68,7 @@ function MultiSelectUser({
   );
   return (
     <div className="tj-ms tj-ms-count">
-      <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
+      {/* <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} /> */}
       <Select
         className={className}
         getOptions={onSearch ? searchFunction : undefined}

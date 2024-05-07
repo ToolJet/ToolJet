@@ -1,0 +1,57 @@
+@import "./typography.scss";
+@import "./designtheme.scss";
+
+.granular-access-container {
+    .empty-container {
+        height: fit-content;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        flex-direction: column;
+        margin-top: 10rem;
+        width: 330px;
+
+        .icon-container {
+            width: 50px;
+            height: 50px;
+            background: var(--indigo4);
+
+            svg {
+                width: 45px;
+                height: 45px;
+                path {
+                    fill: var(--indigo9);
+                }
+            }
+        }
+
+        .add-permission-btn {
+            width: 135px;
+        }
+    }
+}
+
+.permission-type {
+    border: 0px !important;
+    width: 100% !important;
+    justify-content: flex-start;
+    padding-left: 1rem;
+}
+
+.permission-manager-modal {
+    .permission-manager-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .type-container {
+        display: flex;
+        justify-content: space-between;
+
+        .right-container {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}

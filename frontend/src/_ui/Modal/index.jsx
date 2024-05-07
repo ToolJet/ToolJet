@@ -14,14 +14,16 @@ export default function ModalBase({
   isLoading,
   children,
   cancelDisabled,
+  className = '',
+  size = 'sm',
 }) {
   return (
     <Modal
       show={show}
       onHide={handleClose}
-      size="sm"
+      size={size}
       centered={true}
-      contentClassName={`${darkMode ? 'theme-dark dark-theme modal-base' : 'modal-base'}`}
+      contentClassName={`${className} ${darkMode ? 'theme-dark dark-theme modal-base' : 'modal-base'}`}
     >
       <Modal.Header>
         <Modal.Title className="font-weight-500" data-cy="modal-title">

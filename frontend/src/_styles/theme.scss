@@ -12,6 +12,7 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import './groups-permissions.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -9571,8 +9572,14 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--grass3);
+  background: var(--indigo3);
   border-radius: 100px;
+  border: 2px solid var(--indigo9);
+  color: var(--indigo9);
+
+  path {
+    fill: var(--indigo9);
+  }
 }
 
 .sso-icon-wrapper {
@@ -12859,5 +12866,28 @@ tbody {
 
   &:active {
     background-color: var(--interactive-overlays-fill-pressed) !important;
+  }
+}
+
+.modal-base {
+  .modal-footer {
+    border-top: 1px solid var(--slate5);
+    padding: 1rem;
+
+    .tj-btn-left-icon {
+      svg {
+        width: 20px;
+        height: 20px;
+
+        path {
+          fill: var(--indigo1);
+        }
+      }
+    }
+
+    .tj-large-btn {
+      font-weight: 500;
+      font-size: 14px;
+    }
   }
 }

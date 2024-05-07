@@ -162,6 +162,8 @@ import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
+import UserGear from './UserGear.jsx';
+import GranularAccess from './GranularAccess.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -283,6 +285,8 @@ const Icon = (props) => {
       return <Globe {...props} />;
     case 'grid':
       return <Grid {...props} />;
+    case 'granularaccess':
+      return <GranularAccess {...props} />;
     case 'helppolygon':
       return <HelpPolygon {...props} />;
     case 'home':
@@ -421,6 +425,8 @@ const Icon = (props) => {
       return <UserAdd {...props} />;
     case 'usergroup':
       return <UserGroup {...props} />;
+    case 'usergear':
+      return <UserGear {...props} />;
     case 'userremove':
       return <UserRemove {...props} />;
     case 'uturn':

@@ -17,13 +17,15 @@ export function OrganizationSettings(props) {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const { workspaceId } = useParams();
 
-  const sideBarNavs = ['Users', 'Groups', 'Workspace login', 'Workspace variables'];
+  const sideBarNavs = ['Users', 'Groups', 'Groups V2', 'Workspace login', 'Workspace variables'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'users':
         return 'Users';
       case 'groups':
         return 'Groups';
+      case 'groups2':
+        return 'Groups V2';
       case 'workspace-login':
         return 'Workspace login';
       case 'workspace-variables':
