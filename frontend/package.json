@@ -7,6 +7,7 @@
     "@codemirror/commands": "^6.3.3",
     "@codemirror/lang-javascript": "^6.2.1",
     "@codemirror/lang-python": "^6.1.3",
+    "@codemirror/lang-sass": "^6.0.2",
     "@codemirror/lang-sql": "^6.5.5",
     "@codemirror/language": "^6.10.0",
     "@codemirror/view": "^6.24.0",

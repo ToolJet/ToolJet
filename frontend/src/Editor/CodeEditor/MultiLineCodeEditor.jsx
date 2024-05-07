@@ -7,6 +7,7 @@ import { keymap } from '@codemirror/view';
 import { completionKeymap } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
+import { sass, sassCompletionSource } from '@codemirror/lang-sass';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { findNearestSubstring, generateHints } from './autocompleteExtensionConfig';
@@ -21,6 +22,7 @@ const langSupport = Object.freeze({
   python: python(),
   sql: sql(),
   jsx: javascript({ jsx: true }),
+  css: sass(),
 });
 
 const MultiLineCodeEditor = (props) => {
@@ -229,6 +231,9 @@ const MultiLineCodeEditor = (props) => {
                   }),
                   sql().language.data.of({
                     autocomplete: overRideFunction,
+                  }),
+                  sass().language.data.of({
+                    autocomplete: sassCompletionSource,
                   }),
                   keymap.of([...customKeyMaps]),
                 ]}
