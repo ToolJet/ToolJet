@@ -239,7 +239,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
     };
   });
 
-  const headerText = primaryColumn.charAt(0).toUpperCase() + primaryColumn.slice(1);
+  const headerText = primaryColumn;
 
   let matchingObject = {};
   let matchingObjectForCharacter = {};
@@ -298,7 +298,7 @@ const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
             Array.isArray(columns) &&
             columns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
               const currentValue = selectedTableData.find((row) => row.id === selectedRow)?.[accessor];
-              const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
+              const headerText = Header;
               const isPrimaryKey = constraints_type.is_primary_key;
               const isNullable = !constraints_type.is_not_null;
 
