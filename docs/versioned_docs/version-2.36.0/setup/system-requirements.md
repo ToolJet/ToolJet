@@ -9,7 +9,7 @@ This document covers all the system requirements for self-hosting ToolJet.
 
 ### Microsoft Windows
 
-ToolJet is developed for Linux-based operating systems. Please consider using a virtual machine or Windows Subsystem for Linux 2 (WSL2) to run ToolJet on windows.
+ToolJet is developed for Linux-based operating systems. Please consider using a virtual machine or Windows Subsystem for Linux 2 (WSL2) to run ToolJet on Windows.
 
 ### Supported Linux distribution
 
