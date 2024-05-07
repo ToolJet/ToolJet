@@ -82,7 +82,7 @@ sudo systemctl daemon-reload
 mkdir -p ~/app
 
 #The below url will be edited dynamically when actions is triggered
-git clone -b packer-npm-fix https://PAT@github.com/ToolJet/tj-ee.git ~/app && cd ~/app
+git clone -b develop https://PAT@github.com/ToolJet/tj-ee.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
