@@ -122,6 +122,7 @@ const ForeignKeyTableForm = ({
         isForeignKeyForColumnDrawer={isForeignKeyForColumnDrawer}
         editForeignKeyInCreateTable={editForeignKeyInCreateTable}
         showToolTipForFkOnReadDocsSection={true}
+        foreignKeyDetails={foreignKeyDetails}
       />
     </div>
   );

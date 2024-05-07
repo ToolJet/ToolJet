@@ -20,6 +20,7 @@ function DrawerFooter({
   isForeignKeyForColumnDrawer,
   editForeignKeyInCreateTable,
   showToolTipForFkOnReadDocsSection = false,
+  foreignKeyDetails = [],
 }) {
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
@@ -37,7 +38,8 @@ function DrawerFooter({
         </ToolTip>
         <div className="d-flex action-btns">
           {(isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit))) ||
-          (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ? (
+          (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ||
+          (isCreateColumn && foreignKeyDetails?.length > 0) ? (
             <ButtonSolid variant="dangerTertiary" onClick={onDeletePopup}>
               <DeleteIcon />
               &nbsp; Delete

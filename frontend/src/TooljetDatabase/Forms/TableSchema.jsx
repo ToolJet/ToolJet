@@ -244,10 +244,14 @@ function TableSchema({
                       (prevColumns[index].constraints_type?.is_primary_key &&
                         prevColumns[index]?.data_type !== 'serial');
 
-                    columnConstraints.is_unique =
-                      prevColumns[index].constraints_type?.is_primary_key || (value.value === 'boolean' && false);
+                    columnConstraints.is_unique = prevColumns[index].constraints_type?.is_primary_key
+                      ? true
+                      : value?.value === 'boolean'
+                      ? false
+                      : false;
 
                     columnConstraints.is_primary_key = value.value === 'boolean' && false;
+                    // columnConstraints.is_primary_key = value.value === 'serial' && true;
                     prevColumns[index].constraints_type = { ...columnConstraints };
                     setColumns(prevColumns);
                   }}
@@ -412,13 +416,19 @@ function TableSchema({
                     // const data = e.target.checked === true ? true : false;
                     columnConstraints.is_primary_key = e.target.checked;
                     columnConstraints.is_not_null =
-                      isEditMode && e.target.checked === false
-                        ? true
-                        : e.target.checked === true || prevColumns[index].data_type === 'serial'
+                      // isEditMode && e.target.checked === false
+                      //   ? true
+                      e.target.checked === true ||
+                      prevColumns[index].data_type === 'serial' ||
+                      e.target.checked === false
                         ? true
                         : false;
                     columnConstraints.is_unique =
-                      e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
+                      e.target.checked === true ||
+                      prevColumns[index].data_type === 'serial' ||
+                      e.target.checked === false
+                        ? true
+                        : false;
                     prevColumns[index].constraints_type = { ...columnConstraints };
                     // prevColumns[index].data_type = data === false && '';
                     setColumns(prevColumns);

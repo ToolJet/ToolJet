@@ -860,7 +860,7 @@ const Table = ({ collapseSidebar }) => {
             primaryKeyTooltip: true,
           })}
         >
-          <div>
+          <div className="table-header-container">
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
               {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
             </span>
@@ -920,11 +920,11 @@ const Table = ({ collapseSidebar }) => {
       </ToolTip>
     ) : (
       <div className="primaryKeyTooltip">
-        <div>
+        <div className="table-header-container">
           <span className="tj-text-xsm tj-db-dataype text-lowercase">
             {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
           </span>
-          {column.render('Header')}
+          <span style={{ width: '100px' }}>{column.render('Header')}</span>
         </div>
 
         <ToolTip

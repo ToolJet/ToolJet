@@ -87,18 +87,38 @@ const ColumnForm = ({
     }
   });
 
-  const [foreignKeyDetails, setForeignKeyDetails] = useState(
-    foreignKeys?.map((item) => {
-      return {
-        column_names: isEditColumn ? (!createForeignKeyInEdit ? item.column_names : []) : [],
-        referenced_table_name: isEditColumn ? (!createForeignKeyInEdit ? item.referenced_table_name : '') : '',
-        referenced_table_id: isEditColumn ? (!createForeignKeyInEdit ? item.referenced_table_id : '') : '',
-        referenced_column_names: isEditColumn ? (!createForeignKeyInEdit ? item.referenced_column_names : []) : [],
-        on_delete: isEditColumn ? (!createForeignKeyInEdit ? item.on_delete : '') : '',
-        on_update: isEditColumn ? (!createForeignKeyInEdit ? item.on_update : '') : '',
-      };
-    })
-  );
+  const [foreignKeyDetails, setForeignKeyDetails] = useState([]);
+
+  useEffect(() => {
+    toast.dismiss();
+    setForeignKeyDetails(
+      foreignKeys?.map((item) => {
+        return {
+          column_names: item.column_names,
+          referenced_table_name: item.referenced_table_name,
+          referenced_table_id: item.referenced_table_id,
+          referenced_column_names: item.referenced_column_names,
+          on_delete: item.on_delete,
+          on_update: item.on_update,
+        };
+      })
+    );
+  }, []);
+
+  useEffect(() => {
+    setForeignKeyDetails(
+      foreignKeys?.map((item) => {
+        return {
+          column_names: item.column_names,
+          referenced_table_name: item.referenced_table_name,
+          referenced_table_id: item.referenced_table_id,
+          referenced_column_names: item.referenced_column_names,
+          on_delete: item.on_delete,
+          on_update: item.on_update,
+        };
+      })
+    );
+  }, [foreignKeys]);
 
   const columns = {
     column_name: columnName,
@@ -213,7 +233,6 @@ const ColumnForm = ({
 
   const onCloseForeignKeyDrawer = () => {
     setIsForeignKeyDraweOpen(false);
-    setIsForeignKey(false);
     setCreateForeignKeyInEdit(false);
     setSourceColumn([]);
     setTargetTable([]);
@@ -221,6 +240,8 @@ const ColumnForm = ({
     setOnDelete([]);
     setOnUpdate([]);
   };
+
+  const getForeignKeyColumnDetails = foreignKeys?.filter((item) => item.column_names[0] === selectedColumn?.Header); // this is for getting current foreign key column
 
   const handleEdit = async () => {
     const colDetails = {
@@ -236,7 +257,7 @@ const ColumnForm = ({
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
       },
 
-      ...(isForeignKey === false && { foreignKeyIdToDelete: foreignKeys[selectedForeignkeyIndex]?.constraint_name }),
+      ...(isForeignKey === false && { foreignKeyIdToDelete: getForeignKeyColumnDetails[0]?.constraint_name }),
     };
 
     if (
@@ -245,7 +266,7 @@ const ColumnForm = ({
       defaultValue !== selectedColumn?.column_default ||
       nullValue !== isNotNull ||
       uniqueConstraintValue !== isUniqueConstraint ||
-      (foreignKeyDetails[selectedForeignkeyIndex] && !isForeignKey)
+      !isForeignKey
     ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
@@ -266,17 +287,20 @@ const ColumnForm = ({
     width: '126px',
   };
 
-  const handleDeleteColumn = async () => {
-    const id = foreignKeys[0]?.constraint_name;
+  const handleDeleteForeignKeyColumn = async () => {
+    const id = foreignKeys[selectedForeignkeyIndex]?.constraint_name;
     const { error } = await tooljetDatabaseService.deleteForeignKey(organizationId, selectedTable.table_name, id);
 
     if (error) {
       toast.error(error?.message ?? `Failed to delete foreign key`);
       return;
     }
-    onCloseForeignKeyDrawer();
+
     fetchMetaDataApi();
     setOnDeletePopup(false);
+    setIsForeignKey(false);
+    setForeignKeyDetails([]);
+    onCloseForeignKeyDrawer();
     toast.success(`Foreign key deleted successfully`);
   };
 
@@ -486,7 +510,7 @@ const ColumnForm = ({
               show={selectedColumn?.dataType === 'serial'}
             >
               <div>
-                {!isMatchingForeignKeyColumn(columnName) ? (
+                {!isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
                   <input
                     value={selectedColumn?.dataType !== 'serial' ? defaultValue : null}
                     type="text"
@@ -581,21 +605,21 @@ const ColumnForm = ({
               <p className="fw-400 secondary-text tj-text-xsm mb-2">
                 Adding a foreign key relation will link this column with a column in an existing table.
               </p>
-              {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(columnName) && isForeignKey && (
+              {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(selectedColumn?.Header) && isForeignKey && (
                 <div className="foreignKey-details mt-0">
                   <span className="foreignKey-text">
-                    {isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]}
+                    {isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.column_names[0]}
                   </span>
                   <div className="foreign-key-relation">
                     <ForeignKeyRelationIcon width="13" height="13" />
                   </div>
                   <span className="foreignKey-text">{`${
-                    isMatchingForeignKeyColumnDetails(columnName)?.referenced_table_name
-                  }.${isMatchingForeignKeyColumnDetails(columnName)?.referenced_column_names[0]}`}</span>
+                    isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.referenced_table_name
+                  }.${isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.referenced_column_names[0]}`}</span>
                   <div
                     className="editForeignkey"
                     onClick={() => {
-                      openEditForeignKey(isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]);
+                      openEditForeignKey(isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.column_names[0]);
                     }}
                   >
                     <EditIcon width="17" height="18" />
@@ -751,7 +775,7 @@ const ColumnForm = ({
         title={'Delete foreign key'}
         show={onDeletePopup}
         message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
-        onConfirm={handleDeleteColumn}
+        onConfirm={handleDeleteForeignKeyColumn}
         onCancel={() => {
           setOnDeletePopup(false);
         }}
