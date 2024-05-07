@@ -461,19 +461,19 @@ If server-side search is enabled, `on search` event is fired after the content o
 
 ### Show download button
 
-The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
+The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the download button by clicking on the **Fx** button.
 
 ### Hide column selector button
 
-The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
+The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the column selector button by clicking on the **Fx** button.
 
 ### Show filter button
 
-The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
+The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the filter button by clicking on the **Fx** button.
 
 ### Show add new row button
 
-The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the Add new row button by clicking on the **Fx** button.
+The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the Add new row button by clicking on the **Fx** button.
 
 ### Show update buttons
 
@@ -481,7 +481,7 @@ It's enabled by default. Table footer will show two update buttons **Save change
 
 ### Allow selection
 
-This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible.
+This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is disabled, the ability to highlight selected rows and perform bulk selection will not be accessible.
 
 ### Highlight selected row
 
@@ -591,12 +591,14 @@ Any property having `Fx` button next to its field can be **programmatically conf
 | dataUpdates | Just like changeSet but includes the data of the entire row |
 | selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
 | selectedCell | The data of the cell that was last clicked on the table. |
-| searchText | The value of the search field if server-side pagination is enabled |
+| searchText | The value of the search field if server-side pagination is enabled. |
 | newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
 
 ## Component specific actions (CSA)
 
-Following actions of color picker component can be controlled using the component specific actions(CSA):
+Following actions of the component can be controlled using the component specific actions(CSA):
+
+
 
 | Actions     | Description |
 | ----------- | ----------- |

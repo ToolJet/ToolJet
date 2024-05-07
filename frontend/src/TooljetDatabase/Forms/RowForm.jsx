@@ -235,7 +235,7 @@ const RowForm = ({ onCreate, onClose }) => {
           columns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;
             const isNullable = !constraints_type.is_not_null;
-            const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
+            const headerText = Header;
             const isSerialDataTypeColumn = dataType === 'serial';
             return (
               <div className="mb-3 " key={index}>

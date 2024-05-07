@@ -108,7 +108,6 @@ class ManageAppUsersComponent extends React.Component {
     this.setState({
       ischangingVisibility: true,
     });
-
     useAppDataStore.getState().actions.updateState({ isPublic: newState });
 
     // eslint-disable-next-line no-unused-vars
