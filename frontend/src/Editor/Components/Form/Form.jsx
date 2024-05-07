@@ -260,6 +260,7 @@ export const Form = function Form(props) {
                 }}
                 currentPageId={props.currentPageId}
                 {...props}
+                {...containerProps}
               />
               <SubCustomDragLayer
                 containerCanvasWidth={width}
