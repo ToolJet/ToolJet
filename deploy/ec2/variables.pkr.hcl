@@ -19,7 +19,7 @@ variable "ami_groups" {
 
 variable "ami_regions" {
   type    = list(string)
-  default = ["us-west-1"]
+  default = ["us-west-1", "us-east-1", "us-east-2", "eu-central-1", "ap-northeast-1", "ca-central-1"]
 }
 
 variable "PACKER_BUILDER_TYPE" {
