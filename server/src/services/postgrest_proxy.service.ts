@@ -132,7 +132,7 @@ export class PostgrestProxyService {
           origin: 'proxy_postgrest',
           internalTables: Object.entries(userReq.headers.tableInfo).map(([key, value]) => ({
             id: key,
-            tableName: value,
+            tableName: value as string,
           })),
         };
         const errorObj = new QueryFailedError(postgrestResponse, [], new PostgrestError(postgrestResponse));
