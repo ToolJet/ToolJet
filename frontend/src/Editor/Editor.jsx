@@ -84,7 +84,7 @@ import AutoLayoutAlert from './AutoLayoutAlert';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
-import { decimalToHex } from './editorConstants';
+import { decimalToHex, EditorConstants } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import cx from 'classnames';
 
@@ -146,7 +146,6 @@ const EditorComponent = (props) => {
     currentAppEnvironment,
     currentAppEnvironmentId,
     featureAccess,
-    editorCanvasWidth,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
@@ -163,7 +162,6 @@ const EditorComponent = (props) => {
       currentAppEnvironment: state.currentAppEnvironment,
       currentAppEnvironmentId: state.currentAppEnvironmentId,
       featureAccess: state.featureAccess,
-      editorCanvasWidth: state.editorCanvasWidth,
     }),
     shallow
   );
@@ -383,12 +381,6 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setCurrentState({
         layout: currentLayout,
       });
-
-      const canvasWidth = getCanvasWidth();
-
-      if (typeof canvasWidth === 'number') {
-        setCanvasWidth(canvasWidth);
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, mounted]);
@@ -575,7 +567,6 @@ const EditorComponent = (props) => {
       },
     });
 
-    getCanvasWidth();
     initEditorWalkThrough();
   };
 
@@ -655,11 +646,16 @@ const EditorComponent = (props) => {
   };
 
   const getCanvasWidth = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
-
-    const _canvasWidth = canvasBoundingRect?.width;
-    return _canvasWidth;
+    const windowWidth = window.innerWidth;
+    const widthInPx = windowWidth - (EditorConstants.leftSideBarWidth + EditorConstants.rightSideBarWidth);
+    if (appDefinition?.globalSettings?.canvasMaxWidthType === 'px') {
+      return +appDefinition.globalSettings.canvasMaxWidth;
+    }
+    if (appDefinition?.globalSettings?.canvasMaxWidthType === '%') {
+      return (widthInPx / 100) * +appDefinition.globalSettings.canvasMaxWidth;
+    }
   };
+
   const computeCanvasContainerHeight = () => {
     // 45 = (height of header)
     // 85 = (the height of the query panel header when minimised) + (height of header)
@@ -2124,6 +2120,11 @@ const EditorComponent = (props) => {
     return `_tooljet-page-${pageHandle}`;
   };
 
+  const canvasWidth = getCanvasWidth() ?? useEditorStore.getState().editorCanvasWidth;
+  if (typeof canvasWidth === 'number' && canvasWidth !== useEditorStore.getState().editorCanvasWidth) {
+    setCanvasWidth(canvasWidth);
+  }
+
   return (
     <HotkeysProvider initiallyActiveScopes={['editor']}>
       <div className="editor wrapper">
@@ -2299,7 +2300,7 @@ const EditorComponent = (props) => {
                       {defaultComponentStateComputed && (
                         <>
                           <Container
-                            widthOfCanvas={editorCanvasWidth}
+                            widthOfCanvas={canvasWidth}
                             socket={socket}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
@@ -2321,7 +2322,7 @@ const EditorComponent = (props) => {
                           />
                           <CustomDragLayer
                             snapToGrid={true}
-                            canvasWidth={editorCanvasWidth}
+                            canvasWidth={canvasWidth}
                             onDragging={(isDragging) => setIsDragging(isDragging)}
                           />
                         </>
