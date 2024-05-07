@@ -99,7 +99,7 @@ const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => 
         overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
       >
         <img
-          style={{ zIndex: 100000 }}
+          style={{ zIndex: 10000 }}
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
           width={size}

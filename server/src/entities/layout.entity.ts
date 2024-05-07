@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, UpdateDateColumn } from 'typeorm';
 import { Component } from './component.entity';
 
 @Entity({ name: 'layouts' })
@@ -31,6 +31,8 @@ export class Layout {
     enum: ['count', 'percent'],
   })
   dimensionUnit: string;
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
 
   @ManyToOne(() => Component, (component) => component.layouts)
   @JoinColumn({ name: 'component_id' })

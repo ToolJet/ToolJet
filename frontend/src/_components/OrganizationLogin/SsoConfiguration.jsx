@@ -176,7 +176,7 @@ class SSOConfiguration extends React.Component {
     const isEnabledKey = `${key}Enabled`;
     const enabledStatus = !this.state[isEnabledKey];
 
-    if (enabledStatus === false) {
+    if (!enabledStatus) {
       try {
         await this.handleToggleSSOOption(key);
         toast.success(
@@ -228,9 +228,9 @@ class SSOConfiguration extends React.Component {
     const iconStyles = { width: '20px', height: '20x' };
     switch (key) {
       case 'google':
-        return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
+        return <img src="assets/images/Google.png" alt="Google" style={iconStyles} />;
       case 'git':
-        return <img src="/assets/images/Github.png" alt="GitHub" style={iconStyles} />;
+        return <img src="assets/images/Github.png" alt="GitHub" style={iconStyles} />;
       default:
         return null;
     }
@@ -238,7 +238,7 @@ class SSOConfiguration extends React.Component {
 
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
-    const isEnabled = this.state[isEnabledKey];
+    const isEnabled = this.state[isEnabledKey] || false;
 
     return (
       <div
@@ -259,7 +259,7 @@ class SSOConfiguration extends React.Component {
               </span>
               {
                 <img
-                  src="/assets/images/EditIcon.png"
+                  src="assets/images/EditIcon.png"
                   className="option-icon"
                   style={{ width: '14px', height: '14px', marginLeft: '8px' }}
                   data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-edit-icon`}

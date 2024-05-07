@@ -24,7 +24,7 @@ return data.filter(row => row.amount > 1000);
     `,
     python: `# write your code here
 # return value will be set as data and the original data will be available as rawData
-return [row for row in data if row['amount'] > 1000]
+[row for row in data if row['amount'] > 1000]
     `,
   };
 
@@ -179,7 +179,7 @@ return [row for row in data if row['amount'] > 1000]
 
         {enableTransformation && (
           <div
-            className="rounded-3 transformation-container"
+            className="transformation-container"
             style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
           >
             <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">

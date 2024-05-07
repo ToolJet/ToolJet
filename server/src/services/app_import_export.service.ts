@@ -9,7 +9,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { User } from 'src/entities/user.entity';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
 import {
   dbTransactionWrap,
@@ -32,6 +32,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -50,7 +51,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -60,7 +61,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
-const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput'];
+const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
 
 @Injectable()
 export class AppImportExportService {
@@ -95,13 +96,14 @@ export class AppImportExportService {
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
-      let dataSources =
+      const legacyLocalDataSources =
         appVersions?.length &&
         (await manager
           .createQueryBuilder(DataSource, 'data_sources')
           .where('data_sources.appVersionId IN(:...versionId)', {
             versionId: appVersions.map((v) => v.id),
           })
+          .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
           .orderBy('data_sources.created_at', 'ASC')
           .getMany());
 
@@ -127,7 +129,7 @@ export class AppImportExportService {
 
       const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
 
-      dataSources = [...dataSources, ...globalDataSources];
+      const dataSources = [...legacyLocalDataSources, ...globalDataSources];
 
       if (dataSources?.length) {
         dataQueries = await manager
@@ -236,21 +238,20 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const shouldUpdateForGridCompatibility = !cloning;
-
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+    const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    await this.setupImportedAppAssociations(
+    const resourceMapping = await this.setupImportedAppAssociations(
       this.entityManager,
       importedApp,
       schemaUnifiedAppParams,
       user,
       externalResourceMappings,
       isNormalizedAppDefinitionSchema,
-      shouldUpdateForGridCompatibility,
-      tooljetVersion
+      currentTooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
+    await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
 
     // NOTE: App slug updation callback doesn't work while wrapped in transaction
     // hence updating slug explicitly
@@ -259,6 +260,64 @@ export class AppImportExportService {
     await this.entityManager.save(importedApp);
 
     return importedApp;
+  }
+
+  async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
+    const mappings = { ...resourceMapping.componentsMapping, ...resourceMapping.dataQueryMapping };
+    const newComponentIds = Object.values(resourceMapping.componentsMapping);
+    const newQueriesIds = Object.values(resourceMapping.dataQueryMapping);
+
+    if (newComponentIds.length > 0) {
+      const components = await manager
+        .createQueryBuilder(Component, 'components')
+        .where('components.id IN(:...componentIds)', { componentIds: newComponentIds })
+        .select([
+          'components.id',
+          'components.properties',
+          'components.styles',
+          'components.general',
+          'components.validation',
+          'components.generalStyles',
+          'components.displayPreferences',
+        ])
+        .getMany();
+
+      const toUpdateComponents = components.filter((component) => {
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, mappings);
+        }
+      });
+
+      if (!isEmpty(toUpdateComponents)) {
+        await manager.save(toUpdateComponents);
+      }
+    }
+
+    if (newQueriesIds.length > 0) {
+      const dataQueries = await manager
+        .createQueryBuilder(DataQuery, 'dataQueries')
+        .where('dataQueries.id IN(:...dataQueryIds)', { dataQueryIds: newQueriesIds })
+        .select(['dataQueries.id', 'dataQueries.options'])
+        .getMany();
+
+      const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
+        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInQueryOptions.length > 0) {
+          return updateEntityReferences(dataQuery, mappings);
+        }
+      });
+
+      if (!isEmpty(toUpdateDataQueries)) {
+        await manager.save(toUpdateDataQueries);
+      }
+    }
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
@@ -327,8 +386,7 @@ export class AppImportExportService {
     user: User,
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
-    shouldUpdateForGridCompatibility: boolean,
-    tooljetVersion: string
+    tooljetVersion: string | null
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -392,7 +450,6 @@ export class AppImportExportService {
         importingPages,
         importingComponents,
         importingEvents,
-        shouldUpdateForGridCompatibility,
         tooljetVersion
       );
 
@@ -598,8 +655,7 @@ export class AppImportExportService {
     importingPages: Page[],
     importingComponents: Component[],
     importingEvents: EventHandler[],
-    shouldUpdateForGridCompatibility: boolean,
-    tooljetVersion: string
+    tooljetVersion: string | null
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1093,7 +1149,7 @@ export class AppImportExportService {
         where: {
           name: dataSource.name,
           kind: dataSource.kind,
-          type: DataSourceTypes.DEFAULT,
+          type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
           scope: 'global',
           organizationId: user.organizationId,
         },
@@ -1241,6 +1297,7 @@ export class AppImportExportService {
             canvasMaxHeight: 2400,
             canvasBackgroundColor: '#edeff5',
             backgroundFxQuery: '',
+            appMode: 'auto',
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
@@ -1655,9 +1712,10 @@ export class AppImportExportService {
       .createQueryBuilder(EventHandler, 'event')
       .where('event.appVersionId = :versionId', { versionId })
       .getMany();
+    const mappings = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping } as Record<string, string>;
 
     for (const event of allEvents) {
-      const eventDefinition = event.event;
+      const eventDefinition = updateEntityReferences(event.event, mappings);
 
       if (eventDefinition?.actionId === 'run-query' && oldDataQueryToNewMapping[eventDefinition.queryId]) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
@@ -1710,15 +1768,20 @@ function migrateProperties(
   componentType: NewRevampedComponent,
   component: Component,
   componentTypes: NewRevampedComponent[],
-  tooljetVersion: string
+  tooljetVersion: string | null
 ) {
-  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
-
   const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (!tooljetVersion) {
+    return { properties, styles, general, generalStyles, validation };
+  }
+
+  const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
+
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {

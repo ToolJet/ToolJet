@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -18,11 +18,11 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
+import { EditorContext } from '../Context/EditorContextWrapper';
 
-const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
-
   const [isFocused, setIsFocused] = useState(false);
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
@@ -32,8 +32,21 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
   const wrapperRef = useRef(null);
   //! Re render the component when the componentName changes as the initialValue is not updated
 
+  const { variablesExposedForPreview } = useContext(EditorContext);
+
+  const customVariables = variablesExposedForPreview?.[componentId] ?? {};
+
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
+
+    const [valid, _error] = !isEmpty(validation)
+      ? resolveReferences(initialValue, validation, customVariables)
+      : [true, null];
+
+    if (!valid) {
+      setErrorStateActive(true);
+    }
+
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentName, initialValue]);
@@ -58,6 +71,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
 
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   return (
     <div
       ref={wrapperRef}
@@ -74,10 +88,10 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
-        // fxActive={fxActive}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
+        isPortalOpen={restProps?.portalProps?.isOpen}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
@@ -121,7 +135,6 @@ const EditorInput = ({
   isFocused,
   componentId,
   type,
-  className,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -131,7 +144,21 @@ const EditorInput = ({
     let queryInput = context.state.doc.toString();
 
     if (totalReferences > 0) {
-      const currentWord = queryInput.split('{{').pop().split('}}')[0];
+      const currentCursor = context.state.selection.main.head;
+      const currentCursorPos = context.pos;
+
+      let currentWord = queryInput.substring(currentCursor, currentCursorPos);
+
+      if (currentWord?.length === 0) {
+        const lastBracesFromPos = queryInput.lastIndexOf('{{', currentCursorPos);
+        currentWord = queryInput.substring(lastBracesFromPos, currentCursorPos);
+        //remove curly braces from the current word as will append it later
+        currentWord = currentWord.replace(/{{|}}/g, '');
+      }
+
+      // remove \n from the current word if it is present
+      currentWord = currentWord.replace(/\n/g, '');
+
       queryInput = '{{' + currentWord + '}}';
     }
 
@@ -154,6 +181,11 @@ const EditorInput = ({
     },
     aboveCursor: false,
     defaultKeymap: true,
+    positionInfo: () => {
+      return {
+        class: 'cm-completionInfo-top cm-custom-completion-info',
+      };
+    },
   });
 
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
@@ -164,15 +196,9 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setFirstTimeFocus(false);
-    if (ignoreValidation) {
-      return onBlurUpdate(currentValue);
-    }
     setTimeout(() => {
-      if (!error || currentValue == '') {
-        const _value = currentValue;
-        onBlurUpdate(_value);
-      }
+      setFirstTimeFocus(false);
+      onBlurUpdate(currentValue);
     }, 0);
   };
 
@@ -250,7 +276,7 @@ const EditorInput = ({
               completionKeymap: true,
               searchKeymap: false,
             }}
-            onFocus={() => handleFocus()}
+            onMouseDown={() => handleFocus()}
             onBlur={() => handleOnBlur()}
             className={customClassNames}
             theme={theme}
@@ -277,6 +303,7 @@ const DynamicEditorBridge = (props) => {
     cyLabel = '',
     onChange,
     styleDefinition,
+    onVisibilityChange,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -337,6 +364,7 @@ const DynamicEditorBridge = (props) => {
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 styleDefinition={styleDefinition}
+                onVisibilityChange={onVisibilityChange}
               />
             )}
           </div>

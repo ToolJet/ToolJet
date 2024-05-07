@@ -15,8 +15,9 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
 
     1.1 Install Homebrew
     ```bash
-    /bin/bash -c "(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     ```
+
     1.2 Install Node.js ( version: v18.18.2 ) and npm (version: v9.8.1)
     ```bash
     brew install nvm

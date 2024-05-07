@@ -93,6 +93,8 @@ export class AppsControllerV2 {
     response['pages'] = pagesForVersion;
     response['events'] = eventsForVersion;
 
+    console.log({ app });
+
     //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {
       response['editing_version'] = {

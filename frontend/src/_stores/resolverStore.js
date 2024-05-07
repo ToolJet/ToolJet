@@ -184,7 +184,12 @@ export const useResolveStore = create(
         const updatedList = [];
 
         resolvedRefs.forEach((ref) => {
-          if (!ref.hint || !ref.newRef || !hintsMap.has(ref.hint)) return;
+          if (
+            !ref.hint ||
+            (typeof ref.newRef === 'string' && ref.newRef !== '' && !ref.newRef) ||
+            !hintsMap.has(ref.hint)
+          )
+            return;
 
           const refId = hintsMap.get(ref.hint);
           const currentRef = lookupResolvedRefs.get(refId);
@@ -212,10 +217,12 @@ export const useResolveStore = create(
       },
 
       addEntitiesToMap: (entities) => {
+        if (!Array.isArray(entities) || entities.length === 0) return;
+
         const { referenceMapper } = get();
 
         entities.forEach((entity) => {
-          if (!referenceMapper.has(entity.id)) {
+          if (entity?.id && !referenceMapper.has(entity.id)) {
             referenceMapper.set(entity.id, entity.name);
           }
         });
