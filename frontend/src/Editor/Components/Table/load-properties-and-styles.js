@@ -82,7 +82,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
   const contentWrapProperty = styles?.contentWrap ?? true;
   const borderColor = styles?.borderColor ?? 'var(--borders-weak-disabled)';
-  const columnHeaderType = styles?.columnHeaderType ?? 'fixed';
+  const columnHeaderWrap = styles?.columnHeaderWrap ?? 'fixed';
 
   return {
     color,
@@ -121,6 +121,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     contentWrapProperty,
     boxShadow,
     borderColor,
-    columnHeaderType,
+    columnHeaderWrap,
   };
 }

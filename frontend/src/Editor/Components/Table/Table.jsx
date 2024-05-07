@@ -142,7 +142,7 @@ export function Table({
     maxRowHeightValue,
     borderColor,
     isMaxRowHeightAuto,
-    columnHeaderType,
+    columnHeaderWrap,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
@@ -1333,9 +1333,9 @@ export function Table({
                                             'selector-column':
                                               column.id === 'selection' && column.columnType === 'selector',
                                             'text-truncate':
-                                              resolveReferences(columnHeaderType, currentState) === 'fixed',
+                                              resolveReferences(columnHeaderWrap, currentState) === 'fixed',
                                             'wrap-wrapper':
-                                              resolveReferences(columnHeaderType, currentState) === 'wrap',
+                                              resolveReferences(columnHeaderWrap, currentState) === 'wrap',
                                           })}
                                         >
                                           {column.render('Header')}
