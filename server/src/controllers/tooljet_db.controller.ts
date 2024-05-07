@@ -32,7 +32,7 @@ import {
   EditTableDto,
   EditColumnTableDto,
   PostgrestForeignKeyDto,
-  PostgrestTableColumnDto,
+  AddColumnDto,
 } from '@dto/tooljet-db.dto';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -108,14 +108,14 @@ export class TooljetDbController {
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddColumn, 'all'))
   async addColumn(
-    @Body() body: { column: PostgrestTableColumnDto; foreign_keys?: PostgrestForeignKeyDto },
     @Param('organizationId') organizationId,
-    @Param('tableName') tableName
+    @Param('tableName') tableName,
+    @Body() addColumnBody: AddColumnDto
   ) {
     const params = {
       table_name: tableName,
-      column: body.column,
-      foreign_keys: body?.foreign_keys || [],
+      column: addColumnBody.column,
+      foreign_keys: addColumnBody?.foreign_keys || [],
     };
     const result = await this.tooljetDbService.perform(organizationId, 'add_column', params);
     return decamelizeKeys({ result });

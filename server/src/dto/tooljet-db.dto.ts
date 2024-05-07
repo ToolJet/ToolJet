@@ -300,3 +300,16 @@ export class EditColumnTableDto {
   @IsOptional()
   constraints_type: ConstraintTypeDto;
 }
+
+export class AddColumnDto {
+  @ValidateNested()
+  @Type(() => PostgrestTableColumnDto)
+  @IsNotEmpty()
+  column: PostgrestTableColumnDto;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
+}
