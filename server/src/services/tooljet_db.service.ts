@@ -49,6 +49,8 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
+    // TODO: remove optional decorator when
+    // ENABLE_TOOLJET_DB flag is deprecated
     @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
@@ -426,7 +428,7 @@ export class TooljetDbService {
     return result;
   }
 
-  private async joinTable(organizationId: string, params) {
+  private async joinTable(organizationId: string, params: Record<string, unknown>) {
     const { joinQueryJson } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
 

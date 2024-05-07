@@ -10,6 +10,7 @@ import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
+import { getQueryParams } from '@/_helpers/routes';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -37,6 +38,13 @@ class ManageOrgUsersComponent extends React.Component {
       existingGroupsToRemove: [],
     };
   }
+
+  setQueryParameter = () => {
+    const showAdduserDrawer = getQueryParams('adduser');
+    this.setState({
+      isInviteUsersDrawerOpen: showAdduserDrawer ? showAdduserDrawer : false,
+    });
+  };
 
   validateEmail(email) {
     const re =
@@ -219,6 +227,10 @@ class ManageOrgUsersComponent extends React.Component {
       this.setState({ creatingUser: false, file: null, isInviteUsersDrawerOpen: true });
     }
   };
+
+  componentDidMount() {
+    this.setQueryParameter();
+  }
 
   generateInvitationURL = (user) => {
     if (user.account_setup_token) {
