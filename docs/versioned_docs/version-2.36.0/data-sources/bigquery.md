@@ -72,7 +72,7 @@ Query results can be transformed using transformations. Read our transformations
 ## Supported Operations
 
 -  **[Query](#query)**
--  **[List Datasets](#list-datatsets)**
+-  **[List Datasets](#list-datasets)**
 -  **[List Tables](#list-tables)**
 -  **[Insert Record ](#insert-record)**
 -  **[Delete Record ](#delete-record)**
