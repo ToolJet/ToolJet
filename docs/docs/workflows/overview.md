@@ -46,19 +46,15 @@ We can now see a node named *postgresql1* connected to the outgoing flow of the 
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
-        - Click on the input field next to the PostgreSQL logo and rename the node to <i>fetchSalesData</i>. 
-        <br/>    
+        - Click on the input field next to the PostgreSQL logo and rename the node to <i>fetchSalesData</i>.     
         <br/>    
         - There are two dropdowns right below the name field. The first dropdown lets you pick from a list of available nodes. The second dropdown lets you pick between <b>SQL mode</b> and <b>GUI mode</b> to frame your query. 
         <br/>
-        <br/>
         - We will stick to <b>SQL mode</b> for our example.
-        <br/>
         <br/>
         - Below the two dropdowns we have an input field to write our SQL query, we'll enter the below query in the input field to fetch the required data:
         <br/>
-        <b>SELECT</b> <i>ProductID, Month, UnitsSold, TotalRevenue</i> <b>FROM</b> <i>MonthlySales</i>;
-        <br/>    
+        <b>SELECT</b> <i>ProductID, Month, UnitsSold, TotalRevenue</i> <b>FROM</b> <i>MonthlySales</i>;   
         <br/>
         - If you click on the <b>Run</b> button in the top bar, the results field at the bottom will be populated with the result of the query.  
     </p>
@@ -80,11 +76,9 @@ The **JavaScript** node lets you run JavaScript code to transform data and perfo
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
-        - In the JavaScript node, the data retrieved from the <i>fetchSalesData</i> node can be accessed using the property - <b>fetchSalesData.data</b>. 
-        <br/>    
+        - In the JavaScript node, the data retrieved from the <i>fetchSalesData</i> node can be accessed using the property - <b>fetchSalesData.data</b>.    
         <br/>    
         - Additionally, to determine the execution status (success or failure) of the node, refer to the <b>fetchSalesData.status</b> property. 
-        <br/>
         <br/>
         - It is important to use a <b>return</b> statement in the JavaScript node to ensure that the node returns some data after the code executes. 
     </p>    
@@ -150,11 +144,9 @@ Click on the **If condition** node, a dialog box will appear on the right.
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
         - Enter the below logical expression in the input area: <br/>
-        <b>sendSMS.data.errorMessage == null</b>
-        <br/>    
+        <b>sendSMS.data.errorMessage == null</b>  
         <br/>
-        - The If condition node will return true if <b>errorMessage</b> is null. In case an error message is present, it'll return false.
-        <br/>    
+        - The If condition node will return true if <b>errorMessage</b> is null. In case an error message is present, it'll return false.  
         <br/>   
         - We can now configure two outgoing flows, one of which will be executed based on the provided logical expression.  
     </p>    
