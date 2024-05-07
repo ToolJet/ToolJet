@@ -9,34 +9,60 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
-const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }, ref) => {
-  return (
-    <div className="table-column-datepicker-input-container">
-      <input
-        onBlur={(e) => {
-          e.stopPropagation();
-        }}
-        className={cx('table-column-datepicker-input text-truncate', {
-          'pointer-events-none': readOnly,
-        })}
-        value={value}
-        onClick={onClick}
-        ref={dateInputRef}
-        style={styles}
-      />
-      {!readOnly && (
-        <span className="cell-icon-display">
-          <SolidIcon
-            width="16"
-            fill={'var(--borders-strong)'}
-            name="calender"
-            className="table-column-datepicker-input-icon"
-          />
-        </span>
-      )}
-    </div>
-  );
-});
+const TjDatepicker = forwardRef(
+  (
+    {
+      value,
+      onClick,
+      styles,
+      dateInputRef,
+      readOnly,
+      onInputDateChange,
+      setIsDateInputFocussed,
+      setDateInputValue,
+      isDateInputFocussed,
+    },
+    ref
+  ) => {
+    return (
+      <div className="table-column-datepicker-input-container">
+        <input
+          onBlur={(e) => {
+            if (isDateInputFocussed) {
+              onInputDateChange(e.target.value);
+            }
+            setIsDateInputFocussed(false);
+            e.stopPropagation();
+          }}
+          className={cx('table-column-datepicker-input text-truncate', {
+            'pointer-events-none': readOnly,
+          })}
+          value={value}
+          onClick={onClick}
+          ref={dateInputRef}
+          style={styles}
+          onChange={(e) => {
+            setIsDateInputFocussed(true);
+            setDateInputValue(e.target.value);
+          }}
+          onFocus={() => {
+            setDateInputValue(value);
+          }}
+        />
+        {!readOnly && (
+          <span className="cell-icon-display">
+            <SolidIcon
+              width="16"
+              fill={'var(--borders-strong)'}
+              name="calender"
+              className="table-column-datepicker-input-icon"
+            />
+          </span>
+        )}
+      </div>
+    );
+  }
+);
 
 export const getDateTimeFormat = (
   dateDisplayFormat,
@@ -92,6 +118,8 @@ export const Datepicker = function Datepicker({
 }) {
   const [date, setDate] = React.useState(null);
   const [excludedDates, setExcludedDates] = React.useState([]);
+  const [isDateInputFocussed, setIsDateInputFocussed] = React.useState(false);
+  const [dateInputValue, setDateInputValue] = React.useState('');
   const pickerRef = React.useRef();
 
   const handleDateChange = (date) => {
@@ -120,6 +148,11 @@ export const Datepicker = function Datepicker({
     } else {
       onChange(computeDateString(_date));
     }
+  };
+
+  const handleInputDateChange = (value) => {
+    const inputDate = moment(value, parseDateFormat).toDate();
+    handleDateChange(inputDate);
   };
 
   useEffect(() => {
@@ -204,11 +237,22 @@ export const Datepicker = function Datepicker({
           'theme-dark dark-theme': darkMode,
         })}
         selected={date}
-        onChange={(date) => handleDateChange(date)}
-        value={computeDateString(date)}
+        onChange={(date) => {
+          setIsDateInputFocussed(false);
+          handleDateChange(date);
+        }}
+        value={isDateInputFocussed ? dateInputValue : computeDateString(date)}
         dateFormat={dateDisplayFormat}
         customInput={
-          <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
+          <TjDatepicker
+            dateInputRef={dateInputRef}
+            readOnly={readOnly}
+            styles={{ color: cellStyles.color }}
+            onInputDateChange={handleInputDateChange}
+            setIsDateInputFocussed={setIsDateInputFocussed}
+            setDateInputValue={setDateInputValue}
+            isDateInputFocussed={isDateInputFocussed}
+          />
         }
         showTimeSelect={isTimeChecked}
         showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
