@@ -241,6 +241,8 @@ const ColumnForm = ({
     setOnUpdate([]);
   };
 
+  const getForeignKeyColumnDetails = foreignKeys?.filter((item) => item.column_names[0] === selectedColumn?.Header); // this is for getting current foreign key column
+
   const handleEdit = async () => {
     const colDetails = {
       column: {
@@ -255,7 +257,7 @@ const ColumnForm = ({
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
       },
 
-      ...(isForeignKey === false && { foreignKeyIdToDelete: foreignKeys[selectedForeignkeyIndex]?.constraint_name }),
+      ...(isForeignKey === false && { foreignKeyIdToDelete: getForeignKeyColumnDetails[0]?.constraint_name }),
     };
 
     if (
@@ -264,7 +266,7 @@ const ColumnForm = ({
       defaultValue !== selectedColumn?.column_default ||
       nullValue !== isNotNull ||
       uniqueConstraintValue !== isUniqueConstraint ||
-      (foreignKeyDetails[selectedForeignkeyIndex] && !isForeignKey)
+      !isForeignKey
     ) {
       setFetching(true);
       const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
