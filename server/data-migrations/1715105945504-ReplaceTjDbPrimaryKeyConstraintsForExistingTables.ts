@@ -4,10 +4,11 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { createConnection } from 'typeorm';
 import { tooljetDbOrmconfig } from 'ormconfig';
 
-// With the new changes in TJDB for primary key and foriegn key, we are using TypeORM methods to create
-// constraints. Existing primary key constraints that were created does not follow the TypeORM naming
-// strategy and therefore breaks when tried to modify. Therefore we are removing and reacreating them
-// to follow the same naming convension throughout.
+// With the new changes in TJDB for primary and foreign keys, we are using
+// TypeORM methods to create constraints. Existing primary key constraints
+// that were made do not follow the TypeORM naming strategy and therefore
+// break when tried to modify. Therefore we are removing and recreating
+// them to follow the same naming convention throughout
 export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     if (process.env.ENABLE_TOOLJET_DB !== 'true') return;
