@@ -149,12 +149,12 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
 
   const previewContent = !withValidation ? resolvedValue : computeCoersionPreview(resolvedValue, coersionData);
 
-  const cls = error ? 'bg-red-lt' : 'bg-green-lt';
+  const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 
   return (
-    <div class={`d-flex flex-column align-content-between flex-wrap`}>
-      <div class="p-2">
-        <span class={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
+    <div className={`d-flex flex-column align-content-between flex-wrap`}>
+      <div className="p-2">
+        <span className={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
       </div>
 
       <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
@@ -162,7 +162,14 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
   );
 };
 
-const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsidePreview, ...restProps }) => {
+const PreviewContainer = ({
+  children,
+  isFocused,
+  enablePreview,
+  setCursorInsidePreview,
+  isPortalOpen,
+  ...restProps
+}) => {
   const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement } = restProps;
 
   const [errorMessage, setErrorMessage] = useState('');
@@ -178,7 +185,12 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
       bsPrefix="codehinter-preview-popover"
       id="popover-basic"
       className={`${darkMode && 'dark-theme'}`}
-      style={{ width: '250px', maxWidth: '350px', marginRight: 10, zIndex: 1200 }}
+      style={{
+        width: '250px',
+        maxWidth: '350px',
+        marginRight: 2,
+        zIndex: 1400,
+      }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}
     >
@@ -186,6 +198,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
         style={{
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
           padding: isEmpty(validationSchema) && '0px',
+          boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
         }}
       >
         <div>
@@ -200,7 +213,7 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
                 imgWidth={18}
               >
                 <div className="d-flex align-items-center">
-                  <div class="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
+                  <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
               </Alert>
             </div>
@@ -228,9 +241,12 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
                     maxHeight: '100px',
                   }}
                 >
-                  <div class="d-flex flex-column align-content-between flex-wrap p-0">
-                    <div class="p-2">
-                      <span class="badge bg-light-gray font-500 mute-text text-capitalize">
+                  <div className="d-flex flex-column align-content-between flex-wrap p-0">
+                    <div className="p-2">
+                      <span
+                        className={`badge bg-light-gray font-500 mute-text text-capitalize`}
+                        style={{ fontSize: '12px', background: 'var(--interactive-default)' }}
+                      >
                         {validationSchema?.schema?.type}
                       </span>
                     </div>
@@ -283,7 +299,12 @@ const PreviewContainer = ({ children, isFocused, enablePreview, setCursorInsideP
   );
 
   return (
-    <OverlayTrigger trigger="click" show={enablePreview && isFocused} placement={previewPlacement} overlay={popover}>
+    <OverlayTrigger
+      trigger="click"
+      show={enablePreview && isFocused && !isPortalOpen}
+      placement={previewPlacement}
+      overlay={popover}
+    >
       {children}
     </OverlayTrigger>
   );
@@ -336,7 +357,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
     );
   }
   return (
-    <div class="p-2 pt-0">
+    <div className="p-2 pt-0">
       <pre
         className="text-secondary"
         style={{
@@ -353,6 +374,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           fontSize: '12px',
           overflowY: 'auto',
           padding: '0',
+          margin: '0',
         }}
       >
         {prettyPrintedJson?.startsWith('{{') && prettyPrintedJson?.endsWith('{{')

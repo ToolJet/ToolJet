@@ -47,6 +47,8 @@ class WebSocketConnection {
           data: appId,
         })
       );
+
+      this.appId = appId;
     });
 
     // Connection closed

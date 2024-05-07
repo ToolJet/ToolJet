@@ -94,6 +94,7 @@ async function bootstrap() {
           'cdn.skypack.dev',
           'cdn.jsdelivr.net',
           'https://esm.sh',
+          'www.googletagmanager.com',
         ],
         'default-src': [
           'maps.googleapis.com',
@@ -103,6 +104,7 @@ async function bootstrap() {
           '*.sentry.io',
           "'self'",
           'blob:',
+          'www.googletagmanager.com',
         ],
         'connect-src': ['ws://' + domain, "'self'", '*'],
         'frame-ancestors': ['*'],

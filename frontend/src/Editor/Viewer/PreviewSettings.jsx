@@ -34,6 +34,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
               onVersionDelete={noop}
               isEditable={false}
               isViewer
+              darkMode={darkMode}
             />
           )}
         </span>
@@ -101,12 +102,13 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
                     onVersionDelete={noop}
                     isEditable={false}
                     isViewer
+                    darkMode={darkMode}
                   />
                 )}
               </span>
               <div className="d-flex p-2 align-items-center">
                 <span style={{ marginRight: '24px' }}>layout</span>
-                <HeaderActions showToggleLayoutBtn showFullWidth />
+                <HeaderActions showToggleLayoutBtn showFullWidth darkMode={darkMode} />
               </div>
             </Offcanvas.Body>
           )}

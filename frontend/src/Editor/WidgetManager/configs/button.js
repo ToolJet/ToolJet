@@ -138,6 +138,7 @@ export const buttonConfig = {
       borderRadius: { value: '{{4}}' },
       borderColor: { value: '#375FCF' },
       disabledState: { value: '{{false}}' },
+      padding: { value: 'default' },
     },
   },
 };

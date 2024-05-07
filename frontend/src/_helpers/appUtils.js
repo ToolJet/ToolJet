@@ -11,7 +11,7 @@ import {
   isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isArray } from 'lodash';
+import _, { isArray, isEmpty } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -24,7 +24,6 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
-import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
@@ -38,6 +37,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
+import { updateParentNodes } from './utility';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -135,9 +135,11 @@ export function onComponentOptionChanged(component, option_name, value) {
 
       if (shouldUpdateRef) {
         handleLowPriorityWork(() => {
-          useResolveStore
-            .getState()
-            .actions.updateResolvedRefsOfHints([{ hint: path, newRef: componentData[option_name] }]);
+          const toUpdateHints = updateParentNodes(path, componentData[option_name], option_name);
+
+          toUpdateHints.push({ hint: path, newRef: componentData[option_name] });
+
+          useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateHints);
         });
       }
     }
@@ -166,7 +168,8 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-async function executeRunPycode(_ref, code, query, isPreview, mode, currentState) {
+const evaluatePythonCode = async (options) => {
+  const { _ref, query, mode, currentState, isPreview, code, queryResult } = options;
   let pyodide;
   try {
     pyodide = await loadPyodide();
@@ -178,17 +181,13 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
       },
     };
   }
+  const log = (line) => console.log({ line });
+  let result = {};
 
-  function log(line) {
-    console.log({ line });
-  }
+  try {
+    const appStateVars = currentState['variables'] ?? {};
 
-  const evaluatePythonCode = async (pyodide) => {
-    let result = {};
-
-    try {
-      const appStateVars = currentState['variables'] ?? {};
-
+    if (!isEmpty(query) && !isEmpty(_ref)) {
       const actions = generateAppActions(_ref, query.id, mode, isPreview);
 
       for (const key of Object.keys(currentState.queries)) {
@@ -197,134 +196,64 @@ async function executeRunPycode(_ref, code, query, isPreview, mode, currentState
           run: () => actions.runQuery(key),
 
           getData: () => {
-            return getCurrentState().queries[key].data;
+            return currentState.queries[key].data;
           },
 
           getRawData: () => {
-            return getCurrentState().queries[key].rawData;
+            return currentState.queries[key].rawData;
           },
 
           getloadingState: () => {
-            return getCurrentState().queries[key].isLoading;
+            return currentState.queries[key].isLoading;
           },
         };
       }
 
-      await pyodide.globals.set('components', currentState['components']);
-      await pyodide.globals.set('queries', currentState['queries']);
-      await pyodide.globals.set('tj_globals', currentState['globals']);
-      await pyodide.globals.set('client', currentState['client']);
-      await pyodide.globals.set('server', currentState['server']);
-      await pyodide.globals.set('constants', currentState['constants']);
-      await pyodide.globals.set('parameters', currentState['parameters']);
-      await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
-
-      await pyodide.loadPackagesFromImports(code);
-
-      await pyodide.loadPackage('micropip', log);
-
-      let pyresult = await pyodide.runPythonAsync(code);
-      result = await pyresult;
-    } catch (err) {
-      console.error(err);
-
-      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
-      const error = err.message.split(errorType + ': ')[1];
-      const errorMessage = `${errorType} : ${error}`;
-
-      result = {};
-
-      result = {
-        status: 'failed',
-        message: errorMessage,
-        description: {
-          code: query?.options?.code,
-          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
-        },
-      };
     }
 
-    return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
-  };
+    await pyodide.globals.set('components', currentState['components']);
+    await pyodide.globals.set('queries', currentState['queries']);
+    await pyodide.globals.set('tj_globals', currentState['globals']);
+    await pyodide.globals.set('client', currentState['client']);
+    await pyodide.globals.set('server', currentState['server']);
+    await pyodide.globals.set('constants', currentState['constants']);
+    await pyodide.globals.set('page', currentState['page']);
+    await pyodide.globals.set('parameters', currentState['parameters']);
+    await pyodide.globals.set('variables', appStateVars);
+    if (queryResult) await pyodide.globals.set('data', queryResult);
 
-  return { data: await evaluatePythonCode(pyodide, code) };
-}
+    await pyodide.loadPackagesFromImports(code);
+    await pyodide.loadPackage('micropip', log);
 
-async function exceutePycode(payload, code, currentState, query, mode) {
-  let pyodide;
-  try {
-    pyodide = await loadPyodide();
-  } catch (errorMessage) {
-    return {
-      data: {
-        status: 'failed',
-        message: errorMessage,
+    let pyresult = await pyodide.runPythonAsync(code);
+    result = await pyresult;
+  } catch (err) {
+    console.error(err);
+
+    const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+    const error = err.message.split(errorType + ': ')[1];
+    const errorMessage = `${errorType} : ${error}`;
+
+    result = {
+      status: 'failed',
+      message: errorMessage,
+      description: {
+        code: query?.options?.code,
+        error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
       },
     };
   }
 
-  const evaluatePython = async (pyodide) => {
-    let result = {};
-    try {
-      //remove the comments from the code
-      let codeWithoutComments = code.replace(/#.*$/gm, '');
-      codeWithoutComments = codeWithoutComments.replace(/^\s+/g, '');
-      const _code = codeWithoutComments.replace('return ', '');
-      currentState['variables'] = currentState['variables'] ?? {};
-      const _currentState = JSON.stringify(currentState);
+  return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
+};
 
-      let execFunction = await pyodide.runPython(`
-        from pyodide.ffi import to_js
-        import json
-        def exec_code(payload, _currentState):
-          data = json.loads(payload)
-          currentState = json.loads(_currentState)
-          components = currentState['components']
-          queries = currentState['queries']
-          globals = currentState['globals']
-          variables = currentState['variables']
-          client = currentState['client']
-          server = currentState['server']
-          constants = currentState['constants']
-          page = currentState['page']
-          code_to_execute = ${_code}
+async function executeRunPycode(_ref, code, query, isPreview, mode, currentState) {
+  return { data: await evaluatePythonCode({ _ref, code, query, isPreview, mode, currentState }) };
+}
 
-          try:
-            res = to_js(json.dumps(code_to_execute))
-            # convert dictionary to js object
-            return res
-          except Exception as e:
-            print(e)
-            return {"error": str(e)}
-
-        exec_code
-    `);
-      const _data = JSON.stringify(payload);
-      result = execFunction(_data, _currentState);
-      return JSON.parse(result);
-    } catch (err) {
-      console.error(err);
-
-      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
-      const error = err.message.split(errorType + ': ')[1];
-      const errorMessage = `${errorType} : ${error}`;
-      result = {};
-      if (mode === 'edit') toast.error(errorMessage);
-
-      result = {
-        status: 'failed',
-        message: errorMessage,
-        description: {
-          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
-        },
-      };
-    }
-
-    return result;
-  };
-
-  return await evaluatePython(pyodide, code);
+async function exceutePycode(queryResult, code, currentState, query, mode) {
+  return await evaluatePythonCode({ queryResult, code, query, mode, currentState });
 }
 
 export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
@@ -595,7 +524,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex);
+        setTablePageIndex(event.table, event.pageIndex, _ref);
         break;
       }
 
@@ -978,8 +907,6 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', parameters);
-    } else if (query.kind === 'tooljetdb') {
-      queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit', queryState);
     } else {
@@ -1012,12 +939,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
           setPreviewData(finalData);
         }
         let queryStatusCode = data?.status ?? null;
-        const queryStatus =
-          query.kind === 'tooljetdb'
-            ? data.statusText
-            : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
+        const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
 
         switch (true) {
           // Note: Need to move away from statusText -> statusCode
@@ -1159,8 +1081,6 @@ export function runQuery(
         queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode, queryState);
-      } else if (query.kind === 'tooljetdb') {
-        queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
       }
@@ -1173,12 +1093,7 @@ export function runQuery(
           }
 
           let queryStatusCode = data?.status ?? null;
-          const promiseStatus =
-            query.kind === 'tooljetdb'
-              ? data.statusText
-              : query.kind === 'runpy'
-              ? data?.data?.status ?? 'ok'
-              : data.status;
+          const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
           // Note: Need to move away from statusText -> statusCode
           if (
             promiseStatus === 'failed' ||
@@ -1361,7 +1276,7 @@ export function runQuery(
   });
 }
 
-export function setTablePageIndex(tableId, index) {
+export function setTablePageIndex(tableId, index, _ref) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
@@ -1527,6 +1442,7 @@ export const debuggerActions = {
           generalProps.message = value.data.message;
           generalProps.property = key.split('- ')[1];
           error.resolvedProperties = value.resolvedProperties;
+          error.componentId = value.componentId;
           break;
         case 'navToDisablePage':
           generalProps.message = value.data.message;

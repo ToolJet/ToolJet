@@ -41,9 +41,8 @@ const BoxUI = (props) => {
     onOptionsChanged,
     isFromSubContainer,
     childComponents,
+    darkMode,
   } = props;
-
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 

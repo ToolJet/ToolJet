@@ -21,7 +21,7 @@ const initialState = {
   showComments: false,
   hoveredComponent: '',
   selectionInProgress: false,
-  selectedComponents: EMPTY_ARRAY,
+  selectedComponents: [],
   isEditorActive: false,
   selectedComponent: null,
   canUndo: false,
@@ -38,6 +38,7 @@ const initialState = {
   currentPageId: null,
   currentSessionId: uuid(),
   componentsNeedsUpdateOnNextRender: [],
+  appMode: 'auto',
 };
 
 export const useEditorStore = create(
@@ -102,6 +103,7 @@ export const useEditorStore = create(
         });
       },
       setCurrentPageId: (currentPageId) => set({ currentPageId }),
+      setAppMode: (appMode) => set({ appMode }),
     },
   }),
   { name: STORE_NAME }

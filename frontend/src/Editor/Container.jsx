@@ -1,12 +1,12 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo, useContext } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes, EditorConstants } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveWidgetFieldValue, getWorkspaceId } from '@/_helpers/utils';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
@@ -23,9 +23,15 @@ import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
 import toast from 'react-hot-toast';
-import { isOnlyLayoutUpdate, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import GhostWidget from './GhostWidget';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useSampleDataSource } from '@/_stores/dataSourcesStore';
+import './editor.theme.scss';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import BulkIcon from '@/_ui/Icon/BulkIcons';
+import { getSubpath } from '@/_helpers/routes';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
@@ -49,6 +55,9 @@ export const Container = ({
   const appDefinition = useEditorStore.getState().appDefinition;
   // Dont update first time to skip
   // redundant save on app definition load
+  const { createDataQuery } = useDataQueriesActions();
+  const { setPreviewData } = useQueryPanelActions();
+  const sampleDataSource = useSampleDataSource();
   const firstUpdate = useRef(true);
 
   const noOfGrids = 43;
@@ -576,7 +585,7 @@ export const Container = ({
       componentData.parent = parent ? parent : null;
 
       return {
-        ...copyOfBoxes,
+        ...boxesObj,
         [id]: {
           ...copyOfBoxes[id],
           component: componentData,
@@ -780,6 +789,26 @@ export const Container = ({
     [childComponents, selectedComponents, draggedSubContainer]
   );
 
+  const openAddUserWorkspaceSetting = () => {
+    const workspaceId = getWorkspaceId();
+    const subPath = getSubpath();
+    const path = subPath
+      ? `${subPath}/${workspaceId}/workspace-settings?adduser=true`
+      : `/${workspaceId}/workspace-settings?adduser=true`;
+    window.open(path, '_blank');
+  };
+
+  const handleConnectSampleDB = () => {
+    const source = sampleDataSource;
+    const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
+    createDataQuery(source, true, { query });
+    setPreviewData(null);
+  };
+
+  const queryBoxText = sampleDataSource
+    ? 'Connect to your data source or use our sample data source to start playing around!'
+    : 'Connect to a data source to be able to create a query';
+
   return (
     <ContainerWrapper
       showComments={showComments}
@@ -891,20 +920,58 @@ export const Container = ({
       </div>
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
-          <div className="mx-auto w-50 p-5 bg-light no-components-box">
-            <center className="text-muted" data-cy={`empty-editor-text`}>
-              You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
-              our&nbsp;
-              <a
-                className="color-indigo9 "
-                href="https://docs.tooljet.com/docs/#quickstart-guide"
-                target="_blank"
-                rel="noreferrer"
-              >
-                guide
-              </a>{' '}
-              on adding components.
-            </center>
+          <div className="row empty-box-cont">
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
+              </div>
+              <div className={`title-text`} data-cy="empty-editor-text">
+                Drag and drop a component
+              </div>
+              <div className="title-desc">
+                Choose a component from the right side panel or use our pre-built templates to get started quickly!
+              </div>
+            </div>
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <SolidIcon name="datasource" fill="#3E63DD" width="25" />
+              </div>
+              <div className={`title-text`}>Create a Query</div>
+              <div className="title-desc">{queryBoxText}</div>
+              {!!sampleDataSource && (
+                <div className="box-link">
+                  <div className="child">
+                    <a className="link-but" onClick={handleConnectSampleDB}>
+                      Connect to sample data source{' '}
+                    </a>
+                  </div>
+
+                  <div>
+                    <BulkIcon name="arrowright" fill="#3E63DD" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
+              </div>
+              <div className={`title-text `}>Share your application!</div>
+              <div className="title-desc">
+                Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
+              </div>
+              <div className="box-link">
+                <div className="child">
+                  <a className="link-but" onClick={openAddUserWorkspaceSetting}>
+                    Invite collaborators{' '}
+                  </a>
+                </div>
+                <div>
+                  <BulkIcon name="arrowright" fill="#3E63DD" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

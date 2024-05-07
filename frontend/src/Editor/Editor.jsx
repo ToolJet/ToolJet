@@ -30,6 +30,7 @@ import {
   runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
+// eslint-disable-next-line import/no-unresolved
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
@@ -73,10 +74,9 @@ import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
-import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 import { getQueryParams } from '@/_helpers/routes';
@@ -89,13 +89,13 @@ import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import cx from 'classnames';
 
 setAutoFreeze(false);
 enablePatches();
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
-  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -195,6 +195,7 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
+  const { isAppDarkMode, appMode, onAppModeChange } = useAppDarkMode();
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -216,7 +217,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     updateState({ isLoading: true });
-
+    useResolveStore.getState().actions.resetStore();
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = currentSession?.current_user;
 
@@ -262,7 +263,10 @@ const EditorComponent = (props) => {
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
+      useCurrentStateStore.getState().actions.setEditorReady(false);
+      useResolveStore.getState().actions.resetStore();
       prevAppDefinition.current = null;
+      props.setEditorOrViewer('');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -501,8 +505,7 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
-    useResolveStore.getState().actions.updateJSHints();
-
+    props.setEditorOrViewer('editor');
     await runForInitialLoad();
     await fetchOrgEnvironmentVariables();
     await fetchOrgEnvironmentConstants();
@@ -610,12 +613,14 @@ const EditorComponent = (props) => {
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
   const changeDarkMode = (newMode) => {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      globals: {
-        ...getCurrentState().globals,
-        theme: { name: newMode ? 'dark' : 'light' },
-      },
-    });
+    if (appMode === 'auto') {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        globals: {
+          ...getCurrentState().globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      });
+    }
     props.switchDarkMode(newMode);
   };
 
@@ -662,9 +667,11 @@ const EditorComponent = (props) => {
   };
 
   const computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = appDefinition?.globalSettings ?? '#edeff5';
+    const canvasBackgroundColor = appDefinition?.globalSettings?.canvasBackgroundColor
+      ? appDefinition?.globalSettings?.canvasBackgroundColor
+      : '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-      return props.darkMode ? '#2f3c4c' : '#edeff5';
+      return isAppDarkMode ? '#2f3c4c' : '#edeff5';
     }
     return canvasBackgroundColor;
   };
@@ -699,7 +706,7 @@ const EditorComponent = (props) => {
 
   /* Only for the first load of an app. Should not use for any other cases */
   const runForInitialLoad = async () => {
-    const appId = props.id;
+    const appId = props?.id || props?.params?.slug;
     const appData = await appService.fetchApp(appId);
     const {
       name: appName,
@@ -712,6 +719,7 @@ const EditorComponent = (props) => {
       user_id: userId,
       events,
     } = appData;
+    useResolveStore.getState().actions.updateJSHints();
     const startingPageHandle = props.params.pageHandle;
     setWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
@@ -763,6 +771,7 @@ const EditorComponent = (props) => {
     };
 
     setCurrentPageId(homePageId);
+    onAppModeChange(appJson?.globalSettings?.appMode);
 
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
@@ -898,6 +907,11 @@ const EditorComponent = (props) => {
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
 
+    // Component deletion provides an undefined key and escaping it to update the deletion in the database
+    if (!opts?.componentDeleted) {
+      removeUndefined(diffPatches);
+    }
+
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
@@ -936,6 +950,13 @@ const EditorComponent = (props) => {
 
       if (opts?.widgetMovedWithKeyboard === true) {
         updatingEditorStateInProcess = false;
+      }
+
+      if (opts?.addNewPage) {
+        updatedAppDefinition.pages[currentPageId] = {
+          ...updatedAppDefinition.pages[currentPageId],
+          components: {},
+        };
       }
 
       updateEditorState({
@@ -1681,7 +1702,9 @@ const EditorComponent = (props) => {
 
     setCurrentPageId(pageId);
 
-    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === page.id);
+    const currentPageEvents = useAppDataStore
+      .getState()
+      .events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
   };
@@ -1930,7 +1953,11 @@ const EditorComponent = (props) => {
   const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
   if (isLoading && !isEditorReady) {
-    return <TJLoader />;
+    return (
+      <div className={cx('apploader', { 'dark-theme theme-dark': props.darkMode })}>
+        <TJLoader />
+      </div>
+    );
   }
   return (
     <HotkeysProvider initiallyActiveScopes={['editor']}>
@@ -1970,7 +1997,6 @@ const EditorComponent = (props) => {
             appName={appName}
             appId={appId}
             slug={slug}
-            isSocketOpen={isSocketOpen}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -2026,14 +2052,18 @@ const EditorComponent = (props) => {
                 id="main-editor-canvas"
               >
                 <div
-                  className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                  className={cx(
+                    'canvas-container align-items-center',
+                    { 'dark-theme theme-dark': isAppDarkMode },
+                    { 'hide-sidebar': !showLeftSidebar }
+                  )}
                   style={{
                     transform: `scale(${zoomLevel})`,
                     borderLeft:
                       (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                       `px solid ${computeCanvasBackgroundColor()}`,
                     height: computeCanvasContainerHeight(),
-                    background: !props.darkMode ? '#EBEBEF' : '#2E3035',
+                    background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
                   }}
                   onMouseUp={handleCanvasContainerMouseUp}
                   ref={canvasContainerRef}
@@ -2081,13 +2111,13 @@ const EditorComponent = (props) => {
                         </div>
                       )}
                       {defaultComponentStateComputed && (
-                        <>
+                        <div>
                           <Container
                             widthOfCanvas={getCanvasWidth()}
                             socket={socket}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
-                            darkMode={props.darkMode}
+                            darkMode={isAppDarkMode}
                             mode={
                               appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'
                                 ? 'view'
@@ -2108,7 +2138,7 @@ const EditorComponent = (props) => {
                             canvasWidth={getCanvasWidth()}
                             onDragging={(isDragging) => setIsDragging(isDragging)}
                           />
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -2131,7 +2161,7 @@ const EditorComponent = (props) => {
                 />
                 <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>
-              <div className="editor-sidebar">
+              <div className={cx('editor-sidebar', { 'dark-theme theme-dark': props.darkMode })}>
                 <EditorKeyHooks
                   moveComponents={moveComponents}
                   cloneComponents={cloningComponents}
@@ -2166,7 +2196,9 @@ const EditorComponent = (props) => {
                 />
               </div>
               {config.COMMENT_FEATURE_ENABLE && showComments && (
-                <CommentNotifications socket={socket} pageId={currentPageId} />
+                <div className={cx({ 'dark-theme theme-dark': props.darkMode })}>
+                  <CommentNotifications socket={socket} pageId={currentPageId} />
+                </div>
               )}
             </div>
           </DndProvider>
