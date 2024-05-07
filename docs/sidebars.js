@@ -75,6 +75,34 @@ const sidebars = {
         'app-builder/overview',
         {
           'type': 'category',
+          'label': 'App-Builder UI',
+          'items': [
+           'app-builder/components-library',
+           'app-builder/query-panel',
+           'tutorial/pages',
+           'app-builder/topbar',
+           'app-builder/left-sidebar',
+           'app-builder/canvas',
+           'app-builder/preview',
+           'app-builder/share',
+           'app-builder/customstyles',
+           'app-builder/importing-exporting-applications',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Examples',
+          'items': [
+            'app-builder/examples/create-ui',
+            'app-builder/examples/create-queries',
+            'app-builder/examples/using-code',
+            'app-builder/examples/accessing-values',
+            'app-builder/examples/variables',
+            //'app-builder/examples/sharing-apps',
+          ],
+        },
+        {
+          'type': 'category',
           'label': 'Components Catalog',
           'items': [
             'widgets/overview',
@@ -86,7 +114,14 @@ const sidebars = {
                 'widgets/button',
                 'widgets/button-group',
                 'widgets/calendar',
-                'widgets/chart',
+                {
+                  'type': 'category',
+                  'label': 'Chart',
+                  'items': [
+                    'widgets/chart/chart-properties',
+                    'widgets/chart/chart-examples'
+                  ]
+                },
                 'widgets/checkbox',
                 'widgets/circular-progress-bar',
                 'widgets/code-editor',
@@ -121,7 +156,15 @@ const sidebars = {
                 'widgets/statistics',
                 'widgets/steps',
                 'widgets/svg-image',
-                'widgets/table',
+                {
+                  'type': 'category',
+                  'label': 'Table',
+                  'items': [
+                    'widgets/table/table-properties',
+                    'widgets/table/table-columns',
+                    'widgets/table/table-csa-and-variables',
+                  ]
+                },
                 'widgets/tabs',
                 'widgets/tags',
                 'widgets/text-input',
@@ -169,16 +212,6 @@ const sidebars = {
             },
           ],
         },
-        'app-builder/components-library',
-        'app-builder/query-panel',
-        'tutorial/pages',
-        'app-builder/topbar',
-        'app-builder/left-sidebar',
-        'app-builder/canvas',
-        'app-builder/preview',
-        'app-builder/share',
-        'app-builder/customstyles',
-        'app-builder/importing-exporting-applications',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -219,6 +252,7 @@ const sidebars = {
       'label': 'Data Sources',
       'items': [
         'data-sources/overview',
+        'data-sources/sample-data-sources',
         {
           'type': 'category',
           'label': 'Datasources library',
@@ -274,7 +308,15 @@ const sidebars = {
         'tutorial/transformations',
       ],
     },
-    'tooljet-database',
+    {
+      'type': 'category',
+      'label': 'ToolJet Database',
+      'items': [
+        'tooljet-db/tooljet-database',
+        'tooljet-db/database-editor',
+        'tooljet-db/querying-tooljet-db',
+      ]
+    },
     {
       'type': 'category',
       'label': 'Org Management',

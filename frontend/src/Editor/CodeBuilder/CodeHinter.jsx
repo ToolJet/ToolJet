@@ -43,6 +43,8 @@ import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
 import { Visibility } from './Elements/Visibility';
 import { NumberInput } from './Elements/NumberInput';
+import TableRowHeightInput from './Elements/TableRowHeightInput';
+
 import { validateProperty } from '../component-properties-validation';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'TextComponentTextInput'];
@@ -63,6 +65,7 @@ const AllElements = {
   Icon,
   Visibility,
   NumberInput,
+  TableRowHeightInput,
 };
 
 export function CodeHinter({
@@ -407,7 +410,15 @@ export function CodeHinter({
 
   const fxBtn = () => (
     <div className="col-auto pt-0 fx-common">
-      {!['Type', 'selectRowOnCellEdit', 'Select row on cell edit', ' ', 'Padding', 'Width'].includes(paramLabel) && ( //add some key if these extends
+      {![
+        'Type',
+        'selectRowOnCellEdit',
+        'Select row on cell edit',
+        ' ',
+        'Padding',
+        'Width',
+        'Make all columns editable',
+      ].includes(paramLabel) && ( //add some key if these extends
         <FxButton
           active={codeShow}
           onPress={() => {

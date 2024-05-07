@@ -5,7 +5,7 @@ title: Tabs
 
 # Tabs
 
-A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a [container](/docs/widgets/container/) that can have different widgets placed inside it.
+A **Tabs** widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a [container](/docs/widgets/container/) that can have different widgets placed inside it.
 
 :::caution Restricted components
 In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Tabs component using drag-and-drop functionality.
@@ -21,7 +21,7 @@ If the builder attempts to add any of the aforementioned components inside the T
 
 ### Tabs
 
-This property lets you add and remove containers from the tabs widget. Each container in the tab has its unique `id` , `title` and `disabled` for disabling individual tabs . This field expects an array of objects.
+This property lets you add and remove containers from the Tabs widget. Each container in the tab has its unique `id` , `title` and `disabled` for disabling individual tabs . This field expects an array of objects.
 
 ```js
 {{[
@@ -79,7 +79,7 @@ Following actions of Tabs component can be controlled using the component specif
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| setTab | Set the current tab of the tabs component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.tabs1.setTab(1)` |
+| setTab | Set the current tab of the Tabs component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.tabs1.setTab(1)` |
 
 </div>
 
@@ -89,7 +89,7 @@ Following actions of Tabs component can be controlled using the component specif
 
 | <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| currentTab | This variable holds the id of the current tab selected on the tabs component. | Access the value dynamically using JS: `{{components.tabs1.currentTab}}`|
+| currentTab | This variable holds the id of the current tab selected on the Tabs component. | Access the value dynamically using JS: `{{components.tabs1.currentTab}}`|
 
 </div>
 
