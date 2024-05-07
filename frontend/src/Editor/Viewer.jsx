@@ -316,6 +316,11 @@ class ViewerComponent extends React.Component {
     await appService
       .fetchAppByVersion(appId, versionId)
       .then((data) => {
+        setWindowTitle({
+          page: pageTitles.VIEWER,
+          appName: data.name,
+          preview: true,
+        });
         this.setStateForApp(data);
         this.setStateForContainer(data, versionId);
       })

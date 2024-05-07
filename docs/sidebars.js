@@ -297,7 +297,15 @@ const sidebars = {
         'tutorial/transformations',
       ],
     },
-    'tooljet-database',
+    {
+      'type': 'category',
+      'label': 'ToolJet Database',
+      'items': [
+        'tooljet-db/tooljet-database',
+        'tooljet-db/database-editor',
+        'tooljet-db/querying-tooljet-db',
+      ]
+    },
     {
       'type': 'category',
       'label': 'Org Management',
