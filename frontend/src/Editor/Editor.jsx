@@ -88,6 +88,7 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex } from './editorConstants';
 import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 
 setAutoFreeze(false);
 enablePatches();
@@ -491,7 +492,9 @@ const EditorComponent = (props) => {
   const initEventListeners = () => {
     socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
-      if (data === 'versionReleased') fetchApp();
+      if (data === 'versionReleased') {
+        //TODO update the released version id
+      }
     });
   };
 
@@ -500,7 +503,7 @@ const EditorComponent = (props) => {
 
     useResolveStore.getState().actions.updateJSHints();
 
-    await fetchApp(props.params.pageHandle, true);
+    await runForInitialLoad();
     await fetchOrgEnvironmentVariables();
     await fetchOrgEnvironmentConstants();
     initComponentVersioning();
@@ -532,10 +535,6 @@ const EditorComponent = (props) => {
   const fetchGlobalDataSources = () => {
     const { current_organization_id: organizationId } = currentUser;
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
-  };
-
-  const onVersionDelete = () => {
-    fetchApp(props.params.pageHandle);
   };
 
   const toggleAppMaintenance = () => {
@@ -698,28 +697,56 @@ const EditorComponent = (props) => {
     });
   };
 
-  const callBack = async (data, startingPageHandle, versionSwitched = false) => {
-    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
-    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
-    if (!releasedVersionId || !versionSwitched) {
-      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
-    }
-
-    const currentOrgId = data?.organization_id || data?.organizationId;
+  /* Only for the first load of an app. Should not use for any other cases */
+  const runForInitialLoad = async () => {
+    const appId = props.id;
+    const appData = await appService.fetchApp(appId);
+    const {
+      name: appName,
+      current_version_id,
+      editing_version,
+      organization_id: organizationId,
+      slug,
+      is_maintenance_on: isMaintenanceOn,
+      is_public: isPublic,
+      user_id: userId,
+      events,
+    } = appData;
+    const startingPageHandle = props.params.pageHandle;
+    setWindowTitle({ page: pageTitles.EDITOR, appName });
+    useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
+    current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
 
     updateState({
-      slug: data.slug,
-      isMaintenanceOn: data?.is_maintenance_on,
-      organizationId: currentOrgId,
-      isPublic: data?.is_public || data?.isPublic,
-      appName: data?.name,
-      userId: data?.user_id,
-      appId: data?.id,
-      events: data.events,
-      currentVersionId: data?.editing_version?.id,
-      app: data,
+      slug,
+      isMaintenanceOn,
+      organizationId,
+      isPublic,
+      appName,
+      userId,
+      appId,
+      events,
+      currentVersionId: editing_version?.id,
+      app: appData,
     });
 
+    await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
+      handleLowPriorityWork(async () => {
+        await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+        await fetchDataSources(editing_version?.id);
+        commonLowPriorityActions(events, { homePageId });
+      });
+    });
+  };
+
+  const commonLowPriorityActions = async (events, { homePageId }) => {
+    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+    const editorRef = getEditorRef();
+    await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+  };
+
+  const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -756,37 +783,15 @@ const EditorComponent = (props) => {
       });
     }
 
-    Promise.all([
-      await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id),
-      await fetchDataSources(data.editing_version?.id),
-      await fetchDataQueries(data.editing_version?.id, true, true),
-    ])
+    Promise.all([await fetchDataQueries(data.editing_version?.id, true, true)])
       .then(async () => {
         await onEditorLoad(appJson, homePageId, versionSwitched);
         updateEntityReferences(appJson, homePageId);
       })
       .finally(async () => {
-        const currentPageEvents = data.events.filter(
-          (event) => event.target === 'page' && event.sourceId === homePageId
-        );
-
-        const editorRef = getEditorRef();
-
-        handleLowPriorityWork(async () => {
-          await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-          await handleEvent('onPageLoad', currentPageEvents, {}, true);
-        });
+        const funcParams = { homePageId };
+        typeof onComplete === 'function' && (await onComplete(funcParams));
       });
-  };
-
-  const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id || props?.params?.slug;
-
-    if (!onMount) {
-      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
-    } else {
-      callBack(app, startingPageHandle);
-    }
   };
 
   const setAppDefinitionFromVersion = (appData) => {
@@ -802,11 +807,24 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
+
       useCurrentStateStore.getState().actions.setCurrentState({});
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
 
-      callBack(appData, null, true);
+      const { editing_version } = appData;
+      useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
+      updateState({
+        events,
+        currentVersionId: editing_version?.id,
+        app: appData,
+      });
+      processNewAppDefinition(appData, null, true, ({ homePageId }) => {
+        handleLowPriorityWork(async () => {
+          await fetchDataSources(editing_version?.id);
+          commonLowPriorityActions(events, homePageId);
+        });
+      });
       initComponentVersioning();
     }
   };
@@ -1912,29 +1930,7 @@ const EditorComponent = (props) => {
   const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
   if (isLoading && !isEditorReady) {
-    return (
-      <div className="apploader">
-        <div className="col col-* editor-center-wrapper">
-          <div className="editor-center">
-            <div className="canvas">
-              <div className="mt-5 d-flex flex-column">
-                <div className="mb-1">
-                  <Skeleton width={'150px'} height={15} className="skeleton" />
-                </div>
-                {Array.from(Array(4)).map((_item, index) => (
-                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
-                ))}
-                <div className="align-self-end">
-                  <Skeleton width={'100px'} className="skeleton" />
-                </div>
-                <Skeleton className="skeleton mt-4" />
-                <Skeleton height={'150px'} className="skeleton mt-2" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <TJLoader />;
   }
   return (
     <HotkeysProvider initiallyActiveScopes={['editor']}>
@@ -1970,7 +1966,6 @@ const EditorComponent = (props) => {
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
             onVersionRelease={onVersionRelease}
             saveEditingVersion={saveEditingVersion}
-            onVersionDelete={onVersionDelete}
             isMaintenanceOn={isMaintenanceOn}
             appName={appName}
             appId={appId}

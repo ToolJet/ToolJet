@@ -1,6 +1,6 @@
 import create from 'zustand';
 import { zustandDevTools } from './utils';
-import { appEnvironmentService } from '../_services/app_environment.service';
+import { appEnvironmentService, appVersionService } from '@/_services';
 
 const initialState = {
   selectedVersion: null,
@@ -11,7 +11,6 @@ const initialState = {
   shouldRenderPromoteButton: false,
   shouldRenderReleaseButton: false,
   initializedEnvironmentDropdown: false,
-  initializedVersionsDropdown: false,
   environmentsLazyLoaded: false,
   appVersionsLazyLoaded: false,
 };
@@ -31,7 +30,7 @@ export const useEnvironmentsAndVersionsStore = create(
               appVersionEnvironment: response.appVersionEnvironment,
               shouldRenderPromoteButton: response.shouldRenderPromoteButton,
               shouldRenderReleaseButton: response.shouldRenderReleaseButton,
-              environments: [response.editorEnvironment],
+              environments: response.environments,
               versionsPromotedToEnvironment: [response.editorVersion],
             }));
           } catch (error) {
@@ -49,6 +48,95 @@ export const useEnvironmentsAndVersionsStore = create(
             }));
           } catch (error) {
             console.error('Error while getting the versions', error);
+          }
+        },
+        setSelectedVersion: (selectedVersion) => set({ selectedVersion }),
+        setEnvironmentAndVersionsInitStatus: (state) => set({ completedEnvironmentAndVersionsInit: state }),
+        createNewVersionAction: async (appId, versionName, selectedVersionId, onSuccess, onFailure) => {
+          try {
+            const newVersion = await appVersionService.create(appId, versionName, selectedVersionId);
+            const editorVersion = {
+              id: newVersion.id,
+              name: newVersion.name,
+              current_environment_id: newVersion.current_environment_id,
+            };
+            set((state) => ({
+              ...state,
+              selectedVersion: editorVersion,
+              versionsPromotedToEnvironment: [editorVersion],
+              appVersionsLazyLoaded: false,
+            }));
+            onSuccess(newVersion);
+          } catch (error) {
+            onFailure(error);
+          }
+        },
+        updateVersionNameAction: async (appId, versionId, versionName, onSuccess, onFailure) => {
+          try {
+            await appVersionService.save(appId, versionId, { name: versionName });
+            const selectedVersion = get().selectedVersion;
+            selectedVersion.name = versionName;
+            set((state) => ({
+              ...state,
+              selectedVersion,
+              versionsPromotedToEnvironment: [selectedVersion],
+              appVersionsLazyLoaded: false,
+            }));
+            onSuccess();
+          } catch (error) {
+            onFailure(error);
+          }
+        },
+        deleteVersionAction: async (appId, versionId, onSuccess, onFailure) => {
+          try {
+            await appVersionService.del(appId, versionId);
+            const isCurrentVersion = get().selectedVersion.id === versionId;
+            let optionsToUpdate = {
+              appVersionsLazyLoaded: false,
+            };
+            if (isCurrentVersion) {
+              /* User is deleted the editor version (currently selected).  */
+              const response = await appEnvironmentService.postVersionDeleteAction({
+                appId,
+                editorVersionId: versionId,
+                deletedVersionId: versionId,
+              });
+              const selectedVersion = response.editorVersion;
+              optionsToUpdate = {
+                ...optionsToUpdate,
+                selectedVersion,
+                selectedEnvironment: response.editorEnvironment,
+                appVersionEnvironment: response.appVersionEnvironment,
+                shouldRenderPromoteButton: response.shouldRenderPromoteButton,
+                shouldRenderReleaseButton: response.shouldRenderReleaseButton,
+              };
+            }
+            set((state) => ({
+              ...state,
+              ...optionsToUpdate,
+            }));
+            let newVersionDef;
+            const newEditorVersion = optionsToUpdate.selectedVersion;
+            if (newEditorVersion) {
+              newVersionDef = await appVersionService.getAppVersionData(appId, newEditorVersion.id);
+            }
+            onSuccess(newVersionDef);
+          } catch (error) {
+            onFailure(error);
+          }
+        },
+        changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure) => {
+          try {
+            const data = await appVersionService.getAppVersionData(appId, versionId);
+            const selectedVersion = {
+              id: data.editing_version.id,
+              name: data.editing_version.name,
+              current_environment_id: data.editing_version.currentEnvironmentId,
+            };
+            set((state) => ({ ...state, selectedVersion }));
+            onSuccess(data);
+          } catch (error) {
+            onFailure(error);
           }
         },
       },

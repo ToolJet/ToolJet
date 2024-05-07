@@ -85,16 +85,6 @@ const isThisExistedRoute = () => {
   return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
 };
 
-const fetchOrganizations = (current_organization_id, callback) => {
-  organizationService.getOrganizations().then((response) => {
-    const current_organization = response.organizations?.find((org) => org.id === current_organization_id);
-    callback({
-      organizations: response.organizations,
-      current_organization,
-    });
-  });
-};
-
 const isThisWorkspaceLoginPage = (justLoginPage = false) => {
   const subpath = getSubpath();
   const pathname = location.pathname.replace(subpath, '');
@@ -102,7 +92,7 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
   return (justLoginPage && pathnames[0] === 'login') || (pathnames.length === 2 && pathnames[0] === 'login');
 };
 
-const updateCurrentSession = (newSession) => {
+export const updateCurrentSession = (newSession) => {
   const currentSession = authenticationService.currentSessionValue;
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };
@@ -125,16 +115,12 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
     .authorize()
     .then((data) => {
       /* CASE-1 */
-      const { current_organization_id } = data;
-      fetchOrganizations(current_organization_id, ({ organizations, current_organization }) => {
-        const { name: current_organization_name } = current_organization;
-        /* add the user details like permission and user previlliage details to the subject */
-        updateCurrentSession({
-          ...data,
-          current_organization_name,
-          organizations,
-          load_app: true,
-        });
+      const { current_organization_name } = data;
+      /* add the user details like permission and user previlliage details to the subject */
+      updateCurrentSession({
+        ...data,
+        current_organization_name,
+        load_app: true,
       });
     })
     .catch((error) => {
@@ -148,7 +134,7 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
         /* get current session's workspace id */
         authenticationService
           .validateSession()
-          .then(({ current_organization_id }) => {
+          .then(({ current_organization_id, ...restSessionData }) => {
             /* change current organization id to valid one [current logged in organization] */
             updateCurrentSession({
               current_organization_id,
@@ -160,20 +146,17 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
                 authorizeUserAndHandleErrors(unauthorized_organization_id);
               })
               .catch(() => {
-                /* CASE-3 */
-                fetchOrganizations(current_organization_id, ({ current_organization }) => {
-                  const { name: current_organization_name, slug: current_organization_slug } = current_organization;
-                  updateCurrentSession({
-                    current_organization_name,
-                    current_organization_slug,
-                    load_app: true,
-                  });
-
-                  if (!isThisWorkspaceLoginPage())
-                    return (window.location = `${
-                      subpath ?? ''
-                    }/login/${unauthorized_organization_slug}?redirectTo=${getRedirectToWithParams()}`);
+                const { current_organization_name, current_organization_slug } = restSessionData;
+                updateCurrentSession({
+                  current_organization_name,
+                  current_organization_slug,
+                  load_app: true,
                 });
+
+                if (!isThisWorkspaceLoginPage())
+                  return (window.location = `${
+                    subpath ?? ''
+                  }/login/${unauthorized_organization_slug}?redirectTo=${getRedirectToWithParams()}`);
               });
           })
           /* CASE-3 */

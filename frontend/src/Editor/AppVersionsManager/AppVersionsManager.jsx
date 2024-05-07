@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
-import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -15,53 +14,8 @@ const appVersionLoadingStatus = Object.freeze({
   error: 'error',
 });
 
-export const AppVersionsManager = function ({
-  appId,
-  setAppDefinitionFromVersion,
-  onVersionDelete,
-  isEditable = true,
-  isViewer,
-}) {
-  const { initializedEnvironmentDropdown, versionsPromotedToEnvironment, lazyLoadAppVersions, appVersionsLazyLoaded } =
-    useEnvironmentsAndVersionsStore(
-      (state) => ({
-        appVersionsLazyLoaded: state.appVersionsLazyLoaded,
-        initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
-        versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
-        lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
-      }),
-      shallow
-    );
-
-  if (initializedEnvironmentDropdown) {
-    return (
-      <RenderComponent
-        appId={appId}
-        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-        onVersionDelete={onVersionDelete}
-        isEditable={isEditable}
-        isViewer={isViewer}
-        versionsPromotedToEnvironment={versionsPromotedToEnvironment}
-        lazyLoadAppVersions={lazyLoadAppVersions}
-        appVersionsLazyLoaded={appVersionsLazyLoaded}
-      />
-    );
-  } else {
-    return <></>;
-  }
-};
-
-const RenderComponent = ({
-  appId,
-  isEditable,
-  isViewer,
-  setAppDefinitionFromVersion,
-  onVersionDelete,
-  versionsPromotedToEnvironment,
-  lazyLoadAppVersions,
-  appVersionsLazyLoaded,
-}) => {
-  const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loaded);
+export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion, isEditable = true, isViewer }) {
+  const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
   const [deleteVersion, setDeleteVersion] = useState({
     versionId: '',
     versionName: '',
@@ -85,6 +39,40 @@ const RenderComponent = ({
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  const {
+    initializedEnvironmentDropdown,
+    versionsPromotedToEnvironment,
+    lazyLoadAppVersions,
+    appVersionsLazyLoaded,
+    setEnvironmentAndVersionsInitStatus,
+    changeEditorVersionAction,
+    selectedVersion,
+    deleteVersionAction,
+  } = useEnvironmentsAndVersionsStore(
+    (state) => ({
+      appVersionsLazyLoaded: state.appVersionsLazyLoaded,
+      initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
+      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+      selectedVersion: state.selectedVersion,
+      lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
+      setEnvironmentAndVersionsInitStatus: state.actions.setEnvironmentAndVersionsInitStatus,
+      deleteVersionAction: state.actions.deleteVersionAction,
+      changeEditorVersionAction: state.actions.changeEditorVersionAction,
+    }),
+    shallow
+  );
+
+  useEffect(() => {
+    setEnvironmentAndVersionsInitStatus(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (initializedEnvironmentDropdown) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
+  }, [initializedEnvironmentDropdown]);
+
   const selectVersion = (id) => {
     const currentVersionId = useAppDataStore.getState().currentVersionId;
 
@@ -96,15 +84,18 @@ const RenderComponent = ({
       });
     }
 
-    return appVersionService
-      .getAppVersionData(appId, id)
-      .then((data) => {
-        const isCurrentVersionReleased = data.currentVersionId ? true : false;
-        setAppDefinitionFromVersion(data, isCurrentVersionReleased);
-      })
-      .catch((error) => {
+    changeEditorVersionAction(
+      appId,
+      id,
+      (newDeff) => {
+        setAppDefinitionFromVersion(newDeff);
+      },
+      (error) => {
         toast.error(error);
-      });
+      }
+    );
+
+    return;
   };
 
   const resetDeleteModal = () => {
@@ -117,25 +108,26 @@ const RenderComponent = ({
 
   const deleteAppVersion = (versionId, versionName) => {
     const deleteingToastId = toast.loading('Deleting version...');
-    appVersionService
-      .del(appId, versionId)
-      .then(() => {
+    deleteVersionAction(
+      appId,
+      versionId,
+      (newVersionDef) => {
+        if (newVersionDef) {
+          /* User deleted new version */
+          setAppDefinitionFromVersion(newVersionDef);
+        }
         toast.dismiss(deleteingToastId);
         toast.success(`Version - ${versionName} Deleted`);
         resetDeleteModal();
-        setGetAppVersionStatus(appVersionLoadingStatus.loading);
-      })
-      .catch((error) => {
+        setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+      },
+      (error) => {
         toast.dismiss(deleteingToastId);
         toast.error(error?.error ?? 'Oops, something went wrong');
         setGetAppVersionStatus(appVersionLoadingStatus.error);
         resetDeleteModal();
-      })
-      .finally(() => {
-        appVersionService.getAll(appId, true).then((data) => {
-          onVersionDelete();
-        });
-      });
+      }
+    );
   };
 
   const options = versionsPromotedToEnvironment.map((appVersion) => ({
@@ -197,10 +189,28 @@ const RenderComponent = ({
     resetDeleteModal,
   };
 
+  /* Force close is not working with usual blur function of react-select */
+  const clickedOutsideRef = useRef(null);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (clickedOutsideRef.current && !clickedOutsideRef.current.contains(event.target)) {
+        if (!forceMenuOpen) {
+          setForceMenuOpen(false);
+        }
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clickedOutsideRef]);
+
   return (
     <div
       className="d-flex align-items-center p-0"
       style={{ margin: isViewer && currentLayout === 'mobile' ? '0px' : '0 24px' }}
+      ref={clickedOutsideRef}
     >
       <div
         className={cx('d-flex version-manager-container p-0', {
@@ -216,7 +226,7 @@ const RenderComponent = ({
           <CustomSelect
             isLoading={appVersionStatus === 'loading'}
             options={options}
-            value={editingVersion?.id}
+            value={selectedVersion?.id}
             onChange={(id) => selectVersion(id)}
             {...customSelectProps}
             className={` ${darkMode && 'dark-theme'}`}
