@@ -53,6 +53,7 @@ export const Container = ({
 }) => {
   const currentPageId = useEditorStore.getState().currentPageId;
   const appDefinition = useEditorStore.getState().appDefinition;
+  const [canvasWidth, setCanvasWidth] = useState(widthOfCanvas);
   // Dont update first time to skip
   // redundant save on app definition load
   const { createDataQuery } = useDataQueriesActions();
@@ -80,9 +81,11 @@ export const Container = ({
     shallow
   );
 
-  const canvasWidth = widthOfCanvas
-    ? widthOfCanvas
-    : document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
+  useEffect(() => {
+    const _canvasWidth = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
+    setCanvasWidth(_canvasWidth);
+  }, [currentLayout]);
+
   const gridWidth = canvasWidth / noOfGrids;
 
   const { appId } = useAppInfo();
