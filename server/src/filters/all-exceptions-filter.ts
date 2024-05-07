@@ -55,7 +55,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message: errorResponse.message,
       });
     } catch (error) {
-      this.logger.error('Error while processing uncaught exception', error);
+      this.logger.error(error.stack);
+      this.logger.error('Error while processing uncaught exception', error.stack);
     }
   }
 

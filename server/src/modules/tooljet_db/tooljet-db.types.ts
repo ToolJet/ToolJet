@@ -26,23 +26,19 @@ export type TooljetDbActions =
   | 'view_tables'
   | 'proxy_postgrest';
 
-interface ErrorCodeMapping {
-  [PostgresErrorCode.NotNullViolation]: Partial<Record<TooljetDbActions | 'default', string>>;
-  [PostgresErrorCode.UniqueViolation]: Partial<Record<TooljetDbActions | 'default', string>>;
-  [PostgresErrorCode.UndefinedTable]: Partial<Record<TooljetDbActions | 'default', string>>;
-}
+type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
+type ErrorCodeMapping = {
+  [key in PostgresErrorCode]: ErrorCodeMappingItem;
+};
 
-const errorCodeMapping: ErrorCodeMapping = {
+const errorCodeMapping: Partial<ErrorCodeMapping> = {
   [PostgresErrorCode.NotNullViolation]: {
-    edit_column: 'Cannot add NOT NULL constraint as this column contains NULL values',
+    edit_column: 'Cannot add NOT NULL constraint as this column contains null values',
     proxy_postgrest: 'Not null constraint violated for "{{table}}"."{{column}}"',
-    default: 'Cannot add NOT NULL constraint',
   },
   [PostgresErrorCode.UniqueViolation]: {
-    edit_table: 'Cannot add UNIQUE constraint as column contains duplicate values',
     edit_column: 'Cannot add UNIQUE constraint as this column contains duplicate values',
     proxy_postgrest: 'Unique constraint violated as {{value}} already exists in "{{table}}"."{{column}}"',
-    default: 'Cannot add UNIQUE Key constraint',
   },
   [PostgresErrorCode.UndefinedTable]: {
     default: 'Could not find the table "{{table}}".',
@@ -113,22 +109,31 @@ export class TooljetDatabaseError extends QueryFailedError {
       }, errorMessage);
     };
 
+    // Handle custom errors that are thrown from PostgREST with
+    // specific parsers for the error code
     if (this.queryError.driverError instanceof PostgrestError) {
-      const parser = this.postgrestDetailsParser();
-      modifiedErrorMessage = replaceTemplateStrings(modifiedErrorMessage, parser);
+      const parsedTableInfo = this.postgrestDetailsParser();
+      if (parsedTableInfo) {
+        modifiedErrorMessage = replaceTemplateStrings(modifiedErrorMessage, parsedTableInfo);
+      }
     }
 
-    // TODO: Need to handle errors wherein multiple tables are involved
+    // TODO: Need to handle errors wherein multiple tables are involved when need arises
+    //
+    // Based on the internalTables in context replace the template placeholders
+    // that are used in the error message
     if (this.context.internalTables.length === 1) {
       const replacements = { table: this.context.internalTables[0].tableName };
       modifiedErrorMessage = replaceTemplateStrings(modifiedErrorMessage, replacements);
     }
 
+    // Based on the internalTables in context replace table UUIDs in
+    // the error message
     modifiedErrorMessage = replaceTableUUIDs(modifiedErrorMessage, internalTableEntries);
     return modifiedErrorMessage;
   }
 
-  postgrestDetailsParser(): Record<string, string> {
+  postgrestDetailsParser(): Record<string, string> | null {
     const parsers = {
       [PostgresErrorCode.NotNullViolation]: () => {
         const errorMessage = this.queryError.driverError.message;
@@ -145,6 +150,6 @@ export class TooljetDatabaseError extends QueryFailedError {
         return { table, column: matches[1], value: matches[2] };
       },
     };
-    return parsers[this.code]?.();
+    return parsers[this.code]?.() || null;
   }
 }

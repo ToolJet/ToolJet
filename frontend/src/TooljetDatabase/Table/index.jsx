@@ -703,7 +703,7 @@ const Table = ({ collapseSidebar }) => {
       errorState: false,
     }));
     cellValue === null ? setNullValue(true) : setNullValue(false);
-    handleProgressAnimation('column edited successfully', true);
+    handleProgressAnimation('Column edited successfully', true);
     document.getElementById('edit-input-blur').blur();
   };
 
