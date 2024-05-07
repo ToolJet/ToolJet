@@ -1,31 +1,35 @@
 ---
 id: system-requirements
-title: System Requirements
+title: System Requirements for Self-Hosting
 ---
 
-This page details the system requirements for setting up and running our software, including both Docker local setups and server deployments. Tailor your setup to match these requirements for optimal performance.
+This document covers all the system requirements for self-hosting ToolJet. 
 
-## Docker Local Setup Requirements
+## Operating Systems
 
-#### Windows
-For users setting up Docker locally on a Windows machine:
-- **RAM**: Minimum of 16GB RAM is required.
+### Microsoft Windows
 
-#### Mac
-For Docker setups on Mac systems:
-- **RAM**: It is recommended to have 16GB RAM.
+ToolJet is developed for Linux-based operating systems. Please consider using a virtual machine or Windows Subsystem for Linux 2 (WSL2) to run ToolJet on windows.
 
-## Server Requirements
+### Supported Linux distribution
 
-The basic requirements for server setups are as follows:
-- **RAM**: Minimum of 2GB.
-- **CPU**: At least 1 CPU core.
+[ToolJet images](https://hub.docker.com/r/tooljet/tooljet/tags) can run on any Linux machine with x86 architecture (64-bit). Ensure that your system meets the minimum requirements specified below before installing ToolJet.
 
-Adjustments can be made based on specific needs and the expected load on the server.
 
-## Bare-Metal Setup
+## VM deployments:
 
-For those opting for a **[bare-metal setup](/docs/contributing-guide/setup/docker)** instead of Docker:
-- **RAM**: 8GB RAM is sufficient for a bare-metal setup.
+- **Operating System:** Ubuntu 22.04 or later
+- **Processor Architecture:** x86 (arm64 is not supported)
+- **RAM:** 2GB
+- **CPU:** 1 vCPU
+- **Storage:** At least 8GiB, but can increase according to your requirements.
 
-Please ensure your system meets these requirements before proceeding with the installation. Adjustments to the server specifications should be made considering the specific demands of your deployment scenario.
+## Orchestrated Deployments:
+
+- When employing container orchestration frameworks like Kubernetes, it's imperative to ensure that your cluster hosts at least one node equipped with the above specifications for seamlessly executing ToolJet deployments.
+
+Note: Adjustments can be made based on specific needs and the expected load on the server
+
+## Database software:
+
+- It is recommended that your PostgreSQL database is of version 13.x.

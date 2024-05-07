@@ -446,6 +446,7 @@ const sidebars = {
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
             'contributing-guide/setup/windows',
+            'contributing-guide/setup/system-requirements-for-contributing',
           ],
         },
         {
