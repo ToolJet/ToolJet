@@ -3,11 +3,13 @@ id: accessing-values
 title: Accessing and Utilizing Values
 ---
 
-ToolJet's flexibility in integrating dynamic data within applications is facilitated through its ability to access and manipulate values derived from components, queries, globals, and custom JavaScript code. The concise guide below illustrates practical examples of utilizing these values in your applications.
+ToolJet's flexibility in integrating dynamic data within applications is facilitated through the ability to use custom code, and access and manipulate values derived from components, queries, globals. You can use double curly braces `{{}}` in the app-builder to access values or enter JavaScript code.
 
 ## Accessing Values
 
-You can check all the accessible values using the left sidebar's **[Inspector](/docs/how-to/use-inspector/)** tab. This functionality can be handy to check data returned by queries and components on the canvas and refer it in queries or components.
+You can check all the accessible values using the left sidebar's **[Inspector](/docs/how-to/use-inspector/)** tab. This functionality can be handy to check data returned by queries and components on the canvas and reference it in queries or components. Inspector also displays other values like global values, variables, page variables, etc. 
+
+![Check Available Values Using Inspector](/img/tooljet-concepts/writing-custom-code/inspector.png)
 
 ### Example Scenarios
 
@@ -19,27 +21,24 @@ You can check all the accessible values using the left sidebar's **[Inspector](/
 - **Purpose**: Access data from a selected row in a table.
 - **Implementation**: Use the expression `{{components.table1.selectedRow.id}}` to get the ID of the selected row in `table1`.
 
-![Check Available Values Using Inspector](/img/tooljet-concepts/writing-custom-code/inspector.png)
-
 **Accessing Globals**
 - **Purpose**: Access global settings and variables predefined in the ToolJet environment.
 - **Implementation**: To check the current theme and adjust styles dynamically, use:
-{{globals.theme.name}}
-
+`{{globals.theme.name}}`
 
 ## Writing Custom Code
 
-ToolJet supports embedding custom JavaScript directly within the app's interface through double curly braces `{{}}`.
+ToolJet supports embedding custom JavaScript directly within the app's interface.
 
 ### Example Scenarios
 
 **Dynamic Background Color**:
-   - **Purpose**: Set the background color of a button based on the theme.
-   - **Implementation**: In the properties panel next to the background color setting, use `{{globals.theme.name == "light" ? "#375FCF" : "#FFFFFF"}}` to conditionally set the color.
+   - **Purpose**: Set the background color of a Button component based on the theme.
+   - **Implementation**: In the properties panel, click on **fx** next to the `Background color` setting. Enter `{{globals.theme.name == "light" ? "#375FCF" : "#FFFFFF"}}` to conditionally set the color.
 
 **Conditional Button Enablement**:
-   - **Purpose**: Enable a button based on user input.
-   - **Implementation**: Use `{{components.form1.data.textinput1 == "" ? true : false}}` in the button's enabled property to activate it only when the specified text input is empty.
+   - **Purpose**: Enable a Button component based on user input.
+   - **Implementation**: Under the Button's `Disable` property, click on **fx** and enter `{{components.form1.data.textinput1.value == "" ? true : false}}` to disable it when the specified text input in the Form component is empty.
 
 ## More on the Left Sidebar
 

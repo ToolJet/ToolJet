@@ -15,14 +15,14 @@ The Query Panel consists of two sections:
 
 ## Creating a New Query
 - Click on the **+ Add** button in the Query Panel to open a menu listing the available data sources.
-- Choose your data source to set the context for the new query.
+- Choose a data source to set the context for the new query.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/walkthrough/create-queries/data-source-list.png" alt="Data Source List" />
 </div>
 
 ### Configuring the Query
-- To configure the query, you can use low-code operations or write an SQL statement depending on the data source. 
+- You can choose from low-code operations or write an SQL statement, depending on the data source. 
 
 - For instance, you will have to choose the **Table name** and **Operations** (List Rows, Create Row, Update Rows, Delete Rows, Join Tables) for a ToolJet Database. 
 
@@ -46,14 +46,14 @@ The Query Panel consists of two sections:
 SELECT * FROM allUsers WHERE id = {{parameters.id}}
 ```
 
-Here, `{{parameters.id}}` is a parameter you can define in the Parameters section to filter records based on their id.
+Here, `{{parameters.id}}` is a parameter that you can define by clicking on the **+** icon on the Query Panel header next to the `Parameters` label.
 
 ## Query Examples
 
 Let's look at some examples with a PostgreSQL data source with a database table named *feature_requests*.
 
 ### Reading Data 
-- Create a query named *getAllRequests* that selects all records from a dfeature_requests` table.
+- Create a query named *getAllRequests* that selects all records from the `feature_requests` table.
 
 ```sql
 SELECT * FROM feature_requests;
@@ -65,7 +65,7 @@ SELECT * FROM feature_requests;
 
 - You can scroll down and see the returned data in the **Preview** section.
 
-- Binding the returned data to components is a straightforward process. For instance, to add the returned data of the *getAllRequests* query to a Table, simply refer the query in the `Data` property of the Table component:
+- Binding the returned data to components is a straightforward process. For instance, to add the returned data of the *getAllRequests* query to a Table, simply reference the query in the `Data` property of the Table component:
 
 ```js
 {{queries.getAllRequests.data}}
@@ -105,7 +105,7 @@ SET
     description = 'Updated Feature Description',
     votes = 15,
     priority = 2
-WHERE id = ;
+WHERE id = `{{components.table1.selectedRow.id}}`;
 ```
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
@@ -130,7 +130,7 @@ DELETE FROM feature_requests WHERE votes < {{parameters.minimumVotes}};
 
 **Transformations**: After fetching data, you might want to format it (e.g., filtering out unnecessary fields or converting data types). ToolJet allows using JavaScript or Python for these transformations.
 
-**Event Handling**: Link queries with application events for dynamic interactions.
+**Event Handling**: Link queries with application events for dynamic interactions. For example, in the *updateRequest* query, you can set up an event to automatically run the *getAllRequests* query right after *updateRequest*. This ensures that the application retrieves and displays the updated data in the relevant components.
 
 ## Advanced Settings and Debugging
 
@@ -139,4 +139,4 @@ DELETE FROM feature_requests WHERE votes < {{parameters.minimumVotes}};
 **Configuration Settings**:
 - **Run this query on application load?**: Decide if the query should execute automatically when the app loads.
 - **Request confirmation before running query?**: Set up confirmations for query operations to prevent accidental data changes.
-- **Show notification on success?**: Configure notifications to inform users of successful operations, customizing message content and display duration.
+- **Show notification on success?**: Configure notifications to inform users of successful operations. You can customize this property's notification message content and display duration.

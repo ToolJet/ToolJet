@@ -3,7 +3,7 @@ id: create-ui
 title: Creating UI
 ---
 
-ToolJet's offers a variety of pre-built components that streamline the development process and allow for rapid prototyping and deployment of internal tools. This guide is focussed on building a basic UI for a Support Desk Dashboard application.
+ToolJet offers a variety of pre-built components that streamline the development process and allow for rapid prototyping and deployment of internal tools. This guide is focused on building a basic UI for a Support Desk Dashboard application.
 
 ## Creating the Header
 - Drag and drop a **Text** component on the top left of the canvas. 
@@ -16,7 +16,7 @@ ToolJet's offers a variety of pre-built components that streamline the developme
 You can see all the available properties of a component in the Properties Panel. You can manage the functionality and styling properties of the component in the Properties Panel.
 
 - Change its font size to 24, font weight to bold and color to blue(hex code - `#408FCC`). 
-- Add another Text component below it and enter `Track and manage all your tickets in one place` under its Data property.
+- Add another Text component below it and enter `Track and manage all your tickets in one place` under its `Data` property.
 - Change its font size to 14 and color to grey (hex code - `#9B9B9B`).
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
@@ -87,13 +87,13 @@ You can see all the available properties of a component in the Properties Panel.
 
 ## Adding a New Page
 - Click on **Pages** on the left sidebar - there will be a *Home* page by default. Rename the 
-- Click on the `+` icon to create a new page, rename the new page to <i>Customers</i>.
+- Click on the `+` icon to create a new page and rename the new page to <i>Customers</i>.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/walkthrough/create-ui/create-new-page.png" alt="Add new page" />
 </div>
 
-- Click and drag to select all components on the *Dashboard* page, copy them(CMD+C for Mac and Cntrl+C for Windows) and paste(CMD+V for Mac and Cntrl+V on Windows) them in the <i>Customers</i> page.
+- Click and drag to select all components on the *Dashboard* page, copy them (CMD+C for Mac and Cntrl+C for Windows) and paste (CMD+V for Mac and Cntrl+V on Windows) them in the <i>Customers</i> page.
 
 
 - For the **Text** component for **Tickets**, change the `Data` property to **Customers**.
@@ -146,6 +146,16 @@ You can see all the available properties of a component in the Properties Panel.
     <img className="screenshot-full" src="/img/v2-beta/app-builder/walkthrough/create-ui/update-new-page.png" alt="Update new page" />
 </div>
 
+## Changing the Theme
+
+Click on the **Settings** button on the left sidebar. The `App mode` property will be set as `Auto` by default. Switch the `App mode` property to dark. Now when you preview the app, you can see that the app has a dark color scheme. 
+
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/walkthrough/create-ui/dark-color-scheme.png" alt="Dark mode" />
+</div>
+
+
+When you keep the `App mode` as auto, it will follow the color scheme of the browser.
 
 
 This guide has outlined the steps to create a Support Desk Dashboard UI using ToolJet's components. You now have a visually appealing interface that will help manage and track support tickets efficiently. Continue to explore ToolJet to learn about adding functionality to the UI. 
