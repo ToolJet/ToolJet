@@ -97,6 +97,8 @@ export class TooljetDatabaseError extends QueryFailedError {
     let modifiedErrorMessage = errorMessage;
     const internalTableEntries = this.context.internalTables.map(({ id, tableName }) => [id, tableName]);
 
+    // Templates strings replacement current works in expectation that
+    // there will only be one table involved
     const replaceTemplateStrings = (errorMessage: string, replacements: Record<string, string>): string => {
       return Object.entries(replacements).reduce((message, [key, value]) => {
         return message.replace(new RegExp(`{{${key}}}`, 'g'), value);
