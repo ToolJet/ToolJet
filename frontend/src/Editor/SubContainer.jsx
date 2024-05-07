@@ -58,12 +58,6 @@ export const SubContainer = ({
   columns = 1,
   parentWidgetId,
 }) => {
-  //Todo add custom resolve vars for other widgets too
-
-  const widgetResolvables = Object.freeze({
-    Listview: 'listItem',
-  });
-
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
 
   const currentState = useCurrentState();
@@ -278,21 +272,147 @@ export const SubContainer = ({
             newComponent = placeComponentInsideParent(newComponent, canvasBoundingRect);
           }
 
-          setChildWidgets((prev) => {
-            return {
-              ...prev,
-              [newComponent.id]: {
+          // Logic to add default child components
+          const childrenBoxes = {};
+          if (componentMeta.defaultChildren) {
+            const parentMeta = componentMeta;
+            const widgetResolvables = Object.freeze({
+              Listview: 'listItem',
+            });
+            const customResolverVariable = widgetResolvables[parentMeta?.component];
+            const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
+            const parentId = newComponent.id;
+
+            defaultChildren.forEach((child) => {
+              const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } =
+                child;
+
+              const componentMeta = _.cloneDeep(
+                componentTypes.find((component) => component.component === componentName)
+              );
+              const componentData = JSON.parse(JSON.stringify(componentMeta));
+
+              const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / noOfGrids;
+              const height = layout.height ? layout.height : componentMeta.defaultSize.height;
+              const newComponentDefinition = {
+                ...componentData.definition.properties,
+              };
+
+              if (_.isArray(properties) && properties.length > 0) {
+                properties.forEach((prop) => {
+                  const accessor = customResolverVariable
+                    ? `{{${customResolverVariable}.${accessorKey}}}`
+                    : defaultValue[prop] || '';
+
+                  _.set(newComponentDefinition, prop, {
+                    value: accessor,
+                  });
+                });
+                _.set(componentData, 'definition.properties', newComponentDefinition);
+              }
+
+              if (_.isArray(styles) && styles.length > 0) {
+                styles.forEach((prop) => {
+                  const accessor = customResolverVariable
+                    ? `{{${customResolverVariable}.${accessorKey}}}`
+                    : defaultValue[prop] || '';
+
+                  _.set(newComponentDefinition, prop, {
+                    value: accessor,
+                  });
+                });
+                _.set(componentData, 'definition.styles', newComponentDefinition);
+              }
+
+              const newChildComponent = addNewWidgetToTheEditor(
+                componentData,
+                {},
+                { ...allComponents, ...childrenBoxes },
+                {},
+                item.currentLayout,
+                snapToGrid,
+                zoomLevel,
+                true,
+                true
+              );
+
+              _.set(childrenBoxes, newChildComponent.id, {
                 component: {
-                  ...newComponent.component,
-                  parent: parentRef.current.id,
+                  ...newChildComponent.component,
+                  parent: parentMeta.component === 'Tabs' ? parentId + '-' + tab : parentId,
                 },
+
                 layouts: {
-                  ...newComponent.layout,
+                  [currentLayout]: {
+                    ...layout,
+                    width: incrementWidth ? width * incrementWidth : width,
+                    height: height,
+                  },
                 },
-                withDefaultChildren: newComponent.withDefaultChildren,
-              },
-            };
-          });
+              });
+            });
+          }
+
+          if (newComponent.withDefaultChildren) {
+            if (appDefinitionChanged) {
+              const newDefinition = {
+                ...appDefinition,
+                pages: {
+                  ...appDefinition.pages,
+                  [currentPageId]: {
+                    ...appDefinition.pages[currentPageId],
+                    components: {
+                      ...appDefinition.pages[currentPageId].components,
+                      [newComponent.id]: {
+                        component: {
+                          ...newComponent.component,
+                          parent: parentRef.current.id,
+                        },
+                        layouts: {
+                          ...newComponent.layout,
+                        },
+                        withDefaultChildren: false,
+                      },
+                      ...childrenBoxes,
+                    },
+                  },
+                },
+              };
+
+              const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+              const newComponents = newDefinition.pages[currentPageId]?.components ?? {};
+
+              const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
+
+              const opts = { containerChanges: true };
+
+              if (componendAdded) {
+                opts.componentAdded = true;
+              }
+
+              const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+
+              if (shouldUpdate) {
+                appDefinitionChanged(newDefinition, opts);
+              }
+            }
+          } else {
+            setChildWidgets((prev) => {
+              return {
+                ...prev,
+                [newComponent.id]: {
+                  component: {
+                    ...newComponent.component,
+                    parent: parentRef.current.id,
+                  },
+                  layouts: {
+                    ...newComponent.layout,
+                  },
+                  withDefaultChildren: newComponent.withDefaultChildren,
+                },
+              };
+            });
+          }
 
           setSelectedComponent(newComponent.id, newComponent.component);
 
@@ -315,7 +435,7 @@ export const SubContainer = ({
         isOverCurrent: monitor.isOver({ shallow: true }),
       }),
     }),
-    [parent]
+    [parent, appDefinition]
   );
 
   function getContainerCanvasWidth() {
