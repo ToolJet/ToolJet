@@ -114,6 +114,43 @@ function SourceKeyRelation({
       value: 'SET DEFAULT',
     },
   ];
+  const onDeleteOptions = [
+    {
+      name: 'NO ACTION',
+      label: 'NO ACTION',
+      value: 'NO ACTION',
+    },
+    {
+      name: 'CASCADE',
+      label: 'CASCADE',
+      value: 'CASCADE',
+    },
+    {
+      name: 'RESTRICT',
+      label: 'RESTRICT',
+      value: 'RESTRICT',
+    },
+    {
+      name: 'SET NULL',
+      label: 'SET NULL',
+      value: 'SET NULL',
+    },
+    {
+      name: 'SET DEFAULT',
+      label: 'SET DEFAULT',
+      value: 'SET DEFAULT',
+    },
+  ];
+
+  useEffect(() => {
+    // When this component is mounted by default we are setting onDelete and onUpdate action with first value of onUpdateOptions, so that by default no action is selected for the actions dropdown
+    if (_.isEmpty(onDelete)) {
+      setOnDelete(onDeleteOptions[0]);
+    }
+    if (_.isEmpty(onUpdate)) {
+      setOnUpdate(onUpdateOptions[0]);
+    }
+  }, []);
 
   const handleSelectColumn = (table_name = '') => {
     if (table_name?.length > 0) {
@@ -268,7 +305,7 @@ function SourceKeyRelation({
           firstColumnName={'On update'}
           secondColumnName={'On remove'}
           tableList={onUpdateOptions}
-          tableColumns={onUpdateOptions}
+          tableColumns={onDeleteOptions}
           source={false}
           showDescription={true}
           actions={true}
@@ -278,6 +315,8 @@ function SourceKeyRelation({
           onDelete={onDelete}
           setOnUpdate={setOnUpdate}
           onUpdate={onUpdate}
+          tableName={tableName}
+          targetTable={targetTable}
           fetchTables={fetchTables}
           onTableClick={false}
         />

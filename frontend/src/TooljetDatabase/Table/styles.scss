@@ -392,6 +392,27 @@
 
     .unique-constraint-parent {
       padding: 16px 16px 0px 16px !important;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      .unique-constraint-info{
+        background-color: var(--slate2);
+        border: 1px solid var(--slate5) !important;
+        gap: 4px;
+        padding: 8px;
+        border-radius: 6px;
+        opacity: 0px;
+        display: flex;
+        color: var(--slate11);
+        svg{
+          width: 20%;
+          height: 100%;
+        }
+      }
+      .column-popover{
+        width: 100% !important;
+      }
+
     }
 
     .delete-column-table-creation {
@@ -407,7 +428,7 @@
     }
 
     .unique-tag {
-      color: var(--slate11) !important;
+      color: var(--slate12) !important;
       font-weight: 500 !important;
     }
 

@@ -329,6 +329,7 @@ const TableForm = ({
           hasPrimaryKey !== true ||
           (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
+        showToolTipForFkOnReadDocsSection={true}
       />
       <ConfirmDialog
         title={'Change in primary key'}

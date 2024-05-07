@@ -44,6 +44,10 @@ function DataSourceSelect({
   setTotalRecords,
   pageNumber,
   setPageNumber,
+  tableName,
+  targetTable,
+  actions,
+  actionName,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -240,11 +244,11 @@ function DataSourceSelect({
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: showRedirection || showDescription ? 'space-between' : 'flex-start',
+                    justifyContent: showRedirection ? 'space-between' : 'flex-start',
                     alignItems: 'center',
                     cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
                   }}
-                  className="dd-select-option"
+                  className={`dd-select-option ${showDescription && 'h-100'}`}
                 >
                   {isMulti && (
                     <div
@@ -283,9 +287,6 @@ function DataSourceSelect({
                     })}
                   >
                     {children}
-                    {foreignKeyAccess && showDescription && (
-                      <span className="action-description">{props.data.label}</span>
-                    )}
                   </span>
 
                   {foreignKeyAccess && showRedirection && props.isFocused && (
@@ -329,23 +330,76 @@ function DataSourceSelect({
           },
           // }),
           MenuList: useCallback(
-            (props) => (
-              <MenuList
-                {...props}
-                onAdd={onAdd}
-                addBtnLabel={addBtnLabel}
-                emptyError={emptyError}
-                foreignKeyAccess={foreignKeyAccess}
-                columnInfoForTable={columnInfoForTable}
-                showColumnInfo={showColumnInfo}
-                foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                scrollEventForColumnValus={scrollEventForColumnValus}
-                scrollContainerRef={scrollContainerRef}
-                foreignKeys={foreignKeys}
-                cellColumnName={cellColumnName}
-                isLoadingFKDetails={isLoadingFKDetails}
-              />
-            ),
+            (props) => {
+              const selectedOption =
+                props &&
+                props.children &&
+                Array.isArray(props.children) &&
+                props?.children?.reduce((accumulator, reactElement) => {
+                  const props = reactElement?.props ?? {};
+                  if (props?.isSelected) {
+                    accumulator = { ...props?.data };
+                  }
+                  return accumulator;
+                }, {});
+              const focusedOption =
+                props &&
+                props.children &&
+                Array.isArray(props.children) &&
+                props?.children?.reduce((accumulator, reactElement) => {
+                  const props = reactElement?.props ?? {};
+                  if (props?.isFocused) {
+                    accumulator = { ...props?.data };
+                  }
+                  return accumulator;
+                }, {});
+
+              return (
+                <React.Fragment>
+                  <MenuList
+                    {...props}
+                    onAdd={onAdd}
+                    addBtnLabel={addBtnLabel}
+                    emptyError={emptyError}
+                    foreignKeyAccess={foreignKeyAccess}
+                    columnInfoForTable={columnInfoForTable}
+                    showColumnInfo={showColumnInfo}
+                    foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
+                    scrollEventForColumnValus={scrollEventForColumnValus}
+                    scrollContainerRef={scrollContainerRef}
+                    foreignKeys={foreignKeys}
+                    cellColumnName={cellColumnName}
+                    isLoadingFKDetails={isLoadingFKDetails}
+                  />
+                  {foreignKeyAccess && showDescription && actions && (
+                    <>
+                      <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+                      <div
+                        style={{
+                          minHeight: '140px',
+                          height: 'fit-content',
+                          padding: '8px 12px',
+                        }}
+                      >
+                        <div className="tj-header-h8 tj-text">
+                          {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                        </div>
+                        <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+                          {
+                            <GenerateActionsDescription
+                              targetTable={targetTable?.value || targetTable?.label || targetTable?.name}
+                              sourceTable={tableName}
+                              actionName={actionName}
+                              label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                            />
+                          }
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            },
             // eslint-disable-next-line react-hooks/exhaustive-deps
             [onAdd, addBtnLabel, emptyError]
           ),
@@ -576,6 +630,118 @@ const CustomGroupHeading = (props) => {
       <SolidIcon name={isGroupListCollapsed ? 'cheverondown' : 'cheveronup'} height={20} />
     </div>
   );
+};
+
+const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '', label }) => {
+  const isActionOnUpdate = actionName === 'On update';
+
+  const Description = Object.freeze({
+    noAction: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ),
+    cascade: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will also update any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ) : (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will also delete any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ),
+    restrict: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+        <br />
+        It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas
+        RESTRICT does not.
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will not be permitted for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table. <br />
+        It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas
+        RESTRICT does not.
+      </>
+    ),
+    setNull: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the NULL value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the NULL value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ),
+    setDefault: isActionOnUpdate ? (
+      <>
+        Updating a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the default value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ) : (
+      <>
+        Deleting a record from{' '}
+        <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
+        table will set the default value for any records that references it in{' '}
+        <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
+        table.
+      </>
+    ),
+  });
+
+  switch (label) {
+    case 'NO ACTION':
+      return Description.noAction;
+    case 'RESTRICT':
+      return Description.restrict;
+    case 'CASCADE':
+      return Description.cascade;
+    case 'SET NULL':
+      return Description.setNull;
+    case 'SET DEFAULT':
+      return Description.setDefault;
+    default:
+      break;
+  }
 };
 
 export default DataSourceSelect;
