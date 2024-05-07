@@ -13,8 +13,10 @@ import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { Tooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import '../queryManager.theme.scss';
 
-function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalDataSources }) {
+function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, darkMode, globalDataSources }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources];
   const [searchTerm, setSearchTerm] = useState();
   const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);
@@ -22,6 +24,8 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
   const { admin } = authenticationService.currentSessionValue;
+
+  const docLink = 'sampledb.com';
 
   const handleChangeDataSource = (source) => {
     createDataQuery(source);
@@ -86,6 +90,50 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
             );
           })}
         </div>
+        {!!sampleDataSource && (
+          <div>
+            <label className="form-label sample-db-data-query-picker-form-label" data-cy={`landing-page-label-default`}>
+              Sample data sources
+            </label>
+
+            <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
+              <ButtonSolid
+                key={`${sampleDataSource.id}-${sampleDataSource.kind}`}
+                variant="tertiary"
+                size="sm"
+                onClick={() => {
+                  handleChangeDataSource(sampleDataSource);
+                }}
+                className="text-truncate"
+                data-cy={`${sampleDataSource.kind.toLowerCase().replace(/\s+/g, '-')}-sample-db-add-query-card`}
+              >
+                <DataSourceIcon source={sampleDataSource} height={14} />{' '}
+                {sampleDataSource.kind == 'postgresql' ? 'PostgreSQL' : 'ToolJetDB'}
+              </ButtonSolid>
+            </div>
+
+            {/* Info icon */}
+            <div className="open-doc-link-container">
+              <div className="col-md-1 info-btn">
+                <SolidIcon name="informationcircle" fill="#3E63DD" />
+              </div>
+              <div className="col-md-11">
+                <div className="message" data-cy="warning-text">
+                  <p>
+                    This is a shared resource and may show varying data due to real-time updates. It&apos;s reset daily
+                    for some consistency, but please note it&apos;s designed for user exploration, not production
+                    use.&nbsp;
+                    <a onClick={handleAddClick} target="_blank" rel="noopener noreferrer" className="opn-git-btn">
+                      Explore available data sources
+                    </a>{' '}
+                    <SolidIcon name="open" width={'8'} height={'8'} viewBox={'0 0 10 10'} />
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
             {`Available Data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}

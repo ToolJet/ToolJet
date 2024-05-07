@@ -40,6 +40,19 @@
   background-color: white !important;
 }
 
+.tj-table-empty {
+  th {
+    border-top: 1px solid rgba(101, 109, 119, 0.16) !important;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-color: inherit;
+  }
+
+  td {
+    border: none !important
+  }
+}
+
 .tj-table {
   thead th {
     z-index: 1;
@@ -88,6 +101,7 @@
   }
 
   .dark-background {
+
     td:nth-child(1),
     td:nth-child(2) {
       background-color: #2B394A;
@@ -112,6 +126,74 @@
     padding: 0;
   }
 
+}
+
+.tjdb-loader-parent>span:first-child {
+  height: 20px !important;
+
+  .tjdb-loader {
+    width: 180px !important;
+    background: var(--slate7) !important;
+    display: flex !important;
+  }
+}
+
+.tjdb-loader-icon-parent {
+  width: 20px !important;
+  height: 20px !important;
+
+  .tjdb-icon-loader {
+    width: 20px !important;
+    background: var(--slate7) !important;
+    display: flex !important;
+  }
+}
+
+.tjdb-empty-row td {
+  border-right: 1px solid !important;
+  border-bottom: 1px solid !important;
+  border-color: inherit !important;
+}
+
+.loading-table th {
+  padding: 5px 8px 5px 8px !important;
+  height: 32px !important;
+}
+
+.warning-icon-container,
+.warning-icon-container-dark {
+  width: 54px !important;
+  height: 52px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: #F1F3F5;
+  border-radius: 6px !important;
+  margin: 0px auto 8px auto !important;
+}
+.warning-icon-container-dark {
+  background-color: #2B2F30 !important;
+}
+
+.empty-table-description {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  margin-top: 5px !important;
+}
+
+.empty-table-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 63px);
+}
+
+.tjdb-create-new-table {
+  width: 180px !important;
+  margin: 0px auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .keyPress-actions {
@@ -174,11 +256,15 @@
   left: 0;
   bottom: 0;
   height: 2px;
-  background-color: var(--Indigo-09, #3E63DD) !important;
+  border: none !important;
+}
 
-  .tjdb-cell-save-progress-bar {
-    background-color: var(--Indigo-09, #3E63DD) !important;
-  }
+.progress::-webkit-progress-value {
+  background-color: var(--Indigo-09, #3E63DD) !important;
+}
+
+.progress::-moz-progress-bar {
+  background-color: var(--Indigo-09, #3E63DD) !important;
 }
 
 .toojet-db-table-footer {

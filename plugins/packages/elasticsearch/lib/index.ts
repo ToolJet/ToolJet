@@ -57,11 +57,11 @@ export default class ElasticsearchService implements QueryService {
     return sslEnabled ? 'https' : 'http';
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<Client> {
     const host = sourceOptions.host;
     const port = sourceOptions.port;
-    const username = sourceOptions.username;
-    const password = sourceOptions.password;
+    const username = encodeURIComponent(sourceOptions.username);
+    const password = encodeURIComponent(sourceOptions.password);
     const sslEnabled = sourceOptions.ssl_enabled;
     const protocol = this.determineProtocol(sourceOptions);
     const sslCertificate = sourceOptions.ssl_certificate;

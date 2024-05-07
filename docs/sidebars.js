@@ -49,6 +49,7 @@ const sidebars = {
       },
       'items': [
         'setup/try-tooljet',
+        'setup/system-requirements',
         'setup/digitalocean',
         'setup/docker',
         'setup/ec2',
@@ -185,6 +186,7 @@ const sidebars = {
       'type': 'category',
       'label': 'How To',
       'items': [
+        'how-to/use-url-params-on-load',
         'how-to/use-custom-parameters',
         'how-to/setup-rsyslog',
         'how-to/use-inspector',
@@ -233,6 +235,7 @@ const sidebars = {
             'data-sources/clickhouse',
             'data-sources/cosmosdb',
             'data-sources/couchdb',
+            'data-sources/databricks',
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
@@ -289,20 +292,9 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'User Authentication',
-          'link': {
-            'type': 'generated-index',
-            'title': 'User Authentication',
-            'description': 'Guides for setting up User Authentication and managing Single Sign-On',
-            'keywords': [
-              'SSO',
-              'authentication',
-            ],
-          },
-          'collapsed': true,
           'items': [
             'user-authentication/user-lifecycle',
-            'user-authentication/general-settings',
-            'user-authentication/password-login',
+            'user-authentication/workspace-login',
             {
               'type': 'category',
               'label': 'SSO',
@@ -341,7 +333,14 @@ const sidebars = {
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
-        'org-management/licensing',
+        {
+          "type": "category",
+          "label": "Licensing",
+          "items": [
+            "org-management/licensing/tooljet-cloud",
+            "org-management/licensing/self-hosted"
+          ]
+        }
       ],
     },
     {
@@ -374,12 +373,16 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
+            'marketplace/plugins/marketplace-plugin-redshift',
             'marketplace/plugins/marketplace-plugin-textract',
-            'marketplace/plugins/aws-lambda-plugin',
+            'marketplace/plugins/marketplace-plugin-aws-lambda',
+            'marketplace/plugins/marketplace-plugin-engagespot',
             'marketplace/plugins/marketplace-plugin-github',
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
+            'marketplace/plugins/marketplace-plugin-supabase',
+            'marketplace/plugins/marketplace-plugin-pocketbase',
           ],
         },
       ],
