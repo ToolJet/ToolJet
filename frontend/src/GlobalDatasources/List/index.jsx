@@ -8,6 +8,7 @@ import { globalDatasourceService } from '@/_services';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { SearchBox } from '@/_components/SearchBox';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -145,10 +146,13 @@ export const List = ({ updateSelectedDatasource }) => {
               {!isLoading && filteredData?.length ? (
                 <div className="list-group">
                   {filteredData?.map((source, idx) => {
+                    const sanpleDBtoolTipText =
+                      source.type == DATA_SOURCE_TYPE.SAMPLE ? 'Sample data source\ncannot be deleted' : '';
                     return (
                       <ListItem
                         dataSource={source}
                         key={idx}
+                        toolTipText={sanpleDBtoolTipText}
                         active={selectedDataSource?.id === source?.id}
                         onDelete={deleteDataSource}
                         updateSelectedDatasource={updateSelectedDatasource}

@@ -341,7 +341,7 @@ const EditRowForm = ({
             Array.isArray(editRowColumns) &&
             editRowColumns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
               const currentValue = selectedRowObj[accessor];
-              const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
+              const headerText = Header;
               const isPrimaryKey = constraints_type?.is_primary_key ?? false;
               const isNullable = !constraints_type?.is_not_null;
               const isSerialDataTypeColumn = dataType === 'serial';

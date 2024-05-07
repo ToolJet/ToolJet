@@ -142,6 +142,8 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import ArrowUpTriangle from './ArrowUpTriangle.jsx';
+import ArrowDownTriangle from './ArrowDownTriangle.jsx';
 import EnterButtonIcon from './EnterButtonIcon.jsx';
 import WorkspaceConstants from './WorkspaceConstants.jsx';
 import ArrowBackDown from './ArrowBackDown.jsx';
@@ -160,6 +162,11 @@ import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
 import PrimaryKey from './PrimaryKey.jsx';
 import ForeignKey from './ForeignKey.jsx';
+import InformationCircle from './InformationCircle.jsx';
+import Open from './Open.jsx';
+import TooljetIcon from './TooljetIcon.jsx';
+import TriangleUpCenter from './TriangleUpCenter.jsx';
+import TriangleDownCenter from './TriangleDownCenter.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -293,6 +300,8 @@ const Icon = (props) => {
       return <InnerJoinIcon {...props} />;
     case 'inrectangle':
       return <InRectangle {...props} />;
+    case 'informationcircle':
+      return <InformationCircle {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
     case 'italic':
@@ -339,6 +348,8 @@ const Icon = (props) => {
       return <NotificationUnread {...props} />;
     case 'options':
       return <Options {...props} />;
+    case 'open':
+      return <Open {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
@@ -413,6 +424,8 @@ const Icon = (props) => {
       return <Table {...props} />;
     case 'tick':
       return <Tick {...props} />;
+    case 'tooljet':
+      return <TooljetIcon {...props} />;
     case 'trash':
       return <Trash {...props} />;
     case 'uparrow':
@@ -471,6 +484,10 @@ const Icon = (props) => {
       return <Save {...props} />;
     case 'cross':
       return <Cross {...props} />;
+    case 'arrowUpTriangle':
+      return <ArrowUpTriangle {...props} />;
+    case 'arrowDownTriangle':
+      return <ArrowDownTriangle {...props} />;
     case 'underline':
       return <Underline {...props} />;
     case 'overline':
@@ -485,6 +502,10 @@ const Icon = (props) => {
       return <Capitalize {...props} />;
     case 'oblique':
       return <Oblique {...props} />;
+    case 'TriangleUpCenter':
+      return <TriangleUpCenter {...props} />;
+    case 'TriangleDownCenter':
+      return <TriangleDownCenter {...props} />;
     default:
       return <Apps {...props} />;
   }

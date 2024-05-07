@@ -1,7 +1,6 @@
 import { create, zustandDevTools } from './utils';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 const initialState = {
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
@@ -16,7 +15,7 @@ const initialState = {
 
 export const useQueryPanelStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
         updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),

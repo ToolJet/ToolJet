@@ -46,7 +46,7 @@ For example: `SERVE_CLIENT=false TOOLJET_SERVER_URL=https://server.tooljet.io np
 Tooljet client can be hosted from Cloud Storage bucket just like hosting any other static website.
 Follow the instructions from google documentation [here](https://cloud.google.com/storage/docs/hosting-static-website).
 
-Summarising the steps below:
+Summarizing the steps below:
 1. Create a bucket and upload files within the build folder such that the `index.html` is at the bucket root.
 
 2. Edit permissions for the bucket to assign *New principal* as `allUsers` with role as `Storage Object Viewer` and permit for public access for the bucket.
@@ -107,8 +107,8 @@ If this is a new installation of the application, you may start directly with th
 
 - It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

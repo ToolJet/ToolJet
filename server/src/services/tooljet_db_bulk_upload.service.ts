@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as csv from 'fast-csv';
@@ -15,6 +15,9 @@ const MAX_ROW_COUNT = 1000;
 export class TooljetDbBulkUploadService {
   constructor(
     private readonly manager: EntityManager,
+    // TODO: remove optional decorator when
+    // ENABLE_TOOLJET_DB flag is deprecated
+    @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly tooljetDbService: TooljetDbService
