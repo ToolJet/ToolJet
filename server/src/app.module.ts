@@ -138,6 +138,7 @@ const imports = [
   ImportExportResourcesModule,
   CopilotModule,
   OrganizationConstantModule,
+  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
@@ -165,7 +166,6 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 }
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TooljetDbModule);
   imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
 }
 
