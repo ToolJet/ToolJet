@@ -6,26 +6,7 @@ import WorkflowEditorContext from '../../../context';
 import { find } from 'lodash';
 import './styles.scss';
 
-function ResultNode(props) {
-  const { editorSession, editorSessionActions } = useContext(WorkflowEditorContext);
-  const { updateNodeData } = editorSessionActions;
-
-  const fxActive = props.data?.fxActive ?? false;
-
-  useEffect(() => {
-    if (!fxActive) {
-      const incomingEdges = editorSession.app.flow.edges.filter((edge) => edge.target === props.id);
-      const incomingQueryNodes = incomingEdges
-        .map((edge) => find(editorSession.app.flow.nodes, { id: edge.source }))
-        .filter((node) => node.type === 'query');
-      const incomingQueryNames = incomingQueryNodes.map(
-        (node) => find(editorSession.queries, { idOnDefinition: node.data.idOnDefinition })?.name
-      );
-      updateNodeData(props.id, { code: `return ({\n ${incomingQueryNames.join(',\n ')}\n})` });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(editorSession.app.flow.edges.filter((edge) => edge.target === props.id).map((edge) => edge.id))]);
-
+function ResultNode(_props) {
   return (
     <div className="result-node-container">
       <AddThunder />

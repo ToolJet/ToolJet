@@ -37,7 +37,11 @@ export const initialState = ({ appId, appVersionId }) => ({
         },
         {
           id: uuidv4(),
-          data: { nodeType: 'result', label: 'Result', code: 'return ({})' },
+          data: {
+            nodeType: 'result',
+            label: 'Result',
+            code: '// What this code snippet returns will be the response\n// when this workflow is used as an API endpoint\n\nreturn ({})',
+          },
           position: { x: 650, y: 250 },
           type: 'output',
           targetPosition: 'left',
