@@ -21,10 +21,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   catch(exception: any, host: ArgumentsHost) {
     try {
-      this.logger.error(exception);
       const ctx = host.switchToHttp();
       const response = ctx.getResponse();
       const request = ctx.getRequest();
+
+      this.logger.error(
+        {
+          method: request.method,
+          url: request.url,
+          headers: request.headers,
+          exception,
+        },
+        exception.stack
+      );
 
       let errorResponse: ErrorResponse;
       const message = exception?.response?.message || exception.message;

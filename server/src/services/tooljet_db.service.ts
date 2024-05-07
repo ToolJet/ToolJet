@@ -1,26 +1,9 @@
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  NotFoundException,
-  Optional,
-  ConflictException,
-} from '@nestjs/common';
-import {
-  EntityManager,
-  In,
-  ObjectLiteral,
-  QueryFailedError,
-  SelectQueryBuilder,
-  Table,
-  TableColumn,
-  TypeORMError,
-  TableForeignKey,
-} from 'typeorm';
+import { BadRequestException, Injectable, NotFoundException, Optional, ConflictException } from '@nestjs/common';
+import { EntityManager, In, ObjectLiteral, SelectQueryBuilder, Table, TableColumn, TableForeignKey } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty, camelCase } from 'lodash';
-import { TooljetDatabaseError } from 'src/modules/tooljet_db/tooljet-db.types';
+import { TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
 
 export type TableColumnSchema = {
   column_name: string;
@@ -82,7 +65,7 @@ export class TooljetDbService {
   }
 
   private getActionHandler(action: string): ((organizationId: string, params: any) => Promise<any>) | undefined {
-    const actionHandlers: Record<string, (organizationId: string, params: any) => Promise<any>> = {
+    const actionHandlers: Partial<Record<TooljetDbActions, (organizationId: string, params: any) => Promise<any>>> = {
       view_tables: this.viewTables,
       view_table: this.viewTable,
       create_table: this.createTable,
@@ -342,7 +325,14 @@ export class TooljetDbService {
       return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw err;
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'drop_table',
+          internalTables: [internalTable],
+        },
+        err
+      );
     } finally {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
@@ -637,15 +627,14 @@ export class TooljetDbService {
       const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap);
       return await queryBuilder.getRawMany();
     } catch (error) {
-      // custom error handling - for Query error
-      if (error instanceof QueryFailedError || error instanceof TypeORMError) {
-        let customErrorMessage: string = error.message;
-        Object.entries(internalTableIdToNameMap).forEach(([key, value]) => {
-          customErrorMessage = customErrorMessage.replace(key, value as string);
-        });
-        throw new HttpException(customErrorMessage, 422);
-      }
-      throw error;
+      throw new TooljetDatabaseError(
+        error.message,
+        {
+          origin: 'join_tables',
+          internalTables: internalTables,
+        },
+        error
+      );
     }
   }
 
@@ -943,7 +932,20 @@ export class TooljetDbService {
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
-      throw err;
+
+      const referencedTables = Object.entries(referenced_tables_info).map(([key, value]) => ({
+        id: key,
+        tableName: value as string,
+      }));
+
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'create_foreign_key',
+          internalTables: [internalTable, ...referencedTables],
+        },
+        err
+      );
     }
   }
 
@@ -994,7 +996,19 @@ export class TooljetDbService {
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
-      throw err;
+      const referencedTables = Object.entries(referenced_tables_info).map(([key, value]) => ({
+        id: key,
+        tableName: value as string,
+      }));
+
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'update_foreign_key',
+          internalTables: [internalTable, ...referencedTables],
+        },
+        err
+      );
     }
   }
 

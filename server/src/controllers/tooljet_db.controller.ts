@@ -45,7 +45,7 @@ import { TooljetDbExceptionFilter } from 'src/filters/tooljetdb-exception-filter
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('tooljet-db')
-@UseFilters(new TooljetDbExceptionFilter())
+@UseFilters(TooljetDbExceptionFilter)
 export class TooljetDbController {
   private readonly pinoLogger: Logger;
   constructor(
