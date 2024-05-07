@@ -35,8 +35,9 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
   };
 
   let iconSrc;
-
-  if (repo) {
+  if (process.env.NODE_ENV === 'development') {
+    iconSrc = `https://tooljet-plugins-stage.s3.us-east-2.amazonaws.com/marketplace-assets/${id}/lib/icon.svg`;
+  } else if (repo) {
     iconSrc = `https://raw.githubusercontent.com/${repo}/main/lib/icon.svg`;
   } else {
     iconSrc = `${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`;
