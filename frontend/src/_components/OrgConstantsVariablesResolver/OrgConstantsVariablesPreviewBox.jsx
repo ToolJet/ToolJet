@@ -8,16 +8,16 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
   const getResolveValueType = (currentValue) => {
     if (!currentValue) return null;
 
+    if (currentValue.includes('constants')) {
+      return 'Workspace Constant';
+    }
+
     if (currentValue.includes('client')) {
       return 'client workspace variable';
     }
 
     if (currentValue.includes('server')) {
       return 'server workspace variable';
-    }
-
-    if (currentValue.includes('constants')) {
-      return 'Workspace Constant';
     }
 
     return null;

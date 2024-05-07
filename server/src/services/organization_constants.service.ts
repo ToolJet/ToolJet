@@ -33,16 +33,21 @@ export class OrganizationConstantsService {
             appEnvironments.map(async (env) => {
               const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
 
-              return {
+              const valueResult = {
                 environmentName: env.name,
-                value:
-                  value && value.value.length > 0
-                    ? decryptValue
-                      ? await this.decryptSecret(organizationId, value.value)
-                      : value.value
-                    : '',
-                id: value.environmentId,
+                id: value ? value.environmentId : undefined, // Safeguard for undefined 'value'
               };
+
+              if (value && value.value.length > 0) {
+                const decryptedOrRawValue = decryptValue
+                  ? await this.decryptSecret(organizationId, value.value)
+                  : value.value;
+
+                if (decryptValue) {
+                  valueResult['value'] = decryptedOrRawValue;
+                }
+              }
+              return valueResult;
             })
           );
 
@@ -73,14 +78,20 @@ export class OrganizationConstantsService {
       const result = await query.getMany();
 
       const constantsWithValues = result.map(async (constant) => {
-        const value = decryptValue
-          ? await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value)
-          : constant.orgEnvironmentConstantValues[0].value;
-        return {
+        const constantResult = {
           id: constant.id,
           name: constant.constantName,
-          value: value,
         };
+
+        if (decryptValue && constant.orgEnvironmentConstantValues.length > 0) {
+          const decryptedValue = await this.decryptSecret(
+            organizationId,
+            constant.orgEnvironmentConstantValues[0].value
+          );
+          constantResult['value'] = decryptedValue;
+        }
+
+        return constantResult;
       });
 
       return Promise.all(constantsWithValues);
