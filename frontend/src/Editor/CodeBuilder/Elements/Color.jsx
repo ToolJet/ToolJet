@@ -4,7 +4,34 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import classNames from 'classnames';
 
-export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true, meta }) => {
+export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true, meta, component }) => {
+  // This function is written only to handle diff colors W.R.T button types
+  const computeColor = () => {
+    if (component?.component?.definition?.styles?.type?.value == 'primary') return value;
+    else {
+      if (meta?.displayName == 'Background') {
+        value = value == '#4368E3' ? '#FFFFFF' : value;
+        return value;
+      }
+      if (meta?.displayName == 'Text color') {
+        value = value == '#FFFFFF' ? '#1B1F24' : value;
+        return value;
+      }
+      if (meta?.displayName == 'Icon color') {
+        value = value == '#FFFFFF' ? '#CCD1D5' : value;
+        return value;
+      }
+      if (meta?.displayName == 'Border color') {
+        value = value == '#4368E3' ? '#CCD1D5' : value;
+        return value;
+      }
+      if (meta?.displayName == 'Loader color') {
+        return value;
+      }
+    }
+  };
+  value = component.component.component == 'Button' ? computeColor() : value;
+
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
@@ -15,7 +42,6 @@ export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowP
     bottom: '0px',
     left: '0px',
   };
-
   const outerStyles = {
     width: '142px',
     height: '32px',

@@ -699,11 +699,24 @@ export const widgets = [
           schema: { type: 'string' },
           defaultValue: false,
         },
+        conditionallyRender: {
+          key: 'type',
+          value: 'primary',
+        },
         accordian: 'button',
       },
       textColor: {
         type: 'color',
         displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+        accordian: 'button',
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
           defaultValue: false,
@@ -838,6 +851,7 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#FFFFFF' },
+        borderColor: { value: '#4368E3' },
         loaderColor: { value: '#FFFFFF' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#4368E3' },

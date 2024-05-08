@@ -5,7 +5,8 @@ import * as Icons from '@tabler/icons-react';
 import { getCssVariableValue } from '@/_helpers/appUtils';
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables, component } =
+    props;
   const {
     backgroundColor,
     textColor,
@@ -55,6 +56,12 @@ export const Button = function Button(props) {
         ? getCssVariableValue('--icons-on-solid')
         : getCssVariableValue('--icons-strong')
       : iconColor;
+  const computedBorderColor =
+    '#4368E3' === borderColor
+      ? type === 'primary'
+        ? '#4368E3'
+        : getCssVariableValue('--borders-default')
+      : borderColor;
 
   const computedTextColor =
     getCssVariableValue('--text-on-solid') === textColor
@@ -78,7 +85,7 @@ export const Button = function Button(props) {
     '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
     '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
     '--loader-color': tinycolor(loaderColor ?? getCssVariableValue('--icons-on-solid')).toString(),
-    borderColor: borderColor,
+    borderColor: computedBorderColor,
     boxShadow: boxShadow,
     padding: '0px 12px',
     cursor: 'pointer',
@@ -193,33 +200,34 @@ export const Button = function Button(props) {
             alignItems: 'center',
             flexDirection: direction == 'right' ? 'row-reverse' : 'row',
             justifyContent: 'center',
+            gap: '6px',
           }}
         >
           <div
             style={{
               overflow: 'hidden',
-              marginLeft: direction == 'right' && iconVisibility && '3px',
-              marginRight: direction == 'left' && iconVisibility && '3px',
             }}
           >
             <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
-              <p className="tj-text-xsm" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
+              <p className="tj-text-sm" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
                 {label}
               </p>
             </span>
           </div>
-          <div className="d-flex">
-            {props.component?.definition?.styles?.iconVisibility?.value && !props.isResizing && !loading && (
-              <IconElement
-                style={{
-                  width: '14px',
-                  height: '14px',
-                  color: computedIconColor,
-                }}
-                stroke={1.5}
-              />
-            )}
-          </div>
+          {iconVisibility && (
+            <div className="d-flex">
+              {!props.isResizing && !loading && (
+                <IconElement
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    color: computedIconColor,
+                  }}
+                  stroke={1.5}
+                />
+              )}
+            </div>
+          )}
         </div>
       </button>
     </div>
