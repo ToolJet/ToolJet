@@ -2888,7 +2888,7 @@ input:focus-visible {
   box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.12);
   outline: none;
   background-color: #FFFFFF;
-  border: 1px solid var(--Border-strong, #ACB2B9);
+  border: 1px solid;
 
 
   &.btn-custom:hover {
@@ -2905,7 +2905,7 @@ input:focus-visible {
 .jet-button {
   box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.12);
   outline: none;
-  border: none;
+  border: 1px solid;
 
   &.btn-custom:hover {
     background: var(--tblr-btn-color-darker) !important;
@@ -7006,7 +7006,7 @@ tbody {
     }
   }
 
-  .table-cell-dark{
+  .table-cell-dark {
     color: #ffffff;
   }
 
@@ -8432,6 +8432,7 @@ tbody {
     background-color: #2F3C4C !important;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
+
   .react-loading-skeleton::after {
     background-image: linear-gradient(90deg, #2F3C4C, #3A4251, #2F3C4C) !important;
   }
@@ -12517,9 +12518,11 @@ tbody {
 .custom-gap-2 {
   gap: 2px
 }
-.custom-gap-3{
+
+.custom-gap-3 {
   gap: 3px;
 }
+
 .custom-gap-4 {
   gap: 4px;
 }
@@ -12531,10 +12534,12 @@ tbody {
 .custom-gap-12 {
   gap: 12px
 }
-.custom-gap-16{
+
+.custom-gap-16 {
   gap: 16px;
 }
-.text-black-000{
+
+.text-black-000 {
   color: var(--text-black-000) !important;
 }
 
@@ -12543,6 +12548,7 @@ tbody {
     max-width: 100%;
   }
 }
+
 .tooltip-inner {
   border-radius: 8px;
 }
@@ -12554,9 +12560,11 @@ tbody {
     }
   }
 }
-.custom-gap-7{
-  gap:7px
+
+.custom-gap-7 {
+  gap: 7px
 }
+
 .card-table {
   overflow: visible;
 }
@@ -12808,7 +12816,7 @@ tbody {
 }
 
 .inspector-validation-date-picker {
-  .react-datepicker-wrapper { 
+  .react-datepicker-wrapper {
     input {
       width: 100%;
       border: 1px solid var(--slate7);
@@ -12816,7 +12824,7 @@ tbody {
       background-color: var(--base);
       color: var(--slate12)
     }
-}
+  }
 
   .dark-theme {
     .react-datepicker__day {
@@ -12828,20 +12836,25 @@ tbody {
 .canvas-container {
   scrollbar-color: transparent;
   scrollbar-width: thin;
+
   &::-webkit-scrollbar {
     background-color: transparent;
     width: 6px;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-track {
     background-color: transparent;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-thumb {
     background-color: transparent;
   }
-  &:hover{
+
+  &:hover {
     scrollbar-color: #6a727c4d;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -12849,8 +12862,9 @@ tbody {
 }
 
 .jet-listview {
-  &:hover{
+  &:hover {
     scrollbar-color: #6a727c4d;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -12878,6 +12892,7 @@ tbody {
     }
   }
 }
+
 .number-input-arrow {
   &:hover {
     background-color: var(--interactive-overlays-fill-hover) !important;
