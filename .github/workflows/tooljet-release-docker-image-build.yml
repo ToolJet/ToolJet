@@ -61,9 +61,9 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet enterprise image published:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`\n\`tooljet/tooljet:${{ github.event.release.tag_name }}\`\n@adish Deploy when available :mandalorian"
+            message="ToolJet enterprise image published:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`\n\`tooljet/tooljet:${{ github.event.release.tag_name }}\`"
+            message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -115,9 +115,9 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! docker image tooljet/saas:${{ github.event.inputs.image }} & tooljet/tooljet:${{ github.event.inputs.image }}"
+            message="Job '${{ env.JOB_NAME }}' succeeded! docker image tooljet/saas:${{ github.event.inputs.image }}"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/saas:${{ github.event.inputs.image }} & tooljet/tooljet:${{ github.event.inputs.image }}"
+            message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/saas:${{ github.event.inputs.image }}"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
