@@ -829,7 +829,8 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
 
-      const { editing_version } = appData;
+      const { editing_version, events } = appData;
+
       useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
       updateState({
         events,
