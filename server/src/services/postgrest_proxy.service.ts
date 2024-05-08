@@ -104,7 +104,7 @@ export class PostgrestProxyService {
         method,
         headers: reqHeaders,
         responseType: 'json',
-        throwHttpErrors: false, // don't throw for non-2xx status codes
+        throwHttpErrors: true,
         ...(!isEmpty(body) && { body: JSON.stringify(body) }),
       });
 
