@@ -179,9 +179,10 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import PrimaryKey from './PrimaryKey.jsx';
+import ForeignKey from './ForeignKey.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
-import PrimaryKey from './PrimaryKey.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -319,6 +320,8 @@ const Icon = (props) => {
       return <FolderUpload {...props} />;
     case 'gitsync':
       return <GitSync {...props} />;
+    case 'foreignkey':
+      return <ForeignKey {...props} />;
     case 'fullouterjoin':
       return <FullOuterJoin {...props} />;
     case 'globe':

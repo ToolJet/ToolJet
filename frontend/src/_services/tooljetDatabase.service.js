@@ -16,10 +16,11 @@ async function getTablesLimit() {
   return res;
 }
 
-function createTable(organizationId, tableName, columns) {
+function createTable(organizationId, tableName, columns, foreignKeyColumns, checkingValues = false) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table`, {
     table_name: tableName,
     columns,
+    ...(checkingValues && { foreign_keys: foreignKeyColumns }),
   });
 }
 
@@ -43,7 +44,9 @@ function createColumn(
   defaultValue,
   isNotNull,
   isUniqueConstraint,
-  isCheckSerialType = false
+  isCheckSerialType = false,
+  checkingValues = false,
+  foreignKeyArray
 ) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
@@ -55,6 +58,7 @@ function createColumn(
         is_unique: isUniqueConstraint,
       },
     },
+    ...(checkingValues && { foreign_keys: foreignKeyArray }),
   });
 }
 
@@ -75,11 +79,27 @@ function renameTable(organizationId, tableName, newTableName, data = []) {
     });
   });
   return tooljetAdapter.patch(`/tooljet-db/organizations/${organizationId}/table/${tableName}`, {
-    action: 'rename_table',
     table_name: tableName,
     ...(newTableName !== tableName && { new_table_name: newTableName }),
     columns: bodyData,
   });
+}
+
+function editForeignKey(organizationId, tableName, id, data = []) {
+  return tooljetAdapter.put(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
+    foreign_key_id: id,
+    foreign_keys: data,
+  });
+}
+
+function createForeignKey(organizationId, tableName, data = []) {
+  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
+    foreign_keys: data,
+  });
+}
+
+function deleteForeignKey(organizationId, tableName, id) {
+  return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey/${id}`);
 }
 
 function updateRows(headers, tableId, data, query = '') {
@@ -127,4 +147,7 @@ export const tooljetDatabaseService = {
   bulkUpload,
   joinTables,
   updateColumn,
+  editForeignKey,
+  createForeignKey,
+  deleteForeignKey,
 };

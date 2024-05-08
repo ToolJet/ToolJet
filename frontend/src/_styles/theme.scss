@@ -13211,6 +13211,76 @@ flex-direction: row;
   }
 }
 
+.tjdb-dashboard-scrollbar {
+  width: 403px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+}
+
+.tjdb-rowForm-scrollbar {
+  width: 494px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.tjdb-cellEdit-scrollbar {
+  width: 266px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
 .tj-scrollbar {
 
   ::-webkit-scrollbar,
@@ -14656,6 +14726,27 @@ flex-direction: row;
       margin-left: 8px;
     }
   }
+}
+
+.action-description-highlighter{
+  color: var(--indigo9) !important;
+}
+.read-docs-fk{
+  
+  .tooltip-inner {
+    padding: 8px 12px 8px 12px !important;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 400;
+    text-align: center;
+  }
+  .tooltip-outer{
+    // box-shadow: 0px 4px 6px -2px #10182808 ,0px 12px 16px -4px #10182814 !important;
+  }
+}
+ 
+.change-margin {
+  margin-bottom: 10px !important;
 }
 
 .inspector-validation-date-picker {

@@ -55,7 +55,7 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible }) {
         isOpen={isCreateTableDrawerOpen}
         onClose={() => setIsCreateTableDrawerOpen(false)}
         position="right"
-        drawerStyle={{ width: '630px' }}
+        drawerStyle={{ width: '640px' }}
       >
         <CreateTableForm
           onCreate={(tableInfo) => {

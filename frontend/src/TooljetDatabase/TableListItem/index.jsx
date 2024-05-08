@@ -22,12 +22,14 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     handleRefetchQuery,
     pageSize,
     setColumns,
+    setForeignKeys,
   } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
   const [focused, setFocused] = useState(false);
   const [isAddNewColumnDrawerOpen, setIsAddNewColumnDrawerOpen] = useState(false);
+  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -101,22 +103,28 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     return filteredDataTypes;
   };
 
-  const isEditTable = () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
+  const isEditTable = (tableName) => {
+    tooljetDatabaseService.viewTable(organizationId, tableName).then(({ data = [], error }) => {
       if (error) {
         toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
         return;
       }
 
-      if (data?.result?.length > 0) {
+      const { foreign_keys = [] } = data?.result || {};
+      if (data?.result?.columns?.length > 0) {
         setColumns(
-          data?.result.map(({ column_name, data_type, ...rest }) => ({
+          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
             Header: column_name,
             accessor: column_name,
             dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
             ...rest,
           }))
         );
+      }
+      if (foreign_keys.length > 0) {
+        setForeignKeys([...foreign_keys]);
+      } else {
+        setForeignKeys([]);
       }
     });
     handleRefetchQuery({}, {}, 1, pageSize);
@@ -185,7 +193,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isOpen={isEditTableDrawerOpen}
         onClose={() => setIsEditTableDrawerOpen(false)}
         position="right"
-        drawerStyle={{ width: '630px' }}
+        drawerStyle={{ width: '640px' }}
       >
         <EditTableForm
           selectedColumns={formColumns}
@@ -200,6 +208,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isCreateColumnDrawerOpen={isAddNewColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsAddNewColumnDrawerOpen}
         rows={selectedTableData}
+        referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
       />
     </div>
   );

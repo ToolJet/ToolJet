@@ -9,6 +9,7 @@ import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
+import { serialDataType } from '../constants';
 
 const TableForm = ({
   selectedTable = {},
@@ -16,7 +17,8 @@ const TableForm = ({
     0: {
       column_name: 'id',
       data_type: 'serial',
-      constraints_type: { is_primary_key: true, is_not_null: true, is_unique: true },
+      constraints_type: { is_primary_key: true, is_not_null: true, is_unique: false },
+      dataTypeDetails: serialDataType,
     },
   },
   selectedTableData = {},
@@ -27,45 +29,55 @@ const TableForm = ({
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
-  const arrayOfTableColumns = Object.values(selectedTableColumns);
+  const selectedTableColumnDetails = Object.values(selectedTableColumns);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [fetching, setFetching] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
   const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
-  const { organizationId } = useContext(TooljetDatabaseContext);
+  const { organizationId, foreignKeys, setForeignKeys } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  const [foreignKeyDetails, setForeignKeyDetails] = useState([]);
 
   useEffect(() => {
     toast.dismiss();
+    if (isEditMode) {
+      setForeignKeyDetails(
+        foreignKeys?.map((item) => {
+          return {
+            column_names: item.column_names,
+            referenced_table_name: item.referenced_table_name,
+            referenced_table_id: item.referenced_table_id,
+            referenced_column_names: item.referenced_column_names,
+            on_delete: item.on_delete,
+            on_update: item.on_update,
+          };
+        })
+      );
+    }
   }, []);
 
-  // const primaryKeyColumns = [];
-  // const nonPrimaryKeyColumns = [];
-  // Object.values(columns).forEach((column) => {
-  //   // this is for old_column object which we need to send in edit table api tracked (old column with primary columns are in top order) deep cloned object
-  //   if (column?.constraints_type?.is_primary_key) {
-  //     primaryKeyColumns.push({ ...column });
-  //   } else {
-  //     nonPrimaryKeyColumns.push({ ...column });
-  //   }
-  // });
+  useEffect(() => {
+    if (isEditMode) {
+      setForeignKeyDetails(
+        foreignKeys?.map((item) => {
+          return {
+            column_names: item.column_names,
+            referenced_table_name: item.referenced_table_name,
+            referenced_table_id: item.referenced_table_id,
+            referenced_column_names: item.referenced_column_names,
+            on_delete: item.on_delete,
+            on_update: item.on_update,
+          };
+        })
+      );
+    }
+  }, [foreignKeys]);
 
-  // const editPrimaryKeyColumns = [];
-  // const editNonPrimaryKeyColumns = [];
-  // arrayOfTableColumns.forEach((column) => {
-  //   // this is for new_column object which we need to send in edit table api
-  //   if (column?.constraints_type?.is_primary_key) {
-  //     editPrimaryKeyColumns.push({ ...column });
-  //   } else {
-  //     editNonPrimaryKeyColumns.push({ ...column });
-  //   }
-  // });
-
-  // const editColumns = Object.assign({}, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
-
-  function bodyColumns(columns, arrayOfTableColumns) {
+  function bodyColumns(columns, selectedTableColumnDetails) {
     let newArray = [];
 
     for (const key in columns) {
@@ -74,7 +86,7 @@ const TableForm = ({
         let old_column = {};
 
         new_column = columns[key];
-        old_column = arrayOfTableColumns[key];
+        old_column = selectedTableColumnDetails[key];
 
         if (old_column !== undefined) {
           newArray.push({ new_column, old_column });
@@ -84,7 +96,7 @@ const TableForm = ({
       }
     }
 
-    arrayOfTableColumns.forEach((col, index) => {
+    selectedTableColumnDetails.forEach((col, index) => {
       if (!columns.hasOwnProperty(index)) {
         let old_column = {};
         old_column = col;
@@ -93,7 +105,7 @@ const TableForm = ({
     });
 
     Object.values(columns).forEach((col, index) => {
-      if (!arrayOfTableColumns.hasOwnProperty(index)) {
+      if (!selectedTableColumnDetails.hasOwnProperty(index)) {
         let new_column = col;
         if (!newArray.some((item) => JSON.stringify(item.new_column) === JSON.stringify(new_column))) {
           newArray.push({ new_column });
@@ -103,11 +115,7 @@ const TableForm = ({
     return newArray;
   }
 
-  // let data = isEditMode
-  //   ? bodyColumns(editColumns, _.cloneDeep([...editPrimaryKeyColumns, ...editNonPrimaryKeyColumns]))
-  //   : bodyColumns(columns, [...primaryKeyColumns, ...nonPrimaryKeyColumns]);
-
-  let data = bodyColumns(columns, arrayOfTableColumns);
+  let data = bodyColumns(columns, selectedTableColumnDetails);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -138,8 +146,16 @@ const TableForm = ({
       return;
     }
 
+    const checkingValues = isEmpty(foreignKeyDetails) ? false : true;
+
     setFetching(true);
-    const { error, data } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
+    const { error, data } = await tooljetDatabaseService.createTable(
+      organizationId,
+      tableName,
+      Object.values(columns),
+      foreignKeyDetails,
+      checkingValues
+    );
     setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
@@ -148,6 +164,7 @@ const TableForm = ({
 
     toast.success(`${tableName} created successfully`);
     onCreate && onCreate({ id: data.result.id, table_name: tableName });
+    setCreateForeignKeyInEdit(false);
   };
 
   function handleKeyPress(e) {
@@ -179,7 +196,8 @@ const TableForm = ({
     updateSidebarNAV(tableName);
     updateSelectedTable({ ...selectedTable, table_name: tableName });
 
-    onEdit && onEdit();
+    onEdit && onEdit(tableName);
+    setCreateForeignKeyInEdit(false);
   };
 
   const isRequiredFieldsExistForCreateTableOperation = (columnDetails) => {
@@ -201,7 +219,7 @@ const TableForm = ({
 
   const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
 
-  const existingPrimaryKeyObjects = arrayOfTableColumns.filter((item) => item.constraints_type.is_primary_key);
+  const existingPrimaryKeyObjects = selectedTableColumnDetails.filter((item) => item.constraints_type.is_primary_key);
 
   const primaryKeyObjects = Object.values(columns).filter((item) => item.constraints_type?.is_primary_key === true);
 
@@ -275,7 +293,22 @@ const TableForm = ({
             </div>
           </div>
         </div>
-        <CreateColumnsForm columns={columns} setColumns={setColumns} isEditMode={isEditMode} editColumns={columns} />
+        <CreateColumnsForm
+          columns={columns}
+          setColumns={setColumns}
+          isEditMode={isEditMode}
+          editColumns={columns}
+          tableName={tableName}
+          setForeignKeyDetails={setForeignKeyDetails}
+          isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
+          foreignKeyDetails={foreignKeyDetails}
+          organizationId={organizationId}
+          existingForeignKeyDetails={foreignKeys}
+          setCreateForeignKeyInEdit={setCreateForeignKeyInEdit}
+          createForeignKeyInEdit={createForeignKeyInEdit}
+          selectedTable={selectedTable}
+          setForeignKeys={setForeignKeys}
+        />
       </div>
       <DrawerFooter
         fetching={fetching}
@@ -296,6 +329,7 @@ const TableForm = ({
           hasPrimaryKey !== true ||
           (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
+        showToolTipForFkOnReadDocsSection={true}
       />
       <ConfirmDialog
         title={'Change in primary key'}

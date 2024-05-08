@@ -1,14 +1,5 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import {
-  EntityManager,
-  In,
-  ObjectLiteral,
-  QueryFailedError,
-  SelectQueryBuilder,
-  Table,
-  TableColumn,
-  TypeORMError,
-} from 'typeorm';
+import { BadRequestException, Injectable, NotFoundException, Optional, ConflictException } from '@nestjs/common';
+import { EntityManager, In, ObjectLiteral, SelectQueryBuilder, Table, TableColumn, TableForeignKey } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { LicenseService } from './license.service';
@@ -17,6 +8,7 @@ import { generatePayloadForLimits } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
 
 export type TableColumnSchema = {
   column_name: string;
@@ -27,6 +19,14 @@ export type TableColumnSchema = {
   is_nullable: 'YES' | 'NO';
   constraint_type: string | null;
   keytype: string | null;
+};
+
+export type ForeignKeyDetails = {
+  column_names: Array<string>;
+  referenced_table_name: string;
+  referenced_column_names: Array<string>;
+  on_delete: string;
+  on_update: string;
 };
 
 export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
@@ -64,31 +64,35 @@ export class TooljetDbService {
   ) {}
 
   async perform(organizationId: string, action: string, params = {}) {
-    switch (action) {
-      case 'view_tables':
-        return await this.viewTables(organizationId);
-      case 'view_table':
-        return await this.viewTable(organizationId, params);
-      case 'create_table':
-        return await this.createTable(organizationId, params);
-      case 'drop_table':
-        return await this.dropTable(organizationId, params);
-      case 'add_column':
-        return await this.addColumn(organizationId, params);
-      case 'drop_column':
-        return await this.dropColumn(organizationId, params);
-      case 'edit_table':
-        return await this.editTable(organizationId, params);
-      case 'join_tables':
-        return await this.joinTable(organizationId, params);
-      case 'edit_column':
-        return await this.editColumn(organizationId, params);
-      default:
-        throw new BadRequestException('Action not defined');
+    const actionHandler = this.getActionHandler(action);
+    if (!actionHandler) {
+      throw new BadRequestException('Action not defined');
     }
+    return await actionHandler.call(this, organizationId, params);
   }
 
-  private async viewTable(organizationId: string, params): Promise<TableColumnSchema[]> {
+  private getActionHandler(action: string): ((organizationId: string, params: any) => Promise<any>) | undefined {
+    const actionHandlers: Partial<Record<TooljetDbActions, (organizationId: string, params: any) => Promise<any>>> = {
+      view_tables: this.viewTables,
+      view_table: this.viewTable,
+      create_table: this.createTable,
+      drop_table: this.dropTable,
+      add_column: this.addColumn,
+      drop_column: this.dropColumn,
+      edit_table: this.editTable,
+      join_tables: this.joinTable,
+      edit_column: this.editColumn,
+      create_foreign_key: this.createForeignKey,
+      update_foreign_key: this.updateForeignKey,
+      delete_foreign_key: this.deleteForeignKey,
+    };
+    return actionHandlers[action];
+  }
+
+  private async viewTable(
+    organizationId: string,
+    params
+  ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[] }> {
     const { table_name: tableName, id: id } = params;
 
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -101,7 +105,59 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    return await this.tooljetDbManager.query(`
+    let foreign_keys = await this.tooljetDbManager.query(`
+      select
+        pgc.confrelid::regclass as referenced_table_name, 
+        pgc.conname as constraint_name,
+        ARRAY(SELECT attname FROM pg_attribute WHERE attrelid = pgc.conrelid AND attnum = any(pgc.conkey)) AS column_names,
+        ARRAY(select attname from pg_attribute where attrelid = pgc.confrelid and attnum = any(pgc.confkey)) as referenced_column_names,
+        case pgc.confupdtype 
+              WHEN 'a' THEN 'NO ACTION'
+              WHEN 'r' THEN 'RESTRICT'
+              WHEN 'c' THEN 'CASCADE'
+              WHEN 'n' THEN 'SET NULL'
+              WHEN 'd' THEN 'SET DEFAULT'
+              ELSE NULL
+        end as on_update,
+        case pgc.confdeltype 
+          when 'a' then 'NO ACTION'
+          when 'r' then 'RESTRICT'
+          when 'c' then 'CASCADE'
+          when 'n' then 'SET NULL'
+          when 'd' then 'SET DEFAULT'
+        end as on_delete
+      from pg_constraint as pgc 
+      where pgc.conrelid = '${internalTable.id}'::regclass and pgc.contype = 'f'
+    `);
+
+    // Transforming the Query response
+    const referenced_table_list = [];
+    foreign_keys = foreign_keys.map((foreign_key_detail) => {
+      const { referenced_table_name, column_names, referenced_column_names } = foreign_key_detail;
+      referenced_table_list.push(referenced_table_name.slice(1, -1));
+      return {
+        ...foreign_key_detail,
+        referenced_table_name: referenced_table_name.slice(1, -1),
+        column_names: column_names.slice(1, -1).split(','),
+        referenced_column_names: referenced_column_names.slice(1, -1).split(','),
+      };
+    });
+
+    const referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+      referenced_table_list,
+      organizationId,
+      'TABLEID'
+    );
+
+    foreign_keys = foreign_keys.map((foreign_key_detail) => {
+      return {
+        ...foreign_key_detail,
+        referenced_table_id: foreign_key_detail.referenced_table_name,
+        referenced_table_name: referenced_tables_info[foreign_key_detail.referenced_table_name],
+      };
+    });
+
+    const columns = await this.tooljetDbManager.query(`
     SELECT c.COLUMN_NAME,
         c.DATA_TYPE,
         CASE
@@ -158,6 +214,11 @@ export class TooljetDbService {
         c.TABLE_NAME,
         c.ORDINAL_POSITION;
     `);
+
+    return {
+      foreign_keys,
+      columns,
+    };
   }
 
   private async viewTables(organizationId: string) {
@@ -180,7 +241,34 @@ export class TooljetDbService {
 
     if (isEmpty(primaryKeyColumnList)) throw new BadRequestException('Primary key is mandatory');
 
-    const { table_name: tableName } = params;
+    const { table_name: tableName, foreign_keys = [] } = params;
+
+    const tableWithSameName = await this.manager.findOne(InternalTable, {
+      tableName,
+      organizationId,
+    });
+
+    if (!isEmpty(tableWithSameName)) throw new ConflictException(`Table with with name "${tableName}" already exists`);
+
+    let referenced_tables_info = {};
+    if (foreign_keys.length) {
+      const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+        referenced_table_list,
+        organizationId,
+        'TABLENAME'
+      );
+    }
+
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
 
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
@@ -195,12 +283,16 @@ export class TooljetDbService {
         tableName,
         organizationId,
       });
+
       await queryRunner.manager.save(internalTable);
 
       await tjdbQueryRunner.createTable(
         new Table({
           name: internalTable.id,
           columns: this.prepareColumnListForCreateTable(params.columns),
+          ...(foreign_keys.length && {
+            foreignKeys: this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info),
+          }),
         })
       );
 
@@ -219,7 +311,14 @@ export class TooljetDbService {
       await queryRunner.release();
       await tjdbQueryRunner.release();
 
-      throw err;
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'create_table',
+          internalTables: [],
+        },
+        err
+      );
     }
   }
 
@@ -247,7 +346,14 @@ export class TooljetDbService {
       return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw err;
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'drop_table',
+          internalTables: [internalTable],
+        },
+        err
+      );
     } finally {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
@@ -311,8 +417,41 @@ export class TooljetDbService {
                 }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
             })
           );
+
+          // To Sync with Other States - Adding it to the Update Array as well
+          columnstoBeUpdated.push({
+            oldColumn: new TableColumn({
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
+            }),
+            newColumn: new TableColumn({
+              name: new_column.column_name,
+              type: new_column.data_type,
+              ...(new_column?.column_default &&
+                new_column.data_type !== 'serial' && {
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
+              isNullable: !new_column?.constraints_type.is_not_null,
+              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
+            }),
+          });
         }
 
         // Columns to be updated
@@ -331,6 +470,7 @@ export class TooljetDbService {
                 }),
               isNullable: !old_column?.constraints_type.is_not_null,
               isUnique: old_column?.constraints_type.is_unique,
+              isPrimary: old_column?.constraints_type.is_primary_key || false,
             }),
             newColumn: new TableColumn({
               name: new_column.column_name,
@@ -344,6 +484,7 @@ export class TooljetDbService {
                 }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+              isPrimary: new_column?.constraints_type.is_primary_key || false,
             }),
           });
         }
@@ -351,11 +492,9 @@ export class TooljetDbService {
 
       if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
 
-      if (!isEmpty(updatedPrimaryKeys)) await tjdbQueryRunner.dropPrimaryKey(internalTable.id);
       if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(internalTable.id, columnsToBeDeleted);
       if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(internalTable.id, columnsToBeInserted);
       if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(internalTable.id, columnstoBeUpdated);
-      if (!isEmpty(updatedPrimaryKeys)) await tjdbQueryRunner.updatePrimaryKeys(internalTable.id, updatedPrimaryKeys);
 
       if (params.new_table_name) {
         const { new_table_name } = params;
@@ -377,17 +516,38 @@ export class TooljetDbService {
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
       await queryRunner.release();
-      throw error;
+
+      throw new TooljetDatabaseError(error.message, { origin: 'edit_table', internalTables: [internalTable] }, error);
     }
   }
 
   private async addColumn(organizationId: string, params) {
-    const { table_name: tableName, column } = params;
+    const { table_name: tableName, column, foreign_keys } = params;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+
+    let referenced_tables_info = {};
+    if (foreign_keys.length) {
+      const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+        referenced_table_list,
+        organizationId,
+        'TABLENAME'
+      );
+    }
+
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
 
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunnner.connect();
@@ -410,13 +570,22 @@ export class TooljetDbService {
           ...(column?.constraints_type.is_primary_key && { isPrimary: true }),
         })
       );
+
+      if (foreign_keys.length) {
+        const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+          (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+        );
+        await tjdbQueryRunnner.createForeignKeys(internalTable.id, foreignKeys);
+      }
+
       await tjdbQueryRunnner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunnner.release();
     } catch (err) {
       await tjdbQueryRunnner.rollbackTransaction();
       await tjdbQueryRunnner.release();
-      throw err;
+
+      throw new TooljetDatabaseError(err.message, { origin: 'add_column', internalTables: [internalTable] }, err);
     }
   }
 
@@ -493,15 +662,14 @@ export class TooljetDbService {
       const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap);
       return await queryBuilder.getRawMany();
     } catch (error) {
-      // custom error handling - for Query error
-      if (error instanceof QueryFailedError || error instanceof TypeORMError) {
-        let customErrorMessage: string = error.message;
-        Object.entries(internalTableIdToNameMap).forEach(([key, value]) => {
-          customErrorMessage = customErrorMessage.replace(key, value as string);
-        });
-        throw new HttpException(customErrorMessage, 422);
-      }
-      throw error;
+      throw new TooljetDatabaseError(
+        error.message,
+        {
+          origin: 'join_tables',
+          internalTables: internalTables,
+        },
+        error
+      );
     } finally {
       if (!isEmpty(dataQuery) && !isEmpty(user)) {
         this.eventEmitter.emit('auditLogEntry', {
@@ -626,19 +794,19 @@ export class TooljetDbService {
   }
 
   private async editColumn(organizationId: string, params) {
-    const { table_name: tableName, column } = params;
+    const { table_name: tableName, column, foreign_key_id_to_delete } = params;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-    const internalTableInfo = {};
 
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
 
     try {
+      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id_to_delete);
       await tjdbQueryRunner.changeColumn(
         internalTable.id,
         column.column_name,
@@ -665,36 +833,267 @@ export class TooljetDbService {
       await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
     } catch (error) {
-      internalTableInfo[internalTable.id] = tableName;
-      if (error instanceof QueryFailedError || error instanceof TypeORMError) {
-        let customErrorMessage: string = error.message;
-        Object.entries(internalTableInfo).forEach(([key, value]) => {
-          customErrorMessage = customErrorMessage.replace(key, value as string);
-        });
-        error.message = customErrorMessage;
-        // throw new HttpException(customErrorMessage, 422);
-      }
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
-      throw error;
+      throw new TooljetDatabaseError(error.message, { origin: 'edit_column', internalTables: [internalTable] }, error);
     }
   }
 
   private prepareColumnListForCreateTable(columns) {
     const columnList = columns.map((column) => {
-      const { column_name, data_type, column_default = undefined, constraints_type = {} } = column;
+      const { column_name, constraints_type = {} } = column;
       const is_primary_key_column = constraints_type?.is_primary_key || false;
+
+      const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
+        const { data_type, column_default = undefined } = column;
+        const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
+        const isCharacterVarying = () => data_type === 'character varying';
+
+        if (isSerial()) return { data_type: 'serial', column_default: undefined };
+        if (isCharacterVarying() && !isEmpty(column_default))
+          return { data_type, column_default: this.addQuotesIfString(column_default) };
+
+        return { data_type, column_default };
+      };
+
+      const { data_type, column_default } = prepareDataTypeAndDefault(column);
 
       return {
         name: column_name,
         type: data_type,
-        ...(column_default && {
-          default: data_type === 'character varying' ? this.addQuotesIfString(column_default) : column_default,
-        }),
+        default: column_default,
         isNullable: constraints_type?.is_not_null ? false : true,
         isUnique: constraints_type?.is_unique && !is_primary_key_column ? true : false,
       };
     });
     return columnList;
+  }
+
+  private prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info) {
+    if (!foreign_keys.length) return [];
+    const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
+      const {
+        column_names,
+        referenced_table_name,
+        referenced_column_names,
+        on_delete = '',
+        on_update = '',
+      } = foreignKeyDetail;
+
+      return {
+        columnNames: column_names,
+        referencedTableName: referenced_tables_info[referenced_table_name],
+        referencedColumnNames: referenced_column_names,
+        ...(on_delete && { onDelete: on_delete }),
+        ...(on_update && { onUpdate: on_update }),
+      };
+    });
+    return foreignKeyList;
+  }
+
+  // Method to check : Tables mentioned in Foreignkey is valid or not ( based on 'type' of input logic differs)
+  private async fetchAndCheckIfValidForeignKeyTables(
+    referenced_table_list,
+    organisation_id,
+    type: 'TABLEID' | 'TABLENAME'
+  ) {
+    const valid_referenced_table_details = await this.manager.find(InternalTable, {
+      where: {
+        organizationId: organisation_id,
+        ...(type === 'TABLENAME' && { tableName: In(referenced_table_list) }),
+        ...(type === 'TABLEID' && { id: In(referenced_table_list) }),
+      },
+      select: ['tableName', 'id'],
+    });
+
+    const referenced_tables_info = {};
+    const validReferencedTableSet = new Set(
+      valid_referenced_table_details.map((referenced_table_detail) => {
+        if (type === 'TABLEID') {
+          referenced_tables_info[referenced_table_detail.id] = referenced_table_detail.tableName;
+          return referenced_table_detail.id;
+        }
+        referenced_tables_info[referenced_table_detail.tableName] = referenced_table_detail.id;
+        return referenced_table_detail.tableName;
+      })
+    );
+
+    const invalid_tables = [];
+    const is_all_tables_exist = referenced_table_list.every((referenced_table) => {
+      if (validReferencedTableSet.has(referenced_table)) return true;
+      invalid_tables.push(referenced_table);
+      return false;
+    });
+
+    if (!is_all_tables_exist) {
+      const errorMessage =
+        type === 'TABLEID'
+          ? 'Some tables used in Foreign key was not found'
+          : `Tables: ${invalid_tables.join(',')} - used for Foreign key reference was not found`;
+      throw new BadRequestException(errorMessage);
+    }
+    return referenced_tables_info;
+  }
+
+  private async createForeignKey(organizationId: string, params) {
+    const { table_name, foreign_keys } = params;
+    if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId: organizationId, tableName: table_name },
+    });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+
+    let referenced_tables_info = {};
+    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+      referenced_table_list,
+      organizationId,
+      'TABLENAME'
+    );
+
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
+    try {
+      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+      );
+      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
+
+      await tjdbQueryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
+      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
+    } catch (err) {
+      await tjdbQueryRunner.rollbackTransaction();
+      await tjdbQueryRunner.release();
+
+      const referencedTables = Object.entries(referenced_tables_info).map(([key, value]) => ({
+        tableName: key,
+        id: value as string,
+      }));
+
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'create_foreign_key',
+          internalTables: [internalTable, ...referencedTables],
+        },
+        err
+      );
+    }
+  }
+
+  private async updateForeignKey(organizationId: string, params) {
+    const { table_name, foreign_key_id, foreign_keys } = params;
+    if (!foreign_key_id) throw new BadRequestException('Foreign key id is mandatory');
+    if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId: organizationId, tableName: table_name },
+    });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+
+    let referenced_tables_info = {};
+    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+      referenced_table_list,
+      organizationId,
+      'TABLENAME'
+    );
+
+    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
+      foreign_keys,
+      organizationId
+    );
+
+    if (isFKfromCompositePK)
+      throw new ConflictException(
+        'Foreign key cannot be created as the referenced column is in the composite primary key.'
+      );
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
+    try {
+      await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
+
+      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+      );
+      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
+
+      await tjdbQueryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await tjdbQueryRunner.release();
+      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
+    } catch (err) {
+      await tjdbQueryRunner.rollbackTransaction();
+      await tjdbQueryRunner.release();
+      const referencedTables = Object.entries(referenced_tables_info).map(([key, value]) => ({
+        id: key,
+        tableName: value as string,
+      }));
+
+      throw new TooljetDatabaseError(
+        err.message,
+        {
+          origin: 'update_foreign_key',
+          internalTables: [internalTable, ...referencedTables],
+        },
+        err
+      );
+    }
+  }
+
+  private async deleteForeignKey(organizationId: string, params) {
+    const { table_name, foreign_key_id } = params;
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId: organizationId, tableName: table_name },
+    });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
+    return { statusCode: 200, message: 'Foreign key relation deleted successfully!' };
+  }
+
+  private async checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(foreignKeys, organizationId) {
+    if (!foreignKeys.length) return;
+    let isFKfromCompositePK = false;
+    for (const foreignKeyDetails of foreignKeys) {
+      const { referenced_table_name = '', referenced_column_names = [] } = foreignKeyDetails;
+      const referencedTableMetaData = await this.viewTable(organizationId, { table_name: referenced_table_name });
+      const { columns = [] } = referencedTableMetaData;
+      const pkColumnList = [];
+
+      if (columns.length) {
+        columns.forEach((column: any) => {
+          const { constraints_type = {} } = column;
+          if (constraints_type?.is_primary_key) pkColumnList.push(column.column_name);
+        });
+      }
+
+      if (
+        pkColumnList.length > 1 &&
+        referenced_column_names.some((referencedColumnName) => pkColumnList.includes(referencedColumnName))
+      ) {
+        isFKfromCompositePK = true;
+      }
+    }
+    return isFKfromCompositePK;
   }
 }

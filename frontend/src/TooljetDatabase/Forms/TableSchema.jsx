@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
+import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import Serial from '../Icons/Serial.svg';
 import ForeignKeyRelation from '../Icons/Fk-relation.svg';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import SelectIcon from '../Icons/Select-column.svg';
 import MenuIcon from '../Icons/Unique-menu.svg';
+import ArrowRight from '../Icons/ArrowRight.svg';
 import Tick from '../Icons/Tick.svg';
+import Information from '@/_ui/Icon/solidIcons/Information';
+import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
 
@@ -18,8 +22,13 @@ function TableSchema({
   setColumnSelection,
   handleDelete,
   isEditMode,
+  indexHover,
   editColumns,
+  foreignKeyDetails,
+  existingForeignKeyDetails,
 }) {
+  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+
   const { Option } = components;
 
   const darkDisabledBackground = '#1f2936';
@@ -41,6 +50,13 @@ function TableSchema({
   const dropdownContainerWidth = '360px';
 
   const columnDetails = isEditMode ? editColumns : columns;
+
+  const [defaultValue, setDefaultValue] = useState(
+    Object.keys(columnDetails).map((key, index) => ({
+      label: columnDetails[index]?.column_default,
+      value: columnDetails[index]?.column_default,
+    }))
+  );
 
   const CustomSelectOption = (props) => {
     return (
@@ -99,11 +115,39 @@ function TableSchema({
   }
 
   const primaryKeyLength = countPrimaryKeyLength(columnDetails);
+  // const indexOfActiveForeignKey = Object.values(columnDetails).findIndex((obj) =>
+  //   Object.values(obj).includes(foreignKeyDetails?.column_names?.value)
+  // );
+  const indexesOfForeignKey = foreignKeyDetails.flatMap((foreignKey) => {
+    return Object.values(columnDetails).reduce((acc, column, index) => {
+      if (foreignKey.column_names[0] === column.column_name) {
+        acc.push(index);
+      }
+      return acc;
+    }, []);
+  });
+
+  function checkMatchingColumnNamesInForeignKey(foreignKeys, columnName) {
+    return foreignKeys?.some((foreignKey) => foreignKey?.column_names?.includes(columnName));
+  }
+
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
+    const [key, value] = Object.entries(item);
+    return {
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
+    };
+  });
+
+  // const objectsAtIndexes = indexesOfForeignKey.map((index) => columnDetails[index]);
 
   return (
-    <div>
+    <div className="column-schema-container">
       {Object.keys(columnDetails).map((index) => (
-        <div key={index} className="list-group-item mb-1 mt-2 table-schema">
+        <div
+          key={index}
+          className={`list-group-item mb-1 mt-2 table-schema  ${index == indexHover ? 'foreignKey-hover' : ''}`}
+        >
           <div className="table-schema-row">
             {/* <div className="col-1">
                   <DragIcon />
@@ -124,9 +168,49 @@ function TableSchema({
                 // disabled={columns[index]?.constraints_type?.is_primary_key === true}
               />
             </div>
-            <div className="foreign-key-relation">
-              <ForeignKeyRelation width="14" height="14" />
-            </div>
+
+            <ToolTip
+              message={
+                foreignKeyDetails.some((item) => item.column_names[0] === columnDetails[index]?.column_name) ? (
+                  <div>
+                    <span>Foreign key relation</span>
+                    <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                      <span>
+                        {
+                          foreignKeyDetails.find((item) => item.column_names[0] === columnDetails[index]?.column_name)
+                            ?.column_names[0]
+                        }
+                      </span>
+                      <ArrowRight />
+                      <span>{`${
+                        foreignKeyDetails.find((item) => item.column_names[0] === columnDetails[index]?.column_name)
+                          ?.referenced_table_name
+                      }.${
+                        foreignKeyDetails.find((item) => item.column_names[0] === columnDetails[index]?.column_name)
+                          ?.referenced_column_names[0]
+                      }`}</span>
+                    </div>
+                  </div>
+                ) : (
+                  'No foreign key relation'
+                )
+              }
+              placement="top"
+              tooltipClassName="tootip-table"
+            >
+              <div
+                className={cx({
+                  'foreign-key-relation-active': foreignKeyDetails?.some(
+                    (item) => item.column_names[0] === columnDetails[index]?.column_name
+                  ),
+                  'foreign-key-relation': foreignKeyDetails?.some(
+                    (item) => item.column_names[0] !== columnDetails[index]?.column_name
+                  ),
+                })}
+              >
+                <ForeignKeyRelation width="13" height="13" />
+              </div>
+            </ToolTip>
 
             <ToolTip
               message="Primary key data type cannot be modified"
@@ -160,10 +244,14 @@ function TableSchema({
                       (prevColumns[index].constraints_type?.is_primary_key &&
                         prevColumns[index]?.data_type !== 'serial');
 
-                    columnConstraints.is_unique =
-                      value.value === 'serial' ||
-                      (prevColumns[index].constraints_type?.is_primary_key &&
-                        prevColumns[index]?.data_type !== 'serial');
+                    columnConstraints.is_unique = prevColumns[index].constraints_type?.is_primary_key
+                      ? true
+                      : value?.value === 'boolean'
+                      ? false
+                      : false;
+
+                    columnConstraints.is_primary_key = value.value === 'boolean' && false;
+                    // columnConstraints.is_primary_key = value.value === 'serial' && true;
                     prevColumns[index].constraints_type = { ...columnConstraints };
                     setColumns(prevColumns);
                   }}
@@ -206,75 +294,149 @@ function TableSchema({
                 />
               </div>
             </ToolTip>
+            {checkMatchingColumnNamesInForeignKey(foreignKeyDetails, columnDetails[index].column_name) ? (
+              <DropDownSelect
+                buttonClasses="border border-end-1 foreignKeyAcces-container"
+                showPlaceHolder={true}
+                options={referenceTableDetails}
+                darkMode={darkMode}
+                emptyError={
+                  <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                    <Information />
+                    No table selected
+                  </div>
+                }
+                value={
+                  columnDetails[index].column_default !== null
+                    ? { value: columnDetails[index].column_default, label: columnDetails[index].column_default }
+                    : defaultValue[index]
+                }
+                // foreignKeyAccessInRowForm={true}
+                disabled={
+                  (columnDetails[index].data_type === 'serial' &&
+                    columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                  columnDetails[index].data_type === 'serial'
+                }
+                topPlaceHolder={
+                  (columnDetails[index].data_type === 'serial' &&
+                    columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                  columnDetails[index].data_type === 'serial'
+                    ? 'Auto-generated'
+                    : 'Null'
+                }
+                onChange={(value) => {
+                  setDefaultValue((prevState) => {
+                    const newState = [...prevState];
+                    newState[index].value = value.value === 'Null' ? null : value.value;
+                    newState[index].label = value.value === 'Null' ? null : value.value;
+                    return newState;
+                  });
+                  const prevColumns = { ...columnDetails };
+                  prevColumns[index].column_default = value.value;
+                  setColumns(prevColumns);
+                }}
+                onAdd={true}
+                addBtnLabel={'Open referenced table'}
+                foreignKeys={foreignKeyDetails}
+                setReferencedColumnDetails={setReferencedColumnDetails}
+                scrollEventForColumnValus={true}
+                cellColumnName={columnDetails[index].column_name}
+              />
+            ) : (
+              <ToolTip
+                message={
+                  columnDetails[index]?.data_type === 'serial' ? 'Serial data type values cannot be modified' : null
+                }
+                placement="top"
+                tooltipClassName="tootip-table"
+                style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
+                show={columnDetails[index]?.data_type === 'serial'}
+              >
+                <div className="m-0" data-cy="column-default-input-field">
+                  <input
+                    onChange={(e) => {
+                      e.persist();
+                      const prevColumns = { ...columnDetails };
+                      prevColumns[index].column_default = e.target.value;
+                      setColumns(prevColumns);
+                    }}
+                    value={
+                      columnDetails[index].data_type === 'serial'
+                        ? 'Auto-generated'
+                        : // : checkDefaultValue(columnDetails[index].column_default)
+                          // ? null
+                          columnDetails[index].column_default
+                    }
+                    type="text"
+                    className="form-control defaultValue"
+                    data-cy="default-input-field"
+                    placeholder={
+                      (columnDetails[index].data_type === 'serial' &&
+                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                      columnDetails[index].data_type === 'serial'
+                        ? 'Auto-generated'
+                        : 'Null'
+                    }
+                    disabled={
+                      (columnDetails[index].data_type === 'serial' &&
+                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                      columnDetails[index].data_type === 'serial'
+                    }
+                  />
+                </div>
+              </ToolTip>
+            )}
 
             <ToolTip
               message={
-                columnDetails[index]?.data_type === 'serial' ? 'Serial data type values cannot be modified' : null
+                columnDetails[index]?.data_type === 'boolean'
+                  ? 'Boolean data type cannot be a primary key'
+                  : 'There must be atleast one Primary key'
               }
               placement="top"
               tooltipClassName="tootip-table"
-              style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
-              show={columnDetails[index]?.data_type === 'serial'}
-            >
-              <div className="m-0" data-cy="column-default-input-field">
-                <input
-                  onChange={(e) => {
-                    e.persist();
-                    const prevColumns = { ...columnDetails };
-                    prevColumns[index].column_default = e.target.value;
-                    setColumns(prevColumns);
-                  }}
-                  value={
-                    columnDetails[index].data_type === 'serial'
-                      ? 'Auto-generated'
-                      : // : checkDefaultValue(columnDetails[index].column_default)
-                        // ? null
-                        columnDetails[index].column_default
-                  }
-                  type="text"
-                  className="form-control defaultValue"
-                  data-cy="default-input-field"
-                  placeholder={
-                    (columnDetails[index].data_type === 'serial' &&
-                      columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                    columnDetails[index].data_type === 'serial'
-                      ? 'Auto-generated'
-                      : columnDetails[index]?.constraints_type?.is_primary_key === true
-                      ? 'Enter value'
-                      : 'Null'
-                  }
-                  disabled={
-                    (columnDetails[index].data_type === 'serial' &&
-                      columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                    columnDetails[index].data_type === 'serial'
-                  }
-                />
-              </div>
-            </ToolTip>
-
-            <ToolTip
-              message={'There must be atleast one Primary key'}
-              placement="top"
-              tooltipClassName="tootip-table"
-              show={primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true}
+              show={
+                (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                columnDetails[index]?.data_type === 'boolean'
+              }
             >
               <div className="primary-check">
                 <IndeterminateCheckbox
-                  checked={columnDetails[index]?.constraints_type?.is_primary_key ?? false}
+                  checked={
+                    columnDetails[index]?.constraints_type?.is_primary_key &&
+                    columnDetails[index]?.data_type === 'boolean'
+                      ? false
+                      : columnDetails[index]?.constraints_type?.is_primary_key
+                      ? true
+                      : false
+                  }
                   onChange={(e) => {
                     const prevColumns = { ...columnDetails };
                     const columnConstraints = prevColumns[index]?.constraints_type ?? {};
                     // const data = e.target.checked === true ? true : false;
                     columnConstraints.is_primary_key = e.target.checked;
                     columnConstraints.is_not_null =
-                      e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
+                      // isEditMode && e.target.checked === false
+                      //   ? true
+                      e.target.checked === true ||
+                      prevColumns[index].data_type === 'serial' ||
+                      e.target.checked === false
+                        ? true
+                        : false;
                     columnConstraints.is_unique =
-                      e.target.checked === true || prevColumns[index].data_type === 'serial' ? true : false;
+                      e.target.checked === true ||
+                      prevColumns[index].data_type === 'serial' ||
+                      e.target.checked === false
+                        ? true
+                        : false;
                     prevColumns[index].constraints_type = { ...columnConstraints };
                     // prevColumns[index].data_type = data === false && '';
                     setColumns(prevColumns);
                   }}
-                  disabled={primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true}
+                  disabled={
+                    (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                    columnDetails[index].data_type === 'boolean'
+                  }
                 />
               </div>
             </ToolTip>

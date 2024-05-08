@@ -6,13 +6,26 @@ import { tooljetDatabaseService } from '@/_services';
 import _ from 'lodash';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
+import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
+import { Link } from 'react-router-dom';
+import { getPrivateRoute } from '@/_helpers/routes';
+import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
+import ArrowRight from '../Icons/ArrowRight.svg';
 
-const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
+const EditRowForm = ({
+  onEdit,
+  onClose,
+  selectedRowObj = null,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
@@ -52,7 +65,7 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
               currentValue[key] === null || currentValue[key]?.toString() === columns[index].column_default
                 ? true
                 : false;
-            return { value: value, disabled: disabledValue };
+            return { value: value, disabled: disabledValue, label: value };
           })
         : [];
 
@@ -74,6 +87,23 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
     return data;
   });
 
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
+    const [key, value] = Object.entries(item);
+    return {
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
+    };
+  });
+
+  function isMatchingForeignKeyColumn(columnName) {
+    return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
+  }
+
+  function isMatchingForeignKeyColumnDetails(columnHeader) {
+    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    return matchingColumn;
+  }
+
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
     const newActiveTabs = [...activeTab];
     newActiveTabs[index] = tabData;
@@ -83,19 +113,19 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
     const actualDefaultVal = defaultValue === 'true' ? true : false;
     const newInputValues = [...inputValues];
     if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
-      newInputValues[index] = { value: defaultValue, disabled: true };
+      newInputValues[index] = { value: defaultValue, disabled: true, label: defaultValue };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
-      newInputValues[index] = { value: actualDefaultVal, disabled: true };
+      newInputValues[index] = { value: actualDefaultVal, disabled: true, label: actualDefaultVal };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
-      newInputValues[index] = { value: null, disabled: true };
+      newInputValues[index] = { value: null, disabled: true, label: null };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: null, disabled: true };
+      newInputValues[index] = { value: null, disabled: true, label: null };
     } else if (tabData === 'Custom' && customVal.length > 0) {
-      newInputValues[index] = { value: customVal, disabled: false };
+      newInputValues[index] = { value: customVal, disabled: false, label: customVal };
     } else if (tabData === 'Custom' && customVal.length <= 0) {
-      newInputValues[index] = { value: '', disabled: false };
+      newInputValues[index] = { value: '', disabled: false, label: '' };
     } else {
-      newInputValues[index] = { value: customVal, disabled: false };
+      newInputValues[index] = { value: customVal, disabled: false, label: customVal };
     }
 
     setInputValues(newInputValues);
@@ -134,9 +164,13 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
-    newInputValues[index] = { value: value, disabled: false };
+    newInputValues[index] = {
+      value: value === 'Null' ? null : value,
+      disabled: false,
+      label: value === 'Null' ? null : value,
+    };
     setInputValues(newInputValues);
-    setRowData({ ...rowData, [columnName]: value });
+    setRowData({ ...rowData, [columnName]: value === 'Null' ? null : value });
   };
 
   useEffect(() => {
@@ -177,18 +211,44 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            <input
-              //defaultValue={currentValue}
-              value={inputValues[index]?.value !== null && inputValues[index]?.value}
-              type="text"
-              disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
-              onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-              placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
-              className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
-              data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
-              autoComplete="off"
-              // onFocus={onFocused}
-            />
+            {isMatchingForeignKeyColumn(columnName) ? (
+              <DropDownSelect
+                buttonClasses="border border-end-1 foreignKeyAcces-container"
+                showPlaceHolder={true}
+                options={referenceTableDetails}
+                darkMode={darkMode}
+                emptyError={
+                  <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                    <Information />
+                    No table selected
+                  </div>
+                }
+                value={inputValues[index]?.value !== null && inputValues[index]}
+                foreignKeyAccessInRowForm={true}
+                disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
+                topPlaceHolder={inputValues[index]?.value !== null && 'Select a value'}
+                onChange={(value) => handleInputChange(index, value.value, columnName)}
+                onAdd={true}
+                addBtnLabel={'Open referenced table'}
+                foreignKeys={foreignKeys}
+                setReferencedColumnDetails={setReferencedColumnDetails}
+                scrollEventForColumnValus={true}
+                cellColumnName={columnName}
+              />
+            ) : (
+              <input
+                //defaultValue={currentValue}
+                value={inputValues[index]?.value !== null && inputValues[index]?.value}
+                type="text"
+                disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
+                onChange={(e) => handleInputChange(index, e.target.value, columnName)}
+                placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
+                className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
+                data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
+                autoComplete="off"
+                // onFocus={onFocused}
+              />
+            )}
             {inputValues[index]?.value === null ? (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             ) : null}
@@ -241,17 +301,39 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
     }
   });
 
-  const isSubset = Object.entries(matchingObject).every(([key, value]) => currentValue[key] === value);
+  const isSubset = Object.entries(matchingObject).every(([key, value]) => currentValue[key] == value);
   const isSubsetForCharacter = Object.entries(matchingObjectForCharacter).every(
-    ([key, value]) => currentValue[key] === value
+    ([key, value]) => currentValue[key] == value
   );
+
+  const handleNavigateToReferencedtable = (id, name) => {
+    const data = { id: id, table_name: name };
+    localStorage.setItem('tableDetails', JSON.stringify(data));
+  };
 
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title">
-        <h3 className="card-title" data-cy="edit-row-header">
-          Edit row
-        </h3>
+        <div className="editRow-header-container">
+          <h3 className="card-title" data-cy="edit-row-header">
+            Edit row
+          </h3>
+          {foreignKeys.length > 0 &&
+            foreignKeys.map((foreignKey, index) => (
+              <ToolTip key={index} message="Open referenced table" placement="right" tooltipClassName="tootip-table">
+                <Link target="_blank" to={getPrivateRoute('database')}>
+                  <div
+                    className="edit-row-tableName"
+                    onClick={() =>
+                      handleNavigateToReferencedtable(foreignKey.referenced_table_id, foreignKey.referenced_table_name)
+                    }
+                  >
+                    <span>{foreignKey.referenced_table_name}</span> <Maximize />
+                  </div>
+                </Link>
+              </ToolTip>
+            ))}
+        </div>
       </div>
       <div className="card-body">
         <div>
@@ -272,10 +354,42 @@ const EditRowForm = ({ onEdit, onClose, selectedRowObj = null }) => {
                       className="form-label"
                       data-cy={`${String(Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-name-label`}
                     >
-                      <div className="d-flex align-items-center justify-content-start mb-2">
-                        <span style={{ width: '24px' }}>{renderDatatypeIcon(dataType)}</span>
+                      <div className="headerText-withIcon d-flex align-items-center justify-content-start">
+                        <span style={{ width: '24px' }}>
+                          {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
+                        </span>
                         <span style={{ marginRight: '5px' }}>{headerText}</span>
-                        {constraints_type?.is_primary_key === true && <SolidIcon name="primarykey" />}
+                        {constraints_type?.is_primary_key === true && (
+                          <span style={{ marginRight: '3px' }}>
+                            <SolidIcon name="primarykey" />
+                          </span>
+                        )}
+                        <ToolTip
+                          message={
+                            isMatchingForeignKeyColumn(Header) ? (
+                              <div>
+                                <span>Foreign key relation</span>
+                                <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                                  <span>{isMatchingForeignKeyColumnDetails(Header)?.column_names[0]}</span>
+                                  <ArrowRight />
+                                  <span>{`${isMatchingForeignKeyColumnDetails(Header)?.referenced_table_name}.${
+                                    isMatchingForeignKeyColumnDetails(Header)?.referenced_column_names[0]
+                                  }`}</span>
+                                </div>
+                              </div>
+                            ) : null
+                          }
+                          placement="top"
+                          tooltipClassName="tootip-table"
+                        >
+                          <div>
+                            {isMatchingForeignKeyColumn(Header) && (
+                              <span>
+                                <ForeignKeyIndicator />
+                              </span>
+                            )}
+                          </div>
+                        </ToolTip>
                       </div>
                     </div>
 

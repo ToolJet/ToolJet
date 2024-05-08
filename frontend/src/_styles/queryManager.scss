@@ -480,7 +480,7 @@ $border-radius: 4px;
   .select-search-dark__value input {
     width: 90px !important;
     height: 32px !important;
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
   }
 }
 
@@ -720,7 +720,7 @@ $border-radius: 4px;
   width: 268px !important;
 
   input {
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
   }
 }
 
@@ -745,7 +745,7 @@ $border-radius: 4px;
   }
 
   .input-group-parent-container {
-    border: 1px solid $color-light-slate-07  !important;
+    border: 1px solid $color-light-slate-07 !important;
     border-radius: 6px !important;
     overflow: hidden;
 
@@ -911,13 +911,13 @@ $border-radius: 4px;
     .delete-query {
       svg {
         path {
-          fill: $color-dark-tomato-10  !important;
+          fill: $color-dark-tomato-10 !important;
         }
       }
 
       svg:hover {
         path {
-          fill: $color-dark-tomato-09  !important;
+          fill: $color-dark-tomato-09 !important;
         }
       }
     }
@@ -925,13 +925,13 @@ $border-radius: 4px;
     .rename-query {
       svg {
         path {
-          fill: $color-dark-slate-12  !important;
+          fill: $color-dark-slate-12 !important;
         }
       }
 
       svg:hover {
         path {
-          fill: $color-dark-slate-11  !important;
+          fill: $color-dark-slate-11 !important;
         }
       }
     }
@@ -1165,14 +1165,14 @@ $border-radius: 4px;
         .text-danger {
           svg {
             path {
-              fill: $color-light-tomato-09  !important;
+              fill: $color-light-tomato-09 !important;
             }
           }
 
           &:hover {
             svg {
               path {
-                fill: $color-light-tomato-10  !important;
+                fill: $color-light-tomato-10 !important;
               }
             }
           }
@@ -1320,7 +1320,7 @@ $border-radius: 4px;
   .delete-field-option:hover {
     svg {
       path {
-        fill: $color-light-tomato-10  !important;
+        fill: $color-light-tomato-10 !important;
       }
     }
   }
@@ -1617,6 +1617,27 @@ $border-radius: 4px;
 .tjdb-codehinter {
   .CodeMirror {
     font-size: 12px !important;
+  }
+}
+
+.foreignKeyAcces-container {
+  border-radius: 4px;
+
+  .tdb-dropdown-btn-foreignKeyAccess {
+    border: 1px solid transparent !important;
+    border-radius: 4px !important;
+    height: 33px !important;
+
+    &:hover {
+      border: 1px solid transparent !important;
+      // background: transparent !important;
+    }
+
+    &:focus {
+      border: 1px solid var(--indigo-09, #3E63DD) !important;
+      background: transparent !important;
+      box-shadow: 0px 0px 0px 1px #C6D4F9
+    }
   }
 }
 

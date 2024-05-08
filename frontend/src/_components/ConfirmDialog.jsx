@@ -27,6 +27,11 @@ export function ConfirmDialog({
   currentPrimaryKeyIcons = {},
   newPrimaryKeyIcons = {},
   isEditToolJetDbTable = false,
+  foreignKeyChanges = [],
+  existingReferencedTableName = '',
+  existingReferencedColumnName = '',
+  currentReferencedTableName = '',
+  currentReferencedColumnName = '',
 }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
@@ -82,7 +87,15 @@ export function ConfirmDialog({
       )}
       <Modal.Body className="confirm-dialogue-body" data-cy="modal-message">
         {isEditToolJetDbTable && (
-          <ChangesComponent currentPrimaryKeyIcons={currentPrimaryKeyIcons} newPrimaryKeyIcons={newPrimaryKeyIcons} />
+          <ChangesComponent
+            currentPrimaryKeyIcons={currentPrimaryKeyIcons}
+            newPrimaryKeyIcons={newPrimaryKeyIcons}
+            foreignKeyChanges={foreignKeyChanges}
+            existingReferencedTableName={existingReferencedTableName}
+            existingReferencedColumnName={existingReferencedColumnName}
+            currentReferencedTableName={currentReferencedTableName}
+            currentReferencedColumnName={currentReferencedColumnName}
+          />
         )}
         {message}
       </Modal.Body>

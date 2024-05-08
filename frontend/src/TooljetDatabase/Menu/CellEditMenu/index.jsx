@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import DropDownSelect from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import LeftNav from '../../Icons/LeftNav.svg';
 import RightNav from '../../Icons/RightNav.svg';
@@ -23,9 +25,21 @@ export const CellEditMenu = ({
   setNullValue,
   nullValue,
   isBoolean,
+  referencedColumnDetails = [],
+  referenceColumnName = '',
+  isForeignKey = false,
+  scrollEventForColumnValus,
+  organizationId,
+  foreignKeys,
+  setReferencedColumnDetails,
+  cellHeader,
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
+  const [selectedForeignKeyValue, setSelectedForeignKeyValue] = useState({
+    value: previousCellValue === 'Null' ? null : previousCellValue,
+    label: previousCellValue === 'Null' ? null : previousCellValue,
+  });
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
@@ -57,6 +71,7 @@ export const CellEditMenu = ({
   };
 
   const closePopover = () => {
+    setReferencedColumnDetails([]);
     setSelectedValue(previousCellValue);
     close();
   };
@@ -99,6 +114,14 @@ export const CellEditMenu = ({
     e.stopPropagation();
   };
 
+  const referencedFKDataList = referencedColumnDetails.map((item) => {
+    const [key, _value] = Object.entries(item);
+    return {
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
+    };
+  });
+
   useEffect(() => {
     if (show) {
       document.addEventListener('keydown', handleKeyDown);
@@ -106,16 +129,55 @@ export const CellEditMenu = ({
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, isBoolean, selectedValue, cellValue]);
 
   useEffect(() => {
     if (selectedValue !== cellValue) setSelectedValue(cellValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellValue]);
 
   const popover = (
-    <Popover className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}>
+    <Popover
+      className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}
+      onClick={(event) => {
+        if (event.target.closest('.react-select-container')) {
+          event.preventDefault(); // Prevent the Popover from closing
+        }
+      }}
+    >
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className={`d-flex flex-column ${isBoolean ? 'gap-4' : 'gap-3'}`}>
+          {isForeignKey && (
+            <DropDownSelect
+              buttonClasses="border border-end-1 foreignKeyAcces-container"
+              showPlaceHolder={true}
+              options={referencedFKDataList}
+              darkMode={darkMode}
+              emptyError={
+                <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                  <Information />
+                  No table selected
+                </div>
+              }
+              value={selectedForeignKeyValue}
+              onChange={(value) => {
+                setSelectedForeignKeyValue({
+                  label: value.value === 'Null' ? null : value.value,
+                  value: value.value === 'Null' ? null : value.value,
+                });
+                setCellValue(value.value === 'Null' ? null : value.value);
+              }}
+              onAdd={true}
+              addBtnLabel={'Open referenced table'}
+              isCellEdit={true}
+              scrollEventForColumnValus={scrollEventForColumnValus}
+              organizationId={organizationId}
+              foreignKeys={foreignKeys}
+              setReferencedColumnDetails={setReferencedColumnDetails}
+              cellColumnName={cellHeader}
+            />
+          )}
           {/*  Boolean View */}
           {isBoolean && (
             <div className="d-flex align-items-start gap-2">

@@ -17,12 +17,14 @@ import TableFooter from './Footer';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
+import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import WarningDark from '../Icons/warning-dark.svg';
 import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
+import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
@@ -45,10 +47,13 @@ const Table = ({ collapseSidebar }) => {
     pageCount,
     handleRefetchQuery,
     loadingState,
+    setForeignKeys,
+    foreignKeys,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
+
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
@@ -82,6 +87,7 @@ const Table = ({ collapseSidebar }) => {
   const [nullValue, setNullValue] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
+  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   const prevSelectedTableRef = useRef({});
   const tooljetDbTableRef = useRef(null);
@@ -278,15 +284,21 @@ const Table = ({ collapseSidebar }) => {
           return;
         }
 
-        if (data?.result?.length > 0) {
+        const { foreign_keys = [] } = data?.result || {};
+        if (data?.result?.columns?.length > 0) {
           setColumns(
-            data?.result.map(({ column_name, data_type, ...rest }) => ({
+            data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
               Header: column_name,
               accessor: column_name,
               dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
               ...rest,
             }))
           );
+        }
+        if (foreign_keys.length > 0) {
+          setForeignKeys([...foreign_keys]);
+        } else {
+          setForeignKeys([]);
         }
       });
     } else {
@@ -404,6 +416,7 @@ const Table = ({ collapseSidebar }) => {
       const cellDataType =
         rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.column?.dataType;
 
+      setReferencedColumnDetails([]);
       setCellClick((prevValue) => ({
         ...prevValue,
         rowIndex: selectedCellRef.current.rowIndex,
@@ -543,6 +556,7 @@ const Table = ({ collapseSidebar }) => {
       }));
       updateCellNavigationRefToDefault();
       handleOnCloseEditMenu();
+      setReferencedColumnDetails([]);
     }
     event.stopPropagation();
   };
@@ -689,7 +703,7 @@ const Table = ({ collapseSidebar }) => {
       errorState: false,
     }));
     cellValue === null ? setNullValue(true) : setNullValue(false);
-    handleProgressAnimation('column edited successfully', true);
+    handleProgressAnimation('Column edited successfully', true);
     document.getElementById('edit-input-blur').blur();
   };
 
@@ -760,7 +774,14 @@ const Table = ({ collapseSidebar }) => {
 
   const handleCellClick = (e, cellIndex, rowIndex, cellVal) => {
     if (
-      ['table-editable-parent-cell', 'tjdb-td-wrapper', 'table-cell', 'cell-text'].includes(e.target.classList.value)
+      [
+        'table-editable-parent-cell',
+        'tjdb-td-wrapper',
+        'table-cell',
+        'cell-text',
+        'css-18kmycr-Input',
+        ' css-18kmycr-Input',
+      ].includes(e.target.classList.value)
     ) {
       const isCellValueDefault =
         headerGroups[0].headers[cellIndex]?.column_default === cellVal?.toString() ? true : false;
@@ -777,6 +798,7 @@ const Table = ({ collapseSidebar }) => {
       cellVal === null ? setNullValue(true) : setNullValue(false);
       setDefaultValue(isCellValueDefault);
       setEditPopover(false);
+      setReferencedColumnDetails([]);
     }
   };
 
@@ -812,9 +834,21 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
+  function isMatchingForeignKeyColumn(columnName) {
+    return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
+  }
+
+  function isMatchingForeignKeyColumnDetails(columnHeader) {
+    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    return matchingColumn;
+  }
+
   function tableHeaderContent(column, index) {
     const { constraints_type = {}, dataType = '' } = column;
     const { is_primary_key } = constraints_type;
+    const primaryKeyCount = headerGroups[0]?.headers.filter(
+      (obj) => obj.constraints_type.is_primary_key === true
+    ).length;
 
     return is_primary_key ? (
       <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
@@ -826,25 +860,104 @@ const Table = ({ collapseSidebar }) => {
             primaryKeyTooltip: true,
           })}
         >
-          <div>
+          <div className="table-header-container">
             <span className="tj-text-xsm tj-db-dataype text-lowercase">
               {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
             </span>
             <span>{column.render('Header')}</span>
           </div>
-          <ToolTip message="Primary key" placement="top" tooltipClassName="tootip-table" show={true}>
-            <div>
-              <SolidIcon name="primarykey" />
-            </div>
-          </ToolTip>
+          <div className="d-flex align-items-center">
+            <ToolTip
+              message={primaryKeyCount === 1 ? 'Primary key' : 'Composite primary key'}
+              placement="top"
+              tooltipClassName="tjdb-table-tooltip"
+              show={true}
+            >
+              <div>
+                <span
+                  style={{
+                    marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
+                  }}
+                >
+                  <SolidIcon name="primarykey" />
+                </span>
+              </div>
+            </ToolTip>
+
+            <ToolTip
+              message={
+                isMatchingForeignKeyColumn(column.Header) ? (
+                  <div className="foreignKey-relation-tooltip">
+                    <span>Foreign key relation</span>
+                    <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                      <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
+                      <ArrowRight />
+                      <span>{`${isMatchingForeignKeyColumnDetails(column.Header)?.referenced_table_name}.${
+                        isMatchingForeignKeyColumnDetails(column.Header)?.referenced_column_names[0]
+                      }`}</span>
+                    </div>
+                  </div>
+                ) : null
+              }
+              placement="top"
+              tooltipClassName="tjdb-table-tooltip"
+              show={true}
+            >
+              <div>
+                {isMatchingForeignKeyColumn(column.Header) && (
+                  <span
+                    style={{
+                      marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
+                    }}
+                  >
+                    <ForeignKeyIndicator />
+                  </span>
+                )}
+              </div>
+            </ToolTip>
+          </div>
         </div>
       </ToolTip>
     ) : (
-      <div className="tj-db-headerText">
-        <span className="tj-text-xsm tj-db-dataype text-lowercase">
-          {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
-        </span>
-        {column.render('Header')}
+      <div className="primaryKeyTooltip">
+        <div className="table-header-container">
+          <span className="tj-text-xsm tj-db-dataype text-lowercase">
+            {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
+          </span>
+          <span style={{ width: '100px' }}>{column.render('Header')}</span>
+        </div>
+
+        <ToolTip
+          message={
+            isMatchingForeignKeyColumn(column.Header) ? (
+              <div className="foreignKey-relation-tooltip">
+                <span>Foreign key relation</span>
+                <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                  <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
+                  <ArrowRight />
+                  <span>{`${isMatchingForeignKeyColumnDetails(column.Header)?.referenced_table_name}.${
+                    isMatchingForeignKeyColumnDetails(column.Header)?.referenced_column_names[0]
+                  }`}</span>
+                </div>
+              </div>
+            ) : null
+          }
+          placement="top"
+          tooltipClassName="tjdb-table-tooltip"
+          show={true}
+        >
+          <div>
+            {isMatchingForeignKeyColumn(column.Header) && (
+              <span
+                style={{
+                  marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
+                }}
+              >
+                <ForeignKeyIndicator />
+              </span>
+            )}
+          </div>
+        </ToolTip>
       </div>
     );
   }
@@ -875,15 +988,6 @@ const Table = ({ collapseSidebar }) => {
     marginTop: '0px',
   };
 
-  // primary key column should come in front row of table
-  // headerGroups.forEach((item) => {
-  //   item.headers.sort((a, b) => {
-  //     if (a.constraints_type && a.constraints_type.is_primary_key) return -1;
-  //     if (b.constraints_type && b.constraints_type.is_primary_key) return 1;
-  //     return 0;
-  //   });
-  // });
-
   return (
     <div>
       <TjdbTableHeader
@@ -900,6 +1004,9 @@ const Table = ({ collapseSidebar }) => {
         setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
         setFilterEnable={setFilterEnable}
         filterEnable={filterEnable}
+        referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
+        // getForeignKeyDetails={getForeignKeyDetails}
       />
       <div
         style={{
@@ -1085,6 +1192,7 @@ const Table = ({ collapseSidebar }) => {
                             onClick={() => {
                               replaceToggleSelectedRow(row.id);
                               setTimeout(() => setIsEditRowDrawerOpen(true), 100);
+                              // getForeignKeyDetails(0);
                             }}
                             className="tjdb-checkbox-cell"
                             data-cy="edit-cell-expand"
@@ -1101,6 +1209,7 @@ const Table = ({ collapseSidebar }) => {
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`
                             : `id-${cell.row.values?.id}-column-${cell.column.id}`;
+
                         return (
                           <td
                             {...cell.getCellProps()}
@@ -1151,22 +1260,21 @@ const Table = ({ collapseSidebar }) => {
                                 cell.value !== ''
                               }
                             >
-                              <div
-                                className={`${
-                                  cellClick.rowIndex === rIndex &&
-                                  cellClick.cellIndex === index &&
-                                  cellClick.errorState === true
-                                    ? 'tjdb-cell-error'
-                                    : cellClick.rowIndex === rIndex &&
+                              <div className="tjdb-column-select-border">
+                                <div
+                                  className={cx('tjdb-td-wrapper', {
+                                    'tjdb-selected-cell':
+                                      cellClick.rowIndex === rIndex &&
                                       cellClick.cellIndex === index &&
                                       cellClick.editable === true &&
-                                      !isCellUpdateInProgress
-                                    ? 'tjdb-selected-cell'
-                                    : 'tjdb-column-select-border'
-                                }`}
-                                id={`tjdb-cell-row${rIndex}-column${index}`}
-                              >
-                                <div className="tjdb-td-wrapper">
+                                      !isCellUpdateInProgress,
+                                    'tjdb-cell-error':
+                                      cellClick.rowIndex === rIndex &&
+                                      cellClick.cellIndex === index &&
+                                      cellClick.errorState === true,
+                                  })}
+                                  id={`tjdb-cell-row${rIndex}-column${index}`}
+                                >
                                   {cellClick.editable &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index ? (
@@ -1185,7 +1293,19 @@ const Table = ({ collapseSidebar }) => {
                                       setNullValue={setNullValue}
                                       nullValue={nullValue}
                                       isBoolean={cell.column?.dataType === 'boolean' ? true : false}
+                                      referencedColumnDetails={referencedColumnDetails}
+                                      referenceColumnName={
+                                        foreignKeys.length > 0 &&
+                                        isMatchingForeignKeyColumnDetails(cell.column.Header)
+                                          ?.referenced_column_names[0]
+                                      }
+                                      isForeignKey={isMatchingForeignKeyColumn(cell.column.Header)}
                                       darkMode={darkMode}
+                                      scrollEventForColumnValus={true}
+                                      organizationId={organizationId}
+                                      foreignKeys={foreignKeys}
+                                      setReferencedColumnDetails={setReferencedColumnDetails}
+                                      cellHeader={cell.column.Header}
                                     >
                                       <div
                                         className="input-cell-parent"
@@ -1196,64 +1316,89 @@ const Table = ({ collapseSidebar }) => {
                                         {cellVal === null ? (
                                           <span className="cell-text-null-input">Null</span>
                                         ) : cell.column?.dataType === 'boolean' ? (
-                                          <div
-                                            className="row"
-                                            style={{ marginLeft: '0px' }}
-                                            onClick={() => {
-                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
-                                            }}
-                                          >
-                                            <div className="col-1 p-0">
-                                              <label className={`form-switch`}>
-                                                <input
-                                                  autoComplete="off"
-                                                  id="edit-input-blur"
-                                                  className="form-check-input fs-12"
-                                                  type="checkbox"
-                                                  checked={editPopover ? cellVal : cell.value}
-                                                  onChange={() => {
-                                                    if (!editPopover && shouldOpenCellEditMenu(index))
-                                                      handleToggleCellEdit(
-                                                        cell.value,
-                                                        row.values.id,
-                                                        index,
-                                                        rIndex,
-                                                        true,
-                                                        cell.value
-                                                      );
-                                                  }}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setCellClick((prev) => ({
-                                                      ...prev,
-                                                      editable: false,
-                                                    }));
-                                                  }}
-                                                />
-                                              </label>
+                                          <div className="d-flex align-items-center justify-content-between">
+                                            <div
+                                              className="row"
+                                              style={{ marginLeft: '0px' }}
+                                              onClick={() => {
+                                                if (shouldOpenCellEditMenu(index)) setEditPopover(true);
+                                              }}
+                                            >
+                                              <div className="col-1 p-0">
+                                                <label className={`form-switch`}>
+                                                  <input
+                                                    autoComplete="off"
+                                                    id="edit-input-blur"
+                                                    className="form-check-input fs-12"
+                                                    type="checkbox"
+                                                    checked={editPopover ? cellVal : cell.value}
+                                                    onChange={() => {
+                                                      if (!editPopover && shouldOpenCellEditMenu(index))
+                                                        handleToggleCellEdit(
+                                                          cell.value,
+                                                          row.values.id,
+                                                          index,
+                                                          rIndex,
+                                                          true,
+                                                          cell.value
+                                                        );
+                                                    }}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setCellClick((prev) => ({
+                                                        ...prev,
+                                                        editable: false,
+                                                      }));
+                                                    }}
+                                                  />
+                                                </label>
+                                              </div>
                                             </div>
+                                            {/* <ToolTip
+                                              message={'Open referenced table'}
+                                              placement="top"
+                                              tooltipClassName="tjdb-table-tooltip"
+                                            >
+                                              <div className="cursor-pointer">
+                                                {isMatchingForeignKeyColumn(cell.column.Header) && <Maximize />}
+                                              </div>
+                                            </ToolTip> */}
                                           </div>
                                         ) : (
-                                          <input
-                                            autoComplete="off"
-                                            className="form-control fs-12 text-truncate"
-                                            id="edit-input-blur"
-                                            value={cellVal === null ? '' : cellVal}
-                                            onChange={(e) => {
-                                              if (shouldOpenCellEditMenu(index)) setCellVal(e.target.value);
-                                              if (e.target.value !== headerGroups[0].headers[index].column_default) {
-                                                setDefaultValue(false);
-                                              } else {
-                                                setDefaultValue(true);
+                                          <div className="d-flex align-items-center justify-content-between">
+                                            <input
+                                              autoComplete="off"
+                                              className="form-control fs-12 text-truncate"
+                                              id="edit-input-blur"
+                                              value={cellVal === null ? '' : cellVal}
+                                              onChange={(e) => {
+                                                if (shouldOpenCellEditMenu(index)) setCellVal(e.target.value);
+                                                if (e.target.value !== headerGroups[0].headers[index].column_default) {
+                                                  setDefaultValue(false);
+                                                } else {
+                                                  setDefaultValue(true);
+                                                }
+                                              }}
+                                              onFocus={() => {
+                                                if (shouldOpenCellEditMenu(index)) setEditPopover(true);
+                                              }}
+                                              disabled={
+                                                nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
                                               }
-                                            }}
-                                            onFocus={() => {
-                                              if (shouldOpenCellEditMenu(index)) setEditPopover(true);
-                                            }}
-                                            disabled={
-                                              nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
-                                            }
-                                          />
+                                            />
+                                            {/* <ToolTip
+                                              message={'Open referenced table'}
+                                              placement="top"
+                                              tooltipClassName="tjdb-table-tooltip"
+                                            >
+                                              <div className="cursor-pointer">
+                                                {foreignKeys[0]?.column_names?.length > 0 &&
+                                                  foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
+                                                    <Maximize />
+                                                  )}
+                                              </div>
+                                            </ToolTip> */}
+                                          </div>
                                         )}
                                       </div>
                                     </CellEditMenu>
@@ -1262,6 +1407,7 @@ const Table = ({ collapseSidebar }) => {
                                       {cell.value === null ? (
                                         <span className="cell-text-null">Null</span>
                                       ) : cell.column.dataType === 'boolean' ? (
+                                        // <div className="d-flex align-items-center justify-content-between">
                                         <div className="row" style={{ width: '33px' }}>
                                           <div className="col-1">
                                             <label className={`form-switch`}>
@@ -1286,8 +1432,34 @@ const Table = ({ collapseSidebar }) => {
                                           </div>
                                         </div>
                                       ) : (
-                                        <div className="cell-text">
-                                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                        //   <ToolTip
+                                        //     message={'Open referenced table'}
+                                        //     placement="top"
+                                        //     tooltipClassName="tjdb-table-tooltip"
+                                        //   >
+                                        //     <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
+                                        //   </ToolTip>
+                                        // </div>
+                                        <div
+                                          className={cx({
+                                            'foreignkey-cell': isMatchingForeignKeyColumn(cell.column.Header),
+                                          })}
+                                        >
+                                          <div className="cell-text">
+                                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                          </div>
+                                          {/* <ToolTip
+                                            message={'Open referenced table'}
+                                            placement="top"
+                                            tooltipClassName="tjdb-table-tooltip"
+                                          >
+                                            <div className="cursor-pointer">
+                                              {foreignKeys[0]?.column_names?.length > 0 &&
+                                                foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
+                                                  <Maximize />
+                                                )}
+                                            </div>
+                                          </ToolTip> */}
                                         </div>
                                       )}
                                     </>
@@ -1399,6 +1571,9 @@ const Table = ({ collapseSidebar }) => {
           setColumns={setColumns}
           onClose={() => setIsEditColumnDrawerOpen(false)}
           rows={rows}
+          isEditColumn={true}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
       <ConfirmDialog
