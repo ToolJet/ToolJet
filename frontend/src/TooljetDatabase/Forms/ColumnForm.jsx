@@ -375,9 +375,9 @@ const ColumnForm = ({
                   </div>
                 </div>
               ))}
-            {foreignKeyDetails?.length > 0 && (
+            {/* {foreignKeyDetails?.length > 0 && (
               <p className="fw-400 secondary-text tj-text-xsm mb-2">Create column to add foreign key relation</p>
-            )}
+            )} */}
           </div>
         </div>
 

@@ -292,13 +292,12 @@ function ForeignKeyRelation({
       return tableLength < 1;
     }
   };
-
   const disableAddRelationButton =
     checkTablelength(tables?.length, isEditMode) ||
     isEmpty(tableName) ||
     isEmpty(columns) ||
-    (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
-    (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation));
+    (!isEditMode && !Object.values(columns).some(isRequiredFieldsExistForCreateTableOperation)) ||
+    (isEditMode && !Object.values(columns).some(isRequiredFieldsExistForCreateTableOperation));
 
   const getTooltipContentFordisableAddRelationButton = (tableLength, tableName, columns) => {
     if (tableLength < 2) {
@@ -307,6 +306,11 @@ function ForeignKeyRelation({
       return 'Table name is required to add foreign key relation';
     } else if (isEmpty(columns)) {
       return 'At least 1 column is required to add foreign key relation';
+    } else if (
+      (!isEditMode && !Object.values(columns).some(isRequiredFieldsExistForCreateTableOperation)) ||
+      (isEditMode && !Object.values(columns).some(isRequiredFieldsExistForCreateTableOperation))
+    ) {
+      return 'Please fill all the required fields for at least 1 available column to add foreign key relation';
     } else {
       return '';
     }
@@ -371,10 +375,10 @@ function ForeignKeyRelation({
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
-        {!isEditMode && foreignKeyDetails.length >= 1 && (
+        {/* {!isEditMode && foreignKeyDetails.length >= 1 && (
           <span className="tj-text-xsm"> Create table to add foreign key relation</span>
-        )}
-        <div></div>
+        )} */}
+        {/* <div></div> */}
       </div>
       <Drawer
         isOpen={isForeignKeyDraweOpen}
