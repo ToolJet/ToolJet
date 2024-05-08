@@ -236,6 +236,13 @@ export class TooljetDbService {
 
     const { table_name: tableName, foreign_keys = [] } = params;
 
+    const tableWithSameName = await this.manager.findOne(InternalTable, {
+      tableName,
+      organizationId,
+    });
+
+    if (!isEmpty(tableWithSameName)) throw new ConflictException(`Table with with name "${tableName}" already exists`);
+
     let referenced_tables_info = {};
     if (foreign_keys.length) {
       const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
