@@ -1,0 +1,72 @@
+
+
+.response-modal-content {
+  width: 600px;
+  padding: 30px 24px;
+  flex-direction: column;
+  height: 100%;
+
+  .result-section {
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    margin-top: 24px;
+    background: #F8F9FA;
+    border-radius: 8px 8px 0px 0px;
+    padding: 0px;
+    overflow: hidden;
+    flex: 1;
+
+    .result-label {
+      height: 44px;
+      padding: 8px 16px;
+      background: #F8F9FA;
+      font-family: 'IBM Plex Sans';
+      font-style: normal;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 20px;
+      display: flex;
+      align-items: center;
+      color: #889096;
+      border-bottom: 1px solid #ECEEF0;
+    }
+  }
+
+
+  .response-section {
+    flex: 1;
+
+    .labels-section {
+      flex: 1;
+    }
+
+    .codehinter-section {
+      flex: 9;
+
+      .code-hinter {
+        max-height: none !important;
+      }
+    }
+
+    span.title {
+        font-weight: bold;
+        padding-bottom: 12px;
+    }
+  
+    .fx-button {
+      height: 22px;
+      margin-left: 3px;
+    }
+
+    .result-node-codehinter {
+      height: 100%;
+      .CodeMirror {
+        height: 100%;
+        background-color: #F8F9FA;
+        border: 0;
+      }
+    }
+  }
+
+}

@@ -123,19 +123,16 @@ function WorkflowEditor(props) {
       });
   };
 
-  const save = (editorSession, editorSessionActions) => {
+  const save = async (editorSession, editorSessionActions) => {
     editorSessionActions.setAppSavingStatus(true);
-    appVersionService
-      .save(editorSession.app.id, editorSession.app.versionId, {
-        definition: {
-          ...editorSession.app.flow,
-          queries: editorSession.queries.map((query) => ({ idOnDefinition: query.idOnDefinition, id: query.id })),
-          webhookParams: [...editorSession.parameters],
-        },
-      })
-      .then(() => {
-        editorSessionActions.setAppSavingStatus(false);
-      });
+    await appVersionService.save(editorSession.app.id, editorSession.app.versionId, {
+      definition: {
+        ...editorSession.app.flow,
+        queries: editorSession.queries.map((query) => ({ idOnDefinition: query.idOnDefinition, id: query.id })),
+        webhookParams: [...editorSession.parameters],
+      },
+    });
+    editorSessionActions.setAppSavingStatus(false);
   };
 
   const debouncedSave = useMemo(() => debounce(save, 2000, { leading: true }), []);
@@ -176,6 +173,7 @@ function WorkflowEditor(props) {
   const executeWorkflow = async () => {
     editorSessionActions.clearLogsConsole();
     editorSessionActions.setMode(Modes.Running);
+    await save(editorSession, editorSessionActions);
     editorSessionActions.displayLogsConsole(true);
 
     try {
@@ -254,7 +252,9 @@ function WorkflowEditor(props) {
           </div>
           <div className="flow-editor-column">
             <ReactFlowProvider>
-              <WorkflowEditorContext.Provider value={{ editorSession, editorSessionActions, addQuery, updateQuery }}>
+              <WorkflowEditorContext.Provider
+                value={{ editorSession, editorSessionActions, addQuery, updateQuery, save }}
+              >
                 <FlowBuilder
                   flow={editorSession.app.flow}
                   updateFlow={updateFlow}
