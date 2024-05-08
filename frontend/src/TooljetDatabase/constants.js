@@ -6,6 +6,7 @@ import CharacterVar from './Icons/Text.svg';
 import Boolean from './Icons/Toggle.svg';
 import Serial from './Icons/Serial.svg';
 import ArrowRight from './Icons/ArrowRight.svg';
+import RightFlex from './Icons/Right-flex.svg';
 
 export const dataTypes = [
   {
@@ -59,36 +60,68 @@ export const getColumnDataType = (columnDetails) => {
   const { data_type = '', column_default = '' } = columnDetails;
   const result = checkDefaultValue(column_default);
 
-  if (data_type === 'integer' && column_default) {
+  if (data_type === 'integer' && result) {
     if (result) return 'serial';
   }
   return data_type;
 };
 
-export const ChangesComponent = ({ currentPrimaryKeyIcons, newPrimaryKeyIcons }) => {
+export const ChangesComponent = ({
+  currentPrimaryKeyIcons,
+  newPrimaryKeyIcons,
+  foreignKeyChanges,
+  existingReferencedTableName,
+  existingReferencedColumnName,
+  currentReferencedTableName,
+  currentReferencedColumnName,
+}) => {
   return (
     <div className="new-changes-container">
       <div className="changes-title">
-        <span>Current primary key</span>
+        <span>{foreignKeyChanges && foreignKeyChanges.length > 0 ? 'Current relation' : 'Current primary key'}</span>
         <ArrowRight />
-        <span>New primary key</span>
+        <span>{foreignKeyChanges && foreignKeyChanges.length > 0 ? 'New relation' : 'New primary key'}</span>
       </div>
       <div className="key-changes-container">
         <div className="primarykeyDetails-container">
-          {Object.entries(currentPrimaryKeyIcons)?.map(([index, item]) => (
-            <div className="currentKey-details" key={index}>
-              {renderDatatypeIcon(item.icon)}
-              <span className="currentPrimaryKey-columnName">{item.columnName}</span>
-            </div>
-          ))}
+          {foreignKeyChanges && foreignKeyChanges.length > 0 ? (
+            <>
+              <span className="currentPrimaryKey-columnName">{existingReferencedTableName}</span>
+              <div className="currentKey-details align-item-center">
+                <RightFlex width={16} height={16} />
+                <span className="currentPrimaryKey-columnName">{existingReferencedColumnName}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              {Object.entries(currentPrimaryKeyIcons)?.map(([index, item]) => (
+                <div className="currentKey-details" key={index}>
+                  {renderDatatypeIcon(item.icon)}
+                  <span className="currentPrimaryKey-columnName">{item.columnName}</span>
+                </div>
+              ))}
+            </>
+          )}
         </div>
         <div className="newkeyDetails-container">
-          {Object.entries(newPrimaryKeyIcons)?.map(([index, item]) => (
-            <div className="newKey-details" key={index}>
-              {renderDatatypeIcon(item.icon)}
-              <span className="newPrimaryKey-columnName">{item.columnName}</span>
-            </div>
-          ))}
+          {foreignKeyChanges && foreignKeyChanges.length > 0 ? (
+            <>
+              <span className="currentPrimaryKey-columnName">{currentReferencedTableName}</span>
+              <div className="currentKey-details align-item-center">
+                <RightFlex width={16} height={16} />
+                <span className="currentPrimaryKey-columnName">{currentReferencedColumnName}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              {Object.entries(newPrimaryKeyIcons)?.map(([index, item]) => (
+                <div className="newKey-details" key={index}>
+                  {renderDatatypeIcon(item.icon)}
+                  <span className="newPrimaryKey-columnName">{item.columnName}</span>
+                </div>
+              ))}
+            </>
+          )}
         </div>
         <div></div>
       </div>
@@ -167,6 +200,7 @@ export default function tjdbDropdownStyles(
       ...base,
       width: dropdownContainerWidth,
       background: darkMode ? 'rgb(31,40,55)' : 'white',
+      zIndex: 10,
     }),
     singleValue: (provided) => ({
       ...provided,

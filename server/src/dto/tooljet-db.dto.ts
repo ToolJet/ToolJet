@@ -17,6 +17,7 @@ import {
   ValidateNested,
   IsBoolean,
   IsObject,
+  IsIn,
 } from 'class-validator';
 import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
 
@@ -128,6 +129,46 @@ export class CreatePostgrestTableDto {
   @ValidateNested({ each: true })
   @Type(() => PostgrestTableColumnDto)
   columns: PostgrestTableColumnDto[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
+}
+
+export class PostgrestForeignKeyDto {
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 column' })
+  column_names: Array<string>;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(31, { message: 'Referenced table name must be less than 32 characters' })
+  @MinLength(1, { message: 'Referenced table name must be at least 1 character' })
+  @Matches(/^[a-zA-Z0-9_]*$/, {
+    message: 'Table name can only contain letters, numbers and underscores',
+  })
+  @Validate(SQLInjectionValidator)
+  referenced_table_name: string;
+
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 referenced column' })
+  referenced_column_names: Array<string>;
+
+  @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-remove operation has invalid input',
+  })
+  @IsOptional()
+  on_delete: string;
+
+  @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-delete operation has invalid input',
+  })
+  @IsOptional()
+  on_update: string;
 }
 
 export class PostgrestTableColumnDto {
@@ -258,4 +299,17 @@ export class EditColumnTableDto {
 
   @IsOptional()
   constraints_type: ConstraintTypeDto;
+}
+
+export class AddColumnDto {
+  @ValidateNested()
+  @Type(() => PostgrestTableColumnDto)
+  @IsNotEmpty()
+  column: PostgrestTableColumnDto;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
 }

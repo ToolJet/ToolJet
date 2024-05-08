@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import ColumnName from '../Icons/ColumnName.svg';
 import TableSchema from './TableSchema';
+import ForeignKeyRelation from './ForeignKeyRelation';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import _, { isEmpty } from 'lodash';
 
-const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns }) => {
+const ColumnsForm = ({
+  columns,
+  setColumns,
+  isEditMode,
+  editColumns,
+  tableName,
+  setForeignKeyDetails,
+  isRequiredFieldsExistForCreateTableOperation,
+  foreignKeyDetails,
+  organizationId,
+  existingForeignKeyDetails,
+  setCreateForeignKeyInEdit,
+  createForeignKeyInEdit = false,
+  selectedTable,
+  setForeignKeys,
+}) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
+  const [hoveredColumn, setHoveredColumn] = useState(null);
+  const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
 
   const handleDelete = (index) => {
     const newColumns = { ...columns };
@@ -14,11 +33,35 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns }) => {
     setColumns(newColumns);
   };
 
+  const onMouseHover = (char = []) => {
+    const isNameAvailable = Object.values(columns).some((obj) => {
+      return Object.values(obj).some((value) => {
+        return char.includes(value);
+      });
+    });
+
+    const index = Object.values(columns).findIndex((obj) => {
+      return Object.values(obj).some((value) => {
+        return char.includes(value);
+      });
+    });
+
+    if (isNameAvailable === true) {
+      setHoveredColumn(index);
+      setTimeout(() => {
+        setHoveredColumn(null);
+      }, 3000);
+    } else {
+      setHoveredColumn(null);
+    }
+  };
   // const handleDeleteEditColumn = (index) => {
   //   const newColumns = { ...editColumns };
   //   delete newColumns[index];
   //   setColumns(newColumns);
   // };
+
+  // const isNameAvailable = Object.values(columns).some((obj) => Object.values(obj).includes(char));
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -63,6 +106,16 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns }) => {
           setColumnSelection={setColumnSelection}
           handleDelete={handleDelete}
           isEditMode={isEditMode}
+          isActiveForeignKey={
+            !isEmpty(foreignKeyDetails?.column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_table_name) &&
+            !isEmpty(foreignKeyDetails?.on_delete) &&
+            !isEmpty(foreignKeyDetails?.on_update)
+          }
+          indexHover={hoveredColumn}
+          foreignKeyDetails={foreignKeyDetails}
+          existingForeignKeyDetails={existingForeignKeyDetails} // foreignKeys from context state
         />
 
         <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
@@ -80,6 +133,26 @@ const ColumnsForm = ({ columns, setColumns, isEditMode, editColumns }) => {
             &nbsp;&nbsp; Add more columns
           </ButtonSolid>
         </div>
+
+        <ForeignKeyRelation
+          onMouseHoverFunction={onMouseHover}
+          setHoveredColumn={setHoveredColumn}
+          tableName={tableName}
+          columns={columns}
+          setColumns={setColumns}
+          isEditMode={isEditMode}
+          setForeignKeyDetails={setForeignKeyDetails}
+          isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
+          foreignKeyDetails={foreignKeyDetails}
+          organizationId={organizationId}
+          existingForeignKeyDetails={existingForeignKeyDetails}
+          setForeignKeys={setForeignKeys}
+          setCreateForeignKeyInEdit={setCreateForeignKeyInEdit}
+          createForeignKeyInEdit={createForeignKeyInEdit}
+          selectedTable={selectedTable}
+          setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}
+          isForeignKeyDraweOpen={isForeignKeyDraweOpen}
+        />
       </div>
     </div>
   );

@@ -7,7 +7,12 @@ import { tooljetDatabaseService } from '@/_services';
 import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
-const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
+const CreateRowDrawer = ({
+  isCreateRowDrawerOpen,
+  setIsCreateRowDrawerOpen,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+}) => {
   const {
     organizationId,
     selectedTable,
@@ -54,6 +59,8 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
     </>

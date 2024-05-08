@@ -161,6 +161,7 @@ import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
 import PrimaryKey from './PrimaryKey.jsx';
+import ForeignKey from './ForeignKey.jsx';
 import InformationCircle from './InformationCircle.jsx';
 import Open from './Open.jsx';
 import TooljetIcon from './TooljetIcon.jsx';
@@ -281,6 +282,8 @@ const Icon = (props) => {
       return <FolderDownload {...props} />;
     case 'folderupload':
       return <FolderUpload {...props} />;
+    case 'foreignkey':
+      return <ForeignKey {...props} />;
     case 'fullouterjoin':
       return <FullOuterJoin {...props} />;
     case 'globe':
