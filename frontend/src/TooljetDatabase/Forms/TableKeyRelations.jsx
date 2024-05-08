@@ -76,7 +76,7 @@ function SourceKeyRelation({
           return {
             name: item?.column_name,
             label: item?.column_name,
-            icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails[0]?.icon,
+            icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails?.[0]?.icon,
             value: item?.column_name,
             dataType: item?.data_type,
             isDisabled: item?.data_type === 'serial' ? true : false,
