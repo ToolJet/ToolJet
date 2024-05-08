@@ -1806,11 +1806,10 @@ export const addNewWidgetToTheEditor = (
   const gridWidth = subContainerWidth / noOfGrid;
   left = Math.round(left / gridWidth);
   console.log('Top calc', { top, initialClientOffset, delta, zoomLevel, offsetFromTopOfWindow, subContainerWidth });
-  // left = (left * 100) / subContainerWidth;
 
   if (currentLayout === 'mobile') {
-    componentData.definition.others.showOnDesktop.value = false;
-    componentData.definition.others.showOnMobile.value = true;
+    componentData.definition.others.showOnDesktop.value = `{{false}}`;
+    componentData.definition.others.showOnMobile.value = `{{true}}`;
   }
 
   const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
