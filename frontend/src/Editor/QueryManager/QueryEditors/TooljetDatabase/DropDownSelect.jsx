@@ -31,6 +31,7 @@ const DropDownSelect = ({
   showDescription = false,
   foreignKeyAccessInRowForm = false,
   topPlaceHolder = '',
+  showPlaceHolderInForeignKeyDrawer = false,
   isCellEdit = false,
   scrollEventForColumnValus,
   organizationId,
@@ -231,7 +232,9 @@ const DropDownSelect = ({
                 selected?.label
               )
             ) : showPlaceHolder ? (
-              <span style={{ color: '#9e9e9e' }}>{foreignKeyAccessInRowForm ? topPlaceHolder : 'Select...'}</span>
+              <span style={{ color: '#9e9e9e' }}>
+                {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
+              </span>
             ) : (
               ''
             )}

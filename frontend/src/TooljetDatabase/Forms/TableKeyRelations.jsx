@@ -271,7 +271,7 @@ function SourceKeyRelation({
             <Target width={18} height={18} />
             <p className="mb-0 source-title">TARGET</p>
           </div>
-          <span className="source-description">This is the data to which the current table will be referenced to </span>
+          <span className="source-description">This is the current table which will reference source table</span>
         </div>
         <TableDetailsDropdown
           firstColumnName={'Table'}
@@ -291,6 +291,7 @@ function SourceKeyRelation({
           setTargetColumn={setTargetColumn}
           fetchTables={fetchTables}
           onTableClick={true}
+          isSourceColumnAvailable={isEmpty(sourceColumn)}
         />
       </div>
       <div className="actions mt-4">
@@ -299,7 +300,7 @@ function SourceKeyRelation({
             <Actions width={18} height={18} />
             <p className="mb-0 source-title">ACTIONS</p>
           </div>
-          <span className="source-description">This is the data to which the current table will be referenced to </span>
+          <span className="source-description">What happens to Source table when Target table is modified </span>
         </div>
         <TableDetailsDropdown
           firstColumnName={'On update'}

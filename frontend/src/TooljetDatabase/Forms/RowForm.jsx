@@ -231,7 +231,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 foreignKeyAccessInRowForm={true}
                 disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
                 topPlaceHolder={
-                  isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
+                  isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Select a value'
                 }
                 onChange={(value) => {
                   handleInputChange(index, value.value, columnName);

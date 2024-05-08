@@ -226,7 +226,7 @@ const EditRowForm = ({
                 value={inputValues[index]?.value !== null && inputValues[index]}
                 foreignKeyAccessInRowForm={true}
                 disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
-                topPlaceHolder={inputValues[index]?.value !== null && 'Enter a value'}
+                topPlaceHolder={inputValues[index]?.value !== null && 'Select a value'}
                 onChange={(value) => handleInputChange(index, value.value, columnName)}
                 onAdd={true}
                 addBtnLabel={'Open referenced table'}

@@ -24,8 +24,8 @@ function DrawerFooter({
 }) {
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
-      <div className="d-flex justify-content-between drawer-footer-btn-wrap">
-        <ToolTip
+      <div className="d-flex justify-content-end drawer-footer-btn-wrap">
+        {/* <ToolTip
           message={'Foreign key relations checks for referential integrity between two tables.'}
           placement="top"
           tooltipClassName="tootip-table read-docs-fk"
@@ -35,7 +35,7 @@ function DrawerFooter({
             <Student />
             <a className="read-documentation">Read documentation</a>
           </div>
-        </ToolTip>
+        </ToolTip> */}
         <div className="d-flex action-btns">
           {(isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit))) ||
           (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ||

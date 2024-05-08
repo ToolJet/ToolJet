@@ -3,6 +3,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import DropdownInformation from '../Icons/dropdownInfo.svg';
+import { isEmpty } from 'lodash';
 
 function TableDetailsDropdown({
   firstColumnName,
@@ -34,6 +35,7 @@ function TableDetailsDropdown({
   tableName,
   fetchTables = () => {},
   onTableClick = false,
+  isSourceColumnAvailable = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -58,6 +60,8 @@ function TableDetailsDropdown({
               value={source ? tableList[0] : actions ? onUpdate : targetTable}
               foreignKeyAccess={true}
               disabled={source || isEditColumn || isCreateColumn ? true : false}
+              topPlaceHolder={!source && !actions && 'Select table..'}
+              showPlaceHolderInForeignKeyDrawer={true}
               onChange={(value) => {
                 if (actions) {
                   setOnUpdate(value);
@@ -99,7 +103,13 @@ function TableDetailsDropdown({
               emptyError={
                 <div className="dd-select-alert-error m-2 d-flex align-items-center">
                   <Information />
-                  {tableColumns.length === 0 ? 'There are no columns of the same datatype' : 'No table selected yet'}
+                  {isEmpty(targetTable)
+                    ? 'Please select the table'
+                    : isSourceColumnAvailable
+                    ? 'Please select source column'
+                    : tableColumns.length === 0
+                    ? 'There are no columns of the same datatype'
+                    : 'There are no columns of the same datatype'}
                 </div>
               }
               value={
@@ -112,6 +122,8 @@ function TableDetailsDropdown({
                   : targetColumn
               }
               foreignKeyAccess={true}
+              topPlaceHolder={!actions && 'Select columns..'}
+              showPlaceHolderInForeignKeyDrawer={true}
               onChange={(value) => {
                 if (source) {
                   setSourceColumn(value);
