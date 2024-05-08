@@ -32,6 +32,7 @@ export const shouldUpdate = (prevProps, nextProps) => {
     prevProps?.width === nextProps?.width &&
     prevProps?.height === nextProps?.height &&
     prevProps?.darkMode === nextProps?.darkMode &&
+    prevProps?.childComponents === nextProps?.childComponents &&
     !needToRender
   );
 };
