@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
@@ -51,12 +51,15 @@ function TableSchema({
 
   const columnDetails = isEditMode ? editColumns : columns;
 
-  const [defaultValue, setDefaultValue] = useState(
-    Object.keys(columnDetails).map((key, index) => ({
-      label: columnDetails[index]?.column_default,
-      value: columnDetails[index]?.column_default,
-    }))
-  );
+  const [defaultValue, setDefaultValue] = useState([]);
+
+  useEffect(() => {
+    const newDefaultValue = Object.keys(columnDetails).map((key, index) => ({
+      label: columnDetails[index]?.column_default || '',
+      value: columnDetails[index]?.column_default || '',
+    }));
+    setDefaultValue(newDefaultValue);
+  }, [columnDetails]);
 
   const CustomSelectOption = (props) => {
     return (
@@ -115,17 +118,6 @@ function TableSchema({
   }
 
   const primaryKeyLength = countPrimaryKeyLength(columnDetails);
-  // const indexOfActiveForeignKey = Object.values(columnDetails).findIndex((obj) =>
-  //   Object.values(obj).includes(foreignKeyDetails?.column_names?.value)
-  // );
-  const indexesOfForeignKey = foreignKeyDetails.flatMap((foreignKey) => {
-    return Object.values(columnDetails).reduce((acc, column, index) => {
-      if (foreignKey.column_names[0] === column.column_name) {
-        acc.push(index);
-      }
-      return acc;
-    }, []);
-  });
 
   function checkMatchingColumnNamesInForeignKey(foreignKeys, columnName) {
     return foreignKeys?.some((foreignKey) => foreignKey?.column_names?.includes(columnName));
@@ -138,8 +130,6 @@ function TableSchema({
       value: key[1] === null ? 'Null' : key[1],
     };
   });
-
-  // const objectsAtIndexes = indexesOfForeignKey.map((index) => columnDetails[index]);
 
   return (
     <div className="column-schema-container">
