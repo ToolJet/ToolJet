@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { join } from 'path';
 import handlebars from 'handlebars';
 import { centsToUSD, generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { defaultWhiteLabellingSettings } from 'src/helpers/instance_settings.constants';
 import { MailerService } from '@nestjs-modules/mailer';
 import { WhiteLabellingService } from './white_labelling.service';
 import {
@@ -33,6 +34,7 @@ export class EmailService {
   private WHITE_LABEL_TEXT;
   private WHITE_LABEL_LOGO;
   private SUB_PATH;
+  private defaultWhiteLabelState;
 
   constructor(
     private readonly whiteLabellingService: WhiteLabellingService,
@@ -48,6 +50,7 @@ export class EmailService {
     const whiteLabelSettings = await this.retrieveWhiteLabelSettings(organizationId);
     this.WHITE_LABEL_TEXT = await this.retrieveWhiteLabelText(whiteLabelSettings);
     this.WHITE_LABEL_LOGO = await this.retrieveWhiteLabelLogo(whiteLabelSettings);
+    this.defaultWhiteLabelState = this.checkDefaultWhiteLabelState();
   }
 
   private async sendEmail(to: string, subject: string, templateData: any) {
@@ -133,7 +136,13 @@ export class EmailService {
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     };
-    const templatePath = isOrgInvite ? 'invite_user.hbs' : 'setup_account.hbs';
+    const templatePath = isOrgInvite
+      ? this.defaultWhiteLabelState
+        ? 'default_invite_user.hbs'
+        : 'invite_user.hbs'
+      : this.defaultWhiteLabelState
+      ? 'default_setup_account.hbs'
+      : 'setup_account.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
 
     return await this.sendEmail(to, subject, {
@@ -165,7 +174,7 @@ export class EmailService {
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     };
-    const templatePath = 'invite_user.hbs';
+    const templatePath = this.defaultWhiteLabelState ? 'default_invite_user.hbs' : 'invite_user.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
 
     return await this.sendEmail(to, subject, {
@@ -188,7 +197,7 @@ export class EmailService {
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     };
-    const templatePath = 'reset_password.hbs';
+    const templatePath = this.defaultWhiteLabelState ? 'default_reset_password.hbs' : 'reset_password.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
 
     return await this.sendEmail(to, subject, {
@@ -329,5 +338,13 @@ export class EmailService {
   async retrieveWhiteLabelLogo(whiteLabelSettings) {
     const whiteLabelLogo = whiteLabelSettings?.[WHITE_LABELLING_COLUMNS.WHITE_LABEL_LOGO];
     return whiteLabelLogo || DEFAULT_WHITE_LABELLING_SETTINGS[WHITE_LABELLING_SETTINGS.WHITE_LABEL_LOGO];
+  }
+
+  checkDefaultWhiteLabelState() {
+    return (
+      this.WHITE_LABEL_TEXT === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT &&
+      (this.WHITE_LABEL_LOGO === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO ||
+        this.WHITE_LABEL_LOGO === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO_URL)
+    );
   }
 }

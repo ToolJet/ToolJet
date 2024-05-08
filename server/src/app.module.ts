@@ -14,6 +14,7 @@ import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
 import * as path from 'path';
 
+import { ShutdownService } from 'src/schedulers/server-shutdown.hook';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { CaslModule } from './modules/casl/casl.module';
@@ -173,6 +174,7 @@ const imports = [
   AppGitModule,
   OrganizationConstantModule,
   OrganizationPaymentModule,
+  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
@@ -200,7 +202,6 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 }
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TooljetDbModule);
   imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
 }
 
@@ -211,7 +212,7 @@ if (process.env.DISABLE_WEBHOOKS !== 'true') {
 @Module({
   imports,
   controllers: [AppController],
-  providers: [EmailService, SeedsService],
+  providers: [EmailService, SeedsService, ShutdownService],
 })
 export class AppModule implements OnModuleInit {
   constructor(private connection: Connection) {}

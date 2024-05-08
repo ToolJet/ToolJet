@@ -17,3 +17,9 @@ export enum INSTANCE_USER_SETTINGS {
   ENABLE_MULTIPLAYER_EDITING = 'ENABLE_MULTIPLAYER_EDITING',
   ENABLE_COMMENTS = 'ENABLE_COMMENTS',
 }
+
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_LOGO_URL: 'https://app.tooljet.com/logo.svg',
+};
