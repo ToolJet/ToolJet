@@ -14,7 +14,10 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
     if (process.env.ENABLE_TOOLJET_DB !== 'true') return;
     const batchSize = 1000;
     const entityManager = queryRunner.manager;
-    const tooljetDbConnection = await createConnection(tooljetDbOrmconfig as any);
+    const tooljetDbConnection = await createConnection({
+      ...tooljetDbOrmconfig,
+      name: 'tooljetDbMigration',
+    } as any);
     const tooljetDbManager = tooljetDbConnection.createEntityManager();
     const totalTables = await entityManager.count(InternalTable);
     console.log(`Tables to migrate: ${totalTables}`);
