@@ -67,6 +67,8 @@ class ViewerComponent extends React.Component {
       isAppLoaded: false,
       pages: {},
       homepage: null,
+      isSidebarPinned: localStorage.getItem('isPinned') === 'false' ? false : true,
+      isSidebarHovered: false,
     };
   }
 
@@ -550,6 +552,8 @@ class ViewerComponent extends React.Component {
     );
   };
 
+  setIsSidebarPinned = () => this.setState({ isSidebarPinned: !this.state.isSidebarPinned });
+
   handleEvent = (eventName, events, options) => {
     return onEvent(this.getViewerRef(), eventName, events, options, 'view');
   };
@@ -579,6 +583,7 @@ class ViewerComponent extends React.Component {
       defaultComponentStateComputed,
       dataQueries,
       canvasWidth,
+      isSidebarPinned,
     } = this.state;
 
     const currentCanvasWidth = canvasWidth;
@@ -677,15 +682,19 @@ class ViewerComponent extends React.Component {
                         currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                         switchPage={this.switchPage}
                         darkMode={this.props.darkMode}
+                        isSidebarPinned={isSidebarPinned}
+                        setIsSidebarPinned={this.setIsSidebarPinned}
                       />
                     )}
                     <div
-                      className="flex-grow-1 d-flex justify-content-center"
+                      className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
+                        close: !isSidebarPinned,
+                      })}
                       style={{
                         backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
                         marginLeft:
                           appDefinition?.showViewerNavigation && this.props.currentLayout !== 'mobile'
-                            ? '200px'
+                            ? '220px'
                             : 'auto',
                       }}
                     >
