@@ -22,6 +22,7 @@ class ManageWhiteLabellingComponent extends React.Component {
       initialSettings: {},
       hasChanges: false,
       featureAccess: {},
+      focusedField: null,
     };
   }
 
@@ -127,8 +128,21 @@ class ManageWhiteLabellingComponent extends React.Component {
     return transformedData;
   };
 
+  handleFocus = (fieldName) => {
+    this.setState({ focusedField: fieldName });
+  };
+
+  handleBlur = () => {
+    this.setState({ focusedField: null });
+  };
+
   render() {
-    const { settings, isSaving, disabled, isLoading, featureAccess } = this.state;
+    const { settings, isSaving, disabled, isLoading, featureAccess, focusedField } = this.state;
+    const defaultValues = {
+      'App Logo': 'https://app.tooljet.com/logo.svg',
+      'Page Title': 'ToolJet',
+      Favicon: 'https://app.tooljet.com/favico.png',
+    };
     const isTrial = featureAccess?.licenseStatus?.licenseType === 'trial';
     return (
       <ErrorBoundary showFallback={true}>
@@ -172,9 +186,15 @@ class ManageWhiteLabellingComponent extends React.Component {
                               <input
                                 className="form-control"
                                 type="text"
+                                onFocus={() => this.handleFocus('App Logo')}
+                                onBlur={this.handleBlur}
                                 onChange={(e) => this.optionsChanged('App Logo', e.target.value)}
                                 aria-describedby="emailHelp"
-                                value={settings['App Logo'] || 'https://app.tooljet.com/logo.svg'}
+                                value={
+                                  focusedField === 'App Logo' || settings['App Logo']
+                                    ? settings['App Logo']
+                                    : defaultValues['App Logo']
+                                }
                                 data-cy={`input-field-app-logo`}
                                 style={{ width: '516px' }}
                                 placeholder={'Enter App Logo'}
@@ -208,9 +228,15 @@ class ManageWhiteLabellingComponent extends React.Component {
                               <input
                                 className="form-control"
                                 type="text"
+                                onFocus={() => this.handleFocus('Page Title')}
+                                onBlur={this.handleBlur}
                                 onChange={(e) => this.optionsChanged('Page Title', e.target.value)}
                                 aria-describedby="emailHelp"
-                                value={settings['Page Title'] || 'ToolJet'}
+                                value={
+                                  focusedField === 'Page Title' || settings['Page Title']
+                                    ? settings['Page Title']
+                                    : defaultValues['Page Title']
+                                }
                                 data-cy={`input-field-page-title`}
                                 style={{ width: '516px' }}
                                 placeholder={'Enter app title'}
@@ -243,9 +269,15 @@ class ManageWhiteLabellingComponent extends React.Component {
                               <input
                                 className="form-control"
                                 type="text"
+                                onFocus={() => this.handleFocus('Favicon')}
+                                onBlur={this.handleBlur}
                                 onChange={(e) => this.optionsChanged('Favicon', e.target.value)}
                                 aria-describedby="emailHelp"
-                                value={settings['Favicon'] || 'https://app.tooljet.com/favico.png'}
+                                value={
+                                  focusedField === 'Favicon' || settings['Favicon']
+                                    ? settings['Favicon']
+                                    : defaultValues['Favicon']
+                                }
                                 data-cy={`input-field-fav-icon`}
                                 style={{ width: '516px' }}
                                 placeholder={'Enter favicon'}

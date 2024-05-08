@@ -3,32 +3,42 @@ import 'winston-daily-rotate-file';
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const readline = require('readline');
 
-const writeJsonFile = (filePath) => {
-  // Read the contents of the file
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error('Error reading file:', err);
-      return;
+export const readObjectFromLines = (logFilePath) => {
+  const fileStream = fs.createReadStream(logFilePath);
+  const rl = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity,
+  });
+
+  let objectLines = [];
+  const objectsList = [];
+
+  rl.on('line', (line) => {
+    if (line.trim() === '{' && objectLines.length !== 0) {
+      const object = objectLines.join('\n');
+      objectsList.push(object);
+      objectLines = [];
     }
-    // Append a comma to the end of the content
-    const modifiedContent = data.trim() + ',\n';
-    let jsonContent = '[' + modifiedContent + ']';
-    jsonContent = JSON.stringify(eval(jsonContent), null, 2);
+    objectLines.push(line);
+  });
 
-    // Write the modified content back to the file
-    fs.writeFile(`${filePath}.json`, jsonContent, (err) => {
+  rl.on('close', () => {
+    const object = objectLines.join('\n');
+    objectsList.push(object);
+    const modifiedContent = `[ ${objectsList.join(',')} ]`;
+    const jsonContent = JSON.stringify(eval(modifiedContent), null, 2);
+    fs.writeFile(`${logFilePath}.json`, jsonContent, (err) => {
       if (err) {
         console.error('Error writing file:', err);
         return;
       }
     });
-    fs.writeFile(filePath, modifiedContent, (err) => {
-      if (err) {
-        console.error('Error writing file:', err);
-        return;
-      }
-    });
+  });
+
+  rl.on('error', (err) => {
+    console.error('Error reading file:', err);
   });
 };
 
@@ -53,12 +63,7 @@ export const logfileTransportConfig = (filePath, processId) => {
   });
   transport.on('rotate', function (oldFilename, newFilename) {
     console.log(`Rotating old log file - ${oldFilename} and creating new log file ${newFilename}`);
-  });
-  transport.on('logged', function (transport) {
-    const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().slice(0, 10);
-    const filePath = `${absoluteLogDir}/${processId}-${formattedDate}/audit.log`;
-    writeJsonFile(filePath);
+    readObjectFromLines(oldFilename);
   });
   return transport;
 };
