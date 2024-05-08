@@ -120,9 +120,9 @@ export const Listview = function Listview({
 
   useEffect(() => {
     const data = filterComponents(childComponents, childrenData);
-    setChildrenData(data);
+    if (!_.isEqual(data, childrenData)) setChildrenData(data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childComponents]);
+  }, [childComponents, childrenData]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageChanged = (page) => {

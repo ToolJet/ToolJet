@@ -634,6 +634,7 @@ export const SubContainer = ({
                       exposedVariables={exposedVariables ?? {}}
                       getContainerProps={getContainerProps}
                       isFromSubContainer={true}
+                      childComponents={childComponents[key]}
                     />
                   </SubWidgetWrapper>
                 );

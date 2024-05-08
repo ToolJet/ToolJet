@@ -767,30 +767,27 @@ export const Container = ({
     return componentWithChildren;
   }, [components]);
 
-  const getContainerProps = React.useCallback(
-    (componentId) => {
-      return {
-        mode,
-        snapToGrid,
-        onComponentClick,
-        onEvent,
-        appDefinition,
-        appDefinitionChanged,
-        appLoading,
-        zoomLevel,
-        setSelectedComponent,
-        removeComponent,
-        currentLayout,
-        selectedComponents,
-        darkMode,
-        currentPageId,
-        childComponents: childComponents[componentId],
-        parentGridWidth: gridWidth,
-        draggedSubContainer,
-      };
-    },
-    [childComponents, selectedComponents, draggedSubContainer]
-  );
+  const getContainerProps = React.useCallback(() => {
+    return {
+      mode,
+      snapToGrid,
+      onComponentClick,
+      onEvent,
+      appDefinition,
+      appDefinitionChanged,
+      appLoading,
+      zoomLevel,
+      setSelectedComponent,
+      removeComponent,
+      currentLayout,
+      selectedComponents,
+      darkMode,
+      currentPageId,
+      childComponents,
+      parentGridWidth: gridWidth,
+      draggedSubContainer,
+    };
+  }, [childComponents, selectedComponents, draggedSubContainer]);
 
   const openAddUserWorkspaceSetting = () => {
     const workspaceId = getWorkspaceId();
