@@ -8,13 +8,15 @@ import { AppsService } from './apps.service';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { isEmpty } from 'lodash';
 import { transformTjdbImportDto } from 'src/helpers/tjdb_dto_transforms';
+import { TooljetDbService } from './tooljet_db.service';
 
 @Injectable()
 export class ImportExportResourcesService {
   constructor(
     private readonly appImportExportService: AppImportExportService,
     private readonly appsService: AppsService,
-    private readonly tooljetDbImportExportService: TooljetDbImportExportService
+    private readonly tooljetDbImportExportService: TooljetDbImportExportService,
+    private readonly tooljetDbService: TooljetDbService
   ) {}
 
   async export(user: User, exportResourcesDto: ExportResourcesDto) {
@@ -45,22 +47,34 @@ export class ImportExportResourcesService {
 
   async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false) {
     const tableNameMapping = {};
+    const tableNameForeignKeyMapping = {};
     const imports = { app: [], tooljet_database: [] };
     const importingVersion = importResourcesDto.tooljet_version;
 
     if (importResourcesDto.tooljet_database) {
       for (const tjdbImportDto of importResourcesDto.tooljet_database) {
         const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
+        const { foreign_keys } = transformedDto.schema;
 
         const createdTable = await this.tooljetDbImportExportService.import(
           importResourcesDto.organization_id,
           transformedDto,
           cloning
         );
+        if (foreign_keys.length) tableNameForeignKeyMapping[createdTable.table_name] = foreign_keys;
         tableNameMapping[tjdbImportDto.id] = createdTable;
         imports.tooljet_database.push(createdTable);
       }
     }
+
+    await Promise.all(
+      Object.keys(tableNameForeignKeyMapping).map((tableName) => {
+        return this.tooljetDbService.perform(importResourcesDto.organization_id, 'create_foreign_key', {
+          table_name: tableName,
+          foreign_keys: tableNameForeignKeyMapping[tableName],
+        });
+      })
+    );
 
     if (importResourcesDto.app) {
       for (const appImportDto of importResourcesDto.app) {
