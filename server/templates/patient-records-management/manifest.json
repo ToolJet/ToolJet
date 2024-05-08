@@ -1,0 +1,16 @@
+{
+  "name": "Patient records management",
+  "description": "Securely store, manage, and access patient medical data.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "patient-records-management",
+  "category": "healthcare"
+}
