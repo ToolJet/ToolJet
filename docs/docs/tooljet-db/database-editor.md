@@ -6,34 +6,84 @@ title: Database Editor
 You can manage the ToolJet Database directly from the Database Editor. ToolJet Database organizes the data into **tables** that can have different structures. All the tables will be listed lexicographically on the left. Click on any of the tables to view the table data.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tables.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tables-v2.png" alt="ToolJet database" />
 </div>
 
 The sidebar on the left can also be collapsed to give more space to the database editor.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/collapse.png" alt="ToolJet database" />
-</div>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/collapse-v2.gif" alt="ToolJet database"/>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Create New Table
 
-To create a new table in ToolJet Database, click on the **Create New Table** button on the top left corner of the Database editor.
+To create a new table in ToolJet Database:
+ - Click on the **Create New Table** button on the top left corner of the Database editor.
+ - A drawer will open from the right. Enter the details of your new table.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/new.png" alt="ToolJet database" />
-</div>
-
-When you click the **Create New Table** button, a drawer opens from the right, allowing you to enter the details of your new table.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/newtable.png" alt="ToolJet database" />
-</div>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/newtable-v2.gif" alt="ToolJet database"/>
 
 #### To create a new table, you'll need to:
 - Enter a **Table name**
-- Add **Columns** (`id` column with `serial` data type is automatically created as the **primary key** of the table)
+- By default, an **id** column with **serial** data type is automatically created as the **primary key** of the table. You can change the primary key to any other column.
+- Add **Columns**
+  - **Column name**: Enter a unique name for the column.
+  - **Data type**: Choose the appropriate data type for the column from dropdown.
+  - **Default value(optional)**: Specify any default value that should be assigned to the column. If left blank, the column will be null.
+  - **Primary Key checkbox**: Check the box to set the column as the [Primary Key](#primary-key). Multiple columns can be selected as the primary key making it a composite primary key.
+  - **NULL/NOT NULL toggle**: Use the toggle to determine whether the column should allow NULL values or not. By default, the toggle is off.
+  - **Unique toggle**: Click on the kebab menu and use the **Unique** toggle to add a unique constraint to the column. By default, the toggle is off.
+  - **Foreign Key**: Click on `+ Add relation` button to add a [Foreign Key](#foreign-key) relationship to the column. Select the target table and the column from the target table to reference.
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Primary Key
+
+ToolJet Database supports both single field and composite primary keys.
+
+#### Single Field Primary Key
+You may check any field to be a Primary Key. This field can be of any data type except Boolean that ToolJet supports. 
+- A primary key cannot be null.
+- A primary key cannot have Boolean data type.
+- A primary key is always unique.
+
+#### Composite Primary Key
+You can convert existing primary key to a composite primary key. A composite key has 2 or more than 2 columns/fields. 
+- A composite primary key cannot be null.
+- A composite primary key cannot have Boolean data type.
+- A composite primary key cannot contain duplicates.
+- Values in an individual column can be duplicated, but across the columns they must be unique.
+
+#### Modifying Primary Key
+You will have a menu option in the table setting to change the primary key. You can select an existing field that will become Primary Key after modification.
+The current Primary Key will be dropped/deleted from the table and an existing field with unique values will be selected. 
+
+#### Deleting Primary Key
+Deletion of Primary Key can be done only in Edit Table panel after removing Primary Key constraint.
+Deletion will be restricted in case of auto-generated `id` is selected as Primary Key.
+You cannot delete/update a Primary Key of a target table if it is being used as a foreign key in source tables.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Foreign Key
+
+A foreign key relation refers to linking one column or set of columns of the current table with one column or set of columns in an existing table provided the column/columns in the existing table have UNIQUE Constraint added to it explicitly.
+
+#### Creating Foreign Key
+While creating/editing a table/column, you will be able add one or more than one Foreign Keys referencing to Primary or Unique Keys of other existing tables. 
+Foreign Keys can be added after creating a table as well.
+
+#### Modifying Foreign Key
+Users can remove or add Foreign Key constraints while editing an existing table or column.
+
+#### Deleting Foreign Key
+
+#### Example linking two tables using Foreign Key
+
+
 
 </div>
 
@@ -95,7 +145,6 @@ A drawer from the right will open up where you can enter the details for the new
 - **Column Name**: Enter a unique name for the new column, serving as its key identifier.
 - **Data Type**: Choose the appropriate data type for the column from the [available options](#supported-data-types).
 - **Default Value**: Specify any default value that should be assigned to the column. Optionally, users can leave this field blank. When a table contains rows and NOT NULL is applied to one of its existing or new columns, specifying a default value becomes compulsory.
-- **NULL/NOT NULL**: Use the switch to determine whether the column should allow NULL values or not. By default, the toggle is off, allowing the column to have blank or empty entries. If you turn it on, the column is set to NOT NULL, meaning it can't have blank or empty entries anymore. But, for text columns, even with NOT NULL on, they can still have empty text (like an empty line) but not completely blank entries
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/newcol.png" alt="ToolJet database" />
