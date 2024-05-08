@@ -374,7 +374,6 @@ const EditorComponent = (props) => {
     orgEnvironmentConstantService.getAll().then(({ constants }) => {
       const orgConstants = {};
       constants.map((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
         orgConstants[constant.name] = maskedWorkspaceConstantStr;
       });
 

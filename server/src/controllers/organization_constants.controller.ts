@@ -9,7 +9,6 @@ import {
   Delete,
   ForbiddenException,
   Query,
-  Req,
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
@@ -33,9 +32,8 @@ export class OrganizationConstantController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async get(@User() user, @Req() req) {
+  async get(@User() user, @Query('decryptValue') decryptValue) {
     const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
-    const { decryptValue } = req.query;
     const decrypt =
       decryptValue === 'true' &&
       (ability.can('createOrganizationConstant', OrganizationConstant) ||
@@ -46,22 +44,19 @@ export class OrganizationConstantController {
 
   @UseGuards(IsPublicGuard)
   @Get(':app_slug')
-  async getConstantsFromApp(@App() app, @User() user, @Req() req) {
-    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
-    const { decryptValue } = req.query;
-    const decrypt =
-      decryptValue === 'true' &&
-      (ability.can('createOrganizationConstant', OrganizationConstant) ||
-        ability.can('deleteOrganizationConstant', OrganizationConstant));
-    const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId, decrypt);
+  async getConstantsFromApp(@App() app, @User() user) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId, false);
     return { constants: result };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/environment/:environmentId')
-  async getConstantsFromEnvironment(@User() user, @Param('environmentId') environmentId, @Req() req) {
+  async getConstantsFromEnvironment(
+    @User() user,
+    @Param('environmentId') environmentId,
+    @Query('decryptValue') decryptValue
+  ) {
     const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
-    const { decryptValue } = req.query;
     const decrypt =
       decryptValue === 'true' &&
       (ability.can('createOrganizationConstant', OrganizationConstant) ||
