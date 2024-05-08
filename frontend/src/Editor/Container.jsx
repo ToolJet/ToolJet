@@ -376,7 +376,7 @@ export const Container = ({
           monitor,
           boxes,
           canvasBoundingRect,
-          currentLayout,
+          useEditorStore.getState().currentLayout,
           snapToGrid,
           zoomLevel
         );

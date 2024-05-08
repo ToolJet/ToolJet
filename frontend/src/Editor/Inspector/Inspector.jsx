@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
@@ -106,7 +105,7 @@ export const Inspector = ({
     scopes: 'editor',
   });
 
-  const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
+  const componentMeta = JSON.parse(JSON.stringify(allComponents?.[selectedComponentId]?.component));
 
   const isMounted = useMounted();
 
@@ -322,13 +321,9 @@ export const Inspector = ({
         paramUpdated={paramUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
-        // eventUpdated={eventUpdated}
-        // eventOptionUpdated={eventOptionUpdated}
         components={allComponents}
         currentState={currentState}
         darkMode={darkMode}
-        // eventsChanged={eventsChanged}
-        // apps={apps} !check
         pages={pages}
         allComponents={allComponents}
       />
