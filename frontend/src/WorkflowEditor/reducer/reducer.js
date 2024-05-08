@@ -40,7 +40,7 @@ export const initialState = ({ appId, appVersionId }) => ({
           data: {
             nodeType: 'result',
             label: 'Result',
-            code: '// What this code snippet returns will be the response\n// when this workflow is used as an API endpoint\n\nreturn ({})',
+            code: '// Use this section to define the expected API response\n\nreturn ({})',
           },
           position: { x: 650, y: 250 },
           type: 'output',
