@@ -246,7 +246,7 @@ function DataSourceSelect({
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: showRedirection ? 'space-between' : 'flex-start',
+                    justifyContent: showRedirection || actions ? 'space-between' : 'flex-start',
                     alignItems: 'center',
                     cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
                   }}
