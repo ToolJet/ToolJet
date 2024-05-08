@@ -6,8 +6,7 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useEditorActions, useEditorState } from '@/_stores/editorStore';
+import { useEditorState } from '@/_stores/editorStore';
 import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 
 export const CreateVersion = ({
@@ -18,8 +17,6 @@ export const CreateVersion = ({
 }) => {
   const { featureAccess } = useEditorState();
   const { current_organization_id } = authenticationService.currentSessionValue;
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
 
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
@@ -37,7 +34,7 @@ export const CreateVersion = ({
   );
 
   const { t } = useTranslation();
-  const { currentAppEnvironmentId } = useEditorState();
+
   const { editingVersion } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
@@ -88,7 +85,7 @@ export const CreateVersion = ({
               };
               gitSyncService
                 .gitPush(body, orgGit?.id, data?.editing_version?.id)
-                .then((data) => {
+                .then(() => {
                   toast.success('Changes commited successfully');
                 })
                 .catch((error) => {
