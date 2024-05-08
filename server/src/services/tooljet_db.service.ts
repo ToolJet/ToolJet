@@ -54,6 +54,8 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
+    // TODO: remove optional decorator when
+    // ENABLE_TOOLJET_DB flag is deprecated
     @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,

@@ -25,6 +25,7 @@ import { ImportExportResourcesModule } from '../import_export_resources/import_e
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 import { TooljetDbService } from '@services/tooljet_db.service';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { TooljetDbService } from '@services/tooljet_db.service';
     ]),
     CaslModule,
     ImportExportResourcesModule,
+    TooljetDbModule,
   ],
   providers: [
     EncryptionService,

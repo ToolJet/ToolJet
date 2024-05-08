@@ -1,7 +1,6 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import { omit } from 'lodash';
-
 const initialState = {
   queries: {},
   components: {},

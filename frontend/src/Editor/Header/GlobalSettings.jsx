@@ -15,6 +15,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import AppModeToggle from './AppModeToggle';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -150,7 +151,7 @@ export const GlobalSettings = ({
         />
       )}
       <div id="" className={cx({ 'dark-theme': darkMode })}>
-        <div bsPrefix="global-settings-popover">
+        <div bsPrefix="global-settings-popover" className="global-settings-panel">
           <HeaderSection darkMode={darkMode}>
             <HeaderSection.PanelHeader title="Global settings" />
           </HeaderSection>
@@ -382,7 +383,7 @@ export const GlobalSettings = ({
                   </div>
                 </div>
               </div>
-
+              <AppModeToggle globalSettingsChanged={globalSettingsChanged} />
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
                 <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
                 <div>
