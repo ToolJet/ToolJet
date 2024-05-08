@@ -930,6 +930,7 @@ export function Table({
       );
     }
   }, [JSON.stringify(changeSet)]);
+
   useEffect(() => {
     if (
       allowSelection &&
@@ -939,20 +940,22 @@ export function Table({
     ) {
       const preSelectedRowDetails = getDetailsOfPreSelectedRow();
       if (_.isEmpty(preSelectedRowDetails)) return;
-
       const selectedRow = preSelectedRowDetails?.original ?? {};
+      const selectedRowIndex = preSelectedRowDetails?.index ?? null;
       const selectedRowId = preSelectedRowDetails?.id ?? null;
-      const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
+      const pageNumber = Math.floor(selectedRowIndex / rowsPerPage) + 1;
+
       preSelectRow.current = true;
       if (highlightSelectedRow) {
-        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        setExposedVariables({ selectedRow: selectedRow, selectedRowId });
         toggleRowSelected(selectedRowId, true);
-        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId });
       } else {
         toggleRowSelected(selectedRowId, true);
       }
       if (pageIndex >= 0 && pageNumber !== pageIndex + 1) {
         gotoPage(pageNumber - 1);
+        setPaginationInternalPageIndex(pageNumber);
       }
     }
 
@@ -978,7 +981,7 @@ export function Table({
   useEffect(() => {
     setExposedVariable('currentPageData', pageData);
   }, [JSON.stringify(pageData)]);
-
+  console.log(paginationInternalPageIndex, 'setPaginationInternalPageIndex');
   function downlaodPopover() {
     const options = [
       { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
