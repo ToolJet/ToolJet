@@ -1,5 +1,6 @@
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
+import { processDataInBatches } from 'src/helpers/utils.helper';
+import { MigrationProgress } from 'src/helpers/migration.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { createConnection } from 'typeorm';
 import { tooljetDbOrmconfig } from 'ormconfig';
