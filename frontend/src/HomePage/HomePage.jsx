@@ -99,9 +99,9 @@ class HomePageComponent extends React.Component {
     };
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
-    await Promise.all([
+    return Promise.all([
       this.fetchApps(1, this.state.currentFolder.id),
       this.fetchFolders(),
       this.fetchFeatureAccesss(),
