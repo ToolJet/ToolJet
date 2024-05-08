@@ -6,6 +6,8 @@ import moment from 'moment';
 import Timepicker from '@/ToolJetUI/Timepicker/Timepicker';
 import CustomDatePickerHeader from '@/Editor/Components/Table/CustomDatePickerHeader';
 import { resolveReferences } from '../../../../../_helpers/utils';
+import cx from 'classnames';
+
 
 const getDate = (date, format) => {
   const dateMomentInstance = date && moment(date, format);
@@ -185,7 +187,9 @@ export const ValidationProperties = ({
               showTimeSelectOnly={validation.showOnlyTime}
               placeholderText={validation?.placeholder ?? ''}
               renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
-              popperClassName={darkMode && 'theme-dark dark-theme'}
+              popperClassName={cx('tj-table-datepicker', {
+                'theme-dark dark-theme': darkMode,
+              })}
             />
           </div>
         );

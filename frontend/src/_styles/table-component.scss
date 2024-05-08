@@ -661,7 +661,7 @@
       font-weight: 500 !important;
       font-size: 14px !important;
       width: 100%;
-      text-transform: capitalize;
+      text-transform: uppercase;
 
       &:hover {
 
@@ -886,7 +886,7 @@
 
       }
 
-      &:focus-within {
+      &:focus-within:not(.has-actions) {
         border: 1px solid var(--interactive-overlays-focus-outline);
         background-color: var(--surfaces-surface-01) !important;
         box-shadow: var(--elevation-200-box-shadow);
@@ -1409,18 +1409,6 @@
   text-decoration: underline;
 }
 
-.react-datepicker__time-list-item,
-.react-datepicker__time-list-item--selected {
-  margin-bottom: 3px !important;
-}
-
-.react-datepicker__time-box {
-  display: flex;
-
-  ul {
-    padding: 0px 10px 0px 10px !important;
-  }
-}
 
 .is-invalid.content-editing~.invalid-feedback {
   padding: 0px 12px 8px;
@@ -1449,4 +1437,8 @@
 
 .table-column-type-input-element[type="number"] {
   -moz-appearance: textfield !important;
+}
+
+.tj-table-tag-col-readonly {
+  margin-left: -2px !important;  //this -ve margin offset for the margin given to each tags in overall column width
 }

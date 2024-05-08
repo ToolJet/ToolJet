@@ -145,7 +145,7 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-        cellValue = cellValue === undefined ? '' : cellValue;
+        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
         switch (columnType) {
           case 'string':
           case undefined:
@@ -487,7 +487,7 @@ export default function generateColumnsData({
                     containerWidth={width}
                     optionsLoadingState={
                       resolveReferences(column?.useDynamicOptions, currentState) &&
-                      resolveReferences(column?.optionsLoadingState, currentState)
+                        resolveReferences(column?.optionsLoadingState, currentState)
                         ? true
                         : false
                     }
