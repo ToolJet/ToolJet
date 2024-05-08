@@ -887,7 +887,8 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
 
-      const { editing_version, should_freeze_editor: shouldFreezeEditor } = appData;
+      const { editing_version, should_freeze_editor: shouldFreezeEditor, events } = appData;
+
       useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
       onEditorFreeze(shouldFreezeEditor);
       updateState({
