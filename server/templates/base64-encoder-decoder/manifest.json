@@ -1,0 +1,16 @@
+{
+  "name": "Base64 encoder & decoder",
+  "description": "Encrypt and decrypt data for secure transmission and storage.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "base64-encoder-decoder",
+  "category": "developer-utilities"
+}
