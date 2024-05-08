@@ -444,6 +444,16 @@ export const SubContainer = ({
       else return containerCanvasWidth - 2;
     }
 
+    let width = 0;
+    if (parentRef.current) {
+      const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
+      if (realCanvas) {
+        const canvasBoundingRect = realCanvas.getBoundingClientRect();
+        width = canvasBoundingRect.width;
+        return width;
+      }
+    }
+
     return useEditorStore.getState().editorCanvasWidth;
   }
 
@@ -549,7 +559,7 @@ export const SubContainer = ({
       drop={drop}
       styles={styles}
       parent={parent}
-      isDragging={isDragging}
+      isDragging={isDragging || isOver}
       isResizing={isResizing}
       isGridActive={isGridActive}
       readOnly={readOnly}
