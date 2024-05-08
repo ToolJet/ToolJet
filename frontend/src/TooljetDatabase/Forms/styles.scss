@@ -51,9 +51,9 @@
   width: 100px !important;
 }
 
-.css-1xc3v61-indicatorContainer {
-  padding: 8px 8px 8px 0px !important;
-}
+// .css-1xc3v61-indicatorContainer {
+//   padding: 8px 8px 8px 0px !important;
+// }
 
 .dataType-dropdown-label {
   margin-left: 8px;
@@ -281,44 +281,103 @@
   color: var(--slate11) !important;
 }
 
-.table-schema {
-  background-color: var(--slate3) !important;
-  padding: 8px !important;
-  margin-bottom: 6px !important;
+.column-schema-container {
 
-  .not-null-with-disable {
-    color: var(--slate9) !important;
-  }
+  // overflow-y: scroll;
+  // max-height: 440px;
 
-  .table-schema-row {
-    display: flex;
-    align-items: center;
-    justify-content: start;
-    gap: 6px;
+  .table-schema {
+    background-color: var(--slate3) !important;
+    padding: 8px !important;
+    margin-bottom: 6px !important;
+    border: 1px solid transparent !important;
 
-    .foreign-key-relation {
-      width: 14px !important;
-      padding: 0px !important;
-      margin: 0px !important;
+    .not-null-with-disable {
+      color: var(--slate9) !important;
     }
 
-    .not-null-toggle {
-      width: 100px !important;
-    }
+    .table-schema-row {
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: 6px;
 
-    .datatype-dropdown,
-    .defaultValue,
-    .columnName {
-      width: 125px !important;
-    }
+      .foreign-key-relation {
+        width: 20px !important;
+        height: 22px;
+        padding: 0px !important;
+        margin: 0px !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 5px;
 
-    .primary-check {
-      .form-check {
-        padding-left: 1.95rem !important;
+        &:hover {
+          background-color: #ACB2B966;
+        }
+
+      }
+
+      .foreignKeyAcces-container {
+        width: 125px;
+        height: 36px;
+
+        button {
+          height: 100%;
+        }
+      }
+
+      .foreign-key-relation-active {
+        width: 20px !important;
+        height: 22px;
+        padding: 0px !important;
+        margin: 0px !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 5px;
+
+        &:hover {
+          background-color: #ACB2B966;
+        }
+
+        svg {
+          path {
+            fill: var(--indigo9);
+          }
+        }
+
+      }
+
+      .not-null-toggle {
+        width: 100px !important;
+      }
+
+      .datatype-dropdown,
+      .defaultValue,
+      .columnName {
+        width: 125px !important;
+      }
+
+      .primary-check {
+        .form-check {
+          padding-left: 1.95rem !important;
+        }
       }
     }
+
   }
 
+  .foreignKey-hover {
+    border: 1px solid var(--slate9) !important;
+    background-color: var(--slate6) !important;
+  }
+
+}
+
+.column-schema-container::-webkit-scrollbar {
+  width: 0px !important;
+  /* This will hide the scrollbar */
 }
 
 .new-changes-container {
@@ -378,6 +437,64 @@
 
 }
 
+.foreignkey-relation-container {
+
+  margin-top: 24px !important;
+
+  .foreign-key-heading {
+    span {
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      color: var(--text-black-000) !important;
+    }
+  }
+
+  .empty-foreignkey-container {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='black' stroke-width='1' stroke-dasharray='6%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    height: 40px;
+    width: 270px !important;
+    border-radius: 6px !important;
+    margin-top: 10px !important;
+  }
+}
+
+// common css for two form components
+.foreignKey-details {
+  display: flex;
+  align-items: center;
+  border-radius: 16px;
+  background-color: var(--slate3);
+  border: 1px solid var(--slate7);
+  padding: 4px 12px 4px 12px;
+  padding-inline-end: 40px !important;
+  width: max-content;
+  gap: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  position: relative;
+  margin-bottom: 16px;
+
+  span {
+    font-size: 12px;
+    font-weight: 500;
+    color: #687076;
+  }
+
+  .editForeignkey {
+    background-color: var(--slate3) !important;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-left: 1px solid var(--slate6);
+    position: absolute;
+    right: 0;
+    height: 27px;
+    width: 30px;
+    display: flex;
+    align-items: center;
+    padding-left: 4px;
+  }
+}
+
 .tooltip-table-edit-column {
   inset: auto auto 0px -183px !important
 }
@@ -397,6 +514,90 @@
 
 }
 
+.foreignKeyRelation-form-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between !important;
+  height: 100%;
+
+  .relations-container {
+    padding: 12px 24px !important;
+
+    .single-foreign-key {
+      padding: 6px 12px 6px 12px;
+      background: var(--Button-default-secondary-00-default, #F0F4FF);
+      border: 2px solid var(--Button-default-secondary-04-border, #AEC0F5);
+      border-radius: 100px;
+      margin-left: 10px;
+      font-size: 10px;
+      color: var(--button-default-secondary-03-text-icon-secondary, #3E63DD);
+    }
+
+    .source-title {
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      color: var(--text-secondary) !important;
+      margin-left: 10px;
+    }
+
+    .source-description {
+      font-size: 12px !important;
+      font-weight: 400 !important;
+      color: var(--slate10) !important;
+    }
+
+    .keyRelation-column-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+  }
+}
+
 .primary-key-tooltip {
   inset: -5px auto 0px 0px !important;
+}
+
+.columnInfoForTable {
+  background: var(--slate2) !important;
+  border: 1px solid var(--slate5);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--slate11) !important;
+  padding: 8px;
+  gap: 10px;
+}
+
+.editRow-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  .edit-row-tableName {
+    background: var(--slate3);
+    padding: 5px 10px 5px 10px !important;
+    border-radius: 6px;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+    cursor: pointer;
+
+    span {
+      color: var(--slate11);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+  }
+}
+
+.custom-tooltip-style {
+  svg {
+    margin: 0px 8px 0px 8px;
+
+    path {
+      fill: white;
+    }
+  }
 }

@@ -15,7 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import useConfirm from './Confirm';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
-  const { selectedTableId, tables, joinOptions, findTableDetails } = useContext(TooljetDatabaseContext);
+  const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =
+    useContext(TooljetDatabaseContext);
   const joinType = data?.joinType;
   const baseTableDetails = (selectedTableId && findTableDetails(selectedTableId)) || {};
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
@@ -45,18 +46,149 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
     });
   tableSet.add(selectedTableId);
 
-  const leftTableList = [...tableSet]
+  // In Joins-Query, the table on the LHS should be the ones which we already selected for base table or the tables which we selected on RHS
+  const leftTableList = [];
+  [...tableSet]
     .filter((table) => table !== rightFieldTable)
-    .map((t) => {
+    .forEach((t) => {
       const tableDetails = findTableDetails(t);
-      return { label: tableDetails?.table_name ?? '', value: t };
+      const targetTableFKListWithAdjacentTable = checkIfAdjacentTableHasForeignKey(true, t?.table_id);
+      if (targetTableFKListWithAdjacentTable.length) {
+        leftTableList.unshift({
+          label: tableDetails?.table_name ?? '',
+          value: t,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      } else {
+        leftTableList.push({
+          label: tableDetails?.table_name ?? '',
+          value: t,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      }
     });
 
-  const tableList = tables
+  // Tables to list on Right-Hand-Side of Join operation, Omits already selected table
+  const tableList = [];
+  tables
     .filter((table) => ![...tableSet, leftFieldTable].includes(table.table_id))
-    .map((t) => {
-      return { label: t?.table_name ?? '', value: t.table_id };
+    .forEach((t) => {
+      const targetTableFKListWithAdjacentTable = checkIfAdjacentTableHasForeignKey(false, t?.table_id);
+      if (targetTableFKListWithAdjacentTable.length) {
+        tableList.unshift({
+          label: t?.table_name ?? '',
+          value: t?.table_id,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      } else {
+        tableList.push({
+          label: t?.table_name ?? '',
+          value: t?.table_id,
+          isTargetTable: !!targetTableFKListWithAdjacentTable.length,
+        });
+      }
     });
+
+  // OnSelecting LHS ro RHS table on Join Operation, Checking if Adjacent table has FK relation and Auto Fill the column values
+  function checkIfAdjacentTableHasForeignKey(isChoosingLHStable, tableId) {
+    if (isChoosingLHStable && rightFieldTable) {
+      const rightFieldTableDetails = findTableDetails(rightFieldTable);
+      if (rightFieldTableDetails?.table_name && tableForeignKeyInfo[rightFieldTableDetails.table_name]) {
+        return tableForeignKeyInfo[rightFieldTableDetails.table_name].filter(
+          (foreignKeyDetail) => foreignKeyDetail.referenced_table_id === tableId
+        );
+      }
+    }
+
+    if (!isChoosingLHStable && leftFieldTable) {
+      const leftFieldTableTableDetails = findTableDetails(leftFieldTable);
+      if (leftFieldTableTableDetails?.table_name && tableForeignKeyInfo[leftFieldTableTableDetails.table_name]) {
+        return tableForeignKeyInfo[leftFieldTableTableDetails.table_name].filter(
+          (foreignKeyDetail) => foreignKeyDetail.referenced_table_id === tableId
+        );
+      }
+    }
+
+    return [];
+  }
+
+  function autoFillColumnIfForeignKeyExists(tableId, isChoosingLHStable) {
+    const adjacentTableForeignKeyDetails = checkIfAdjacentTableHasForeignKey(isChoosingLHStable, tableId);
+    if (isChoosingLHStable) {
+      if (adjacentTableForeignKeyDetails.length) {
+        const newData = cloneDeep({ ...data });
+        const newConditionsList = adjacentTableForeignKeyDetails.map((adjacentTableForeignKey) => {
+          const { referenced_column_names = [], column_names = [] } = adjacentTableForeignKey;
+          const newCondition = {
+            leftField: {
+              table: tableId,
+              type: 'Column',
+              ...(referenced_column_names[0] && { columnName: referenced_column_names[0] }),
+            },
+            operator: '=',
+            rightField: {
+              table: rightFieldTable,
+              type: 'Column',
+              ...(column_names[0] && { columnName: column_names[0] }),
+            },
+          };
+
+          return newCondition;
+        });
+        set(newData, 'conditions.conditionsList', newConditionsList);
+        onChange(newData);
+      } else {
+        const newData = cloneDeep({ ...data });
+        const { conditionsList = [{}] } = newData?.conditions || {};
+        const newConditionsList = conditionsList.map((condition) => {
+          const newCondition = { ...condition };
+          set(newCondition, 'leftField.table', tableId);
+          set(newCondition, 'operator', '='); //should we removed when we have more options
+          return newCondition;
+        });
+        set(newData, 'conditions.conditionsList', newConditionsList);
+        // set(newData, 'table', value?.value);
+        onChange(newData);
+      }
+    } else {
+      if (adjacentTableForeignKeyDetails.length) {
+        const newData = cloneDeep({ ...data });
+        const newConditionsList = adjacentTableForeignKeyDetails.map((adjacentTableForeignKey) => {
+          const { referenced_column_names = [], column_names = [] } = adjacentTableForeignKey;
+          const newCondition = {
+            leftField: {
+              table: leftFieldTable,
+              type: 'Column',
+              ...(column_names[0] && { columnName: column_names[0] }),
+            },
+            operator: '=',
+            rightField: {
+              table: tableId,
+              type: 'Column',
+              ...(referenced_column_names[0] && { columnName: referenced_column_names[0] }),
+            },
+          };
+
+          return newCondition;
+        });
+        set(newData, 'conditions.conditionsList', newConditionsList);
+        set(newData, 'table', tableId);
+        onChange(newData);
+      } else {
+        const newData = cloneDeep({ ...data });
+        const { conditionsList = [] } = newData?.conditions || {};
+        const newConditionsList = conditionsList.map((condition) => {
+          const newCondition = { ...condition };
+          set(newCondition, 'rightField.table', tableId);
+          set(newCondition, 'operator', '='); //should we removed when we have more options
+          return newCondition;
+        });
+        set(newData, 'conditions.conditionsList', newConditionsList);
+        set(newData, 'table', tableId);
+        onChange(newData);
+      }
+    }
+  }
 
   return (
     <Container fluid className="p-0">
@@ -118,23 +250,12 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                   result = true;
                 }
 
-                if (result) {
-                  const newData = cloneDeep({ ...data });
-                  const { conditionsList = [{}] } = newData?.conditions || {};
-                  const newConditionsList = conditionsList.map((condition) => {
-                    const newCondition = { ...condition };
-                    set(newCondition, 'leftField.table', value?.value);
-                    set(newCondition, 'operator', '='); //should we removed when we have more options
-                    return newCondition;
-                  });
-                  set(newData, 'conditions.conditionsList', newConditionsList);
-                  // set(newData, 'table', value?.value);
-                  onChange(newData);
-                }
+                if (result) autoFillColumnIfForeignKeyExists(value?.value, true);
               }}
               onAdd={() => navigate(getPrivateRoute('database'))}
               addBtnLabel={'Add new table'}
               value={leftTableList.find((val) => val?.value === leftFieldTable)}
+              shouldShowForeignKeyIcon
             />
           ) : (
             <div
@@ -182,23 +303,12 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 );
               }
 
-              if (result) {
-                const newData = cloneDeep({ ...data });
-                const { conditionsList = [] } = newData?.conditions || {};
-                const newConditionsList = conditionsList.map((condition) => {
-                  const newCondition = { ...condition };
-                  set(newCondition, 'rightField.table', value?.value);
-                  set(newCondition, 'operator', '='); //should we removed when we have more options
-                  return newCondition;
-                });
-                set(newData, 'conditions.conditionsList', newConditionsList);
-                set(newData, 'table', value?.value);
-                onChange(newData);
-              }
+              if (result) autoFillColumnIfForeignKeyExists(value?.value, false);
             }}
             onAdd={() => navigate(getPrivateRoute('database'))}
             addBtnLabel={'Add new table'}
             value={tableList.find((val) => val?.value === rightFieldTable)}
+            shouldShowForeignKeyIcon
           />
         </Col>
       </Row>

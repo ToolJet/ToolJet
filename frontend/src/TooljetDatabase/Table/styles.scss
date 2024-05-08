@@ -20,6 +20,14 @@
   align-items: center;
   justify-content: space-between;
   width: 100% !important;
+
+  .table-header-container {
+    width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
 }
 
 .column-popover {
@@ -53,6 +61,7 @@
         height: 100%;
         background-color: rgba(101, 109, 119, 0.16) !important;
       }
+
       border-right: 0px;
       border-color: inherit;
     }
@@ -107,6 +116,7 @@
         height: 100%;
         background-color: rgba(101, 109, 119, 0.16) !important;
       }
+
       border-right: 0px;
       border-color: inherit;
     }
@@ -146,6 +156,21 @@
     justify-content: center;
     padding: 0.375rem 0.375rem;
     border: 2px solid transparent;
+
+    .foreignkey-cell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100% !important;
+
+      .cell-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 80%;
+      }
+
+    }
   }
 
   .tjdb-selected-cell {
@@ -266,6 +291,7 @@
 
   position: relative !important;
   background-color: transparent;
+  // height: 100% !important;
 
   .cell-text-null-input {
     background-color: var(--slate3) !important;
@@ -355,21 +381,38 @@
   }
 
   .tjdb-th-bg-dark {
-    background: #1c252f !important;
+    background: #1C252F !important;
   }
 }
 
 .create-table-list-items {
-  width: 262px !important;
-  z-index: 1000 !important;
-  inset: 10px auto auto -20px !important;
-
   .popover-body {
     padding: 0px !important;
-    width: 262px !important;
+    width: 240px !important;
 
     .unique-constraint-parent {
       padding: 16px 16px 0px 16px !important;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      .unique-constraint-info{
+        background-color: var(--slate2);
+        border: 1px solid var(--slate5) !important;
+        gap: 4px;
+        padding: 8px;
+        border-radius: 6px;
+        opacity: 0px;
+        display: flex;
+        color: var(--slate11);
+        svg{
+          width: 20%;
+          height: 100%;
+        }
+      }
+      .column-popover{
+        width: 100% !important;
+      }
+
     }
 
     .delete-column-table-creation {
@@ -385,7 +428,7 @@
     }
 
     .unique-tag {
-      color: var(--slate11) !important;
+      color: var(--slate12) !important;
       font-weight: 500 !important;
     }
 
@@ -405,5 +448,21 @@
 
   .disabled-btn {
     cursor: not-allowed !important;
+  }
+}
+
+.tjdb-table-tooltip {
+  width: max-content !important;
+
+  .tooltip-inner {
+    max-width: max-content !important;
+    width: max-content !important;
+
+    .foreignKey-relation-tooltip {
+      span {
+        text-align: left;
+      }
+    }
+
   }
 }

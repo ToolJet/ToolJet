@@ -8,7 +8,14 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { listAllPrimaryKeyColumns } from '../../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
-const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRowIds, rows }) => {
+const EditRowDrawer = ({
+  isEditRowDrawerOpen,
+  setIsEditRowDrawerOpen,
+  selectedRowIds,
+  rows,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+}) => {
   const {
     organizationId,
     selectedTable,
@@ -33,7 +40,9 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
       <ButtonSolid
         variant="tertiary"
         size="sm"
-        onClick={() => setIsEditRowDrawerOpen(!isEditRowDrawerOpen)}
+        onClick={() => {
+          setIsEditRowDrawerOpen(!isEditRowDrawerOpen);
+        }}
         className="gap-0"
         data-cy="edit-row-button-"
         style={{
@@ -96,6 +105,8 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
           }}
           onClose={() => setIsEditRowDrawerOpen(false)}
           selectedRowObj={selectedRowObj}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
     </>
