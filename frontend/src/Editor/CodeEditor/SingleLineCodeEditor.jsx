@@ -142,6 +142,7 @@ const EditorInput = ({
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
 
     let queryInput = context.state.doc.toString();
+    const originalQueryInput = queryInput;
 
     if (totalReferences > 0) {
       const currentCursor = context.state.selection.main.head;
@@ -162,7 +163,7 @@ const EditorInput = ({
       queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences);
+    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
 
     return {
       from: word.from,

@@ -1,9 +1,10 @@
 import { getLastDepth, getLastSubstring } from './autocompleteUtils';
 
-export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) => {
+export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, originalQueryInput = null) => {
   if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
   const actualInput = input.replace(/{{|}}/g, '');
+
   let JSLangHints = [];
 
   if (fieldType) {
@@ -51,7 +52,9 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1) 
     if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
   });
 
-  const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences, input);
+  const queryInput = originalQueryInput || input;
+
+  const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences, queryInput);
   return orderSuggestions(suggestions, fieldType);
 };
 
@@ -90,9 +93,9 @@ export const generateHints = (hints, totalReferences = 1, input) => {
       apply: (view, completion, from, to) => {
         const doc = view.state.doc;
         const { from: _, to: end } = doc.lineAt(from);
-
+        const actualStartIndex = input.lastIndexOf('{{');
         const pickedCompletionConfig = {
-          from: end - to,
+          from: actualStartIndex + (end - to),
           to: to,
           insert: completion.label,
         };
