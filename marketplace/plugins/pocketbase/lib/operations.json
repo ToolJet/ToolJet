@@ -1,0 +1,249 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "PocketBase datasource",
+  "description": "A schema defining PocketBase datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_records",
+          "name": "List Records"
+        },
+        {
+          "value": "get_record",
+          "name": "Get Record"
+        },
+        {
+          "value": "add_record",
+          "name": "Add Record to Collection"
+        },
+        {
+          "value": "update_record",
+          "name": "Update Record to Collection"
+        },
+        {
+          "value": "delete_record",
+          "name": "Delete Record"
+        }
+      ]
+    },
+    "list_records": {
+      "collectionId": {
+        "label": "Collection ID or Name",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id or name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection id or name"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter limit to get max records",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter limit to get max records"
+      },
+      "sort": {
+        "label": "Sort",
+        "key": "sort",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter records sort rule in order",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter record sort rule in order (Prefix '-' to field for descending order)"
+      },
+      "list_filter": {
+        "label": "Where",
+        "key": "list_filter",
+        "type": "filters",
+        "description": "PocketBase multi filter component",
+        "placeholders": {
+          "columnKey": "Enter Column name",
+          "operator": "Select operation",
+          "value": "Enter value"
+        },
+        "list": [
+          {
+            "value": "=",
+            "name": "Equal"
+          },
+          {
+            "value": "!=",
+            "name": "Not Equal"
+          },
+          {
+            "value": "<",
+            "name": "Less than"
+          },
+          {
+            "value": ">",
+            "name": "Greater than"
+          },
+          {
+            "value": "<=",
+            "name": "Less than & equal"
+          },
+          {
+            "value": ">=",
+            "name": "Greater than & equal"
+          },
+          {
+            "value": "~",
+            "name": "Like/Contains"
+          },
+          {
+            "value": "!~",
+            "name": "Not Like/Contains"
+          },
+          {
+            "value": "?=",
+            "name": "Any/At least one of Equal"
+          },
+          {
+            "value": "?!=",
+            "name": "Any/At least one of Not Equal"
+          },
+          {
+            "value": "?<",
+            "name": "Any/At least one of Less than"
+          },
+          {
+            "value": "?>",
+            "name": "Any/At least one of Greater than"
+          },
+          {
+            "value": "?<=",
+            "name": "Any/At least one of Less than & equal"
+          },
+          {
+            "value": "?>=",
+            "name": "Any/At least one of Greater than & equal"
+          },
+          {
+            "value": "?~",
+            "name": "Any/At least one of Like/Contains"
+          },
+          {
+            "value": "?!~",
+            "name": "Any/At least one of Not Like/Contains"
+          }
+        ]
+      }
+    },
+    "get_record": {
+      "collectionId": {
+        "label": "Collection ID or Name",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id or name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection id or name"
+      },
+      "recordId": {
+        "label": "Record ID",
+        "key": "recordId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter record id"
+      }
+    },
+    "add_record": {
+      "collectionId": {
+        "label": "Collection ID or Name",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id or name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection id or name"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter document body",
+        "height": "150px"
+      }
+    },
+    "update_record": {
+      "collectionId": {
+        "label": "Collection ID or Name",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id or name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection id or name"
+      },
+      "recordId": {
+        "label": "Record ID",
+        "key": "recordId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter record id"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter document body",
+        "height": "150px"
+      }
+    },
+    "delete_record": {
+      "collectionId": {
+        "label": "Collection ID or Name",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id or name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection id or name"
+      },
+      "recordId": {
+        "label": "Record ID",
+        "key": "recordId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter record id"
+      }
+    }
+  }
+}

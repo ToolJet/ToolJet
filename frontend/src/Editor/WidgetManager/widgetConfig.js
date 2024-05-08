@@ -33,106 +33,6 @@ export const widgets = [
       columns: {
         type: 'array',
         displayName: 'Table Columns',
-        // validation: {
-        //   schema: {
-        //     type: 'array',
-        //     element: {
-        //       type: 'union',
-        //       schemas: [
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             textWrap: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             textColor: { type: 'string' },
-        //             regex: { type: 'string' },
-        //             minLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             maxLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             customRule: { type: 'string' },
-        //           },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //           },
-        //           isEditable: { type: 'boolean' },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             activeColor: { type: 'string' },
-        //             isEditable: { type: 'boolean' },
-        //           },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             values: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //             labels: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //           },
-        //           isEditable: { type: 'boolean' },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             values: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //             labels: {
-        //               type: 'union',
-        //               schemas: [
-        //                 { type: 'array', element: { type: 'string' } },
-        //                 { type: 'array', element: { type: 'number' } },
-        //               ],
-        //             },
-        //           },
-        //           isEditable: { type: 'boolean' },
-        //         },
-        //         {
-        //           type: 'object',
-        //           object: {
-        //             columnType: { type: 'string' },
-        //             name: { type: 'string' },
-        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        //             dateFormat: { type: 'string' },
-        //             parseDateFormat: { type: 'string' },
-        //             isTimeChecked: { type: 'boolean' },
-        //             isEditable: { type: 'boolean' },
-        //           },
-        //         },
-        //       ],
-        //     },
-        //   },
-        // },
       },
       useDynamicColumn: {
         type: 'toggle',
@@ -221,7 +121,6 @@ export const widgets = [
           { displayName: 'Client side', value: 'clientSide' },
           { displayName: 'Server side', value: 'serverSide' },
         ],
-        // defaultValue: 'clientSide',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -236,7 +135,6 @@ export const widgets = [
           { displayName: 'Client side', value: 'clientSide' },
           { displayName: 'Server side', value: 'serverSide' },
         ],
-        // defaultValue: 'clientSide',
       },
       serverSideFilter: {
         type: 'clientServerSwitch',
@@ -337,13 +235,27 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 28.86,
+      width: 35,
       height: 456,
     },
     events: {
@@ -365,57 +277,112 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
-      },
-      actionButtonRadius: {
-        type: 'code',
-        displayName: 'Action button radius',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
-        },
+        accordian: 'Data',
       },
       tableType: {
         type: 'select',
-        displayName: 'Table type',
+        displayName: 'Row style',
         options: [
-          { name: 'Bordered', value: 'table-bordered' },
           { name: 'Regular', value: 'table-classic' },
+          { name: 'Bordered', value: 'table-bordered' },
           { name: 'Striped', value: 'table-striped' },
         ],
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'Data',
       },
       cellSize: {
         type: 'select',
-        displayName: 'Cell size',
+        displayName: 'Cell height',
         options: [
-          { name: 'Condensed', value: 'condensed' },
           { name: 'Regular', value: 'regular' },
+          { name: 'Condensed', value: 'condensed' },
         ],
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'Data',
+      },
+      contentWrap: {
+        type: 'toggle',
+        showLabel: false,
+        toggleLabel: 'Content wrap',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+        accordian: 'Data',
+      },
+      maxRowHeight: {
+        type: 'switch',
+        displayName: 'Max row height',
+        validation: { schema: { type: 'string' } },
+        accordian: 'Data',
+        options: [
+          { displayName: 'Auto', value: 'auto' },
+          { displayName: 'Custom', value: 'custom' },
+        ],
+        conditionallyRender: {
+          key: 'contentWrap',
+          value: true,
+        },
+      },
+      maxRowHeightValue: {
+        type: 'tableRowHeightInput',
+        showLabel: false,
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+        accordian: 'Data',
+        conditionallyRender: [
+          {
+            key: 'maxRowHeight',
+            value: 'custom',
+          },
+          {
+            key: 'contentWrap',
+            value: true,
+          },
+        ],
+      },
+      actionButtonRadius: {
+        type: 'numberInput',
+        displayName: 'Button radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+        accordian: 'Action button',
       },
       borderRadius: {
-        type: 'code',
+        type: 'numberInput',
         displayName: 'Border radius',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'Container',
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
+      borderColor: {
+        type: 'color',
+        displayName: 'Border',
         validation: {
-          schema: { type: 'boolean' },
+          schema: { type: 'string' },
+          defaultValue: false,
         },
+        accordian: 'Container',
       },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'Container',
+      },
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+        accordian: 'Container',
       },
     },
     exposedVariables: {
@@ -505,7 +472,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         data: {
           value:
-            "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
+            "{{ [ \n\t\t{ id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '15/05/2022', mobile_number: 9876543210, interest: ['Reading', 'Traveling','Photography'], photo: 'https://reqres.in/img/faces/7-image.jpg' }, \n\t\t{ id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '20/09/2021', mobile_number: 8765432109, interest: ['Cooking','Gardening','Hiking'], photo: 'https://reqres.in/img/faces/5-image.jpg' }, \n\t\t{ id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', mobile_number: 7654321098, interest: ['Music','Dancing','Crafting'], photo: 'https://reqres.in/img/faces/3-image.jpg' }, \n\t\t{ id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', mobile_number: 6543210987, interest: ['Reading', 'Traveling', 'Volunteering'], photo: 'https://reqres.in/img/faces/1-image.jpg' }, \n\t\t{ id: 5, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '07/01/2021', mobile_number: 4321098765, interest: ['Music', 'Dancing', 'Hiking'], photo: 'https://reqres.in/img/faces/4-image.jpg' }, \n\t\t{ id: 6, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', mobile_number: 2109876543, interest: ['Cooking', 'Traveling', 'Photography'], photo: 'https://reqres.in/img/faces/6-image.jpg' }, \n\t\t{ id: 7, name: 'Mia Tiana', email: 'mia.tiana@example.com', date: '21/11/2022', mobile_number: 1098705217, interest: ['Music', 'Gardening', 'Hiking'], photo: 'https://reqres.in/img/faces/2-image.jpg' }, \n\t\t{ id: 8, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '31/03/2023', mobile_number: 9876543210, interest: ['Reading', 'Dancing', 'Crafting'], photo: 'https://reqres.in/img/faces/9-image.jpg' }, \n\t\t{ id: 9, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '07/09/2022', mobile_number: 7654321098, interest: ['Music','Gardening','Photography'], photo: 'https://reqres.in/img/faces/8-image.jpg' }, \n\t\t{ id: 10, name: 'Michael Reyes', email: 'michael.reyes@example.com', date: '25/12/2021', mobile_number: 5432109876, interest: ['Cooking','Crafting','Volunteering'], photo: 'https://reqres.in/img/faces/10-image.jpg' } \n] }}",
         },
         useDynamicColumn: { value: '{{false}}' },
         columnData: {
@@ -524,6 +491,7 @@ export const widgets = [
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
         autogenerateColumns: { value: true, generateNestedColumns: true },
+        isAllColumnsEditable: { value: '{{false}}' },
         columns: {
           value: [
             {
@@ -531,18 +499,106 @@ export const widgets = [
               id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737',
               autogenerated: true,
               fxActiveFields: [],
+              columnSize: 30,
+              columnType: 'string',
+            },
+            {
+              name: 'photo',
+              key: 'photo',
+              id: 'f23b7d134b2e490ea41e3bb8eeb8c8e37472af243bf6b70d5af294482097e3a2',
+              autogenerated: true,
+              fxActiveFields: [],
+              columnType: 'image',
+              objectFit: 'contain',
+              borderRadius: '100',
+              columnSize: 70,
             },
             {
               name: 'name',
               id: '5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a',
               autogenerated: true,
               fxActiveFields: [],
+              columnSize: 130,
+              columnType: 'string',
             },
             {
               name: 'email',
               id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f',
               autogenerated: true,
               fxActiveFields: [],
+              columnSize: 230,
+              columnType: 'string',
+            },
+            {
+              name: 'date',
+              id: '27b75c8af9d34d1eaa1f9bb7f8f9f7b0abf1823e799748c8bb57e74f53b2c1dc',
+              autogenerated: true,
+              fxActiveFields: [],
+              columnType: 'datepicker',
+              isTimeChecked: false,
+              dateFormat: 'DD/MM/YYYY',
+              parseDateFormat: 'DD/MM/YYYY',
+              isDateSelectionEnabled: true,
+              columnSize: 130,
+            },
+            {
+              name: 'mobile_number',
+              id: '9c2e3c40572a4aefb8e179ee39a0e1ac9dc2b2e6634be56e1c05be13c3d1de56',
+              autogenerated: true,
+              fxActiveFields: [],
+              columnType: 'number',
+              columnSize: 140,
+            },
+            {
+              name: 'interest',
+              key: 'interest',
+              id: 'f23b7d134b2e490ea41e3bb8eeb8c8e37472af243bf6b70d5af294482097e3a1',
+              autogenerated: true,
+              fxActiveFields: [],
+              columnType: 'newMultiSelect',
+              columnSize: 300,
+              options: [
+                {
+                  label: 'Reading',
+                  value: 'Reading',
+                },
+                {
+                  label: 'Traveling',
+                  value: 'Traveling',
+                },
+                {
+                  label: 'Photography',
+                  value: 'Photography',
+                },
+                {
+                  label: 'Music',
+                  value: 'Music',
+                },
+                {
+                  label: 'Cooking',
+                  value: 'Cooking',
+                },
+                {
+                  label: 'Crafting',
+                  value: 'Crafting',
+                },
+                {
+                  label: 'Voluntering',
+                  value: 'Voluntering',
+                },
+                {
+                  label: 'Garndening',
+                  value: 'Garndening',
+                },
+                {
+                  label: 'Dancing',
+                  value: 'Dancing',
+                },
+                {
+                  label: 'Hiking',
+                  value: 'Hiking',
+                },
+              ],
             },
           ],
         },
@@ -556,16 +612,21 @@ export const widgets = [
         defaultSelectedRow: { value: '{{{"id":1}}}' },
         showAddNewRowButton: { value: '{{true}}' },
         allowSelection: { value: '{{true}}' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
       events: [],
       styles: {
         textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         cellSize: { value: 'regular' },
-        borderRadius: { value: '4' },
+        borderRadius: { value: '8' },
         tableType: { value: 'table-classic' },
+        maxRowHeight: { value: 'auto' },
+        maxRowHeightValue: { value: '80px' },
+        contentWrap: { value: '{{true}}' },
+        boxShadow: { value: '0px 0px 0px 0px #00000090' },
+        padding: { value: 'default' },
       },
     },
   },
@@ -707,6 +768,7 @@ export const widgets = [
         borderRadius: { value: '{{4}}' },
         borderColor: { value: '#375FCF' },
         disabledState: { value: '{{false}}' },
+        padding: { value: 'default' },
       },
     },
   },
@@ -1556,7 +1618,6 @@ export const widgets = [
           value: 'side',
         },
       },
-
       backgroundColor: {
         type: 'color',
         displayName: 'Background',
@@ -1700,17 +1761,17 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '#11181C' },
-        borderColor: { value: '#6A727C47' },
+        textColor: { value: '#1B1F24' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
+        errTextColor: { value: '#D72D39' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        iconColor: { value: '#C1C8CD' },
+        iconColor: { value: '#CFD3D859' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
+        color: { value: '#1B1F24' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -1989,15 +2050,16 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#6A727C47' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
-        textColor: { value: '#232e3c' },
-        iconColor: { value: '#C1C8CD' },
+        errTextColor: { value: '#D72D39' },
+        textColor: { value: '#1B1F24' },
+        color: { value: '#1B1F24' },
+
+        iconColor: { value: '#CFD3D859' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -2273,15 +2335,15 @@ export const widgets = [
       styles: {
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
-        borderColor: { value: '#6A727C47' },
+        borderColor: { value: '#CCD1D5' },
         accentColor: { value: '#4368E3' },
-        errTextColor: { value: '#DB4324' },
-        textColor: { value: '#11181C' },
-        iconColor: { value: '#C1C8CD' },
+        errTextColor: { value: '#D72D39' },
+        textColor: { value: '#1B1F24' },
+        iconColor: { value: '#CFD3D859' },
         direction: { value: 'left' },
         width: { value: '{{33}}' },
         alignment: { value: 'side' },
-        color: { value: '#11181C' },
+        color: { value: '#1B1F24' },
         auto: { value: '{{true}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
@@ -5903,7 +5965,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
       showDownloadOption: {
         type: 'toggle',
-        displayName: 'Show the download',
+        displayName: 'Show download button',
         validation: { schema: { type: 'boolean' } },
       },
     },

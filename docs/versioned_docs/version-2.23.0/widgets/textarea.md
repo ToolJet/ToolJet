@@ -61,7 +61,7 @@ The **Box Shadow** property is used to add shadow effects around a component's f
 ## Exposed Variables
 
 | Variables    | Description | Expected Value |
-|: ----------- |: ----------- | :-------------|
+|:----------- |:----------- | :-------------|
 | value | This variable holds the value entered in the text area component. | You can access the value dynamically using JS. For example, `{{components.textarea1.value}}`|
 
 ## Component Specific Actions (CSA)

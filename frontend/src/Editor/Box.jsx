@@ -67,7 +67,6 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import { useModuleName } from '../_contexts/ModuleContext';
 import { isPDFSupported } from '@/_stores/utils';
 
 export const AllComponents = {
@@ -159,11 +158,11 @@ export const Box = memo(
     isResizing,
     adjustHeightBasedOnAlignment,
     currentLayout,
+    darkMode,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-    const moduleName = useModuleName();
     const { events } = useAppInfo();
     const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
@@ -206,7 +205,6 @@ export const Box = memo(
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
         : [resolvedGeneralStyles, []];
 
-    const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
     let styles = {

@@ -3,15 +3,14 @@ import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
-import { useSuperStore } from '../_stores/superStore';
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
+import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -413,6 +412,97 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   };
 }
 
+export function validateDates({ validationObject, widgetValue, currentState, customResolveObjects }) {
+  let isValid = true;
+  let validationError = null;
+  const validationDateFormat = validationObject?.dateFormat?.value || 'MM/DD/YYYY';
+  const validationTimeFormat = validationObject?.timeFormat?.value || 'HH:mm';
+  const customRule = validationObject?.customRule?.value;
+  const parsedDateFormat = validationObject?.parseDateFormat?.value;
+  const isTwentyFourHrFormatEnabled = validationObject?.isTwentyFourHrFormatEnabled?.value ?? false;
+  const isDateSelectionEnabled = validationObject?.isDateSelectionEnabled?.value ?? true;
+  const _widgetDateValue = moment(widgetValue, parsedDateFormat);
+  const _widgetTimeValue = moment(
+    widgetValue,
+    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled, isDateSelectionEnabled)
+  ).format(validationTimeFormat);
+
+  const resolvedMinDate = resolveWidgetFieldValue(
+    validationObject?.minDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxDate = resolveWidgetFieldValue(
+    validationObject?.maxDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMinTime = resolveWidgetFieldValue(
+    validationObject?.minTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxTime = resolveWidgetFieldValue(
+    validationObject?.maxTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+
+  // Minimum date validation
+  if (resolvedMinDate !== undefined && moment(resolvedMinDate).isValid()) {
+    if (!moment(resolvedMinDate, validationDateFormat).isBefore(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum date is ${resolvedMinDate}`,
+      };
+    }
+  }
+
+  // Maximum date validation
+  if (resolvedMaxDate !== undefined && moment(resolvedMaxDate).isValid()) {
+    if (!moment(resolvedMaxDate, validationDateFormat).isAfter(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum date is ${resolvedMaxDate}`,
+      };
+    }
+  }
+
+  // Minimum time validation
+  if (resolvedMinTime !== undefined && moment(resolvedMinTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMinTime, validationTimeFormat).isBefore(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum time is ${resolvedMinTime}`,
+      };
+    }
+  }
+
+  // Maximum time validation
+  if (resolvedMaxTime !== undefined && moment(resolvedMaxTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMaxTime, validationTimeFormat).isAfter(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum time is ${resolvedMaxTime}`,
+      };
+    }
+  }
+
+  //Custom rule validation
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+    return { isValid: false, validationError: resolvedCustomRule };
+  }
+  return {
+    isValid,
+    validationError,
+  };
+}
+
 export function validateEmail(email) {
   const emailRegex =
     /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -429,7 +519,7 @@ export async function executeMultilineJS(
   parameters = {},
   hasParamSupport = false
 ) {
-  const currentState = getCurrentState(_ref.moduleName);
+  const currentState = getCurrentState();
   let result = {},
     error = null;
 
@@ -440,11 +530,7 @@ export async function executeMultilineJS(
 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
-  const queryDetails = useSuperStore
-    .getState()
-    .modules[_ref.moduleName].useDataQueriesStore.getState()
-    .dataQueries.find((q) => q.id === queryId);
-  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
+  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
 
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
@@ -474,10 +560,7 @@ export async function executeMultilineJS(
           params = {};
         }
         const processedParams = {};
-        const query = useSuperStore
-          .getState()
-          .modules.modules[_ref.moduleName].useDataQueriesStore.getState()
-          .dataQueries.find((q) => q.name === key);
+        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
       },
@@ -606,17 +689,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     : {};
 
   const runQuery = (queryName = '', parameters) => {
-    const query = useSuperStore
-      .getState()
-      .modules[_ref.moduleName].useDataQueriesStore.getState()
-      .dataQueries.find((query) => {
-        const isFound = query.name === queryName;
-        if (isPreview) {
-          return isFound;
-        } else {
-          return isFound && isQueryRunnable(query);
-        }
-      });
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
+      const isFound = query.name === queryName;
+      if (isPreview) {
+        return isFound;
+      } else {
+        return isFound && isQueryRunnable(query);
+      }
+    });
 
     const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {
@@ -1076,12 +1156,6 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
 
   return true;
 };
-
-export function eraseRedirectUrl() {
-  const redirectPath = getCookie('redirectPath');
-  redirectPath && eraseCookie('redirectPath');
-  return redirectPath;
-}
 
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();

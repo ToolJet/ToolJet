@@ -48,7 +48,7 @@ Check the **component specific actions** available for this component **[here](/
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
+|:---------- | :---------- | :------------ |
 | value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.value}}`). |
 | label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.label}}`). |
 | isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isValid}}`). |
@@ -66,6 +66,12 @@ Check the **component specific actions** available for this component **[here](/
 | Min length         | Sets the minimum number of characters allowed.                | Integer (e.g., `6` for a minimum of 6 characters). |
 | Max length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
 | Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.passwordinput1.value<5&&"Value needs to be more than 5"}}`).           |
+
+To add regex inside `Custom Validation`, you can use the below format: 
+
+**Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message';}}`
+
+**Example**: `{{(/^\d{1,10}$/.test(components.passwordinput1.value)) ? '' : 'Error message';}}`
 
 
 
