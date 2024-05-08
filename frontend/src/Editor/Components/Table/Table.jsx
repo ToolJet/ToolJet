@@ -981,7 +981,7 @@ export function Table({
   useEffect(() => {
     setExposedVariable('currentPageData', pageData);
   }, [JSON.stringify(pageData)]);
-  console.log(paginationInternalPageIndex, 'setPaginationInternalPageIndex');
+
   function downlaodPopover() {
     const options = [
       { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
