@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
+// eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -131,6 +132,10 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     overflowX: isScrollRequired === 'disabled' && 'hidden',
   };
 
+  const commonScrollStyle = {
+    overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'hidden',
+  };
+
   return (
     <div
       data-disabled={isDisabled}
@@ -144,10 +149,15 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div>{text}</div>}
-          {textFormat === 'markdown' && <Markdown className={'reactMarkdown'}>{text}</Markdown>}
+          {textFormat === 'plainText' && <div style={commonScrollStyle}>{text}</div>}
+          {textFormat === 'markdown' && (
+            <div style={commonScrollStyle}>
+              <Markdown className={'reactMarkdown'}>{text}</Markdown>
+            </div>
+          )}
           {(textFormat === 'html' || !textFormat) && (
             <div
+              style={commonScrollStyle}
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(text || ''),
               }}

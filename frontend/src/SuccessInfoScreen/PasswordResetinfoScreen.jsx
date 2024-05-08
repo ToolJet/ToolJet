@@ -26,7 +26,11 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ darkMo
         </p>
         <ButtonSolid
           variant="secondary"
-          onClick={() => navigate('/login')}
+          onClick={() =>
+            navigate('/login', {
+              state: { from: '/reset-password' },
+            })
+          }
           className="reset-password-info-btn"
           data-cy="back-to-login-button"
         >

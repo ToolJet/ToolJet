@@ -15,10 +15,11 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
-import { useSuperStore } from '@/_stores/superStore';
+import { useEditorStore } from '@/_stores/editorStore';
+
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { ModuleContext } from '../_contexts/ModuleContext';
+import { isPDFSupported } from '@/_stores/utils';
 
 const NO_OF_GRIDS = 43;
 
@@ -62,8 +63,6 @@ export const SubContainer = ({
   const widgetResolvables = Object.freeze({
     Listview: 'listItem',
   });
-
-  const moduleName = useContext(ModuleContext);
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
   const currentState = useCurrentState();
@@ -311,6 +310,13 @@ export const SubContainer = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
+        if (item.component.component === 'PDF' && !isPDFSupported()) {
+          toast.error(
+            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+          );
+          return;
+        }
+
         const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );
@@ -405,9 +411,7 @@ export const SubContainer = ({
     let newBoxes = { ...boxes };
 
     const subContainerHeight = canvasBounds.height - 30;
-    const selectedComponents = useSuperStore
-      .getState()
-      .modules[moduleName].useEditorStore.getState().selectedComponents;
+    const selectedComponents = useEditorStore.getState().selectedComponents;
 
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {

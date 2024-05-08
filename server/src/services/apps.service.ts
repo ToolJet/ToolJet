@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, MoreThan, Repository } from 'typeorm';
+import { EntityManager, Like, MoreThan, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -28,6 +28,7 @@ import { Layout } from 'src/entities/layout.entity';
 
 import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 
 const uuid = require('uuid');
 @Injectable()
@@ -146,6 +147,7 @@ export class AppsService {
           canvasMaxHeight: 2400,
           canvasBackgroundColor: '#edeff5',
           backgroundFxQuery: '',
+          appMode: 'auto',
         };
         await manager.save(appVersion);
 
@@ -218,7 +220,7 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string): Promise<App[]> {
+  async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
     const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
     if (page) {
@@ -229,6 +231,12 @@ export class AppsService {
     }
 
     return await viewableAppsQb.getMany();
+  }
+
+  async findAll(organizationId: string, searchParam): Promise<App[]> {
+    return await this.appsRepository.find({
+      where: { organizationId, ...(searchParam.name && { name: Like(`${searchParam.name} %`) }) },
+    });
   }
 
   async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {

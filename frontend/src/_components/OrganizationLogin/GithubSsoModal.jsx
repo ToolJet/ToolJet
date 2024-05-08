@@ -36,19 +36,16 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
 
   const handleClientIdChange = (newClientId) => {
     setClientId(newClientId);
-    const changesMade = newClientId !== settings?.configs?.client_id;
     checkChanges();
   };
 
   const handleHostNameChange = (newHostName) => {
     setHostName(newHostName);
-    const changesMade = newHostName !== settings?.configs?.host_name;
     checkChanges();
   };
 
   const handleClientSecretChange = (newClientSecret) => {
     setClientSecret(newClientSecret);
-    const changesMade = newClientSecret !== settings?.configs?.client_secret;
     checkChanges();
   };
 
@@ -59,10 +56,10 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
   };
 
   const checkChanges = () => {
-    const hasClientIdChanged = clientId !== settings?.configs?.client_id;
-    const hasEnabledChanged = enabled !== settings?.enabled;
-    const hasHostNameChanged = hostName !== settings?.configs?.host_name;
-    const hasClientSecretChanged = clientSecret != settings?.configs?.client_secret;
+    const hasClientIdChanged = clientId !== (settings?.configs?.client_id || '');
+    const hasEnabledChanged = enabled !== (settings?.enabled || false);
+    const hasHostNameChanged = hostName !== (settings?.configs?.host_name || '');
+    const hasClientSecretChanged = clientSecret != (settings?.configs?.client_secret || '');
     setHasChanges(hasClientIdChanged || hasEnabledChanged || hasHostNameChanged || hasClientSecretChanged);
   };
 
@@ -134,7 +131,7 @@ export function GithubSSOModal({ settings, onClose, onUpdateSSOSettings, isInsta
         }}
       >
         <div>
-          <label className="switch">
+          <label className="switch" data-cy="github-toggle-input">
             <input type="checkbox" checked={enabled} onChange={onToggleChange} />
             <span className="slider round"></span>
           </label>
