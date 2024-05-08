@@ -99,5 +99,5 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }
