@@ -114,6 +114,19 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
         }}
         onMouseOut={() => setHovered(false)}
       >
+        {/* Container for renderTags */}
+        {!showForm && (
+          <div
+            className="render-tags-container table-tags-col-container h-100 d-flex flex-wrap custom-gap-3"
+            style={{ width: readOnly ? '100' : '80%', overflow: 'hidden' }}
+          >
+            {value.map((item, index) => (
+              <span key={index} className="col-auto tag-wrapper">
+                {renderTag(item)}
+              </span>
+            ))}
+          </div>
+        )}
         {/* Container for + button */}
         {!showForm && !readOnly && (
           <div className="add-tag-container" style={{ width: '20%' }}>
@@ -124,19 +137,7 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
             </span>
           </div>
         )}
-        {/* Container for renderTags */}
-        {!showForm && (
-          <div
-            className="render-tags-container table-tags-col-container h-100 d-flex flex-wrap custom-gap-3"
-            style={{ width: '80%', overflow: 'hidden' }}
-          >
-            {value.map((item, index) => (
-              <span key={index} className="col-auto tag-wrapper">
-                {renderTag(item)}
-              </span>
-            ))}
-          </div>
-        )}
+
         {/* Input element */}
         {showForm && (
           <div className="col-auto badge bg-green-lt mx-1">
