@@ -217,7 +217,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           <div style={{ position: 'relative' }}>
             {isMatchingForeignKeyColumn(columnName) ? (
               <DropDownSelect
-                buttonClasses="border border-end-1 foreignKeyAcces-container"
+                buttonClasses="border border-end-1 foreignKeyAcces-container-drawer"
                 showPlaceHolder={true}
                 options={referenceTableDetails}
                 darkMode={darkMode}
@@ -356,7 +356,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                           ) : null
                         }
                         placement="top"
-                        tooltipClassName="tootip-table"
+                        tooltipClassName="tjdb-table-tooltip"
                       >
                         <div>
                           {isMatchingForeignKeyColumn(Header) && (

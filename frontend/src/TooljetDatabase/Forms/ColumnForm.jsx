@@ -285,7 +285,7 @@ const ColumnForm = ({
                 />
               ) : (
                 <DropDownSelect
-                  buttonClasses="border border-end-1 foreignKeyAcces-container mb-2"
+                  buttonClasses="border border-end-1 foreignKeyAcces-container-drawer mb-2"
                   showPlaceHolder={true}
                   options={referenceTableDetails}
                   darkMode={darkMode}
