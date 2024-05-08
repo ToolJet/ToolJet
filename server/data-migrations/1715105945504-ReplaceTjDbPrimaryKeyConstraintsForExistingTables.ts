@@ -31,9 +31,11 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
       await tooljetDbManager.transaction(async (tooljetDbManager) => {
         await processDataInBatches(
           entityManager,
-          async (entityManager: EntityManager) => {
+          async (entityManager, skip, take) => {
             return await entityManager.find(InternalTable, {
               order: { createdAt: 'ASC' },
+              take,
+              skip,
             });
           },
           async (entityManager: EntityManager, internalTables: InternalTable[]) => {
