@@ -50,14 +50,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent =
-  | 'Text'
-  | 'TextInput'
-  | 'PasswordInput'
-  | 'NumberInput'
-  | 'Table'
-  | 'ToggleSwitch'
-  | 'Checkbox';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table' | 'Button' | 'Checkbox';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -73,8 +66,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PasswordInput',
   'NumberInput',
   'Table',
-  'ToggleSwitch',
   'Checkbox',
+  'Button',
 ];
 
 @Injectable()

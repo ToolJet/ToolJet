@@ -4,7 +4,7 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class MoveCheckboxToggleDisabledToProperties1715248128046 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = ['ToggleSwitch', 'Checkbox'];
+    const componentTypes = ['Checkbox', 'Button'];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 
