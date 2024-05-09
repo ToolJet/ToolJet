@@ -1,6 +1,6 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
-import _, { debounce, initial, merge, omit } from 'lodash';
+import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 
@@ -91,7 +91,6 @@ useCurrentStateStore.subscribe((state) => {
   if (!isEditorReady) return;
 
   const isStoreIntialized = useResolveStore.getState().storeReady;
-
   if (!isStoreIntialized) {
     const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
