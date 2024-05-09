@@ -746,7 +746,6 @@ export const widgets = [
         displayName: 'Icon color',
         validation: { schema: { type: 'string' } },
         accordian: 'button',
-
         visibility: false,
       },
 
@@ -776,6 +775,10 @@ export const widgets = [
         displayName: 'Box shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'button',
+        conditionallyRender: {
+          key: 'type',
+          value: 'primary',
+        },
       },
 
       padding: {

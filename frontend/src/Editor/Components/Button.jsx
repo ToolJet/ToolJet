@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 import * as Icons from '@tabler/icons-react';
-import { getCssVariableValue } from '@/_helpers/appUtils';
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables, component } =
-    props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const {
     backgroundColor,
     textColor,
@@ -51,30 +49,23 @@ export const Button = function Button(props) {
   }, [properties.loadingState]);
 
   const computedIconColor =
-    getCssVariableValue('--icons-on-solid') === iconColor
-      ? type === 'primary'
-        ? getCssVariableValue('--icons-on-solid')
-        : getCssVariableValue('--icons-strong')
-      : iconColor;
+    '#FFFFFF' === iconColor ? (type === 'primary' ? iconColor : 'var(--icons-strong)') : iconColor;
+
   const computedBorderColor =
-    '#4368E3' === borderColor
-      ? type === 'primary'
-        ? '#4368E3'
-        : getCssVariableValue('--borders-default')
-      : borderColor;
+    borderColor === '#4368E3' ? (type === 'primary' ? '#4368E3' : 'var(--borders-default)') : borderColor;
 
   const computedTextColor =
-    getCssVariableValue('--text-on-solid') === textColor
-      ? type == 'primary'
-        ? getCssVariableValue('--text-on-solid')
-        : getCssVariableValue('text-primary')
-      : textColor;
+    '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--text-primary)') : textColor;
+
   const computedBgColor =
-    getCssVariableValue('--primary-brand') === backgroundColor
+    '#4368E3' === backgroundColor
       ? type === 'primary'
-        ? getCssVariableValue('--primary-brand')
-        : getCssVariableValue('--surfaces-surface-01')
-      : backgroundColor;
+        ? 'var(--primary-brand)'
+        : 'transparent'
+      : type === 'primary'
+      ? backgroundColor
+      : 'transparent';
+
   const computedStyles = {
     backgroundColor: computedBgColor,
     color: computedTextColor,
@@ -84,9 +75,9 @@ export const Button = function Button(props) {
     display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
     '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
-    '--loader-color': tinycolor(loaderColor ?? getCssVariableValue('--icons-on-solid')).toString(),
+    '--loader-color': tinycolor(loaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
-    boxShadow: boxShadow,
+    boxShadow: type == 'primary' && boxShadow,
     padding: '0px 12px',
     cursor: 'pointer',
     opacity: disable && '50%',
@@ -170,7 +161,7 @@ export const Button = function Button(props) {
   };
   const renderButton = () => (
     <div
-      className="widget-button d-flex align-items-center"
+      className={`widget-button d-flex align-items-center`}
       style={{
         position: 'relative',
         height,
@@ -209,7 +200,10 @@ export const Button = function Button(props) {
             }}
           >
             <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
-              <p className="tj-text-sm" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
+              <p
+                className="tj-text-sm"
+                style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+              >
                 {label}
               </p>
             </span>
