@@ -688,7 +688,7 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
       </>
     ) : (
       <>
-        Updating a record from{' '}
+        Deleting a record from{' '}
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
         table will also delete any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
