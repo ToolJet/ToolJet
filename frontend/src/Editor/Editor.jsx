@@ -85,7 +85,7 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex, EditorConstants } from './editorConstants';
-import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { findComponentsWithReferences, handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
 
@@ -112,6 +112,7 @@ const EditorComponent = (props) => {
     setCurrentPageId,
     updateComponentsNeedsUpdateOnNextRender,
     setCanvasWidth,
+    setCanvasBackground,
   } = useEditorActions();
 
   const { setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
@@ -142,6 +143,7 @@ const EditorComponent = (props) => {
     currentSessionId,
     currentAppEnvironmentId,
     featureAccess,
+    canvasBackground,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
@@ -158,6 +160,7 @@ const EditorComponent = (props) => {
       currentAppEnvironment: state.currentAppEnvironment,
       currentAppEnvironmentId: state.currentAppEnvironmentId,
       featureAccess: state.featureAccess,
+      canvasBackground: state.canvasBackground,
     }),
     shallow
   );
@@ -697,8 +700,8 @@ const EditorComponent = (props) => {
   };
 
   const computeCanvasBackgroundColor = () => {
-    const canvasBackgroundColor = appDefinition?.globalSettings?.canvasBackgroundColor
-      ? appDefinition?.globalSettings?.canvasBackgroundColor
+    const canvasBackgroundColor = canvasBackground?.canvasBackgroundColor
+      ? canvasBackground?.canvasBackgroundColor
       : '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
       return isAppDarkMode ? '#2f3c4c' : '#edeff5';
@@ -723,6 +726,9 @@ const EditorComponent = (props) => {
         const hexCode = `${value?.[0]}${decimalToHex(value?.[1]?.a)}`;
         newAppDefinition.globalSettings[key] = hexCode;
       }
+    }
+    if (globalOptions?.canvasBackgroundColor || globalOptions?.backgroundFxQuery) {
+      updateCanvasBackground(newAppDefinition.globalSettings, true);
     }
 
     updateEditorState({
@@ -1542,6 +1548,12 @@ const EditorComponent = (props) => {
 
       const newAppDefinition = produce(appJson, (draft) => {
         draft.globalSettings = newGlobalSettings;
+      });
+
+      // Setting the canvas background to the editor store
+      setCanvasBackground({
+        backgroundFxQuery: newGlobalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: newGlobalSettings?.canvasBackgroundColor,
       });
 
       updateEditorState({

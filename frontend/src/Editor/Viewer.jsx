@@ -128,6 +128,11 @@ class ViewerComponent extends React.Component {
     const currentComponents = appJson.pages[currentPageId].components;
     let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
     let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
+    const globalSettings = appJson['globalSettings'];
+
+    const entittyReferencesInGlobalSettings = findAllEntityReferences(globalSettings, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
 
     const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
       (entity) => entity && isValidUUID(entity)
@@ -143,6 +148,36 @@ class ViewerComponent extends React.Component {
 
     const manager = useResolveStore.getState().referenceMapper;
 
+    if (Array.isArray(entittyReferencesInGlobalSettings) && entittyReferencesInGlobalSettings?.length > 0) {
+      let newGlobalSettings = JSON.parse(JSON.stringify(globalSettings));
+      entittyReferencesInGlobalSettings.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newGlobalSettings = dfs(newGlobalSettings, entity, value);
+        }
+      });
+
+      const newAppDefinition = {
+        ...appJson,
+        globalSettings: {
+          ...appJson.globalSettings,
+          newGlobalSettings,
+        },
+      };
+
+      useEditorStore.getState().actions.setCanvasBackground({
+        backgroundFxQuery: newGlobalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: newGlobalSettings?.canvasBackgroundColor,
+      });
+
+      useEditorStore.getState().actions.updateEditorState({
+        isUpdatingEditorStateInProcess: false,
+        appDefinition: newAppDefinition,
+      });
+    }
+
     if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {
       let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
 
@@ -156,12 +191,13 @@ class ViewerComponent extends React.Component {
         }
       });
 
+      const appDefinition = useEditorStore.getState().appDefinition;
       const newAppDefinition = {
-        ...appJson,
+        ...appDefinition,
         pages: {
-          ...appJson.pages,
+          ...appDefinition.pages,
           [currentPageId]: {
-            ...appJson.pages[currentPageId],
+            ...appDefinition.pages[currentPageId],
             components: newComponentDefinition,
           },
         },
@@ -698,8 +734,7 @@ class ViewerComponent extends React.Component {
 
   computeCanvasBackgroundColor = () => {
     const bgColor =
-      (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
-        this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
+      (this.props.canvasBackground?.backgroundFxQuery || this.props.canvasBackground?.canvasBackgroundColor) ??
       '#2f3c4c';
     const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
     if (['#2f3c4c', '#F2F2F5', '#edeff5'].includes(resolvedBackgroundColor)) {
@@ -1061,12 +1096,13 @@ class ViewerComponent extends React.Component {
 }
 const withStore = (Component) => (props) => {
   const currentState = useCurrentStateStore();
-  const { currentLayout, queryConfirmationList, currentPageId, appDefinition } = useEditorStore(
+  const { currentLayout, queryConfirmationList, currentPageId, appDefinition, canvasBackground } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
       queryConfirmationList: state?.queryConfirmationList,
       currentPageId: state?.currentPageId,
       appDefinition: state?.appDefinition,
+      canvasBackground: state.canvasBackground,
     }),
     shallow
   );
@@ -1126,6 +1162,7 @@ const withStore = (Component) => (props) => {
       queryConfirmationList={queryConfirmationList}
       currentAppVersionEnvironment={currentAppVersionEnvironment}
       darkMode={isAppDarkMode}
+      canvasBackground={canvasBackground}
     />
   );
 };

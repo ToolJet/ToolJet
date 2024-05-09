@@ -14,6 +14,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import CodeHinter from '../CodeEditor';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import AppModeToggle from './AppModeToggle';
@@ -24,11 +25,18 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   isMaintenanceOn,
-  backgroundFxQuery,
 }) => {
   const realState = useCurrentState();
   const { t } = useTranslation();
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
+
+  const { canvasBackgroundColor, backgroundFxQuery } = useEditorStore(
+    (state) => ({
+      canvasBackgroundColor: state.canvasBackground?.canvasBackgroundColor,
+      backgroundFxQuery: state.canvasBackground?.backgroundFxQuery,
+    }),
+    shallow
+  );
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType } = globalSettings;
   const [showPicker, setShowPicker] = useState(false);
   const [forceCodeBox, setForceCodeBox] = useState(true);
   const [showConfirmation, setConfirmationShow] = useState(false);
@@ -318,9 +326,8 @@ export const GlobalSettings = ({
                         onChangeComplete={(color) => {
                           const options = {
                             canvasBackgroundColor: [color.hex, color.rgb],
-                            backgroundFxQuery: color.hex,
+                            backgroundFxQuery: '',
                           };
-
                           globalSettingsChanged(options);
                         }}
                       />
