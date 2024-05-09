@@ -5,32 +5,34 @@ import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './static-modal.scss';
-import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
+import { authenticationService } from '@/_services';
 
 export default function ErrorPage({ darkMode }) {
   const params = useParams();
   const errorType = params?.errorType;
   const errorMsg = ERROR_MESSAGES[errorType];
-  const { session, isLoading, setLoading, isValidSession, isInvalidSession } = useSessionManagement({
-    disableInValidSessionCallback: true,
-    disableValidSessionCallback: true,
-  });
-
   if (!errorMsg) redirectToDashboard();
 
   const searchParams = new URLSearchParams(location.search);
   const appSlug = searchParams.get('appSlug');
 
-  useEffect(() => {
-    if (!session.triggeredOnce) authorizeWorkspace();
-  }, [session.triggeredOnce]);
+  const [isLoading, setLoading] = React.useState(true);
+  const [isValidSession, setValidSession] = React.useState(null);
 
   useEffect(() => {
-    if (isValidSession || isInvalidSession) setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValidSession, isInvalidSession]);
+    authenticationService
+      .validateSession()
+      .then(() => {
+        setValidSession(true);
+      })
+      .catch(() => {
+        setValidSession(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   if (isLoading) {
     return <TJLoader />;
@@ -40,14 +42,14 @@ export default function ErrorPage({ darkMode }) {
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <ErrorModal
         errorMsg={
-          isValidSession
+          isValidSession === true
             ? errorMsg
             : {
                 ...errorMsg,
                 cta: '',
               }
         }
-        isValidSession={isValidSession}
+        isValidSession={isValidSession === true}
         appSlug={appSlug}
         show={true}
         darkMode={darkMode}

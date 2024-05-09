@@ -118,6 +118,7 @@ const isThisExistedRoute = () => {
     'confirm',
     'confirm-invite',
     'app-url-archived',
+    'error',
   ];
 
   const subpath = getSubpath();
