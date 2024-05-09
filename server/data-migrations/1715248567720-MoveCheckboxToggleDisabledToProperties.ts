@@ -2,9 +2,9 @@ import { Component } from 'src/entities/component.entity';
 import { processDataInBatches } from 'src/helpers/utils.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class MoveVisibilityDisabledStatesToProperties1707466537651 implements MigrationInterface {
+export class MoveCheckboxToggleDisabledToProperties1715248128046 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'Text'];
+    const componentTypes = ['ToggleSwitch', 'Checkbox'];
     const batchSize = 100;
     const entityManager = queryRunner.manager;
 
@@ -31,7 +31,6 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
       const styles = component.styles;
       const general = component.general;
       const generalStyles = component.generalStyles;
-      const validation = component.validation;
 
       if (styles.visibility) {
         properties.visibility = styles.visibility;
@@ -53,35 +52,11 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
         delete generalStyles?.boxShadow;
       }
 
-      // Label and value
-      if (component.type !== 'Text' && component.type !== 'ToggleSwitch' && component.type !== 'Checkbox') {
-        if (properties.label == undefined || null) {
-          properties.label = '';
-        }
-        if (styles.borderRadius == undefined || null) {
-          styles.borderRadius = { value: '{{4}}' };
-        }
-      }
-
-      // Moving 'minValue' from properties to validation
-      if (component.type == 'NumberInput') {
-        if (properties.minValue) {
-          validation.minValue = properties.minValue;
-          delete properties.minValue; // Removing 'minValue' from properties
-        }
-
-        if (properties.maxValue) {
-          validation.maxValue = properties.maxValue;
-          delete properties.maxValue; // Removing 'minValue' from properties
-        }
-      }
-
       await entityManager.update(Component, component.id, {
         properties,
         styles,
         general,
         generalStyles,
-        validation,
       });
     }
   }
