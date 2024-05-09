@@ -106,7 +106,7 @@ export class OrganizationUsersService {
         `${invitationToken}?oid=${organizationUser.organizationId}`,
         organizationUser.organization.name
       )
-      .catch((err) => console.error(err));
+      .catch((err) => console.error('Error while sending welcome mail', err));
 
     return;
   }

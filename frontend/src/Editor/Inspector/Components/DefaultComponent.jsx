@@ -88,7 +88,7 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text', 'ToggleSwitch', 'Checkbox'],
+    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Table', 'ToggleSwitch', 'Checkbox'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {

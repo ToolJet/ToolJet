@@ -222,6 +222,10 @@ export function extractMajorVersion(version) {
   return semver.valid(semver.coerce(version));
 }
 
+export function checkVersionCompatibility(importingVersion) {
+  return semver.gte(semver.coerce(globalThis.TOOLJET_VERSION), semver.coerce(importingVersion));
+}
+
 /**
  * Checks if a given Tooljet version is compatible with normalized app definition schemas.
  *
@@ -256,16 +260,16 @@ export function isVersionGreaterThanOrEqual(version1: string, version2: string) 
   return true;
 }
 
-export const getMaxCopyNumber = (existNameList) => {
+export const getMaxCopyNumber = (existNameList, splitChar = '_') => {
   if (existNameList.length == 0) return '';
   const filteredNames = existNameList.filter((name) => {
-    const parts = name.group.split('_');
+    const parts = name.split(splitChar);
     return !isNaN(parseInt(parts[parts.length - 1]));
   });
 
   // Extracting numbers from the filtered names
   const numbers = filteredNames.map((name) => {
-    const parts = name.group.split('_');
+    const parts = name.split(splitChar);
     return parseInt(parts[parts.length - 1]);
   });
 
