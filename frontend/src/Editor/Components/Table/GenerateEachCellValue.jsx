@@ -20,8 +20,8 @@ export default function GenerateEachCellValue({
   currentState,
   darkMode,
   cellWidth,
-  isCellValueChanged,
-  setIsCellValueChanged,
+  // isCellValueChanged,
+  // setIsCellValueChanged,
 }) {
   const mounted = useMounted();
   const updateCellValue = useRef();
@@ -29,7 +29,7 @@ export default function GenerateEachCellValue({
   const cellRef = useRef(null);
 
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
-  const [isNullCellClicked, setIsNullCellClicked] = React.useState(false);
+  // const [isNullCellClicked, setIsNullCellClicked] = React.useState(false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
   const ref = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
@@ -49,7 +49,7 @@ export default function GenerateEachCellValue({
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
 
   const handleCellClick = () => {
-    setIsNullCellClicked(true);
+    // setIsNullCellClicked(true);
     if (isEditable && columnTypeAllowToRenderMarkElement.includes(columnType)) {
       setHighlighterCells(false);
     }
@@ -170,24 +170,21 @@ export default function GenerateEachCellValue({
         }}
         onMouseOut={() => setHovered(false)}
       >
-        {cellValue === null ? (
-          <NullRenderer darkMode={darkMode} />
-        ) : (
-          <div
-            style={{
-              color: cellTextColor,
+        <div
+          style={{
+            color: cellTextColor,
+          }}
+          ref={ref}
+          tabIndex={0}
+          className={`table-column-type-div-element ${columnType === 'text' && 'h-100 my-1'}`}
+        >
+          <span
+            dangerouslySetInnerHTML={{
+              __html: htmlElement,
             }}
-            ref={ref}
-            tabIndex={0}
-            className={`table-column-type-div-element ${columnType === 'text' && 'h-100 my-1'}`}
-          >
-            <span
-              dangerouslySetInnerHTML={{
-                __html: htmlElement,
-              }}
-            ></span>
-          </div>
-        )}
+          ></span>
+        </div>
+
         <div
           style={{
             display: cell.column.isEditable && validationData.validationError ? 'block' : 'none',
@@ -203,41 +200,41 @@ export default function GenerateEachCellValue({
     );
   };
 
-  const _renderNullCell = () => {
-    if (isEditable) {
-      if (!isNullCellClicked && !updateCellValue.current) {
-        return <NullRenderer darkMode={darkMode} />;
-      } else return cellRender;
-    } else {
-      return <NullRenderer darkMode={darkMode} />;
-    }
-  };
+  // const _renderNullCell = () => {
+  //   if (isEditable) {
+  //     if (!isNullCellClicked && !updateCellValue.current) {
+  //       return <NullRenderer darkMode={darkMode} />;
+  //     } else return cellRender;
+  //   } else {
+  //     return <NullRenderer darkMode={darkMode} />;
+  //   }
+  // };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (cellRef.current && !cellRef.current.contains(event.target) && !isCellValueChanged) {
-        // Adding setTimeout to avoid this event to be executed before input's blur event
-        setTimeout(() => {
-          setIsNullCellClicked(false);
-          setIsCellValueChanged(false);
-        }, 100);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isCellValueChanged, setIsCellValueChanged]);
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (cellRef.current && !cellRef.current.contains(event.target) && !isCellValueChanged) {
+  //       // Adding setTimeout to avoid this event to be executed before input's blur event
+  //       setTimeout(() => {
+  //         setIsNullCellClicked(false);
+  //         setIsCellValueChanged(false);
+  //       }, 100);
+  //     }
+  //   };
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, [isCellValueChanged, setIsCellValueChanged]);
 
-  useEffect(() => {
-    if (isNullCellClicked) {
-      const inputElement = document.getElementById(`table-input-${cell.column.id}-${cell.row.id}`);
-      if (inputElement) {
-        inputElement.focus();
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNullCellClicked]);
+  // useEffect(() => {
+  //   if (isNullCellClicked) {
+  //     const inputElement = document.getElementById(`table-input-${cell.column.id}-${cell.row.id}`);
+  //     if (inputElement) {
+  //       inputElement.focus();
+  //     }
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isNullCellClicked]);
 
   return (
     <div
@@ -257,8 +254,6 @@ export default function GenerateEachCellValue({
         >
           {_renderCellWhenHighlighted()}
         </OverlayTrigger>
-      ) : cellValue === null ? (
-        _renderNullCell()
       ) : (
         cellRender
       )}
