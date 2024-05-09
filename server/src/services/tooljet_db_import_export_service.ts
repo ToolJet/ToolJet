@@ -7,7 +7,11 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 
 @Injectable()
 export class TooljetDbImportExportService {
-  constructor(private readonly tooljetDbService: TooljetDbService, private readonly manager: EntityManager) {}
+  constructor(
+    private readonly tooljetDbService: TooljetDbService,
+    private readonly manager: EntityManager,
+    private readonly tooljetDbManager: EntityManager
+  ) {}
 
   async export(organizationId: string, tjDbDto: ExportTooljetDatabaseDto) {
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -25,6 +29,32 @@ export class TooljetDbImportExportService {
       table_name: internalTable.tableName,
       schema: { columns, foreign_keys },
     };
+  }
+
+  async bulkForeignKeyCreate(
+    organizationId: string,
+    tableNameForeignKeyMapping: { [tableName: string]: ImportTooljetDatabaseDto }
+  ) {
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+    try {
+      await Promise.all(
+        Object.keys(tableNameForeignKeyMapping).map((tableName) => {
+          return this.tooljetDbService.perform(organizationId, 'create_foreign_key', {
+            table_name: tableName,
+            foreign_keys: tableNameForeignKeyMapping[tableName],
+          });
+        })
+      );
+      await tjdbQueryRunner.commitTransaction();
+      await tjdbQueryRunner.release();
+      return true;
+    } catch (err) {
+      await tjdbQueryRunner.rollbackTransaction();
+      await tjdbQueryRunner.release();
+      throw new Error(err.message);
+    }
   }
 
   async import(organizationId: string, tjDbDto: ImportTooljetDatabaseDto, cloning = false) {
