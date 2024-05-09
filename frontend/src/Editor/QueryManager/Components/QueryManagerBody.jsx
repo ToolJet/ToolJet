@@ -21,6 +21,7 @@ import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDefinition, setOptions }) => {
   const { t } = useTranslation();
@@ -267,7 +268,7 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
 
   if (selectedQueryId !== selectedQuery?.id) return;
   const hasPermissions =
-    selectedDataSource?.scope === 'global'
+    selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()

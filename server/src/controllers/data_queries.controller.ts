@@ -133,7 +133,6 @@ export class DataQueriesController {
           user,
           dataSource.id
         );
-
         if (
           !(
             globalDataSourceAbility.can('createGlobalDataSource', dataSource) ||

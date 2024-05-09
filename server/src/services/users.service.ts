@@ -30,6 +30,8 @@ import { UserDetails } from 'src/entities/user_details.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceTypes } from 'src/helpers/data_source.constants';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -532,12 +534,20 @@ export class UsersService {
 
   async canUserPerformActionOnDataSources(user: User, action: string, dataSourceId?: string): Promise<boolean> {
     let permissionGrant: boolean;
+    let dataSource: DataSource;
 
     switch (action) {
       case 'create':
         permissionGrant = this.canAnyGroupPerformAction('dataSourceCreate', await this.groupPermissions(user));
         break;
       case 'read':
+        await dbTransactionWrap(async (manager: EntityManager) => {
+          dataSource = await manager.findOne(DataSource, dataSourceId);
+        });
+        permissionGrant =
+          dataSource.type === DataSourceTypes.SAMPLE ||
+          this.canAnyGroupPerformAction(action, await this.dataSourceGroupPermissions(user, dataSourceId));
+        break;
       case 'update':
         permissionGrant = this.canAnyGroupPerformAction(
           action,

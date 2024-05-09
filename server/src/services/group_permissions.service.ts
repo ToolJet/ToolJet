@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, MethodNotAllowedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, createQueryBuilder, In, Not, EntityManager, Brackets } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -190,14 +190,6 @@ export class GroupPermissionsService {
         groupPermissionId: groupPermissionId,
       },
     });
-    const dataSource = await manager.findOne(DataSource, {
-      where: {
-        id: dataSourceGroupPermission.dataSourceId,
-      },
-    });
-    if (dataSource.type == DataSourceTypes.SAMPLE) {
-      throw new MethodNotAllowedException('Can not update sample data source permissions');
-    }
 
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
@@ -377,15 +369,6 @@ export class GroupPermissionsService {
         }
 
         for (const dataSourceId of remove_data_sources) {
-          const dataSource = await manager.findOne(DataSource, {
-            where: {
-              id: dataSourceId,
-            },
-          });
-
-          //Should not delete sample data source
-          if (dataSource.type == DataSourceTypes.SAMPLE) continue;
-
           await manager.delete(DataSourceGroupPermission, {
             dataSourceId: dataSourceId,
             groupPermissionId: groupPermissionId,
@@ -625,9 +608,6 @@ export class GroupPermissionsService {
       .andWhere('group_permissions.organization_id = :organizationId', {
         organizationId: user.organizationId,
       })
-      .andWhere('datasources.type != :sample_ds_type', {
-        sample_ds_type: DataSourceTypes.SAMPLE,
-      })
       .andWhere('data_source_group_permissions.group_permission_id = :groupPermissionId', { groupPermissionId })
       .orderBy('datasources.created_at', 'DESC')
       .getMany();
@@ -670,6 +650,7 @@ export class GroupPermissionsService {
         id: Not(In(DataSourcesInGroupIds)),
         organizationId: user.organizationId,
         scope: DataSourceScopes.GLOBAL,
+        type: Not(DataSourceTypes.SAMPLE),
       },
       loadEagerRelations: false,
       relations: ['groupPermissions', 'dataSourceGroupPermissions'],
