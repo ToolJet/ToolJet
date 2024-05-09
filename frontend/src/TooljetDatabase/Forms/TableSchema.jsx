@@ -365,7 +365,7 @@ function TableSchema({
                         columnDetails[index]?.constraints_type?.is_primary_key === true) ||
                       columnDetails[index].data_type === 'serial'
                         ? 'Auto-generated'
-                        : 'NULL'
+                        : 'Enter value'
                     }
                     disabled={
                       (columnDetails[index].data_type === 'serial' &&
