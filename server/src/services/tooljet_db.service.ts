@@ -516,7 +516,7 @@ export class TooljetDbService {
 
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
-      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
       await queryRunner.release();
     } catch (error) {
@@ -853,7 +853,7 @@ export class TooljetDbService {
       }
 
       await tjdbQueryRunner.commitTransaction();
-      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
     } catch (error) {
       await tjdbQueryRunner.rollbackTransaction();
@@ -1100,6 +1100,7 @@ export class TooljetDbService {
       const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
       await tjdbQueryRunner.connect();
       await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       return { statusCode: 200, message: 'Foreign key relation deleted successfully!' };
     } catch (error) {
       throw new TooljetDatabaseError(
