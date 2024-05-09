@@ -752,6 +752,7 @@ const EditorComponent = (props) => {
 
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
       handleLowPriorityWork(async () => {
+        useResolveStore.getState().actions.updateLastUpdatedRefs(['constants']);
         await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
         await fetchDataSources(editing_version?.id);
         commonLowPriorityActions(events, { homePageId });
