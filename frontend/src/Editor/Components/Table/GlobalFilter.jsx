@@ -6,8 +6,6 @@ import { debounce } from 'lodash';
 export const GlobalFilter = ({
   globalFilter,
   setGlobalFilter,
-  onComponentOptionChanged,
-  component,
   // eslint-disable-next-line no-unused-vars
   darkMode,
   setExposedVariable,
