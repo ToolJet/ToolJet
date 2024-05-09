@@ -687,7 +687,7 @@ export const widgets = [
         displayName: 'Type',
         validation: { schema: { type: 'string' } },
         options: [
-          { displayName: 'Primary', value: 'primary' },
+          { displayName: 'Solid', value: 'primary' },
           { displayName: 'Outline', value: 'outline' },
         ],
         accordian: 'button',
