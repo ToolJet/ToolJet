@@ -1,7 +1,14 @@
 import React from 'react';
 import cx from 'classnames';
 import moment from 'moment';
-import { appsService, folderService, authenticationService, libraryAppService, gitSyncService } from '@/_services';
+import {
+  appsService,
+  folderService,
+  authenticationService,
+  libraryAppService,
+  gitSyncService,
+  licenseService,
+} from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
@@ -121,6 +128,15 @@ class HomePageComponent extends React.Component {
       this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
     }
   }
+
+  fetchFeatureAccesss = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      this.setState({
+        featureAccess: data,
+        featuresLoaded: true,
+      });
+    });
+  };
 
   fetchAppsLimit() {
     appsService.getAppsLimit().then((data) => {
