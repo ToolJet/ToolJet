@@ -88,11 +88,11 @@ function SourceKeyRelation({
     .map((item) => ({ value: item?.table_name, label: item?.table_name, id: item.id }));
 
   const onUpdateOptions = [
-    {
-      name: 'NO ACTION',
-      label: 'NO ACTION',
-      value: 'NO ACTION',
-    },
+    // {
+    //   name: 'NO ACTION',
+    //   label: 'NO ACTION',
+    //   value: 'NO ACTION',
+    // },
     {
       name: 'CASCADE',
       label: 'CASCADE',
@@ -103,23 +103,23 @@ function SourceKeyRelation({
       label: 'RESTRICT',
       value: 'RESTRICT',
     },
-    {
-      name: 'SET NULL',
-      label: 'SET NULL',
-      value: 'SET NULL',
-    },
-    {
-      name: 'SET DEFAULT',
-      label: 'SET DEFAULT',
-      value: 'SET DEFAULT',
-    },
+    // {
+    //   name: 'SET NULL',
+    //   label: 'SET NULL',
+    //   value: 'SET NULL',
+    // },
+    // {
+    //   name: 'SET DEFAULT',
+    //   label: 'SET DEFAULT',
+    //   value: 'SET DEFAULT',
+    // },
   ];
   const onDeleteOptions = [
-    {
-      name: 'NO ACTION',
-      label: 'NO ACTION',
-      value: 'NO ACTION',
-    },
+    // {
+    //   name: 'NO ACTION',
+    //   label: 'NO ACTION',
+    //   value: 'NO ACTION',
+    // },
     {
       name: 'CASCADE',
       label: 'CASCADE',
@@ -130,16 +130,16 @@ function SourceKeyRelation({
       label: 'RESTRICT',
       value: 'RESTRICT',
     },
-    {
-      name: 'SET NULL',
-      label: 'SET NULL',
-      value: 'SET NULL',
-    },
-    {
-      name: 'SET DEFAULT',
-      label: 'SET DEFAULT',
-      value: 'SET DEFAULT',
-    },
+    // {
+    //   name: 'SET NULL',
+    //   label: 'SET NULL',
+    //   value: 'SET NULL',
+    // },
+    // {
+    //   name: 'SET DEFAULT',
+    //   label: 'SET DEFAULT',
+    //   value: 'SET DEFAULT',
+    // },
   ];
 
   useEffect(() => {

@@ -11,6 +11,8 @@ import { Form } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import cx from 'classnames';
+import { ToolTip } from '@/_components/ToolTip';
+import ArrowRight from '@/TooljetDatabase/Icons/ArrowRight.svg';
 
 function DataSourceSelect({
   darkMode,
@@ -48,6 +50,7 @@ function DataSourceSelect({
   targetTable,
   actions,
   actionName,
+  referencedForeignKeyDetails,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -319,7 +322,27 @@ function DataSourceSelect({
                   )}
 
                   {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
-                    <SolidIcon name="foreignkey" height={'14'} width={'24'} />
+                    <ToolTip
+                      message={referencedForeignKeyDetails?.map(
+                        (item, index) =>
+                          item?.referenced_table_id === props?.data?.value && (
+                            <div key={item?.referenced_table_id}>
+                              <span>Foreign key relation</span>
+                              <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                                <span>{item?.column_names[0]}</span>
+                                <ArrowRight />
+                                <span>{`${item?.referenced_table_name}.${item?.referenced_column_names[0]}`}</span>
+                              </div>
+                            </div>
+                          )
+                      )}
+                      placement="top"
+                      tooltipClassName="tjdb-table-tooltip"
+                    >
+                      <div>
+                        <SolidIcon name="foreignkey" height={'14'} width={'24'} />
+                      </div>
+                    </ToolTip>
                   )}
                 </div>
                 {foreignKeyAccess && props.data.isDisabled && (
@@ -378,7 +401,7 @@ function DataSourceSelect({
                       <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
                       <div
                         style={{
-                          minHeight: '140px',
+                          // minHeight: '140px',
                           height: 'fit-content',
                           padding: '8px 12px',
                         }}
@@ -679,19 +702,20 @@ const GenerateActionsDescription = ({ targetTable, sourceTable, actionName = '',
         table will not be permitted for any records that references it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
         table.
-        <br />
+        {/* <br />
         It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas
-        RESTRICT does not.
+        RESTRICT does not. */}
       </>
     ) : (
       <>
         Deleting a record from{' '}
         <span className="action-description-highlighter">{targetTable ? targetTable : '< target table name >'}</span>{' '}
-        table will not be permitted for any records that references it in{' '}
+        table will not be permitted for any records that reference it in{' '}
         <span className="action-description-highlighter">{sourceTable ? sourceTable : '< source table name >'}</span>{' '}
-        table. <br />
+        table.
+        {/* <br />
         It is similar to NO ACTION but NO ACTION allows the check to be deferred until later in the transaction, whereas
-        RESTRICT does not.
+        RESTRICT does not. */}
       </>
     ),
     setNull: isActionOnUpdate ? (
