@@ -15,7 +15,7 @@ export const ViewerSidebarNavigation = ({
   darkMode,
   showHeader,
   isSidebarPinned,
-  setIsSidebarPinned,
+  toggleSidebarPinned,
 }) => {
   if (isMobileDevice) {
     return null;
@@ -37,7 +37,7 @@ export const ViewerSidebarNavigation = ({
       <div className="position-relative">
         <ButtonSolid
           onClick={() => {
-            setIsSidebarPinned();
+            toggleSidebarPinned();
           }}
           as="a"
           variant="tertiary"

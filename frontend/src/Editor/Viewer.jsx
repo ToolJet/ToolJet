@@ -67,7 +67,7 @@ class ViewerComponent extends React.Component {
       isAppLoaded: false,
       pages: {},
       homepage: null,
-      isSidebarPinned: localStorage.getItem('isPinned') === 'false' ? false : true,
+      isSidebarPinned: localStorage.getItem('isPagesSidebarPinned') === 'false' ? false : true,
       isSidebarHovered: false,
     };
   }
@@ -552,7 +552,10 @@ class ViewerComponent extends React.Component {
     );
   };
 
-  setIsSidebarPinned = () => this.setState({ isSidebarPinned: !this.state.isSidebarPinned });
+  toggleSidebarPinned = () => {
+    this.setState({ isSidebarPinned: !this.state.isSidebarPinned });
+    localStorage.setItem('isPagesSidebarPinned', JSON.stringify(!this.state.isSidebarPinned));
+  };
 
   handleEvent = (eventName, events, options) => {
     return onEvent(this.getViewerRef(), eventName, events, options, 'view');
@@ -683,7 +686,7 @@ class ViewerComponent extends React.Component {
                         switchPage={this.switchPage}
                         darkMode={this.props.darkMode}
                         isSidebarPinned={isSidebarPinned}
-                        setIsSidebarPinned={this.setIsSidebarPinned}
+                        toggleSidebarPinned={this.toggleSidebarPinned}
                       />
                     )}
                     <div
