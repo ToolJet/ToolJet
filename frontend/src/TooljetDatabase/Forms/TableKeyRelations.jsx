@@ -103,16 +103,16 @@ function SourceKeyRelation({
       label: 'RESTRICT',
       value: 'RESTRICT',
     },
-    // {
-    //   name: 'SET NULL',
-    //   label: 'SET NULL',
-    //   value: 'SET NULL',
-    // },
-    // {
-    //   name: 'SET DEFAULT',
-    //   label: 'SET DEFAULT',
-    //   value: 'SET DEFAULT',
-    // },
+    {
+      name: 'SET NULL',
+      label: 'SET NULL',
+      value: 'SET NULL',
+    },
+    {
+      name: 'SET DEFAULT',
+      label: 'SET DEFAULT',
+      value: 'SET DEFAULT',
+    },
   ];
   const onDeleteOptions = [
     // {
@@ -130,16 +130,16 @@ function SourceKeyRelation({
       label: 'RESTRICT',
       value: 'RESTRICT',
     },
-    // {
-    //   name: 'SET NULL',
-    //   label: 'SET NULL',
-    //   value: 'SET NULL',
-    // },
-    // {
-    //   name: 'SET DEFAULT',
-    //   label: 'SET DEFAULT',
-    //   value: 'SET DEFAULT',
-    // },
+    {
+      name: 'SET NULL',
+      label: 'SET NULL',
+      value: 'SET NULL',
+    },
+    {
+      name: 'SET DEFAULT',
+      label: 'SET DEFAULT',
+      value: 'SET DEFAULT',
+    },
   ];
 
   useEffect(() => {
