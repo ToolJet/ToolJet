@@ -2,7 +2,8 @@ import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import _, { debounce, merge, omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
-import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const initialState = {
   queries: {},
@@ -81,6 +82,9 @@ useCurrentStateStore.subscribe((state) => {
   const isEditorReady = state.isEditorReady;
 
   if (!isEditorReady) return;
+
+  // TODO: Change the logic of updating canvas background
+  updateCanvasBackground(useEditorStore.getState().canvasBackground);
 
   const isStoreIntialized = useResolveStore.getState().storeReady;
 
