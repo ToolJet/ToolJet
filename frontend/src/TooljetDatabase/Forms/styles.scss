@@ -320,10 +320,10 @@
 
       .foreignKeyAcces-container {
         width: 125px;
-        height: 36px;
+        height: 100%;
 
         button {
-          height: 100%;
+          height: 35px !important;
           padding: 7px 0px 7px 12px !important;
           border-radius: 4px !important;
 
@@ -625,9 +625,10 @@
 
 .foreignKeyAcces-container-drawer {
   border-radius: 5px;
+  height: 100% !important;
 
   button {
-    height: 100%;
+    height: 35px !important;
     padding: 6px 0px 6px 12px !important;
     border-radius: 4px !important;
     border: 1px solid transparent !important;
