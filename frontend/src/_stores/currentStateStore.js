@@ -1,6 +1,6 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
-import _, { debounce, merge, omit } from 'lodash';
+import _, { debounce, initial, merge, omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -54,6 +54,9 @@ export const useCurrentStateStore = create(
           set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });
         },
         setEditorReady: (isEditorReady) => set({ isEditorReady }),
+        initializeCurrentStateOnVersionSwitch: () => {
+          set({ ...initialState }, false, { type: 'INITIALIZE_CURRENT_STATE_ON_VERSION_SWITCH', initialState });
+        },
       },
     }),
     { name: 'Current State' }
