@@ -9,7 +9,10 @@ import Input from '@/_ui/Input';
 const Salesforce = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource, workspaceConstants }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
-  const redirectUri = `http://localhost:8082/oauth2/authorize`;
+  const hostUrl = window.public_config?.TOOLJET_HOST;
+  const subPathUrl = window.public_config?.SUB_PATH;
+  const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
+  const redirectUri = fullUrl;
   const selectOptions = [
     { value: 'v1', label: 'v1' },
     { value: 'v2', label: 'v2' },
