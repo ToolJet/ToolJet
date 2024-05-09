@@ -1113,7 +1113,7 @@ const Table = ({ collapseSidebar }) => {
                       onMouseOver={() => handleMouseOver(index)}
                       onMouseOut={() => handleMouseOut()}
                     >
-                      <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center justify-content-between" style={{ gap: '4px' }}>
                         {tableHeaderContent(column, index)}
 
                         <TablePopover
