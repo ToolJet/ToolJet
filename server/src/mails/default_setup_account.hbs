@@ -10,12 +10,21 @@
         <tr>
           <td class="padding-y-20">
             <p>
-            {{#if sender}}
-              {{sender}} has invited you to join the workspace -
-            {{else}}
-              You have been invited to join the workspace -
-            {{/if}}
-            <span class="text-bold">{{organizationName}}</span>. Click the button below to get started!
+              Thank you for signing up to ToolJet. We’re excited to have you
+              onboard! Please confirm your email address by clicking the button
+              below to get started.
+            </p>
+            <p class="padding-b-20">
+              Should you have any questions or need assistance, our support team
+              is
+              <a
+                class="url"
+                href="https://tooljet.com/slack"
+                target="_blank"
+              >here</a>
+              to help or reach out to us on
+              <a class="url" target="_blank" href="mailto: hello@tooljet.com">
+                hello@tooljet.com</a>.
             </p>
           </td>
         </tr>
@@ -23,14 +32,13 @@
           <td>
             <a href={{inviteUrl}} target="_blank" class="padding-r-40" href="#">
               <button class="primary-btn">
-                Join workspace
+                Confirm email address
               </button>
             </a>
           </td>
         </tr>
         <tr>
           <td class="padding-y-20 footer-note">
-            <br />
             {{#if (eq whiteLabelText "ToolJet")}}
               <span>Welcome aboard,</span>
               <br />

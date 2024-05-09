@@ -14,7 +14,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { buildURLWithQuery, retrieveWhiteLabelText, checkWhiteLabelsDefaultState } from '@/_helpers/utils';
 import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { redirectToDashboard } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
@@ -31,6 +31,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
   const { t } = useTranslation();
+  const [defaultState, setDefaultState] = useState(false);
 
   const location = useLocation();
   const params = useParams();
@@ -98,6 +99,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     } else {
       setIsGettingConfigs(false);
     }
+    setDefaultState(checkWhiteLabelsDefaultState());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -285,20 +287,22 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="verification-terms" data-cy="signup-terms-helper">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                          Terms of Service{' '}
-                        </a>
-                        &
-                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                          {' '}
-                          Privacy Policy
-                        </a>
-                      </span>
-                    </p>
+                    {defaultState && (
+                      <p className="verification-terms" data-cy="signup-terms-helper">
+                        By signing up you are agreeing to the
+                        <br />
+                        <span>
+                          <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                            Terms of Service{' '}
+                          </a>
+                          &
+                          <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                            {' '}
+                            Privacy Policy
+                          </a>
+                        </span>
+                      </p>
+                    )}
                   </div>
                 )}
               </form>

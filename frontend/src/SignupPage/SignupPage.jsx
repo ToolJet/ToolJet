@@ -2,10 +2,7 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
-import { retrieveWhiteLabelText, validateEmail } from '../_helpers/utils';
-import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
+import { validateEmail, checkWhiteLabelsDefaultState } from '../_helpers/utils';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
@@ -37,6 +34,7 @@ class SignupPageComponent extends React.Component {
       emailError: '',
       disableOnEdit: false,
       email: this.inviteeEmail || '',
+      defaultState: false,
     };
   }
 
@@ -45,6 +43,7 @@ class SignupPageComponent extends React.Component {
     if (errorMessage) {
       toast.error(errorMessage);
     }
+    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
   }
 
   backtoSignup = (email, name) => {
@@ -125,7 +124,7 @@ class SignupPageComponent extends React.Component {
 
   render() {
     const { configs } = this.props;
-    const { isLoading, signupSuccess } = this.state;
+    const { isLoading, signupSuccess, defaultState } = this.state;
     const comingFromInviteFlow = !!this.organizationToken;
     const isSignUpButtonDisabled =
       isLoading ||
@@ -323,20 +322,22 @@ class SignupPageComponent extends React.Component {
                           </>
                         )}
 
-                        <p className="signup-terms" data-cy="signup-terms-helper">
-                          By signing up you are agreeing to the
-                          <br />
-                          <span>
-                            <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                              Terms of Service{' '}
-                            </a>
-                            &
-                            <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                              {' '}
-                              Privacy Policy
-                            </a>
-                          </span>
-                        </p>
+                        {defaultState && (
+                          <p className="signup-terms" data-cy="signup-terms-helper">
+                            By signing up you are agreeing to the
+                            <br />
+                            <span>
+                              <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                                Terms of Service{' '}
+                              </a>
+                              &
+                              <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                                {' '}
+                                Privacy Policy
+                              </a>
+                            </span>
+                          </p>
+                        )}
                       </div>
                     </>
                   )

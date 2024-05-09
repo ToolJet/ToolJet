@@ -6,7 +6,7 @@ import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, checkWhiteLabelsDefaultState } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -17,6 +17,13 @@ class OrganizationInvitationPageComponent extends React.Component {
 
     this.state = {
       isLoading: false,
+      configs: {},
+      isGettingConfigs: true,
+      userDetails: {},
+      verifiedToken: false,
+      showPassword: false,
+      fallBack: false,
+      defaultState: false,
     };
     this.formRef = React.createRef(null);
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
@@ -56,7 +63,7 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ fallBack: true });
         }
       });
-
+    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
     document.addEventListener('keydown', this.handleEnterKey);
   }
 
@@ -94,7 +101,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, userDetails, defaultState } = this.state;
     const { name, email, invitedOrganizationName: organizationName } = this.props;
     return (
       <div className="page" ref={this.formRef}>
@@ -139,6 +146,10 @@ class OrganizationInvitationPageComponent extends React.Component {
                       <ButtonSolid
                         className="org-btn login-btn"
                         onClick={(e) => this.acceptInvite(e)}
+                        disabled={
+                          userDetails?.onboarding_details?.password &&
+                          (isLoading || !this.state?.password || this.state?.password?.length < 5)
+                        }
                         data-cy="accept-invite-button"
                       >
                         {isLoading ? (
@@ -148,19 +159,21 @@ class OrganizationInvitationPageComponent extends React.Component {
                         ) : (
                           <>
                             <span>{this.props.t('confirmationPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
+                            <EnterIcon className="enter-icon-onboard" />
                           </>
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="text-center-onboard d-block">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
-                      </span>
-                    </p>
+                    {defaultState && (
+                      <p className="text-center-onboard d-block">
+                        By signing up you are agreeing to the
+                        <br />
+                        <span>
+                          <a href="https://www.tooljet.com/terms">Terms of Service </a>&
+                          <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </form>
               </div>

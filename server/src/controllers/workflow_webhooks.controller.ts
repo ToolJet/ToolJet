@@ -17,11 +17,8 @@ export class WorkflowWebhooksController {
   async triggerWorkflow(@Param('id') id: any, @Body() workflowParams, @Query('environment') environment: string) {
     const workflowApps = { executeUsing: 'app', appId: id };
 
-    await this.workflowWebhookService.triggerWorkflow(workflowApps, workflowParams, environment);
-    return {
-      statusCode: 200,
-      message: 'Workflow successfully started',
-    };
+    const result = await this.workflowWebhookService.triggerWorkflow(workflowApps, workflowParams, environment);
+    return result;
   }
 
   @UseGuards(JwtAuthGuard, ValidateLicenseGuard)
