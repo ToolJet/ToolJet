@@ -828,8 +828,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-
-      useCurrentStateStore.getState().actions.setCurrentState({});
+      useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
 
@@ -1426,6 +1425,7 @@ const EditorComponent = (props) => {
 
   const onEditorLoad = (appJson, pageId, isPageSwitchOrVersionSwitch = false) => {
     useCurrentStateStore.getState().actions.setEditorReady(true);
+
     const currentComponents = appJson?.pages?.[pageId]?.components;
 
     const referenceManager = useResolveStore.getState().referenceMapper;
