@@ -49,7 +49,7 @@ export const GlobalFilter = ({
           onClick={() => {
             setGlobalFilter(undefined);
             setValue('');
-            onComponentOptionChanged(component, 'searchText', '');
+            debouncedChange('');
           }}
         >
           <SolidIcon name="removerectangle" width="16" height="16" fill={'var(--icons-default)'} />
