@@ -65,16 +65,16 @@ export class ImportExportResourcesService {
         tableNameMapping[tjdbImportDto.id] = createdTable;
         imports.tooljet_database.push(createdTable);
       }
-    }
 
-    await Promise.all(
-      Object.keys(tableNameForeignKeyMapping).map((tableName) => {
-        return this.tooljetDbService.perform(importResourcesDto.organization_id, 'create_foreign_key', {
-          table_name: tableName,
-          foreign_keys: tableNameForeignKeyMapping[tableName],
-        });
-      })
-    );
+      await Promise.all(
+        Object.keys(tableNameForeignKeyMapping).map((tableName) => {
+          return this.tooljetDbService.perform(importResourcesDto.organization_id, 'create_foreign_key', {
+            table_name: tableName,
+            foreign_keys: tableNameForeignKeyMapping[tableName],
+          });
+        })
+      );
+    }
 
     if (importResourcesDto.app) {
       for (const appImportDto of importResourcesDto.app) {
