@@ -7,7 +7,6 @@ import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { AppsService } from './apps.service';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { isEmpty } from 'lodash';
-import { transformTjdbImportDto } from 'src/helpers/tjdb_dto_transforms';
 
 @Injectable()
 export class ImportExportResourcesService {
@@ -44,30 +43,18 @@ export class ImportExportResourcesService {
   }
 
   async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false) {
-    const tableNameMapping = {};
-    const tableNameForeignKeyMapping = {};
+    let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
     const importingVersion = importResourcesDto.tooljet_version;
 
     if (importResourcesDto.tooljet_database) {
-      for (const tjdbImportDto of importResourcesDto.tooljet_database) {
-        const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
-        const { foreign_keys } = transformedDto.schema;
-
-        const createdTable = await this.tooljetDbImportExportService.import(
-          importResourcesDto.organization_id,
-          transformedDto,
-          cloning
-        );
-        if (foreign_keys.length) tableNameForeignKeyMapping[createdTable.table_name] = foreign_keys;
-        tableNameMapping[tjdbImportDto.id] = createdTable;
-        imports.tooljet_database.push(createdTable);
-      }
-
-      await this.tooljetDbImportExportService.bulkForeignKeyCreate(
-        importResourcesDto.organization_id,
-        tableNameForeignKeyMapping
+      const res = await this.tooljetDbImportExportService.bulkTableCreate(
+        importResourcesDto,
+        importingVersion,
+        cloning
       );
+      tableNameMapping = res.tableNameMapping;
+      imports.tooljet_database = res.tooljet_database;
     }
 
     if (importResourcesDto.app) {

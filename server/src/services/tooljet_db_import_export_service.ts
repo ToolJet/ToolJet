@@ -1,15 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { ExportTooljetDatabaseDto } from '@dto/export-resources.dto';
-import { ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
+import { ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
 import { TooljetDbService } from './tooljet_db.service';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { transformTjdbImportDto } from 'src/helpers/tjdb_dto_transforms';
+import { InjectEntityManager } from '@nestjs/typeorm';
 
 @Injectable()
 export class TooljetDbImportExportService {
   constructor(
     private readonly tooljetDbService: TooljetDbService,
     private readonly manager: EntityManager,
+    // TODO: remove optional decorator when
+    // ENABLE_TOOLJET_DB flag is deprecated
+    @Optional()
+    @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
   ) {}
 
@@ -31,33 +37,67 @@ export class TooljetDbImportExportService {
     };
   }
 
-  async bulkForeignKeyCreate(
-    organizationId: string,
-    tableNameForeignKeyMapping: { [tableName: string]: ImportTooljetDatabaseDto }
-  ) {
+  async bulkTableCreate(importResourcesDto: ImportResourcesDto, importingVersion: string, cloning: boolean) {
+    const tableNameMapping = {};
+    const tjdbDatabase = [];
+    const tableNameForeignKeyMapping = {};
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    const queryRunner = this.manager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       await Promise.all(
+        importResourcesDto.tooljet_database.map(async (tjdbImportDto) => {
+          const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
+          const { foreign_keys } = transformedDto.schema;
+          const bulkActions = {
+            tjdbQueryRunner,
+            queryRunner,
+          };
+          const createdTable = await this.import(
+            importResourcesDto.organization_id,
+            transformedDto,
+            cloning,
+            bulkActions
+          );
+          if (foreign_keys.length) tableNameForeignKeyMapping[createdTable.table_name] = foreign_keys;
+          tableNameMapping[tjdbImportDto.id] = createdTable;
+          tjdbDatabase.push(createdTable);
+        })
+      );
+
+      await Promise.all(
         Object.keys(tableNameForeignKeyMapping).map((tableName) => {
-          return this.tooljetDbService.perform(organizationId, 'create_foreign_key', {
+          return this.tooljetDbService.perform(importResourcesDto.organization_id, 'create_foreign_key', {
             table_name: tableName,
             foreign_keys: tableNameForeignKeyMapping[tableName],
+            bulkActions: {
+              tjdbQueryRunner,
+              queryRunner,
+            },
           });
         })
       );
+
       await tjdbQueryRunner.commitTransaction();
+      await queryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await queryRunner.release();
       await tjdbQueryRunner.release();
-      return true;
+      return { tableNameMapping, tooljet_database: tjdbDatabase };
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       throw new Error(err.message);
     }
   }
 
-  async import(organizationId: string, tjDbDto: ImportTooljetDatabaseDto, cloning = false) {
+  async import(organizationId: string, tjDbDto: ImportTooljetDatabaseDto, cloning = false, bulkActions = {}) {
     const internalTableWithSameNameExists = await this.manager.findOne(InternalTable, {
       where: {
         tableName: tjDbDto.table_name,
@@ -81,6 +121,7 @@ export class TooljetDbImportExportService {
 
     return await this.tooljetDbService.perform(organizationId, 'create_table', {
       table_name: tableName,
+      bulkActions,
       ...{ columns, foreign_keys: [] },
     });
   }

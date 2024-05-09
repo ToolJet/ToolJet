@@ -235,8 +235,9 @@ export class TooljetDbService {
     if (isEmpty(primaryKeyColumnList)) throw new BadRequestException('Primary key is mandatory');
 
     const { table_name: tableName, foreign_keys = [] } = params;
+    const entityManager = params?.bulkActions?.queryRunner?.manager || this.manager;
 
-    const tableWithSameName = await this.manager.findOne(InternalTable, {
+    const tableWithSameName = await entityManager.findOne(InternalTable, {
       tableName,
       organizationId,
     });
@@ -249,7 +250,8 @@ export class TooljetDbService {
       referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
         referenced_table_list,
         organizationId,
-        'TABLENAME'
+        'TABLENAME',
+        entityManager
       );
     }
 
@@ -263,13 +265,15 @@ export class TooljetDbService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
-    const queryRunner = this.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
-    await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
+    const queryRunner = params?.bulkActions?.queryRunner || this.manager.connection.createQueryRunner();
+    const tjdbQueryRunner =
+      params?.bulkActions?.tjdbQueryRunner || this.tooljetDbManager.connection.createQueryRunner();
+    if (isEmpty(params?.bulkActions)) {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      await tjdbQueryRunner.connect();
+      await tjdbQueryRunner.startTransaction();
+    }
 
     try {
       const internalTable = queryRunner.manager.create(InternalTable, {
@@ -288,21 +292,22 @@ export class TooljetDbService {
           }),
         })
       );
-
       await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
-
-      await queryRunner.commitTransaction();
-      await tjdbQueryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await queryRunner.release();
-      await tjdbQueryRunner.release();
-
+      if (isEmpty(params?.bulkActions)) {
+        await queryRunner.commitTransaction();
+        await tjdbQueryRunner.commitTransaction();
+        await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+        await queryRunner.release();
+        await tjdbQueryRunner.release();
+      }
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
-      await queryRunner.rollbackTransaction();
-      await tjdbQueryRunner.rollbackTransaction();
-      await queryRunner.release();
-      await tjdbQueryRunner.release();
+      if (isEmpty(params?.bulkActions)) {
+        await queryRunner.rollbackTransaction();
+        await tjdbQueryRunner.rollbackTransaction();
+        await queryRunner.release();
+        await tjdbQueryRunner.release();
+      }
 
       throw new TooljetDatabaseError(
         err.message,
@@ -862,9 +867,10 @@ export class TooljetDbService {
   private async fetchAndCheckIfValidForeignKeyTables(
     referenced_table_list,
     organisation_id,
-    type: 'TABLEID' | 'TABLENAME'
+    type: 'TABLEID' | 'TABLENAME',
+    entityManager: EntityManager = this.manager
   ) {
-    const valid_referenced_table_details = await this.manager.find(InternalTable, {
+    const valid_referenced_table_details = await entityManager.find(InternalTable, {
       where: {
         organizationId: organisation_id,
         ...(type === 'TABLENAME' && { tableName: In(referenced_table_list) }),
@@ -906,7 +912,8 @@ export class TooljetDbService {
     const { table_name, foreign_keys } = params;
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
-    const internalTable = await this.manager.findOne(InternalTable, {
+    const entityManager = params?.bulkActions?.queryRunner?.manager || this.manager;
+    const internalTable = await entityManager.findOne(InternalTable, {
       where: { organizationId: organizationId, tableName: table_name },
     });
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
@@ -916,7 +923,8 @@ export class TooljetDbService {
     referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
       referenced_table_list,
       organizationId,
-      'TABLENAME'
+      'TABLENAME',
+      entityManager
     );
 
     const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
@@ -929,24 +937,29 @@ export class TooljetDbService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
-    await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
-
+    const tjdbQueryRunner =
+      params?.bulkActions?.tjdbQueryRunner || this.tooljetDbManager.connection.createQueryRunner();
+    if (!tjdbQueryRunner) {
+      await tjdbQueryRunner.connect();
+      await tjdbQueryRunner.startTransaction();
+    }
     try {
       const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
         (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
       );
       await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
 
-      await tjdbQueryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await tjdbQueryRunner.release();
+      if (isEmpty(params?.bulkActions)) {
+        await tjdbQueryRunner.commitTransaction();
+        await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+        await tjdbQueryRunner.release();
+      }
       return { statusCode: 200, message: 'Foreign key relation created successfully!' };
     } catch (err) {
-      await tjdbQueryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
-
+      if (isEmpty(params?.bulkActions)) {
+        await tjdbQueryRunner.rollbackTransaction();
+        await tjdbQueryRunner.release();
+      }
       const referencedTables = Object.entries(referenced_tables_info).map(([key, value]) => ({
         tableName: key,
         id: value as string,
