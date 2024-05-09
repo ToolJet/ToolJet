@@ -11,9 +11,9 @@
 //   //   height: 20px;
 // }
 
-.header-primaryKey-container {
-  margin-right: 6px !important;
-}
+// .header-primaryKey-container {
+//   margin-right: 6px !important;
+// }
 
 .primaryKeyTooltip {
   display: flex;
@@ -395,7 +395,8 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      .unique-constraint-info{
+
+      .unique-constraint-info {
         background-color: var(--slate2);
         border: 1px solid var(--slate5) !important;
         gap: 4px;
@@ -404,12 +405,14 @@
         opacity: 0px;
         display: flex;
         color: var(--slate11);
-        svg{
+
+        svg {
           width: 20%;
           height: 100%;
         }
       }
-      .column-popover{
+
+      .column-popover {
         width: 100% !important;
       }
 
