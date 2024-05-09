@@ -107,6 +107,7 @@ class ViewerComponent extends React.Component {
     useEditorStore.getState().actions.updateEditorState({
       appDefinition: appDefData,
     });
+    useResolveStore.getState().actions.resetStore();
   };
 
   onViewerLoadUpdateEntityReferences = (pageId, loadType) => {
@@ -365,6 +366,7 @@ class ViewerComponent extends React.Component {
       ...constants,
     });
     useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
+
     this.props.updateState({ events: data.events ?? [] });
     const currentPageComponents = appDefData?.pages[currentPage.id]?.components;
 
@@ -475,6 +477,7 @@ class ViewerComponent extends React.Component {
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
+        useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
         setWindowTitle({

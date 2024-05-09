@@ -7,7 +7,7 @@ import '@/_styles/custom.scss';
 import { EditorContext } from './Context/EditorContextWrapper';
 import { validateWidget } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
@@ -65,14 +65,13 @@ const BoxUI = (props) => {
   }, [JSON.stringify(customResolvables), readOnly]);
 
   let exposedVariables = currentState?.components[component.name] ?? {};
-  const { events } = useAppInfo();
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
 
-    const componentEvents = events.filter((event) => event.sourceId === id);
+    const componentEvents = useAppDataStore.getState().events.filter((event) => event.sourceId === id);
 
     onEvent(eventName, componentEvents, { ...options, customVariables: { ...customResolvables } });
   };
