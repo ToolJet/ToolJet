@@ -126,6 +126,7 @@ const BoxUI = (props) => {
           padding: _styles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
         }}
         role={'Box'}
+        className={inCanvas ? `_tooljet-${component.component} _tooljet-${component.name}` : ''} //required for custom CSS
       >
         <ControlledComponentToRender
           componentName={component.component}

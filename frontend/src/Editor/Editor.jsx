@@ -2106,6 +2106,7 @@ const EditorComponent = (props) => {
     );
   }
 
+  // Required for custom CSS
   const formCustomPageSelectorClass = () => {
     const pageHandle = getCurrentState().page.handle;
     return `_tooljet-page-${pageHandle}`;
