@@ -5,15 +5,11 @@ import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
 import Select from '@/_ui/Select';
 import Input from '@/_ui/Input';
-import config from 'config';
 
 const Salesforce = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource, workspaceConstants }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
-  const hostUrl = window.public_config?.TOOLJET_HOST;
-  const subPathUrl = window.public_config?.SUB_PATH;
-  const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
-  const redirectUri = fullUrl;
+  const redirectUri = `http://localhost:8082/oauth2/authorize`;
   const selectOptions = [
     { value: 'v1', label: 'v1' },
     { value: 'v2', label: 'v2' },
