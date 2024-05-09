@@ -52,7 +52,7 @@ export const Button = function Button(props) {
     '#FFFFFF' === iconColor ? (type === 'primary' ? iconColor : 'var(--icons-strong)') : iconColor;
 
   const computedBorderColor =
-    borderColor === '#4368E3' ? (type === 'primary' ? '#4368E3' : 'var(--borders-default)') : borderColor;
+    borderColor === '#4368E3' ? (type === 'primary' ? '#4368E3' : 'var(--borders-strong)') : borderColor;
 
   const computedTextColor =
     '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--text-primary)') : textColor;

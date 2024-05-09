@@ -1898,8 +1898,3 @@ export const removeFunctionObjects = (obj) => {
   }
   return obj;
 };
-
-// Function to get the value of a CSS variable
-export const getCssVariableValue = (varName) => {
-  return window.getComputedStyle(document.documentElement).getPropertyValue(varName);
-};
