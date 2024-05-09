@@ -3,9 +3,9 @@ import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { getRedirectURL, pathnameToArray } from '@/_helpers/routes';
 import { authenticationService } from '@/_services';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-export const AuthRoute = ({ children, navigate }) => {
+export const AuthRoute = ({ children }) => {
   const { isLoading, session, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
     disableInValidSessionCallback: true,
     disableValidSessionCallback: true,
@@ -26,12 +26,10 @@ export const AuthRoute = ({ children, navigate }) => {
   const { organizationId: organizationSlug } = params;
   const location = useLocation();
   const isSignUpRoute = location.pathname.startsWith('/signup');
+  const navigate = useNavigate();
 
   useEffect(
-    () => {
-      authenticationService.deleteAllAuthCookies();
-      fetchOrganizationDetails();
-    },
+    () => initialize(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [location.pathname]
   );
@@ -47,6 +45,17 @@ export const AuthRoute = ({ children, navigate }) => {
     if ((isInvalidSession || isComingFromPasswordReset) && !isGettingConfigs) setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInvalidSession, isGettingConfigs]);
+
+  const initialize = () => {
+    const isSuperAdminLogin = location.pathname.startsWith('/login/super-admin');
+    const shouldGetConfigs = !isSuperAdminLogin;
+    authenticationService.deleteAllAuthCookies();
+    if (shouldGetConfigs) {
+      fetchOrganizationDetails();
+    } else {
+      setGettingConfig(false);
+    }
+  };
 
   const fetchOrganizationDetails = () => {
     authenticationService.getOrganizationConfigs(organizationSlug).then(

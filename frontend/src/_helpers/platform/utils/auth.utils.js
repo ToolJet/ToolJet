@@ -16,6 +16,7 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     current_organization_id,
     current_organization_slug,
     no_workspace_attached_in_the_session: noWorkspaceAttachedInTheSession,
+    is_current_organization_archived: isCurrentOrganizationArchived,
   } = userResponse;
   /* reset the authentication status and loggingIn status */
   const { email, id, first_name, last_name, organization_id, organization, ...restResponse } = userResponse;
@@ -26,10 +27,30 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     ...restResponse,
     authentication_status: null,
     noWorkspaceAttachedInTheSession,
+    isCurrentOrganizationArchived,
   });
   const redirectPath = redirectTo || getCookie('redirectPath');
   const path = getRedirectURL(redirectPath);
   eraseRedirectUrl();
+  switch (true) {
+    case isCurrentOrganizationArchived: {
+      navigate('/switch-workspace-archived');
+      break;
+    }
+    case noWorkspaceAttachedInTheSession: {
+      navigate(path);
+      break;
+    }
+    default: {
+      authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
+        updateCurrentSession({
+          isUserLoggingIn: false,
+        });
+        navigate(path);
+      });
+    }
+  }
+
   if (!noWorkspaceAttachedInTheSession) {
     authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
       updateCurrentSession({

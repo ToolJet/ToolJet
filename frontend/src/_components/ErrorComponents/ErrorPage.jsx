@@ -1,24 +1,57 @@
 import { ERROR_MESSAGES } from '@/_helpers/constants';
 import { redirectToDashboard, getPrivateRoute, getSubpath } from '@/_helpers/routes';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './static-modal.scss';
+import { useSessionManagement } from '@/_hooks/useSessionManagement';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
 
 export default function ErrorPage({ darkMode }) {
   const params = useParams();
   const errorType = params?.errorType;
   const errorMsg = ERROR_MESSAGES[errorType];
+  const { session, isLoading, setLoading, isValidSession, isInvalidSession } = useSessionManagement({
+    disableInValidSessionCallback: true,
+    disableValidSessionCallback: true,
+  });
 
   if (!errorMsg) redirectToDashboard();
 
   const searchParams = new URLSearchParams(location.search);
   const appSlug = searchParams.get('appSlug');
 
+  useEffect(() => {
+    if (!session.triggeredOnce) authorizeWorkspace();
+  }, [session.triggeredOnce]);
+
+  useEffect(() => {
+    if (isValidSession || isInvalidSession) setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValidSession, isInvalidSession]);
+
+  if (isLoading) {
+    return <TJLoader />;
+  }
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <ErrorModal errorMsg={errorMsg} appSlug={appSlug} show={true} darkMode={darkMode} />
+      <ErrorModal
+        errorMsg={
+          isValidSession
+            ? errorMsg
+            : {
+                ...errorMsg,
+                cta: '',
+              }
+        }
+        isValidSession={isValidSession}
+        appSlug={appSlug}
+        show={true}
+        darkMode={darkMode}
+      />
     </div>
   );
 }

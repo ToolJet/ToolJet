@@ -9,7 +9,7 @@ import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
-import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_STATUS, WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
 import { UpdateUserDto } from '@dto/user.dto';
@@ -84,10 +84,23 @@ export class OrganizationUsersService {
         'user.firstName',
         'user.lastName',
         'user.source',
+        'organization.status',
       ])
       .innerJoin('organizationUser.user', 'user')
+      .innerJoin('organizationUser.organization', 'organization')
       .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
       .getOne();
+
+    if (organizationUser?.organization?.status === WORKSPACE_STATUS.ARCHIVE) {
+      /* Invited workspace is archive */
+      const errorResponse = {
+        message: {
+          error: 'The workspace is archived. Please contact the super admin to get access.',
+          isWorkspaceArchived: true,
+        },
+      };
+      throw new BadRequestException(errorResponse);
+    }
 
     const user: InvitedUserType = organizationUser?.user;
     /* Invalid organization token */
@@ -112,6 +125,27 @@ export class OrganizationUsersService {
         status: WORKSPACE_USER_STATUS.ACTIVE,
       },
     });
+  }
+
+  async isTheUserIsAnActiveMemberOfTheWorkspace(userId: string, organizationId: string) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        organizationId,
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      },
+    });
+  }
+
+  async isAllWorkspacesArchivedBySuperAdmin(userId: string) {
+    const archivedWorkspaceCount = await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        status: WORKSPACE_USER_STATUS.ARCHIVED,
+      },
+    });
+    const allWorkspacesCount = await this.organizationUsersRepository.count({ userId });
+    return allWorkspacesCount === archivedWorkspaceCount;
   }
 
   async updateOrgUser(organizationUserId: string, updateUserDto: UpdateUserDto) {

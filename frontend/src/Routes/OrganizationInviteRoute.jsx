@@ -105,7 +105,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
               break;
             }
             case isInvalidInvitationUrl: {
-              /* Wrong invitation URL (invalid tokens) */
+              /* Wring invitation URL (invalid tokens) */
               setLinkStatus(isInvalidInvitationUrl);
               break;
             }

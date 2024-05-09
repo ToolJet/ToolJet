@@ -168,15 +168,15 @@ export class UsersService {
     }, manager);
   }
 
+  async findOne(where = {}): Promise<User> {
+    return this.usersRepository.findOne({ where });
+  }
+
   async getAppOrganizationDetails(app: App): Promise<Organization> {
     return this.organizationRepository.findOneOrFail({
       select: ['id', 'slug'],
       where: { id: app.organizationId },
     });
-  }
-
-  async findOne(where = {}): Promise<User> {
-    return this.usersRepository.findOne({ where });
   }
 
   async findSelfhostOnboardingDetails(): Promise<User> {
@@ -275,7 +275,8 @@ export class UsersService {
     existingUser?: User,
     isInvite?: boolean,
     defaultOrganizationId?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    shouldNotAttachWorkspace = false
   ): Promise<User> {
     const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
     let user: User;
@@ -294,7 +295,7 @@ export class UsersService {
           status,
           userType,
           invitationToken: isInvite ? uuid.v4() : null,
-          defaultOrganizationId: defaultOrganizationId || organizationId,
+          defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -330,6 +331,17 @@ export class UsersService {
 
       for (const group of groups) {
         const orgGroupPermission = organizationGroups.find((organizationGroup) => organizationGroup.group === group);
+
+        if (isValidateExistingGroups) {
+          const userGroup = await manager.count(UserGroupPermission, {
+            where: {
+              groupPermissionId: orgGroupPermission.id,
+              userId,
+            },
+          });
+
+          if (userGroup) continue;
+        }
 
         if (!orgGroupPermission) {
           throw new BadRequestException(`${group} group does not exist for current organization`);

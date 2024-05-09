@@ -11,7 +11,6 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
@@ -1299,7 +1298,6 @@ export const executeWorkflow = async (self, workflowId, _blocking = false, param
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
   return { data: executionResponse.result };
 };
-
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;

@@ -53,20 +53,12 @@ export function OrganizationSettings(props) {
     }
   };
 
-  if (!admin) {
-    navigate('/');
-  }
-
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);
       setFeaturesLoaded(true);
     });
   };
-
-  if (!admin) {
-    navigate('/');
-  }
 
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {

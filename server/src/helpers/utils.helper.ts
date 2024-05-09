@@ -364,7 +364,6 @@ export function generateSecurePassword(length = 10) {
   //default length = 10
   return crypto.randomBytes(length).toString('hex').slice(0, length);
 }
-
 export function isVersionGreaterThanOrEqual(version1: string, version2: string) {
   if (!version1) return false;
 

@@ -10,19 +10,12 @@ import { retrieveWhiteLabelText, checkWhiteLabelsDefaultState } from '@/_helpers
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       isLoading: false,
-      configs: {},
-      isGettingConfigs: true,
-      userDetails: {},
-      verifiedToken: false,
-      showPassword: false,
-      fallBack: false,
       defaultState: false,
     };
     this.formRef = React.createRef(null);
@@ -33,38 +26,8 @@ class OrganizationInvitationPageComponent extends React.Component {
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
-
-    if (this.organizationId) {
-      authenticationService.saveLoginOrganizationId(this.organizationId);
-      this.organizationId &&
-        authenticationService.getOrganizationConfigs(this.organizationId).then(
-          (configs) => {
-            this.setState({ isGettingConfigs: false, configs });
-          },
-          () => {
-            this.setState({ isGettingConfigs: false });
-          }
-        );
-    } else {
-      this.setState({ isGettingConfigs: false });
-    }
-
-    /* Workspace signup organization token */
-    authenticationService
-      .verifyOrganizationToken(this.organizationToken)
-      .then((data) => {
-        this.setState({ userDetails: data });
-        if (data?.email !== '') {
-          this.setState({ verifiedToken: true });
-        }
-      })
-      .catch((err) => {
-        if (err?.data.statusCode == 400) {
-          this.setState({ fallBack: true });
-        }
-      });
-    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
     document.addEventListener('keydown', this.handleEnterKey);
+    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
   }
 
   handleEnterKey = (e) => {
@@ -101,7 +64,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, userDetails, defaultState } = this.state;
+    const { isLoading, defaultState } = this.state;
     const { name, email, invitedOrganizationName: organizationName } = this.props;
     return (
       <div className="page" ref={this.formRef}>
@@ -146,10 +109,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                       <ButtonSolid
                         className="org-btn login-btn"
                         onClick={(e) => this.acceptInvite(e)}
-                        disabled={
-                          userDetails?.onboarding_details?.password &&
-                          (isLoading || !this.state?.password || this.state?.password?.length < 5)
-                        }
                         data-cy="accept-invite-button"
                       >
                         {isLoading ? (

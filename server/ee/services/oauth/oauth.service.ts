@@ -21,9 +21,9 @@ import {
 import {
   dbTransactionWrap,
   generateInviteURL,
-  isSuperAdmin,
   generateNextNameAndSlug,
   isValidDomain,
+  isSuperAdmin,
 } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
@@ -85,6 +85,7 @@ export class OauthService {
     }
 
     const groups = ['all_users', ...(ssoGroups ? ssoGroups : [])];
+    /* Default password for sso-signed workspace user */
     const password = uuid.v4();
     user = await this.usersService.create(
       { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso), password },
@@ -178,10 +179,10 @@ export class OauthService {
   ): Promise<any> {
     const {
       organizationId: loginOrganiaztionId,
+      samlResponseId,
       signupOrganizationId,
       invitationToken: signUpInvitationToken,
       redirectTo,
-      samlResponseId,
     } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
@@ -283,7 +284,7 @@ export class OauthService {
       throw new NotAcceptableException('User has been archived, please contact the administrator');
     }
 
-    if (!isSuperAdmin(userDetails) && isValidDomain(userResponse.email, domain)) {
+    if (!isSuperAdmin(userDetails) && !isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
@@ -355,10 +356,15 @@ export class OauthService {
           } else if (organizationList?.length > 0 && personalWorkspaceCount > 0) {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
-          } else if (allowPersonalWorkspace) {
+          } else if (allowPersonalWorkspace && !isInviteRedirect) {
             // no SSO login enabled organization available for user - creating new one
             const { name, slug } = generateNextNameAndSlug('My workspace');
             organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
+            await this.usersService.updateUser(
+              userDetails.id,
+              { defaultOrganizationId: organizationDetails.id },
+              manager
+            );
           } else {
             if (!isInviteRedirect) {
               // no SSO login enabled organization available for user - creating new one
@@ -450,16 +456,19 @@ export class OauthService {
             // update sso user info
             await this.usersService.updateSSOUserInfo(manager, userDetails.id, userResponse.userinfoResponse);
           }
-          return await this.validateLicense(
-            this.authService.processOrganizationSignup(
-              response,
-              userDetails,
-              { invitationToken: organizationToken, organizationId: organization.id },
-              manager,
-              personalWorkspace,
-              'sso'
-            ),
-            manager
+
+          const shouldSyncGroups = ['ldap', 'saml'].includes(sso);
+          if (shouldSyncGroups) {
+            await this.syncUserAndGroups(userResponse, userDetails.id, organization.id, manager);
+          }
+
+          return await this.authService.processOrganizationSignup(
+            response,
+            userDetails,
+            { invitationToken: organizationToken, organizationId: organization.id },
+            manager,
+            personalWorkspace,
+            'sso'
           );
         }
       }
@@ -487,6 +496,26 @@ export class OauthService {
       if (isInviteRedirect && userDetails.defaultOrganizationId) {
         /* Assign defaultOrganization instead of invited organization details */
         organizationDetails = await this.organizationService.fetchOrganization(userDetails.defaultOrganizationId);
+
+        /* Sync groups - CASE: if the user already has an account in tooljet and got an invite from other workspace where group syncing SSOs configured */
+        const shouldSyncGroups = ['ldap', 'saml'].includes(sso);
+        if (shouldSyncGroups) {
+          await this.syncUserAndGroups(userResponse, userDetails.id, organization.id, manager);
+        }
+      }
+
+      if (loginOrganiaztionId) {
+        const activeUserOfTheWorkspace = await this.organizationUsersService.isTheUserIsAnActiveMemberOfTheWorkspace(
+          userDetails.id,
+          loginOrganiaztionId
+        );
+
+        if (activeUserOfTheWorkspace) {
+          const shouldSyncGroups = ['ldap', 'saml'].includes(sso);
+          if (shouldSyncGroups) {
+            await this.syncUserAndGroups(userResponse, userDetails.id, organization.id, manager);
+          }
+        }
       }
 
       return await this.authService.generateLoginResultPayload(
@@ -496,10 +525,33 @@ export class OauthService {
         isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
         false,
         user,
-        manager
+        manager,
+        isInviteRedirect ? loginOrganiaztionId : null
       );
     });
   }
+
+  syncUserAndGroups = async (
+    userResponse: UserResponse,
+    userId: string,
+    organizationId: string,
+    manager: EntityManager
+  ) => {
+    const { groups: ssoGroups, profilePhoto, email } = userResponse;
+    /* Sync LDAP / SAML groups before signup to the workspace */
+    if (ssoGroups?.length) await this.usersService.attachUserGroup(ssoGroups, organizationId, userId, true, manager);
+
+    /* Create avatar if profilePhoto available */
+    if (profilePhoto) {
+      try {
+        await this.usersService.addAvatar(userId, profilePhoto, `${email}.jpeg`, manager);
+      } catch (error) {
+        /* Should not break the flow */
+        console.log('Profile picture upload failed', error);
+      }
+    }
+  };
+
   private async validateLicense(response: any, manager: EntityManager) {
     await this.usersService.validateLicense(manager);
     return response;

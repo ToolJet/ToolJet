@@ -208,7 +208,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       </p>
                     </div>
 
-                    {userDetails?.onboarding_details?.password && source != 'sso' && (
+                    {userDetails?.onboarding_details?.password && source !== 'sso' && (
                       <div className="mb-3">
                         <label className="form-label" data-cy="password-label">
                           {t('verificationSuccessPage.password', 'Password')}

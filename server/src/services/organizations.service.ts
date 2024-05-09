@@ -11,9 +11,9 @@ import {
   isPlural,
   generatePayloadForLimits,
   catchDbException,
+  isSuperAdmin,
   fullName,
   generateNextNameAndSlug,
-  isSuperAdmin,
 } from 'src/helpers/utils.helper';
 import {
   Brackets,
@@ -171,7 +171,7 @@ export class OrganizationsService {
     const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings(
       INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
     );
-    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
+    const oidcIncluded = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
     const ssoConfigs = await this.getInstanceSSOConfigs();
     const enableSignUp = await this.instanceSettingsService.getSettings(INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP);
 
@@ -184,6 +184,12 @@ export class OrganizationsService {
       };
     });
 
+    const isExpired = await this.licenseService.getLicenseTerms(LICENSE_FIELD.IS_EXPIRED);
+    const isBasicPlan = await this.licenseService.isBasicPlan();
+    const banner_message = `OpenID connect ${
+      isExpired || isBasicPlan ? 'is available only in paid plans' : 'is not included in your current plan'
+    }. For more, contact super admin`;
+
     return {
       google: {
         enabled: ssoConfigMap?.google?.enabled || false,
@@ -194,8 +200,10 @@ export class OrganizationsService {
         configs: ssoConfigMap?.git?.configs || {},
       },
       openid: {
-        enabled: ssoConfigMap?.openid?.enabled && oidcEnabled,
+        enabled: ssoConfigMap?.openid?.enabled || false,
         configs: ssoConfigMap?.openid?.configs || {},
+        featureIncluded: !!oidcIncluded,
+        ...(!oidcIncluded ? { banner_message } : {}),
       },
       form: {
         enable_sign_up: enableSignUp === 'true' && isPersonalWorkspaceAllowed === 'true',
@@ -269,14 +277,14 @@ export class OrganizationsService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       let organization: Organization;
       try {
-        organization = await this.organizationsRepository.findOneOrFail({
+        organization = await manager.findOneOrFail(Organization, {
           where: { slug },
-          select: ['id', 'slug', 'status', 'name'],
+          select: ['id', 'slug', 'name', 'status'],
         });
       } catch (error) {
-        organization = await this.organizationsRepository.findOne({
+        organization = await manager.findOneOrFail(Organization, {
           where: { id: slug },
-          select: ['id', 'slug', 'status', 'name'],
+          select: ['id', 'slug', 'name', 'status'],
         });
       }
       if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
@@ -693,21 +701,7 @@ export class OrganizationsService {
       }
     }
 
-    // filter oidc and ldap configs
-    const licenseTerms = await this.licenseService.getLicenseTerms([
-      LICENSE_FIELD.OIDC,
-      LICENSE_FIELD.LDAP,
-      LICENSE_FIELD.SAML,
-    ]);
-    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.OPENID) && !licenseTerms[LICENSE_FIELD.OIDC]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.OPENID);
-    }
-    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.LDAP) && !licenseTerms[LICENSE_FIELD.LDAP]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.LDAP);
-    }
-    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.SAML) && !licenseTerms[LICENSE_FIELD.SAML]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.SAML);
-    }
+    result.ssoConfigs = await this.cycleThroughOrganizationConfigs(result.ssoConfigs);
 
     if (!isHideSensitiveData) {
       if (!(result?.ssoConfigs?.length > 0)) {
@@ -720,6 +714,50 @@ export class OrganizationsService {
     }
     return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp, result.id);
   }
+
+  private cycleThroughOrganizationConfigs = async (ssoConfigs: any) => {
+    const filteredConfigs: SSOConfigs[] = [];
+
+    const licenseTerms = await this.licenseService.getLicenseTerms([
+      LICENSE_FIELD.OIDC,
+      LICENSE_FIELD.LDAP,
+      LICENSE_FIELD.SAML,
+      LICENSE_FIELD.IS_EXPIRED,
+    ]);
+    const isBasicPlan = await this.licenseService.isBasicPlan();
+    const isExpired = licenseTerms[LICENSE_FIELD.IS_EXPIRED];
+
+    ssoConfigs.map((config) => {
+      const copiedConfig = config;
+      const sso: string = copiedConfig.sso;
+      const paidSSOs = {
+        openid: {
+          label: 'OpenID connect',
+          licenseTerm: LICENSE_FIELD.OIDC,
+        },
+        saml: { label: 'SAML', licenseTerm: LICENSE_FIELD.SAML },
+        ldap: { label: 'LDAP', licenseTerm: LICENSE_FIELD.LDAP },
+      };
+
+      if (Object.keys(paidSSOs).includes(sso)) {
+        const ssoType = paidSSOs[sso];
+        const { label, licenseTerm } = ssoType;
+        if (!licenseTerms[licenseTerm]) {
+          const bannerMessage = `${label} ${
+            isExpired || isBasicPlan ? 'is available only in paid plans' : 'is not included in your current plan'
+          }. For more, contact super admin`;
+          copiedConfig.configs = {
+            name: copiedConfig?.configs?.name,
+          };
+          copiedConfig.bannerMessage = bannerMessage;
+        }
+        copiedConfig.featureIncluded = !!licenseTerms[licenseTerm];
+      }
+      filteredConfigs.push(copiedConfig);
+    });
+
+    return filteredConfigs;
+  };
 
   private hideSSOSensitiveData(
     ssoConfigs: DeepPartial<SSOConfigs>[],
@@ -905,13 +943,14 @@ export class OrganizationsService {
         );
       }
 
+      const isPersonalWorkspaceAllowedConfig = await this.instanceSettingsService.getSettings(
+        INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
+      );
+      const isPersonalWorkspaceAllowed = isPersonalWorkspaceAllowedConfig === 'true';
       if (!user) {
         // User not exist
         shouldSendWelcomeMail = true;
-        // Create default organization if user not exist
-        if (
-          (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true'
-        ) {
+        if (isPersonalWorkspaceAllowed) {
           // Create default organization if user not exist
           const { name, slug } = generateNextNameAndSlug('My workspace');
           defaultOrganization = await this.create(name, slug, null, manager);
@@ -921,10 +960,6 @@ export class OrganizationsService {
         shouldSendWelcomeMail = true;
       }
 
-      if (user && user.status === USER_STATUS.ARCHIVED) {
-        await this.usersService.updateUser(user.id, { status: USER_STATUS.ACTIVE });
-      }
-
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
@@ -932,13 +967,13 @@ export class OrganizationsService {
         user,
         true,
         defaultOrganization?.id,
-        manager
+        manager,
+        !isPersonalWorkspaceAllowed
       );
 
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.organizationUserService.validateLicense(manager);
         await this.usersService.attachUserGroup(
           ['all_users', 'admin'],
           defaultOrganization.id,

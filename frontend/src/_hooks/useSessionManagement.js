@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { getWorkspaceId, fetchAndSetWindowTitle } from '@/_helpers/utils';
+import { getWorkspaceId, setFaviconAndTitle } from '@/_helpers/utils';
 import { appendWorkspaceId, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
 
 /*
@@ -26,6 +26,7 @@ export const useSessionManagement = (initialState = defaultState) => {
   const navigate = useNavigate();
   const { pathname, search, state } = location;
   const { disableValidSessionCallback, disableInValidSessionCallback } = initialState;
+  const { WHITE_LABEL_FAVICON, WHITE_LABEL_TEXT } = window.public_config;
 
   useEffect(() => {
     /* replacing the state. otherwise the route will keep isSwitchingPage value `true` */
@@ -41,7 +42,7 @@ export const useSessionManagement = (initialState = defaultState) => {
   }, []);
 
   useEffect(() => {
-    fetchAndSetWindowTitle(null);
+    setFaviconAndTitle(WHITE_LABEL_FAVICON, WHITE_LABEL_TEXT, location);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 

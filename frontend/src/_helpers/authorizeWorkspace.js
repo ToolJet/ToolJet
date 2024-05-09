@@ -1,4 +1,4 @@
-import { organizationService, authenticationService, licenseService } from '@/_services';
+import { organizationService, authenticationService } from '@/_services';
 import {
   pathnameToArray,
   getSubpath,
@@ -22,6 +22,9 @@ import { ERROR_TYPES } from './constants';
 
 export const authorizeWorkspace = () => {
   if (!isThisExistedRoute()) {
+    updateCurrentSession({
+      triggeredOnce: true,
+    });
     const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
     const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
     const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
@@ -33,21 +36,27 @@ export const authorizeWorkspace = () => {
           current_organization_id,
           current_organization_slug,
           no_workspace_attached_in_the_session: noWorkspaceAttachedInTheSession,
+          is_all_workspaces_archived: isAllWorkspacesArchived,
         }) => {
           if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-            updateCurrentSession({
-              noWorkspaceAttachedInTheSession,
-              authentication_status: true,
-            });
-            if (noWorkspaceAttachedInTheSession) {
-              /*
+            if (isAllWorkspacesArchived) {
+              /* All workspaces are archived by the super admin. lets logout the user */
+              authenticationService.logout();
+            } else {
+              updateCurrentSession({
+                noWorkspaceAttachedInTheSession,
+                authentication_status: true,
+              });
+              if (noWorkspaceAttachedInTheSession) {
+                /*
                 User just signed up after the invite flow and doesn't have any active workspace.
                 - From useSessionManagement hook we will be redirecting the user to an error page.
               */
-              return;
+                return;
+              }
+              /*CASE-2*/
+              authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
             }
-            /*CASE-2*/
-            authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
           } else {
             updateCurrentSession({
               current_organization_id,
@@ -74,6 +83,9 @@ export const authorizeWorkspace = () => {
             /* If the user is trying to load the app viewer and the app id / slug not found */
             redirectToErrorPage(ERROR_TYPES.INVALID);
           } else if (error?.data?.statusCode == 422) {
+            if (isThisWorkspaceLoginPage()) {
+              return redirectToErrorPage(ERROR_TYPES.INVALID);
+            }
             redirectToErrorPage(ERROR_TYPES.UNKNOWN);
           } else {
             const subpath = getSubpath();

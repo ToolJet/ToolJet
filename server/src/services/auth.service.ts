@@ -1,7 +1,7 @@
 import {
   BadRequestException,
-  HttpException,
   ForbiddenException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -34,6 +34,7 @@ import {
   SOURCE,
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_STATUS,
 } from 'src/helpers/user_lifecycle';
 import {
   dbTransactionWrap,
@@ -178,17 +179,14 @@ export class AuthService {
         } else if (organizationList?.length > 0) {
           // default organization form login not enabled, picking first one from form enabled list
           organization = organizationList[0];
-        } else if (allowPersonalWorkspace) {
+        } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
           organization = await this.organizationsService.create(name, slug, user, manager);
         } else {
-          if (!isInviteRedirect) {
-            const { name, slug } = generateNextNameAndSlug('My workspace');
-            organization = await this.organizationsService.create(name, slug, user, manager);
-          }
-          throw new UnauthorizedException('User is not assigned to any workspaces');
+          if (!isInviteRedirect) throw new UnauthorizedException('User is not assigned to any workspaces');
         }
+
         if (organization) user.organizationId = organization.id;
       } else {
         // organization specific login
@@ -214,17 +212,19 @@ export class AuthService {
 
       await this.usersService.updateUser(user.id, updateData, manager);
 
-      await this.auditLoggerService.perform(
-        {
-          userId: user.id,
-          organizationId: organization.id,
-          resourceId: user.id,
-          resourceType: ResourceTypes.USER,
-          resourceName: user.email,
-          actionType: ActionTypes.USER_LOGIN,
-        },
-        manager
-      );
+      if (!isInviteRedirect) {
+        await this.auditLoggerService.perform(
+          {
+            userId: user.id,
+            organizationId: organization.id,
+            resourceId: user.id,
+            resourceType: ResourceTypes.USER,
+            resourceName: user.email,
+            actionType: ActionTypes.USER_LOGIN,
+          },
+          manager
+        );
+      }
 
       return await this.generateLoginResultPayload(response, user, organization, false, true, loggedInUser);
     });
@@ -236,8 +236,9 @@ export class AuthService {
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
+    /* User doesn't have access to this workspace */
     if (!newUser && !isSuperAdmin(newUser)) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("User doesn't have access to this workspace");
     }
     newUser.organizationId = newOrganizationId;
 
@@ -389,13 +390,16 @@ export class AuthService {
       const { name, slug } = generateNextNameAndSlug('My workspace');
       const personalWorkspace = await this.organizationsService.create(name, slug, null, manager);
       /* Create the user or attach user groups to the user */
+      const lifeCycleParms = signingUpOrganization
+        ? getUserStatusAndSource(lifecycleEvents.USER_WORKSPACE_SIGN_UP)
+        : getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP);
       const user = await this.usersService.create(
         {
           email,
           password,
           ...(firstName && { firstName }),
           ...(lastName && { lastName }),
-          ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
+          ...lifeCycleParms,
         },
         personalWorkspace.id,
         ['all_users', 'admin'],
@@ -608,9 +612,33 @@ export class AuthService {
         );
       }
       case hasWorkspaceInviteButUserWantsInstanceSignup: {
-        const firstTimeSignup = existingUser.source !== SOURCE.SIGNUP;
+        const firstTimeSignup = ![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(existingUser.source as SOURCE);
         if (firstTimeSignup) {
           /* Invite user doing instance signup. So reset name fields and set password */
+          let defaultOrganizationId: string;
+          const isPersonalWorkspaceAllowed =
+            (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
+            'true';
+          if (!existingUser.defaultOrganizationId && isPersonalWorkspaceAllowed) {
+            const personalWorkspaces = await this.organizationUsersService.personalWorkspaces(existingUser.id);
+            if (personalWorkspaces.length) {
+              defaultOrganizationId = personalWorkspaces[0].organizationId;
+            } else {
+              /* Create a personal workspace for the user */
+              const { name, slug } = generateNextNameAndSlug('My workspace');
+              const defaultOrganization = await this.organizationsService.create(name, slug, null, manager);
+              defaultOrganizationId = defaultOrganization.id;
+              await this.organizationUsersService.create(existingUser, defaultOrganization, true, manager);
+              await this.usersService.attachUserGroup(
+                ['all_users', 'admin'],
+                defaultOrganizationId,
+                existingUser.id,
+                false,
+                manager
+              );
+            }
+          }
+
           await this.usersService.updateUser(
             existingUser.id,
             {
@@ -618,6 +646,7 @@ export class AuthService {
               ...(lastName && { lastName }),
               password,
               source: SOURCE.SIGNUP,
+              defaultOrganizationId,
             },
             manager
           );
@@ -1100,6 +1129,7 @@ export class AuthService {
 
     const activeWorkspacesCount = await this.organizationUsersService.getActiveWorkspacesCount(user.id);
     const noWorkspaceAttachedInTheSession = activeWorkspacesCount === 0;
+    const isAllWorkspacesArchived = await this.organizationUsersService.isAllWorkspacesArchivedBySuperAdmin(user.id);
 
     return decamelizeKeys({
       id: user.id,
@@ -1107,6 +1137,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       noWorkspaceAttachedInTheSession,
+      isAllWorkspacesArchived,
       currentOrganizationId,
       currentOrganizationSlug: currentOrganization?.slug,
       ...(appData && { appData }),
@@ -1169,6 +1200,7 @@ export class AuthService {
 
     response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
 
+    const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
     const responsePayload = {
       id: user.id,
       email: user.email,
@@ -1176,13 +1208,14 @@ export class AuthService {
       lastName: user.lastName,
       avatar_id: user.avatarId,
       sso_user_info: user.userDetails?.ssoUserInfo,
-      organizationId: organization.id,
-      organization: organization.name,
+      organizationId: organization?.id,
+      organization: organization?.name,
       superAdmin: isSuperAdmin(user),
       admin: await this.usersService.hasGroup(user, 'admin', null, manager),
       groupPermissions: await this.usersService.groupPermissions(user, manager),
       appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
       dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
+      isCurrentOrganizationArchived,
       ...(organization
         ? { currentOrganizationId: organization.id, currentOrganizationSlug: organization.slug }
         : { noWorkspaceAttachedInTheSession: true }),
@@ -1211,7 +1244,9 @@ export class AuthService {
 
     if (accountYetToActive) {
       /* User has invite url which got after the workspace signup */
-      if (source === 'signup') {
+      const isInstanceSignupInvite = !!accountToken && !organizationToken && source === SOURCE.SIGNUP;
+      const isOrganizationSignupInvite = organizationAndAccountInvite && source === SOURCE.WORKSPACE_SIGNUP;
+      if (isInstanceSignupInvite || isOrganizationSignupInvite) {
         const responseObj = {
           email,
           name: fullName(firstName, lastName),

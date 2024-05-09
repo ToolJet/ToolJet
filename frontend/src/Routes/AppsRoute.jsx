@@ -15,7 +15,7 @@ export const AppsRoute = ({ children, componentType }) => {
   const [extraProps, setExtraProps] = useState({});
   const { isLoading, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
     disableValidSessionCallback: true,
-    /* Only for preivew / released apps */
+    /* Only for preiview / released apps */
     disableInValidSessionCallback: componentType !== 'editor',
   });
   const clonedElement = React.cloneElement(children, extraProps);
@@ -47,13 +47,14 @@ export const AppsRoute = ({ children, componentType }) => {
     const isSwitchingPages = location.state?.isSwitchingPage;
 
     if (!isSwitchingPages) {
-      const { slug, versionId, pageHandle } = params;
+      const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
-      let accessDetails = await handleAppAccess(componentType, slug, versionId);
-      const { versionName, ...restDetails } = accessDetails;
+      let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
+      const { versionName, environmentName, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
         const search = queryString.stringify({
+          env: environmentName,
           version: versionName,
           ...restQueryParams,
         });

@@ -2,10 +2,17 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { retrieveWhiteLabelText, setFaviconAndTitle } from '@/_helpers/utils';
+import { setFaviconAndTitle } from '@/_helpers/utils';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
+import {
+  PrivateRoute,
+  AdminRoute,
+  AppsRoute,
+  SwitchWorkspaceRoute,
+  OrganizationInviteRoute,
+  SuperAdminRoute,
+} from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -47,7 +54,6 @@ import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { CopilotSetting } from '@/CopilotSettings';
 import { CustomStylesEditor } from '@/CustomStylesEditor';
-import { ManageOrgConstants } from '@/ManageOrgConstants';
 import LdapLoginPage from '../LdapLogin';
 import InstanceLogin from '@/ManageInstanceSettings/InstanceLogin';
 import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
@@ -182,8 +188,17 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
-              <Route path="/login/:organizationId/sso/openid" exact element={<OpenIdLoginPage />} />
-              <Route path="/login/sso/openid" exact element={<OpenIdLoginPage />} />
+              <Route
+                path="/login/super-admin"
+                exact
+                element={
+                  <AuthRoute {...this.props}>
+                    <SuperadminLoginPage />
+                  </AuthRoute>
+                }
+              />
+              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              <Route path="/ldap/:organizationId" element={<LdapLoginPage {...this.props} darkMode={darkMode} />} />
               <Route
                 path="/login/:organizationId"
                 exact
@@ -202,8 +217,8 @@ class AppComponent extends React.Component {
                   </AuthRoute>
                 }
               />
-              <Route path="/login/super-admin" exact element={<SuperadminLoginPage />} />
-              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              <Route path="/login/:organizationId/sso/openid" exact element={<OpenIdLoginPage />} />
+              <Route path="/login/sso/openid" exact element={<OpenIdLoginPage />} />
               <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
               <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
               <Route
@@ -224,7 +239,6 @@ class AppComponent extends React.Component {
                   </AuthRoute>
                 }
               />
-              <Route path="/ldap/:organizationId" element={<LdapLoginPage {...this.props} darkMode={darkMode} />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -313,27 +327,15 @@ class AppComponent extends React.Component {
               >
                 <Route
                   path="users"
-                  element={
-                    <AdminRoute>
-                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
+                  element={<ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
                   path="groups"
-                  element={
-                    <AdminRoute>
-                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
+                  element={<ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
                   path="workspace-login"
-                  element={
-                    <AdminRoute>
-                      <OrganizationLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
+                  element={<OrganizationLogin switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
                   path="workspace-variables"
@@ -341,15 +343,7 @@ class AppComponent extends React.Component {
                 />
                 <Route
                   path="configure-git"
-                  element={
-                    <AdminRoute>
-                      <GitSyncConfig switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="workspace-constants"
-                  element={<ManageOrgConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={<GitSyncConfig switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
                   path="copilot"
@@ -359,20 +353,16 @@ class AppComponent extends React.Component {
                 />
                 <Route
                   path="custom-styles"
-                  element={
-                    <AdminRoute>
-                      <CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
+                  element={<CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
               </Route>
               <Route
                 exact
                 path="/instance-settings"
                 element={
-                  <PrivateRoute>
+                  <SuperAdminRoute {...this.props}>
                     <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </SuperAdminRoute>
                 }
               >
                 <Route
@@ -386,9 +376,7 @@ class AppComponent extends React.Component {
                 <Route
                   path="all-workspaces"
                   element={
-                    <AdminRoute>
-                      <ManageWorkspaceArchivePageComponent switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
+                    <ManageWorkspaceArchivePageComponent switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   }
                 />
                 <Route
@@ -408,9 +396,9 @@ class AppComponent extends React.Component {
                 exact
                 path="/:workspaceId/audit-logs"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute {...this.props}>
                     <AuditLogsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route
@@ -504,9 +492,9 @@ class AppComponent extends React.Component {
                 exact
                 path="/switch-workspace-archived"
                 element={
-                  <PrivateRoute>
+                  <SwitchWorkspaceRoute>
                     <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} archived={true} />
-                  </PrivateRoute>
+                  </SwitchWorkspaceRoute>
                 }
               />
               <Route
@@ -523,7 +511,7 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/workflows"
                   element={
-                    <AdminRoute>
+                    <AdminRoute {...this.props}>
                       <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'workflow'} />
                     </AdminRoute>
                   }

@@ -3,3 +3,4 @@ export * from './AdminRoute';
 export * from './AppsRoute';
 export * from './SwitchWorkspaceRoute';
 export * from './OrganizationInviteRoute';
+export * from './SuperAdminRoute';

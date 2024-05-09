@@ -13,7 +13,7 @@ import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 import { withRouter } from '@/_hoc/withRouter';
-import { extractErrorObj, onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { isEmpty } from 'lodash';
 import { EmailComponent } from './EmailComponent';
 import SSOLoginModule from '@/LoginPage/SSOLoginModule';
@@ -80,12 +80,11 @@ class SignupPageComponent extends React.Component {
         .activateAccountWithToken(email, password, organizationToken)
         .then((response) => onInvitedUserSignUpSuccess(response, this.props.navigate))
         .catch((errorObj) => {
-          const errorDetails = extractErrorObj(errorObj);
-          const message = errorDetails.message;
-          toast.error(message, {
-            position: 'top-center',
-          });
-          this.setState({ isLoading: false });
+          if (typeof errorObj?.error?.error === 'string') {
+            toast.error(errorObj?.error?.error);
+          }
+          const emailError = errorObj?.error?.inputError;
+          this.setState({ isLoading: false, emailError });
         });
     } else {
       authenticationService
@@ -100,8 +99,7 @@ class SignupPageComponent extends React.Component {
           this.setState({ isLoading: false, signupSuccess: true });
         })
         .catch((e) => {
-          const errorDetails = extractErrorObj(e);
-          toast.error(errorDetails?.message, {
+          toast.error(e?.error || 'Something went wrong!', {
             position: 'top-center',
           });
           this.setState({ isLoading: false });
@@ -132,12 +130,17 @@ class SignupPageComponent extends React.Component {
       !this.state.password ||
       (isEmpty(this.state.name) && !comingFromInviteFlow) ||
       this.state.password.length < 5;
+    const shouldShowSignInCTA = !this.organizationToken;
+    const isAnySSOEnabled =
+      !!configs?.git?.enabled ||
+      !!configs?.google?.enabled ||
+      !!configs?.openid?.enabled ||
+      !!configs?.saml?.enabled ||
+      !!configs?.ldap?.enabled;
 
-    const isAnySSOEnabled = !!configs?.git?.enabled || !!configs?.google?.enabled;
     const shouldShowSignupDisabledCard =
       !this.organizationToken && !configs?.enable_sign_up && !configs?.form?.enable_sign_up;
     const passwordLabelText = this.organizationToken ? 'Create a password' : 'Password';
-    const shouldShowSignInCTA = !this.organizationToken;
 
     return (
       <div className="page common-auth-section-whole-wrapper">

@@ -9,6 +9,7 @@ export enum lifecycleEvents {
   USER_SSO_ACTIVATE = 'USER_SSO_ACTIVATE',
   USER_ADMIN_SETUP = 'USER_ADMIN_SETUP',
   USER_SIGNUP_ACTIVATE = 'USER_SIGNUP_ACTIVATE',
+  USER_WORKSPACE_SIGN_UP = 'USER_WORKSPACE_SIGN_UP',
 }
 
 export enum SOURCE {
@@ -19,6 +20,7 @@ export enum SOURCE {
   OPENID = 'openid',
   LDAP = 'ldap',
   SAML = 'saml',
+  WORKSPACE_SIGNUP = 'workspace_signup',
 }
 
 export enum USER_TYPE {
@@ -63,6 +65,11 @@ export function getUserStatusAndSource(event: string, source?: any): { source?: 
         source: SOURCE.SIGNUP,
         status: USER_STATUS.INVITED,
       };
+    case lifecycleEvents.USER_WORKSPACE_SIGN_UP:
+      return {
+        source: SOURCE.WORKSPACE_SIGNUP,
+        status: USER_STATUS.INVITED,
+      };
     case lifecycleEvents.USER_INVITE:
       return {
         source: SOURCE.INVITE,
@@ -103,7 +110,7 @@ export function getUserStatusAndSource(event: string, source?: any): { source?: 
 }
 
 export function isPasswordMandatory(source: any): boolean {
-  if (source !== SOURCE.SIGNUP) {
+  if (![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(source)) {
     return true;
   }
   return false;
@@ -115,5 +122,5 @@ export enum WORKSPACE_USER_STATUS {
   ARCHIVED = 'archived',
 }
 
-type source = 'google' | 'git' | 'signup' | 'invite' | 'openid' | 'ldap' | 'saml';
+type source = 'google' | 'git' | 'signup' | 'invite' | 'openid' | 'ldap' | 'saml' | 'workspace_signup';
 type status = 'invited' | 'verified' | 'active' | 'archived';

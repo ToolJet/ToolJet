@@ -106,7 +106,6 @@ class LoginPageComponent extends React.Component {
   };
 
   authSuccessHandler = (user) => {
-    this.setState({ isLoading: false });
     updateCurrentSession({
       isUserLoggingIn: true,
     });
@@ -127,15 +126,23 @@ class LoginPageComponent extends React.Component {
   render() {
     const { configs, currentOrganizationName } = this.props;
     const { isLoading, redirectTo } = this.state;
-    const shouldShowLoginMethods = configs?.google?.enabled || configs?.git?.enabled || configs?.form?.enabled;
-    const noLoginMethodsEnabled = !configs?.form && !configs?.git && !configs?.google;
+    const noLoginMethodsEnabled =
+      !configs?.form && !configs?.git && !configs?.google && !configs?.openid && !configs?.ldap && !configs?.saml;
+
+    const shouldShowLoginMethods =
+      configs?.google?.enabled ||
+      configs?.git?.enabled ||
+      configs?.form?.enabled ||
+      configs?.ldap?.enabled ||
+      configs?.saml?.enabled ||
+      configs?.openid?.enabled;
     const workspaceSignUpEnabled = this.organizationId && configs?.enable_sign_up;
     const instanceSignUpEnabled = !this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up);
     const isSignUpCTAEnabled = workspaceSignUpEnabled || instanceSignUpEnabled;
     const signUpCTA = workspaceSignUpEnabled ? 'Sign up' : 'Create an account';
     const signupText = workspaceSignUpEnabled
       ? this.props.t('loginSignupPage.newToWorkspace', `New to this workspace?`)
-      : this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
+      : this.props.t('loginSignupPage.newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
           whiteLabelText: retrieveWhiteLabelText(),
         });
     const signUpUrl = `/signup${this.paramOrganizationSlug ? `/${this.paramOrganizationSlug}` : ''}${
@@ -209,7 +216,7 @@ class LoginPageComponent extends React.Component {
                           setRedirectUrlToCookie={() => this.setRedirectUrlToCookie()}
                           buttonText={'Sign in with'}
                         />
-                        {(configs?.google?.enabled || configs?.git?.enabled) && configs?.form?.enabled && (
+                        {shouldShowLoginMethods && configs?.form?.enabled && (
                           <div className="separator-onboarding ">
                             <div className="mt-2 separator" data-cy="onboarding-separator">
                               <h2>

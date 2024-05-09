@@ -14,6 +14,7 @@ export class AppAuthenticationDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   redirectTo: string;
 }
 
