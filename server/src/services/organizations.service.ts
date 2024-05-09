@@ -161,6 +161,7 @@ export class OrganizationsService {
 
         await this.usersService.validateLicense(manager);
       }
+      await this.createSampleDB(organization.id, manager);
       await this.organizationUserService.validateLicense(manager);
     }, manager);
 

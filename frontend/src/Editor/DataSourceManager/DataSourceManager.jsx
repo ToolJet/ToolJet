@@ -567,11 +567,8 @@ class DataSourceManagerComponent extends React.Component {
       })
       .catch((errorResponse) => {
         _self.setState({ creatingApp: false });
-        if (errorResponse.statusCode === 409) {
-          return false;
-        } else {
-          throw errorResponse;
-        }
+        const message = errorResponse?.error;
+        toast.error(message);
       });
   };
 
@@ -1017,11 +1014,7 @@ class DataSourceManagerComponent extends React.Component {
                       <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                       <a
                         className="color-primary tj-docs-link tj-text-sm"
-                        href={
-                          selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-                            ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
-                            : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource.kind}`
-                        }
+                        href={docLink}
                         target="_blank"
                         rel="noreferrer"
                         data-cy="link-read-documentation"
@@ -1029,7 +1022,10 @@ class DataSourceManagerComponent extends React.Component {
                         {this.props.t('globals.readDocumentation', 'Read documentation')}
                       </a>
                     </div>
-                    <div className="col-auto" data-cy="button-test-connection">
+                    <div
+                      className={!isSampleDb ? `col-auto` : 'col-auto test-connection-sample-db'}
+                      data-cy="button-test-connection"
+                    >
                       <TestConnection
                         kind={selectedDataSource?.kind}
                         pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}

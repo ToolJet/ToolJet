@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable, MethodNotAllowedException, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
@@ -53,7 +53,8 @@ export class DataSourcesService {
         .leftJoinAndSelect('data_source.plugin', 'plugin')
         .leftJoinAndSelect('plugin.iconFile', 'iconFile')
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
-        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
+        .where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
         if (!canPerformCreateOrDelete) {
@@ -99,8 +100,25 @@ export class DataSourcesService {
         .andWhere('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
         .getMany();
 
+      const sampleDataSourceQuery = await manager
+        .createQueryBuilder(DataSource, 'data_source')
+        .where('data_source.organizationId = :organizationId', { organizationId })
+        .andWhere('data_source.type = :type', { type: DataSourceTypes.SAMPLE })
+        .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')
+        .leftJoinAndSelect('data_source.plugin', 'plugin')
+        .leftJoinAndSelect('plugin.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
+
+      let sampleDataSource: DataSource[] = [];
+      if (scope === DataSourceScopes.GLOBAL) {
+        sampleDataSource = await sampleDataSourceQuery.getMany();
+      }
+
+      const dataSourceList = [...result, ...sampleDataSource];
+
       //remove tokenData from restapi datasources
-      const dataSources = result?.map((ds) => {
+      const dataSources = dataSourceList?.map((ds) => {
         if (ds.kind === 'restapi') {
           const options = {};
           Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
@@ -332,8 +350,8 @@ export class DataSourcesService {
   ): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
 
-    if (dataSource.type == DataSourceTypes.SAMPLE) {
-      throw new MethodNotAllowedException('Cannot update configuration of sample data source');
+    if (dataSource.type === DataSourceTypes.SAMPLE) {
+      throw new BadRequestException('Cannot update configuration of sample data source');
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -382,8 +400,8 @@ export class DataSourcesService {
 
   async delete(dataSourceId: string) {
     const dataSource = await this.findOne(dataSourceId);
-    if (dataSource.type == DataSourceTypes.SAMPLE) {
-      throw new MethodNotAllowedException('Cannod delete sample data source');
+    if (dataSource.type === DataSourceTypes.SAMPLE) {
+      throw new BadRequestException('Cannod delete sample data source');
     }
     return await this.dataSourcesRepository.delete(dataSourceId);
   }

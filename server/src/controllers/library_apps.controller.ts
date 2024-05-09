@@ -30,6 +30,10 @@ export class LibraryAppsController {
   @Get('sample-app')
   @UseGuards(JwtAuthGuard)
   async createSampleApp(@User() user) {
+    const ability = await this.appsAbilityFactory.appsActions(user);
+    if (!ability.can('createApp', App)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
     return await this.libraryAppCreationService.createSampleApp(user);
   }
 

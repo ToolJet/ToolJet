@@ -9,7 +9,6 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 
 export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -97,27 +96,6 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
           const values = [env.id, dataSource.id, parsedOptions];
           await entityManager.query(insertQuery, values);
         })
-      );
-
-      const GroupPermissionList: GroupPermission[] = await entityManager.query(
-        `
-        SELECT *
-        FROM group_permissions
-        WHERE "group" = $1
-        AND organization_id = $2
-        `,
-        ['all_users', organizationId]
-      );
-
-      const allUserGroupPermissions = GroupPermissionList[0];
-
-      await entityManager.query(
-        `
-        INSERT INTO data_source_group_permissions (data_source_id, group_permission_id, read)
-        VALUES ($1, $2, $3)
-        RETURNING *;
-        `,
-        [dataSource.id, allUserGroupPermissions.id, true]
       );
     }
   }
