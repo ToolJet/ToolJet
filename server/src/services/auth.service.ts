@@ -52,6 +52,7 @@ import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
 import { LicenseService } from './license.service';
+import { LicenseCountsService } from './license_counts.service';
 import { uuid4 } from '@sentry/utils';
 import got from 'got/dist/source';
 import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
@@ -82,7 +83,8 @@ export class AuthService {
     private metadataService: MetadataService,
     private configService: ConfigService,
     private sessionService: SessionService,
-    private licenseService: LicenseService
+    private licenseService: LicenseService,
+    private licenseCountsService: LicenseCountsService
   ) {}
 
   verifyToken(token: string) {
@@ -835,7 +837,7 @@ export class AuthService {
     const { id: customerId } = metadata;
     const otherData = { companySize, role, phoneNumber };
 
-    const { editor, viewer } = await this.licenseService.fetchTotalViewerEditorCount(getManager());
+    const { editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(getManager());
 
     const body = {
       hostname,

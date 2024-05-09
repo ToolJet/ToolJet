@@ -34,6 +34,7 @@ export const ERROR_TYPES = {
   INVALID: 'invalid-link',
   UNKNOWN: 'unknown',
   WORKSPACE_ARCHIVED: 'Organization is Archived',
+  USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
 };
 
 export const ERROR_MESSAGES = {
@@ -75,6 +76,12 @@ export const ERROR_MESSAGES = {
     cta: 'Back to home page',
     retry: true,
     queryParams: [],
+  },
+  'user-count-exceeding': {
+    title: 'User count exceeding',
+    message:
+      'Your builder or end-user count exceeds the limit for your upgraded plan. Please archive users or increase your plan limits to upgrade successfully.',
+    retry: false,
   },
   'invited-workspace-archived': {
     title: 'Archived workspace',

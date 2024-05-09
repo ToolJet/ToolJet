@@ -7,6 +7,7 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
+
 const protobuf = require('protobufjs');
 const semver = require('semver');
 const crypto = require('crypto');

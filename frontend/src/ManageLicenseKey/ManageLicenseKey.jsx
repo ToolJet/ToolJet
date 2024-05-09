@@ -10,7 +10,7 @@ import { licenseService } from '@/_services/license.service';
 import { getDateDifferenceInDays, convertDateFormat } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
-function ManageLicenseKey() {
+function ManageLicenseKey(darkMode) {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState('licenseKey');
   const [sidebarNavs, setSidebarNavs] = useState(['License Key']);
@@ -111,7 +111,7 @@ function ManageLicenseKey() {
             </div>
             <div className="content-wrapper">
               {selectedTab === 'licenseKey' && (
-                <LicenseKey fetchFeatureAccess={fetchFeatureAccess} featureAccess={featureAccess} />
+                <LicenseKey fetchFeatureAccess={fetchFeatureAccess} featureAccess={featureAccess} darkMode={darkMode} />
               )}
             </div>
             <>
