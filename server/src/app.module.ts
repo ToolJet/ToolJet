@@ -15,6 +15,7 @@ import * as Sentry from '@sentry/node';
 import { WinstonModule } from 'nest-winston';
 import * as path from 'path';
 
+import { ShutdownService } from 'src/schedulers/server-shutdown.hook';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { CaslModule } from './modules/casl/casl.module';
@@ -219,7 +220,7 @@ if (process.env.DISABLE_WEBHOOKS !== 'true') {
 @Module({
   imports,
   controllers: [AppController],
-  providers: [EmailService, SeedsService],
+  providers: [EmailService, SeedsService, ShutdownService],
 })
 export class AppModule implements OnModuleInit {
   constructor(private connection: Connection) {}
