@@ -1,6 +1,6 @@
 import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
-import _, { debounce, initial, merge, omit } from 'lodash';
+import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -90,7 +90,6 @@ useCurrentStateStore.subscribe((state) => {
   updateCanvasBackground(useEditorStore.getState().canvasBackground);
 
   const isStoreIntialized = useResolveStore.getState().storeReady;
-
   if (!isStoreIntialized) {
     const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
