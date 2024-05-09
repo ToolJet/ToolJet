@@ -40,6 +40,7 @@ const initialState = {
   componentsNeedsUpdateOnNextRender: [],
   appMode: 'auto',
   editorCanvasWidth: 1092,
+  canvasBackground: {},
 };
 
 export const useEditorStore = create(
@@ -106,6 +107,7 @@ export const useEditorStore = create(
       },
       setCurrentPageId: (currentPageId) => set({ currentPageId }),
       setAppMode: (appMode) => set({ appMode }),
+      setCanvasBackground: (canvasBackground) => set({ canvasBackground }),
     },
   }),
   { name: STORE_NAME }
