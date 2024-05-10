@@ -135,6 +135,7 @@ const EditorInput = ({
   isFocused,
   componentId,
   type,
+  delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -197,6 +198,10 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
+    if (!delayOnChange) {
+      setFirstTimeFocus(false);
+      return onBlurUpdate(currentValue);
+    }
     setTimeout(() => {
       setFirstTimeFocus(false);
       onBlurUpdate(currentValue);
