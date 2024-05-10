@@ -82,7 +82,7 @@
   },
   {
     "name": "salesforce",
-    "description": "api plugin from salesforce",
+    "description": "API plugin from salesforce",
     "version": "1.0.0",
     "id": "salesforce",
     "author": "Tooljet",
