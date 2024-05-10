@@ -9,7 +9,7 @@ export default class Salesforce implements QueryService {
 
     const client_id = sourceOptions.client_id;
     const client_secret = sourceOptions.client_secret;
-    const instanceUrl = sourceOptions.instanceUrl;
+    const instanceUrl = sourceOptions.instance_url;
     const access_token = sourceOptions.access_token;
     const operation = queryOptions.operation;
     const host = process.env.TOOLJET_HOST;
@@ -133,7 +133,7 @@ export default class Salesforce implements QueryService {
       authDetails.push(['refresh_token', conn['refreshToken']]);
     }
     if (conn['instanceUrl']) {
-      authDetails.push(['instanceUrl', conn['instanceUrl']]);
+      authDetails.push(['instance_url', conn['instanceUrl']]);
     }
     return authDetails;
   }

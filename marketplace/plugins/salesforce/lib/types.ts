@@ -2,7 +2,7 @@ export type SourceOptions = {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
-  instanceUrl: string;
+  instance_url: string;
   access_token: string;
 };
 export type QueryOptions = {
