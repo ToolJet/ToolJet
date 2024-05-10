@@ -19,6 +19,7 @@ import { Chart } from './Components/Chart';
 import { Map } from './Components/Map/Map';
 import { QrScanner } from './Components/QrScanner/QrScanner';
 import { ToggleSwitch } from './Components/Toggle';
+import { ToggleSwitchNew } from './Components/ToggleV2';
 import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
 import { Divider } from './Components/Divider';
@@ -90,6 +91,7 @@ export const AllComponents = {
   Map,
   QrScanner,
   ToggleSwitch,
+  ToggleSwitchNew,
   RadioButton,
   StarRating,
   Divider,
@@ -164,14 +166,7 @@ export const Box = memo(
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
     const { events } = useAppInfo();
-    const shouldAddBoxShadowAndVisibility = [
-      'TextInput',
-      'PasswordInput',
-      'NumberInput',
-      'Text',
-      'ToggleSwitch',
-      'Checkbox',
-    ];
+    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Checkbox'];
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
