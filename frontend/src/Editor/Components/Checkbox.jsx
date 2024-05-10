@@ -148,7 +148,7 @@ export const Checkbox = function Checkbox({
         boxShadow,
         alignItems: loading && 'center',
         gap: '6px ',
-        justifyContent: `${loadingState ? 'center' : 'space-between'}`,
+        justifyContent: `${loadingState ? 'center' : alignment == 'left' && 'space-between'}`,
         height,
         whiteSpace: 'nowrap',
         flexDirection: alignment == 'left' && 'row-reverse',
@@ -201,7 +201,7 @@ export const Checkbox = function Checkbox({
             style={{
               lineHeight: padding == 'none' && '20px',
               color: textColor,
-              fontWeight: 500,
+              fontWeight: 400,
               fontSize: '14px',
             }}
             whiteSpace="normal"
@@ -216,13 +216,12 @@ export const Checkbox = function Checkbox({
   );
   const checkmarkStyle = {
     position: 'absolute',
-    top: padding == 'default' ? '3px' : '1px',
-    right: alignment === 'left' && padding === 'default' ? '3px' : alignment === 'left' ? '1px' : null,
-    left: alignment === 'right' && padding === 'default' ? '3px' : alignment === 'right' ? '1px' : null,
+    top: padding == 'default' ? '4px' : '2px',
+    right: alignment === 'left' && padding === 'default' ? '4px' : alignment === 'left' ? '2px' : null,
+    left: alignment === 'right' && padding === 'default' ? '4px' : alignment === 'right' ? '2px' : null,
     visibility: checked ? 'visible' : 'hidden',
     height: '14px',
     width: ' 14px',
-    backgroundColor: 'red',
     display: 'flex',
   };
 
@@ -233,10 +232,10 @@ export const Checkbox = function Checkbox({
     border: `1px solid ${borderColor}`,
     backgroundColor: checked ? checkboxColor : uncheckedColor,
     borderRadius: '6px',
-    height: '16px',
-    width: '16px',
-    minHeight: '16px',
-    minWidth: '16px',
+    height: '18px',
+    width: '18px',
+    minHeight: '18px',
+    minWidth: '18px',
     borderColor: '#CCD1D5' == borderColor ? (checked ? 'transparent' : 'var(--borders-default)') : borderColor,
   };
   const handleToggleChange = () => {
