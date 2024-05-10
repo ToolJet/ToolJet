@@ -34,11 +34,6 @@ The **If condition** node triggers one of the outgoing flows depending on the gi
 - If you click on the **If condition** node, a dialog box will appear on the right that accepts a logical expression.
 - The **If condition** node can be handy when you want to run flows based on the data received or create alert messages based on success or failure of certain nodes.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/nodes/if-condition-config.png" alt="If condition configuration"  />
-</div>
-<br/>
-
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
