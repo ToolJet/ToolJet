@@ -620,10 +620,7 @@ class ViewerComponent extends React.Component {
       this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.params.slug);
     }
-    if (
-      prevProps.currentLayout !== this.props.currentLayout ||
-      prevProps.currentAppVersionEnvironment !== this.props.currentAppVersionEnvironment
-    ) {
+    if (prevProps.currentLayout !== this.props.currentLayout) {
       if (this.props.id && useAppVersionStore.getState()?.editingVersion?.id) {
         this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
       }
