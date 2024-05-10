@@ -19,11 +19,21 @@ export const dataTypes = [
   { name: 'Integers up to 8 bytes', label: 'bigint', icon: <BigInt width="16" height="16" />, value: 'bigint' },
   { name: 'Decimal numbers', label: 'float', icon: <Float width="16" height="16" />, value: 'double precision' },
   { name: 'Boolean True/False', label: 'boolean', icon: <Boolean width="16" height="16" />, value: 'boolean' },
-  { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
+  {
+    name: 'Auto-incrementing integers',
+    label: 'serial',
+    icon: <Serial width="16" height="16" />,
+    value: 'serial',
+  },
 ];
 
 export const serialDataType = [
-  { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
+  {
+    name: 'Auto-incrementing integers',
+    label: 'serial',
+    icon: <Serial width="16" height="16" />,
+    value: 'serial',
+  },
 ];
 
 export const operators = [
