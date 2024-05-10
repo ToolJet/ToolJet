@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import OverflowTooltip from '@/_components/OverflowTooltip';
+
 class Switch extends React.Component {
   render() {
     const {
@@ -101,6 +103,7 @@ export const ToggleSwitch = ({
   dataCy,
   component,
   validate,
+  width,
 }) => {
   const defaultValue = properties.defaultValue ?? false;
 
@@ -119,7 +122,7 @@ export const ToggleSwitch = ({
 
   const { toggleSwitchColor, boxShadow, alignment, padding, borderColor } = styles;
 
-  const textColor = styles.textColor === '#11181C' ? 'var(--text-primary)' : styles.textColor;
+  const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
 
   function toggleValue(e) {
     const toggled = e.target.checked;
@@ -215,14 +218,14 @@ export const ToggleSwitch = ({
   const renderInput = () => (
     <div
       data-disabled={disabledState}
-      className={`${alignment === 'right' ? 'flex-row-reverse' : ''}`}
+      className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
       style={{
         display: visibility ? 'flex' : 'none',
         boxShadow,
-        alignItems: 'center',
-        // gap: '8px ',
-        justifyContent: `${loadingState && 'center'}`,
-        height: height,
+        alignItems: loading && 'center',
+        gap: '6px ',
+        justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
+        height,
         whiteSpace: 'nowrap',
       }}
       data-cy={dataCy}
@@ -231,21 +234,20 @@ export const ToggleSwitch = ({
         <Loader width="16" />
       ) : (
         <>
-          <p
+          <OverflowTooltip
+            className="form-check-label"
             style={{
-              lineHeight: padding == 'none' && '12px',
-              color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-              display: 'block',
-              overflow: label?.length > 6 && 'hidden', // Hide any content that overflows the box
-              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-              fontWeight: 500,
+              lineHeight: padding == 'none' && '20px',
+              color: textColor,
+              fontWeight: 400,
               fontSize: '14px',
-              margin: '0px',
             }}
+            whiteSpace="normal"
+            width={width - 20}
           >
             {label}
-            {isMandatory && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
-          </p>
+            {isMandatory && !on && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
+          </OverflowTooltip>
 
           <Switch
             disabledState={disable}
@@ -274,7 +276,7 @@ export const ToggleSwitch = ({
   return (
     <div
       style={{
-        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
+        justifyContent: `${loadingState ? 'center' : 'flex-start'}`,
       }}
     >
       {renderInput()}
@@ -282,7 +284,7 @@ export const ToggleSwitch = ({
         <div
           className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: '#DB4324' }}
+          style={{ color: 'var(--status-error-strong)' }}
         >
           {showValidationError && validationError}
         </div>

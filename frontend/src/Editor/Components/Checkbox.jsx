@@ -15,6 +15,7 @@ export const Checkbox = function Checkbox({
   component,
   validate,
   isResizing,
+  width,
 }) {
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
@@ -142,16 +143,15 @@ export const Checkbox = function Checkbox({
   const renderCheckBox = () => (
     <div
       data-disabled={disabledState}
-      className={`${alignment === 'right' ? '' : ''}`}
+      className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
       style={{
         display: visibility ? 'flex' : 'none',
         boxShadow,
         alignItems: loading && 'center',
         gap: '6px ',
-        justifyContent: `${loadingState ? 'center' : alignment == 'left' && 'space-between'}`,
+        justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
         height,
         whiteSpace: 'nowrap',
-        flexDirection: alignment == 'left' && 'row-reverse',
       }}
       data-cy={dataCy}
     >
@@ -205,7 +205,7 @@ export const Checkbox = function Checkbox({
               fontSize: '14px',
             }}
             whiteSpace="normal"
-            width={'313px'}
+            width={width - 20}
           >
             {label}
             {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}

@@ -2468,7 +2468,7 @@ export const widgets = [
     component: 'Checkbox',
     defaultSize: {
       width: 5,
-      height: 20,
+      height: 22,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2652,7 +2652,7 @@ export const widgets = [
         disabledState: { value: '{{false}}' },
         textColor: { value: '#1B1F24' },
         checkboxColor: { value: '#4368E3' },
-        uncheckedColor: { value: '#F6F8FA' },
+        uncheckedColor: { value: '#E4E7EB' },
         padding: { value: 'default' },
         borderColor: { value: '#CCD1D5' },
         handleColor: { value: '#FFFFFF' },
@@ -2785,7 +2785,7 @@ export const widgets = [
     component: 'ToggleSwitch',
     defaultSize: {
       width: 5,
-      height: 20,
+      height: 22,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
