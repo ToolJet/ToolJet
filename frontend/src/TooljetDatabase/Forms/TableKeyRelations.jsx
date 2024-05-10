@@ -94,14 +94,14 @@ function SourceKeyRelation({
     //   value: 'NO ACTION',
     // },
     {
-      name: 'CASCADE',
-      label: 'CASCADE',
-      value: 'CASCADE',
-    },
-    {
       name: 'RESTRICT',
       label: 'RESTRICT',
       value: 'RESTRICT',
+    },
+    {
+      name: 'CASCADE',
+      label: 'CASCADE',
+      value: 'CASCADE',
     },
     {
       name: 'SET NULL',
@@ -121,14 +121,14 @@ function SourceKeyRelation({
     //   value: 'NO ACTION',
     // },
     {
-      name: 'CASCADE',
-      label: 'CASCADE',
-      value: 'CASCADE',
-    },
-    {
       name: 'RESTRICT',
       label: 'RESTRICT',
       value: 'RESTRICT',
+    },
+    {
+      name: 'CASCADE',
+      label: 'CASCADE',
+      value: 'CASCADE',
     },
     {
       name: 'SET NULL',
@@ -245,7 +245,7 @@ function SourceKeyRelation({
             <Source width={18} height={18} />
             <p className="mb-0 source-title">SOURCE</p>
           </div>
-          <span className="source-description">This is the data to which the current table will be referenced to </span>
+          <span className="source-description">The current table on which foreign Key constraint is being added</span>
         </div>
         <TableDetailsDropdown
           firstColumnName={'Table'}
@@ -271,7 +271,7 @@ function SourceKeyRelation({
             <Target width={18} height={18} />
             <p className="mb-0 source-title">TARGET</p>
           </div>
-          <span className="source-description">This is the current table which will reference source table</span>
+          <span className="source-description">The table that contains foreign key column’s reference</span>
         </div>
         <TableDetailsDropdown
           firstColumnName={'Table'}
