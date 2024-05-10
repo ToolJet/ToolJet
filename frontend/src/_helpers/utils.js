@@ -406,7 +406,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, co
     return {
       isValid: false,
       validationError:
-        !widgetValue && component !== 'Checkbox' && component !== 'ToggleSwitch' && `Field cannot be empty`,
+        !widgetValue && component !== 'Checkbox' && component !== 'ToggleSwitchNew' && `Field cannot be empty`,
     };
   }
   return {

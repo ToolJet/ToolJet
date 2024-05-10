@@ -141,78 +141,89 @@ export const Checkbox = function Checkbox({
   }, [checked]);
 
   const renderCheckBox = () => (
-    <div
-      data-disabled={disabledState}
-      className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
-      style={{
-        display: visibility ? 'flex' : 'none',
-        boxShadow,
-        alignItems: loading && 'center',
-        gap: '6px ',
-        justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
-        height,
-        whiteSpace: 'nowrap',
-      }}
-      data-cy={dataCy}
-    >
-      {loading ? (
-        <Loader width="16" />
-      ) : (
-        <>
-          <div
-            onClick={handleToggleChange}
-            style={{
-              ...checkboxStyle,
-            }}
-          >
-            <input
-              style={{ display: 'none' }}
-              className="form-check-input"
-              type="checkbox"
-              onClick={(e) => {
-                toggleValue(e);
+    <>
+      <div
+        data-disabled={disabledState}
+        className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
+        style={{
+          display: visibility ? 'flex' : 'none',
+          boxShadow,
+          alignItems: loading && 'center',
+          gap: '6px ',
+          justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
+          height,
+          whiteSpace: 'nowrap',
+        }}
+        data-cy={dataCy}
+      >
+        {loading ? (
+          <Loader width="16" />
+        ) : (
+          <>
+            <div
+              onClick={handleToggleChange}
+              style={{
+                ...checkboxStyle,
               }}
-              defaultChecked={defaultValue}
-              checked={checked}
-            />
-            <div style={checkmarkStyle}>
-              {checked && !isResizing && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className=" icon-tabler icon-tabler-check"
-                  width={14}
-                  height={14}
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke={handleColor}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M5 12l5 5l10 -10" />
-                </svg>
-              )}
+            >
+              <input
+                style={{ display: 'none' }}
+                className="form-check-input"
+                type="checkbox"
+                onClick={(e) => {
+                  toggleValue(e);
+                }}
+                defaultChecked={defaultValue}
+                checked={checked}
+              />
+              <div style={checkmarkStyle}>
+                {checked && !isResizing && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className=" icon-tabler icon-tabler-check"
+                    width={14}
+                    height={14}
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke={handleColor}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M5 12l5 5l10 -10" />
+                  </svg>
+                )}
+              </div>
             </div>
-          </div>
 
-          <OverflowTooltip
-            className="form-check-label"
-            style={{
-              lineHeight: padding == 'none' && '20px',
-              color: textColor,
-              fontWeight: 400,
-              fontSize: '14px',
-            }}
-            whiteSpace="normal"
-            width={width - 20}
-          >
-            {label}
-            {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
-          </OverflowTooltip>
-        </>
+            <OverflowTooltip
+              className="form-check-label"
+              style={{
+                lineHeight: padding == 'none' && '20px',
+                color: textColor,
+                fontWeight: 400,
+                fontSize: '14px',
+              }}
+              whiteSpace="normal"
+              width={width - 20}
+            >
+              {label}
+              {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
+            </OverflowTooltip>
+          </>
+        )}
+      </div>
+      {validationError && visibility && (
+        <div
+          className="tj-text-sm"
+          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          style={{ color: 'var(--status-error-strong)' }}
+        >
+          {validationError}
+        </div>
       )}
-    </div>
+    </>
   );
   const checkmarkStyle = {
     position: 'absolute',
@@ -259,15 +270,6 @@ export const Checkbox = function Checkbox({
       >
         {renderCheckBox()}
       </div>
-      {validationError && visibility && (
-        <div
-          className="tj-text-sm"
-          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: 'var(--status-error-strong)' }}
-        >
-          {validationError}
-        </div>
-      )}
     </>
   );
 };

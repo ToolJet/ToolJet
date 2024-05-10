@@ -2467,7 +2467,7 @@ export const widgets = [
     description: 'Single checkbox toggle',
     component: 'Checkbox',
     defaultSize: {
-      width: 5,
+      width: 6,
       height: 22,
     },
     others: {
@@ -2784,7 +2784,7 @@ export const widgets = [
     description: 'User-controlled on-off switch',
     component: 'ToggleSwitchNew',
     defaultSize: {
-      width: 5,
+      width: 6,
       height: 22,
     },
     others: {

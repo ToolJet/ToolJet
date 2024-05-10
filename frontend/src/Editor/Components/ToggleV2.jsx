@@ -217,7 +217,7 @@ export const ToggleSwitchNew = ({
   const renderInput = () => (
     <div
       data-disabled={disabledState}
-      className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`${alignment === 'right' ? 'flex-row-reverse' : 'flex-row'}`}
       style={{
         display: visibility ? 'flex' : 'none',
         boxShadow,
