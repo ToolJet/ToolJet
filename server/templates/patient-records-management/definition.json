@@ -6,7 +6,7 @@
         "appV2": {
           "id": "0d588cb0-39a3-489c-85ff-beb36c7ce0e2",
           "type": "front-end",
-          "name": "New app",
+          "name": "New application",
           "slug": "0d588cb0-39a3-489c-85ff-beb36c7ce0e2",
           "isPublic": false,
           "isMaintenanceOn": false,
