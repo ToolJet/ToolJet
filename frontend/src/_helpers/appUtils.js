@@ -363,7 +363,16 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
   );
 
   _ref.updateQueryConfirmationList(filtertedQueryConfirmation, 'check');
-  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
+  isConfirm &&
+    runQuery(
+      _ref,
+      queryConfirmationData.queryId,
+      queryConfirmationData.queryName,
+      true,
+      mode,
+      undefined,
+      queryConfirmationData.shouldSetPreviewData
+    );
 }
 
 export async function copyToClipboard(text) {
@@ -1051,10 +1060,6 @@ export function runQuery(
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
-  if (shouldSetPreviewData) {
-    setPreviewLoading(true);
-    queryPreviewData && setPreviewData('');
-  }
 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
@@ -1084,6 +1089,7 @@ export function runQuery(
     const queryConfirmation = {
       queryId,
       queryName,
+      shouldSetPreviewData,
     };
     if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
       queryConfirmationList.push(queryConfirmation);
@@ -1101,6 +1107,10 @@ export function runQuery(
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
     setTimeout(() => {
+      if (shouldSetPreviewData) {
+        setPreviewLoading(true);
+        queryPreviewData && setPreviewData('');
+      }
       if (!isOnLoad) {
         useCurrentStateStore.getState().actions.setCurrentState({
           queries: {
