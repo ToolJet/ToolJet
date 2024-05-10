@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
 import Select from '@/_ui/Select';
 import Input from '@/_ui/Input';
+import cx from 'classnames';
 
 const Salesforce = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource, workspaceConstants }) => {
   const [authStatus, setAuthStatus] = useState(null);
@@ -26,9 +27,6 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving, select
     datasourceService
       .fetchOauth2BaseUrl(provider, plugin_id, source_options)
       .then((data) => {
-        console.log('options', source_options);
-        console.log('data from Oauth', data.url);
-        console.log('selectedDataSource.kind', selectedDataSource.kind);
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
         optionchanged('provider', provider).then(() => {
           optionchanged('oauth2', true);
@@ -43,7 +41,6 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving, select
       });
   }
   function saveDataSource() {
-    console.log('selectedDS', selectedDataSource);
     optionchanged('code', localStorage.getItem('OAuthCode')).then(() => {
       createDataSource();
     });
@@ -110,7 +107,7 @@ const Salesforce = ({ optionchanged, createDataSource, options, isSaving, select
 
           {(!authStatus || authStatus === 'waiting_for_url') && (
             <Button
-              className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
+              className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
               disabled={isSaving}
               onClick={() => authSalesforce()}
             >
