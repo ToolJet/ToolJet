@@ -1652,6 +1652,9 @@ const EditorComponent = (props) => {
 
   const removeComponents = () => {
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
+
+    if (selectedComponents.length === 0) return;
+
     if (!isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
@@ -1666,6 +1669,7 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
+      updateEditorState({ selectedComponents: [] });
     } else if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
