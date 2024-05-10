@@ -182,7 +182,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
         const { dataType, column_default } = column;
         if (dataType !== 'serial') {
           if (column.dataType === 'boolean') {
-            result[column.accessor] = false;
+            result[column.accessor] = column_default ? column_default : false;
           } else {
             result[column.accessor] = column_default ? column_default : '';
           }
