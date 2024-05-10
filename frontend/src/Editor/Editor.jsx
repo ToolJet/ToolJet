@@ -903,12 +903,26 @@ const EditorComponent = (props) => {
         currentVersionId: editing_version?.id,
         app: appData,
       });
-      processNewAppDefinition(appData, null, true, ({ homePageId }) => {
-        handleLowPriorityWork(async () => {
-          await fetchDataSources(editing_version?.id, selectedEnvironment.id);
-          commonLowPriorityActions(events, homePageId);
-        });
-      });
+
+      const extraGlobals = {
+        environment: {
+          name: selectedEnvironment.name,
+          id: selectedEnvironment.id,
+        },
+      };
+
+      processNewAppDefinition(
+        appData,
+        null,
+        true,
+        ({ homePageId }) => {
+          handleLowPriorityWork(async () => {
+            await fetchDataSources(editing_version?.id, selectedEnvironment.id);
+            commonLowPriorityActions(events, homePageId);
+          });
+        },
+        extraGlobals
+      );
       initComponentVersioning();
     }
   };
