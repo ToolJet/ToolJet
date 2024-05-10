@@ -155,6 +155,12 @@ const DynamicForm = ({
         return OpenApi;
       case 'react-component-zendesk':
         return Zendesk;
+      case 'columns':
+        return MultiColumn;
+      case 'filters':
+        return ConditionFilter;
+      case 'sorts':
+        return CondtionSort;
       case 'react-component-salesforce':
         return Salesforce;
       default:
