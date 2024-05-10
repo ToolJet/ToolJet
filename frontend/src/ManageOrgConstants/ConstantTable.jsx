@@ -96,7 +96,10 @@ const ConstantTable = ({
                           style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
                           data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
                         >
-                          <div onClick={() => toggleShowValue(constant.id)} data-cy="show-password-icon">
+                          <div
+                            onClick={() => toggleShowValue(constant.id)}
+                            data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-constant-visibility`}
+                          >
                             {!showValues[constant.id] ? (
                               <EyeHide
                                 fill={

@@ -198,7 +198,7 @@ const ConstantForm = ({
             <div className="col tj-app-input">
               <label className="form-label" data-cy="value-label">
                 Value
-                <small className="text-green" style={{ marginLeft: '380px' }}>
+                <small className="text-green" style={{ marginLeft: '380px' }} data-cy="encrypted-label">
                   <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                   Encrypted
                 </small>
@@ -265,6 +265,7 @@ const ConstantForm = ({
                           ? '#384151'
                           : '#D1D5DB'
                       }
+                      data-cy="test"
                     />
                   )}
                 </div>
