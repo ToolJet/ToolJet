@@ -6,6 +6,8 @@ import { debounce } from 'lodash';
 export const GlobalFilter = ({
   globalFilter,
   setGlobalFilter,
+  onComponentOptionChanged,
+  component,
   // eslint-disable-next-line no-unused-vars
   darkMode,
   setExposedVariable,
@@ -48,6 +50,7 @@ export const GlobalFilter = ({
             setGlobalFilter(undefined);
             setValue('');
             debouncedChange('');
+            onComponentOptionChanged(component, 'searchText', '');
           }}
         >
           <SolidIcon name="removerectangle" width="16" height="16" fill={'var(--icons-default)'} />
