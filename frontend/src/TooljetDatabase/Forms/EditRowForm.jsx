@@ -318,7 +318,7 @@ const EditRowForm = ({
           <h3 className="card-title" data-cy="edit-row-header">
             Edit row
           </h3>
-          {foreignKeys.length > 0 &&
+          {/* {foreignKeys.length > 0 &&
             foreignKeys.map((foreignKey, index) => (
               <ToolTip key={index} message="Open referenced table" placement="right" tooltipClassName="tootip-table">
                 <Link target="_blank" to={getPrivateRoute('database')}>
@@ -332,7 +332,7 @@ const EditRowForm = ({
                   </div>
                 </Link>
               </ToolTip>
-            ))}
+            ))} */}
         </div>
       </div>
       <div className="card-body">
