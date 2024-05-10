@@ -11,6 +11,7 @@ export function ToolTip({
   delay = { show: 50, hide: 100 },
   show = true,
   tooltipClassName = '',
+  ...rest
 }) {
   if (!show) {
     return children;
@@ -20,7 +21,11 @@ export function ToolTip({
       trigger={trigger}
       placement={placement}
       delay={delay}
-      overlay={<Tooltip className={tooltipClassName}>{message}</Tooltip>}
+      overlay={
+        <Tooltip className={tooltipClassName} style={{ width: rest?.width ? rest?.width : 'auto' }}>
+          {message}
+        </Tooltip>
+      }
     >
       {children}
     </OverlayTrigger>

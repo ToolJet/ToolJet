@@ -2650,13 +2650,13 @@ export const widgets = [
       events: [],
       styles: {
         disabledState: { value: '{{false}}' },
-        textColor: { value: '#11181C' },
-        checkboxColor: { value: '#3E63DD' },
-        uncheckedColor: { value: '#D7DBDF' },
+        textColor: { value: '#1B1F24' },
+        checkboxColor: { value: '#4368E3' },
+        uncheckedColor: { value: '#F6F8FA' },
         padding: { value: 'default' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#CCD1D5' },
         handleColor: { value: '#FFFFFF' },
-        alignment: { value: 'left' },
+        alignment: { value: 'right' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
       },
       validation: {
@@ -2965,11 +2965,11 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '#11181C' },
-        toggleSwitchColor: { value: '#3E63DD' }, //keeping same key for backward comopatibility
-        uncheckedColor: { value: '#D7DBDF' },
+        textColor: { value: '#1B1F24' },
+        toggleSwitchColor: { value: '#4368E3' }, //keeping same key for backward comopatibility
+        uncheckedColor: { value: '#E4E7EB' },
         padding: { value: 'default' },
-        borderColor: { value: '#D7DBDF' },
+        borderColor: { value: '#E4E7EB' },
         handleColor: { value: '#FFFFFF' },
         alignment: { value: 'right' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },

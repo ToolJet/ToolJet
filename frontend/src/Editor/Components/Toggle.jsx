@@ -119,19 +119,13 @@ export const ToggleSwitch = ({
 
   const { toggleSwitchColor, boxShadow, alignment, padding, borderColor } = styles;
 
-  const textColor = darkMode && styles.textColor === '#11181C' ? '#fff' : styles.textColor;
-  const [calculatedHeight, setCalculatedHeight] = useState(height);
+  const textColor = styles.textColor === '#11181C' ? 'var(--text-primary)' : styles.textColor;
 
   function toggleValue(e) {
     const toggled = e.target.checked;
     setExposedVariable('value', toggled);
     fireEvent('onChange');
   }
-  // useEffect(() => {
-  //   if (padding == 'default') {
-  //     setCalculatedHeight(height + 10);
-  //   }
-  // }, [padding]);
 
   // Exposing the initially set false value once on load
   useEffect(() => {
@@ -226,8 +220,8 @@ export const ToggleSwitch = ({
         display: visibility ? 'flex' : 'none',
         boxShadow,
         alignItems: 'center',
-        gap: '8px ',
-        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'space-between'}`,
+        // gap: '8px ',
+        justifyContent: `${loadingState && 'center'}`,
         height: height,
         whiteSpace: 'nowrap',
       }}
@@ -250,7 +244,7 @@ export const ToggleSwitch = ({
             }}
           >
             {label}
-            {isMandatory && !on && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
+            {isMandatory && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
           </p>
 
           <Switch
@@ -280,7 +274,6 @@ export const ToggleSwitch = ({
   return (
     <div
       style={{
-        // height: height,
         justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
       }}
     >
