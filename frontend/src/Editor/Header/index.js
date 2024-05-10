@@ -15,6 +15,7 @@ import { useEditorState } from '@/_stores/editorStore';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
 import RightTopHeaderButtons from './RightTopHeaderButtons';
 import EnvironmentManager from './EnvironmentManager';
+import { useEnvironmentsAndVersionsStore } from '../../_stores/environmentsAndVersionsStore';
 
 export default function EditorHeader({
   M,
@@ -35,7 +36,14 @@ export default function EditorHeader({
 }) {
   const currentUser = useCurrentUser();
   const { isSaving, appId, appName, isPublic, creationMode } = useAppInfo();
-  const { featureAccess, currentAppEnvironment } = useEditorState();
+  const { featureAccess } = useEditorState();
+  const { selectedEnvironment } = useEnvironmentsAndVersionsStore(
+    (state) => ({
+      appVersionEnvironment: state?.appVersionEnvironment,
+      selectedEnvironment: state?.selectedEnvironment,
+    }),
+    shallow
+  );
 
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
@@ -151,13 +159,13 @@ export default function EditorHeader({
                 <div
                   onClick={
                     featureAccess?.gitSync &&
-                    currentAppEnvironment?.priority === 1 &&
+                    selectedEnvironment?.priority === 1 &&
                     (creationMode === 'GIT' || !isEditorFreezed) &&
                     toggleGitSyncModal
                   }
                   className={
                     featureAccess?.gitSync &&
-                    currentAppEnvironment?.priority === 1 &&
+                    selectedEnvironment?.priority === 1 &&
                     (creationMode === 'GIT' || !isEditorFreezed)
                       ? 'git-sync-btn'
                       : 'git-sync-btn disabled-action-tooltip'
@@ -166,7 +174,7 @@ export default function EditorHeader({
                   <LicenseTooltip feature={'GitSync'} limits={featureAccess} placement="bottom">
                     <ToolTip
                       message={`${
-                        currentAppEnvironment?.priority !== 1 &&
+                        selectedEnvironment?.priority !== 1 &&
                         'GitSync can only be performed in development environment'
                       }`}
                       show={featureAccess?.gitSync}
