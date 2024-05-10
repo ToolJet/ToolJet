@@ -792,6 +792,7 @@ const EditorComponent = (props) => {
       false,
       ({ homePageId }) => {
         handleLowPriorityWork(async () => {
+          useResolveStore.getState().actions.updateLastUpdatedRefs(['constants']);
           await useDataSourcesStore
             .getState()
             .actions.fetchGlobalDataSources(organizationId, editing_version?.id, currentEnvironmentId);
@@ -883,7 +884,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-      useCurrentStateStore.getState().actions.setCurrentState({});
+      useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
 
@@ -1486,6 +1487,7 @@ const EditorComponent = (props) => {
 
   const onEditorLoad = (appJson, pageId, isPageSwitchOrVersionSwitch = false) => {
     useCurrentStateStore.getState().actions.setEditorReady(true);
+
     const currentComponents = appJson?.pages?.[pageId]?.components;
 
     const referenceManager = useResolveStore.getState().referenceMapper;
@@ -2041,6 +2043,12 @@ const EditorComponent = (props) => {
       true,
       ({ homePageId }) => {
         handleLowPriorityWork(async () => {
+          const currentComponents = Object.keys(appDefinition.pages[currentPageId].components);
+
+          if (currentComponents.length > 0) {
+            batchUpdateComponents(currentComponents);
+          }
+
           await useDataSourcesStore
             .getState()
             .actions.fetchGlobalDataSources(organizationId || organization_id, editing_version.id, newEnvironmentId);
@@ -2050,6 +2058,7 @@ const EditorComponent = (props) => {
       },
       extraGlobals
     );
+
     initComponentVersioning();
   };
 

@@ -119,6 +119,7 @@ class ViewerComponent extends React.Component {
     useEditorStore.getState().actions.updateEditorState({
       appDefinition: appDefData,
     });
+    useResolveStore.getState().actions.resetStore();
   };
 
   onViewerLoadUpdateEntityReferences = (pageId, loadType) => {
@@ -352,6 +353,7 @@ class ViewerComponent extends React.Component {
       ...constants,
     });
     useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
+
     this.props.updateState({ events: data.events ?? [] });
     const currentPageComponents = appDefData?.pages[currentPage.id]?.components;
 
@@ -479,6 +481,7 @@ class ViewerComponent extends React.Component {
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
+        useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
         this.setStateForApp(data, true);
         this.setState({ appId: data.id });
         this.setStateForContainer(data);
@@ -1070,9 +1073,10 @@ const withStore = (Component) => (props) => {
     }),
     shallow
   );
-  const { currentAppVersionEnvironment } = useAppVersionStore(
+  const { selectedEnvironment } = useEnvironmentsAndVersionsStore(
     (state) => ({
-      currentAppVersionEnvironment: state?.currentAppVersionEnvironment,
+      appVersionEnvironment: state?.appVersionEnvironment,
+      selectedEnvironment: state?.selectedEnvironment,
     }),
     shallow
   );
@@ -1102,6 +1106,18 @@ const withStore = (Component) => (props) => {
   }
 
   React.useEffect(() => {
+    const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
+    const currentComponents = Object.keys(currentComponentsDef);
+
+    setTimeout(() => {
+      if (currentComponents.length > 0) {
+        batchUpdateComponents(currentComponents);
+      }
+    }, 400);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEnvironment]);
+
+  React.useEffect(() => {
     if (lastUpdatedRef.length > 0) {
       const currentComponents = appDefinition?.pages?.[currentPageId]?.components || {};
       const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
@@ -1124,7 +1140,7 @@ const withStore = (Component) => (props) => {
       currentLayout={currentLayout}
       updateState={updateState}
       queryConfirmationList={queryConfirmationList}
-      currentAppVersionEnvironment={currentAppVersionEnvironment}
+      currentAppVersionEnvironment={selectedEnvironment}
       darkMode={isAppDarkMode}
     />
   );
