@@ -8,6 +8,6 @@
   { "lang": "Ukrainian", "code": "uk", "nativeLang": "Українська" },
   { "lang": "Russian", "code": "ru", "nativeLang": "Русский" },
   { "lang": "German", "code": "de", "nativeLang": "Deutsch" },
-  { "lang": "Simplified Chinese", "code": "zh-cn", "nativeLang": "简体中文" }
+  { "lang": "Chinese", "code": "zh", "nativeLang": "中文" }
   ]
 }
