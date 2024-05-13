@@ -15,6 +15,7 @@ import {
   UploadedFile,
   BadRequestException,
   UseFilters,
+  Put,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
@@ -28,9 +29,10 @@ import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
 import {
   CreatePostgrestTableDto,
-  RenamePostgrestTableDto,
-  PostgrestTableColumnDto,
+  EditTableDto,
   EditColumnTableDto,
+  PostgrestForeignKeyDto,
+  AddColumnDto,
 } from '@dto/tooljet-db.dto';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -38,10 +40,12 @@ import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.ser
 import { TooljetDbJoinDto } from '@dto/tooljet-db-join.dto';
 import { TooljetDbJoinExceptionFilter } from 'src/filters/tooljetdb-join-exceptions-filter';
 import { Logger } from 'nestjs-pino';
+import { TooljetDbExceptionFilter } from 'src/filters/tooljetdb-exception-filter';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('tooljet-db')
+@UseFilters(TooljetDbExceptionFilter)
 export class TooljetDbController {
   private readonly pinoLogger: Logger;
   constructor(
@@ -95,8 +99,8 @@ export class TooljetDbController {
   @Patch('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.RenameTable, 'all'))
-  async renameTable(@Body() renameTableDto: RenamePostgrestTableDto, @Param('organizationId') organizationId) {
-    const result = await this.tooljetDbService.perform(organizationId, 'rename_table', renameTableDto);
+  async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
+    const result = await this.tooljetDbService.perform(organizationId, 'edit_table', editTableBody);
     return decamelizeKeys({ result });
   }
 
@@ -112,13 +116,14 @@ export class TooljetDbController {
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddColumn, 'all'))
   async addColumn(
-    @Body('column') columnDto: PostgrestTableColumnDto,
     @Param('organizationId') organizationId,
-    @Param('tableName') tableName
+    @Param('tableName') tableName,
+    @Body() addColumnBody: AddColumnDto
   ) {
     const params = {
       table_name: tableName,
-      column: columnDto,
+      column: addColumnBody.column,
+      foreign_keys: addColumnBody?.foreign_keys || [],
     };
     const result = await this.tooljetDbService.perform(organizationId, 'add_column', params);
     return decamelizeKeys({ result });
@@ -172,13 +177,65 @@ export class TooljetDbController {
   async editColumn(
     @Body('column') columnDto: EditColumnTableDto,
     @Param('organizationId') organizationId,
-    @Param('tableName') tableName
+    @Param('tableName') tableName,
+    @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string
   ) {
     const params = {
       table_name: tableName,
       column: columnDto,
+      foreign_key_id_to_delete: foreignKeyIdToDelete || '',
     };
     const result = await this.tooljetDbService.perform(organizationId, 'edit_column', params);
+    return decamelizeKeys({ result });
+  }
+
+  @Post('/organizations/:organizationId/table/:tableName/foreignkey')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddForeignKey, 'all'))
+  async createForeignKey(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
+  ) {
+    const params = {
+      table_name: tableName,
+      foreign_keys: foreign_keys,
+    };
+    const result = await this.tooljetDbService.perform(organizationId, 'create_foreign_key', params);
+    return decamelizeKeys({ result });
+  }
+
+  @Put('/organizations/:organizationId/table/:tableName/foreignkey')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.UpdateForeignKey, 'all'))
+  async updateForeignKey(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Body('foreign_key_id') foreign_key_id: string,
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
+  ) {
+    const params = {
+      table_name: tableName,
+      foreign_key_id: foreign_key_id,
+      foreign_keys: foreign_keys,
+    };
+    const result = await this.tooljetDbService.perform(organizationId, 'update_foreign_key', params);
+    return decamelizeKeys({ result });
+  }
+
+  @Delete('/organizations/:organizationId/table/:tableName/foreignkey/:foreignKeyId')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.DeleteForeignKey, 'all'))
+  async deleteForeignKey(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Param('foreignKeyId') foreignKeyId: string
+  ) {
+    const params = {
+      table_name: tableName,
+      foreign_key_id: foreignKeyId,
+    };
+    const result = await this.tooljetDbService.perform(organizationId, 'delete_foreign_key', params);
     return decamelizeKeys({ result });
   }
 }

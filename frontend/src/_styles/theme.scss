@@ -7068,7 +7068,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 80%;
+    width: 78%;
   }
 
   .table-header,
@@ -7134,12 +7134,17 @@ tbody {
 
   .tjdb-cell-error {
     padding: 0rem;
-    border-color: var(--Tomato-09, #E54D2E) !important;
+    border-top: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-bottom: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-right: 1.5px solid var(--Tomato-09, #E54D2E) !important;
+    border-left: 1.5px solid var(--Tomato-09, #E54D2E) !important;
   }
 
   .tjdb-column-select-border {
-    border-left: 1px solid transparent;
-    border-right: 1px solid transparent;
+    border-left: 1.5px solid transparent;
+    border-right: 1.5px solid transparent;
+    border-top: 1.5px solid transparent;
+    border-bottom: 1.5px solid transparent;
   }
 
   .table-columnHeader-click {
@@ -7163,6 +7168,7 @@ tbody {
     background-color: #242f3c;
     padding: 0;
     max-width: 230px;
+    color: #ffffff;
 
     .tjdb-column-select-border {
       border-left-color: white !important;
@@ -7178,7 +7184,7 @@ tbody {
 
   .row-tj:first-child {
     .tjdb-column-select-border {
-      border-top: 1px solid transparent;
+      border-top: 1.5px solid transparent;
     }
 
     .table-columnHeader-click {
@@ -7196,7 +7202,7 @@ tbody {
 
   .row-tj:last-of-type {
     .tjdb-column-select-border {
-      border-bottom: 1px solid transparent;
+      border-bottom: 1.5px solid transparent;
     }
 
     .table-columnHeader-click {
@@ -8899,6 +8905,7 @@ tbody {
     background-color: #2F3C4C !important;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
+
   .react-loading-skeleton::after {
     background-image: linear-gradient(90deg, #2F3C4C, #3A4251, #2F3C4C) !important;
   }
@@ -11812,7 +11819,7 @@ tbody {
   width: 30px;
   height: 31px;
   border-radius: 0px !important;
-  background: var(--slate7) !important;
+  background: var(--color-light-slate-04, #ECEEF0) !important;
   cursor: pointer;
 
   .icon-styles {
@@ -13243,6 +13250,76 @@ tbody {
   &:hover,
   &:focus {
     background-color: var(--slate4) !important;
+  }
+}
+
+.tjdb-dashboard-scrollbar {
+  width: 403px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+}
+
+.tjdb-rowForm-scrollbar {
+  width: 494px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.tjdb-cellEdit-scrollbar {
+  width: 266px !important;
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
   }
 }
 
@@ -14718,6 +14795,25 @@ tbody {
   }
 }
 
+.action-description-highlighter {
+  color: var(--indigo9) !important;
+}
+
+.read-docs-fk {
+
+  .tooltip-inner {
+    padding: 8px 12px 8px 12px !important;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  .tooltip-outer {
+    // box-shadow: 0px 4px 6px -2px #10182808 ,0px 12px 16px -4px #10182814 !important;
+  }
+}
+
 .change-margin {
   margin-bottom: 10px !important;
 }
@@ -14813,6 +14909,19 @@ tbody {
     background-color: var(--interactive-overlays-fill-pressed) !important;
   }
 }
-.change-margin {
-  margin-bottom: 10px !important;
+
+.tjdb-table-tooltip {
+  width: max-content !important;
+
+  .tooltip-inner {
+    max-width: max-content !important;
+    width: max-content !important;
+
+    .foreignKey-relation-tooltip {
+      span {
+        text-align: left;
+      }
+    }
+
+  }
 }
