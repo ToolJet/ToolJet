@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ToggleSwitchv2 = ({ fill = '#D7DBDF', width = 24, className = '', viewBox = '0 0 49 48' }) => (
+const ToggleSwitchV2 = ({ fill = '#D7DBDF', width = 24, className = '', viewBox = '0 0 49 48' }) => (
   <svg
     width={width}
     height={width}
@@ -24,4 +24,4 @@ const ToggleSwitchv2 = ({ fill = '#D7DBDF', width = 24, className = '', viewBox 
   </svg>
 );
 
-export default ToggleSwitchv2;
+export default ToggleSwitchV2;
