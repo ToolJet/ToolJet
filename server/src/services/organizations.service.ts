@@ -208,7 +208,7 @@ export class OrganizationsService {
       },
       form: {
         enable_sign_up: enableSignUp === 'true' && isPersonalWorkspaceAllowed === 'true',
-        enabled: ssoConfigMap?.form?.enabled || false,
+        enabled: isExpired || isBasicPlan || ssoConfigMap?.form?.enabled || false,
       },
       enableSignUp: enableSignUp === 'true' && isPersonalWorkspaceAllowed === 'true',
     };
@@ -622,6 +622,7 @@ export class OrganizationsService {
       result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
     }
     const ssoConfigs = await this.getInstanceSSOConfigs(false);
+    const isBasicPlan = await this.licenseService.isBasicPlan();
     const isEnableWorkspaceLoginConfiguration =
       (await this.instanceSettingsService.getSettings(
         INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION
@@ -638,9 +639,13 @@ export class OrganizationsService {
 
     if (!result) return;
 
+    if (isBasicPlan) {
+      result.ssoConfigs.forEach((config) => config.sso === 'form' && (config.enabled = true));
+    }
+
     if (!isEnableWorkspaceLoginConfiguration) {
       result.ssoConfigs = [];
-      if (ssoConfigMap?.form?.enabled === true) {
+      if (ssoConfigMap?.form?.enabled === true || isBasicPlan) {
         result.ssoConfigs.push({
           sso: SSOType.FORM,
           enabled: true,
