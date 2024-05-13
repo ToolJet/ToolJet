@@ -1218,7 +1218,7 @@ export class OrganizationsService {
 
   async createSampleDB(organizationId, manager: EntityManager) {
     const config = {
-      name: 'Sample Data Source',
+      name: 'Sample data source',
       kind: 'postgresql',
       type: DataSourceTypes.SAMPLE,
       scope: DataSourceScopes.GLOBAL,

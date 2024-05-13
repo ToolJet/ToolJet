@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
 import { getWorkspaceId, deepEqual, returnDevelopmentEnv } from '@/_helpers/utils';
+import { getSubpath } from '@/_helpers/routes';
 import {
   DataBaseSources,
   ApiSources,
@@ -561,7 +562,11 @@ class DataSourceManagerComponent extends React.Component {
       .createSampleApp()
       .then((data) => {
         const workspaceId = getWorkspaceId();
-        window.open(`/${workspaceId}/apps/${data.app[0].id}`, '_blank');
+        const subpath = getSubpath();
+        const path = subpath
+          ? `${subpath}/${workspaceId}/apps/${data.app[0].id}`
+          : `/${workspaceId}/apps/${data.app[0].id}`;
+        window.open(path, '_blank');
         toast.success('App created successfully!');
         _self.setState({ creatingApp: false });
       })
@@ -1028,51 +1033,6 @@ class DataSourceManagerComponent extends React.Component {
                     >
                       <TestConnection
                         kind={selectedDataSource?.kind}
-                        pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
-                        options={options}
-                        onConnectionTestFailed={this.onConnectionTestFailed}
-                        darkMode={this.props.darkMode}
-                        environmentId={this.props.currentEnvironment?.id}
-                      />
-                    </div>
-                    {!isSampleDb && (
-                      <div className="col-auto" data-cy="db-connection-save-button">
-                        <ButtonSolid
-                          className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                          isLoading={isSaving}
-                          disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-                          variant="primary"
-                          onClick={this.createDataSource}
-                          leftIcon="floppydisk"
-                          fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
-                        >
-                          {this.props.t('globals.save', 'Save')}
-                        </ButtonSolid>
-                      </div>
-                    )}
-                  </Modal.Footer>
-                )}
-
-                {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
-                  <Modal.Footer>
-                    <div className="col">
-                      <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
-                      <a
-                        className="color-primary tj-docs-link tj-text-sm"
-                        href={docLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        data-cy="link-read-documentation"
-                      >
-                        {this.props.t('globals.readDocumentation', 'Read documentation')}
-                      </a>
-                    </div>
-                    <div
-                      className={!isSampleDb ? `col-auto` : 'col-auto test-connection-sample-db'}
-                      data-cy="button-test-connection"
-                    >
-                      <TestConnection
-                        kind={selectedDataSource.kind}
                         pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
                         options={options}
                         onConnectionTestFailed={this.onConnectionTestFailed}

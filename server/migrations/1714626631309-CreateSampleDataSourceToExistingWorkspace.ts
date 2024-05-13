@@ -32,7 +32,7 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
     for (const workspace of workspaces) {
       const { id: organizationId } = workspace;
       const config = {
-        name: 'Sample Data Source',
+        name: 'Sample data source',
         kind: 'postgresql',
         type: DataSourceTypes.SAMPLE,
         scope: DataSourceScopes.GLOBAL,

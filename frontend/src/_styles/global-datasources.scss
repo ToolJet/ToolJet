@@ -181,6 +181,7 @@
 .datasource-list-container {
     overflow-y: auto;
     max-height: calc(100vh - 64px);
+    border-left: 1px solid var(--slate5);
     .datasource-list {
         width: 976px;
         margin: 0 auto;
