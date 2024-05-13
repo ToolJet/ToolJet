@@ -74,7 +74,7 @@ export const Tabs = function Tabs({
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
+  }, [currentTab, darkMode]);
 
   function computeTabVisibility(componentId, id) {
     let tabVisibility = 'hidden';
