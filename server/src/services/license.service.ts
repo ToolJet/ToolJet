@@ -157,10 +157,19 @@ export class LicenseService {
   }
 
   async validateLicenseUsersCount(licenseUsers): Promise<boolean> {
+    if (!licenseUsers) {
+      return true;
+    }
     return dbTransactionWrap(async (manager: EntityManager) => {
       let editor = -1,
         viewer = -1;
-      const { editor: editorUsers, viewer: viewerUsers, superadmin: superadminUsers, total: users } = licenseUsers;
+      // Set default values to "unlimited" when licenseUsers is undefined
+      const {
+        editor: editorUsers = LICENSE_LIMIT.UNLIMITED,
+        viewer: viewerUsers = LICENSE_LIMIT.UNLIMITED,
+        superadmin: superadminUsers = LICENSE_LIMIT.UNLIMITED,
+        total: users = LICENSE_LIMIT.UNLIMITED,
+      } = licenseUsers || {};
 
       if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
         const superadmin = await this.licenseCountsService.fetchTotalSuperadminCount(manager);
