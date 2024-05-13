@@ -1,4 +1,4 @@
-import { Button } from './button';
+import { Button } from './Button';
 import * as React from 'react';
 
 // Function to determine default icon fill color

@@ -31,6 +31,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { useSuperStore } from '../_stores/superStore';
 import { ModuleContext } from '../_contexts/ModuleContext';
 const AppWrapper = (props) => {

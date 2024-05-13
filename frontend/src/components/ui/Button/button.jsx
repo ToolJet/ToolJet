@@ -1,14 +1,14 @@
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import { cn } from '@/lib/utils';
-import Loader from '../utilComponents/loader';
+import Loader from '@/components/ui/utilComponents/loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 // eslint-disable-next-line import/no-unresolved
 import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 import './button.scss';
-import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize, getButtonWidth } from './buttonUtils.js';
+import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize } from './buttonUtils.js';
 
 const buttonVariants = cva('tw-flex tw-justify-center tw-items-center tw-font-medium', {
   variants: {

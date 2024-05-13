@@ -30,30 +30,3 @@ export const getIconSize = (size) => {
       return '12px';
   }
 };
-
-// conditional styles WRT icon and button
-export const getButtonWidth = (size, iconOnly) => {
-  if (iconOnly) {
-    switch (size) {
-      case 'large':
-        return 'tw-w-[40px] tw-px-[10px]';
-      case 'default':
-        return 'tw-w-[32px] tw-px-[7px]';
-      case 'medium':
-        return 'tw-w-[28px] tw-px-[5px]';
-      case 'small':
-        return 'tw-w-[20px] tw-px-[2px]';
-    }
-  } else {
-    switch (size) {
-      case 'large':
-        return 'tw-px-[20px]';
-      case 'default':
-        return 'tw-px-[12px]';
-      case 'medium':
-        return 'tw-px-[10px]';
-      case 'small':
-        return 'tw-px-[8px]';
-    }
-  }
-};
