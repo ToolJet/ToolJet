@@ -38,13 +38,11 @@ export function findProp(obj, prop, defval) {
 }
 
 export function checkWhiteLabelsDefaultState() {
-  const text = window.public_config?.WHITE_LABEL_TEXT;
-  const logo = window.public_config?.WHITE_LABEL_LOGO;
-  const favicon = window.public_config?.WHITE_LABEL_FAVICON;
+  const { whiteLabelText, whiteLabelFavicon, whiteLabelLogo } = useWhiteLabellingStore.getState();
   return (
-    (!text || text === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
-    (!logo || logo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
-    (!favicon || favicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
+    (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
+    (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
+    (!whiteLabelFavicon || whiteLabelFavicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
   );
 }
 
