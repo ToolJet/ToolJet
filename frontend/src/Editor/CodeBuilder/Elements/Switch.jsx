@@ -7,7 +7,7 @@ const Switch = ({ value, onChange, cyLabel, meta, paramName, isIcon, component }
   const options = meta?.options;
   const defaultValue =
     paramName == 'defaultValue' &&
-    (component.component.component == 'Checkbox' || component.component.component == 'ToggleSwitchNew')
+    (component.component.component == 'Checkbox' || component.component.component == 'ToggleSwitchv2')
       ? `{{${value}}}`
       : value;
   return (

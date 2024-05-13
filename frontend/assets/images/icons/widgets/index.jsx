@@ -53,7 +53,7 @@ import Textinput from './textinput.jsx';
 import Timeline from './timeline.jsx';
 import Timer from './timer.jsx';
 import Toggleswitch from './toggleswitch.jsx';
-import ToggleSwitchNew from './toggleswitchV2.jsx';
+import ToggleSwitchv2 from './toggleswitchV2.jsx';
 
 import Treeselect from './treeselect.jsx';
 import Upstatistics from './upstatistics.jsx';
@@ -172,7 +172,7 @@ const WidgetIcon = (props) => {
     case 'toggleswitch':
       return <Toggleswitch {...props} />;
     case 'toggleswitchnew':
-      return <ToggleSwitchNew {...props} />;
+      return <ToggleSwitchv2 {...props} />;
     case 'treeselect':
       return <Treeselect {...props} />;
     case 'upstatistics':

@@ -2779,10 +2779,10 @@ export const widgets = [
     },
   },
   {
-    name: 'ToggleSwitchNew',
+    name: 'ToggleSwitch',
     displayName: 'Toggle Switch',
     description: 'User-controlled on-off switch',
-    component: 'ToggleSwitchNew',
+    component: 'ToggleSwitchv2',
     defaultSize: {
       width: 6,
       height: 22,
@@ -2977,7 +2977,7 @@ export const widgets = [
     },
   },
   {
-    name: 'ToggleSwitch',
+    name: 'ToggleSwitchLegacy',
     displayName: 'Toggle Switch',
     description: 'User-controlled on-off switch',
     component: 'ToggleSwitch',

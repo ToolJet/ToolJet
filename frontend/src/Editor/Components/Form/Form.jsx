@@ -274,7 +274,7 @@ export const Form = function Form(props) {
                       'DropDown',
                       'RadioButton',
                       'ToggleSwitch',
-                      'ToggleSwitchNew',
+                      'ToggleSwitchv2',
                     ].includes(uiComponents?.[index + 1]?.component)
                       ? `json-form-wrapper`
                       : `json-form-wrapper  form-label-restricted`
