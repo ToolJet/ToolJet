@@ -361,12 +361,14 @@ export const Container = ({
           componentTypes.find((component) => component.component === item.component.component)
         );
 
+        const currentActiveLayout = useEditorStore.getState().currentLayout;
+
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
           boxes,
           canvasBoundingRect,
-          useEditorStore.getState().currentLayout,
+          currentActiveLayout,
           snapToGrid,
           zoomLevel
         );
@@ -427,7 +429,7 @@ export const Container = ({
               {},
               { ...boxes, ...childrenBoxes },
               {},
-              item.currentLayout,
+              currentActiveLayout,
               snapToGrid,
               zoomLevel,
               true,
@@ -441,7 +443,7 @@ export const Container = ({
               },
 
               layouts: {
-                [currentLayout]: {
+                [currentActiveLayout]: {
                   ...layout,
                   width: incrementWidth ? width * incrementWidth : width,
                   height: height,
