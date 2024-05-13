@@ -118,7 +118,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                         ) : (
                           <>
                             <span>{this.props.t('confirmationPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" />
+                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
                           </>
                         )}
                       </ButtonSolid>

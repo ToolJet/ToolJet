@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
-import { getRedirectURL, pathnameToArray } from '@/_helpers/routes';
+import { getPathname, getRedirectURL } from '@/_helpers/routes';
 import { authenticationService } from '@/_services';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -89,7 +89,10 @@ export const AuthRoute = ({ children }) => {
               });
               navigate('/switch-workspace');
             } catch (error) {
-              if (pathnameToArray()[0] !== 'login') navigate('/login');
+              const pathname = getPathname();
+              if (!pathname.startsWith('/login/')) {
+                navigate('/login');
+              }
             }
           }
         }

@@ -617,7 +617,7 @@ export class AuthService {
         const firstTimeSignup = ![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(existingUser.source as SOURCE);
         if (firstTimeSignup) {
           /* Invite user doing instance signup. So reset name fields and set password */
-          let defaultOrganizationId: string;
+          let defaultOrganizationId = existingUser.defaultOrganizationId;
           const isPersonalWorkspaceAllowed =
             (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
             'true';
