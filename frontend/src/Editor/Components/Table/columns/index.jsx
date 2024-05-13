@@ -145,7 +145,7 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-        cellValue = cellValue === undefined ? '' : cellValue;
+        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
         switch (columnType) {
           case 'string':
           case undefined:

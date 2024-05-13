@@ -37,7 +37,11 @@ export const initialState = ({ appId, appVersionId }) => ({
         },
         {
           id: uuidv4(),
-          data: { nodeType: 'result', label: 'Result' },
+          data: {
+            nodeType: 'result',
+            label: 'Result',
+            code: '// Use this section to define the expected API response\n\nreturn ({})',
+          },
           position: { x: 650, y: 250 },
           type: 'output',
           targetPosition: 'left',
@@ -212,6 +216,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
 
     case 'ADD_NEW_EDGE': {
       const { edge } = payload;
+
       return {
         ...state,
         app: {

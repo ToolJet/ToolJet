@@ -41,6 +41,17 @@ export function findProp(obj, prop, defval) {
   return obj;
 }
 
+export function checkWhiteLabelsDefaultState() {
+  const text = window.public_config?.WHITE_LABEL_TEXT;
+  const logo = window.public_config?.WHITE_LABEL_LOGO;
+  const favicon = window.public_config?.WHITE_LABEL_FAVICON;
+  return (
+    (!text || text === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
+    (!logo || logo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
+    (!favicon || favicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
+  );
+}
+
 export function stripTrailingSlash(str) {
   return str.replace(/[/]+$/, '');
 }
