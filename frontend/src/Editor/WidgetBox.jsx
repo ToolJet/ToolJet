@@ -13,7 +13,7 @@ const WidgetBox = ({ component, darkMode }) => {
           data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
         >
           {component.component == 'ToggleSwitch' && <p className="widget-version-old-identifier">Lgcy</p>}
-          {component.component == 'ToggleSwitchv2' && <p className="widget-version-new-identifier">New</p>}
+          {component.component == 'ToggleSwitchV2' && <p className="widget-version-new-identifier">New</p>}
           <center>
             <div
               className="widget-svg-container"

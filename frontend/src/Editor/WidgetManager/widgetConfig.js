@@ -2782,7 +2782,7 @@ export const widgets = [
     name: 'ToggleSwitch',
     displayName: 'Toggle Switch',
     description: 'User-controlled on-off switch',
-    component: 'ToggleSwitchv2',
+    component: 'ToggleSwitchV2',
     defaultSize: {
       width: 6,
       height: 22,

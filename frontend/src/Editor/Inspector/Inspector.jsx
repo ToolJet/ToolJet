@@ -59,7 +59,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'PasswordInput',
   'NumberInput',
   'Table',
-  'ToggleSwitchv2',
+  'ToggleSwitchV2',
   'Checkbox',
 ];
 

@@ -93,7 +93,7 @@ class Switch extends React.Component {
   }
 }
 
-export const ToggleSwitchv2 = ({
+export const ToggleSwitchV2 = ({
   height,
   properties,
   styles,

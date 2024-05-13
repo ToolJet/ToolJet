@@ -19,7 +19,7 @@ import { Chart } from './Components/Chart';
 import { Map } from './Components/Map/Map';
 import { QrScanner } from './Components/QrScanner/QrScanner';
 import { ToggleSwitch } from './Components/Toggle';
-import { ToggleSwitchv2 } from './Components/ToggleV2';
+import { ToggleSwitchV2 } from './Components/ToggleV2';
 import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
 import { Divider } from './Components/Divider';
@@ -91,7 +91,7 @@ export const AllComponents = {
   Map,
   QrScanner,
   ToggleSwitch,
-  ToggleSwitchv2,
+  ToggleSwitchV2,
   RadioButton,
   StarRating,
   Divider,
