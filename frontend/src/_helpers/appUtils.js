@@ -145,6 +145,9 @@ export function onComponentOptionChanged(component, option_name, value) {
   const path = option_name ? `components.${componentName}.${option_name}` : null;
 
   if (isEditorReady) {
+    if (duplicateCurrentState !== null) {
+      duplicateCurrentState = null;
+    }
     // Always update the current state if editor is ready
     useCurrentStateStore.getState().actions.setCurrentState({
       components: { ...components, [componentName]: componentData },
