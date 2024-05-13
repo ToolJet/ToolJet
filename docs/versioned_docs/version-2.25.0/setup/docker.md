@@ -38,16 +38,17 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
   mv docker-compose-db.yaml docker-compose.yaml
   mkdir postgres_data
-  mkdir redis_data
   ```
 
   2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
-  ```bash
+   ```bash
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.internal.example
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/internal.sh && chmod +x internal.sh
   mv .env.internal.example .env && ./internal.sh
   ```
+
+  `internal.sh` helps to generate the basic .env variables such as the LOCKBOX_MASTER_KEY, SECRET_KEY_BASE, and the password for postgreSQL database.
 
   3. To start the docker container, use the following command:
 
@@ -84,7 +85,6 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   2. Download our production docker-compose file into the server.
   ```bash
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
-  mkdir redis_data
   ```
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
@@ -134,19 +134,28 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 </Tabs>
 
 ## Docker Backup
-The is a Docker-specific feature that assists in backing up the database during an upgrade process. If you plan to utilize this feature, uncomment the backup service in the docker-compose file. Additionally, you need to set an environment variable: `DATABASE_BACKUP=true`. This enables the creation of a `pg_dump` file, which will be stored in the backup folder.
 
-To restore the database from this dump, execute the following command:
+The below bash script will help with taking back-up and as well as restoring:
 
+1. Download the script:
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
 ```
-cat your_dump.sql | docker exec -i --user postgres <postgres-db-container-name> psql -U postgres
+
+2. Run the script with the following command:
+```bash
+./backup-restore.sh 
 ```
 
-## Upgrading to v2.24.3-ee2.10.2
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
+</div>
 
-Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+## Upgrading to the Latest Version
 
-If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+The latest version includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
 #### Prerequisites for Upgrading to the Latest Version:
 
@@ -154,7 +163,7 @@ If this is a new installation of the application, you may start directly with ve
 
 - Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
 

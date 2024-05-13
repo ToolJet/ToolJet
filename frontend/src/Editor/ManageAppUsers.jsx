@@ -13,12 +13,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
-import { useSuperStore } from '../_stores/superStore';
-import { ModuleContext } from '../_contexts/ModuleContext';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 class ManageAppUsersComponent extends React.Component {
-  static contextType = ModuleContext;
-
   constructor(props) {
     super(props);
     this.isUserAdmin = authenticationService.currentSessionValue?.admin;
@@ -111,11 +108,7 @@ class ManageAppUsersComponent extends React.Component {
     this.setState({
       ischangingVisibility: true,
     });
-
-    useSuperStore
-      .getState()
-      .modules[this.context].useAppDataStore.getState()
-      .actions.updateState({ isPublic: newState });
+    useAppDataStore.getState().actions.updateState({ isPublic: newState });
 
     // eslint-disable-next-line no-unused-vars
     appsService
@@ -171,10 +164,7 @@ class ManageAppUsersComponent extends React.Component {
           });
 
           replaceEditorURL(value, this.props.pageHandle);
-          useSuperStore
-            .getState()
-            .modules[this.context].useAppDataStore.getState()
-            .actions.updateState({ slug: value });
+          useAppDataStore.getState().actions.updateState({ slug: value });
         })
         .catch(({ error }) => {
           this.setState({

@@ -8,6 +8,7 @@ import Float from '../Icons/Float.svg';
 import Integer from '../Icons/Integer.svg';
 import CharacterVar from '../Icons/Text.svg';
 import Boolean from '../Icons/Toggle.svg';
+import Serial from '../Icons/Serial.svg';
 import './styles.scss';
 
 const RowForm = ({ onCreate, onClose }) => {
@@ -220,7 +221,7 @@ const RowForm = ({ onCreate, onClose }) => {
           columns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;
             const isNullable = !constraints_type.is_not_null;
-            const headerText = Header.charAt(0).toUpperCase() + Header.slice(1);
+            const headerText = Header;
             return (
               <div className="mb-3 " key={index}>
                 <div className="d-flex align-items-center justify-content-between">
@@ -230,8 +231,8 @@ const RowForm = ({ onCreate, onClose }) => {
                   >
                     <div className="headerText-withIcon d-flex align-items-center justify-content-start">
                       <span style={{ width: '24px' }}>
-                        {Header == 'id' ? (
-                          <Integer width="18" height="18" className="tjdb-column-header-name" />
+                        {isPrimaryKey === true ? (
+                          <Serial width="18" height="14" className="tjdb-column-header-name" />
                         ) : (
                           checkDataTypeIcons(dataType)
                         )}

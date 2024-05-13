@@ -49,10 +49,10 @@
   --ifm-link-menu-color-background-hover: #f0f4ff;
 }
 
-/* .markdown h1 {
-  margin-left: 10%;
-  margin-right: 10%;
-} */
+
+h3 {
+  font-size: 1.2rem;
+}
 
 .menu__link--sublist-caret:after {
   background: var(--ifm-menu-link-sublist-icon) 50% / 1rem 1rem;
@@ -186,6 +186,14 @@ body {
 img {
   max-width: 100%;
   max-height: 100%;
+  border: 0 ;
+  border-radius: 10px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2) 
+}
+
+.card-icon img {
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .menu__link--sublist:after {
@@ -198,8 +206,9 @@ img {
   --ifm-hero-background-color: #00bcd4;
 }
 
-.navbar__logo {
-  height: 25px;
+.navbar__logo img {
+  border-radius: 0px !important;
+  box-shadow: none !important
 }
 
 /* strong {

@@ -52,5 +52,5 @@
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
-    }
+  }
 }

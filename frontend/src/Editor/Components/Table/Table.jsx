@@ -54,6 +54,8 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { isRowInValid } from '../tableUtils';
+import moment from 'moment';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -132,9 +134,15 @@ export function Table({
     showAddNewRowButton,
     allowSelection,
     enablePagination,
+    maxRowHeight,
+    autoHeight,
     selectRowOnCellEdit,
+    contentWrapProperty,
+    boxShadow,
+    maxRowHeightValue,
+    borderColor,
+    isMaxRowHeightAuto,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
-
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
   const { events: allAppEvents } = useAppInfo();
@@ -171,11 +179,12 @@ export function Table({
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
   const [hoverAdded, setHoverAdded] = useState(false);
   const [generatedColumn, setGeneratedColumn] = useState([]);
+  const [isCellValueChanged, setIsCellValueChanged] = useState(false);
+
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
-
   const [resizingColumnId, setResizingColumnId] = useState(null);
 
   const prevDataFromProps = useRef();
@@ -231,6 +240,8 @@ export function Table({
 
   function handleExistingRowCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
+    setIsCellValueChanged(true);
+
     const dataUpdates = tableDetails.dataUpdates || [];
     const clonedTableData = _.cloneDeep(tableData);
 
@@ -268,6 +279,7 @@ export function Table({
   }, [JSON.stringify(tableDetails)]);
 
   function handleNewRowCellValueChange(index, key, value, rowData) {
+    setIsCellValueChanged(true);
     const changeSet = copyOfTableDetails.current.addNewRowsDetails.newRowsChangeSet || {};
     const dataUpdates = copyOfTableDetails.current.addNewRowsDetails.newRowsDataUpdates || {};
     let obj = changeSet ? changeSet[index] || {} : {};
@@ -342,6 +354,10 @@ export function Table({
       // Returning false as downloading of file is already taken care of
       return false;
     }
+  }
+
+  function getExportFileName() {
+    return `${component?.name}_${moment().format('DD-MM-YYYY_HH-mm')}`;
   }
 
   function onPageIndexChanged(page) {
@@ -424,6 +440,9 @@ export function Table({
     t,
     darkMode,
     tableColumnEvents: tableColumnEvents,
+    cellSize: cellSize,
+    maxRowHeightValue: maxRowHeightValue,
+    isMaxRowHeightAuto: isMaxRowHeightAuto,
   });
 
   columnData = useMemo(
@@ -444,16 +463,40 @@ export function Table({
     }));
 
   tableData = useMemo(() => {
-    return tableData.map((row) => ({
-      ...row,
-      ...Object.fromEntries(
-        transformations.map((t) => [
-          t.key,
-          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
-        ])
-      ),
-    }));
-  }, [JSON.stringify([transformations, currentState, component.definition.properties.data.value])]);
+    return tableData.map((row) => {
+      const transformedObject = {};
+
+      transformations.forEach(({ key, transformation }) => {
+        const nestedKeys = key.includes('.') && key.split('.');
+        if (nestedKeys) {
+          // Single-level nested property
+          const [nestedKey, subKey] = nestedKeys;
+          const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
+          const newValue = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row?.[nestedKey]?.[subKey],
+            rowData: row,
+          });
+
+          // Apply transformation to subKey
+          nestedObject[subKey] = newValue;
+
+          // Update transformedObject with the new nested object
+          transformedObject[nestedKey] = nestedObject;
+        } else {
+          // Non-nested property
+          transformedObject[key] = resolveReferences(transformation, currentState, row[key], {
+            cellValue: row[key],
+            rowData: row,
+          });
+        }
+      });
+
+      return {
+        ...row,
+        ...transformedObject,
+      };
+    });
+  }, [JSON.stringify([tableData, transformations, currentState])]);
 
   useEffect(() => {
     setExposedVariables({
@@ -493,6 +536,7 @@ export function Table({
   );
 
   const textWrapActions = (id) => {
+    //should we remove this
     let wrapOption = tableDetails.columnProperties?.find((item) => {
       return item?.id == id;
     });
@@ -609,6 +653,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      getExportFileName,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
@@ -653,7 +698,7 @@ export function Table({
             },
             Cell: ({ row }) => {
               return (
-                <div className="d-flex flex-column align-items-center">
+                <div className="d-flex flex-column align-items-center justify-content-center h-100">
                   <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} fireEvent={fireEvent} />
                 </div>
               );
@@ -681,6 +726,7 @@ export function Table({
       },
     ];
   }, [JSON.stringify(state)]);
+
   const getDetailsOfPreSelectedRow = () => {
     const key = Object?.keys(defaultSelectedRow)[0] ?? '';
     const value = defaultSelectedRow?.[key] ?? undefined;
@@ -812,6 +858,7 @@ export function Table({
       setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
+
   useEffect(() => {
     const pageData = page.map((row) => row.original);
     if (preSelectRow.current) {
@@ -852,6 +899,7 @@ export function Table({
 
   const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
   const [rowDetails, setRowDetails] = useState();
+
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
@@ -1031,15 +1079,16 @@ export function Table({
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className={`card jet-table table-component ${darkMode && 'dark-theme'}`}
+      className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
       style={{
         width: `100%`,
         height: `${height}px`,
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
-        boxShadow: styles.boxShadow,
+        boxShadow,
         padding: '8px',
+        borderColor: borderColor,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
@@ -1067,7 +1116,7 @@ export function Table({
                   className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
                   customStyles={{ minWidth: '32px' }}
                   leftIcon="filter"
-                  fill={`var(--slate11)`}
+                  fill={`var(--icons-default)`}
                   iconWidth="16"
                   onClick={(e) => {
                     if (tableDetails?.filterDetails?.filtersVisible) {
@@ -1136,7 +1185,9 @@ export function Table({
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
             tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-          } ${!loadingState && page.length !== 0 && 'h-100'}`}
+          } ${!loadingState && page.length !== 0 && 'h-100'} ${
+            state?.columnResizing?.isResizingColumn ? 'table-resizing' : ''
+          }`}
           style={computedStyles}
         >
           <thead>
@@ -1261,15 +1312,17 @@ export function Table({
                                           `}
                                       >
                                         <div>
-                                          {column.columnType !== 'selector' && isEditable && (
-                                            <SolidIcon
-                                              name="editable"
-                                              width="16px"
-                                              height="16px"
-                                              fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                                              vievBox="0 0 16 16"
-                                            />
-                                          )}
+                                          {column.columnType !== 'selector' &&
+                                            column.columnType !== 'image' &&
+                                            isEditable && (
+                                              <SolidIcon
+                                                name="editable"
+                                                width="16px"
+                                                height="16px"
+                                                fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                                                vievBox="0 0 16 16"
+                                              />
+                                            )}
                                         </div>
                                         <div
                                           data-cy={`column-header-${String(column.exportValue)
@@ -1330,7 +1383,14 @@ export function Table({
                                           ? ''
                                           : 'resizer'
                                       }  ${column.isResizing ? 'isResizing' : ''}`}
-                                    ></div>
+                                    >
+                                      <div
+                                        className="table-column-resize-handle"
+                                        style={{
+                                          ...(column.isResizing && { display: 'block' }),
+                                        }}
+                                      ></div>
+                                    </div>
                                   </th>
                                 );
                               }}
@@ -1348,6 +1408,28 @@ export function Table({
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {page.map((row, index) => {
                 prepareRow(row);
+                let rowProps = { ...row.getRowProps() };
+                const contentWrap = resolveReferences(contentWrapProperty, currentState);
+                const isMaxRowHeightAuto = maxRowHeight === 'auto';
+                rowProps.style.minHeight = cellSize === 'condensed' ? '39px' : '45px'; // 1px is removed to accomodate 1px border-bottom
+                let cellMaxHeight;
+                let cellHeight;
+                if (contentWrap) {
+                  cellMaxHeight = isMaxRowHeightAuto
+                    ? 'fit-content'
+                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
+                  rowProps.style.maxHeight = cellMaxHeight;
+                } else {
+                  cellMaxHeight = cellSize === 'condensed' ? 40 : 46;
+                  cellHeight = cellSize === 'condensed' ? 40 : 46;
+                  rowProps.style.maxHeight = cellMaxHeight + 'px';
+                  rowProps.style.height = cellHeight + 'px';
+                }
+                const showInvalidError = row.cells.some((cell) => isRowInValid(cell, currentState, changeSet));
+                if (showInvalidError) {
+                  rowProps.style.maxHeight = 'fit-content';
+                  rowProps.style.height = '';
+                }
                 return (
                   <tr
                     key={index}
@@ -1361,7 +1443,7 @@ export function Table({
                         ? 'selected'
                         : ''
                     }`}
-                    {...row.getRowProps()}
+                    {...rowProps}
                     onClick={async (e) => {
                       e.stopPropagation();
                       // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
@@ -1414,19 +1496,26 @@ export function Table({
                       ) {
                         cellProps.style.flex = '1 1 auto';
                       }
+                      //should we remove this
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
                       const rowData = tableData[cell.row.index];
-                      const cellBackgroundColor = resolveReferences(
-                        cell.column?.cellBackgroundColor,
-                        currentState,
-                        '',
-                        {
-                          cellValue,
-                          rowData,
-                        }
-                      );
+                      const cellBackgroundColor = ![
+                        'dropdown',
+                        'badge',
+                        'badges',
+                        'tags',
+                        'radio',
+                        'link',
+                        'multiselect',
+                        'toggle',
+                      ].includes(cell?.column?.columnType)
+                        ? resolveReferences(cell.column?.cellBackgroundColor, currentState, '', {
+                            cellValue,
+                            rowData,
+                          })
+                        : '';
                       const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
                         cellValue,
                         rowData,
@@ -1453,22 +1542,34 @@ export function Table({
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
-                            `table-text-align-${cell.column.horizontalAlignment} ${
-                              wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'
-                            }-wrapper td`,
+                            `table-text-align-${cell.column.horizontalAlignment}  
+                            ${cell?.column?.Header !== 'Actions' && (contentWrap ? 'wrap-wrapper' : '')}
+                            td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                               'has-left-actions': cell.column.id === 'leftActions',
                               'has-right-actions': cell.column.id === 'rightActions',
                               'has-text': cell.column.columnType === 'text' || isEditable,
+                              'has-number': cell.column.columnType === 'number',
                               'has-dropdown': cell.column.columnType === 'dropdown',
                               'has-multiselect': cell.column.columnType === 'multiselect',
                               'has-datepicker': cell.column.columnType === 'datepicker',
                               'align-items-center flex-column': cell.column.columnType === 'selector',
+                              'has-badge': ['badge', 'badges'].includes(cell.column.columnType),
                               [cellSize]: true,
+                              'overflow-hidden':
+                                ['text', 'string', undefined, 'number'].includes(cell.column.columnType) &&
+                                !contentWrap,
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
+                              'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnType),
+                              'has-tags': cell.column.columnType === 'tags',
+                              'has-link': cell.column.columnType === 'link',
+                              'has-radio': cell.column.columnType === 'radio',
+                              'has-toggle': cell.column.columnType === 'toggle',
+                              'has-textarea': ['string', 'text'].includes(cell.column.columnType),
+                              isEditable: isEditable,
                             }
                           )}
                           {...cellProps}
@@ -1491,7 +1592,7 @@ export function Table({
                         >
                           <div
                             className={`td-container ${
-                              cell.column.columnType === 'image' && 'jet-table-image-column'
+                              cell.column.columnType === 'image' && 'jet-table-image-column h-100'
                             } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
                           >
                             <GenerateEachCellValue
@@ -1502,6 +1603,10 @@ export function Table({
                                 actionButtonsArray,
                                 isEditable,
                                 horizontalAlignment,
+                                cellTextColor,
+                                contentWrap,
+                                autoHeight,
+                                isMaxRowHeightAuto,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
@@ -1510,6 +1615,10 @@ export function Table({
                               cellTextColor={cellTextColor}
                               cell={cell}
                               currentState={currentState}
+                              cellWidth={cell.column.width}
+                              isCellValueChanged={isCellValueChanged}
+                              setIsCellValueChanged={setIsCellValueChanged}
+                              darkMode={darkMode}
                             />
                           </div>
                         </td>
@@ -1587,6 +1696,7 @@ export function Table({
                       variant="primary"
                       className={`tj-text-xsm`}
                       onClick={() => {
+                        setIsCellValueChanged(false);
                         onEvent('onBulkUpdate', tableEvents, { component }).then(() => {
                           handleChangesSaved();
                         });
@@ -1605,6 +1715,7 @@ export function Table({
                       variant="tertiary"
                       className={`tj-text-xsm`}
                       onClick={() => {
+                        setIsCellValueChanged(false);
                         handleChangesDiscarded();
                       }}
                       data-cy={`table-button-discard-changes`}
@@ -1619,7 +1730,11 @@ export function Table({
                   </>
                 ) : (
                   !loadingState && (
-                    <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
+                    <span
+                      data-cy={`footer-number-of-records`}
+                      className="font-weight-500"
+                      style={{ color: 'var(--text-placeholder)' }}
+                    >
                       {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
                       {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                     </span>
@@ -1657,7 +1772,7 @@ export function Table({
                   <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
                   <ButtonSolid
                     variant="ghostBlack"
-                    fill={`var(--slate11)`}
+                    fill={`var(--icons-default)`}
                     className={`tj-text-xsm ${
                       tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
                     }`}
@@ -1691,7 +1806,7 @@ export function Table({
                         minWidth: '32px',
                       }}
                       leftIcon="filedownload"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-tooltip-id="tooltip-for-download"
@@ -1719,7 +1834,7 @@ export function Table({
                       className={`tj-text-xsm `}
                       customStyles={{ minWidth: '32px' }}
                       leftIcon="eye1"
-                      fill={`var(--slate11)`}
+                      fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
                       data-cy={`select-column-icon`}
