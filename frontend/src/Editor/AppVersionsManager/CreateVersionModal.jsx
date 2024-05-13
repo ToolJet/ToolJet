@@ -23,12 +23,17 @@ export const CreateVersion = ({
   const [fetchingOrgGit, setFetchingOrgGit] = useState(false);
   const [cancommit, setCommitEnabled] = useState(false);
   const [orgGit, setOrgGit] = useState(null);
-  const { versionsPromotedToEnvironment: appVersions, createNewVersionAction } = useEnvironmentsAndVersionsStore(
+  const {
+    versionsPromotedToEnvironment: appVersions,
+    createNewVersionAction,
+    selectedEnvironment,
+  } = useEnvironmentsAndVersionsStore(
     (state) => ({
       appVersionsLazyLoaded: state.appVersionsLazyLoaded,
       versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
       lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
       createNewVersionAction: state.actions.createNewVersionAction,
+      selectedEnvironment: state.selectedEnvironment,
     }),
     shallow
   );
@@ -75,7 +80,7 @@ export const CreateVersion = ({
         appVersionService
           .getAppVersionData(appId, newVersion.id)
           .then((data) => {
-            setAppDefinitionFromVersion(data);
+            setAppDefinitionFromVersion(data, selectedEnvironment);
             if (cancommit) {
               const body = {
                 gitAppName: orgGit?.git_app_name,
