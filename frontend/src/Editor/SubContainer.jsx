@@ -22,7 +22,6 @@ import { useEditorStore } from '@/_stores/editorStore';
 
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-// eslint-disable-next-line import/namespace
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
 
@@ -252,13 +251,15 @@ export const SubContainer = ({
               ? 'Kanban_popout'
               : 'Kanban_card'
             : parentComponent.component;
+
         if (!restrictedWidgetsObj[parentComp].includes(componentMeta?.component)) {
+          const currentActiveLayout = useEditorStore.getState().currentLayout;
           let newComponent = addNewWidgetToTheEditor(
             componentMeta,
             monitor,
             { ...allComponents, ...childWidgets },
             canvasBoundingRect,
-            item.currentLayout,
+            currentActiveLayout,
             snapToGrid,
             zoomLevel,
             true
@@ -328,7 +329,7 @@ export const SubContainer = ({
                 {},
                 { ...allComponents, ...childrenBoxes },
                 {},
-                item.currentLayout,
+                currentActiveLayout,
                 snapToGrid,
                 zoomLevel,
                 true,
@@ -342,7 +343,7 @@ export const SubContainer = ({
                 },
 
                 layouts: {
-                  [currentLayout]: {
+                  [currentActiveLayout]: {
                     ...layout,
                     width: incrementWidth ? width * incrementWidth : width,
                     height: height,
@@ -701,7 +702,9 @@ const SubWidgetWrapper = ({
   mode,
 }) => {
   const { layouts } = widget;
-  const widgetRef = useRef();
+
+  const widgetRef = useRef(null);
+
   const isOnScreen = useOnScreen(widgetRef);
 
   const layoutData = layouts[currentLayout] || layouts['desktop'] || {};
@@ -781,19 +784,24 @@ const SubContianerWrapper = ({ children, isDragging, isResizing, isGridActive, r
 
 export default function useOnScreen(ref) {
   const [isIntersecting, setIntersecting] = useState(false);
+  const currentLayout = useEditorStore((state) => state.currentLayout);
 
-  const observer = useMemo(
-    () =>
+  const observer = useMemo(() => {
+    if (ref?.current) {
       new IntersectionObserver(([entry]) => setIntersecting(entry.isIntersecting), {
         root: ref.current?.closest('.real-canvas'),
         threshold: 0,
-      }),
-    [ref]
-  );
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref.current, currentLayout]);
 
   useEffect(() => {
-    observer.observe(ref.current);
-    return () => observer.disconnect();
+    if (observer) {
+      observer.observe(ref.current);
+    }
+    return () => observer && observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return isIntersecting;
