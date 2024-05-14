@@ -1380,7 +1380,10 @@ conditional checks for better performance and error handling.*/
 export function computeComponentState(components = {}) {
   try {
     let componentState = {};
-    const currentComponents = getCurrentState().components;
+
+    const { isEditorReady } = getCurrentState();
+
+    const currentComponents = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
 
     // Precompute parent component types
     const parentComponentTypes = {};
@@ -1416,12 +1419,20 @@ export function computeComponentState(components = {}) {
       }
     });
 
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...componentState,
-      },
-    });
-
+    if (isEditorReady) {
+      if (duplicateCurrentState !== null) {
+        duplicateCurrentState = null;
+      }
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: {
+          ...componentState,
+        },
+      });
+    } else {
+      // Update the duplicate state if editor is not ready
+      duplicateCurrentState = { ...componentState };
+      debouncedChange();
+    }
     return new Promise((resolve) => {
       useEditorStore.getState().actions.updateEditorState({
         defaultComponentStateComputed: true,
