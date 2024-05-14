@@ -2534,7 +2534,7 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
@@ -2581,7 +2581,7 @@ export const widgets = [
 
       alignment: {
         type: 'switch',
-        displayName: 'alignment',
+        displayName: 'Alignment',
         validation: { schema: { type: 'string' } },
         options: [
           { displayName: 'Left', value: 'left' },
@@ -2881,7 +2881,7 @@ export const widgets = [
       },
       alignment: {
         type: 'switch',
-        displayName: 'alignment',
+        displayName: 'Alignment',
         validation: { schema: { type: 'string' } },
         options: [
           { displayName: 'Left', value: 'left' },
@@ -2989,14 +2989,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       toggleSwitchColor: {
         type: 'color',
-        displayName: 'Toggle Switch Color',
+        displayName: 'Toggle switch color',
         validation: {
           schema: { type: 'string' },
         },
