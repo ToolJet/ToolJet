@@ -107,6 +107,10 @@ export const useEditorStore = create(
           selectedComponents: newSelectedComponents,
         });
       },
+      //TODO: Refactor multiple component selection with a single function
+      selectMultipleComponents: (selectedComponents) => {
+        set({ selectedComponents: selectedComponents });
+      },
       setCurrentPageId: (currentPageId) => set({ currentPageId }),
       setAppMode: (appMode) => set({ appMode }),
       setCanvasBackground: (canvasBackground) => set({ canvasBackground }),
