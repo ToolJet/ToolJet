@@ -8,6 +8,7 @@ import { EditorContext } from './Context/EditorContextWrapper';
 import { validateWidget } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import _ from 'lodash';
 
 const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
@@ -64,7 +65,7 @@ const BoxUI = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(customResolvables), readOnly]);
 
-  let exposedVariables = currentState?.components[component.name] ?? {};
+  let exposedVariables = !_.isEmpty(currentState?.component) ? currentState?.components[component.name] ?? {} : {};
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
