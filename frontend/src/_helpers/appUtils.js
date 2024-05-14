@@ -1481,7 +1481,8 @@ export const getAllChildComponents = (allComponents, parentId) => {
 
     const isParentTabORCalendar =
       allComponents[parentId]?.component?.component === 'Tabs' ||
-      allComponents[parentId]?.component?.component === 'Calendar';
+      allComponents[parentId]?.component?.component === 'Calendar' ||
+      allComponents[parentId]?.component?.component === 'Kanban';
 
     if (componentParentId && isParentTabORCalendar) {
       const childComponent = allComponents[componentId];
