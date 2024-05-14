@@ -6980,7 +6980,7 @@ tbody {
     }
   }
 
-  .table-cell-dark{
+  .table-cell-dark {
     color: #ffffff;
   }
 
@@ -7058,6 +7058,7 @@ tbody {
     background-color: #242f3c;
     padding: 0;
     max-width: 230px;
+    color: #ffffff;
 
     .tjdb-column-select-border {
       border-left-color: white !important;
@@ -7947,7 +7948,8 @@ tbody {
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
 
-  &[data-name="Profile settings"] {
+  &[data-name="Profile settings"],
+  &[data-name="Workspace constants"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
   }
@@ -8681,6 +8683,10 @@ tbody {
   justify-content: center;
   align-items: center;
   color: var(--slate11);
+
+  .with-border{
+    border-bottom: 1px solid var(--slate5) !important;
+  }
 
   a {
     text-decoration: none;
@@ -12491,9 +12497,11 @@ tbody {
 .custom-gap-2 {
   gap: 2px
 }
-.custom-gap-3{
+
+.custom-gap-3 {
   gap: 3px;
 }
+
 .custom-gap-4 {
   gap: 4px;
 }
@@ -12505,10 +12513,12 @@ tbody {
 .custom-gap-12 {
   gap: 12px
 }
-.custom-gap-16{
+
+.custom-gap-16 {
   gap: 16px;
 }
-.text-black-000{
+
+.text-black-000 {
   color: var(--text-black-000) !important;
 }
 
@@ -12517,6 +12527,7 @@ tbody {
     max-width: 100%;
   }
 }
+
 .tooltip-inner {
   border-radius: 8px;
 }
@@ -12528,9 +12539,11 @@ tbody {
     }
   }
 }
-.custom-gap-7{
-  gap:7px
+
+.custom-gap-7 {
+  gap: 7px
 }
+
 .card-table {
   overflow: visible;
 }
@@ -12668,7 +12681,7 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1.5rem;
+  padding-top: 1.5rem;
 }
 
 .blank-page-wrapper {
@@ -12781,8 +12794,12 @@ tbody {
   }
 }
 
+.change-margin {
+  margin-bottom: 10px !important;
+}
+
 .inspector-validation-date-picker {
-  .react-datepicker-wrapper { 
+  .react-datepicker-wrapper {
     input {
       width: 100%;
       border: 1px solid var(--slate7);
@@ -12790,7 +12807,7 @@ tbody {
       background-color: var(--base);
       color: var(--slate12)
     }
-}
+  }
 
   .dark-theme {
     .react-datepicker__day {
@@ -12802,20 +12819,25 @@ tbody {
 .canvas-container {
   scrollbar-color: transparent;
   scrollbar-width: thin;
+
   &::-webkit-scrollbar {
     background-color: transparent;
     width: 6px;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-track {
     background-color: transparent;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-thumb {
     background-color: transparent;
   }
-  &:hover{
+
+  &:hover {
     scrollbar-color: #6a727c4d;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -12823,8 +12845,9 @@ tbody {
 }
 
 .jet-listview {
-  &:hover{
+  &:hover {
     scrollbar-color: #6a727c4d;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c4d !important;
     }
@@ -12852,6 +12875,7 @@ tbody {
     }
   }
 }
+
 .number-input-arrow {
   &:hover {
     background-color: var(--interactive-overlays-fill-hover) !important;
@@ -12860,4 +12884,8 @@ tbody {
   &:active {
     background-color: var(--interactive-overlays-fill-pressed) !important;
   }
+}
+
+div.ds-svg-container[data-ds-name="postgresql-button"] svg {
+  padding: 2px;
 }

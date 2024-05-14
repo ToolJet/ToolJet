@@ -2,10 +2,9 @@
 id: airtable
 title: Airtable
 ---
+<div style={{paddingBottom:'24px'}}>
 
-# Airtable
-
-ToolJet can connect to your Airtable account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting [Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions).
+ToolJet can connect to your **Airtable** account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting **[Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions)**.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect-v2.gif" alt="Airtable Data Source Connection" />
@@ -17,6 +16,10 @@ ToolJet can connect to your Airtable account to read and write data. **Personal 
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Supported Operations
 
 - **[List records](#list-records)**
@@ -25,13 +28,17 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 - **[Update record](#update-record)**
 - **[Delete record](#delete-record)**
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### List records
 
 This operation returns a list of records from the specified table.
 
 #### Required parameters:
 
-- **Base ID:** To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+- **Base ID:** To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
 - **Table name:** The name of the table from which you want to fetch the records.
 
@@ -39,7 +46,7 @@ This operation returns a list of records from the specified table.
 
 - **Page size:** The number of records returned in each request. Default is 100 records.  
 
-- **offset:** The offset value is used to fetch the next set of records. The offset value is returned in the response of the previous request.
+- **Offset:** The offset value is used to fetch the next set of records. The offset value is returned in the response of the previous request.
 
 Example response from Airtable:
 
@@ -75,11 +82,15 @@ Example response from Airtable:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Retrieve record
 
 #### Required parameters:
 
-- **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+- **Base ID**: To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
 - **Table name**: The name of the table from which you want to fetch the records.
 
@@ -99,34 +110,38 @@ Example response from Airtable:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Create record
 
 #### Required parameters:
 
-- **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+- **Base ID**: To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
 - **Table name**: The name of the table from which you want to fetch the records.
 
 - **Records**: The records you want to create. The records should be in the form of an array of objects. Each object should have a `fields` key, which contains the fields of the record. The field names should be the same as the field names in the Airtable table.
 
-  **Example creating two records:**
-  
-  ```json title="Records"
-  [
-    {
-      "fields": {
-        "Notes": "sdfdsf",
-        "Name": "dsfdsf"
-      }
-    },
-    {
-      "fields": {
-        "Notes": "note1",
-        "Name": "dsfdsf"
-      }
+Example creating two records:
+
+```json title="Records"
+[
+  {
+    "fields": {
+      "Notes": "sdfdsf",
+      "Name": "dsfdsf"
     }
-  ]
-  ```
+  },
+  {
+    "fields": {
+      "Notes": "note1",
+      "Name": "dsfdsf"
+    }
+  }
+]
+```
 
 Query returns the following response when the records are created successfully:
 
@@ -153,11 +168,15 @@ Query returns the following response when the records are created successfully:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Update record
 
 #### Required parameters:
 
-- **Base ID**: To find the Base ID, first visit **airtable.com/api**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+- **Base ID**: To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 
 - **Table name**: The name of the table from which you want to fetch the records.
 
@@ -165,14 +184,14 @@ Query returns the following response when the records are created successfully:
 
 - **Body**: The fields you want to update. The fields should be in the form of an object. The field names should be the same as the field names in the Airtable table.
 
-  **Example updating a record:**
-  
-  ```json title="Body"
-  {
-    "Notes": "Example Notes",
-    "Name": "change"
-  }
-  ```
+Example updating a record:
+
+```json title="Body"
+{
+  "Notes": "Example Notes",
+  "Name": "change"
+}
+```
 
 Query returns the following response when the record is updated successfully:
 
@@ -186,6 +205,10 @@ Query returns the following response when the record is updated successfully:
   "createdTime": "2021-08-08T17:27:17.000Z"
 }
 ```
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Delete record
 
@@ -203,3 +226,4 @@ Query returns the following response when the record is deleted successfully:
     id: "recIKsyZgqI4zoqS7"
 }
 ```
+</div>
