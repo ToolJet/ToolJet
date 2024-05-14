@@ -1,14 +1,20 @@
+/* eslint-disable import/no-unresolved */
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-// import 'codemirror/addon/comment/comment';
-// import 'codemirror/addon/hint/show-hint';
-// import 'codemirror/addon/display/placeholder';
-// import 'codemirror/addon/search/match-highlighter';
-// import 'codemirror/addon/hint/show-hint.css';
-// import 'codemirror/theme/base16-light.css';
-// import 'codemirror/theme/duotone-light.css';
-// import 'codemirror/theme/monokai.css';
-import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
+import { okaidia } from '@uiw/codemirror-theme-okaidia';
+import { githubLight } from '@uiw/codemirror-theme-github';
+import { javascript } from '@codemirror/lang-javascript';
+import { python } from '@codemirror/lang-python';
+import { sql } from '@codemirror/lang-sql';
+import { sass } from '@codemirror/lang-sass';
+
+const langSupport = Object.freeze({
+  javascript: javascript(),
+  python: python(),
+  sql: sql(),
+  jsx: javascript({ jsx: true }),
+  css: sass(),
+});
 
 export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable, dataCy }) => {
   const { enableLineNumber, mode, placeholder } = properties;
@@ -22,21 +28,25 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
     height: height,
     display: !visibility ? 'none' : 'block',
   };
-  const options = {
-    lineNumbers: enableLineNumber,
-    lineWrapping: true,
-    singleLine: true,
-    mode: mode,
-    tabSize: 2,
-    theme: darkMode ? 'monokai' : 'duotone-light',
-    readOnly: false,
-    highlightSelectionMatches: true,
-    placeholder,
+
+  const setupConfig = {
+    lineNumbers: enableLineNumber ?? true,
+    syntaxHighlighting: true,
+    bracketMatching: true,
+    foldGutter: true,
+    highlightActiveLine: false,
+    autocompletion: true,
+    highlightActiveLineGutter: false,
+    completionKeymap: true,
+    searchKeymap: false,
   };
 
-  function valueChanged(editor, onChange, ignoreBraces = false) {
-    handleChange(editor, onChange, [], ignoreBraces);
-  }
+  const theme = darkMode ? okaidia : githubLight;
+  const langExtention = langSupport[mode?.toLowerCase()] ?? null;
+
+  const editorHeight = React.useMemo(() => {
+    return height || 'auto';
+  }, [height]);
 
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
@@ -45,7 +55,7 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
         style={{
           height: height || 'auto',
           minHeight: height - 1,
-          maxHeight: '320px',
+          // maxHeight: '320px',
           overflow: 'auto',
           borderRadius: `${styles.borderRadius}px`,
           boxShadow: styles.boxShadow,
@@ -53,15 +63,21 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
       >
         <CodeMirror
           value={exposedVariables.value}
-          scrollbarStyle={null}
-          height={height - 1}
-          onBlur={(editor) => {
-            const value = editor.getValue();
-            codeChanged(value);
+          placeholder={placeholder}
+          height={editorHeight}
+          minHeight={editorHeight}
+          maxHeight="100%"
+          width="100%"
+          theme={theme}
+          extensions={[langExtention]}
+          onChange={codeChanged}
+          onBlur={(value) => codeChanged(value)}
+          basicSetup={setupConfig}
+          style={{
+            overflowY: 'auto',
           }}
-          onChange={(editor) => valueChanged(editor, codeChanged)}
-          onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
-          options={options}
+          className={`codehinter-multi-line-input`}
+          indentWithTab={true}
         />
       </div>
     </div>
