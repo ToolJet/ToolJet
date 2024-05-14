@@ -48,11 +48,7 @@ export class ImportExportResourcesService {
     const importingVersion = importResourcesDto.tooljet_version;
 
     if (importResourcesDto.tooljet_database) {
-      const res = await this.tooljetDbImportExportService.bulkTableCreate(
-        importResourcesDto,
-        importingVersion,
-        cloning
-      );
+      const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
       tableNameMapping = res.tableNameMapping;
       imports.tooljet_database = res.tooljet_database;
     }

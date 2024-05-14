@@ -37,68 +37,74 @@ export class TooljetDbImportExportService {
     };
   }
 
-  async bulkTableCreate(importResourcesDto: ImportResourcesDto, importingVersion: string, cloning: boolean) {
+  async bulkImport(importResourcesDto: ImportResourcesDto, importingVersion: string, cloning: boolean) {
     const tableNameMapping = {};
     const tjdbDatabase = [];
     const tableNameForeignKeyMapping = {};
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    const transformedTableNameMapping = {};
     const queryRunner = this.manager.connection.createQueryRunner();
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    const connectionManagers = { appManager: queryRunner.manager, tjdbManager: tjdbQueryRunner.manager };
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      await Promise.all(
-        importResourcesDto.tooljet_database.map(async (tjdbImportDto) => {
-          const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
-          const { foreign_keys } = transformedDto.schema;
-          const bulkActions = {
-            tjdbQueryRunner,
-            queryRunner,
+      for (const tjdbImportDto of importResourcesDto.tooljet_database) {
+        const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
+        const { foreign_keys } = transformedDto.schema;
+        const createdTable = await this.import(
+          importResourcesDto.organization_id,
+          transformedDto,
+          cloning,
+          connectionManagers
+        );
+        transformedTableNameMapping[tjdbImportDto.table_name] = createdTable.table_name;
+        if (foreign_keys.length) tableNameForeignKeyMapping[createdTable.table_name] = foreign_keys;
+        tableNameMapping[tjdbImportDto.id] = createdTable;
+        tjdbDatabase.push(createdTable);
+      }
+      for (const tableName in tableNameForeignKeyMapping) {
+        const foreignKeys = tableNameForeignKeyMapping[tableName].map((ele) => {
+          return {
+            ...ele,
+            referenced_table_name:
+              transformedTableNameMapping?.[ele.referenced_table_name] || ele.referenced_table_name,
           };
-          const createdTable = await this.import(
-            importResourcesDto.organization_id,
-            transformedDto,
-            cloning,
-            bulkActions
-          );
-          if (foreign_keys.length) tableNameForeignKeyMapping[createdTable.table_name] = foreign_keys;
-          tableNameMapping[tjdbImportDto.id] = createdTable;
-          tjdbDatabase.push(createdTable);
-        })
-      );
-
-      await Promise.all(
-        Object.keys(tableNameForeignKeyMapping).map((tableName) => {
-          return this.tooljetDbService.perform(importResourcesDto.organization_id, 'create_foreign_key', {
+        });
+        await this.tooljetDbService.perform(
+          importResourcesDto.organization_id,
+          'create_foreign_key',
+          {
             table_name: tableName,
-            foreign_keys: tableNameForeignKeyMapping[tableName],
-            bulkActions: {
-              tjdbQueryRunner,
-              queryRunner,
-            },
-          });
-        })
-      );
+            foreign_keys: foreignKeys,
+          },
+          connectionManagers
+        );
+      }
 
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await queryRunner.release();
-      await tjdbQueryRunner.release();
       return { tableNameMapping, tooljet_database: tjdbDatabase };
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
       await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await tjdbQueryRunner.release();
       await queryRunner.release();
-      throw new Error(err.message);
     }
   }
 
-  async import(organizationId: string, tjDbDto: ImportTooljetDatabaseDto, cloning = false, bulkActions = {}) {
-    const internalTableWithSameNameExists = await this.manager.findOne(InternalTable, {
+  async import(
+    organizationId: string,
+    tjDbDto: ImportTooljetDatabaseDto,
+    cloning = false,
+    connectionManagers: Record<string, EntityManager> = {}
+  ) {
+    const { appManager } = connectionManagers;
+    const internalTableWithSameNameExists = await appManager.findOne(InternalTable, {
       where: {
         tableName: tjDbDto.table_name,
         organizationId,
@@ -119,11 +125,15 @@ export class TooljetDbImportExportService {
     // TODO: Add support for foreign keys
     const { columns } = tjDbDto.schema;
 
-    return await this.tooljetDbService.perform(organizationId, 'create_table', {
-      table_name: tableName,
-      bulkActions,
-      ...{ columns, foreign_keys: [] },
-    });
+    return await this.tooljetDbService.perform(
+      organizationId,
+      'create_table',
+      {
+        table_name: tableName,
+        ...{ columns, foreign_keys: [] },
+      },
+      connectionManagers
+    );
   }
 
   async isTableColumnsSubset(internalTable: InternalTable, tjDbDto: ImportTooljetDatabaseDto): Promise<boolean> {
