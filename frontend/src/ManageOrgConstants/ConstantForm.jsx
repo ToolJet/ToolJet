@@ -4,6 +4,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _, { capitalize } from 'lodash';
 import { Tooltip } from 'react-tooltip';
 import { FormWrapper, textAreaEnterOnSave } from '@/_components/FormWrapper';
+import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
+import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 
 const ConstantForm = ({
   selectedConstant,
@@ -18,6 +20,21 @@ const ConstantForm = ({
     ...selectedConstant,
     environments: [{ label: currentEnvironment?.name, value: currentEnvironment?.id }],
   }));
+
+  const [showValue, setShowValue] = useState(false);
+
+  const toggleShowValue = () => {
+    setShowValue(!showValue);
+  };
+
+  const getDisplayedValue = () => {
+    if (!fields['value']) {
+      return '';
+    }
+    return showValue ? fields['value'] : '*'.repeat(fields['value'].length);
+  };
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [error, setError] = useState({});
 
@@ -133,6 +150,10 @@ const ConstantForm = ({
     }
   };
 
+  const handleBlur = () => {
+    setShowValue(false);
+  };
+
   return (
     <div className="variable-form-wrap">
       <div className="card-header">
@@ -177,28 +198,78 @@ const ConstantForm = ({
             <div className="col tj-app-input">
               <label className="form-label" data-cy="value-label">
                 Value
+                <small className="text-green" style={{ marginLeft: '380px' }} data-cy="encrypted-label">
+                  <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+                  Encrypted
+                </small>
               </label>
-              <textarea
-                ref={inputRef}
-                type="text"
-                className={`tj-input-element ${error['value'] ? 'tj-input-error-state' : ''}`}
-                placeholder={'Enter Value'}
-                name="value"
-                onChange={handleFieldChange}
-                value={fields['value']}
-                onKeyDown={(e) => textAreaEnterOnSave(e, handlecreateOrUpdate)}
-                onInput={handleInput}
-                onFocus={() => !!selectedConstant && handleInput()}
-                style={{
-                  height: !!selectedConstant && selectedConstant?.value?.length > 50 ? '300px' : '36px',
-                  minHeight: '36px',
-                  maxHeight: '500px',
-                  whiteSpace: 'pre-line',
-                  resize: 'none',
-                  overflow: 'hidden',
-                }}
-                data-cy="value-input-field"
-              />
+              <div className="position-relative">
+                <textarea
+                  ref={inputRef}
+                  type={'text'}
+                  className={`tj-input-element ${error['value'] ? 'tj-input-error-state' : ''}`}
+                  onChange={handleFieldChange}
+                  name="value"
+                  value={getDisplayedValue()}
+                  placeholder={'Enter value'}
+                  onKeyDown={(e) => textAreaEnterOnSave(e, handlecreateOrUpdate)}
+                  readOnly={!showValue}
+                  onInput={handleInput}
+                  onFocus={() => {
+                    setShowValue(true);
+                    !!selectedConstant && handleInput();
+                  }}
+                  onBlur={handleBlur}
+                  style={{
+                    paddingRight: '35px',
+                    height: !!selectedConstant && selectedConstant?.value?.length > 50 ? '300px' : '36px',
+                    minHeight: '36px',
+                    maxHeight: '500px',
+                    whiteSpace: 'pre-line',
+                    resize: 'none',
+                    overflow: 'hidden',
+                  }}
+                  data-cy="value-input-field"
+                />
+                <div
+                  onClick={() => toggleShowValue()}
+                  data-cy="show-password-icon"
+                  style={{
+                    position: 'absolute',
+                    top: 5,
+                    right: '10px',
+                    cursor: 'pointer',
+                    zIndex: 2,
+                  }}
+                >
+                  {!showValue ? (
+                    <EyeHide
+                      fill={
+                        darkMode
+                          ? String(fields['value'])?.length
+                            ? '#D1D5DB'
+                            : '#656565'
+                          : String(fields['value'])?.length
+                          ? '#384151'
+                          : '#D1D5DB'
+                      }
+                    />
+                  ) : (
+                    <EyeShow
+                      fill={
+                        darkMode
+                          ? String(fields['value'])?.length
+                            ? '#D1D5DB'
+                            : '#656565'
+                          : String(fields['value'])?.length
+                          ? '#384151'
+                          : '#D1D5DB'
+                      }
+                      data-cy="test"
+                    />
+                  )}
+                </div>
+              </div>
 
               <span className="text-danger" data-cy="value-error-text">
                 {error['value']}
