@@ -45,6 +45,7 @@ const initialState = {
   appMode: 'auto',
   editorCanvasWidth: 1092,
   canvasBackground: {},
+  pageSwitchInProgress: false,
 };
 
 export const useEditorStore = create(
@@ -58,6 +59,7 @@ export const useEditorStore = create(
           showComments,
         }),
       setCanvasWidth: (editorCanvasWidth) => set({ editorCanvasWidth }),
+      setPageProgress: (bool) => set({ pageSwitchInProgress: bool }),
       toggleComments: () =>
         set({ showComments: !get().showComments }, false, {
           type: ACTIONS.TOGGLE_COMMENTS,

@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   appService,
   appsService,
   authenticationService,
   appVersionService,
   orgEnvironmentVariableService,
-  appEnvironmentService,
   customStylesService,
   orgEnvironmentConstantService,
 } from '@/_services';
@@ -85,7 +84,12 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex, EditorConstants } from './editorConstants';
-import { findComponentsWithReferences, handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
+import {
+  findComponentsWithReferences,
+  handleLowPriorityWork,
+  updateCanvasBackground,
+  clearAllQueuedTasks,
+} from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
 
@@ -890,6 +894,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
+      clearAllQueuedTasks();
       useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
@@ -1769,12 +1774,22 @@ const EditorComponent = (props) => {
   };
 
   const switchPage = async (pageId, queryParams = []) => {
+    if (useEditorStore.getState().pageSwitchInProgress) {
+      toast('Please wait, page switch in progress', {
+        icon: '⚠️',
+      });
+
+      return;
+    }
+
+    clearAllQueuedTasks();
+    useEditorStore.getState().actions.setPageProgress(true);
     useCurrentStateStore.getState().actions.setEditorReady(false);
     useResolveStore.getState().actions.resetStore();
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
-    const appId = useAppDataStore.getState()?.appId;
+
     const pageHandle = getCurrentState().page.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
@@ -1804,7 +1819,9 @@ const EditorComponent = (props) => {
 
     await onEditorLoad(appDefinition, pageId, true);
     updateEntityReferences(appDefinition, pageId);
-    useResolveStore.getState().actions.updateJSHints();
+    handleLowPriorityWork(() => {
+      useResolveStore.getState().actions.updateJSHints();
+    });
 
     setCurrentPageId(pageId);
 
@@ -1813,6 +1830,9 @@ const EditorComponent = (props) => {
       .events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
+    handleLowPriorityWork(() => {
+      useEditorStore.getState().actions.setPageProgress(false);
+    }, 100);
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
@@ -2093,6 +2113,7 @@ const EditorComponent = (props) => {
   };
 
   const appEnvironmentChanged = async (newData, isAppVersionPromoted) => {
+    clearAllQueuedTasks();
     const { selectedEnvironment, selectedVersionDef } = newData;
     const newEnvironmentId = selectedEnvironment.id;
     if (selectedVersionDef) {
