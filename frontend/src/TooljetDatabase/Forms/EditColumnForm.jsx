@@ -773,7 +773,7 @@ const ColumnForm = ({
           fetching={fetching}
           onClose={onClose}
           onEdit={() => {
-            if (foreignKeyDetails?.length > 0 && !isForeignKey) {
+            if (foreignKeyDetails?.length > 0 && !isForeignKey && isMatchingForeignKeyColumn(columnName)) {
               setOnDeletePopup(true);
             } else {
               handleEdit();
@@ -787,7 +787,11 @@ const ColumnForm = ({
         title={'Delete foreign key relation'}
         show={onDeletePopup}
         message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
-        onConfirm={foreignKeyDetails?.length > 0 && !isForeignKey ? handleEdit : handleDeleteForeignKeyColumn}
+        onConfirm={
+          foreignKeyDetails?.length > 0 && !isForeignKey && isMatchingForeignKeyColumn(columnName)
+            ? handleEdit
+            : handleDeleteForeignKeyColumn
+        }
         onCancel={() => {
           setOnDeletePopup(false);
         }}
