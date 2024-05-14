@@ -65,7 +65,6 @@ const BoxUI = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(customResolvables), readOnly]);
 
-  console.log('--arpit::', { currentState });
   let exposedVariables = !_.isEmpty(currentState?.component) ? currentState?.components[component.name] ?? {} : {};
 
   const fireEvent = (eventName, options) => {
