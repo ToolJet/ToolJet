@@ -1774,7 +1774,6 @@ const EditorComponent = (props) => {
   };
 
   const switchPage = async (pageId, queryParams = []) => {
-    console.log('arpit:: switchPage', { x: useEditorStore.getState().pageSwitchInProgress });
     if (useEditorStore.getState().pageSwitchInProgress) {
       toast('Please wait, page switch in progress', {
         icon: '⚠️',
