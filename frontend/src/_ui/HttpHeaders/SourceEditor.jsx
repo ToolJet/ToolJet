@@ -1,67 +1,102 @@
 import React from 'react';
 import Input from '../Input';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import '@/_ui/HttpHeaders/sourceEditorStyles.scss';
+import InfoIcon from '@assets/images/icons/info.svg';
 
 export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, workspaceConstants }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
-    <div className="table-responsive table-no-divider">
-      <table className="table table-vcenter">
-        <thead>
-          <tr>
-            <th>Key</th>
-            <th>Value</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {options.map((option, index) => {
-            return (
-              <tr key={index}>
-                <td>
-                  <Input
-                    type="text"
-                    className="form-control no-border"
-                    onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
-                    value={option[0]}
-                    workspaceConstants={workspaceConstants}
-                    placeholder="key"
-                    autoComplete="off"
-                  />
-                </td>
-                <td>
-                  <Input
-                    type="text"
-                    value={option[1]}
-                    placeholder="value"
-                    autoComplete="off"
-                    className="form-control no-border"
-                    onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
-                    workspaceConstants={workspaceConstants}
-                  />
-                </td>
-                {index > 0 && (
-                  <td>
-                    <span
-                      role="button"
-                      onClick={() => {
-                        removeKeyValuePair(index);
-                      }}
-                    >
-                      x
-                    </span>
-                  </td>
-                )}
-                {index === 0 && (
-                  <td>
-                    <button className="btn btn-sm btn-primary" onClick={() => addNewKeyValuePair(options)}>
-                      Add
-                    </button>
-                  </td>
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="table-content-wrapper">
+      {options.length === 0 && (
+        <div
+          style={{
+            border: '2px dashed #ccc',
+            borderRadius: '6px',
+            padding: '10px',
+            textAlign: 'center',
+            color: '#ccc',
+            width: '600px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px',
+            marginBottom: '10px',
+          }}
+        >
+          <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
+          <span>There are no key value pairs added</span>
+        </div>
+      )}
+
+      {options?.length > 0 && (
+        <div>
+          <div style={{ display: 'flex' }}>
+            <div style={{ width: '250px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>KEY</div>
+            <div style={{ width: '350px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>VALUE</div>
+          </div>
+        </div>
+      )}
+
+      {options.map((option, index) => (
+        <div className="d-flex align-items-top row-container query-manager-border-color mb-2" key={index}>
+          <Input
+            type="text"
+            className="input-control"
+            onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
+            value={option[0]}
+            workspaceConstants={workspaceConstants}
+            placeholder="key"
+            autoComplete="off"
+            style={{
+              flex: 1,
+              width: '250px',
+              borderTopRightRadius: '0',
+              borderBottomRightRadius: '0',
+              borderRight: 'none',
+            }}
+          />
+
+          <Input
+            type="text"
+            value={option[1]}
+            placeholder="value"
+            autoComplete="off"
+            className="input-control"
+            onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
+            workspaceConstants={workspaceConstants}
+            style={{
+              flex: 2,
+              borderTopLeftRadius: '0',
+              borderBottomLeftRadius: '0',
+              borderTopRightRadius: '0',
+              borderBottomRightRadius: '0',
+            }}
+          />
+
+          <button
+            className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end ${
+              darkMode ? 'delete-field-option-dark' : ''
+            }`}
+            style={{ height: '35px' }}
+            role="button"
+            onClick={() => removeKeyValuePair(index)}
+          >
+            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+          </button>
+        </div>
+      ))}
+
+      <div className="d-flex mb-2" style={{ height: '16px' }}>
+        <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)} style={{ gap: '0px' }}>
+          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+          &nbsp;&nbsp;Add more
+        </ButtonSolid>
+      </div>
     </div>
   );
 };
