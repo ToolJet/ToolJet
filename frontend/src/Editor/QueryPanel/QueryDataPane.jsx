@@ -10,6 +10,7 @@ import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
+import { useDataSources } from '@/_stores/dataSourcesStore';
 import FilterandSortPopup from './FilterandSortPopup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -24,11 +25,16 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
+  const dataSources = useDataSources();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
   const [showSearchBox, setShowSearchBox] = useState(false);
   const searchBoxRef = useRef(null);
   const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
   const [searchTermForFilters, setSearchTermForFilters] = useState();
+
+  function isDataSourceLocal(dataQuery) {
+    return dataSources.some((dataSource) => dataSource.id === dataQuery.data_source_id);
+  }
 
   useEffect(() => {
     // Create a copy of the dataQueries array to perform filtering without modifying the original data.
@@ -176,6 +182,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                   darkMode={darkMode}
                   editorRef={editorRef}
                   appId={appId}
+                  localDs={isDataSourceLocal(query) ? 'true' : 'false'}
                 />
               ))}
             </div>

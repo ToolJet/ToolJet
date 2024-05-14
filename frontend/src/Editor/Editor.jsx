@@ -1802,7 +1802,8 @@ const EditorComponent = (props) => {
                     style={{
                       width: currentLayout === 'desktop' ? '100%' : '450px',
                       maxWidth:
-                        +appDefinition.globalSettings.canvasMaxWidth + appDefinition.globalSettings.canvasMaxWidthType,
+                        +appDefinition.globalSettings?.canvasMaxWidth +
+                        appDefinition.globalSettings?.canvasMaxWidthType,
 
                       backgroundColor: computeCanvasBackgroundColor(),
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.

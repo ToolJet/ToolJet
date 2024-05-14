@@ -11,7 +11,7 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable } from '@/_helpers/utils';
 
-export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
+export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, localDs }) => {
   const selectedQuery = useSelectedQuery();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
@@ -104,6 +104,24 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               </span>{' '}
               <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
               {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+              {localDs === 'true' && (
+                <>
+                  <a
+                    className="text-truncate"
+                    data-tooltip-id="query-card-local-ds-info"
+                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img src={`assets/images/icons/warning.svg`} style={{ height: '20px' }} alt="Warning" />
+                  </a>{' '}
+                  <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
+                    Important <br />
+                    Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
+                    Check Documentation for Help
+                  </Tooltip>
+                </>
+              )}
             </div>
           )}
         </div>
