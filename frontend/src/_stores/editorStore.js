@@ -111,6 +111,10 @@ export const useEditorStore = create(
           selectedComponents: newSelectedComponents,
         });
       },
+      //TODO: Refactor multiple component selection with a single function
+      selectMultipleComponents: (selectedComponents) => {
+        set({ selectedComponents: selectedComponents });
+      },
       setCurrentPageId: (currentPageId) => set({ currentPageId }),
       setCurrentAppEnvironmentId: (currentAppEnvironmentId) => set({ currentAppEnvironmentId }),
       setCurrentAppEnvironmentDetails: (currentAppEnvironmentDetails) =>

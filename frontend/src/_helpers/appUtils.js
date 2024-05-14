@@ -2222,3 +2222,8 @@ function extractVersion(versionStr) {
 
   return { major, minor };
 }
+
+// Select multiple components using Selecto via drag
+export const setMultipleComponentsSelected = (components) => {
+  useEditorStore.getState().actions.selectMultipleComponents(components);
+};
