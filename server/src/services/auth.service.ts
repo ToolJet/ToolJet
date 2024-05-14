@@ -1298,11 +1298,12 @@ export class AuthService {
     manager?: EntityManager
   ): Promise<any> {
     const request = RequestContext?.currentContext?.req;
+    const clientIp = (request as any)?.clientIp;
     const { id, email, firstName, lastName } = user;
 
     const session: UserSessions = await this.sessionService.createSession(
       user.id,
-      `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
         request?.headers['user-agent'] || 'unknown'
       }`,
       manager
