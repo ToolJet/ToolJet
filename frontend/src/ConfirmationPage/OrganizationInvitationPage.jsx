@@ -124,12 +124,18 @@ class OrganizationInvitationPageComponent extends React.Component {
                       </ButtonSolid>
                     </div>
                     {defaultState && (
-                      <p className="text-center-onboard d-block">
+                      <p className="text-center-onboard d-block" data-cy="signup-terms-helper">
                         By signing up you are agreeing to the
                         <br />
                         <span>
-                          <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                          <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                          <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                            Terms of Service{' '}
+                          </a>
+                          &
+                          <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                            {' '}
+                            Privacy Policy
+                          </a>
                         </span>
                       </p>
                     )}

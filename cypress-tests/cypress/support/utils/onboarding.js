@@ -217,9 +217,9 @@ export const inviteUser = (firstName, email) => {
   cy.wait(1000);
   cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.intercept("GET", "/api/organizations").as("org");
+  //cy.intercept("GET", "/api/organizations").as("org");
   cy.get(commonSelectors.signUpButton).click();
-  cy.wait("@org");
+  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 

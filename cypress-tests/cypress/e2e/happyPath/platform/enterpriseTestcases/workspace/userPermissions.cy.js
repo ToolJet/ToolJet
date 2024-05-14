@@ -19,7 +19,6 @@ const data = {};
 data.firstName = fake.firstName;
 data.email = fake.email.toLowerCase();
 data.appName = `${fake.companyName} App`;
-data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.dsEdit = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("User permissions", () => {
@@ -36,6 +35,8 @@ describe("User permissions", () => {
   });
 
   it("Should verify the DS View and Edit permission", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
     cy.apiCreateGDS(
       "http://localhost:3000/api/v2/data_sources",
       `cypress-${data.lastName}-bigquery`,
@@ -134,6 +135,8 @@ describe("User permissions", () => {
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
   });
   it("Should verify the Create and Delete DS permission", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
     cy.logoutApi();
     cy.apiLogin(data.email, usersText.password);
     cy.visit("/my-workspace");
