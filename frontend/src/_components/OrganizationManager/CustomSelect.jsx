@@ -7,10 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 const Menu = (props) => {
   const { t } = useTranslation();

@@ -3,10 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import SolidIcon from '../Icon/SolidIcons';
 import { BreadCrumbContext } from '../../App/App';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const { sidebarNav } = useContext(BreadCrumbContext);

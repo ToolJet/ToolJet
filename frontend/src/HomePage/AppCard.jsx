@@ -12,12 +12,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
-import { validateName } from '@/_helpers/utils';
+import { validateName, decodeEntities } from '@/_helpers/utils';
 const { defaultIcon } = configs;
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
 
 export default function AppCard({
   app,

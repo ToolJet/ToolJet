@@ -1279,3 +1279,8 @@ export const setWindowTitle = async (pageDetails, location) => {
     document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
   }
 };
+
+//For <>& UI display issues
+export function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+}

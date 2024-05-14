@@ -5,10 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;

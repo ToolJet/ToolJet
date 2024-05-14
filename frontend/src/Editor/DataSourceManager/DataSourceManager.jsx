@@ -5,7 +5,7 @@ import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
-import { getWorkspaceId, deepEqual } from '@/_helpers/utils';
+import { getWorkspaceId, deepEqual, decodeEntities } from '@/_helpers/utils';
 import {
   DataBaseSources,
   ApiSources,
@@ -29,10 +29,6 @@ import { withRouter } from '@/_hoc/withRouter';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {

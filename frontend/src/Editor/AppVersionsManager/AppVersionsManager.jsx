@@ -6,10 +6,7 @@ import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',

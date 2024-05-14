@@ -3,7 +3,7 @@ import Plus from '@/_ui/Icon/solidIcons/Plus';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox as SearchBox2 } from '@/_components/SearchBox';
 import DataSourceIcon from './DataSourceIcon';
@@ -15,10 +15,6 @@ import { Tooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '../queryManager.theme.scss';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
 
 function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, darkMode, globalDataSources }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources];

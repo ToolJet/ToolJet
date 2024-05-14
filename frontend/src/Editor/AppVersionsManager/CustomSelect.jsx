@@ -5,11 +5,7 @@ import { components } from 'react-select';
 import { EditVersion } from './EditVersionModal';
 import { CreateVersion } from './CreateVersionModal';
 import { ConfirmDialog } from '@/_components';
-import { defaultAppEnvironments } from '@/_helpers/utils';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
 
 export const Menu = (props) => {
   const isEditable = props.selectProps.isEditable;

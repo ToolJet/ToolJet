@@ -9,11 +9,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
-import { isQueryRunnable } from '@/_helpers/utils';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
   const selectedQuery = useSelectedQuery();

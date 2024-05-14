@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { getAvatar } from '@/_helpers/utils';
+import { getAvatar, decodeEntities } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
 
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentSessionValue;

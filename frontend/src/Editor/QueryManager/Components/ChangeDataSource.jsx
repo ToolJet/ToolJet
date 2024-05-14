@@ -1,9 +1,6 @@
 import React from 'react';
 import Select from '@/_ui/Select';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 export const ChangeDataSource = ({ dataSources, onChange, value }) => {
   return (

@@ -8,10 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
 import { humanizeifDefaultGroupName } from '@/_helpers/utils';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 const UsersTable = ({
   isLoading,

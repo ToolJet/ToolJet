@@ -4,7 +4,7 @@ import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { authenticationService } from '@/_services';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -16,10 +16,6 @@ import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataS
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
-}
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
