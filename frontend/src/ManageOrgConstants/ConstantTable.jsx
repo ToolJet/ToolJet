@@ -81,7 +81,7 @@ const ConstantTable = ({
                           : constant.name}
                       </span>
                     </td>
-                    <td className="text-muted p-3">
+                    <td className="text-muted p-3" style={{ width: '350px' }}>
                       <a
                         className="text-reset user-email"
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
