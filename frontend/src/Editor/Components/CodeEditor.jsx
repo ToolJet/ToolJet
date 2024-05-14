@@ -7,6 +7,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import { sass } from '@codemirror/lang-sass';
+import { debounce } from 'lodash';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -20,9 +21,9 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
   const { enableLineNumber, mode, placeholder } = properties;
   const { visibility, disabledState } = styles;
 
-  function codeChanged(code) {
+  const codeChanged = debounce((code) => {
     setExposedVariable('value', code);
-  }
+  }, 500);
 
   const editorStyles = {
     height: height,
@@ -71,7 +72,6 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
           theme={theme}
           extensions={[langExtention]}
           onChange={codeChanged}
-          onBlur={(value) => codeChanged(value)}
           basicSetup={setupConfig}
           style={{
             overflowY: 'auto',
