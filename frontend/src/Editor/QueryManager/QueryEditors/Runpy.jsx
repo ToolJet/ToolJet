@@ -16,7 +16,7 @@ export class Runpy extends React.Component {
 
   render() {
     return (
-      <div className="runps-editor">
+      <div className="runps-editor mb-3">
         <CodeHinter
           type="multiline"
           initialValue={this.props.options.code}

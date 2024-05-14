@@ -249,7 +249,6 @@
 
 
 .codehinter-multi-line-input {
-
     .cm-editor {
         height: 300px;
         max-height: fit-content !important;
@@ -439,13 +438,10 @@
     .cm-editor {
         border-bottom-right-radius: 4px !important;
         border-bottom-left-radius: 4px !important;
-        border-right-color: var(--borders-disabled-on-white);
-        border-left-color: var(--borders-disabled-on-white);
-        border-bottom-color: var(--borders-disabled-on-white);
+        border-color: var(--borders-disabled-on-white);
         border-top-right-radius: 0px !important;
         border-top-left-radius: 0px !important;
         justify-content: center;
-        border-top: none;
     }
 
 }
@@ -491,4 +487,14 @@
 
 .cm-selectionLayer {
     width: 100%;
+}
+
+.code-editor-widget {
+    .codehinter-multi-line-input {
+        height: 100%;
+
+        .cm-editor {
+            height: 100%;
+        }
+    }
 }
