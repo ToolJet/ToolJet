@@ -1381,9 +1381,7 @@ export function computeComponentState(components = {}) {
   try {
     let componentState = {};
 
-    const { isEditorReady } = getCurrentState();
-
-    const currentComponents = duplicateCurrentState === null ? getCurrentState().components : duplicateCurrentState;
+    const currentComponents = getCurrentState().components;
 
     // Precompute parent component types
     const parentComponentTypes = {};
@@ -1419,20 +1417,11 @@ export function computeComponentState(components = {}) {
       }
     });
 
-    if (isEditorReady) {
-      if (duplicateCurrentState !== null) {
-        duplicateCurrentState = null;
-      }
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: {
-          ...componentState,
-        },
-      });
-    } else {
-      // Update the duplicate state if editor is not ready
-      duplicateCurrentState = { ...componentState };
-      debouncedChange();
-    }
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: {
+        ...componentState,
+      },
+    });
     return new Promise((resolve) => {
       useEditorStore.getState().actions.updateEditorState({
         defaultComponentStateComputed: true,
