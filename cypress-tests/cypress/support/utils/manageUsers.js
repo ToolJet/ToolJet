@@ -294,9 +294,9 @@ export const inviteUserWithUserGroups = (
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
   cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.intercept('GET', '/api/organizations').as('org')
+  // cy.intercept('GET', '/api/organizations').as('org')
   cy.get(commonSelectors.signUpButton).click();
-  cy.wait('@org');
+  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
