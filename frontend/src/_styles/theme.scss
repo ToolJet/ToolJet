@@ -7948,7 +7948,8 @@ tbody {
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
 
-  &[data-name="Profile settings"] {
+  &[data-name="Profile settings"],
+  &[data-name="Workspace constants"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
   }
@@ -8682,6 +8683,10 @@ tbody {
   justify-content: center;
   align-items: center;
   color: var(--slate11);
+
+  .with-border{
+    border-bottom: 1px solid var(--slate5) !important;
+  }
 
   a {
     text-decoration: none;
@@ -12682,7 +12687,7 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1.5rem;
+  padding-top: 1.5rem;
 }
 
 .blank-page-wrapper {
@@ -12885,4 +12890,8 @@ tbody {
   &:active {
     background-color: var(--interactive-overlays-fill-pressed) !important;
   }
+}
+
+div.ds-svg-container[data-ds-name="postgresql-button"] svg {
+  padding: 2px;
 }

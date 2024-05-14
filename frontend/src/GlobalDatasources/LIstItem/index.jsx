@@ -8,6 +8,10 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
+function decodeEntities(encodedString) {
+  return encodedString.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+}
+
 export const ListItem = ({
   dataSource,
   key,
@@ -81,10 +85,15 @@ export const ListItem = ({
           className="col d-flex align-items-center overflow-hidden"
           data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
         >
-          <div>{icon}</div>
+          <div
+            className="ds-svg-container"
+            data-ds-name={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
+          >
+            {icon}
+          </div>
 
           <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px', display: 'flex' }}>
-            {dataSource.name}
+            {decodeEntities(dataSource.name)}
             {isSampleDb && (
               <div
                 className="font-400 tj-text-xxsm text-truncate"
