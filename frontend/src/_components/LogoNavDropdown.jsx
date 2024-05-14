@@ -24,7 +24,7 @@ export default function LogoNavDropdown({ darkMode }) {
           className="dropdown-item tj-text tj-text-xsm"
           data-cy="back-to-app-option"
           onClick={handleBackClick}
-          to={dashboardUrl()}
+          to={getPrivateRoute('dashboard')}
         >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
           <span>Back to apps</span>
