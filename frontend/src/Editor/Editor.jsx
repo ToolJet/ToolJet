@@ -1773,8 +1773,18 @@ const EditorComponent = (props) => {
     });
   };
 
-  const switchPage = debounce(async (pageId, queryParams = []) => {
+  const switchPage = async (pageId, queryParams = []) => {
+    console.log('arpit:: switchPage', { x: useEditorStore.getState().pageSwitchInProgress });
+    if (useEditorStore.getState().pageSwitchInProgress) {
+      toast('Please wait, page switch in progress', {
+        icon: '⚠️',
+      });
+
+      return;
+    }
+
     clearAllQueuedTasks();
+    useEditorStore.getState().actions.setPageProgress(true);
     useCurrentStateStore.getState().actions.setEditorReady(false);
     useResolveStore.getState().actions.resetStore();
     // This are fetched from store to handle runQueriesOnAppLoad
@@ -1821,7 +1831,10 @@ const EditorComponent = (props) => {
       .events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
-  }, 100);
+    handleLowPriorityWork(() => {
+      useEditorStore.getState().actions.setPageProgress(false);
+    }, 100);
+  };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
     setShowPageDeletionConfirmation({
