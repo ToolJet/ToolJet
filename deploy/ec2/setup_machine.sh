@@ -11,6 +11,8 @@ nvm install 18.18.2
 sudo ln -s "$(which node)" /usr/bin/node
 sudo ln -s "$(which npm)" /usr/bin/npm
 
+sudo npm i -g npm@9.8.1
+
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
 echo "deb http://openresty.org/package/ubuntu bionic main" > openresty.list

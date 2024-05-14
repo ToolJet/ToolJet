@@ -2,7 +2,7 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-import { retrieveWhiteLabelText, validateEmail } from '../_helpers/utils';
+import { retrieveWhiteLabelText, validateEmail, checkWhiteLabelsDefaultState } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
@@ -27,6 +27,7 @@ class SignupPageComponent extends React.Component {
       emailError: '',
       isGettingConfigs: true,
       disableOnEdit: false,
+      defaultState: false,
     };
   }
 
@@ -53,6 +54,7 @@ class SignupPageComponent extends React.Component {
         }
       }
     );
+    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
   }
 
   handleChange = (event) => {
@@ -99,7 +101,7 @@ class SignupPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, signupSuccess, whiteLabelText } = this.state;
+    const { isLoading, signupSuccess, whiteLabelText, defaultState } = this.state;
 
     return (
       <div className="page common-auth-section-whole-wrapper">
@@ -308,20 +310,22 @@ class SignupPageComponent extends React.Component {
                         </div>
                       </>
                     )}
-                    <p className="signup-terms" data-cy="signup-terms-helper">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                          Terms of Service{' '}
-                        </a>
-                        &
-                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                          {' '}
-                          Privacy Policy
-                        </a>
-                      </span>
-                    </p>
+                    {defaultState && (
+                      <p className="signup-terms" data-cy="signup-terms-helper">
+                        By signing up you are agreeing to the
+                        <br />
+                        <span>
+                          <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                            Terms of Service{' '}
+                          </a>
+                          &
+                          <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                            {' '}
+                            Privacy Policy
+                          </a>
+                        </span>
+                      </p>
+                    )}
                   </div>
                 )}
                 {signupSuccess && (

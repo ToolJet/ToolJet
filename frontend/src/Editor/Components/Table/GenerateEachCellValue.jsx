@@ -170,7 +170,6 @@ export default function GenerateEachCellValue({
         }}
         onMouseOut={() => setHovered(false)}
       >
-
         <div
           style={{
             color: cellTextColor,
