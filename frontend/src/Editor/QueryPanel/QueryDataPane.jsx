@@ -182,7 +182,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                   darkMode={darkMode}
                   editorRef={editorRef}
                   appId={appId}
-                  localDs={isDataSourceLocal(query) ? 'true' : 'false'}
+                  localDs={!!isDataSourceLocal(query)}
                 />
               ))}
             </div>

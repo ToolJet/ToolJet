@@ -104,7 +104,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
               </span>{' '}
               <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
               {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
-              {localDs === 'true' && (
+              {localDs && (
                 <>
                   <a
                     className="text-truncate"
