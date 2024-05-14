@@ -249,7 +249,6 @@
 
 
 .codehinter-multi-line-input {
-
     .cm-editor {
         height: 300px;
         max-height: fit-content !important;
@@ -491,4 +490,14 @@
 
 .cm-selectionLayer {
     width: 100%;
+}
+
+.code-editor-widget {
+    .codehinter-multi-line-input {
+        height: 100%;
+
+        .cm-editor {
+            height: 100%;
+        }
+    }
 }

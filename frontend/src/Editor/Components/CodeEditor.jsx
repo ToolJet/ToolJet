@@ -64,7 +64,7 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
         <CodeMirror
           value={exposedVariables.value}
           placeholder={placeholder}
-          height={editorHeight}
+          height={'100%'}
           minHeight={editorHeight}
           maxHeight="100%"
           width="100%"
