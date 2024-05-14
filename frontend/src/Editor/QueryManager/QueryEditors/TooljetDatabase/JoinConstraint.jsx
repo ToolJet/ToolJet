@@ -89,6 +89,24 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
       }
     });
 
+  const foreignKeyTableDetails = Object.values(tableForeignKeyInfo)?.flatMap(
+    (foreignKeyDetails) => foreignKeyDetails || []
+  );
+
+  function isMatchingForeignKeyObjects(foreignKeyTableList, tableList) {
+    const foreignKeyObjects = [];
+    for (const fkObject of foreignKeyTableList) {
+      for (const table of tableList) {
+        if (fkObject.referenced_table_id === table.value) {
+          foreignKeyObjects.push(fkObject);
+        }
+      }
+    }
+    return foreignKeyObjects;
+  }
+
+  const foreignKeyDetails = isMatchingForeignKeyObjects(foreignKeyTableDetails, tableList);
+
   // OnSelecting LHS ro RHS table on Join Operation, Checking if Adjacent table has FK relation and Auto Fill the column values
   function checkIfAdjacentTableHasForeignKey(isChoosingLHStable, tableId) {
     if (isChoosingLHStable && rightFieldTable) {
@@ -309,6 +327,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             addBtnLabel={'Add new table'}
             value={tableList.find((val) => val?.value === rightFieldTable)}
             shouldShowForeignKeyIcon
+            referencedForeignKeyDetails={foreignKeyDetails}
           />
         </Col>
       </Row>

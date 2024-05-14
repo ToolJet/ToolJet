@@ -34,14 +34,17 @@ type ErrorCodeMapping = {
 const errorCodeMapping: Partial<ErrorCodeMapping> = {
   [PostgresErrorCode.NotNullViolation]: {
     edit_column: 'Cannot add NOT NULL constraint as this column contains null values',
-    proxy_postgrest: 'Not null constraint violated for "{{table}}"."{{column}}"',
+    proxy_postgrest: 'Not null constraint violated for {{table}}.{{column}}',
   },
   [PostgresErrorCode.UniqueViolation]: {
     edit_column: 'Cannot add UNIQUE constraint as this column contains duplicate values',
-    proxy_postgrest: 'Unique constraint violated as {{value}} already exists in "{{table}}"."{{column}}"',
+    proxy_postgrest: 'Unique constraint violated as {{value}} already exists in {{table}}.{{column}}',
   },
   [PostgresErrorCode.UndefinedTable]: {
-    default: 'Could not find the table "{{table}}".',
+    default: 'Could not find the table {{table}}.',
+  },
+  [PostgresErrorCode.ForeignKeyViolation]: {
+    proxy_postgrest: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
   },
 };
 
@@ -150,6 +153,13 @@ export class TooljetDatabaseError extends QueryFailedError {
         const matches = regex.exec(errorMessage);
         const table = this.context.internalTables[0].tableName;
         return { table, column: matches[1], value: matches[2] };
+      },
+      [PostgresErrorCode.ForeignKeyViolation]: () => {
+        const errorMessage = this.queryError.driverError.details;
+        const regex = /Key \((.*?)\)=\((.*?)\) (is still referenced from table|is not present in table) "(.*?)"\./;
+        const matches = regex.exec(errorMessage);
+        const table = this.context.internalTables[0].tableName;
+        return { table, column: matches[1], value: matches[2], referencedTables: [matches[2]] };
       },
     };
     return parsers[this.code]?.() || null;

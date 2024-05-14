@@ -523,7 +523,7 @@ const ColumnForm = ({
                   />
                 ) : (
                   <DropDownSelect
-                    buttonClasses="border border-end-1 foreignKeyAcces-container mb-2"
+                    buttonClasses="border border-end-1 foreignKeyAcces-container-drawer mb-2"
                     showPlaceHolder={true}
                     options={referenceTableDetails}
                     darkMode={darkMode}
@@ -754,9 +754,15 @@ const ColumnForm = ({
                 </label>
               </div>
               <div className="col d-flex flex-column">
-                <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+                <p className="m-0 p-0 fw-500">
+                  {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
+                    ? 'UNIQUE'
+                    : 'NOT UNIQUE'}
+                </p>
                 <p className="fw-400 secondary-text tj-text-xsm">
-                  {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
+                  {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
+                    ? 'Unique value constraint is added'
+                    : 'Unique value constraint is not added'}
                 </p>
               </div>
             </div>

@@ -54,11 +54,23 @@ export const CellEditMenu = ({
   const handleNullChange = (nullVal) => {
     if (nullVal === true) {
       setCellValue(null);
+      setSelectedForeignKeyValue({
+        label: null,
+        value: null,
+      });
     } else {
       if (previousCellValue === null) {
         setCellValue('');
+        setSelectedForeignKeyValue({
+          label: '',
+          value: '',
+        });
       } else {
         setCellValue(previousCellValue);
+        setSelectedForeignKeyValue({
+          label: previousCellValue,
+          value: previousCellValue,
+        });
       }
     }
     setNullValue(nullVal);
@@ -167,6 +179,7 @@ export const CellEditMenu = ({
                   value: value.value === 'Null' ? null : value.value,
                 });
                 setCellValue(value.value === 'Null' ? null : value.value);
+                setNullValue(value.value === 'Null' ? true : false);
               }}
               onAdd={true}
               addBtnLabel={'Open referenced table'}

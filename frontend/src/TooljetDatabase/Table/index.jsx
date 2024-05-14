@@ -1113,7 +1113,7 @@ const Table = ({ collapseSidebar }) => {
                       onMouseOver={() => handleMouseOver(index)}
                       onMouseOut={() => handleMouseOut()}
                     >
-                      <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center justify-content-between" style={{ gap: '4px' }}>
                         {tableHeaderContent(column, index)}
 
                         <TablePopover
@@ -1260,21 +1260,22 @@ const Table = ({ collapseSidebar }) => {
                                 cell.value !== ''
                               }
                             >
-                              <div className="tjdb-column-select-border">
-                                <div
-                                  className={cx('tjdb-td-wrapper', {
-                                    'tjdb-selected-cell':
-                                      cellClick.rowIndex === rIndex &&
+                              <div
+                                className={`${
+                                  cellClick.rowIndex === rIndex &&
+                                  cellClick.cellIndex === index &&
+                                  cellClick.errorState === true
+                                    ? 'tjdb-cell-error'
+                                    : cellClick.rowIndex === rIndex &&
                                       cellClick.cellIndex === index &&
                                       cellClick.editable === true &&
-                                      !isCellUpdateInProgress,
-                                    'tjdb-cell-error':
-                                      cellClick.rowIndex === rIndex &&
-                                      cellClick.cellIndex === index &&
-                                      cellClick.errorState === true,
-                                  })}
-                                  id={`tjdb-cell-row${rIndex}-column${index}`}
-                                >
+                                      !isCellUpdateInProgress
+                                    ? 'tjdb-selected-cell'
+                                    : 'tjdb-column-select-border'
+                                }`}
+                                id={`tjdb-cell-row${rIndex}-column${index}`}
+                              >
+                                <div className={cx('tjdb-td-wrapper')}>
                                   {cellClick.editable &&
                                   cellClick.rowIndex === rIndex &&
                                   cellClick.cellIndex === index ? (

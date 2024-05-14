@@ -182,7 +182,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
         const { dataType, column_default } = column;
         if (dataType !== 'serial') {
           if (column.dataType === 'boolean') {
-            result[column.accessor] = false;
+            result[column.accessor] = column_default ? column_default : false;
           } else {
             result[column.accessor] = column_default ? column_default : '';
           }
@@ -217,7 +217,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           <div style={{ position: 'relative' }}>
             {isMatchingForeignKeyColumn(columnName) ? (
               <DropDownSelect
-                buttonClasses="border border-end-1 foreignKeyAcces-container"
+                buttonClasses="border border-end-1 foreignKeyAcces-container-drawer"
                 showPlaceHolder={true}
                 options={referenceTableDetails}
                 darkMode={darkMode}
@@ -356,7 +356,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                           ) : null
                         }
                         placement="top"
-                        tooltipClassName="tootip-table"
+                        tooltipClassName="tjdb-table-tooltip"
                       >
                         <div>
                           {isMatchingForeignKeyColumn(Header) && (
