@@ -226,6 +226,7 @@ export const ToggleSwitchV2 = ({
         justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
         height,
         whiteSpace: 'nowrap',
+        paddingTop: '3px',
       }}
       data-cy={dataCy}
     >

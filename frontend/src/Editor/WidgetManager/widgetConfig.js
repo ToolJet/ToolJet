@@ -2527,7 +2527,7 @@ export const widgets = [
       },
     },
     events: {
-      onChange: { displayName: 'On Change' },
+      onChange: { displayName: 'On change' },
       onCheck: { displayName: 'On check (Deprecated)' },
       onUnCheck: { displayName: 'On uncheck (Deprecated)' },
     },
@@ -2604,18 +2604,23 @@ export const widgets = [
         displayName: 'toggle',
       },
       {
+        handle: 'setValue',
+        displayName: 'Set value',
+        params: [{ handle: 'value', displayName: 'value' }],
+      },
+      {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
@@ -2910,18 +2915,23 @@ export const widgets = [
         displayName: 'toggle',
       },
       {
+        handle: 'setValue',
+        displayName: 'Set value',
+        params: [{ handle: 'value', displayName: 'value' }],
+      },
+      {
         handle: 'setVisibility',
-        displayName: 'setVisibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setDisable',
-        displayName: 'setDisable',
+        displayName: 'Set disable',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'setLoading',
-        displayName: 'setLoading',
+        displayName: 'Set loading',
         params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],

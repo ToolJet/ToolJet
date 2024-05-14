@@ -266,6 +266,7 @@ export const Checkbox = function Checkbox({
         className="checkbox-component"
         style={{
           justifyContent: `${loadingState ? 'center' : 'flex-start'}`,
+          paddingTop: '3px',
         }}
       >
         {renderCheckBox()}
