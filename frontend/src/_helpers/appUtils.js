@@ -73,9 +73,17 @@ const debouncedChange = _.debounce(() => {
   });
 }, 100);
 
-export function onComponentOptionsChanged(component, options) {
-  const componentName = component.name;
-  const { isEditorReady } = getCurrentState();
+export function onComponentOptionsChanged(component, options, id) {
+  let componentName = component.name;
+  const { isEditorReady, page } = getCurrentState();
+
+  if (id) {
+    const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
+    const _componentName = _component.component.name;
+    if (_componentName !== componentName) {
+      componentName = _componentName;
+    }
+  }
 
   if (isEditorReady) {
     if (duplicateCurrentState !== null) {
@@ -133,9 +141,20 @@ export function onComponentOptionsChanged(component, options) {
   return Promise.resolve();
 }
 
-export function onComponentOptionChanged(component, option_name, value) {
-  const componentName = component.name;
+export function onComponentOptionChanged(component, option_name, value, id) {
+  let componentName = component.name;
+
+  if (id) {
+    //? component passed as argument contains previous state of the component data, component name is not updated
+    const _component = useEditorStore.getState().appDefinition.pages[getCurrentState().page.id].components[id];
+    const _componentName = _component.component.name;
+    if (_componentName !== componentName) {
+      componentName = _componentName;
+    }
+  }
+
   const { isEditorReady, components: currentComponents } = getCurrentState();
+
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
   let componentData = components[componentName] || {};
   componentData[option_name] = value;
