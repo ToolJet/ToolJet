@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useLayoutEffect } from 'react';
 import {
   appService,
   authenticationService,
   appVersionService,
   orgEnvironmentVariableService,
-  appEnvironmentService,
   orgEnvironmentConstantService,
   appsService,
 } from '@/_services';
@@ -87,7 +86,12 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex, EditorConstants } from './editorConstants';
-import { findComponentsWithReferences, handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
+import {
+  findComponentsWithReferences,
+  handleLowPriorityWork,
+  updateCanvasBackground,
+  clearAllQueuedTasks,
+} from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
 
@@ -829,6 +833,7 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
+      clearAllQueuedTasks();
       useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
       useCurrentStateStore.getState().actions.setEditorReady(false);
       useResolveStore.getState().actions.resetStore();
@@ -1685,7 +1690,8 @@ const EditorComponent = (props) => {
     });
   };
 
-  const switchPage = async (pageId, queryParams = []) => {
+  const switchPage = debounce(async (pageId, queryParams = []) => {
+    clearAllQueuedTasks();
     useCurrentStateStore.getState().actions.setEditorReady(false);
     useResolveStore.getState().actions.resetStore();
     // This are fetched from store to handle runQueriesOnAppLoad
@@ -1720,7 +1726,9 @@ const EditorComponent = (props) => {
 
     await onEditorLoad(appDefinition, pageId, true);
     updateEntityReferences(appDefinition, pageId);
-    useResolveStore.getState().actions.updateJSHints();
+    handleLowPriorityWork(() => {
+      useResolveStore.getState().actions.updateJSHints();
+    });
 
     setCurrentPageId(pageId);
 
@@ -1729,7 +1737,7 @@ const EditorComponent = (props) => {
       .events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
-  };
+  }, 100);
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
     setShowPageDeletionConfirmation({
