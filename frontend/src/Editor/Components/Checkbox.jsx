@@ -24,7 +24,7 @@ export const Checkbox = function Checkbox({
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
   const currentState = useCurrentState();
   const { loadingState, disabledState } = properties;
-  const { checkboxColor, boxShadow, alignment, padding, uncheckedColor, borderColor, handleColor } = styles;
+  const { checkboxColor, boxShadow, alignment, uncheckedColor, borderColor, handleColor } = styles;
 
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(disabledState || loadingState);
@@ -200,7 +200,7 @@ export const Checkbox = function Checkbox({
             <OverflowTooltip
               className="form-check-label"
               style={{
-                lineHeight: padding == 'none' && '20px',
+                lineHeight: '20px',
                 color: textColor,
                 fontWeight: 400,
                 fontSize: '14px',
@@ -227,9 +227,9 @@ export const Checkbox = function Checkbox({
   );
   const checkmarkStyle = {
     position: 'absolute',
-    top: padding == 'default' ? '4px' : '2px',
-    right: alignment === 'left' && padding === 'default' ? '4px' : alignment === 'left' ? '2px' : null,
-    left: alignment === 'right' && padding === 'default' ? '4px' : alignment === 'right' ? '2px' : null,
+    // top: padding == 'default' ? '4px' : '2px',
+    right: alignment === 'left' ? '4px' : alignment === 'left' ? '2px' : null,
+    left: alignment === 'right' ? '4px' : alignment === 'right' ? '2px' : null,
     visibility: checked ? 'visible' : 'hidden',
     height: '14px',
     width: ' 14px',
@@ -242,7 +242,7 @@ export const Checkbox = function Checkbox({
     padding: '2px',
     border: `1px solid ${borderColor}`,
     backgroundColor: checked ? checkboxColor : uncheckedColor,
-    borderRadius: '6px',
+    borderRadius: '5px',
     height: '18px',
     width: '18px',
     minHeight: '18px',

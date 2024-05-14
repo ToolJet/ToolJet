@@ -30,7 +30,7 @@ class Switch extends React.Component {
       position: 'relative',
       display: 'inline-block',
       width: '28px',
-      height: '16px',
+      height: '18px',
       marginRight: '0px',
       paddingRight: '0px',
     };
@@ -54,7 +54,7 @@ class Switch extends React.Component {
       height: '12px',
       width: '12px',
       left: '2px',
-      bottom: '2px',
+      bottom: '3px',
       backgroundColor: styles.handleColor,
       transition: 'transform 0.2s',
       borderRadius: '50%',
@@ -119,7 +119,7 @@ export const ToggleSwitchV2 = ({
 
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
 
-  const { toggleSwitchColor, boxShadow, alignment, padding, borderColor } = styles;
+  const { toggleSwitchColor, boxShadow, alignment, borderColor } = styles;
 
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
 
@@ -236,7 +236,7 @@ export const ToggleSwitchV2 = ({
           <OverflowTooltip
             className="form-check-label"
             style={{
-              lineHeight: padding == 'none' && '20px',
+              lineHeight: '20px',
               color: textColor,
               fontWeight: 400,
               fontSize: '14px',
@@ -255,7 +255,6 @@ export const ToggleSwitchV2 = ({
             onChange={toggleValue}
             color={toggleSwitchColor}
             alignment={alignment}
-            padding={padding}
             validationError={validationError}
             isValid={isValid}
             showValidationError={showValidationError}

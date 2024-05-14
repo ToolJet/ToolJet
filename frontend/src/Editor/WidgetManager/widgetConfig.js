@@ -2468,7 +2468,7 @@ export const widgets = [
     component: 'Checkbox',
     defaultSize: {
       width: 6,
-      height: 22,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2589,16 +2589,6 @@ export const widgets = [
         ],
         accordian: 'label',
       },
-      padding: {
-        type: 'switch',
-        displayName: 'Padding',
-        validation: { schema: { type: 'string' } },
-        options: [
-          { displayName: 'Default', value: 'default' },
-          { displayName: 'None', value: 'none' },
-        ],
-        accordian: 'container',
-      },
     },
     exposedVariables: {
       value: false,
@@ -2653,7 +2643,6 @@ export const widgets = [
         textColor: { value: '#1B1F24' },
         checkboxColor: { value: '#4368E3' },
         uncheckedColor: { value: '#E4E7EB' },
-        padding: { value: 'default' },
         borderColor: { value: '#CCD1D5' },
         handleColor: { value: '#FFFFFF' },
         alignment: { value: 'right' },
@@ -2785,7 +2774,7 @@ export const widgets = [
     component: 'ToggleSwitchV2',
     defaultSize: {
       width: 6,
-      height: 22,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2900,16 +2889,6 @@ export const widgets = [
         ],
         accordian: 'label',
       },
-      padding: {
-        type: 'switch',
-        displayName: 'Padding',
-        validation: { schema: { type: 'string' } },
-        options: [
-          { displayName: 'Default', value: 'default' },
-          { displayName: 'None', value: 'none' },
-        ],
-        accordian: 'container',
-      },
       boxShadow: {
         type: 'boxShadow',
         displayName: 'Box Shadow',
@@ -2968,7 +2947,6 @@ export const widgets = [
         textColor: { value: '#1B1F24' },
         toggleSwitchColor: { value: '#4368E3' }, //keeping same key for backward comopatibility
         uncheckedColor: { value: '#E4E7EB' },
-        padding: { value: 'default' },
         borderColor: { value: '#E4E7EB' },
         handleColor: { value: '#FFFFFF' },
         alignment: { value: 'right' },
