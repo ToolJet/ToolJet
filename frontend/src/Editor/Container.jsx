@@ -614,6 +614,12 @@ export const Container = ({
 
     const diffState = diff(boxes, newBoxes);
 
+    // Added to avoid sending layout data to BE without layout key
+    // resulting in App could not save error
+    for (const diffComponent in diffState) {
+      if (!('layouts' in diffState[diffComponent])) return;
+    }
+
     setBoxes((prev) => {
       const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
         const component = newBoxes[key];
