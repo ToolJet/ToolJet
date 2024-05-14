@@ -11,8 +11,9 @@ import {
   isPlural,
   generatePayloadForLimits,
   catchDbException,
-  generateNextNameAndSlug,
   isSuperAdmin,
+  fullName,
+  generateNextNameAndSlug,
 } from 'src/helpers/utils.helper';
 import {
   Brackets,
@@ -29,6 +30,7 @@ import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
 import { GroupPermissionsService } from './group_permissions.service';
 import { OrganizationUsersService } from './organization_users.service';
+import { DataSourcesService } from './data_sources.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
@@ -52,6 +54,10 @@ import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
 import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 import { IsNull } from 'typeorm';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { DataSource } from 'src/entities/data_source.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 const MAX_ROW_COUNT = 500;
 
@@ -106,6 +112,7 @@ export class OrganizationsService {
     @InjectRepository(SSOConfigs)
     private ssoConfigRepository: Repository<SSOConfigs>,
     private usersService: UsersService,
+    private dataSourceService: DataSourcesService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
     private appEnvironmentService: AppEnvironmentService,
@@ -154,6 +161,7 @@ export class OrganizationsService {
 
         await this.usersService.validateLicense(manager);
       }
+      await this.createSampleDB(organization.id, manager);
       await this.organizationUserService.validateLicense(manager);
     }, manager);
 
@@ -164,7 +172,7 @@ export class OrganizationsService {
     const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings(
       INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
     );
-    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
+    const oidcIncluded = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
     const ssoConfigs = await this.getInstanceSSOConfigs();
     const enableSignUp = await this.instanceSettingsService.getSettings(INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP);
 
@@ -177,6 +185,12 @@ export class OrganizationsService {
       };
     });
 
+    const isExpired = await this.licenseService.getLicenseTerms(LICENSE_FIELD.IS_EXPIRED);
+    const isBasicPlan = await this.licenseService.isBasicPlan();
+    const banner_message = `OpenID connect ${
+      isExpired || isBasicPlan ? 'is available only in paid plans' : 'is not included in your current plan'
+    }. For more, contact super admin`;
+
     return {
       google: {
         enabled: ssoConfigMap?.google?.enabled || false,
@@ -187,12 +201,14 @@ export class OrganizationsService {
         configs: ssoConfigMap?.git?.configs || {},
       },
       openid: {
-        enabled: ssoConfigMap?.openid?.enabled && oidcEnabled,
+        enabled: ssoConfigMap?.openid?.enabled || false,
         configs: ssoConfigMap?.openid?.configs || {},
+        featureIncluded: !!oidcIncluded,
+        ...(!oidcIncluded ? { banner_message } : {}),
       },
       form: {
         enable_sign_up: enableSignUp === 'true' && isPersonalWorkspaceAllowed === 'true',
-        enabled: ssoConfigMap?.form?.enabled || false,
+        enabled: isExpired || isBasicPlan || ssoConfigMap?.form?.enabled || false,
       },
       enableSignUp: enableSignUp === 'true' && isPersonalWorkspaceAllowed === 'true',
     };
@@ -258,22 +274,24 @@ export class OrganizationsService {
     });
   }
 
-  async fetchOrganization(slug: string): Promise<Organization> {
-    let organization: Organization;
-    try {
-      organization = await this.organizationsRepository.findOneOrFail({
-        where: { slug },
-        select: ['id', 'slug', 'status'],
-      });
-    } catch (error) {
-      organization = await this.organizationsRepository.findOne({
-        where: { id: slug },
-        select: ['id', 'slug', 'status'],
-      });
-    }
-    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
-      throw new BadRequestException('Organization is Archived');
-    return organization;
+  async fetchOrganization(slug: string, manager?: EntityManager): Promise<Organization> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      let organization: Organization;
+      try {
+        organization = await manager.findOneOrFail(Organization, {
+          where: { slug },
+          select: ['id', 'slug', 'name', 'status'],
+        });
+      } catch (error) {
+        organization = await manager.findOneOrFail(Organization, {
+          where: { id: slug },
+          select: ['id', 'slug', 'name', 'status'],
+        });
+      }
+      if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+        throw new BadRequestException('Organization is Archived');
+      return organization;
+    }, manager);
   }
 
   async getSingleOrganization(): Promise<Organization> {
@@ -421,7 +439,7 @@ export class OrganizationsService {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName ?? '',
         lastName: orgUser.user.lastName ?? '',
-        name: `${orgUser.user.firstName || ''}${orgUser.user.lastName ? ` ${orgUser.user.lastName}` : ''}`,
+        name: fullName(orgUser.user.firstName, orgUser.user.lastName),
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
@@ -604,6 +622,7 @@ export class OrganizationsService {
       result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
     }
     const ssoConfigs = await this.getInstanceSSOConfigs(false);
+    const isBasicPlan = await this.licenseService.isBasicPlan();
     const isEnableWorkspaceLoginConfiguration =
       (await this.instanceSettingsService.getSettings(
         INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION
@@ -620,9 +639,13 @@ export class OrganizationsService {
 
     if (!result) return;
 
+    if (isBasicPlan) {
+      result.ssoConfigs.forEach((config) => config.sso === 'form' && (config.enabled = true));
+    }
+
     if (!isEnableWorkspaceLoginConfiguration) {
       result.ssoConfigs = [];
-      if (ssoConfigMap?.form?.enabled === true) {
+      if (ssoConfigMap?.form?.enabled === true || isBasicPlan) {
         result.ssoConfigs.push({
           sso: SSOType.FORM,
           enabled: true,
@@ -684,21 +707,7 @@ export class OrganizationsService {
       }
     }
 
-    // filter oidc and ldap configs
-    const licenseTerms = await this.licenseService.getLicenseTerms([
-      LICENSE_FIELD.OIDC,
-      LICENSE_FIELD.LDAP,
-      LICENSE_FIELD.SAML,
-    ]);
-    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.OPENID) && !licenseTerms[LICENSE_FIELD.OIDC]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.OPENID);
-    }
-    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.LDAP) && !licenseTerms[LICENSE_FIELD.LDAP]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.LDAP);
-    }
-    if (result?.ssoConfigs?.some((sso) => sso.sso === SSOType.SAML) && !licenseTerms[LICENSE_FIELD.SAML]) {
-      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== SSOType.SAML);
-    }
+    result.ssoConfigs = await this.cycleThroughOrganizationConfigs(result.ssoConfigs);
 
     if (!isHideSensitiveData) {
       if (!(result?.ssoConfigs?.length > 0)) {
@@ -711,6 +720,50 @@ export class OrganizationsService {
     }
     return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp, result.id);
   }
+
+  private cycleThroughOrganizationConfigs = async (ssoConfigs: any) => {
+    const filteredConfigs: SSOConfigs[] = [];
+
+    const licenseTerms = await this.licenseService.getLicenseTerms([
+      LICENSE_FIELD.OIDC,
+      LICENSE_FIELD.LDAP,
+      LICENSE_FIELD.SAML,
+      LICENSE_FIELD.IS_EXPIRED,
+    ]);
+    const isBasicPlan = await this.licenseService.isBasicPlan();
+    const isExpired = licenseTerms[LICENSE_FIELD.IS_EXPIRED];
+
+    ssoConfigs.map((config) => {
+      const copiedConfig = config;
+      const sso: string = copiedConfig.sso;
+      const paidSSOs = {
+        openid: {
+          label: 'OpenID connect',
+          licenseTerm: LICENSE_FIELD.OIDC,
+        },
+        saml: { label: 'SAML', licenseTerm: LICENSE_FIELD.SAML },
+        ldap: { label: 'LDAP', licenseTerm: LICENSE_FIELD.LDAP },
+      };
+
+      if (Object.keys(paidSSOs).includes(sso)) {
+        const ssoType = paidSSOs[sso];
+        const { label, licenseTerm } = ssoType;
+        if (!licenseTerms[licenseTerm]) {
+          const bannerMessage = `${label} ${
+            isExpired || isBasicPlan ? 'is available only in paid plans' : 'is not included in your current plan'
+          }. For more, contact super admin`;
+          copiedConfig.configs = {
+            name: copiedConfig?.configs?.name,
+          };
+          copiedConfig.bannerMessage = bannerMessage;
+        }
+        copiedConfig.featureIncluded = !!licenseTerms[licenseTerm];
+      }
+      filteredConfigs.push(copiedConfig);
+    });
+
+    return filteredConfigs;
+  };
 
   private hideSSOSensitiveData(
     ssoConfigs: DeepPartial<SSOConfigs>[],
@@ -896,13 +949,14 @@ export class OrganizationsService {
         );
       }
 
+      const isPersonalWorkspaceAllowedConfig = await this.instanceSettingsService.getSettings(
+        INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
+      );
+      const isPersonalWorkspaceAllowed = isPersonalWorkspaceAllowedConfig === 'true';
       if (!user) {
         // User not exist
         shouldSendWelcomeMail = true;
-        // Create default organization if user not exist
-        if (
-          (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true'
-        ) {
+        if (isPersonalWorkspaceAllowed) {
           // Create default organization if user not exist
           const { name, slug } = generateNextNameAndSlug('My workspace');
           defaultOrganization = await this.create(name, slug, null, manager);
@@ -912,10 +966,6 @@ export class OrganizationsService {
         shouldSendWelcomeMail = true;
       }
 
-      if (user && user.status === USER_STATUS.ARCHIVED) {
-        await this.usersService.updateUser(user.id, { status: USER_STATUS.ACTIVE });
-      }
-
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
@@ -923,13 +973,13 @@ export class OrganizationsService {
         user,
         true,
         defaultOrganization?.id,
-        manager
+        manager,
+        !isPersonalWorkspaceAllowed
       );
 
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.organizationUserService.validateLicense(manager);
         await this.usersService.attachUserGroup(
           ['all_users', 'admin'],
           defaultOrganization.id,
@@ -959,6 +1009,7 @@ export class OrganizationsService {
         manager
       );
 
+      const name = fullName(currentUser.firstName, currentUser.lastName);
       if (shouldSendWelcomeMail) {
         this.emailService
           .sendWelcomeEmail(
@@ -968,7 +1019,7 @@ export class OrganizationsService {
             organizationUser.invitationToken,
             organizationUser.organizationId,
             currentOrganization.name,
-            `${currentUser.firstName} ${currentUser.lastName ?? ''}`
+            name
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       } else {
@@ -976,9 +1027,10 @@ export class OrganizationsService {
           .sendOrganizationUserWelcomeEmail(
             user.email,
             user.firstName,
-            `${currentUser.firstName} ${currentUser.lastName ?? ''}`,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
-            currentOrganization.name
+            name,
+            organizationUser.invitationToken,
+            currentOrganization.name,
+            organizationUser.organizationId
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       }
@@ -1167,5 +1219,64 @@ export class OrganizationsService {
     });
     if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
     return;
+  }
+
+  async createSampleDB(organizationId, manager: EntityManager) {
+    const config = {
+      name: 'Sample data source',
+      kind: 'postgresql',
+      type: DataSourceTypes.SAMPLE,
+      scope: DataSourceScopes.GLOBAL,
+      organizationId,
+    };
+    const options = [
+      {
+        key: 'host',
+        value: this.configService.get<string>('PG_HOST'),
+        encrypted: true,
+      },
+      {
+        key: 'port',
+        value: this.configService.get<string>('PG_PORT'),
+        encrypted: true,
+      },
+      {
+        key: 'database',
+        value: 'sample_db',
+      },
+      {
+        key: 'username',
+        value: this.configService.get<string>('PG_USER'),
+        encrypted: true,
+      },
+      {
+        key: 'password',
+        value: this.configService.get<string>('PG_PASS'),
+        encrypted: true,
+      },
+      {
+        key: 'ssl_enabled',
+        value: false,
+        encrypted: true,
+      },
+      { key: 'ssl_certificate', value: 'none', encrypted: false },
+    ];
+    const dataSource = manager.create(DataSource, config);
+    await manager.save(dataSource);
+
+    const allEnvs: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
+
+    await Promise.all(
+      allEnvs?.map(async (env) => {
+        const parsedOptions = await this.dataSourceService.parseOptionsForCreate(options);
+        await manager.save(
+          manager.create(DataSourceOptions, {
+            environmentId: env.id,
+            dataSourceId: dataSource.id,
+            options: parsedOptions,
+          })
+        );
+      })
+    );
   }
 }

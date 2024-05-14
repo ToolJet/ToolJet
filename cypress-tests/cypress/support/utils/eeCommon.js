@@ -15,6 +15,7 @@ import { eeGroupsText } from "Texts/eeCommon";
 import {
   verifyOnboardingQuestions,
   verifyCloudOnboardingQuestions,
+  fetchAndVisitInviteLink
 } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
@@ -185,8 +186,19 @@ export const allowPersonalWorkspace = (allow = true) => {
 
 export const addNewUserEE = (firstName, email) => {
   common.navigateToManageUsers();
-  inviteUser(firstName, email);
+  cy.get(usersSelector.buttonAddUsers).click();
+  cy.get(commonSelectors.inputFieldFullName).type(firstName);
+  cy.get(commonSelectors.inputFieldEmailAddress).type(email);
+
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.userCreatedToast
+  );
+  WorkspaceInvitationLink(email)
   cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
+  cy.get(commonSelectors.signUpButton).click();
+  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
     "have.text",
@@ -204,7 +216,7 @@ export const inviteUser = (firstName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
-  WorkspaceInvitationLink(email);
+  fetchAndVisitInviteLink(email);
 };
 
 export const defaultWorkspace = () => {
@@ -284,15 +296,9 @@ export const VerifyWorkspaceInvitePageElements = () => {
     "have.text",
     commonText.invitePageSubHeader
   );
-  cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
-    "have.text",
-    commonText.userNameInputLabel
-  );
+  cy.verifyLabel(commonText.userNameInputLabel)
   cy.get(commonSelectors.invitedUserName).should("be.visible");
-  cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
-    "have.text",
-    commonText.emailInputLabel
-  );
+  cy.verifyLabel(commonText.emailInputLabel)
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",

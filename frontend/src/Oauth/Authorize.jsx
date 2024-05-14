@@ -5,15 +5,19 @@ import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { getCookie } from '@/_helpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { redirectToWorkspace } from '@/_helpers/utils';
+import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
-export function Authorize() {
+export function Authorize({ navigate }) {
   const [error, setError] = useState('');
+  const [inviteeEmail, setInviteeEmail] = useState();
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
   const redirectUrl = getCookie('redirectPath');
+  const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
+  const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -68,29 +72,44 @@ export function Authorize() {
   const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then(({ redirect_url, current_organization_id }) => {
+      .then(({ redirect_url, ...restResponse }) => {
         if (redirect_url) {
           window.location.href = redirect_url;
           return;
         }
-        /*for workspace login / normal login response will contain the next organization_id user want to login*/
-        if (current_organization_id) {
-          redirectToWorkspace();
+        if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
+        else {
+          updateCurrentSession({
+            isUserLoggingIn: true,
+          });
+          onLoginSuccess(restResponse, navigate);
         }
       })
-      .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
+      .catch((err) => {
+        const details = err?.data?.message;
+        const inviteeEmail = details?.inviteeEmail;
+        if (inviteeEmail) setInviteeEmail(inviteeEmail);
+        const errMessage = details?.message || err?.error || 'something went wrong';
+        setError(`${configs.name} login failed - ${errMessage}`);
+      });
   };
 
+  const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
+  const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
+  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
+    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+  }`;
   return (
     <div>
       <TJLoader />
       {error && (
         <Navigate
           replace
-          to={`/login${error && organizationSlug ? `/${organizationSlug}` : '/'}${
-            redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-          }`}
-          state={{ errorMessage: error && error }}
+          to={errorURL}
+          state={{
+            errorMessage: error && error,
+            ...(inviteFlowIdentifier ? { organizationToken: inviteFlowIdentifier, inviteeEmail } : {}),
+          }}
         />
       )}
     </div>

@@ -2,13 +2,25 @@ import config from 'config';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
+import cx from 'classnames';
+import { ToolTip } from '@/_components';
+import SSO from './icons/SSO';
 
-export default function OIDCSSOLoginButton({ configId, configs, text, setRedirectUrlToCookie }) {
+export default function OIDCSSOLoginButton({
+  configId,
+  buttonText,
+  setRedirectUrlToCookie,
+  setSignupOrganizationDetails,
+  name,
+  featureIncluded,
+  bannerMessage,
+}) {
   const [isLoading, setLoading] = useState(false);
 
   const doLogin = (e) => {
     e.preventDefault();
-    setRedirectUrlToCookie();
+    setRedirectUrlToCookie && setRedirectUrlToCookie();
+    setSignupOrganizationDetails && setSignupOrganizationDetails();
     setLoading(true);
     fetch(`${config.apiUrl}/oauth/openid/configs${configId ? `/${configId}` : ''}`, {
       method: 'GET',
@@ -28,21 +40,33 @@ export default function OIDCSSOLoginButton({ configId, configs, text, setRedirec
       });
   };
   return (
-    <div className=" sso-btn-wrapper">
-      <div onClick={doLogin} className={`border-0 sso-button rounded-2 sso-btn`} disabled={isLoading}>
-        {isLoading ? (
-          <div className="spinner-center">
-            <Spinner className="flex" />
+    <ToolTip message={bannerMessage} show={!featureIncluded}>
+      <div
+        className={cx({
+          'sso-btn-disabled': !featureIncluded,
+        })}
+      >
+        <div className="login-sso-wrapper">
+          <div
+            onClick={doLogin}
+            className={`border-0 sso-button rounded-2 sso-btn`}
+            disabled={isLoading || !featureIncluded}
+          >
+            {isLoading ? (
+              <div className="spinner-center">
+                <Spinner className="flex" />
+              </div>
+            ) : (
+              <>
+                <SSO disabled={!featureIncluded} />
+                <span className="px-1 sso-info-text" data-cy="oidc-sso-text">
+                  {buttonText} {name || 'Open ID'}
+                </span>
+              </>
+            )}
           </div>
-        ) : (
-          <>
-            <img src="assets/images/sso-buttons/sso-general.svg" className="h-4" data-cy="oidc-so-icon" />
-            <span className="px-1 sso-info-text" data-cy="oidc-sso-text">
-              {text} {configs?.name || 'Open ID'}
-            </span>
-          </>
-        )}
+        </div>
       </div>
-    </div>
+    </ToolTip>
   );
 }

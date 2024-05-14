@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
 import { returnDevelopmentEnv } from '@/_helpers/utils';
 import _ from 'lodash';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -117,7 +118,16 @@ export const GlobalDatasources = (props) => {
             }
             return ds;
           })
-          .sort((a, b) => a.name.localeCompare(b.name));
+          .sort((a, b) => {
+            if (a.type === DATA_SOURCE_TYPE.SAMPLE && b.type !== DATA_SOURCE_TYPE.SAMPLE) {
+              return -1; // a comes before b
+            } else if (a.type !== DATA_SOURCE_TYPE.SAMPLE && b.type === DATA_SOURCE_TYPE.SAMPLE) {
+              return 1; // b comes before a
+            } else {
+              // If types are the same or both are not 'sample', sort by name
+              return a.name.localeCompare(b.name);
+            }
+          });
         setDataSources([...(orderedDataSources ?? [])]);
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
         if (!resetSelection && ds) {

@@ -10,8 +10,7 @@ import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
@@ -1286,12 +1285,6 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
   return true;
 };
 
-export function eraseRedirectUrl() {
-  const redirectPath = getCookie('redirectPath');
-  redirectPath && eraseCookie('redirectPath');
-  return redirectPath;
-}
-
 export const defaultAppEnvironments = [
   { name: 'development', isDefault: false, priority: 1 },
   { name: 'staging', isDefault: false, priority: 2 },
@@ -1305,7 +1298,6 @@ export const executeWorkflow = async (self, workflowId, _blocking = false, param
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
   return { data: executionResponse.result };
 };
-
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;

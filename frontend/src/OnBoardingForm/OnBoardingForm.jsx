@@ -13,7 +13,7 @@ import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source = null }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +23,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companySize: '',
     phoneNumber: '',
   });
+  const source = new URLSearchParams(location?.search).get('source');
 
   const pageProps = {
     formData,

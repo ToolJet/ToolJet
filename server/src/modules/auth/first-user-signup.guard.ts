@@ -1,11 +1,10 @@
 import { Injectable, CanActivate } from '@nestjs/common';
-import { UsersService } from '@services/users.service';
-
+import { LicenseCountsService } from '@services/license_counts.service';
 @Injectable()
 export class FirstUserSignupGuard implements CanActivate {
-  constructor(private usersService: UsersService) {}
+  constructor(private licenseCountsService: LicenseCountsService) {}
 
   async canActivate(): Promise<any> {
-    return (await this.usersService.getCount()) === 0;
+    return (await this.licenseCountsService.getUsersCount()) === 0;
   }
 }
