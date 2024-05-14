@@ -430,7 +430,7 @@ function ForeignKeyRelation({
         />
       </Drawer>
       <ConfirmDialog
-        title={'Delete foreign key'}
+        title={'Delete foreign key relation'}
         show={onDeletePopup}
         message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
         onConfirm={() => {
