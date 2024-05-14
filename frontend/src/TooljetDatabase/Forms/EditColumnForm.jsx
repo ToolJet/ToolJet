@@ -357,10 +357,10 @@ const ColumnForm = ({
   const newChangesInForeignKey = changesInForeignKey();
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
 
@@ -772,16 +772,22 @@ const ColumnForm = ({
           isEditMode={true}
           fetching={fetching}
           onClose={onClose}
-          onEdit={handleEdit}
+          onEdit={() => {
+            if (foreignKeyDetails?.length > 0 && !isForeignKey) {
+              setOnDeletePopup(true);
+            } else {
+              handleEdit();
+            }
+          }}
           shouldDisableCreateBtn={columnName === ''}
           showToolTipForFkOnReadDocsSection={true}
         />
       </div>
       <ConfirmDialog
-        title={'Delete foreign key'}
+        title={'Delete foreign key relation'}
         show={onDeletePopup}
         message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
-        onConfirm={handleDeleteForeignKeyColumn}
+        onConfirm={foreignKeyDetails?.length > 0 && !isForeignKey ? handleEdit : handleDeleteForeignKeyColumn}
         onCancel={() => {
           setOnDeletePopup(false);
         }}
