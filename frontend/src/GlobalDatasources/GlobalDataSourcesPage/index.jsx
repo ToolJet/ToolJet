@@ -7,7 +7,12 @@ import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceManager } from '@/Editor/DataSourceManager';
-import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
+import {
+  DataBaseSources,
+  ApiSources,
+  CloudStorageSources,
+  CommonlyUsedDataSources,
+} from '@/Editor/DataSourceManager/SourceComponents';
 import { pluginsService, globalDatasourceService, authenticationService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
@@ -332,6 +337,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
 
   const datasourcesGroups = () => {
     const allDataSourcesList = {
+      common: CommonlyUsedDataSources,
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
@@ -339,6 +345,13 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       filteredDatasources: filteredDataSources,
     };
     const dataSourceList = [
+      {
+        type: 'Commonly used',
+        key: '#commonlyused',
+        list: allDataSourcesList.common,
+        renderDatasources: () => renderCardGroup(allDataSourcesList.common, 'Commonly used'),
+      },
+
       {
         type: 'Databases',
         key: '#databases',
