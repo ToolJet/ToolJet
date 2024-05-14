@@ -12885,3 +12885,7 @@ tbody {
     background-color: var(--interactive-overlays-fill-pressed) !important;
   }
 }
+
+div.ds-svg-container[data-ds-name="postgresql-button"] svg {
+  padding: 2px;
+}
