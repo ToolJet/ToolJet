@@ -202,7 +202,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               dataCy={`home-page`}
               className="border-0 homepage-search"
               darkMode={darkMode}
-              placeholder={`Search  data sources`}
+              placeholder={`Search data sources`}
               initialValue={queryString}
               width={'100%'}
               callBack={handleSearch}
