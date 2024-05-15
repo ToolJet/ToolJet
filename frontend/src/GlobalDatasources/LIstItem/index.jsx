@@ -82,12 +82,7 @@ export const ListItem = ({
           className="col d-flex align-items-center overflow-hidden"
           data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
         >
-          <div
-            className="ds-svg-container"
-            data-ds-name={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
-          >
-            {icon}
-          </div>
+          <div className="ds-svg-container">{icon}</div>
 
           <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px', display: 'flex' }}>
             {decodeEntities(dataSource.name)}
