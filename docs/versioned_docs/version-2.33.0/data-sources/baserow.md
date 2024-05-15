@@ -3,29 +3,45 @@ id: baserow
 title: Baserow
 ---
 
-# Baserow
+<div style={{paddingBottom:'24px'}}>
 
 ToolJet can connect to your Baserow account to read and write data.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
 To connect to Baserow, you need to provide the following details:
 
-- **API token**: You can create an API token from your Baserow dashboard. You can follow the steps to create API token from [this link](https://baserow.io/user-docs/personal-api-tokens).
+- **API token**: You can create an API token from your Baserow dashboard. You can follow the steps to create API token from **[this link](https://baserow.io/user-docs/personal-api-tokens)**.
 - **Host**: You can either select the Baserow Cloud or Self-hosted option.
-  - **Base URL**: If you select the self-hosted option, you need to provide the base URL of your Baserow instance.
+- **Base URL**: If you select the self-hosted option, you need to provide the base URL of your Baserow instance.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro-v2.png" alt="Baserow intro" />
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro-v2.png" alt="Baserow intro" />
+
+</div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported Operations
 
-- [List fields](#list-fields)
-- [List rows](#list-rows)
-- [Get row](#get-row)
-- [Create row](#create-row)
-- [Update row](#update-row)
-- [Move row](#move-row)
-- [Delete row](#delete-row)
+- **[List fields](#list-fields)**
+- **[List rows](#list-rows)**
+- **[Get row](#get-row)**
+- **[Create row](#create-row)**
+- **[Update row](#update-row)**
+- **[Move row](#move-row)**
+- **[Delete row](#delete-row)**
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### List fields
 
@@ -35,7 +51,12 @@ This query lists all the fields in a table.
 
 - **Table ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields.png" alt="Baserow list fields" />
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields-v2.png" alt="Baserow list fields" />
+
+</div>
+
 
 Example response from Baserow:
 
@@ -78,6 +99,10 @@ Example response from Baserow:
 ]
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### List rows
 
 This query lists all the rows in a table.
@@ -86,7 +111,12 @@ This query lists all the rows in a table.
 
 - **Table ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows.png" alt="Baserow list"/>
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows-v2.png" alt="Baserow list"/>
+
+</div>
+
 
 Example response from Baserow:
 
@@ -124,6 +154,10 @@ Example response from Baserow:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Get row
 
 #### Required parameters:
@@ -131,7 +165,13 @@ Example response from Baserow:
 - **Table ID**
 - **Row ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row.png" alt="Baserow get" />
+
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row-v2.png" alt="Baserow get" />
+
+</div>
+
 
 Example response from Baserow:
 
@@ -146,6 +186,10 @@ Example response from Baserow:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Create row
 
 #### Required parameters:
@@ -153,7 +197,13 @@ Example response from Baserow:
 - **Table ID**
 - **Records**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row.png"  alt="Bserow create"/>
+
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row-v2.png"  alt="Bserow create"/>
+
+</div>
+
 
 #### Example Records:
 
@@ -178,6 +228,10 @@ Example response from Baserow:
   "Active": true
 }
 ```
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Update row
 
@@ -187,7 +241,11 @@ Example response from Baserow:
 - **Row ID**
 - **Records**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row.png" alt="Baserow update" />
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row-v2.png" alt="Baserow update" />
+
+</div>
 
 #### Example Records:
 
@@ -212,6 +270,10 @@ Example response from Baserow:
   "Active": true
 }
 ```
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Move row
 
@@ -224,7 +286,12 @@ Example response from Baserow:
 
 - **Before ID** (The row will be moved before the entered ID. If not provided, then the row will be moved to the end )
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row.png" alt="Baserow move row" />
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row-v2.png" alt="Baserow move row" />
+
+</div>
+
 
 Example response from Baserow:
 
@@ -239,6 +306,10 @@ Example response from Baserow:
 }
 ```
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Delete row
 
 #### Required parameters:
@@ -246,6 +317,13 @@ Example response from Baserow:
 - **Table ID**
 - **Row ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row.png" alt="Baserow delete" />
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row-v2.png" alt="Baserow delete" />
+
+</div>
+
 
 While deleting a row, the response will be either success or failure from Baserow
+
+</div>

@@ -49,6 +49,11 @@
   --ifm-link-menu-color-background-hover: #f0f4ff;
 }
 
+
+h3 {
+  font-size: 1.2rem;
+}
+
 .menu__link--sublist-caret:after {
   background: var(--ifm-menu-link-sublist-icon) 50% / 1rem 1rem;
 }

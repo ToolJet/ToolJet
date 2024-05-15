@@ -15,11 +15,11 @@ The **Components Library** on the right sidebar contains all of the available co
 Check the **[Components Catalog](/docs/widgets/overview)** to know more about specific component.
 :::
 
-## Component Config Inspector
+## Properties Panel
 
-The Component Config Inspector is also called as component inspector. It contains all the available settings for the selected component and is where you **set values**, **update component names**, and **create event handlers**. The Component Inspector organizes settings into different sections, such as **Property** and **Styles**. 
+The Properties Panel contains all the available settings for the selected component and is where you **set values**, **update component names**, and **create event handlers**. The Properties Panel organizes settings into different sections, such as **Properties** and **Styles**. 
 
-To open the Component Config Inspector, click on the **[component handle](/docs/app-builder/canvas#arrange-components)** that is present on the top of the component including **⚙️ + Component Name** and the component inspector will open up on the right side:
+To open the Properties Panel, click on the **[component handle](/docs/app-builder/canvas#arrange-components)** that is present on the top of the component including **⚙️ + Component Name** and the Properties Panel will open up on the right side.
 
 <div style={{textAlign: 'center'}}>
 

@@ -11,7 +11,6 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { CredentialsService } from '@services/credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
-import { tooljetDbOrmconfig } from '../../../ormconfig';
 import { PluginsModule } from '../plugins/plugins.module';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from '../../../src/entities/credential.entity';
@@ -28,10 +27,6 @@ const imports = [
   TypeOrmModule.forFeature([AppUser, AppVersion, App, Credential, Plugin, DataSource]),
   TooljetDbModule,
 ];
-
-if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
-}
 
 @Module({
   imports,
