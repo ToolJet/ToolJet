@@ -187,10 +187,11 @@ export class DataQueriesService {
           } catch (error) {
             if (error.constructor.name === 'OAuthUnauthorizedClientError') {
               // unauthorized error need to re-authenticate
+              const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
               return {
                 status: 'needs_oauth',
                 data: {
-                  auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+                  auth_url: result.url,
                 },
               };
             }
@@ -248,10 +249,11 @@ export class DataQueriesService {
             }
           );
         } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi' || dataSource.kind === 'graphql') {
+          const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
           return {
             status: 'needs_oauth',
             data: {
-              auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+              auth_url: result.url,
             },
           };
         } else {
@@ -378,7 +380,7 @@ export class DataQueriesService {
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     let tokenOptions: any;
-    if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
+    if (['googlesheets', 'slack', 'zendesk', 'salesforce'].includes(dataSource.kind)) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
     } else {
       const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;

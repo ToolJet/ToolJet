@@ -7058,6 +7058,7 @@ tbody {
     background-color: #242f3c;
     padding: 0;
     max-width: 230px;
+    color: #ffffff;
 
     .tjdb-column-select-border {
       border-left-color: white !important;
@@ -10777,6 +10778,12 @@ tbody {
   display: flex;
 
   .eye-icon {
+    position: absolute;
+    right: 8px;
+    top: 5px;
+    cursor: pointer;
+  }
+  .copy-icon {
     position: absolute;
     right: 8px;
     top: 5px;
