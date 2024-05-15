@@ -187,7 +187,7 @@ export const Button = function Button(props) {
           style={{
             height: '100%',
             width: '100%',
-            display: 'flex',
+            display: !loading ? 'flex' : 'none',
             alignItems: 'center',
             flexDirection: direction == 'right' ? 'row-reverse' : 'row',
             justifyContent: 'center',
