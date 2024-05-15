@@ -35,10 +35,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   const location = useLocation();
   const params = useParams();
+  const searchParams = new URLSearchParams(location?.search);
 
-  const organizationId = new URLSearchParams(location?.search).get('oid');
-  const source = new URLSearchParams(location?.search).get('source');
+  const organizationId = searchParams.get('oid');
+  const organizationToken = searchParams.get('organizationToken') || params?.organizationToken;
+  const source = searchParams.get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const redirectTo = searchParams.get('redirectTo');
 
   const setRedirectUrlToCookie = () => {
     const params = new URL(window.location.href).searchParams;
@@ -50,7 +53,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(params?.token, params?.organizationToken)
+      .verifyToken(params?.token, organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = buildURLWithQuery(data.redirect_url, {
@@ -62,7 +65,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
-          if (params?.organizationToken) {
+          if (organizationToken) {
             setShowJoinWorkspace(true);
             return;
           }
@@ -122,14 +125,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         companySize: '',
         role: '',
         token: params?.token,
-        organizationToken: params?.organizationToken ?? '',
-        source: source,
+        organizationToken,
+        source,
         password: password,
       })
       .then((user) => {
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        redirectToDashboard(user);
+        redirectToDashboard(user, redirectTo);
       })
       .catch((res) => {
         setIsLoading(false);
@@ -147,6 +150,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
+    if (showJoinWorkspace && !showOnboarding) {
+      e.preventDefault();
+      userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
+        ? (setShowOnboarding(true), setShowJoinWorkspace(false))
+        : setUpAccount(e);
+      return;
+    }
+
     userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
       ? setShowOnboarding(true)
       : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
@@ -178,53 +189,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           : `${retrieveWhiteLabelText()}.`
                       }`}
                     </div>
-                    {(configs?.google?.enabled || configs?.git?.enabled || configs?.openid?.enabled) &&
-                      source !== 'sso' && (
-                        <div className="d-flex flex-column align-items-center separator-bottom">
-                          {configs?.google?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <GoogleSSOLoginButton
-                                text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                configs={configs?.google?.configs}
-                                configId={configs?.google?.config_id}
-                                setRedirectUrlToCookie={() => {
-                                  setRedirectUrlToCookie();
-                                }}
-                              />
-                            </div>
-                          )}
-                          {configs?.git?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <GitSSOLoginButton
-                                text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                                configs={configs?.git?.configs}
-                                setRedirectUrlToCookie={() => {
-                                  setRedirectUrlToCookie();
-                                }}
-                              />
-                            </div>
-                          )}
-                          {configs?.openid?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <OIDCSSOLoginButton
-                                configId={configs?.openid?.config_id}
-                                configs={configs?.openid?.configs}
-                                text={t('confirmationPage.signupWithOpenid', `Sign up with`)}
-                                setRedirectUrlToCookie={() => {
-                                  setRedirectUrlToCookie();
-                                }}
-                              />
-                            </div>
-                          )}
-                          <div className="separator-onboarding " style={{ width: '100%' }}>
-                            <div className="mt-2 separator" data-cy="onboarding-separator">
-                              <h2>
-                                <span>{t('confirmationPage.or', 'OR')}</span>
-                              </h2>
-                            </div>
-                          </div>
-                        </div>
-                      )}
 
                     <div className="org-page-inputs-wrapper">
                       <label className="tj-text-input-label" data-cy="name-input-label">
@@ -244,7 +208,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       </p>
                     </div>
 
-                    {userDetails?.onboarding_details?.password && source != 'sso' && (
+                    {userDetails?.onboarding_details?.password && source !== 'sso' && (
                       <div className="mb-3">
                         <label className="form-label" data-cy="password-label">
                           {t('verificationSuccessPage.password', 'Password')}
@@ -318,7 +282,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         ) : (
                           <>
                             <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" />
+                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
                           </>
                         )}
                       </ButtonSolid>
@@ -402,7 +366,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         <OnBoardingForm
           userDetails={userDetails}
           token={params?.token}
-          organizationToken={params?.organizationToken ?? ''}
+          organizationToken={organizationToken}
           password={password}
           darkMode={darkMode}
           source={source}

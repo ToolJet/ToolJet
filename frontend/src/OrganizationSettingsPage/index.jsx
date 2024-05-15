@@ -10,6 +10,7 @@ import { licenseService } from '../_services/license.service';
 import { LicenseBanner } from '@/LicenseBanner';
 import Skeleton from 'react-loading-skeleton';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { getSubpath } from '@/_helpers/routes';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -52,20 +53,12 @@ export function OrganizationSettings(props) {
     }
   };
 
-  if (!admin) {
-    navigate('/');
-  }
-
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);
       setFeaturesLoaded(true);
     });
   };
-
-  if (!admin) {
-    navigate('/');
-  }
 
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {

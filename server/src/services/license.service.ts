@@ -1,15 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, HttpException } from '@nestjs/common';
 import { LICENSE_FIELD, LICENSE_TYPE, decrypt } from 'src/helpers/license.helper';
 import License from '@ee/licensing/configs/License';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
+import { LicenseCountsService } from '@services/license_counts.service';
+import { EntityManager } from 'typeorm';
+import { LICENSE_LIMIT } from 'src/helpers/license.helper';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
-import { Brackets, EntityManager } from 'typeorm';
-import { User } from 'src/entities/user.entity';
-import { USER_STATUS, USER_TYPE, WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class LicenseService {
+  constructor(private readonly licenseCountsService: LicenseCountsService) {}
   async getLicenseTerms(type?: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
     await this.init();
 
@@ -155,12 +156,62 @@ export class LicenseService {
     }
   }
 
+  async validateLicenseUsersCount(licenseUsers): Promise<boolean> {
+    if (!licenseUsers) {
+      return true;
+    }
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      let editor = -1,
+        viewer = -1;
+      // Set default values to "unlimited" when licenseUsers is undefined
+      const {
+        editor: editorUsers = LICENSE_LIMIT.UNLIMITED,
+        viewer: viewerUsers = LICENSE_LIMIT.UNLIMITED,
+        superadmin: superadminUsers = LICENSE_LIMIT.UNLIMITED,
+        total: users = LICENSE_LIMIT.UNLIMITED,
+      } = licenseUsers || {};
+
+      if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
+        const superadmin = await this.licenseCountsService.fetchTotalSuperadminCount(manager);
+        if (superadmin > superadminUsers) {
+          return false;
+        }
+      }
+
+      if (users !== LICENSE_LIMIT.UNLIMITED && (await this.licenseCountsService.getUsersCount(true, manager)) > users) {
+        return false;
+      }
+
+      if (editorUsers === LICENSE_LIMIT.UNLIMITED && viewerUsers === LICENSE_LIMIT.UNLIMITED) {
+        return true;
+      } else {
+        const counts = await this.licenseCountsService.fetchTotalViewerEditorCount(manager);
+        editor = counts.editor;
+        viewer = counts.viewer;
+
+        if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
+          if (editor > editorUsers) {
+            return false;
+          }
+        }
+
+        if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
+          if (viewer > viewerUsers) {
+            return false;
+          }
+        }
+        return true;
+      }
+    });
+  }
+
   async updateLicense(dto: LicenseUpdateDto): Promise<void> {
     const licenseSetting: InstanceSettings = await this.getLicense();
     try {
       const licenseTerms = decrypt(dto.key);
 
       // TODO: validate expiry of new license
+
       const { isLicenseValid } = await this.getLicenseTerms(LICENSE_FIELD.STATUS);
 
       // updated with a valid license and trying to update trial license generated using API
@@ -170,103 +221,25 @@ export class LicenseService {
         );
       }
 
+      if (!(await this.validateLicenseUsersCount(licenseTerms?.users))) {
+        throw new HttpException(
+          'Your builder or end-user count exceeds the limit for your upgraded plan. Please archive users or increase your plan limits to upgrade successfully.',
+          402
+        );
+      }
+
       this.validateHostnameSubpath(licenseTerms.domains);
       await dbTransactionWrap((manager: EntityManager) => {
         return manager.update(InstanceSettings, { id: licenseSetting.id }, { value: dto.key });
       });
     } catch (err) {
-      throw new BadRequestException(err?.message || 'License key is invalid');
+      if (err instanceof HttpException) {
+        throw err;
+      } else {
+        throw new BadRequestException(err?.message || 'License key is invalid');
+      }
     }
   }
 
   isBasicPlan = async () => !(await this.getLicenseFieldValue(LICENSE_FIELD.VALID));
-
-  private async getUserIdWithEditPermission(manager: EntityManager) {
-    const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
-    const userIdsWithEditPermissions = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
-          statusList,
-        })
-        .innerJoin(
-          'users.groupPermissions',
-          'group_permissions',
-          'organization_users.organizationId = group_permissions.organizationId'
-        )
-        .innerJoin('group_permissions.organization', 'organization', 'organization.status = :activeStatus', {
-          activeStatus: WORKSPACE_STATUS.ACTIVE,
-        })
-        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-        .andWhere(
-          new Brackets((qb) => {
-            qb.where('app_group_permissions.read = true AND app_group_permissions.update = true').orWhere(
-              'group_permissions.appCreate = true'
-            );
-          })
-        )
-        .select('users.id')
-        .distinct()
-        .getMany()
-    ).map((record) => record.id);
-
-    const userIdsOfAppOwners = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .innerJoin('users.apps', 'apps')
-        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
-          statusList,
-        })
-        .innerJoin('organization_users.organization', 'organization', 'organization.status = :activeStatus', {
-          activeStatus: WORKSPACE_STATUS.ACTIVE,
-        })
-        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-        .select('users.id')
-        .distinct()
-        .getMany()
-    ).map((record) => record.id);
-
-    const userIdsOfSuperAdmins = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .select('users.id')
-        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
-        .andWhere('users.status = :status', { status: USER_STATUS.ACTIVE })
-        .getMany()
-    ).map((record) => record.id);
-
-    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
-  }
-
-  async fetchTotalEditorCount(manager: EntityManager): Promise<number> {
-    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
-    return userIdsWithEditPermissions?.length || 0;
-  }
-
-  async fetchTotalViewerEditorCount(manager: EntityManager): Promise<{ editor: number; viewer: number }> {
-    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
-
-    if (!userIdsWithEditPermissions?.length) {
-      // No editors -> No viewers
-      return { editor: 0, viewer: 0 };
-    }
-
-    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
-    const viewer = await manager
-      .createQueryBuilder(User, 'users')
-      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
-        statusList,
-      })
-      .innerJoin('organization_users.organization', 'organization', 'organization.status = :activeStatus', {
-        activeStatus: WORKSPACE_STATUS.ACTIVE,
-      })
-      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-      .andWhere('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
-      .select('users.id')
-      .distinct()
-      .getCount();
-
-    return { editor: userIdsWithEditPermissions?.length || 0, viewer };
-  }
 }

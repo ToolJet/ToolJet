@@ -40,6 +40,13 @@
 
             .ds-delete-btn {
                 visibility: visible;
+
+                .disabled-button{
+                    background-color: #FFFF;
+                    width: 19px;
+                    height: 19px;
+                    padding: 3px;
+                }
             }
         }
 
@@ -53,6 +60,10 @@
             visibility: hidden;
             border: none;
             background: none;
+        }
+        
+        .tooltip-sampl-db{
+            width: 10px;
         }
     }
 
@@ -170,6 +181,7 @@
 .datasource-list-container {
     overflow-y: auto;
     max-height: calc(100vh - 64px);
+    border-left: 1px solid var(--slate5);
     .datasource-list {
         width: 976px;
         margin: 0 auto;

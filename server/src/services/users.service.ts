@@ -15,13 +15,14 @@ import {
   isSuperAdmin,
   generateSecurePassword,
 } from 'src/helpers/utils.helper';
+import { LicenseCountsService } from '@services/license_counts.service';
 import { CreateFileDto } from '@dto/create-file.dto';
 import {
   LIMIT_TYPE,
-  USER_STATUS,
   USER_TYPE,
   WORKSPACE_USER_STATUS,
   WORKSPACE_STATUS,
+  USER_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
@@ -30,6 +31,8 @@ import { UserDetails } from 'src/entities/user_details.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceTypes } from 'src/helpers/data_source.constants';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -56,7 +59,8 @@ export class UsersService {
     private appsRepository: Repository<App>,
     @InjectRepository(Organization)
     private organizationRepository: Repository<Organization>,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private readonly licenseCountsService: LicenseCountsService
   ) {}
 
   usersQuery(options: UserFilterOptions, condition?: 'and' | 'or') {
@@ -168,15 +172,15 @@ export class UsersService {
     }, manager);
   }
 
+  async findOne(where = {}): Promise<User> {
+    return this.usersRepository.findOne({ where });
+  }
+
   async getAppOrganizationDetails(app: App): Promise<Organization> {
     return this.organizationRepository.findOneOrFail({
       select: ['id', 'slug'],
       where: { id: app.organizationId },
     });
-  }
-
-  async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
   }
 
   async findSelfhostOnboardingDetails(): Promise<User> {
@@ -275,7 +279,8 @@ export class UsersService {
     existingUser?: User,
     isInvite?: boolean,
     defaultOrganizationId?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    shouldNotAttachWorkspace = false
   ): Promise<User> {
     const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
     let user: User;
@@ -294,7 +299,7 @@ export class UsersService {
           status,
           userType,
           invitationToken: isInvite ? uuid.v4() : null,
-          defaultOrganizationId: defaultOrganizationId || organizationId,
+          defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -330,6 +335,17 @@ export class UsersService {
 
       for (const group of groups) {
         const orgGroupPermission = organizationGroups.find((organizationGroup) => organizationGroup.group === group);
+
+        if (isValidateExistingGroups) {
+          const userGroup = await manager.count(UserGroupPermission, {
+            where: {
+              groupPermissionId: orgGroupPermission.id,
+              userId,
+            },
+          });
+
+          if (userGroup) continue;
+        }
 
         if (!orgGroupPermission) {
           throw new BadRequestException(`${group} group does not exist for current organization`);
@@ -532,12 +548,20 @@ export class UsersService {
 
   async canUserPerformActionOnDataSources(user: User, action: string, dataSourceId?: string): Promise<boolean> {
     let permissionGrant: boolean;
+    let dataSource: DataSource;
 
     switch (action) {
       case 'create':
         permissionGrant = this.canAnyGroupPerformAction('dataSourceCreate', await this.groupPermissions(user));
         break;
       case 'read':
+        await dbTransactionWrap(async (manager: EntityManager) => {
+          dataSource = await manager.findOne(DataSource, dataSourceId);
+        });
+        permissionGrant =
+          dataSource.type === DataSourceTypes.SAMPLE ||
+          this.canAnyGroupPerformAction(action, await this.dataSourceGroupPermissions(user, dataSourceId));
+        break;
       case 'update':
         permissionGrant = this.canAnyGroupPerformAction(
           action,
@@ -805,14 +829,6 @@ export class UsersService {
     }, manager);
   }
 
-  async fetchTotalSuperadminCount(manager: EntityManager): Promise<number> {
-    return await manager
-      .createQueryBuilder(User, 'users')
-      .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
-      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
-      .getCount();
-  }
-
   async validateLicense(manager: EntityManager): Promise<void> {
     let editor = -1,
       viewer = -1;
@@ -821,22 +837,22 @@ export class UsersService {
     } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER]);
 
     if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
-      const superadmin = await this.fetchTotalSuperadminCount(manager);
+      const superadmin = await this.licenseCountsService.fetchTotalSuperadminCount(manager);
       if (superadmin > superadminUsers) {
         throw new HttpException('You have reached your limit for number of super admins.', 451);
       }
     }
 
-    if (users !== LICENSE_LIMIT.UNLIMITED && (await this.getCount(true, manager)) > users) {
+    if (users !== LICENSE_LIMIT.UNLIMITED && (await this.licenseCountsService.getUsersCount(true, manager)) > users) {
       throw new HttpException('You have reached your limit for number of users.', 451);
     }
 
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED && viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
-      ({ editor, viewer } = await this.licenseService.fetchTotalViewerEditorCount(manager));
+      ({ editor, viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(manager));
     }
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (editor === -1) {
-        editor = await this.licenseService.fetchTotalEditorCount(manager);
+        editor = await this.licenseCountsService.fetchTotalEditorCount(manager);
       }
       if (editor > editorUsers) {
         throw new HttpException('You have reached your limit for number of builders.', 451);
@@ -845,9 +861,9 @@ export class UsersService {
 
     if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (viewer === -1) {
-        ({ viewer } = await this.licenseService.fetchTotalViewerEditorCount(manager));
+        ({ viewer } = await this.licenseCountsService.fetchTotalViewerEditorCount(manager));
       }
-      const addedUsers = await this.getCount(true, manager);
+      const addedUsers = await this.licenseCountsService.getUsersCount(true, manager);
       const addableUsers = users - addedUsers;
 
       if (viewer > viewerUsers && addableUsers < 0) {
@@ -869,28 +885,28 @@ export class UsersService {
         if (users === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const currentUsersCount = await this.getCount(true, manager);
+        const currentUsersCount = await this.licenseCountsService.getUsersCount(true, manager);
         return generatePayloadForLimits(currentUsersCount, users, licenseStatus);
       }
       case LIMIT_TYPE.EDITOR: {
         if (editorUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const currentEditorsCount = await this.licenseService.fetchTotalEditorCount(manager);
+        const currentEditorsCount = await this.licenseCountsService.fetchTotalEditorCount(manager);
         return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
       }
       case LIMIT_TYPE.VIEWER: {
         if (viewerUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const { viewer: currentViewersCount } = await this.licenseService.fetchTotalViewerEditorCount(manager);
+        const { viewer: currentViewersCount } = await this.licenseCountsService.fetchTotalViewerEditorCount(manager);
         return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
       }
       case LIMIT_TYPE.ALL: {
-        const currentUsersCount = await this.getCount(true, manager);
-        const currentSuperadminsCount = await this.fetchTotalSuperadminCount(manager);
+        const currentUsersCount = await this.licenseCountsService.getUsersCount(true, manager);
+        const currentSuperadminsCount = await this.licenseCountsService.fetchTotalSuperadminCount(manager);
         const { viewer: currentViewersCount, editor: currentEditorsCount } =
-          await this.licenseService.fetchTotalViewerEditorCount(manager);
+          await this.licenseCountsService.fetchTotalViewerEditorCount(manager);
 
         return {
           usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),

@@ -25,6 +25,8 @@ import { ImportExportResourcesModule } from '../import_export_resources/import_e
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 import { TooljetDbService } from '@services/tooljet_db.service';
+import { AppsService } from '@services/apps.service';
+import { AppUser } from 'src/entities/app_user.entity';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
@@ -38,6 +40,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       AppEnvironment,
       AppVersion,
       User,
+      AppUser,
       Organization,
     ]),
     CaslModule,
@@ -58,6 +61,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
     TooljetDbOperationsService,
     TooljetDbService,
     PostgrestProxyService,
+    AppsService,
   ],
   controllers: [LibraryAppsController],
 })

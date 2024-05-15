@@ -9,7 +9,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { User } from 'src/entities/user.entity';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
 import {
   dbTransactionWrap,
@@ -1151,7 +1151,7 @@ export class AppImportExportService {
         where: {
           name: dataSource.name,
           kind: dataSource.kind,
-          type: DataSourceTypes.DEFAULT,
+          type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
           scope: 'global',
           organizationId: user.organizationId,
         },

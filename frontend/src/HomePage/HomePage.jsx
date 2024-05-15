@@ -21,7 +21,7 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
-import { fetchAndSetWindowTitle, getWorkspaceId, pageTitles } from '../_helpers/utils';
+import { fetchAndSetWindowTitle, getWorkspaceId, pageTitles } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
@@ -29,6 +29,7 @@ import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
+import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import { LicenseBanner } from '@/LicenseBanner';
 import { LicenseTooltip } from '@/LicenseTooltip';
@@ -106,9 +107,15 @@ class HomePageComponent extends React.Component {
     };
   }
 
+  setQueryParameter = () => {
+    const showImportTemplateModal = getQueryParams('fromtemplate');
+    this.setState({
+      showTemplateLibraryModal: showImportTemplateModal ? showImportTemplateModal : false,
+    });
+  };
   componentDidMount() {
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
-    return Promise.all([
+    Promise.all([
       this.fetchApps(1, this.state.currentFolder.id),
       this.fetchFolders(),
       this.fetchFeatureAccesss(),
@@ -117,6 +124,7 @@ class HomePageComponent extends React.Component {
       this.fetchWorkflowsWorkspaceLimit(),
       this.fetchOrgGit(),
     ]);
+    this.setQueryParameter();
   }
 
   componentDidUpdate(prevProps) {
@@ -683,10 +691,16 @@ class HomePageComponent extends React.Component {
   handleNewAppNameChange = (e) => {
     this.setState({ newAppName: e.target.value });
   };
+  removeQueryParameters = () => {
+    const urlWithoutParams = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, urlWithoutParams);
+  };
+
   showTemplateLibraryModal = () => {
     this.setState({ showTemplateLibraryModal: true });
   };
   hideTemplateLibraryModal = () => {
+    this.removeQueryParameters();
     this.setState({ showTemplateLibraryModal: false });
   };
   handleCommitEnableChange = (e) => {

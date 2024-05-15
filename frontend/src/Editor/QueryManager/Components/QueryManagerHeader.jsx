@@ -6,7 +6,7 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
-
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
   useSelectedQuery,
@@ -221,7 +221,7 @@ const PreviewButton = ({ buttonLoadingState, onClick, selectedQuery, isRunButton
   const previewLoading = usePreviewLoading();
   const selectedDataSource = useSelectedDataSource();
   const hasPermissions =
-    selectedDataSource?.scope === 'global'
+    selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()

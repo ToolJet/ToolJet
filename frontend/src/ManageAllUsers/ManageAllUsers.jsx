@@ -6,7 +6,6 @@ import { withTranslation } from 'react-i18next';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import OrganizationsModal from './OrganizationsModal';
-import UserEditModal from './UserEditModal';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { LicenseBanner } from '@/LicenseBanner';
 import UserEditDrawer from './UserEditDrawer';

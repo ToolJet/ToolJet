@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { staticDataSources as staticDatasources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
@@ -13,11 +13,17 @@ import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 import { canCreateDataSource } from '@/_helpers';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import './../queryManager.theme.scss';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
-  const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
+  const sampleDataSource = useSampleDataSource();
+  const [userDefinedSources, setUserDefinedSources] = useState(
+    [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource].filter(Boolean)
+  );
   const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
   const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
   const { createDataQuery } = useDataQueriesActions();
@@ -33,10 +39,11 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     ? staticDatasources
     : staticDatasources.filter((ds) => ds?.kind !== 'workflows');
 
-  console.log(dataSourcesKinds);
-
   useEffect(() => {
-    const allDataSources = [...dataSources, ...globalDataSources];
+    const shouldAddSampleDataSource = !!sampleDataSource;
+    const allDataSources = [...dataSources, ...globalDataSources, shouldAddSampleDataSource && sampleDataSource].filter(
+      Boolean
+    );
     setUserDefinedSources(allDataSources);
     const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
     allDataSources.forEach(({ plugin }) => {
@@ -47,43 +54,58 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
       dataSourceKindsList.push({ name: plugin.name, kind: plugin.pluginId });
     });
     setDataSourcesKinds(dataSourceKindsList);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
   const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
 
   useEffect(() => {
+    const sortedUserDefinedSources = availableDataSources.sort((sourceA, sourceB) => {
+      // Custom sorting function
+      const typeA = sourceA?.type;
+      const typeB = sourceB?.type;
+      if (typeA === 'sample' && typeB !== 'sample') {
+        return -1; // typeA is 'sample', so it comes before typeB
+      } else if (typeB === 'sample' && typeA !== 'sample') {
+        return 1; // typeB is 'sample', so it comes after typeA
+      } else {
+        // Otherwise, maintain the original order
+        return 0;
+      }
+    });
     setUserDefinedSourcesOpts(
-      Object.entries(groupBy(availableDataSources, 'kind')).map(([kind, sources], index) => ({
-        label: (
-          <div>
-            {index === 0 && (
-              <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
-                Data sources
-              </div>
-            )}
-            <DataSourceIcon source={sources?.[0]} height={16} />
-            <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
-          </div>
-        ),
-        options: sources.map((source) => ({
+      Object.entries(groupBy(sortedUserDefinedSources, 'type')).flatMap(([type, sourcesWithType], index) =>
+        Object.entries(groupBy(sourcesWithType, 'kind')).map(([kind, sources], innerIndex) => ({
           label: (
-            <div
-              className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
-              data-tooltip-id="tooltip-for-add-query-dd-option"
-              data-tooltip-content={source.name}
-              data-cy={`ds-${source.name.toLowerCase()}`}
-            >
-              {source.name}
-              <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
+            <div key={`${kind}-${type}`}>
+              {((innerIndex === 0 && type !== DATA_SOURCE_TYPE.SAMPLE) || type === DATA_SOURCE_TYPE.SAMPLE) && (
+                <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
+                  {type !== DATA_SOURCE_TYPE.SAMPLE ? 'Data Sources' : 'Sample data sources'}
+                </div>
+              )}
+              <DataSourceIcon source={sources?.[0]} height={16} />
+              <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
             </div>
           ),
-          value: source.id,
-          isNested: true,
-          source,
-        })),
-      }))
+          options: sources.map((source) => ({
+            label: (
+              <div
+                key={source.id}
+                className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
+                data-tooltip-id="tooltip-for-add-query-dd-option"
+                data-tooltip-content={source.name}
+                data-cy={`ds-${source.name.toLowerCase()}`}
+              >
+                {source.name}
+                <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
+              </div>
+            ),
+            value: source.id,
+            isNested: true,
+            source,
+          })),
+        }))
+      )
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userDefinedSources]);
@@ -163,6 +185,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
         menuPlacement="auto"
         components={{
           MenuList: MenuList,
+          GroupHeading: HideGroupHeading,
           IndicatorSeparator: () => null,
           DropdownIndicator,
         }}
@@ -263,6 +286,19 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     </div>
   );
 }
+
+const HideGroupHeading = (props) => {
+  return (
+    <div
+      className="collapse-group-heading"
+      onClick={() => {
+        document.querySelector(`#${props.id}`).parentElement.parentElement.classList.toggle('collapsed-group');
+      }}
+    >
+      <components.GroupHeading {...props} />
+    </div>
+  );
+};
 
 const MenuList = ({ children, getStyles, innerRef, ...props }) => {
   const navigate = useNavigate();
