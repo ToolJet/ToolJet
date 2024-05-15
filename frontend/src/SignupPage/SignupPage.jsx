@@ -56,7 +56,7 @@ class SignupPageComponent extends React.Component {
     );
     checkWhiteLabelsDefaultState().then((res) => {
       this.setState({ defaultState: res });
-    });    
+    });
   }
 
   handleChange = (event) => {

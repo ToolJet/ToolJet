@@ -74,7 +74,7 @@ class OrganizationInvitationPageComponent extends React.Component {
         if (err?.data.statusCode == 400) {
           this.setState({ fallBack: true });
         }
-      });      
+      });
     document.addEventListener('keydown', this.handleEnterKey);
   }
 
