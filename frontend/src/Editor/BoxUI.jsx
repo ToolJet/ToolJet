@@ -81,11 +81,6 @@ const BoxUI = (props) => {
     height: '100%',
   };
 
-  if (inCanvas) {
-    _styles = {
-      ..._styles,
-    };
-  }
   useEffect(() => {
     if (!component?.parent) {
       onComponentOptionChanged(component, 'id', id);
@@ -122,8 +117,7 @@ const BoxUI = (props) => {
       <div
         style={{
           ..._styles,
-
-          padding: _styles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
+          padding: styles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
         }}
         role={'Box'}
       >
