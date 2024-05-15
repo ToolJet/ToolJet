@@ -9,13 +9,9 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
-import { isQueryRunnable } from '@/_helpers/utils';
+import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
-}
-
-export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
+export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, localDs }) => {
   const selectedQuery = useSelectedQuery();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
@@ -102,12 +98,30 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               <span
                 className="text-truncate"
                 data-tooltip-id="query-card-name-tooltip"
-                data-tooltip-content={dataQuery.name}
+                data-tooltip-content={decodeEntities(dataQuery.name)}
               >
                 {decodeEntities(dataQuery.name)}
               </span>{' '}
               <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
               {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+              {localDs && (
+                <>
+                  <a
+                    className="text-truncate"
+                    data-tooltip-id="query-card-local-ds-info"
+                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img src={`assets/images/icons/warning.svg`} style={{ height: '20px' }} alt="Warning" />
+                  </a>{' '}
+                  <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
+                    Important <br />
+                    Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
+                    Check Documentation for Help
+                  </Tooltip>
+                </>
+              )}
             </div>
           )}
         </div>
