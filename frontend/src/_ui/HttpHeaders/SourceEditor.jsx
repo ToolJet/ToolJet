@@ -54,7 +54,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             autoComplete="off"
             style={{
               flex: 1,
-              width: '250px',
+              width: '265px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
@@ -71,6 +71,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             workspaceConstants={workspaceConstants}
             style={{
               flex: 2,
+              width: '350px',
               borderTopLeftRadius: '0',
               borderBottomLeftRadius: '0',
               borderTopRightRadius: '0',
