@@ -57,4 +57,4 @@ Gitsync can be used to maintain application version control and facilitate colla
 - Follow the prompts to connect your ToolJet app with a GitHub repository.
 - Utilize git operations to manage app development across different branches and versions.
 
-Read more about Gitsync **[here](/docs/gitsync.md)**.
+Read more about Gitsync **[here](/docs/gitsync)**.
