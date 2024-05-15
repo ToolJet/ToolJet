@@ -29,7 +29,7 @@
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
-        "editorType": "extendedSingleLine"
+        "editorType": "multiline"
       }
     },
     "gui": {
