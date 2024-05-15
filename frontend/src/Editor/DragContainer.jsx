@@ -704,6 +704,7 @@ export default function DragContainer({
             const parentHeight = parentElm?.clientHeight;
 
             const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
+            const _gridWidth = useGridStore.getState().subContainerWidths[parentId] || gridWidth;
 
             onDrag(
               events.map((ev) => {
@@ -721,6 +722,9 @@ export default function DragContainer({
                 if (posBottom < 0) {
                   posY = ev.lastEvent.translate[1] + posBottom;
                 }
+                ev.target.style.transform = `translate(${Math.round(posX / _gridWidth) * _gridWidth}px, ${
+                  Math.round(posY / 10) * 10
+                }px)`;
                 return {
                   id: ev.target.id,
                   x: posX,
