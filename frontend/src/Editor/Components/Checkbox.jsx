@@ -20,6 +20,8 @@ export const Checkbox = function Checkbox({
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
   const [checked, setChecked] = React.useState(defaultValueFromProperties);
+  const [value, setValue] = React.useState(defaultValueFromProperties);
+
   const { label } = properties;
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
   const currentState = useCurrentState();
@@ -36,6 +38,8 @@ export const Checkbox = function Checkbox({
   function toggleValue(e) {
     const isChecked = e.target.checked;
     setChecked(isChecked);
+    setValue(isChecked);
+
     setExposedVariable('value', isChecked);
     if (isChecked) {
       fireEvent('onCheck');
@@ -52,18 +56,21 @@ export const Checkbox = function Checkbox({
         fireEvent('onUnCheck');
       }
       setChecked(status);
+      setValue(status);
     };
     const exposedVariables = {
       value: defaultValueFromProperties,
       setChecked: setCheckedAndNotify,
+      setValue: setCheckedAndNotify,
     };
 
     setDefaultvalue(defaultValueFromProperties);
     setChecked(defaultValueFromProperties);
+    setValue(defaultValueFromProperties);
     setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultValueFromProperties, setChecked]);
+  }, [defaultValueFromProperties]);
 
   useEffect(() => {
     disable !== disabledState && setDisable(properties.disabledState);
@@ -136,9 +143,10 @@ export const Checkbox = function Checkbox({
       setExposedVariable('value', !checked);
       fireEvent('onChange');
       setChecked(!checked);
+      setValue(!checked);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked]);
+  }, [checked, value]);
 
   const renderCheckBox = () => (
     <>
@@ -227,9 +235,8 @@ export const Checkbox = function Checkbox({
   );
   const checkmarkStyle = {
     position: 'absolute',
-    // top: padding == 'default' ? '4px' : '2px',
-    right: alignment === 'left' ? '4px' : alignment === 'left' ? '2px' : null,
-    left: alignment === 'right' ? '4px' : alignment === 'right' ? '2px' : null,
+    top: '1px',
+    right: '1px',
     visibility: checked ? 'visible' : 'hidden',
     height: '14px',
     width: ' 14px',
@@ -247,11 +254,13 @@ export const Checkbox = function Checkbox({
     width: '18px',
     minHeight: '18px',
     minWidth: '18px',
+    position: 'relative',
     borderColor: '#CCD1D5' == borderColor ? (checked ? 'transparent' : 'var(--borders-default)') : borderColor,
   };
   const handleToggleChange = () => {
     const newCheckedState = !checked;
     setChecked(newCheckedState);
+    setValue(newCheckedState);
     setExposedVariable('value', newCheckedState).then(fireEvent('onChange'));
     if (newCheckedState) {
       fireEvent('onCheck');
