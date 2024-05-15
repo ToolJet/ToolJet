@@ -98,7 +98,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
               <span
                 className="text-truncate"
                 data-tooltip-id="query-card-name-tooltip"
-                data-tooltip-content={dataQuery.name}
+                data-tooltip-content={decodeEntities(dataQuery.name)}
               >
                 {decodeEntities(dataQuery.name)}
               </span>{' '}

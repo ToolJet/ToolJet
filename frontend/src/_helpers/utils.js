@@ -1268,7 +1268,9 @@ export const setWindowTitle = async (pageDetails, location) => {
     }
   }
   if (pageTitle) {
-    document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
+    document.title = !(pageDetails?.preview === false)
+      ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
+      : `${pageTitle}`;
   }
 };
 

@@ -86,7 +86,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
                 key={source.id}
                 className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
                 data-tooltip-id="tooltip-for-add-query-dd-option"
-                data-tooltip-content={source.name}
+                data-tooltip-content={decodeEntities(source.name)}
                 data-cy={`ds-${source.name.toLowerCase()}`}
               >
                 {decodeEntities(source.name)}
