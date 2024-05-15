@@ -10,34 +10,16 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
 const TjDatepicker = forwardRef(
-  (
-    {
-      value,
-      onClick,
-      styles,
-      dateInputRef,
-      readOnly,
-      onInputDateChange,
-      setIsDateInputFocussed,
-      setDateInputValue,
-      isDateInputFocussed,
-    },
-    ref
-  ) => {
+  ({ value, onClick, styles, dateInputRef, readOnly, setIsDateInputFocussed, setDateInputValue }, ref) => {
     return (
       <div className="table-column-datepicker-input-container">
         <input
-          // onBlur={(e) => {
-          //   // console.log('blur', e)
-
-          //   // e.stopPropagation();
-          // }}
           className={cx('table-column-datepicker-input text-truncate', {
             'pointer-events-none': readOnly,
           })}
           value={value}
           onClick={onClick}
-          ref={ref}
+          ref={dateInputRef}
           style={styles}
           onChange={(e) => {
             setIsDateInputFocussed(true);
@@ -224,7 +206,7 @@ export const Datepicker = function Datepicker({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates]);
-  // console.log(date, "date")
+
   return (
     <div ref={pickerRef}>
       <DatePickerComponent
@@ -246,10 +228,8 @@ export const Datepicker = function Datepicker({
             dateInputRef={dateInputRef}
             readOnly={readOnly}
             styles={{ color: cellStyles.color }}
-            onInputDateChange={handleInputDateChange}
             setIsDateInputFocussed={setIsDateInputFocussed}
             setDateInputValue={setDateInputValue}
-            isDateInputFocussed={isDateInputFocussed}
           />
         }
         showTimeSelect={isTimeChecked}
