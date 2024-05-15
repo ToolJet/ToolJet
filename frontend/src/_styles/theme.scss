@@ -837,6 +837,7 @@ button {
     background: transparent;
     color: var(--slate12);
     height: 20px;
+    border: none !important;
 
     &:focus {
       background: none;

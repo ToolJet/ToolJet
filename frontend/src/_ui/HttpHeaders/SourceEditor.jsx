@@ -50,11 +50,11 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
             value={option[0]}
             workspaceConstants={workspaceConstants}
-            placeholder="key"
+            placeholder="Key"
             autoComplete="off"
             style={{
               flex: 1,
-              width: '250px',
+              width: '265px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
@@ -64,13 +64,14 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
           <Input
             type="text"
             value={option[1]}
-            placeholder="value"
+            placeholder="Value"
             autoComplete="off"
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
             workspaceConstants={workspaceConstants}
             style={{
               flex: 2,
+              width: '350px',
               borderTopLeftRadius: '0',
               borderBottomLeftRadius: '0',
               borderTopRightRadius: '0',
