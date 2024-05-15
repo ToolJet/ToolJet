@@ -5,10 +5,15 @@ import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { WorkflowExecutionsService } from '@services/workflow_executions.service';
 
 @Injectable()
 export class WorkflowWebhooksService {
-  constructor(private readonly manager: EntityManager, private eventEmitter: EventEmitter2) {}
+  constructor(
+    private readonly manager: EntityManager,
+    private eventEmitter: EventEmitter2,
+    private workflowExecutionsService: WorkflowExecutionsService
+  ) {}
 
   async triggerWorkflow(workflowApps, workflowParams, environment) {
     // When workflow version is introduced - Query needs to be tweaked
@@ -53,8 +58,13 @@ export class WorkflowWebhooksService {
     if (!environmentDetails.length) throw new HttpException('Invalid environment', 404);
     const webhookEnvironmentId = environmentDetails[0]?.ae_id ?? '';
 
-    this.eventEmitter.emit('triggerWorkflow', { workflowApps, sanitisedWorkflowParams, webhookEnvironmentId });
-    return;
+    const workflowExecution = await this.workflowExecutionsService.create(workflowApps);
+    const result = await this.workflowExecutionsService.execute(
+      workflowExecution,
+      sanitisedWorkflowParams,
+      webhookEnvironmentId
+    );
+    return result;
   }
 
   async updateWorkflow(workflowId, workflowValuesToUpdate) {

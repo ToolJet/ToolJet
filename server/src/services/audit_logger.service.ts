@@ -27,6 +27,12 @@ export class AuditLoggerService {
     manager?: EntityManager
   ): Promise<AuditLog> {
     return await dbTransactionWrap(async (manager) => {
+      let parsedMeta: any = {};
+      try {
+        parsedMeta = JSON.parse(JSON.stringify(metadata));
+      } catch {
+        console.error('Error while parsing metaData in audit log');
+      }
       const request = RequestContext?.currentContext?.req;
       const clientIp = (request as any)?.clientIp;
       const logData = {
@@ -40,7 +46,7 @@ export class AuditLoggerService {
         metadata: {
           userAgent: request?.headers['user-agent'],
           tooljetVersion: globalThis.TOOLJET_VERSION,
-          ...metadata,
+          ...parsedMeta,
         },
       };
 

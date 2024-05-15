@@ -60,7 +60,12 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible }) {
         z-index="10000"
       />
 
-      <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isCreateTableDrawerOpen}
+        onClose={() => setIsCreateTableDrawerOpen(false)}
+        position="right"
+        drawerStyle={{ width: '640px' }}
+      >
         <CreateTableForm
           onCreate={(tableInfo) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
@@ -68,7 +73,6 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible }) {
                 toast.error(error?.message ?? 'Failed to fetch tables');
                 return;
               }
-
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setSelectedTable({ table_name: tableInfo.table_name, id: tableInfo.id });
                 updateSidebarNAV(tableInfo.table_name);

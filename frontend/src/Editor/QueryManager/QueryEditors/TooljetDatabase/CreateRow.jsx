@@ -98,7 +98,7 @@ const RenderColumnOptions = ({
   darkMode,
   removeColumnOptionsPair,
 }) => {
-  const filteredColumns = columns.filter(({ isPrimaryKey }) => !isPrimaryKey);
+  const filteredColumns = columns.filter(({ column_default }) => !column_default?.startsWith('nextval('));
   const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
   let displayColumns = filteredColumns.map(({ accessor }) => ({
     value: accessor,

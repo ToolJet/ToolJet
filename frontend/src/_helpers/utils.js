@@ -37,6 +37,23 @@ export function findProp(obj, prop, defval) {
   return obj;
 }
 
+export async function checkWhiteLabelsDefaultState(organizationId = null) {
+  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
+  if (!isWhiteLabelDetailsFetched) {
+    try {
+      await actions.fetchWhiteLabelDetails(organizationId);
+    } catch (error) {
+      console.error('Unable to update white label settings', error);
+    }
+  }
+  const { whiteLabelText, whiteLabelFavicon, whiteLabelLogo } = useWhiteLabellingStore.getState();
+  return (
+    (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
+    (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
+    (!whiteLabelFavicon || whiteLabelFavicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
+  );
+}
+
 export function stripTrailingSlash(str) {
   return str.replace(/[/]+$/, '');
 }

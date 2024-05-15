@@ -10,7 +10,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
-import { setFaviconAndTitle } from '@/_helpers/utils';
+import { setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@/_helpers/utils';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
@@ -29,6 +29,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       fallBack: false,
       whiteLabelText: defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,
       whiteLabelFavicon: defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON,
+      defaultState: false,
     };
     this.formRef = React.createRef(null);
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
@@ -57,6 +58,10 @@ class OrganizationInvitationPageComponent extends React.Component {
       this.setState({ isGettingConfigs: false });
     }
 
+    checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
+      this.setState({ defaultState: res });
+    });
+
     authenticationService
       .verifyOrganizationToken(this.props?.params?.token)
       .then((data) => {
@@ -70,7 +75,6 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ fallBack: true });
         }
       });
-
     document.addEventListener('keydown', this.handleEnterKey);
   }
 
@@ -130,7 +134,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, isGettingConfigs, userDetails, fallBack, whiteLabelText } = this.state;
+    const { isLoading, isGettingConfigs, userDetails, fallBack, whiteLabelText, defaultState } = this.state;
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (
@@ -231,14 +235,16 @@ class OrganizationInvitationPageComponent extends React.Component {
                             )}
                           </ButtonSolid>
                         </div>
-                        <p className="text-center-onboard d-block">
-                          By signing up you are agreeing to the
-                          <br />
-                          <span>
-                            <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                            <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
-                          </span>
-                        </p>
+                        {defaultState && (
+                          <p className="text-center-onboard d-block">
+                            By signing up you are agreeing to the
+                            <br />
+                            <span>
+                              <a href="https://www.tooljet.com/terms">Terms of Service </a>&
+                              <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                            </span>
+                          </p>
+                        )}
                       </div>
                     )}
                   </form>

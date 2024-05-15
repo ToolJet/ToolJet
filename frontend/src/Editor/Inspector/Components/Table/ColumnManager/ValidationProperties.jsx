@@ -8,7 +8,6 @@ import CustomDatePickerHeader from '@/Editor/Components/Table/CustomDatePickerHe
 import { resolveReferences } from '../../../../../_helpers/utils';
 import cx from 'classnames';
 
-
 const getDate = (date, format) => {
   const dateMomentInstance = date && moment(date, format);
   if (dateMomentInstance && dateMomentInstance.isValid()) {

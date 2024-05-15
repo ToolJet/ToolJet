@@ -6,34 +6,32 @@
   display: none;
 }
 
-.tjdb-menu-icon-parent {
-  width: 20px;
-  height: 20px;
-}
+// .tjdb-menu-icon-parent {
+//   //   width: 20px;
+//   //   height: 20px;
+// }
+
+// .header-primaryKey-container {
+//   margin-right: 6px !important;
+// }
 
 .primaryKeyTooltip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
+  width: 100% !important;
 
-.primary-key-text {
-  font-size: 8px;
-  color: #687076;
-}
+  .table-header-container {
+    width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.tjdb-primary-key-parent {
-  border-radius: 10px !important;
-  background-color: #D7DBDF !important;
-  padding: 0px 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 70px;
 }
 
 .column-popover {
-  width: 137px !important;
+  width: 150px !important;
 }
 
 .column-popover-parent {
@@ -46,6 +44,27 @@
     border-right: 1px solid;
     border-bottom: 1px solid;
     border-color: inherit;
+
+    &:nth-last-child(2) {
+      border-right: 0px;
+      border-color: inherit;
+    }
+
+    &:last-child {
+      &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 0px;
+        left: -1px;
+        width: 1px;
+        height: 100%;
+        background-color: rgba(101, 109, 119, 0.16) !important;
+      }
+
+      border-right: 0px;
+      border-color: inherit;
+    }
   }
 
   td {
@@ -80,6 +99,27 @@
     border-right: 1px solid;
     border-bottom: 1px solid;
     border-color: inherit;
+
+    &:nth-last-child(2) {
+      border-right: 0px;
+      border-color: inherit;
+    }
+
+    &:last-child {
+      &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 0px;
+        left: -1px;
+        width: 1px;
+        height: 100%;
+        background-color: rgba(101, 109, 119, 0.16) !important;
+      }
+
+      border-right: 0px;
+      border-color: inherit;
+    }
   }
 
   td {
@@ -116,10 +156,25 @@
     justify-content: center;
     padding: 0.375rem 0.375rem;
     border: 2px solid transparent;
+
+    .foreignkey-cell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100% !important;
+
+      .cell-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 80%;
+      }
+
+    }
   }
 
   .tjdb-selected-cell {
-    border-color: var(--Indigo-09, #3E63DD);
+    border: 1.5px solid var(--Indigo-09, #3E63DD) !important;
   }
 
   .card-table tr td:last-child {
@@ -171,6 +226,7 @@
   border-radius: 6px !important;
   margin: 0px auto 8px auto !important;
 }
+
 .warning-icon-container-dark {
   background-color: #2B2F30 !important;
 }
@@ -185,7 +241,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100% - 63px);
+  height: calc(100% - 95px);
 }
 
 .tjdb-create-new-table {
@@ -235,6 +291,7 @@
 
   position: relative !important;
   background-color: transparent;
+  // height: 100% !important;
 
   .cell-text-null-input {
     background-color: var(--slate3) !important;
@@ -272,6 +329,7 @@
 }
 
 .tj-db-table {
+  position: relative;
   scroll-behavior: smooth;
 
   .table-cell {
@@ -310,5 +368,104 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .tjdb-th-bg {
+    height: 32px;
+    background: #ECEEF0;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    border-top: 1px solid rgba(101, 109, 119, 0.16) !important;
+    border-bottom: 1px solid rgba(101, 109, 119, 0.16) !important;
+  }
+
+  .tjdb-th-bg-dark {
+    background: #1C252F !important;
+  }
+}
+
+.create-table-list-items {
+  .popover-body {
+    padding: 0px !important;
+    width: 240px !important;
+
+    .unique-constraint-parent {
+      padding: 16px 16px 0px 16px !important;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .unique-constraint-info {
+        background-color: var(--slate2);
+        border: 1px solid var(--slate5) !important;
+        gap: 4px;
+        padding: 8px;
+        border-radius: 6px;
+        opacity: 0px;
+        display: flex;
+        color: var(--slate11);
+
+        svg {
+          width: 20%;
+          height: 100%;
+        }
+      }
+
+      .column-popover {
+        width: 100% !important;
+      }
+
+    }
+
+    .delete-column-table-creation {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 0px 16px 16px 20px !important;
+      width: 100% !important;
+
+      .delete-column-text {
+        font-weight: 500 !important;
+      }
+    }
+
+    .unique-tag {
+      color: var(--slate12) !important;
+      font-weight: 500 !important;
+    }
+
+    .unique-helper-text {
+      color: var(--slate11) !important;
+      font-weight: 400 !important;
+    }
+
+  }
+}
+
+.table-list-items {
+  button {
+    border: none;
+    background: none;
+  }
+
+  .disabled-btn {
+    cursor: not-allowed !important;
+  }
+}
+
+.tjdb-table-tooltip {
+  width: max-content !important;
+
+  .tooltip-inner {
+    max-width: max-content !important;
+    width: max-content !important;
+
+    .foreignKey-relation-tooltip {
+      span {
+        text-align: left;
+      }
+    }
+
   }
 }
