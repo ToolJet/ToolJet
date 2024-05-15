@@ -31,13 +31,17 @@ To create a new table in the ToolJet Database:
 </div>
 
 - Add Columns:
-  - **Column name**: Enter a unique name for the column.
-  - **Data type**: Select the appropriate data type for the column from the dropdown menu
-  - **Default value(optional)**: Specify any default value to be assigned to the column. If left blank, the column will allow null values.
-  - **Primary Key**: Check this box to designate the column as the [Primary Key](#primary-key). Multiple columns can be selected, creating a composite primary key.
-  - **NULL/NOT NULL toggle**: Use this toggle to determine whether the column should allow null values or require a value. By default, null values are permitted.
-  - **Unique toggle**: Click the kebab menu and toggle the "Unique" option to add a unique constraint to the column, ensuring all values are distinct. By default, duplicate values are allowed.
-  - **Foreign Key**: Click the **+ Add Relation** button to establish a foreign key relationship, linking this column to a primary key in another table.
+
+| **Option** | **Description** |
+| --- | --- |
+| **Column name** | Enter a unique name for the column. |
+| **Data type** | Select the appropriate data type for the column from the dropdown menu. |
+| **Default value (optional)** | Specify any default value to be assigned to the column. If left blank, the column will allow null values. |
+| **Primary Key** | Check this box to designate the column as the [Primary Key](#primary-key). Multiple columns can be selected, creating a composite primary key. |
+| **NULL/NOT NULL toggle** | Use this toggle to determine whether the column should allow null values or require a value. By default, null values are permitted. |
+| **Unique toggle** | Click the kebab menu and toggle the **Unique** option to add a unique constraint to the column, ensuring all values are distinct. By default, duplicate values are allowed. |
+| **Foreign Key** | Click the **+ Add Relation** button to establish a foreign key relationship, linking this column to a primary key or unique constraint column(s) in another table. |
+
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -119,7 +123,7 @@ After creating a table, you can designate any column as the primary key, provide
 
 ### Deleting Primary Key
 
-An existing primary key column can be deleted through the "Edit Table" panel. To delete the primary key column, follow these steps:
+An existing primary key column can be deleted through the **Edit Table** panel. To delete the primary key column, follow these steps:
 
 - Edit an existing table.
 - Select a different column to serve as the new primary key for the table.
@@ -174,6 +178,42 @@ To create a Foreign Key relationship, follow these steps:
 
 </div>
 
+### Example
+
+Let's consider an example where we want to create a foreign key relationship between the `Orders` and `Customers` tables in an e-commerce application.
+
+First, create the following two tables in the ToolJet Database:
+
+**Customers**
+
+| Column Name | Data Type | Primary Key    | Null | Unique  |
+|-------------|-----------|:--------------:|:------:|:--------:|
+| customer_id | int       | ✅             | ❌    | ✅      |
+| name        | varchar   | ❌             | ❌    | ❌      |
+| email       | varchar   | ❌             | ❌    | ✅      |
+
+**Orders**
+
+| Column Name  | Data Type | Primary Key    | Null | Unique  |
+|--------------|-----------|:--------------:|:------:|:--------:|
+| order_id     | int       |  ✅            | ❌    | ✅      |
+| customer_id  | int       |  ❌            | ❌    | ❌      |
+| order_date   | varchar   |  ❌            | ❌    | ❌      |
+| total_amount | float     |  ❌            | ❌    | ❌      |
+
+We want to create a foreign key relationship between the `customer_id` column in the `Orders` table and the `customer_id` column in the `Customers` table.
+
+1. **Define the Foreign Key Relationship**
+   - Edit the `Orders` table.
+   - Click on the **+ Add Relation** button under the Foreign Key Relation section.
+   - In the **Source** section, select the `customer_id` column.
+   - In the **Target** section, select the `Customers` table and the `customer_id` column.
+   - Choose the desired action, for example, **RESTRICT** to prevent deleting a customer that has associated orders.
+
+3. **Save Changes**: Click the **Save Changes** button to create the foreign key relationship.
+
+Now, whenever you try to insert or update a record in the `Orders` table, the `customer_id` value must correspond to an existing `customer_id` value in the `Customers` table. This is also prevent you from deleting a customer that has associated orders. This ensures that orders are always associated with a valid customer, maintaining data integrity and consistency.
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported Data Types
@@ -195,7 +235,9 @@ To create a Foreign Key relationship, follow these steps:
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Search Table
+## Table Operations
+
+### Search Table
 
 Open the Search bar by clicking on the **Search** button and search for a table in the ToolJet database by entering the table name.
 
@@ -207,7 +249,7 @@ Open the Search bar by clicking on the **Search** button and search for a table 
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Rename Table
+### Rename Table
 
 To rename a table, click on the kebab menu icon on the right of the table name and then select the **Edit table** option. A drawer will open from the right from where you can edit the table name.
 
@@ -219,7 +261,7 @@ To rename a table, click on the kebab menu icon on the right of the table name a
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Add New Column
+### Add New Column
 
 To add a new column to a table, either click on the kebab menu icon on the right of the table name and then select the **Add new column** option or click on the **+** button present at the end of the column header.
 
@@ -238,7 +280,7 @@ A drawer from the right will open up where you can enter the details for the new
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Export Schema
+### Export Schema
 
 The export schema option allows you to download the selected table schema in a JSON file. This does not export the table data or the relationships.<br/>
 While exporting the app, you can choose to export the app with or without a table schema connected to the app.<br/>
@@ -252,7 +294,7 @@ To export the table schema, click on the three vertical dots icon on the right o
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Delete Table
+### Delete Table
 
 To delete a table, click on the three vertical dots icon on the right of the table name and then click on the **Delete** option. A confirmation modal will appear, click on the **Delete** button to delete the table.
 
@@ -264,7 +306,7 @@ To delete a table, click on the three vertical dots icon on the right of the tab
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Edit Column
+### Edit Column
 
 To edit a column, click on the kebab menu on the column name and select the option to **Edit column**. When you edit the column, the data type cannot be changed.
 
@@ -276,7 +318,7 @@ To edit a column, click on the kebab menu on the column name and select the opti
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Delete Column
+### Delete Column
 
 To delete a column, click on the kebab menu on the column name and select the option to **Delete**. You cannot delete a column if it is being used as a primary key. You will have to remove the primary key constraint from the column before deleting it.
 
@@ -288,63 +330,61 @@ To delete a column, click on the kebab menu on the column name and select the op
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Add New Data
+## Adding and Modifying Data
+
+### Add New Data
 
 The Add new data button on the top of the table editor allows you to add data to the table. You can either **[Add new row](#add-new-row)** or **[Bulk upload data](#bulk-upload-data)** to add the data to the table.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/addnewdata.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/add-new-data-v2.png" alt="ToolJet database" />
 </div>
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Add New Row
+### Add New Row
 
-To add a new row to a table, either click on the `Add new data` button on top and then select the **Add new row** option or click on the **+** button present at the bottom left.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/addnewrow.png" alt="ToolJet database" />
-</div>
-
+To add a new row to a table, either click on the `Add new data` button on top and then select the **Add new row** option or click on the **+** button present at the bottom left.<br/>
 A drawer from the right will open up where the values for the new row can be provided.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/addnewrow2.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/add-new-row-v2.gif" alt="ToolJet database"/>
 </div>
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Edit Row
+### Edit Row
 
 To edit a row, hover on the row that you want to edit and the expand icon will appear next to the checkbox of that row. Click on the Expand icon to open the drawer and edit the row.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/expand.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/edit-row-v2.png" alt="ToolJet database" />
 </div>
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Edit a Cell
+### Edit a Cell
 
-1. **Double-Click**: Double-click on the cell you want to edit.
-2. **Enter Value**: Input the new value.
-3. **Save Changes**: Press "Enter" to save the changes. For boolean-type columns, choose from "True," "False," or "Null" options.
+- Double-click on the cell you want to edit.
+- Enter the new value.
+- Click on the **Save** button or press **Enter** to save the changes. 
+- For boolean-type columns, use the toggle to change the value.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/editcell.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/edit-cell-v2.gif" alt="ToolJet database"/>
 </div>
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Bulk Upload Data
+### Bulk Upload Data
 
 You can bulk upload data to the ToolJet database by clicking the **Bulk upload data** button at the top of the database editor. On clicking the button, a drawer will open from the right from where you can upload a **CSV** file. This file is used to insert records onto the table. If data for the id column is missing, it will insert a new record with the row data; if the id is present, it will update the corresponding record with the row data.
 
@@ -355,25 +395,26 @@ Once the CSV file is ready, click on the file picker to select the file or drag 
 **Requirements**:
 - The data types of columns in the CSV file should match those in the ToolJet database table.
 - The `id` column with a `serial` data type should not contain duplicate values.
+- All the column constraints should be satisfied. For example, if a column is marked as `Unique`, it should not contain duplicate values in the CSV file.
 
 **Limitations**:
 - There is a limit of 1000 rows per CSV file that can be uploaded to the ToolJet database.
 - The CSV file should not exceed 2MB in size.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/bulk.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/bulk-upload-data-v2.png" alt="ToolJet database" />
 </div>
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Delete Records
+### Delete Records
 
 To delete one or many records/rows, click the checkbox to the right of the record or records you want to delete. As soon as you select a single record, the button to delete the record will appear on the top, click on the **Delete record** button to delete the selected records.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/delrows.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/delete-rows-v2.png" alt="ToolJet database" />
 </div>
 
 </div>
@@ -385,28 +426,28 @@ To delete one or many records/rows, click the checkbox to the right of the recor
 You can add as many filters as you want into the table by clicking on the **Filter** button present on the top of the database editor.
 
 #### Adding a filter on the table data
-- Select a **column** from the Columns dropdown
-- Choose an **[operation](#available-operations-are)**
-- Enter a **value** for the selected operation
+- Select a **column** from the Columns dropdown.
+- Choose an **[operation](#available-operations-are)**.
+- Enter a **value** for the selected operation.
 
 #### Available operations are:
-- **equals**: This operation is used to check if the value of the column is equal to the value entered in the input field. 
-- **greater than**: This operation is used to check if the value of the column is greater than the value entered in the input field. 
-- **greater than or equal**: This operation is used to check if the value of the column is greater than or equal to the value entered in the input field. 
-- **less than**: This operation is used to check if the value of the column is less than the value entered in the input field.
-- **less than or equal**: This operation is used to check if the value of the column is less than or equal to the value entered in the input field. 
-- **not equal**: This operation is used to check if the value of the column is not equal to the value entered in the input field. 
-- **like**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`
-- **ilike**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-insensitive. ex: `ToolJet` will match `tooljet`
-- **match**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`. This operation uses regular expressions. ex: `^ToolJet$` will match `ToolJet` but not `ToolJet Inc`. 
-- **imatch**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-insensitive. This operation uses regular expressions. ex: `^ToolJet$` will match `ToolJet` but not `ToolJet Inc`.
-- **in**: This operation is used to check if the value of the column is in the list of values entered in the input field. ex: `1,2,3`
-- **contains**: This operation is used to check if the value of the column contains the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`
-- **contained**: This operation is used to check if the value of the column is contained in the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`
-- **not**: This operation is used to negate the result of the operation selected in the dropdown. ex: `not equals` will return all the records where the value of the column is not equal to the value entered in the input field.
+| **Operation** | **Description** |
+| --- | --- |
+| **equals** | This operation is used to check if the value of the column is equal to the value entered in the input field. |
+| **greater than** | This operation is used to check if the value of the column is greater than the value entered in the input field. |
+| **greater than or equal** | This operation is used to check if the value of the column is greater than or equal to the value entered in the input field. |
+| **less than** | This operation is used to check if the value of the column is less than the value entered in the input field. |
+| **less than or equal** | This operation is used to check if the value of the column is less than or equal to the value entered in the input field. |
+| **not equal** | This operation is used to check if the value of the column is not equal to the value entered in the input field. |
+| **like** | This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet` |
+| **ilike** | This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-insensitive. ex: `ToolJet` will match `tooljet` |
+| **match** | This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`. This operation uses regular expressions. ex: `^ToolJet$` will match `ToolJet` but not `ToolJet Inc`. |
+| **imatch** | This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-insensitive. This operation uses regular expressions. ex: `^ToolJet$` will match `ToolJet` but not `ToolJet Inc`. |
+| **in** | This operation is used to check if the value of the column is in the list of values entered in the input field. ex: `(1,2,3)` |
+| **is** | This operation is used to check if the value of the column is equal to the value entered in the input field. This operation is used for boolean data types. |
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/filter.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/filter-data-v2.png" alt="ToolJet database" />
 </div>
 
 </div>
@@ -418,7 +459,7 @@ You can add as many filters as you want into the table by clicking on the **Filt
 To sort the table data, click on the **Sort** button on top, select a **column** from the dropdown, and then choose an order **ascending** or **descending**.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/sort.png" alt="ToolJet database" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/sort-v2.png" alt="ToolJet database" />
 </div>
 
 </div>
