@@ -70,8 +70,17 @@ export function setCurrentStateAsync(_ref, changes) {
 }
 
 const debouncedChange = _.debounce(() => {
+  const newComponentsState = {};
+  for (const [key, value] of Object.entries(getCurrentState().components)) {
+    if (duplicateCurrentState[key]) {
+      newComponentsState[key] = { ...value, ...duplicateCurrentState[key] };
+    } else {
+      newComponentsState[key] = value;
+    }
+  }
+  duplicateCurrentState = { ...newComponentsState };
   useCurrentStateStore.getState().actions.setCurrentState({
-    components: duplicateCurrentState,
+    components: newComponentsState,
   });
 }, 100);
 
@@ -144,6 +153,7 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  console.log('duplicateCurrentState--- OptionsChanged');
   let componentName = component.name;
 
   if (id) {
