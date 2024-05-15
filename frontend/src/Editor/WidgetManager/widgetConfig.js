@@ -646,7 +646,7 @@ export const widgets = [
     properties: {
       text: {
         type: 'code',
-        displayName: 'Button text',
+        displayName: 'Label',
         validation: {
           schema: { type: 'string' },
         },
