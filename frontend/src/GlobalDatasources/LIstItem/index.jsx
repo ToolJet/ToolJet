@@ -7,10 +7,7 @@ import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsav
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 export const ListItem = ({
   dataSource,

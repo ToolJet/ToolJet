@@ -8,6 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
 import { humanizeifDefaultGroupName } from '@/_helpers/utils';
+import { decodeEntities } from '@/_helpers/utils';
 
 const UsersTable = ({
   isLoading,
@@ -94,7 +95,7 @@ const UsersTable = ({
                           className="mx-3 tj-text tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
-                          {user.name}
+                          {decodeEntities(user.name)}
                         </span>
                       </td>
                       <td className="text-muted">
