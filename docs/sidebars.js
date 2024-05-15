@@ -226,7 +226,6 @@ const sidebars = {
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
         'how-to/conditionally-format-table',
-        'how-to/create-foreign-key-relationship-tjdb',
         'how-to/bulk-update-multiple-rows',
         'how-to/delete-multiple-rows',
         'how-to/use-server-side-pagination',
