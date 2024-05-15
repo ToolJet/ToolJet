@@ -47,6 +47,7 @@ export async function checkWhiteLabelsDefaultState(organizationId = null) {
     }
   }
   const { whiteLabelText, whiteLabelFavicon, whiteLabelLogo } = useWhiteLabellingStore.getState();
+  console.log(whiteLabelText, whiteLabelFavicon, whiteLabelLogo, 'here');
   return (
     (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
     (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
