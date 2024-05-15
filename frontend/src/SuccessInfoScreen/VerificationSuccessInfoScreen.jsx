@@ -105,7 +105,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     } else {
       setIsGettingConfigs(false);
     }
-    setDefaultState(checkWhiteLabelsDefaultState());
+    setDefaultState(checkWhiteLabelsDefaultState(organizationId));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

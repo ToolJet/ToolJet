@@ -71,7 +71,7 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ fallBack: true });
         }
       });
-    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
+    this.setState({ defaultState: checkWhiteLabelsDefaultState(this.organizationId) });
     document.addEventListener('keydown', this.handleEnterKey);
   }
 
