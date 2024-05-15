@@ -38,7 +38,6 @@ export class ImportExportResourcesService {
             await this.tooljetDbImportExportService.export(exportResourcesDto.organization_id, tjdb)
           );
       }
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     }
 
     if (exportResourcesDto.app) {
@@ -71,6 +70,8 @@ export class ImportExportResourcesService {
         tableNameMapping[tjdbImportDto.id] = createdTable;
         imports.tooljet_database.push(createdTable);
       }
+
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     }
 
     if (importResourcesDto.app) {
