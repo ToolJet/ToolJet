@@ -811,7 +811,7 @@ export const Container = ({
       parentGridWidth: gridWidth,
       draggedSubContainer,
     };
-  }, [childComponents, selectedComponents, draggedSubContainer]);
+  }, [childComponents, selectedComponents, draggedSubContainer, darkMode, currentLayout, currentPageId, gridWidth]);
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
