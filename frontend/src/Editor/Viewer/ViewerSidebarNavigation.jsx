@@ -44,8 +44,8 @@ export const ViewerSidebarNavigation = ({
           className="left-sidebar-header-btn pin"
           fill={`var(--slate12)`}
           darkMode={darkMode}
-          leftIcon={isSidebarPinned ? 'unpin' : 'pin'}
-          iconWidth="14"
+          leftIcon={isSidebarPinned ? 'unpin01' : 'pin'}
+          iconWidth="18"
         ></ButtonSolid>
         <div className="page-handler-wrapper">
           {pages.map((page) =>
