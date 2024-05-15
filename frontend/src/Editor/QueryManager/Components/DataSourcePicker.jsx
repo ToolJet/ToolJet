@@ -174,7 +174,7 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
                       handleChangeDataSource(source);
                     }}
                     data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
-                    data-tooltip-content={source.name}
+                    data-tooltip-content={decodeEntities(source.name)}
                     data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                   >
                     <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
