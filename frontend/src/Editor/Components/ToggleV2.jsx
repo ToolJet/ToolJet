@@ -214,6 +214,14 @@ export const ToggleSwitchV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on]);
 
+  useEffect(() => {
+    setExposedVariable('setValue', async function (value) {
+      setOn(value);
+      setExposedVariable('value', value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const renderInput = () => (
     <div
       data-disabled={disabledState}
