@@ -7081,6 +7081,7 @@ tbody {
     background-color: #242f3c;
     padding: 0;
     max-width: 230px;
+    color: #ffffff;
 
     .tjdb-column-select-border {
       border-left-color: white !important;
@@ -12810,6 +12811,10 @@ tbody {
   input[type="number"] {
     -moz-appearance: textfield !important;
   }
+}
+
+.change-margin {
+  margin-bottom: 10px !important;
 }
 
 .inspector-validation-date-picker {
