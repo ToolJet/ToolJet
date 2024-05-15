@@ -29,22 +29,20 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
     );
 
     try {
-      await tooljetDbManager.transaction(async (tooljetDbManager) => {
-        await processDataInBatches(
-          entityManager,
-          async (entityManager, skip, take) => {
-            return await entityManager.find(InternalTable, {
-              order: { createdAt: 'ASC' },
-              take,
-              skip,
-            });
-          },
-          async (entityManager: EntityManager, internalTables: InternalTable[]) => {
-            await this.recreatePrimaryKeys(tooljetDbManager, internalTables, migrationProgress);
-          },
-          batchSize
-        );
-      });
+      await processDataInBatches(
+        entityManager,
+        async (entityManager, skip, take) => {
+          return await entityManager.find(InternalTable, {
+            order: { createdAt: 'ASC' },
+            take,
+            skip,
+          });
+        },
+        async (entityManager: EntityManager, internalTables: InternalTable[]) => {
+          await this.recreatePrimaryKeys(tooljetDbManager, internalTables, migrationProgress);
+        },
+        batchSize
+      );
     } catch (error) {
       console.error('Error during processing batches: ', error);
       throw error;
@@ -58,28 +56,30 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
     internalTables: InternalTable[],
     migrationProgress: MigrationProgress
   ) {
-    for (const internalTable of internalTables) {
-      const tableName = internalTable.id;
+    await tooljetDbManager.transaction(async (tjdbManager) => {
+      for (const internalTable of internalTables) {
+        const tableName = internalTable.id;
 
-      // Fetch current primary key columns
-      const table = await tooljetDbManager.queryRunner.getTable(tableName);
-      const primaryKeyColumns = await getPrimaryKeyDetails(tooljetDbManager, tableName);
+        // Fetch current primary key columns
+        const table = await tjdbManager.queryRunner.getTable(tableName);
+        const primaryKeyColumns = await getPrimaryKeyDetails(tooljetDbManager, tableName);
 
-      // primary keys created in legacy code is dropped
-      if (primaryKeyColumns.length === 1) {
-        const primaryKeyDetails = primaryKeyColumns[0];
+        // primary keys created in legacy code is dropped
+        if (primaryKeyColumns.length === 1) {
+          const primaryKeyDetails = primaryKeyColumns[0];
 
-        if (primaryKeyDetails.constraint_name.endsWith('_pkey')) {
-          await tooljetDbManager.queryRunner.query(
-            `ALTER TABLE "${table.name}" DROP CONSTRAINT "${primaryKeyDetails.constraint_name}";`
-          );
+          if (primaryKeyDetails.constraint_name.endsWith('_pkey')) {
+            await tjdbManager.queryRunner.query(
+              `ALTER TABLE "${table.name}" DROP CONSTRAINT "${primaryKeyDetails.constraint_name}";`
+            );
 
-          await tooljetDbManager.queryRunner.createPrimaryKey(tableName, [primaryKeyDetails.column_name]);
+            await tjdbManager.queryRunner.createPrimaryKey(tableName, [primaryKeyDetails.column_name]);
+          }
         }
-      }
 
-      migrationProgress.show();
-    }
+        migrationProgress.show();
+      }
+    });
 
     async function getPrimaryKeyDetails(
       tooljetDbManager: EntityManager,
