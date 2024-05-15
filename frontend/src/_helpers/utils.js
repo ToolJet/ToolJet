@@ -1282,5 +1282,5 @@ export const setWindowTitle = async (pageDetails, location) => {
 
 //For <>& UI display issues
 export function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&');
+  return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
 }
