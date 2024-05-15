@@ -131,7 +131,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, isGettingConfigs, userDetails, fallBack, defaultState, whiteLabelText } = this.state;
+    const { isLoading, isGettingConfigs, userDetails, fallBack, whiteLabelText, defaultState } = this.state;
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (

@@ -6,9 +6,9 @@ import { defaultWhiteLabellingSettings } from 'src/helpers/instance_settings.con
 import { MailerService } from '@nestjs-modules/mailer';
 import { WhiteLabellingService } from './white_labelling.service';
 import {
-  WHITE_LABELLING_SETTINGS,
   DEFAULT_WHITE_LABELLING_SETTINGS,
   WHITE_LABELLING_COLUMNS,
+  WHITE_LABELLING_SETTINGS,
 } from 'src/helpers/white_labelling.constants';
 
 const path = require('path');

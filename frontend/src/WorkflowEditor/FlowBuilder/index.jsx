@@ -181,7 +181,6 @@ function FlowBuilder(props) {
       nodeData.pluginId = data?.pluginId;
       nodeData.plugin = data?.plugin;
       if (node.type !== 'input') setSelectedNode(nodeData);
-
     },
     [editorSession.dataSources]
   );
