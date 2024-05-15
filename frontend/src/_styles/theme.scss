@@ -834,13 +834,20 @@ button {
   }
 
   .homepage-search {
-    background: transparent;
+    background: none !important;
     color: var(--slate12);
     height: 20px;
     border: none !important;
 
     &:focus {
-      background: none;
+      background: none !important;
+      border: none !important;
+    }
+
+    &:hover {
+      background: none !important;
+      border: none !important;      
+      color: var(--slate12);       
     }
   }
 }
