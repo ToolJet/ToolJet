@@ -50,7 +50,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
             value={option[0]}
             workspaceConstants={workspaceConstants}
-            placeholder="key"
+            placeholder="Key"
             autoComplete="off"
             style={{
               flex: 1,
@@ -64,7 +64,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
           <Input
             type="text"
             value={option[1]}
-            placeholder="value"
+            placeholder="Value"
             autoComplete="off"
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
