@@ -96,7 +96,7 @@ const MultiLineCodeEditor = (props) => {
 
     const inputStr = currentString.join(' ');
     const currentCurosorPos = currentCursor;
-    const nearestSubstring = findNearestSubstring(inputStr, currentCurosorPos);
+    const nearestSubstring = findNearestSubstring(inputStr, currentCurosorPos).replace(/{{|}}/g, '');
 
     let JSLangHints = [];
     if (lang === 'javascript') {

@@ -558,6 +558,7 @@ export const Container = ({
         _width = 1;
       }
       let _left = Math.round(x / (parent ? useGridStore.getState().subContainerWidths[parent] : gridWidth));
+      y = Math.round(y / 10) * 10;
       if (_width + _left > noOfGrids) {
         _left = _left - (_width + _left - noOfGrids);
         if (_left < 0) {

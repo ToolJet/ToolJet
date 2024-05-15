@@ -179,7 +179,7 @@ const EditorInput = ({
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
     compareCompletions: (a, b) => {
-      return a.label < b.label ? -1 : 1;
+      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
     },
     aboveCursor: false,
     defaultKeymap: true,
