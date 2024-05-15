@@ -27,19 +27,17 @@ const TjDatepicker = forwardRef(
     return (
       <div className="table-column-datepicker-input-container">
         <input
-          onBlur={(e) => {
-            if (isDateInputFocussed) {
-              onInputDateChange(e.target.value);
-            }
-            setIsDateInputFocussed(false);
-            e.stopPropagation();
-          }}
+          // onBlur={(e) => {
+          //   // console.log('blur', e)
+
+          //   // e.stopPropagation();
+          // }}
           className={cx('table-column-datepicker-input text-truncate', {
             'pointer-events-none': readOnly,
           })}
           value={value}
           onClick={onClick}
-          ref={dateInputRef}
+          ref={ref}
           style={styles}
           onChange={(e) => {
             setIsDateInputFocussed(true);
@@ -226,7 +224,7 @@ export const Datepicker = function Datepicker({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates]);
-
+  // console.log(date, "date")
   return (
     <div ref={pickerRef}>
       <DatePickerComponent
@@ -267,6 +265,12 @@ export const Datepicker = function Datepicker({
         popperProps={{ strategy: 'fixed' }}
         timeIntervals={15}
         timeFormat={isTwentyFourHrFormatEnabled ? 'HH:mm' : 'h:mm aa'}
+        onCalendarClose={() => {
+          if (isDateInputFocussed) {
+            handleInputDateChange(dateInputValue);
+          }
+          setIsDateInputFocussed(false);
+        }}
       />
     </div>
   );
