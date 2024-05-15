@@ -36,7 +36,7 @@ describe("Global Datasource Manager", () => {
     cy.skipWalkthrough();
   });
 
-  it.only("Should verify the global data source manager UI", () => {
+  it("Should verify the global data source manager UI", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
       "have.text",
@@ -68,7 +68,7 @@ describe("Global Datasource Manager", () => {
     );
     cy.get(dataSourceSelector.querySearchBar)
       .invoke("attr", "placeholder")
-      .should("eq", "Search  data sources");
+      .should("eq", "Search data sources");
 
     cy.get(dataSourceSelector.apiLabelAndCount)
       .verifyVisibleElement("have.text", dataSourceText.allApis)
