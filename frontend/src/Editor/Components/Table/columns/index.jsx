@@ -487,7 +487,7 @@ export default function generateColumnsData({
                     containerWidth={width}
                     optionsLoadingState={
                       resolveReferences(column?.useDynamicOptions, currentState) &&
-                        resolveReferences(column?.optionsLoadingState, currentState)
+                      resolveReferences(column?.optionsLoadingState, currentState)
                         ? true
                         : false
                     }
