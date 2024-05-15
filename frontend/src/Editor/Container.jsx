@@ -84,7 +84,7 @@ export const Container = ({
   useEffect(() => {
     const _canvasWidth = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
     setCanvasWidth(_canvasWidth);
-  }, [currentLayout]);
+  }, [currentLayout, widthOfCanvas]);
 
   const gridWidth = canvasWidth / noOfGrids;
 
