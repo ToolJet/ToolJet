@@ -84,7 +84,7 @@ export const Container = ({
   useEffect(() => {
     const _canvasWidth = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
     setCanvasWidth(_canvasWidth);
-  }, [currentLayout]);
+  }, [currentLayout, widthOfCanvas]);
 
   const gridWidth = canvasWidth / noOfGrids;
 
@@ -812,7 +812,7 @@ export const Container = ({
       parentGridWidth: gridWidth,
       draggedSubContainer,
     };
-  }, [childComponents, selectedComponents, draggedSubContainer]);
+  }, [childComponents, selectedComponents, draggedSubContainer, darkMode, currentLayout, currentPageId, gridWidth]);
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
