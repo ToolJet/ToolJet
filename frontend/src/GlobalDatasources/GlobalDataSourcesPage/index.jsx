@@ -113,8 +113,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     let arr = [];
 
     const filtered = datasourcesGroups().map((datasourceGroup) => {
-      console.log(datasourceGroup);
-
       if (datasourceGroup.type === 'Commonly used') {
         return {
           ...datasourceGroup,
