@@ -4,7 +4,7 @@ import _, { isEmpty } from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
-import { hasCircularDependency } from '@/_helpers/utils';
+import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 
 const acorn = require('acorn');
 
@@ -187,7 +187,7 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
   const isComponentValue = code.includes('components.') || false;
 
   const allDynamicVariables = getDynamicVariables(code) || [];
-  const isJSCodeResolver = queryHasJSCode && allDynamicVariables.length === 1;
+  let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
 
   if (!isJSCodeResolver) {
     allDynamicVariables.forEach((variable) => {
@@ -211,7 +211,7 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
 
     const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
-    resolvedValue = resolvedValue.replace(code, resolvedCode);
+    resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
   }
 
   return resolvedValue;
@@ -250,10 +250,17 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
 
   const queryHasJSCode = queryHasStringOtherThanVariable(query);
   const useJSResolvers = queryHasStringOtherThanVariable(query) || getDynamicVariables(query)?.length > 1;
+  const customWidgetResolvers = ['listItem'];
+  const isCustomResolvers = customWidgetResolvers.some((resolver) => query.includes(resolver));
 
   const { lookupTable } = useResolveStore.getState();
+
   if (useJSResolvers) {
     resolvedValue = resolveMultiDynamicReferences(query, lookupTable, queryHasJSCode);
+  } else if (isCustomResolvers && !_.isEmpty(customResolvers)) {
+    const currentState = useCurrentStateStore.getState();
+    const resolvedCode = olderResolverMethod(query, currentState, '', customResolvers);
+    resolvedValue = resolvedCode;
   } else {
     let value = query?.replace(/{{|}}/g, '').trim();
 
