@@ -211,7 +211,7 @@ if (process.env.DISABLE_WEBHOOKS !== 'true') {
 @Module({
   imports,
   controllers: [AppController],
-  providers: [EmailService, SeedsService ],
+  providers: [EmailService, SeedsService],
 })
 export class AppModule implements OnModuleInit {
   constructor(private connection: Connection) {}
