@@ -181,14 +181,15 @@ function getDynamicVariables(text) {
   const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
   return matchedParams;
 }
-const resolveMultiDynamicReferences = (code, lookupTable) => {
+const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
   let resolvedValue = code;
 
   const isComponentValue = code.includes('components.') || false;
 
-  const allDynamicVariables = getDynamicVariables(code);
+  const allDynamicVariables = getDynamicVariables(code) || [];
+  const isJSCodeResolver = queryHasJSCode && allDynamicVariables.length === 1;
 
-  if (allDynamicVariables) {
+  if (!isJSCodeResolver) {
     allDynamicVariables.forEach((variable) => {
       const variableToResolve = variable.replace(/{{|}}/g, '').trim();
 
@@ -205,12 +206,22 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
         resolvedValue = resolvedValue.replace(variable, resolvedCode);
       }
     });
+  } else {
+    const variableToResolve = code.replace(/{{|}}/g, '').trim();
+
+    const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+
+    resolvedValue = resolvedValue.replace(code, resolvedCode);
   }
 
   return resolvedValue;
 };
 
 const queryHasStringOtherThanVariable = (query) => {
+  if (query.startsWith('{{') && query.includes(' ')) {
+    return true;
+  }
+
   if (query.startsWith('{{') && query.endsWith('}}')) {
     return false;
   }
@@ -237,11 +248,12 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     return [valid, errors, newValue, resolvedValue];
   }
 
-  const hasMultiDynamicVariables = queryHasStringOtherThanVariable(query) || getDynamicVariables(query)?.length > 1;
+  const queryHasJSCode = queryHasStringOtherThanVariable(query);
+  const useJSResolvers = queryHasStringOtherThanVariable(query) || getDynamicVariables(query)?.length > 1;
 
   const { lookupTable } = useResolveStore.getState();
-  if (hasMultiDynamicVariables) {
-    resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
+  if (useJSResolvers) {
+    resolvedValue = resolveMultiDynamicReferences(query, lookupTable, queryHasJSCode);
   } else {
     let value = query?.replace(/{{|}}/g, '').trim();
 
