@@ -1,0 +1,16 @@
+{
+  "name": "P2p lending application",
+  "description": "Sample description for P2P lending application.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "p2p-lending-application",
+  "category": "sales-and-marketing"
+}
