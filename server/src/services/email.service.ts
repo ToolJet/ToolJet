@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { join } from 'path';
 import handlebars from 'handlebars';
 import { centsToUSD, generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
-import { INSTANCE_SYSTEM_SETTINGS, defaultWhiteLabellingSettings } from 'src/helpers/instance_settings.constants';
+import { defaultWhiteLabellingSettings } from 'src/helpers/instance_settings.constants';
 import { MailerService } from '@nestjs-modules/mailer';
 import { WhiteLabellingService } from './white_labelling.service';
-import { DEFAULT_WHITE_LABELLING_SETTINGS } from 'src/helpers/white_labelling.constants';
+import {
+  DEFAULT_WHITE_LABELLING_SETTINGS,
+  WHITE_LABELLING_COLUMNS,
+  WHITE_LABELLING_SETTINGS,
+} from 'src/helpers/white_labelling.constants';
 
 const path = require('path');
 const fs = require('fs');
@@ -326,16 +330,14 @@ export class EmailService {
     return whiteLabelSetting;
   }
 
-  async retrieveWhiteLabelText(whiteLabelSetting) {
-    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT] !== ''
-      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT]
-      : defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+  async retrieveWhiteLabelText(whiteLabelSettings) {
+    const whiteLabelText = whiteLabelSettings?.[WHITE_LABELLING_COLUMNS.WHITE_LABEL_TEXT];
+    return whiteLabelText || DEFAULT_WHITE_LABELLING_SETTINGS[WHITE_LABELLING_SETTINGS.WHITE_LABEL_TEXT];
   }
 
-  async retrieveWhiteLabelLogo(whiteLabelSetting) {
-    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO] !== ''
-      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO]
-      : defaultWhiteLabellingSettings.WHITE_LABEL_LOGO;
+  async retrieveWhiteLabelLogo(whiteLabelSettings) {
+    const whiteLabelLogo = whiteLabelSettings?.[WHITE_LABELLING_COLUMNS.WHITE_LABEL_LOGO];
+    return whiteLabelLogo || DEFAULT_WHITE_LABELLING_SETTINGS[WHITE_LABELLING_SETTINGS.WHITE_LABEL_LOGO];
   }
 
   checkDefaultWhiteLabelState() {
