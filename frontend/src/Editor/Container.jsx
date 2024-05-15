@@ -796,7 +796,7 @@ export const Container = ({
       parentGridWidth: gridWidth,
       draggedSubContainer,
     };
-  }, [childComponents, selectedComponents, draggedSubContainer]);
+  }, [childComponents, selectedComponents, draggedSubContainer, darkMode, currentLayout, currentPageId, gridWidth]);
 
   const openAddUserWorkspaceSetting = () => {
     const workspaceId = getWorkspaceId();
