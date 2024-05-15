@@ -58,6 +58,10 @@ class OrganizationInvitationPageComponent extends React.Component {
       this.setState({ isGettingConfigs: false });
     }
 
+    checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
+      this.setState({ defaultState: res });
+    });
+
     authenticationService
       .verifyOrganizationToken(this.props?.params?.token)
       .then((data) => {
@@ -70,9 +74,6 @@ class OrganizationInvitationPageComponent extends React.Component {
         if (err?.data.statusCode == 400) {
           this.setState({ fallBack: true });
         }
-      });
-      checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
-        this.setState({ defaultState: res });
       });      
     document.addEventListener('keydown', this.handleEnterKey);
   }
