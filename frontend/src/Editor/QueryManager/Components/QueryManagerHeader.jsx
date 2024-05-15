@@ -23,10 +23,7 @@ import { Button } from 'react-bootstrap';
 import { cloneDeep } from 'lodash';
 
 import ParameterList from './ParameterList';
-
-function decodeEntities(encodedString) {
-  return encodedString.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
-}
+import { decodeEntities } from '@/_helpers/utils';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
   const { renameQuery } = useDataQueriesActions();

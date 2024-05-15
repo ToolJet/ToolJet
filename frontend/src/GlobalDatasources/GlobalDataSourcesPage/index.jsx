@@ -113,6 +113,14 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     let arr = [];
 
     const filtered = datasourcesGroups().map((datasourceGroup) => {
+      if (datasourceGroup.type === 'Commonly used') {
+        return {
+          ...datasourceGroup,
+          list: [],
+          renderDatasources: () => renderCardGroup([], datasourceGroup.type),
+        };
+      }
+
       datasourceGroup.list.map((dataSource) => {
         if (dataSource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
           arr.push({ ...dataSource, type: datasourceGroup.type });
@@ -194,7 +202,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               dataCy={`home-page`}
               className="border-0 homepage-search"
               darkMode={darkMode}
-              placeholder={`Search  data sources`}
+              placeholder={`Search data sources`}
               initialValue={queryString}
               width={'100%'}
               callBack={handleSearch}
