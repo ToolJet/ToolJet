@@ -55,6 +55,8 @@ function DataSourceSelect({
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [searchPageNumber, setSearchPageNumber] = useState(1);
+  const [totalSearchRecords, setTotalSearchRecords] = useState(0);
   const [isInitialForeignKeSearchDataLoaded, setIsInitialForeignKeSearchDataLoaded] = useState(false);
   const scrollContainerRef = useRef(null);
 
@@ -71,149 +73,280 @@ function DataSourceSelect({
     }
   });
 
-  useEffect(() => {
-    function getForeignKeyDetails(incrementPageBy) {
-      if (isEmpty(searchValue)) {
-        const limit = 15;
-        const offset = (pageNumber - 1) * limit;
+  function setDefaultStateForSearch(makeSearchValueToDefault = false) {
+    setIsInitialForeignKeSearchDataLoaded(false);
+    setTotalSearchRecords(0);
+    setSearchPageNumber(1);
+    makeSearchValueToDefault && setSearchValue('');
+    setSearchResults([]);
+  }
 
-        if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
+  function fetchForeignKeyDetails(page, totalRecords, isFirstPageLoaded, searchValue, foreignKeys, organizationId) {
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
+    if (isFirstPageLoaded && offset >= totalRecords) return;
+    setIsLoadingFKDetails(true);
+    const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+    if (!referencedColumns?.referenced_column_names?.length) return;
+
+    const selectQuery = new PostgrestQueryBuilder();
+    const filterQuery = new PostgrestQueryBuilder();
+    selectQuery.select(referencedColumns?.referenced_column_names[0]);
+    let query = `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`;
+    if (!isEmpty(searchValue)) {
+      filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
+      // filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
+      query = query + `&${filterQuery.url.toString()}`;
+    }
+
+    tooljetDatabaseService
+      .findOne(organizationId, referencedColumns?.referenced_table_id, query)
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          setIsLoadingFKDetails(false);
+          toast.error(
+            error?.message ??
+              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+          );
           return;
         }
 
-        setIsLoadingFKDetails(true);
-        const selectQuery = new PostgrestQueryBuilder();
-        // Checking that the selected column is available in ForeignKey
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-        if (!referencedColumns?.referenced_column_names?.length) return;
-        selectQuery.select(referencedColumns?.referenced_column_names[0]);
+        const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+        if (Array.isArray(data) && data?.length > 0) {
+          if (isEmpty(searchValue)) {
+            if (page === 1) setIsInitialForeignKeyDataLoaded(true);
+            setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+            setPageNumber((prevPageNumber) => prevPageNumber + 1);
+            if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
+          }
 
-        tooljetDatabaseService
-          .findOne(
-            organizationId,
-            foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
-            `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
+          if (!isEmpty(searchValue)) {
+            if (page === 1) setIsInitialForeignKeSearchDataLoaded(true);
+            const currentSearchResultList = data.map((item) => ({
+              value: item[referencedColumns?.referenced_column_names[0]],
+              label: item[referencedColumns?.referenced_column_names[0]],
+            }));
+            setSearchResults((prevSearchData) => [...prevSearchData, ...currentSearchResultList]);
+            setSearchPageNumber((prevPageNumber) => prevPageNumber + 1);
+            if (totalFKRecords !== totalSearchRecords) setTotalSearchRecords(totalFKRecords);
+          }
+        }
+        setIsLoadingFKDetails(false);
+      });
+  }
+
+  function handleInfiniteScroll() {
+    const target = scrollContainerRef?.current;
+    let scrollTop = target?.scrollTop;
+    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+
+    if (scrollPercentage > 90 && !isLoadingFKDetails) {
+      isEmpty(searchValue)
+        ? fetchForeignKeyDetails(
+            pageNumber,
+            totalRecords,
+            isInitialForeignKeyDataLoaded,
+            searchValue,
+            foreignKeys,
+            organizationId
           )
-          .then(({ headers, data = [], error }) => {
-            if (error) {
-              toast.error(
-                error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-              );
-              setIsLoadingFKDetails(false);
-              return;
-            }
-
-            const totalFKRecords = headers['content-range'].split('/')[1] || 0;
-            if (Array.isArray(data) && data?.length > 0) {
-              if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
-              setReferencedColumnDetails((prevData) => [...prevData, ...data]);
-              setPageNumber((prevPageNumber) => prevPageNumber + incrementPageBy);
-              if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
-            }
-            setIsLoadingFKDetails(false);
-          });
-      }
+        : fetchForeignKeyDetails(
+            searchPageNumber,
+            totalSearchRecords,
+            isInitialForeignKeSearchDataLoaded,
+            searchValue,
+            foreignKeys,
+            organizationId
+          );
     }
+  }
 
-    function handleScroll() {
-      const target = scrollContainerRef?.current;
-      let scrollTop = target?.scrollTop;
-      const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+  useEffect(() => {
+    const shouldLoadFKDataFirstPage = !isLoadingFKDetails && isEmpty(searchValue) && !isInitialForeignKeyDataLoaded;
+    const shouldLoadFKSearchDataFirstPage = !isLoadingFKDetails && !isEmpty(searchValue);
 
-      if (scrollPercentage > 90 && !isLoadingFKDetails) {
-        if (isEmpty(searchValue)) getForeignKeyDetails(1);
+    let debouncedHandleSearchInSelectBox;
+    if (scrollEventForColumnValus) {
+      if (shouldLoadFKSearchDataFirstPage) {
+        debouncedHandleSearchInSelectBox = debounce(() => {
+          setDefaultStateForSearch();
+          // if (searchResults.length) setSearchResults([]);
+          // setIsInitialForeignKeSearchDataLoaded(false);
+
+          fetchForeignKeyDetails(
+            searchPageNumber,
+            totalSearchRecords,
+            isInitialForeignKeSearchDataLoaded,
+            searchValue,
+            foreignKeys,
+            organizationId
+          );
+        }, 500);
+        debouncedHandleSearchInSelectBox();
       }
-    }
 
-    const handleScrollThrottled = throttle(handleScroll, 500);
-
-    if (scrollEventForColumnValus && !searchValue) {
-      if (!isInitialForeignKeyDataLoaded && !isLoadingFKDetails) getForeignKeyDetails(1);
-      scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
+      if (shouldLoadFKDataFirstPage) {
+        // Should be executed on-mount once
+        fetchForeignKeyDetails(
+          pageNumber,
+          totalRecords,
+          isInitialForeignKeyDataLoaded,
+          searchValue,
+          foreignKeys,
+          organizationId
+        );
+      }
     }
 
     return () => {
-      scrollContainerRef?.current?.removeEventListener('scroll', handleScrollThrottled);
+      debouncedHandleSearchInSelectBox?.cancel;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue, pageNumber, totalRecords, isLoadingFKDetails]);
-
-  useEffect(() => {
-    function handleSearchInSelectBox() {
-      if (!isEmpty(searchValue)) {
-        const limit = 100;
-        // Only first page will be loaded - for Search
-        const offset = (1 - 1) * limit;
-
-        if (isInitialForeignKeSearchDataLoaded) return;
-        setIsLoadingFKDetails(true);
-        const selectQuery = new PostgrestQueryBuilder();
-        const filterQuery = new PostgrestQueryBuilder();
-
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-        if (!referencedColumns?.referenced_column_names?.length) return;
-        selectQuery.select(referencedColumns?.referenced_column_names[0]);
-
-        if (scrollEventForColumnValus) {
-          filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
-          // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
-        }
-
-        const query = `${selectQuery.url.toString()}&${filterQuery.url.toString()}&limit=${limit}&offset=${offset}`;
-
-        tooljetDatabaseService
-          .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
-          .then(({ _headers, data = [], error }) => {
-            if (error) {
-              toast.error(
-                error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-              );
-              setIsLoadingFKDetails(false);
-              return;
-            }
-
-            if (Array.isArray(data) && data?.length > 0) {
-              setIsInitialForeignKeSearchDataLoaded(true);
-              const currentSearchResultList = data.map((item) => ({
-                value: item[referencedColumns?.referenced_column_names[0]],
-                label: item[referencedColumns?.referenced_column_names[0]],
-              }));
-              setSearchResults([...currentSearchResultList]);
-            }
-            setIsLoadingFKDetails(false);
-          });
-      }
-    }
-    let debouncedHandleSearchInSelectBox;
-    if (scrollEventForColumnValus) {
-      debouncedHandleSearchInSelectBox = debounce(() => {
-        // Making the values to default
-        if (searchResults.length) setSearchResults([]);
-        setIsInitialForeignKeSearchDataLoaded(false);
-
-        if (!isLoadingFKDetails) handleSearchInSelectBox(1, true);
-      }, 500);
-
-      debouncedHandleSearchInSelectBox();
-    }
-
-    return debouncedHandleSearchInSelectBox?.cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
+  // useEffect(() => {
+  //   function getForeignKeyDetails(incrementPageBy) {
+  //     if (isEmpty(searchValue)) {
+  //       const limit = 15;
+  //       const offset = (pageNumber - 1) * limit;
+
+  //       if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
+  //         return;
+  //       }
+
+  //       setIsLoadingFKDetails(true);
+  //       const selectQuery = new PostgrestQueryBuilder();
+  //       // Checking that the selected column is available in ForeignKey
+  //       const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+  //       if (!referencedColumns?.referenced_column_names?.length) return;
+  //       selectQuery.select(referencedColumns?.referenced_column_names[0]);
+
+  //       tooljetDatabaseService
+  //         .findOne(
+  //           organizationId,
+  //           foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
+  //           `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
+  //         )
+  //         .then(({ headers, data = [], error }) => {
+  //           if (error) {
+  //             toast.error(
+  //               error?.message ??
+  //                 `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+  //             );
+  //             setIsLoadingFKDetails(false);
+  //             return;
+  //           }
+
+  //           const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+  //           if (Array.isArray(data) && data?.length > 0) {
+  //             if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
+  //             setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+  //             setPageNumber((prevPageNumber) => prevPageNumber + incrementPageBy);
+  //             if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
+  //           }
+  //           setIsLoadingFKDetails(false);
+  //         });
+  //     }
+  //   }
+
+  //   function handleScroll() {
+  //     const target = scrollContainerRef?.current;
+  //     let scrollTop = target?.scrollTop;
+  //     const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+
+  //     if (scrollPercentage > 90 && !isLoadingFKDetails) {
+  //       if (isEmpty(searchValue)) getForeignKeyDetails(1);
+  //     }
+  //   }
+
+  //   const handleScrollThrottled = throttle(handleScroll, 500);
+
+  //   if (scrollEventForColumnValus && !searchValue) {
+  //     if (!isInitialForeignKeyDataLoaded && !isLoadingFKDetails) getForeignKeyDetails(1);
+  //     scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
+  //   }
+
+  //   return () => {
+  //     scrollContainerRef?.current?.removeEventListener('scroll', handleScrollThrottled);
+  //   };
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [searchValue, pageNumber, totalRecords, isLoadingFKDetails]);
+
+  // useEffect(() => {
+  //   function handleSearchInSelectBox() {
+  //     if (!isEmpty(searchValue)) {
+  //       const limit = 100;
+  //       // Only first page will be loaded - for Search
+  //       const offset = (1 - 1) * limit;
+
+  //       if (isInitialForeignKeSearchDataLoaded) return;
+  //       setIsLoadingFKDetails(true);
+  //       const selectQuery = new PostgrestQueryBuilder();
+  //       const filterQuery = new PostgrestQueryBuilder();
+
+  //       const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+  //       if (!referencedColumns?.referenced_column_names?.length) return;
+  //       selectQuery.select(referencedColumns?.referenced_column_names[0]);
+
+  //       if (scrollEventForColumnValus) {
+  //         filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
+  //         // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
+  //       }
+
+  //       const query = `${selectQuery.url.toString()}&${filterQuery.url.toString()}&limit=${limit}&offset=${offset}`;
+
+  //       tooljetDatabaseService
+  //         .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
+  //         .then(({ _headers, data = [], error }) => {
+  //           if (error) {
+  //             toast.error(
+  //               error?.message ??
+  //                 `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+  //             );
+  //             setIsLoadingFKDetails(false);
+  //             return;
+  //           }
+
+  //           if (Array.isArray(data) && data?.length > 0) {
+  //             setIsInitialForeignKeSearchDataLoaded(true);
+  //             const currentSearchResultList = data.map((item) => ({
+  //               value: item[referencedColumns?.referenced_column_names[0]],
+  //               label: item[referencedColumns?.referenced_column_names[0]],
+  //             }));
+  //             setSearchResults([...currentSearchResultList]);
+  //           }
+  //           setIsLoadingFKDetails(false);
+  //         });
+  //     }
+  //   }
+
+  //   let debouncedHandleSearchInSelectBox;
+  //   if (scrollEventForColumnValus) {
+  //     debouncedHandleSearchInSelectBox = debounce(() => {
+  //       // Making the values to default
+  //       if (searchResults.length) setSearchResults([]);
+  //       setIsInitialForeignKeSearchDataLoaded(false);
+
+  //       if (!isLoadingFKDetails) handleSearchInSelectBox(1, true);
+  //     }, 500);
+
+  //     debouncedHandleSearchInSelectBox();
+  //   }
+
+  //   return debouncedHandleSearchInSelectBox?.cancel;
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [searchValue]);
+
   useEffect(() => {
-    // Making the Infinite scroll pagination API to default state
     return () => {
       if (scrollEventForColumnValus) {
         setIsInitialForeignKeyDataLoaded(false);
-        setIsInitialForeignKeSearchDataLoaded(false);
         setTotalRecords(0);
         setPageNumber(1);
-        setSearchValue('');
-        setSearchResults([]);
         setReferencedColumnDetails([]);
+
+        setDefaultStateForSearch(true);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,7 +457,7 @@ function DataSourceSelect({
                   {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
                     <ToolTip
                       message={referencedForeignKeyDetails?.map(
-                        (item, index) =>
+                        (item, _index) =>
                           item?.referenced_table_id === props?.data?.value && (
                             <div key={item?.referenced_table_id}>
                               <span>Foreign key relation</span>
@@ -367,6 +500,7 @@ function DataSourceSelect({
                   }
                   return accumulator;
                 }, {});
+
               const focusedOption =
                 props &&
                 props.children &&
@@ -378,6 +512,8 @@ function DataSourceSelect({
                   }
                   return accumulator;
                 }, {});
+
+              const handleScrollThrottled = throttle(handleInfiniteScroll, 500);
 
               return (
                 <React.Fragment>
@@ -395,6 +531,7 @@ function DataSourceSelect({
                     foreignKeys={foreignKeys}
                     cellColumnName={cellColumnName}
                     isLoadingFKDetails={isLoadingFKDetails}
+                    handleScrollThrottled={handleScrollThrottled}
                   />
                   {foreignKeyAccess && showDescription && actions && (
                     <>
@@ -426,7 +563,16 @@ function DataSourceSelect({
               );
             },
             // eslint-disable-next-line react-hooks/exhaustive-deps
-            [onAdd, addBtnLabel, emptyError]
+            [
+              onAdd,
+              addBtnLabel,
+              emptyError,
+              pageNumber,
+              searchPageNumber,
+              searchValue,
+              // isInitialForeignKeyDataLoaded,
+              isLoadingFKDetails,
+            ]
           ),
           IndicatorSeparator: () => null,
           DropdownIndicator,
@@ -592,6 +738,9 @@ const MenuList = ({
           style={menuListStyles}
           id="query-ds-select-menu"
           onClick={(e) => e.stopPropagation()}
+          onScroll={
+            scrollEventForColumnValus && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
+          }
         >
           {children}
         </div>
