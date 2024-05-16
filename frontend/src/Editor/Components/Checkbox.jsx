@@ -14,7 +14,6 @@ export const Checkbox = function Checkbox({
   dataCy,
   component,
   validate,
-  isResizing,
   width,
 }) {
   const defaultValueFromProperties = properties.defaultValue ?? false;
@@ -185,7 +184,7 @@ export const Checkbox = function Checkbox({
                 checked={checked}
               />
               <div style={checkmarkStyle}>
-                {checked && !isResizing && (
+                {checked && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className=" icon-tabler icon-tabler-check"
