@@ -327,7 +327,7 @@ function ForeignKeyRelation({
     <>
       <div className="foreignkey-relation-container">
         <div className="foreign-key-heading">
-          <span>Foreign key relation</span>
+          <span className="foreign-key-sub-title">Foreign key relation</span>
           <p className="tj-text-xsm">
             A foreign key relation helps to link rows from existing tables with rows in this table based on a common
             column.
