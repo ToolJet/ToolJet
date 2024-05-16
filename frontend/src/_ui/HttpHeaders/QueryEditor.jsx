@@ -18,12 +18,12 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
       {options.map((option, index) => {
         return (
           <div className="d-flex" key={index}>
-            <div className="d-flex justify-content-between w-100">
+            <div className="d-flex mb-2 justify-content-between w-100">
               <div className="w-100">
                 <CodeHinter
                   initialValue={option[0]}
                   height="32px"
-                  placeholder="key"
+                  placeholder="Key"
                   onChange={(value) => keyValuePairValueChanged(value, 0, index)}
                   componentName={`HttpHeaders::key::${index}`}
                 />
@@ -32,7 +32,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                 <CodeHinter
                   initialValue={option[1]}
                   height="32px"
-                  placeholder="value"
+                  placeholder="Value"
                   onChange={(value) => keyValuePairValueChanged(value, 1, index)}
                   componentName={`HttpHeaders::value::${index}`}
                 />
