@@ -19,7 +19,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             padding: '10px',
             textAlign: 'center',
             color: '#ccc',
-            width: '600px',
+            width: '654px',
             height: '32px',
             display: 'flex',
             alignItems: 'center',
@@ -36,8 +36,8 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
       {options?.length > 0 && (
         <div>
           <div style={{ display: 'flex' }}>
-            <div style={{ width: '250px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>KEY</div>
-            <div style={{ width: '350px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>VALUE</div>
+            <div style={{ width: '300px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>KEY</div>
+            <div style={{ width: '316px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>VALUE</div>
           </div>
         </div>
       )}
@@ -54,7 +54,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             autoComplete="off"
             style={{
               flex: 1,
-              width: '265px',
+              width: '300px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
@@ -71,7 +71,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             workspaceConstants={workspaceConstants}
             style={{
               flex: 2,
-              width: '350px',
+              width: '316px',
               borderTopLeftRadius: '0',
               borderBottomLeftRadius: '0',
               borderTopRightRadius: '0',
