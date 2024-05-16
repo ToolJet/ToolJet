@@ -18,7 +18,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
   if (componentId) {
     const componentToRender = listToRender.find((item) => item === componentId);
 
-    if (componentToRender) {
+    const parentReRendered = listToRender.find((item) => item === prevProps?.parentId);
+
+    if (componentToRender || parentReRendered) {
       needToRender = true;
     }
   }

@@ -334,6 +334,7 @@ const EditorComponent = (props) => {
     }
 
     // Flush only updated components
+
     flushComponentsToRender(updatedComponentIds);
   }
 
@@ -342,7 +343,16 @@ const EditorComponent = (props) => {
   useEffect(() => {
     if (lastUpdatedRef.length > 0) {
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
+
+      const directRenders = lastUpdatedRef.map((ref) => ref.includes('rerender') && ref.split(' ')[1]);
+
+      const toUpdateRefs = lastUpdatedRef.filter((ref) => !ref.includes('rerender'));
+
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, toUpdateRefs);
+
+      if (directRenders.length > 0) {
+        componentIdsWithReferences.push(...directRenders);
+      }
 
       if (componentIdsWithReferences.length > 0) {
         batchUpdateComponents(componentIdsWithReferences);

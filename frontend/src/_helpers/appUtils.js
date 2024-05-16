@@ -110,9 +110,16 @@ export function onComponentOptionsChanged(component, options, id) {
     for (const option of options) {
       componentData[option[0]] = option[1];
 
-      const path = `components.${componentName}.${option[0]}`;
+      const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
 
-      if (!_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
+      let path = null;
+      if (isListviewOrKanbaComponent) {
+        path = `components.${componentName}`;
+      } else {
+        path = `components.${componentName}.${option[0]}`;
+      }
+
+      if (!isListviewOrKanbaComponent && !_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
         const lookUpTable = useResolveStore.getState().lookupTable;
 
         const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
@@ -124,6 +131,10 @@ export function onComponentOptionsChanged(component, options, id) {
         if (shouldUpdateRef) {
           shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
         }
+      }
+
+      if (isListviewOrKanbaComponent) {
+        useResolveStore.getState().actions.updateLastUpdatedRefs([`rerender ${id}`]);
       }
     }
 
@@ -153,7 +164,6 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
-  console.log('duplicateCurrentState--- OptionsChanged');
   let componentName = component.name;
 
   if (id) {
@@ -171,7 +181,14 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   let componentData = components[componentName] || {};
   componentData[option_name] = value;
 
-  const path = option_name ? `components.${componentName}.${option_name}` : null;
+  const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
+
+  let path = null;
+  if (isListviewOrKanbaComponent) {
+    path = `components.${componentName}`;
+  } else {
+    path = option_name ? `components.${componentName}.${option_name}` : null;
+  }
 
   if (isEditorReady) {
     if (duplicateCurrentState !== null) {
@@ -182,7 +199,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
       components: { ...components, [componentName]: componentData },
     });
 
-    if (!_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
+    if (!isListviewOrKanbaComponent && !_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
       const lookUpTable = useResolveStore.getState().lookupTable;
 
       const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
@@ -200,6 +217,10 @@ export function onComponentOptionChanged(component, option_name, value, id) {
           useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateHints);
         });
       }
+    }
+
+    if (isListviewOrKanbaComponent) {
+      useResolveStore.getState().actions.updateLastUpdatedRefs([`rerender ${id}`]);
     }
   } else {
     // Update the duplicate state if editor is not ready
