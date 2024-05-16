@@ -61,7 +61,7 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet enterprise image published:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
+            message="ToolJet cloud image published:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
           else
             message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
           fi
