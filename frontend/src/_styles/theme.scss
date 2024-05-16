@@ -8100,12 +8100,13 @@ tbody {
 .pagination-container {
   display: flex;
   padding: 0px;
-  height: 20px;
+  height: 20px !important;
 
   .form-control {
     padding: 0 4px;
     width: fit-content;
-    max-width: 30px;
+    width: 30px !important;
+    height: 20px !important;
     text-align: center;
   }
 
@@ -12896,4 +12897,9 @@ tbody {
 
 div.ds-svg-container svg {
   padding: 2px;
+}
+
+.pagination {
+  width: 30px;
+  height: 20px;
 }

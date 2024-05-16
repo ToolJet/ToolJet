@@ -43,7 +43,7 @@ const Pagination = ({
         <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
       </Button.UnstyledButton>
 
-      <div className="d-flex align-items-center">
+      <div className="d-flex">
         <input
           disabled={isDisabled || disableInput}
           type="text"
