@@ -10,7 +10,11 @@ import {
 } from "Support/utils/workspaceConstants";
 import { buttonText } from "Texts/button";
 import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
-import { verifypreview, createDataQuery } from "Support/utils/dataSource";
+import {
+    verifypreview,
+    createDataQuery,
+    createrestAPIQuery,
+} from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import {
     selectQueryFromLandingPage,
@@ -280,12 +284,10 @@ describe("Workspace constants", () => {
             .replaceAll("[^A-Za-z]", "");
 
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        AddNewconstants(data.restapilink, "http://localhost:4000/production");
+        AddNewconstants(data.restapilink, Cypress.env("constants_host"));
         AddNewconstants(data.restapiHeaderKey, "customHeader");
         AddNewconstants(data.restapiHeaderValue, "key=value");
 
-        cy.get(commonSelectors.homePageLogo).click();
-        cy.wait("@homePage");
         cy.apiCreateApp(data.appName);
 
         cy.getCookie("tj_auth_token").then((cookie) => {
@@ -323,6 +325,106 @@ describe("Workspace constants", () => {
         cy.get(
             '[data-cy="textcomponenttextinput-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.restapi1.data.message`);
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "Production environment testing");
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(4000);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.text", "Production environment testing");
+    });
+    it("should verify the constants resolving in datasource connection form", () => {
+        data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+        data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName}-App`;
+        data.restapilink = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.restapiHeaderKey = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+        data.restapiHeaderValue = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(data.restapilink, Cypress.env("constants_host"));
+        AddNewconstants(data.restapiHeaderKey, "customHeader");
+        AddNewconstants(data.restapiHeaderValue, "key=value");
+        cy.apiCreateGDS(
+            "http://localhost:3000/api/v2/data_sources",
+            data.ds,
+            "restapi",
+            [
+                { key: "url", value: `{{constants.${data.restapilink}}}` },
+                { key: "auth_type", value: "none" },
+                { key: "grant_type", value: "authorization_code" },
+                { key: "add_token_to", value: "header" },
+                { key: "header_prefix", value: "Bearer " },
+                { key: "access_token_url", value: "" },
+                { key: "client_ide", value: "" },
+                { key: "client_secret", value: "", encrypted: true },
+                { key: "scopes", value: "read, write" },
+                { key: "username", value: "", encrypted: false },
+                { key: "password", value: "", encrypted: true },
+                { key: "bearer_token", value: "", encrypted: true },
+                { key: "auth_url", value: "" },
+                { key: "client_auth", value: "header" },
+                { key: "headers", value: [["", ""]] },
+                { key: "custom_query_params", value: [["", ""]], encrypted: false },
+                { key: "custom_auth_params", value: [["", ""]] },
+                {
+                    key: "access_token_custom_headers",
+                    value: [["", ""]],
+                    encrypted: false,
+                },
+                { key: "multiple_auth_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
+            ]
+        );
+        cy.apiCreateApp(data.appName);
+
+        cy.getCookie("tj_auth_token").then((cookie) => {
+            const headers = {
+                "Tj-Workspace-Id": Cypress.env("workspaceId"),
+                Cookie: `tj_auth_token=${cookie.value}`,
+            };
+            cy.request({
+                method: "GET",
+                url: `http://localhost:3000/api/app-environments/versions?app_id=${Cypress.env(
+                    "appId"
+                )}`,
+                headers: headers,
+            }).then((response) => {
+                const appVersions = response.body.appVersions;
+                const appVersionId = appVersions[0].id;
+                createrestAPIQuery({
+                    app_id: Cypress.env("appId"),
+                    app_version_id: appVersionId,
+                    name: data.ds,
+                    key: data.restapiHeaderKey,
+                    value: data.restapiHeaderValue,
+                });
+            });
+        });
+
+        cy.openApp();
+
+        cy.get(".custom-toggle-switch>.switch>").eq(3).click();
+
+        cy.waitForAutoSave();
+        cy.dragAndDropWidget("Text", 550, 650);
+        editAndVerifyWidgetName(data.widgetName, []);
+        cy.waitForAutoSave();
+
+        cy.get(
+            '[data-cy="textcomponenttextinput-input-field"]'
+        ).clearAndTypeOnCodeMirror(`{{queries.${data.ds}.data.message`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();

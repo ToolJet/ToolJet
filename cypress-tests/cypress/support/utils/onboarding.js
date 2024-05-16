@@ -213,9 +213,9 @@ export const inviteUser = (firstName, email) => {
   cy.wait(1000);
   cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.intercept("GET", "/api/organizations").as("org");
+  // cy.intercept("GET", "/api/organizations").as("org");
   cy.get(commonSelectors.signUpButton).click();
-  cy.wait("@org");
+  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
@@ -304,7 +304,9 @@ export const visitWorkspaceInvitation = (email, workspaceName) => {
         } else {
           // Handle case where user belongs to multiple organizations with the same workspaceId
           // For example, you might display an error message or log a warning
-          console.warn(`User '${email}' belongs to multiple organizations with workspaceId '${workspaceId}'.`);
+          console.warn(
+            `User '${email}' belongs to multiple organizations with workspaceId '${workspaceId}'.`
+          );
         }
       });
     });
