@@ -90,7 +90,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       'NumberInput',
       'PasswordInput',
       'Textarea',
-      'ToggleSwitchV2',
+      'ToggleSwitch',
       'Dropdown',
       'Multiselect',
       'RichTextEditor',
@@ -103,7 +103,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     ];
     const integrationItems = ['Map'];
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
-    const legacyItems = ['ToggleSwitch'];
+    const legacyItems = ['ToggleSwitchLegacy'];
 
     filteredComponents.forEach((f) => {
       if (searchQuery) allWidgets.push(f);
