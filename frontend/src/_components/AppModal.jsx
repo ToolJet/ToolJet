@@ -5,6 +5,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
 import { validateName } from '@/_helpers/utils';
 import { FormWrapper } from './FormWrapper';
+import { useTranslation } from 'react-i18next';
 
 export function AppModal({
   closeModal,
@@ -18,6 +19,9 @@ export function AppModal({
   actionButton,
   actionLoadingButton,
 }) {
+
+  const { t } = useTranslation()
+
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
   } else if (!selectedAppName) {
@@ -124,14 +128,8 @@ export function AppModal({
       title={title}
       footerContent={
         <>
-          <ButtonSolid
-            variant="tertiary"
-            onClick={closeModal}
-            data-cy="cancel-button"
-            className="modal-footer-divider"
-            disabled={isLoading}
-          >
-            Cancel
+          <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
+            {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid
             form="createAppForm"
@@ -148,13 +146,13 @@ export function AppModal({
         <div className="row workspace-folder-modal mb-3">
           <div className="col modal-main tj-app-input">
             <label className="tj-input-label" data-cy="app-name-label">
-              {'App Name'}
+              {t('homePage.appName', 'App Name')}
             </label>
             <input
               type="text"
               onChange={handleInputChange}
               className={`form-control ${errorText ? 'input-error-border' : ''}`}
-              placeholder={'Enter app name'}
+              placeholder={t('homePage.appPlaceholder', 'Enter app name')}
               value={newAppName}
               data-cy="app-name-input"
               maxLength={50}
@@ -163,7 +161,6 @@ export function AppModal({
               style={{
                 borderColor: errorText ? '#DB4324 !important' : 'initial',
               }}
-              disabled={isLoading}
             />
             {errorText ? (
               <small
@@ -196,7 +193,7 @@ export function AppModal({
                 }}
                 data-cy="app-name-info-label"
               >
-                App name must be unique and max 50 characters
+                {t('homePage.charLimit', 'App name must be unique and max 50 characters')}
               </small>
             )}
           </div>

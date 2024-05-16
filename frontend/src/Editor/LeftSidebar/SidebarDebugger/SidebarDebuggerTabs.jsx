@@ -31,6 +31,7 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
 };
 
 const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
+  const { t } = useTranslation();
   return (
     <Tabs
       defaultActiveKey="allLog"
@@ -40,10 +41,10 @@ const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
       })}
       justify
     >
-      <Tab eventKey="allLog" title="All Log">
+      <Tab eventKey="allLog" title={t('leftSidebar.Debugger.allLog', 'All Log')}>
         <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName={'allLogs'} />
       </Tab>
-      <Tab eventKey="errors" title="Errors">
+      <Tab eventKey="errors" title={t('leftSidebar.Debugger.errors', 'Errors')}>
         <DebuggerTabContent logs={errors} darkMode={darkMode} tabName={'errors'} />
       </Tab>
     </Tabs>

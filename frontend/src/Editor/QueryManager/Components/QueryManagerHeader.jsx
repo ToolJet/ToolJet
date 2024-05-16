@@ -28,6 +28,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   const { renameQuery } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
+  const { t } = useTranslation();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
   const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
@@ -121,7 +122,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
           >
             <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
           </span>
-          <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
+          <span className="query-manager-btn-name">{isLoading ? ' ' : t('globals.run')}</span>
         </button>
         {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
       </span>

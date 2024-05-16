@@ -229,7 +229,7 @@ export const Folders = function Folders({
         {!showInput ? (
           <>
             <div className="folder-info tj-text-xsm">
-              {t('homePage.foldersSection.filteredData', 'Folders')}
+              {t('homePage.foldersSection.folders', 'Folders')}
               {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
             </div>
             <div className="d-flex folder-header-icons-wrap">

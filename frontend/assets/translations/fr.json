@@ -9,6 +9,7 @@
     "update": "Mise à jour",
     "delete": "Effacer",
     "add": "Ajouter",
+    "close": "Fermer",
     "view": "Voir",
     "create": "Créer",
     "enabled": "Activé",
@@ -25,7 +26,8 @@
     "components": "composantes",
     "send": "Envoyer",
     "noConnection": "n'a pas pu se connecter",
-    "connectionVerifeid": "connexion vérifiée",
+    "connectionVerified": "connexion vérifiée",
+    "run": "Courir",
     "left": "Gauche",
     "center": "Centre",
     "right": "Droite",
@@ -35,7 +37,10 @@
     "header": "ENTÊTE",
     "path": "CHEMIN",
     "query": "REQUÊTE",
-    "requestBody": "Le corps de la requête"
+    "requestBody": "Le corps de la requête",
+    "page": "Page",
+    "searchItem": "Rechercher des applications dans cet espace de travail",
+    "searchComponents": "Composants de recherche"
   },
   "errorBoundary": "Quelque chose s'est mal passé.",
   "viewer": "Pardon!. Cette application est sous maintenance",
@@ -92,12 +97,15 @@
   "editor": {
     "preview": "Aperçu",
     "share": "Partager",
+    "infoOrError1": "La longueur maximale a été atteinte",
+    "infoOrError2": "Le nom de l'application doit être unique et comporter au maximum 50 caractères.",
     "shareModal": {
       "makeApplicationPublic": "Rendre la demande publique ?",
       "shareableLink": "Obtenez un lien partageable pour cette application",
       "copy": "copie",
       "embeddableLink": "Obtenez un lien intégré pour cette application",
-      "manageUsers": "gérer les utilisateurs"
+      "manageUsers": "gérer les utilisateurs",
+      "shareURL": "L'URL de partage n'est pas disponible jusqu'à la publication de la version actuelle"
     },
     "appVersionManager": {
       "version": "Version",
@@ -184,6 +192,26 @@
         "addEventHandler": "+ Ajouter un gestionnaire d'événements",
         "emptyMessage": "Ce {{componentName}} n'a pas de gestionnaires d'événements"
       }
+    },
+    "header": {
+      "couldNotSaveChanges": "Impossible d'enregistrer les modifications",
+      "changesSaved": "Changements sauvegardés",
+      "createNewVersion": "Créer une nouvelle version"
+    },
+    "queryDatePane": {
+      "hideQueryPanel": "Masquer le panneau de requête",
+      "openQuickSearch": "Ouvrir la recherche rapide",
+      "showSortFilter": "Afficher le tri/filtre",
+      "labelNoQueries": "Aucune requête n'a été ajoutée."
+    },
+    "dataSourcePicker": {
+      "connect": "Se connecter à la source de données",
+      "select": "Sélectionnez une source de données pour commencer à créer une nouvelle requête. Pour en savoir plus sur les requêtes dans ToolJet, vous pouvez lire notre",
+      "documentation": "Documentation",
+      "default": "Défaut",
+      "available": "Sources de données disponibles",
+      "addNew": "Ajouter un nouveau",
+      "noDatasource": "Aucune source de données n'a encore été ajoutée."
     }
   },
   "header": {
@@ -355,7 +383,9 @@
     "blankPage": {
       "welcomeToToolJet": "Bienvenue sur ToolJet !",
       "getStartedCreateNewApp": "Vous pouvez démarrer en créant une nouvelle application ou en créant une application à l'aide d'un modèle dans la bibliothèque ToolJet.",
-      "importApplication": "Importer une demande"
+      "importApplication": "Importer une demande",
+      "createNewApplication": "Créer une nouvelle application",
+      "orChooseFromTemplate": "Ou choisissez parmi les modèles"
     },
     "foldersSection": {
       "allApplications": "Toutes les applications",
@@ -383,6 +413,12 @@
     "thisFolderIsEmpty": "Ce dossier est vide",
     "deleteAppAndData": "L'application et les données associées seront supprimées en permanence, voulez-vous continuer ?",
     "removeAppFromFolder": "L'application sera supprimée de ce dossier, voulez-vous continuer ?",
+    "createApp": "Créer une application",
+    "createModule": "Créer un module",
+    "createNewApp": "Créer une nouvelle application à partir d'un modèle",
+    "charLimit": "Le nom de l'application doit être unique et comporter au maximum 50 caractères.",
+    "appPlaceholder": "Entrez le nom de l'application",
+    "appName": "Nom de l'application",
     "change": "Changer",
     "templateCard": {
       "use": "Utilisation",
@@ -453,7 +489,8 @@
     "others": "autres",
     "noResults": "Aucun résultat trouvé",
     "tryAdjustingFilterMessage": "Essayez d'ajuster votre recherche ou votre filtre pour trouver ce que vous recherchez.",
-    "clearQuery": "effacer la requête"
+    "clearQuery": "effacer la requête",
+    "Components": "Composants"
   },
   "widget": {
     "common": {
@@ -877,6 +914,10 @@
     }
   },
   "leftSidebar": {
+    "Pages": {
+      "text": "Pages",
+      "tip": "Pages"
+    },
     "Inspector": {
       "text": "Inspecteur",
       "tip": "Inspecteur"
@@ -892,6 +933,8 @@
       "tip": "Débogueur",
       "errors": "les erreurs",
       "noErrors": "Aucune erreur trouvée",
+      "allLog": "Tout le journal",
+      "noLogs": "Aucun journal trouvé",
       "clear": "dégager"
     },
     "Comments": {
@@ -907,11 +950,22 @@
       "maintenanceMode": "Mode de Maintenance",
       "maxWidthOfCanvas": "Largeur maximale de toile",
       "maxHeightOfCanvas": "Hauteur maximale de la toile",
-      "backgroundColorOfCanvas": "Couleur d'arrière-plan de la toile"
+      "backgroundColorOfCanvas": "Couleur d'arrière-plan de la toile",
+      "appMode": "Mode application",
+      "exportApp": "Exporter l'application",
+      "exportThisApp": "Exporter cette application",
+      "appSlug": "Slug d'application unique",
+      "globalSettings": "Paramètres globaux",
+      "urlFriendly": "Le 'slug' convivial pour les URL se compose de lettres minuscules, de chiffres et de traits d'union.",
+      "appLink": "Lien vers l'application"
     },
     "Back": {
       "text": "Retour",
       "tip": "De retour à la maison"
+    },
+    "addingPageHandler": {
+      "min1": "Le nom de la page doit contenir au moins 1 caractère",
+      "max50": "Le nom de la page ne peut pas dépasser 50 caractères"
     }
   }
 }

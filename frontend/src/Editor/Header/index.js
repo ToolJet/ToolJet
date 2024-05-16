@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
@@ -34,6 +35,7 @@ export default function EditorHeader({
   slug,
   darkMode,
 }) {
+  const { t } = useTranslation();
   const currentUser = useCurrentUser();
 
   const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, currentVersionId } = useAppInfo();
@@ -133,12 +135,14 @@ export default function EditorHeader({
                       ) : saveError ? (
                         <div className="d-flex align-items-center" style={{ gap: '4px' }}>
                           <SolidIcon name="cloudinvalid" width="14" />
-                          <p className="mb-0 text-center tj-text-xxsm">Could not save changes</p>
+                          <p className="mb-0 text-center tj-text-xxsm">
+                            {t('editor.header.couldNotSaveChanges', 'Could not save changes')}
+                          </p>
                         </div>
                       ) : (
                         <div className="d-flex align-items-center" style={{ gap: '4px' }}>
                           <SolidIcon name="cloudvalid" width="14" />
-                          <p className="mb-0 text-center">Changes saved</p>
+                          <p className="mb-0 text-center">{t('editor.header.changesSaved', 'Changes saved')}</p>
                         </div>
                       )}
                     </span>

@@ -92,7 +92,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               onClick={toggleQueryEditor}
               className="btn-query-panel-header"
               data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Hide query panel"
+              data-tooltip-content={t('editor.queryDatePane.hideQueryPanel')}
             >
               <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
             </button>
@@ -105,7 +105,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                 active: showSearchBox,
               })}
               data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Open quick search"
+              data-tooltip-content={t('editor.queryDatePane.openQuickSearch')}
               data-cy="query-search-button"
             >
               <Search width="14" height="14" fill="var(--slate12)" />
@@ -150,7 +150,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                 }}
                 data-cy={`query-search-close-button`}
               >
-                Close
+                {t('globals.close', 'Close')}
               </ButtonSolid>
             </div>
           </div>
@@ -192,22 +192,27 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
   );
 };
 
-const EmptyDataSource = () => (
-  <div>
-    <div className="text-center">
-      <span
-        className="rounded mb-3 bg-slate3 d-flex justify-content-center align-items-center"
-        style={{ width: '32px', height: '32px' }}
-      >
-        <FolderEmpty style={{ height: '16px' }} />
-      </span>
+const EmptyDataSource = () => {
+  const { t } = useTranslation();
+
+  return (
+    <div>
+      <div className="text-center">
+        <span
+          className="rounded mb-3 bg-slate3 d-flex justify-content-center align-items-center"
+          style={{ width: '32px', height: '32px' }}
+        >
+          <FolderEmpty style={{ height: '16px' }} />
+        </span>
+      </div>
+      <span data-cy="label-no-queries">{t('editor.queryDatePane.labelNoQueries')} </span>
     </div>
-    <span data-cy="label-no-queries">No queries have been added. </span>
-  </div>
-);
+  );
+};
 
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
+  const { t } = useTranslation();
   const selectRef = useRef();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -257,7 +262,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
           data-cy={`show-ds-popover-button`}
         >
           <Plus style={{ height: '16px' }} />
-          Add
+          {t('globals.add', 'Add')}
         </ButtonSolid>
       </span>
     </OverlayTrigger>

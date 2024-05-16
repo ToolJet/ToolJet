@@ -1,917 +1,972 @@
 {
     "globals": {
-        "readDocumentation": "Dokumentation lesen",
-        "cancel": "Abbrechen",
-        "save": "Speichern",
-        "back": "Zurück",
-        "edit": "Bearbeiten",
-        "search": "Suchen",
-        "update": "Update",
-        "delete": "Löschen",
-        "add": "Hinzufügen",
-        "view": "Blick",
-        "create": "Erstellen",
-        "enabled": "Aktivieren",
-        "disabled": "Deaktivieren",
-        "yes": "Ja",
-        "submit": "Übermitteln",
-        "select": "Wählen",
-        "environmentVar": "Arbeitsbereich-Variablen",
-        "saving": "Speichern...",
-        "saveDatasource": "Datenquelle Speichern",
-        "authorize": "Autorisieren",
-        "connect": "Verbinden",
-        "reconnect": "Wiederverbinden",
-        "components": "Komponenten",
-        "send": "Senden",
-        "noConnection": "konnte keine Verbindung herstellen",
-        "connectionVerifeid": "Verbindung geprüft",
-        "left": "Links",
-        "center": "Mitte",
-        "right": "Rechts",
-        "justified": "Gerechtfertigt",
-        "host": "Host",
-        "operation": "Operation",
-        "header": "KOPFZEILE",
-        "path": "PATH",
-        "query": "QUERY",
-        "requestBody": "BODY ANFRAGEN"
+      "readDocumentation": "Dokumentation lesen",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "back": "Zurück",
+      "edit": "Bearbeiten",
+      "search": "Suchen",
+      "update": "Update",
+      "delete": "Löschen",
+      "add": "Hinzufügen",
+      "close": "Schließen",
+      "view": "Blick",
+      "create": "Erstellen",
+      "enabled": "Aktivieren",
+      "disabled": "Deaktivieren",
+      "yes": "Ja",
+      "submit": "Übermitteln",
+      "select": "Wählen",
+      "environmentVar": "Arbeitsbereich-Variablen",
+      "saving": "Speichern...",
+      "saveDatasource": "Datenquelle Speichern",
+      "authorize": "Autorisieren",
+      "connect": "Verbinden",
+      "reconnect": "Wiederverbinden",
+      "components": "Komponenten",
+      "send": "Senden",
+      "noConnection": "konnte keine Verbindung herstellen",
+      "connectionVerified": "Verbindung geprüft",
+      "run": "Laufen",
+      "left": "Links",
+      "center": "Mitte",
+      "right": "Rechts",
+      "justified": "Gerechtfertigt",
+      "host": "Host",
+      "operation": "Operation",
+      "header": "KOPFZEILE",
+      "path": "PATH",
+      "query": "QUERY",
+      "requestBody": "BODY ANFRAGEN",
+      "page": "Seite",
+      "searchItem": "Suchen Sie in diesem Arbeitsbereich nach Apps",
+      "searchComponents": "Suchkomponenten"
     },
     "errorBoundary": "Etwas ist schief gelaufen.",
     "viewer": "Entschuldigung!. Diese App wird gerade gewartet",
     "app": {
-        "updateAvailable": "Update available",
-        "newVersionReleased": "Eine neue Version von ToolJet ist veröffentlicht worden.",
-        "readReleaseNotes": "Versionshinweise lesen & Updates",
-        "skipVersion": "Diese Version überspringen"
+      "updateAvailable": "Update available",
+      "newVersionReleased": "Eine neue Version von ToolJet ist veröffentlicht worden.",
+      "readReleaseNotes": "Versionshinweise lesen & Updates",
+      "skipVersion": "Diese Version überspringen"
     },
     "stripe": "Bitte warten Sie, während wir die OpenAPI-Spezifikation für Stripe laden.",
     "openApi": {
-        "noValidOpenApi": "Gültige OpenAPI-Spezifikation ist nicht verfügbar!.",
-        "selectHost": "Wählen Sie einen Host",
-        "selectOperation": "Wählen Sie eine Operation"
+      "noValidOpenApi": "Gültige OpenAPI-Spezifikation ist nicht verfügbar!.",
+      "selectHost": "Wählen Sie einen Host",
+      "selectOperation": "Wählen Sie eine Operation"
     },
     "slack": {
-        "authorize": "Autorisierung",
-        "connectToolJetToSlack": "ToolJet kann eine Verbindung zu Slack herstellen und Benutzer auflisten, Nachrichten senden, usw. Bitte wählen Sie entsprechende Berechtigungsbereiche.",
-        "chatWrite": "chat:schreiben",
-        "listUsersAndSendMessage": "Ihre ToolJet-Anwendung kann dann Benutzer auflisten und Nachrichten an Benutzer und Kanäle senden.",
-        "connectSlack": "Mit Slack verbinden"
+      "authorize": "Autorisierung",
+      "connectToolJetToSlack": "ToolJet kann eine Verbindung zu Slack herstellen und Benutzer auflisten, Nachrichten senden, usw. Bitte wählen Sie entsprechende Berechtigungsbereiche.",
+      "chatWrite": "chat:schreiben",
+      "listUsersAndSendMessage": "Ihre ToolJet-Anwendung kann dann Benutzer auflisten und Nachrichten an Benutzer und Kanäle senden.",
+      "connectSlack": "Mit Slack verbinden"
     },
     "googleSheets": {
-        "readOnly": "Nur lesen",
-        "enableReadAndWrite": "Wenn Sie möchten, dass Ihre ToolJet-Apps Ihre Google Sheets ändern können, müssen Sie Lese- und Schreibzugriff auswählen",
-        "readDataFromSheets": "Ihre ToolJet-Apps können nur Daten aus Google Sheets lesen",
-        "readWrite": "Lesen und Schreiben",
-        "readModifySheets": "Ihre ToolJet-Apps können Daten von Tabellen lesen, Tabellen ändern und vieles mehr.",
-        "toGoogleSheets": "zu Google Sheets"
+      "readOnly": "Nur lesen",
+      "enableReadAndWrite": "Wenn Sie möchten, dass Ihre ToolJet-Apps Ihre Google Sheets ändern können, müssen Sie Lese- und Schreibzugriff auswählen",
+      "readDataFromSheets": "Ihre ToolJet-Apps können nur Daten aus Google Sheets lesen",
+      "readWrite": "Lesen und Schreiben",
+      "readModifySheets": "Ihre ToolJet-Apps können Daten von Tabellen lesen, Tabellen ändern und vieles mehr.",
+      "toGoogleSheets": "zu Google Sheets"
     },
     "profile": {
-        "profileSettings": "Profil-Einstellungen"
+      "profileSettings": "Profil-Einstellungen"
     },
     "loginSignupPage": {
-        "forgotPassword": "Passwort vergessen",
-        "emailAddress": "E-Mail Adresse",
-        "enterEmail": "E-Mail eingeben",
-        "resetPassword": "Passwort wieder einstellen",
-        "dontHaveAccount": "Sie haben noch kein Konto?",
-        "signIn": "Anmelden",
-        "signUp": "Registrieren Sie sich",
-        "createToolJetAccount": "Erstellen Sie ein ToolJet-Konto",
-        "enterBusinessEmail": "Geben Sie Ihre Geschäfts-E-Mail ein",
-        "alreadyHaveAnAccount": "Haben Sie schon ein Konto?",
-        "password": "Passwort",
-        "showPassword": "Passwort zeigen",
-        "loginTo": "Anmeldung bei",
-        "yourAccount": "Ihr Konto",
-        "noLoginMethodsEnabled": "Keine Anmeldemethoden für diesen Arbeitsbereich aktiviert",
-        "emailConfirmLink": "Bitte prüfen Sie Ihre E-Mail auf einen Bestätigungslink",
-        "newPassword": "Neues Passwort",
-        "passwordConfirmation": "Passwort-Bestätigung"
+      "forgotPassword": "Passwort vergessen",
+      "emailAddress": "E-Mail Adresse",
+      "enterEmail": "E-Mail eingeben",
+      "resetPassword": "Passwort wieder einstellen",
+      "dontHaveAccount": "Sie haben noch kein Konto?",
+      "signIn": "Anmelden",
+      "signUp": "Registrieren Sie sich",
+      "createToolJetAccount": "Erstellen Sie ein ToolJet-Konto",
+      "enterBusinessEmail": "Geben Sie Ihre Geschäfts-E-Mail ein",
+      "alreadyHaveAnAccount": "Haben Sie schon ein Konto?",
+      "password": "Passwort",
+      "showPassword": "Passwort zeigen",
+      "loginTo": "Anmeldung bei",
+      "yourAccount": "Ihr Konto",
+      "noLoginMethodsEnabled": "Keine Anmeldemethoden für diesen Arbeitsbereich aktiviert",
+      "emailConfirmLink": "Bitte prüfen Sie Ihre E-Mail auf einen Bestätigungslink",
+      "newPassword": "Neues Passwort",
+      "passwordConfirmation": "Passwort-Bestätigung"
     },
     "editor": {
+      "preview": "Vorschau",
+      "share": "Teilen",
+      "infoOrError1": "Die maximale Länge wurde erreicht",
+      "infoOrError2": "Der App-Name sollte eindeutig sein und maximal 50 Zeichen lang sein",
+      "shareModal": {
+        "makeApplicationPublic": "App öffentlich machen?",
+        "shareableLink": "Freigabe-Link für diese Anwendung abrufen",
+        "copy": "Kopieren",
+        "embeddableLink": "Einbettbaren Link für diese Anwendung abrufen",
+        "manageUsers": "Benutzer verwalten",
+        "shareURL": "Die Freigabe-URL ist erst verfügbar, wenn die aktuelle Version veröffentlicht wird"
+      },
+      "appVersionManager": {
+        "version": "Version",
+        "currentlyReleased": "Derzeit veröffentlicht",
+        "createVersion": "Version erstellen",
+        "versionName": "Version Name",
+        "createVersionFrom": "Version erstellen aus",
+        "save": "Speichern",
+        "create": "Version herstellen",
+        "editVersion": "Version bearbeiten",
+        "deleteVersion": "Wollen Sie diese Version wirklich löschen?",
+        "enterVersionName": "Version Name eingeben",
+        "versionAlreadyReleased": "Version bereits freigegeben. Bitte erstellen Sie eine neue Version oder wechseln Sie zu einer anderen Version, um weitere Änderungen vorzunehmen."
+      },
+      "queries": "Queries",
+      "inspectComponent": "Bitte wählen Sie eine Komponente zur Inspektion aus",
+      "release": "Veröffentlichung",
+      "searchQueries": "Queries suchen",
+      "createQuery": "Query erstellen",
+      "queryManager": {
+        "general": "Allgemeine",
+        "advanced": "Fortgeschrittene",
         "preview": "Vorschau",
-        "share": "Teilen",
-        "shareModal": {
-            "makeApplicationPublic": "App öffentlich machen?",
-            "shareableLink": "Freigabe-Link für diese Anwendung abrufen",
-            "copy": "Kopieren",
-            "embeddableLink": "Einbettbaren Link für diese Anwendung abrufen",
-            "manageUsers": "Benutzer verwalten"
-        },
-        "appVersionManager": {
-            "version": "Version",
-            "currentlyReleased": "Derzeit veröffentlicht",
-            "createVersion": "Version erstellen",
-            "versionName": "Version Name",
-            "createVersionFrom": "Version erstellen aus",
-            "save": "Speichern",
-            "create": "Version herstellen",
-            "editVersion": "Version bearbeiten",
-            "deleteVersion": "Wollen Sie diese Version wirklich löschen?",
-            "enterVersionName": "Version Name eingeben",
-            "versionAlreadyReleased": "Version bereits freigegeben. Bitte erstellen Sie eine neue Version oder wechseln Sie zu einer anderen Version, um weitere Änderungen vorzunehmen."
-        },
-        "queries": "Queries",
-        "inspectComponent": "Bitte wählen Sie eine Komponente zur Inspektion aus",
-        "release": "Veröffentlichung",
-        "searchQueries": "Queries suchen",
-        "createQuery": "Query erstellen",
-        "queryManager": {
-            "general": "Allgemeine",
-            "advanced": "Fortgeschrittene",
-            "preview": "Vorschau",
-            "Save": "Speichern",
-            "selectDatasource": "Wählen Sie die Datenquelle",
-            "addDatasource": "Datenquelle hinzufügen",
-            "dataSourceManager": {
-                "toast": {
-                    "success": {
-                        "dataSourceAdded": "Datenquelle Hinzugefügt",
-                        "dataSourceSaved": "Datenquelle gespeichert "
-                    },
-                    "error": {
-                        "noEmptyDsName": "Der Name der Datenquelle sollte nicht leer sein"
-                    }
-                },
-                "suggestDataSource": "Datenquelle vorschlagen",
-                "suggestAnIntegration": "Eine Integration vorschlagen",
-                "whatLookingFor": "Sagen Sie uns, wonach Sie suchen?",
-                "noResultFound": "Sie haben nicht gefunden, wonach Sie gesucht haben?",
-                "suggest": "vorschlagen",
-                "addNewDataSource": "Neue Datenquelle hinzufügen",
-                "whiteListIP": "Bitte setzen Sie unsere IP-Adresse auf die weiße Liste, wenn die Datenquelle nicht öffentlich zugänglich ist.",
-                "copied": "Kopiert",
-                "copy": "Kopieren",
-                "saving": "Speichern",
-                "noResultsFor": "Keine Ergebnisse für",
-                "noteTaken": "Vielen Dank, wir haben das zur Kenntnis genommen!",
-                "goToAllDatasources": "Zu allen Datenquellen gehen",
-                "send": "Senden"
+        "Save": "Speichern",
+        "selectDatasource": "Wählen Sie die Datenquelle",
+        "addDatasource": "Datenquelle hinzufügen",
+        "dataSourceManager": {
+          "toast": {
+            "success": {
+              "dataSourceAdded": "Datenquelle Hinzugefügt",
+              "dataSourceSaved": "Datenquelle gespeichert "
             },
-            "runQueryOnPageLoad": "Diese Abfrage beim Laden der Seite ausführen?",
-            "confirmBeforeQueryRun": "Bestätigung vor Ausführung der Query anfordern?",
-            "notificationOnSuccess": "Meldung bei Erfolg anzeigen?",
-            "successMessage": "Erfolgsnachricht",
-            "queryRanSuccessfully": "Query erfolgreich ausgeführt",
-            "notificationDuration": "Dauer der Mitteilung (s)",
-            "events": "Ereignisse",
-            "transformation": {
-                "transformationToolTip": "Transformationen können verwendet werden, um die Ergebnisse von Queries zu transformieren. Alle Variablen der App sind über Transformatoren zugänglich und unterstützen JS-Bibliotheken wie Lodash und Moment.",
-                "transformations": "Transformationen"
+            "error": {
+              "noEmptyDsName": "Der Name der Datenquelle sollte nicht leer sein"
             }
+          },
+          "suggestDataSource": "Datenquelle vorschlagen",
+          "suggestAnIntegration": "Eine Integration vorschlagen",
+          "whatLookingFor": "Sagen Sie uns, wonach Sie suchen?",
+          "noResultFound": "Sie haben nicht gefunden, wonach Sie gesucht haben?",
+          "suggest": "vorschlagen",
+          "addNewDataSource": "Neue Datenquelle hinzufügen",
+          "whiteListIP": "Bitte setzen Sie unsere IP-Adresse auf die weiße Liste, wenn die Datenquelle nicht öffentlich zugänglich ist.",
+          "copied": "Kopiert",
+          "copy": "Kopieren",
+          "saving": "Speichern",
+          "noResultsFor": "Keine Ergebnisse für",
+          "noteTaken": "Vielen Dank, wir haben das zur Kenntnis genommen!",
+          "goToAllDatasources": "Zu allen Datenquellen gehen",
+          "send": "Senden"
         },
-        "inspector": {
-            "eventManager": {
-                "event": "Ereigniss",
-                "action": "Aktion",
-                "actionOptions": "Handlungsoptionen",
-                "message": "Nachricht",
-                "alertType": "Warnmeldung Typ",
-                "url": "URL",
-                "modal": "Modal",
-                "text": "Text",
-                "query": "Query",
-                "key": "Schlüssel",
-                "value": "Wert",
-                "type": "Typ",
-                "fileName": "Name der Datei",
-                "data": "Daten",
-                "table": "Tabelle",
-                "pageIndex": "Seitenindex",
-                "component": "Komponente",
-                "addHandler": "Handler hinzufügen",
-                "addEventHandler": "+ Ereignishandler hinzufügen",
-                "emptyMessage": "Dieser {{componentName}} hat keine Ereignishandler"
-            }
+        "runQueryOnPageLoad": "Diese Abfrage beim Laden der Seite ausführen?",
+        "confirmBeforeQueryRun": "Bestätigung vor Ausführung der Query anfordern?",
+        "notificationOnSuccess": "Meldung bei Erfolg anzeigen?",
+        "successMessage": "Erfolgsnachricht",
+        "queryRanSuccessfully": "Query erfolgreich ausgeführt",
+        "notificationDuration": "Dauer der Mitteilung (s)",
+        "events": "Ereignisse",
+        "transformation": {
+          "transformationToolTip": "Transformationen können verwendet werden, um die Ergebnisse von Queries zu transformieren. Alle Variablen der App sind über Transformatoren zugänglich und unterstützen JS-Bibliotheken wie Lodash und Moment.",
+          "transformations": "Transformationen"
         }
+      },
+      "inspector": {
+        "eventManager": {
+          "event": "Ereigniss",
+          "action": "Aktion",
+          "actionOptions": "Handlungsoptionen",
+          "message": "Nachricht",
+          "alertType": "Warnmeldung Typ",
+          "url": "URL",
+          "modal": "Modal",
+          "text": "Text",
+          "query": "Query",
+          "key": "Schlüssel",
+          "value": "Wert",
+          "type": "Typ",
+          "fileName": "Name der Datei",
+          "data": "Daten",
+          "table": "Tabelle",
+          "pageIndex": "Seitenindex",
+          "component": "Komponente",
+          "addHandler": "Handler hinzufügen",
+          "addEventHandler": "+ Ereignishandler hinzufügen",
+          "emptyMessage": "Dieser {{componentName}} hat keine Ereignishandler"
+        }
+      },
+      "header": {
+        "couldNotSaveChanges": "Änderungen konnten nicht gespeichert werden",
+        "changesSaved": "Änderungen gespeichert",
+        "createNewVersion": "Neue Version erstellen"
+      },
+      "queryDatePane": {
+        "hideQueryPanel": "Abfragefeld ausblenden",
+        "openQuickSearch": "Schnellsuche öffnen",
+        "showSortFilter": "Sortierung/Filter anzeigen",
+        "labelNoQueries": "Es wurden keine Abfragen hinzugefügt."
+      },
+      "dataSourcePicker": {
+        "connect": "Stellen Sie eine Verbindung zu einer Datenquelle her",
+        "select": "Wählen Sie eine Datenquelle aus, um mit der Erstellung einer neuen Abfrage zu beginnen. Um mehr über Abfragen in ToolJet zu erfahren, können Sie unsere lesen",
+        "documentation": "Dokumentation",
+        "default": "Standard",
+        "available": "Verfügbare Datenquellen",
+        "addNew": "Neue hinzufügen",
+        "noDatasource": "Es wurden noch keine Datenquellen hinzugefügt."
+      }
     },
     "header": {
-        "darkModeToggle": {
-            "activateLightMode": "Aktivieren des Lichtmodus",
-            "activateDarkMode": "Aktivieren des Nachtmodus"
-        },
-        "languageSelection": {
-            "changeLanguage": "Sprache ändern",
-            "searchLanguage": "Sprache suchen"
-        },
-        "notificationCenter": {
-            "notifications": "Mitteilungen",
-            "markAllAs": "Alle markieren als",
-            "read": "gelesen",
-            "un": "un",
-            "youDontHaveany": "Sie haben keine",
-            "youAreCaughtUp": "Sie haben alles nachgeholt!",
-            "view": "Blick"
-        },
-        "organization": {
-            "loadOrganizations": "Organisationen laden",
-            "createWorkspace": "Arbeitsbereich erstellen",
-            "workspaceName": "Arbeitsbereichsname",
-            "editWorkspace": "Arbeitsbereich bearbeiten",
-            "menus": {
-                "addWorkspace": "Arbeitsbereich hinzufügen",
-                "menusList": {
-                    "manageUsers": "Benutzer verwalten",
-                    "manageGroups": "Gruppen verarbeiten",
-                    "manageSso": "SSO verarbeiten",
-                    "manageEnv": "Verwalten von Arbeitsbereich-Variablen"
-                },
-                "manageUsers": {
-                    "usersAndPermission": "Benutzer & Zulassungen",
-                    "inviteNewUser": "Neuen Benutzer einladen",
-                    "name": "NAME",
-                    "email": "EMAIL",
-                    "status": "STATUS",
-                    "archive": "Archivieren",
-                    "unarchive": "Unarchivieren",
-                    "addNewUser": "Neuen Benutzer hinzufügen",
-                    "emailAddress": "E-Mail Adresse",
-                    "createUser": "Benutzer erstellen",
-                    "enterFirstName": "Vorname eingeben",
-                    "enterLastName": "Nachname eingeben",
-                    "enterEmail": "E-Mail eingeben"
-                },
-                "manageGroups": {
-                    "permissions": {
-                        "userGroups": "Benutzer Grouppen",
-                        "createNewGroup": "Neue Gruppe erstellen",
-                        "udpateGroup": "Gruppe aktualisieren",
-                        "addNewGroup": "Neue Gruppe hinzufügen",
-                        "enterName": "Name eingeben",
-                        "createGroup": "Gruppe Erstellen",
-                        "name": "Name"
-                    },
-                    "permissionResources": {
-                        "userGroup": "Benutzer Gruppe",
-                        "apps": "Apps",
-                        "users": "Benutzer",
-                        "permissions": "Berechtigungen",
-                        "addAppsToGroup": "Wählen Sie Apps aus, die Sie der Gruppe hinzufügen möchten",
-                        "name": "Name",
-                        "addUsersToGroup": "Benutzer auswählen, die der Gruppe hinzugefügt werden sollen",
-                        "email": "E-Mail",
-                        "resource": "Ressource",
-                        "createUpdateDelete": "Erstellen/Aktualisieren/Löschen",
-                        "folder": "Ordner"
-                    }
-                },
-                "manageSSO": {
-                    "manageSso": "SSO bearbeiten",
-                    "generalSettings": {
-                        "title": "Allgemeine Einstellungen",
-                        "enableSignup": "Registrierung aktivieren",
-                        "newAccountWillBeCreated": "Für die erste SSO-Anmeldung eines Benutzers wird ein neues Konto erstellt.",
-                        "allowedDomains": "Zugelassene Domains",
-                        "enterDomains": "Domains eingeben",
-                        "supportMultiDomains": "Unterstützung mehrerer Domains. Geben Sie Domainnamen durch Komma getrennt ein. Beispiel: tooljet.com, tooljet.io, ihreorganisation.com",
-                        "loginUrl": "Anmelde-URL",
-                        "workspaceLogin": "Verwenden Sie diese URL, um sich direkt bei diesem Arbeitsbereich anzumelden",
-                        "allowDefaultSso": "Standard-SSO zulassen",
-                        "ssoAuth": "Erlauben Sie Benutzern, sich über Standard-SSO zu authentifizieren. Standard-SSO-Konfigurationen können durch SSO auf Arbeitsbereichsebene außer Kraft gesetzt werden."
-                    },
-                    "google": {
-                        "title": "Google",
-                        "enabled": "Aktiviert",
-                        "disabled": "Deaktiviert",
-                        "clientId": "Kunden-ID",
-                        "enterClientId": "Kunden-ID eingeben",
-                        "redirectUrl": "Umleitungs-URL"
-                    },
-                    "github": {
-                        "title": "Github",
-                        "hostName": "Hostname",
-                        "enterHostName": "Hostname eingeben",
-                        "requiredGithub": "Erforderlich, wenn GitHub selbst gehostet wird",
-                        "clientId": "Kunden-ID",
-                        "enterClientId": "Kunden Id eingeben",
-                        "clientSecret": "Kundengeheimnis",
-                        "enterClientSecret": "Kundengeheimnis eingeben",
-                        "encrypted": "Verschlüsselt",
-                        "redirectUrl": "URL umleiten"
-                    },
-                    "passwordLogin": "Passwort Login",
-                    "environmentVar": {
-                        "noEnvConfig": "Sie haben keine Arbeitsbereich-Variablen konfiguriert, klicken Sie auf die Schaltfläche 'Neue Variable hinzufügen', um eine zu erstellen",
-                        "envWillBeDeleted": "Die Variable wird gelöscht, möchten Sie fortfahren?",
-                        "addNewVariable": "Neue Variable hinzufügen",
-                        "variableForm": {
-                            "addNewVariable": "Add new variable",
-                            "updatevariable": "Variable aktualisieren",
-                            "name": "Name",
-                            "value": "Wert",
-                            "enterVariableName": "Variablename eingeben",
-                            "enterValue": "Wert eingeben",
-                            "type": "Typ",
-                            "enableEncryption": "Verschlüsselung einschalten",
-                            "addVariable": "Variable hinzufügen"
-                        },
-                        "variableTable": {
-                            "name": "Name",
-                            "value": "Wert",
-                            "type": "Typ",
-                            "secret": "Geheimnis"
-                        }
-                    }
-                }
-            }
-        },
-        "profileSettingPage": {
-            "profileSettings": "Profil-Einstellungen",
-            "firstName": "Vorname",
-            "lastName": "Nachname",
+      "darkModeToggle": {
+        "activateLightMode": "Aktivieren des Lichtmodus",
+        "activateDarkMode": "Aktivieren des Nachtmodus"
+      },
+      "languageSelection": {
+        "changeLanguage": "Sprache ändern",
+        "searchLanguage": "Sprache suchen"
+      },
+      "notificationCenter": {
+        "notifications": "Mitteilungen",
+        "markAllAs": "Alle markieren als",
+        "read": "gelesen",
+        "un": "un",
+        "youDontHaveany": "Sie haben keine",
+        "youAreCaughtUp": "Sie haben alles nachgeholt!",
+        "view": "Blick"
+      },
+      "organization": {
+        "loadOrganizations": "Organisationen laden",
+        "createWorkspace": "Arbeitsbereich erstellen",
+        "workspaceName": "Arbeitsbereichsname",
+        "editWorkspace": "Arbeitsbereich bearbeiten",
+        "menus": {
+          "addWorkspace": "Arbeitsbereich hinzufügen",
+          "menusList": {
+            "manageUsers": "Benutzer verwalten",
+            "manageGroups": "Gruppen verarbeiten",
+            "manageSso": "SSO verarbeiten",
+            "manageEnv": "Verwalten von Arbeitsbereich-Variablen"
+          },
+          "manageUsers": {
+            "usersAndPermission": "Benutzer & Zulassungen",
+            "inviteNewUser": "Neuen Benutzer einladen",
+            "name": "NAME",
+            "email": "EMAIL",
+            "status": "STATUS",
+            "archive": "Archivieren",
+            "unarchive": "Unarchivieren",
+            "addNewUser": "Neuen Benutzer hinzufügen",
+            "emailAddress": "E-Mail Adresse",
+            "createUser": "Benutzer erstellen",
             "enterFirstName": "Vorname eingeben",
             "enterLastName": "Nachname eingeben",
-            "email": "E-Mail",
-            "avatar": "Avatar",
-            "update": "Update",
-            "profile": "Profil",
-            "changePassword": "Passwort ändern",
-            "currentPassword": "Aktuelles Passwort",
-            "newPassword": "Neues Passwort",
-            "confirmNewPassword": "Bestätigen Sie das neue Passwort",
-            "enterCurrentPassword": "Aktuelles Passwort eingebe",
-            "enterNewPassword": "Neues Passwort eingeben"
-        },
-        "profile": "Profil",
-        "logout": "Ausloggen"
-    },
-    "homePage": {
-        "appCard": {
-            "changeIcon": "Icon ändern",
-            "addToFolder": "Zum Ordner hinzufügen",
-            "move": "Verlegen",
-            "to": "zu",
-            "selectFolder": "Ordner auswählen",
-            "deleteApp": "App löschen",
-            "exportApp": "App exportieren",
-            "cloneApp": "App klonen",
-            "launch": "Start",
-            "maintenance": "Wartung",
-            "noDeployedVersion": "Die App hat keine verteilte Version",
-            "openInAppViewer": "Im App-Viewer öffnen",
-            "removeFromFolder": "Aus Ordner entfernen"
-        },
-        "blankPage": {
-            "welcomeToToolJet": "Willkommen bei ToolJet!",
-            "getStartedCreateNewApp": "Sie können mit der Erstellung einer neuen App beginnen oder eine App mit Hilfe einer Vorlage aus der ToolJet Bibliothek erstellen.",
-            "importApplication": "Eine App importieren"
-        },
-        "foldersSection": {
-            "allApplications": "Alle Applikationen",
-            "folders": "Ordner",
-            "createNewFolder": "+ Neuen Ordner erstellen",
-            "noFolders": "Sie haben keine Ordner erstellt. Verwenden Sie Ordner, um Ihre Apps zu organisieren",
-            "createFolder": "Ordner erstellen",
-            "updateFolder": "Ordner aktualisieren",
-            "editFolder": "Ordner bearbeiten",
-            "deleteFolder": "Ordner löschen",
-            "folderName": "Ordner Name",
-            "wishToDeleteFolder": "Sind Sie sicher, dass Sie den Ordner löschen möchten {{folderName}}? Die Apps innerhalb des Ordners werden nicht gelöscht."
-        },
-        "header": {
-            "createNewApplication": "Neue App erstellen",
-            "import": "Importieren",
-            "chooseFromTemplate": "Wählen Sie eine Vorlage aus"
-        },
-        "pagination": {
-            "showing": "Anzeige",
-            "of": "von",
-            "to": "zu"
-        },
-        "noApplicationFound": "Keine Apps gefunden",
-        "thisFolderIsEmpty": "Dieser Ordner ist leer",
-        "deleteAppAndData": "Die App und die zugehörigen Daten werden endgültig gelöscht. Möchten Sie fortfahren?",
-        "removeAppFromFolder": "Die App wird aus diesem Ordner entfernt. Möchten Sie fortfahren?",
-        "change": "Ändern Sie",
-        "templateCard": {
-            "use": "Benutzen Sie",
-            "preview": "Vorschau",
-            "leadGeneretion": "Lead-Generierung"
-        },
-        "templateLibraryModal": {
-            "select": "Vorlage auswählen",
-            "createAppfromTemplate": "App aus einer Vorlage erstellen"
+            "enterEmail": "E-Mail eingeben"
+          },
+          "manageGroups": {
+            "permissions": {
+              "userGroups": "Benutzer Grouppen",
+              "createNewGroup": "Neue Gruppe erstellen",
+              "udpateGroup": "Gruppe aktualisieren",
+              "addNewGroup": "Neue Gruppe hinzufügen",
+              "enterName": "Name eingeben",
+              "createGroup": "Gruppe Erstellen",
+              "name": "Name"
+            },
+            "permissionResources": {
+              "userGroup": "Benutzer Gruppe",
+              "apps": "Apps",
+              "users": "Benutzer",
+              "permissions": "Berechtigungen",
+              "addAppsToGroup": "Wählen Sie Apps aus, die Sie der Gruppe hinzufügen möchten",
+              "name": "Name",
+              "addUsersToGroup": "Benutzer auswählen, die der Gruppe hinzugefügt werden sollen",
+              "email": "E-Mail",
+              "resource": "Ressource",
+              "createUpdateDelete": "Erstellen/Aktualisieren/Löschen",
+              "folder": "Ordner"
+            }
+          },
+          "manageSSO": {
+            "manageSso": "SSO bearbeiten",
+            "generalSettings": {
+              "title": "Allgemeine Einstellungen",
+              "enableSignup": "Registrierung aktivieren",
+              "newAccountWillBeCreated": "Für die erste SSO-Anmeldung eines Benutzers wird ein neues Konto erstellt.",
+              "allowedDomains": "Zugelassene Domains",
+              "enterDomains": "Domains eingeben",
+              "supportMultiDomains": "Unterstützung mehrerer Domains. Geben Sie Domainnamen durch Komma getrennt ein. Beispiel: tooljet.com, tooljet.io, ihreorganisation.com",
+              "loginUrl": "Anmelde-URL",
+              "workspaceLogin": "Verwenden Sie diese URL, um sich direkt bei diesem Arbeitsbereich anzumelden",
+              "allowDefaultSso": "Standard-SSO zulassen",
+              "ssoAuth": "Erlauben Sie Benutzern, sich über Standard-SSO zu authentifizieren. Standard-SSO-Konfigurationen können durch SSO auf Arbeitsbereichsebene außer Kraft gesetzt werden."
+            },
+            "google": {
+              "title": "Google",
+              "enabled": "Aktiviert",
+              "disabled": "Deaktiviert",
+              "clientId": "Kunden-ID",
+              "enterClientId": "Kunden-ID eingeben",
+              "redirectUrl": "Umleitungs-URL"
+            },
+            "github": {
+              "title": "Github",
+              "hostName": "Hostname",
+              "enterHostName": "Hostname eingeben",
+              "requiredGithub": "Erforderlich, wenn GitHub selbst gehostet wird",
+              "clientId": "Kunden-ID",
+              "enterClientId": "Kunden Id eingeben",
+              "clientSecret": "Kundengeheimnis",
+              "enterClientSecret": "Kundengeheimnis eingeben",
+              "encrypted": "Verschlüsselt",
+              "redirectUrl": "URL umleiten"
+            },
+            "passwordLogin": "Passwort Login",
+            "environmentVar": {
+              "noEnvConfig": "Sie haben keine Arbeitsbereich-Variablen konfiguriert, klicken Sie auf die Schaltfläche 'Neue Variable hinzufügen', um eine zu erstellen",
+              "envWillBeDeleted": "Die Variable wird gelöscht, möchten Sie fortfahren?",
+              "addNewVariable": "Neue Variable hinzufügen",
+              "variableForm": {
+                "addNewVariable": "Add new variable",
+                "updatevariable": "Variable aktualisieren",
+                "name": "Name",
+                "value": "Wert",
+                "enterVariableName": "Variablename eingeben",
+                "enterValue": "Wert eingeben",
+                "type": "Typ",
+                "enableEncryption": "Verschlüsselung einschalten",
+                "addVariable": "Variable hinzufügen"
+              },
+              "variableTable": {
+                "name": "Name",
+                "value": "Wert",
+                "type": "Typ",
+                "secret": "Geheimnis"
+              }
+            }
+          }
         }
-    },
-    "confirmationPage": {
-        "setupAccount": "Ihr Konto einrichten",
-        "signupWithGoogle": "Mit Google anmelden",
-        "signupWithGitHub": "Mit GitHub anmelden",
-        "or": "ODER",
+      },
+      "profileSettingPage": {
+        "profileSettings": "Profil-Einstellungen",
         "firstName": "Vorname",
         "lastName": "Nachname",
-        "company": "Unternehmen",
-        "role": "Rolle",
-        "pleaseSelect": "Bitte auswählen",
-        "password": "Passwort",
-        "confirmPassword": "Bestätigen Sie Ihr Passwort",
-        "clickAndAgree": "Mit dem Anklicken der Schaltfläche unten erklären Sie sich mit unserer",
-        "termsAndConditions": "Bedingungen und Konditionen",
-        "finishAccountSetup": "Einrichtung des Kontos beenden",
-        "acceptInvite": "Einladung annehmen",
-        "accountExists": "Sie haben bereits ein Konto?",
-        "and": "und"
+        "enterFirstName": "Vorname eingeben",
+        "enterLastName": "Nachname eingeben",
+        "email": "E-Mail",
+        "avatar": "Avatar",
+        "update": "Update",
+        "profile": "Profil",
+        "changePassword": "Passwort ändern",
+        "currentPassword": "Aktuelles Passwort",
+        "newPassword": "Neues Passwort",
+        "confirmNewPassword": "Bestätigen Sie das neue Passwort",
+        "enterCurrentPassword": "Aktuelles Passwort eingebe",
+        "enterNewPassword": "Neues Passwort eingeben"
+      },
+      "profile": "Profil",
+      "logout": "Ausloggen"
+    },
+    "homePage": {
+      "appCard": {
+        "changeIcon": "Icon ändern",
+        "addToFolder": "Zum Ordner hinzufügen",
+        "move": "Verlegen",
+        "to": "zu",
+        "selectFolder": "Ordner auswählen",
+        "deleteApp": "App löschen",
+        "exportApp": "App exportieren",
+        "cloneApp": "App klonen",
+        "launch": "Start",
+        "maintenance": "Wartung",
+        "noDeployedVersion": "Die App hat keine verteilte Version",
+        "openInAppViewer": "Im App-Viewer öffnen",
+        "removeFromFolder": "Aus Ordner entfernen"
+      },
+      "blankPage": {
+        "welcomeToToolJet": "Willkommen bei ToolJet!",
+        "getStartedCreateNewApp": "Sie können mit der Erstellung einer neuen App beginnen oder eine App mit Hilfe einer Vorlage aus der ToolJet Bibliothek erstellen.",
+        "importApplication": "Eine App importieren",
+        "createNewApplication": "Neue Anwendung erstellen",
+        "orChooseFromTemplate": "Oder wählen Sie aus Vorlagen"
+      },
+      "foldersSection": {
+        "allApplications": "Alle Applikationen",
+        "folders": "Ordner",
+        "createNewFolder": "+ Neuen Ordner erstellen",
+        "noFolders": "Sie haben keine Ordner erstellt. Verwenden Sie Ordner, um Ihre Apps zu organisieren",
+        "createFolder": "Ordner erstellen",
+        "updateFolder": "Ordner aktualisieren",
+        "editFolder": "Ordner bearbeiten",
+        "deleteFolder": "Ordner löschen",
+        "folderName": "Ordner Name",
+        "wishToDeleteFolder": "Sind Sie sicher, dass Sie den Ordner löschen möchten {{folderName}}? Die Apps innerhalb des Ordners werden nicht gelöscht."
+      },
+      "header": {
+        "createNewApplication": "Neue App erstellen",
+        "import": "Importieren",
+        "chooseFromTemplate": "Wählen Sie eine Vorlage aus"
+      },
+      "pagination": {
+        "showing": "Anzeige",
+        "of": "von",
+        "to": "zu"
+      },
+      "noApplicationFound": "Keine Apps gefunden",
+      "thisFolderIsEmpty": "Dieser Ordner ist leer",
+      "deleteAppAndData": "Die App und die zugehörigen Daten werden endgültig gelöscht. Möchten Sie fortfahren?",
+      "removeAppFromFolder": "Die App wird aus diesem Ordner entfernt. Möchten Sie fortfahren?",
+      "createApp": "App erstellen",
+      "createModule": "Modul erstellen",
+      "createNewApp": "Erstellen Sie eine neue App aus einer Vorlage",
+      "charLimit": "Der App-Name muss eindeutig sein und darf maximal 50 Zeichen lang sein",
+      "appPlaceholder": "Geben Sie den App-Namen ein",
+      "appName": "App Name",
+      "change": "Ändern Sie",
+      "templateCard": {
+        "use": "Benutzen Sie",
+        "preview": "Vorschau",
+        "leadGeneretion": "Lead-Generierung"
+      },
+      "templateLibraryModal": {
+        "select": "Vorlage auswählen",
+        "createAppfromTemplate": "App aus einer Vorlage erstellen"
+      }
+    },
+    "confirmationPage": {
+      "setupAccount": "Ihr Konto einrichten",
+      "signupWithGoogle": "Mit Google anmelden",
+      "signupWithGitHub": "Mit GitHub anmelden",
+      "or": "ODER",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "company": "Unternehmen",
+      "role": "Rolle",
+      "pleaseSelect": "Bitte auswählen",
+      "password": "Passwort",
+      "confirmPassword": "Bestätigen Sie Ihr Passwort",
+      "clickAndAgree": "Mit dem Anklicken der Schaltfläche unten erklären Sie sich mit unserer",
+      "termsAndConditions": "Bedingungen und Konditionen",
+      "finishAccountSetup": "Einrichtung des Kontos beenden",
+      "acceptInvite": "Einladung annehmen",
+      "accountExists": "Sie haben bereits ein Konto?",
+      "and": "und"
     },
     "onBoarding": {
-        "finishToolJetInstallation": "ToolJet-Installation beenden",
-        "organization": "Organisation",
-        "name": "Name",
-        "email": "Email",
-        "receiveUpdatesFromToolJet": "Sie werden Updates vom ToolJet-Team erhalten(1-2 E-Mails pro Monat, kein Spam)",
-        "finishSetup": "Einstellung beenden",
-        "skip": "Überspringen"
+      "finishToolJetInstallation": "ToolJet-Installation beenden",
+      "organization": "Organisation",
+      "name": "Name",
+      "email": "Email",
+      "receiveUpdatesFromToolJet": "Sie werden Updates vom ToolJet-Team erhalten(1-2 E-Mails pro Monat, kein Spam)",
+      "finishSetup": "Einstellung beenden",
+      "skip": "Überspringen"
     },
     "redirectSso": {
-        "upgradingTov1.13.0": "Aktualisieren auf v1.13.0 und höher.",
-        "fromV1.13.0": "Ab v1.13.0 haben wir volgendes eingeführt",
-        "multiWorkspace": "Multi-Workspace",
-        "singleSignOnConfig": "Die Single Sign-On bezogenen Konfigurationen werden von den Arbeitsbereich-Variablen in die Datenbank verschoben. Bitte lesen Sie dies",
-        "link": "Link",
-        "toConfigureSSO": "um SSO zu konfigurieren.",
-        "haveGoogleGithubSSo": "Wenn Sie vor dem Upgrade Google- oder GitHub-SSO-Konfigurationen hatten und Multi-Workspace deaktiviert haben, werden die SSO-Konfigurationen beim Upgrade migriert, aber Sie müssen die Umleitungs-URL auf der SSO-Anbieterseite neu konfigurieren. Die Umleitungs-URLs für jedes SSO sind unten angegeben.",
-        "isMultiWorkspaceEnabled": "Wenn Sie Multi-Workspace aktiviert haben, werden die SSO-Konfigurationen während des Upgrades nicht migriert, so dass Sie die SSO unter dem jeweiligen Workspace neu konfigurieren müssen.",
-        "youHaveEnabled": "Sie haben Aktiviert",
-        "setupSsoWorkspace": "Bitte melden Sie sich mit Ihrem Passwort an und Sie können sso über den Arbeitsbereich einrichten",
-        "manageSsoMenu": "SSO Menü verwalten.",
-        "youHaveDisabled": "Sie haben Deaktiviert",
-        "configureRedirectUrl": "Bitte konfigurieren Sie die Umleitungsurl auf der Seite des SSO-Anbieters.",
-        "google": "Google",
-        "redirectUrl": "URL Umleitung:",
-        "gitHub": "GitHub"
+      "upgradingTov1.13.0": "Aktualisieren auf v1.13.0 und höher.",
+      "fromV1.13.0": "Ab v1.13.0 haben wir volgendes eingeführt",
+      "multiWorkspace": "Multi-Workspace",
+      "singleSignOnConfig": "Die Single Sign-On bezogenen Konfigurationen werden von den Arbeitsbereich-Variablen in die Datenbank verschoben. Bitte lesen Sie dies",
+      "link": "Link",
+      "toConfigureSSO": "um SSO zu konfigurieren.",
+      "haveGoogleGithubSSo": "Wenn Sie vor dem Upgrade Google- oder GitHub-SSO-Konfigurationen hatten und Multi-Workspace deaktiviert haben, werden die SSO-Konfigurationen beim Upgrade migriert, aber Sie müssen die Umleitungs-URL auf der SSO-Anbieterseite neu konfigurieren. Die Umleitungs-URLs für jedes SSO sind unten angegeben.",
+      "isMultiWorkspaceEnabled": "Wenn Sie Multi-Workspace aktiviert haben, werden die SSO-Konfigurationen während des Upgrades nicht migriert, so dass Sie die SSO unter dem jeweiligen Workspace neu konfigurieren müssen.",
+      "youHaveEnabled": "Sie haben Aktiviert",
+      "setupSsoWorkspace": "Bitte melden Sie sich mit Ihrem Passwort an und Sie können sso über den Arbeitsbereich einrichten",
+      "manageSsoMenu": "SSO Menü verwalten.",
+      "youHaveDisabled": "Sie haben Deaktiviert",
+      "configureRedirectUrl": "Bitte konfigurieren Sie die Umleitungsurl auf der Seite des SSO-Anbieters.",
+      "google": "Google",
+      "redirectUrl": "URL Umleitung:",
+      "gitHub": "GitHub"
     },
     "oAuth2": {
-        "pleaseWait": "Bitte warten Sie...",
-        "authSuccess": "Anmeldung erfolgreich, Sie können diese Seite jetzt schließen.",
-        "authFailed": "Autorisierung fehlgeschlagen"
+      "pleaseWait": "Bitte warten Sie...",
+      "authSuccess": "Anmeldung erfolgreich, Sie können diese Seite jetzt schließen.",
+      "authFailed": "Autorisierung fehlgeschlagen"
     },
     "widgetManager": {
-        "commonlyUsed": "häufig genutzt",
-        "layouts": "Grundrisse",
-        "forms": "Formulare",
-        "intregrations": "Integrationen",
-        "others": "anderes",
-        "noResults": "Keine Ergebnisse gefunden",
-        "tryAdjustingFilterMessage": "Versuchen Sie, Ihre Suche oder Ihren Filter anzupassen, um das zu finden, was Sie suchen.",
-        "clearQuery": "query löschen"
+      "commonlyUsed": "häufig genutzt",
+      "layouts": "Grundrisse",
+      "forms": "Formulare",
+      "intregrations": "Integrationen",
+      "others": "anderes",
+      "noResults": "Keine Ergebnisse gefunden",
+      "tryAdjustingFilterMessage": "Versuchen Sie, Ihre Suche oder Ihren Filter anzupassen, um das zu finden, was Sie suchen.",
+      "clearQuery": "query löschen",
+      "Components": "Komponenten"
     },
     "widget": {
-        "common": {
-            "properties": "Eigenschaften",
-            "events": "Ereignisse",
-            "layout": "Layout",
-            "styles": "Stile",
-            "general": "Allgemein",
-            "validation": "Validierung",
-            "documentation": "{{componentMeta}} Dokumentation",
-            "widgetNameEmptyError": "Widget-Name darf nicht leer sein",
-            "componentNameExistsError": "Komponentenname existiert bereits",
-            "invalidWidgetName": "Ungültiger Widget-Name. Sollte unik sein und nur Buchstaben, Zahlen und Unterstriche enthalten."
-        },
-        "commonProperties": {
-            "visibility": "Sichtbarkeit",
-            "disable": "Deaktivieren",
-            "borderRadius": "Rand Radius",
-            "boxShadow": "Box Schatten",
-            "tooltip": "Tooltip",
-            "showOnDesktop": "Auf Desktop anzeigen",
-            "showOnMobile": "Auf Handy anzeigen",
-            "showLoadingState": "Ladezustand anzeigen",
-            "backgroundColor": "Hintergrund Farbe",
-            "textColor": "Text Farbe",
-            "loaderColor": "Farbe des Loaders",
-            "defaultValue": "Standardwert",
-            "placeholder": "Platzhalter",
-            "label": "Label",
-            "title": "Titel",
-            "code": "Code",
-            "data": "Daten",
-            "tableData": "Tabelle Daten",
-            "tableColumns": "Tabellenspalten",
-            "searverSideSearch": "Server-seitige Suche",
-            "loadingState": "Ladezustand",
-            "serverSidePagination": "Server-seitige Paginierung",
-            "clientSidePagination": "Client-seitige Paginierung",
-            "serverSideSearch": "Server-seitige Suche",
-            "showSearchBox": "Suchfeld anzeigen",
-            "showDownloadButton": "Download-Schaltfläche anzeigen",
-            "showFilterButton": "Filter Taste anzeigen",
-            "showBulkUpdateActions": "Bulk-Update-Aktionen anzeigen",
-            "bulkSelection": "Mehrfache Auswahl",
-            "highlightSelectedRow": "Ausgewählte Zeile markieren",
-            "actionButtonRadius": "Aktionstaste Radius",
-            "tableType": "Tabelle Typ",
-            "cellSize": "Cell size",
-            "setPage": "Seite eistellen",
-            "page": "Seite",
-            "buttonText": "Taste Text",
-            "click": "Hier klicken",
-            "setText": "Text einstellen",
-            "text": "Text",
-            "markerColor": "Farbe des Markers",
-            "showAxes": "Achsen anzeigen",
-            "showGridLines": "Gitterlinien anzeigen",
-            "chartType": "Diagrammtyp",
-            "jsonDescription": "Json Beschreibung",
-            "usePlotlyJsonSchema": "Plotly JSON-Schema verwenden",
-            "padding": "Padding",
-            "hideTitleBar": "Titelleiste ausblenden",
-            "hideCloseButton": "Schließen-Taste ausblenden",
-            "hideOnEscape": "Bei Escape Verstecken",
-            "modalSize": "Modal Größe",
-            "open": "Öffnen",
-            "close": "Schließen",
-            "regex": "Regex",
-            "minLength": "Min. Länge",
-            "maxLength": "Max. Länge",
-            "customValidation": "Benutzerdefinierte Validierung",
-            "clear": "Löschen",
-            "minimumValue": "Minimaler Wert",
-            "maximumValue": "Maximaler Wert",
-            "format": "Format",
-            "enableTimeSelection": "Zeitauswahl aktivieren?",
-            "enableDateSelection": "Datumsauswahl aktivieren?",
-            "disabledDates": "Deaktivierte Dateien",
-            "setChecked": "Als geprüft einstellen",
-            "status": "status",
-            "defaultStatus": "Standard-Status",
-            "checkboxColor": "Ankreuzfeld Farbe",
-            "optionValues": "Werte Option",
-            "optionLabels": "Etiketten Option",
-            "activeColor": "Aktive Farbe",
-            "selectOption": "Option auswählen",
-            "option": "Option",
-            "toggleSwitchColor": "Kippschalter Farbe",
-            "defaultStartDate": "Standard-Startdatum",
-            "defaultEndDate": "Standard-Enddatum",
-            "textSize": "Text Größe",
-            "alignText": "Text ausrichten",
-            "url": "URL",
-            "alternativeText": "Alternativer Text",
-            "zoomButton": "Zoom-Taste",
-            "borderType": "Umrandungstyp",
-            "imageFit": "Bildanpassung",
-            "optionsLoadingState": "Ladezustand Optionen",
-            "selectedTextColor": "Ausgewählte Textfarbe",
-            "select": "Wählen Sie",
-            "deselectOption": "Option abwählen",
-            "clearSelections": "Selektionen löschen",
-            "enableSelectAllOption": "Aktivieren Sie die Option 'Alle auswählen'",
-            "initialLocation": "Ursprünglicher Standort",
-            "defaultMarkers": "Standard-Marker",
-            "addNewMarkers": "Neue Marker hinzufügen",
-            "searchForPlaces": "Suche nach Orten",
-            "setLocation": "Standort festlegen",
-            "latitude": "Breitengrad",
-            "longitude": "Längengrad",
-            "numberOfStars": "Anzahl der Sterne",
-            "defaultNoOfSelectedStars": "Standardanzahl der gewählten Sterne",
-            "enableHalfStar": "Halben Stern aktivieren",
-            "tooltips": "QuickInfos",
-            "starColor": "Stern Farbe",
-            "labelColor": "Etikett Farbe",
-            "dividerColor": "Teiler Farbe",
-            "clearFiles": "Dateien löschen",
-            "instructionText": "Anleitung Text",
-            "useDropZone": "Drop-Zone verwenden",
-            "useFilePicker": "Dateipicker verwenden",
-            "pickMultipleFiles": "Mehrere Dateien auswählen",
-            "maxFileCount": "Maximale Dateianzahl",
-            "acceptFileTypes": "Dateitypen akzeptieren",
-            "maxSizeLimitBytes": "Maximale Größe (Bytes)",
-            "minSizeLimitBytes": "Mindestgröße (Bytes)",
-            "parseContent": "Inhalt analysieren",
-            "fileType": "Dateityp",
-            "dateFormat": "Datumsformat",
-            "defaultDate": "Standard-Datum",
-            "events": "Events",
-            "resources": "Ressourcen",
-            "defaultView": "Standardansicht",
-            "startTimeOnWeekAndDayView": "Startzeit in der Wochen- und Tagesansicht",
-            "endTimeOnWeekAndDayView": "Endzeit in der Wochen- und Tagesansicht",
-            "showToolbar": "Symbolleiste anzeigen",
-            "showViewSwitcher": "Ansichtsumschalter anzeigen",
-            "highlightToday": "Heute hervorheben",
-            "showPopoverWhenEventIsClicked": "Popover anzeigen, wenn ein Event angeklickt wird",
-            "cellSizeInViewsClassifiedByResource": "Zellgröße in Ansichten, klassifiziert nach Ressource",
-            "headerDateFormatOnWeekView": "Kopfzeilen-Datumsformat in der Wochenansicht",
-            "showLineNumber": "Zeilennummer anzeigen",
-            "mode": "Modus",
-            "tabs": "Tabs",
-            "defaultTab": "Standard Tab",
-            "hideTabs": "Tabs ausblenden",
-            "highlightColor": "Farbe des Highlights",
-            "tabWidth": "Breite des Tabs",
-            "setCurrentTab": "Aktuelle Tab einstellen",
-            "id": "Id",
-            "timerType": "Timer-Typ",
-            "listData": "Daten auflisten",
-            "rowHeight": "Höhe der Zeile",
-            "showBottomBorder": "Unteren Rand anzeigen",
-            "tags": "Tags",
-            "numberOfPages": "Anzahl der Seiten",
-            "defaultPageIndex": "Standard-Seitenindex",
-            "progress": "Fortschritt",
-            "color": "Farbe",
-            "strokeWidth": "Breite des Hubs",
-            "counterClockwise": "Gegen den Uhrzeigersinn",
-            "circleRatio": "Kreisverhältnis",
-            "colour": "Farbe",
-            "size": "Größe",
-            "primaryValueLabel": "Primärer Wert Etikett",
-            "primaryValue": "Primärer Wert",
-            "hideSecondaryValue": "Sekundärwert ausblenden",
-            "secondaryValueLabel": "Etikett für den Sekundärwert",
-            "secondaryValue": "Sekundärer Wert",
-            "secondarySignDisplay": "Sekundäres Zeichen anzeigen",
-            "primaryLabelColour": "Primäre Etikettenfarbe",
-            "primaryTextColour": "Primäre Textfarbe",
-            "secondaryLabelColour": "Sekundäres Etikett Farbe",
-            "secondaryTextColour": "Sekundäre Textfarbe",
-            "min": "Min",
-            "max": "Max",
-            "value": "Werr",
-            "twoHandles": "Zwei handles",
-            "lineColor": "Farbe der Linie",
-            "handleColor": "Handle Farbe",
-            "trackColor": "Spur Farbe",
-            "timelineData": "Daten im Überblick",
-            "hideDate": "Datum verbergen",
-            "svgData": "Svg  daten",
-            "rawHtml": "Raw HTML",
-            "values": "Werte",
-            "labels": "Labels",
-            "defaultSelected": "Default ausgewählen",
-            "enableMutipleSelection": "Mehrfachauswahl aktivieren",
-            "selectedTextColour": "Ausgewählte Textfarbe",
-            "selectedBackgroundColor": "Hintergrund Farbe einstellen",
-            "fileUrl": "Datei URL",
-            "scalePageToWidth": "Seite auf Breite skalieren",
-            "showPageControls": "Seitensteuerungen anzeigen",
-            "steps": "Stufen",
-            "currentStep": "Aktuelle Stufe",
-            "stepsSelectable": "Wählbare Stufen",
-            "theme": "Thema",
-            "columns": "Spalten",
-            "cardData": "Kartendaten",
-            "enableAddCard": "Karte hinzufügen aktivieren",
-            "width": "Breite",
-            "minWidth": "Min. Breite",
-            "accentColor": "Akzentfarbe",
-            "defaultColor": "Default Farbe",
-            "setColor": "Farbe einstellen",
-            "structure": "Struktur",
-            "checkedValues": "Kontrollierte Werte",
-            "expandedValues": "Erweitertes Wertesystem"
-        },
-        "Table": {
-            "displayName": "Tabelle",
-            "description": "Anzeige von paginierten Tabellendaten",
-            "columnType": "Spalten Typ",
-            "columnName": "Spaltenname",
-            "overflow": "Überlauf",
-            "key": "Schlüssel",
-            "textColor": "Text Farbe",
-            "validation": "Validierung",
-            "regex": "Regex",
-            "minLength": "Minimale Länge",
-            "maxLength": "Maximale Länge",
-            "customRule": "Benutzerdefinierte Regel",
-            "values": "Werte",
-            "labels": "Etiketten",
-            "cellBgColor": "Hintergrundfarbe der Zelle",
-            "dateDisplayformat": "Format der Datumsanzeige",
-            "dateParseformat": "Format der Datumsauswertung",
-            "showTime": "Uhrzeit anzeigen",
-            "makeEditable": "Bearbeitbar machen",
-            "buttonText": "Text der Taste",
-            "buttonPosition": "Position der Taste",
-            "remove": "Entfernen",
-            "addButton": "+ Taste hinzufügen",
-            "addColumn": "+ Spalte hinzufügen",
-            "noActionMessage": "Diese Tabelle hat keine Aktionsschaltflächen"
-        },
-        "Button": {
-            "displayName": "Taste",
-            "description": "Ausgelöste Aktionen: Abfragen, Warnungen usw."
-        },
-        "Chart": {
-            "displayName": "Diagramm",
-            "description": "Diagramme anzeigen"
-        },
-        "Modal": {
-            "displayName": "Modal",
-            "description": "Durch Ereignisse ausgelöstes Modal"
-        },
-        "TextInput": {
-            "displayName": "Textfeld",
-            "description": "Textfeld für Formulare"
-        },
-        "NumberInput": {
-            "displayName": "Nummernfeld",
-            "description": "Nummernfeld für Formulare"
-        },
-        "PasswordInput": {
-            "displayName": "Password-Eingabefeld",
-            "description": "Passwort-Eingabefeld für Formulare"
-        },
-        "Datepicker": {
-            "displayName": "Datum-Auswahl",
-            "description": "Wählen Sie ein Datum und eine Uhrzeit"
-        },
-        "Checkbox": {
-            "displayName": "Ankreuzfeld",
-            "description": "Ein einzelnes Ankreuzfeld"
-        },
-        "Radio-button": {
-            "displayName": "Optionsfeld",
-            "description": "Optionsfelder"
-        },
-        "ToggleSwitch": {
-            "displayName": "Kippschalter",
-            "description": "Kippschalter"
-        },
-        "Textarea": {
-            "displayName": "Textbereich",
-            "description": "Formularfeld für den Textbereich"
-        },
-        "DateRangePicker": {
-            "displayName": "Bereichspicker",
-            "description": "Wählen Sie einen Datumsbereich"
-        },
-        "Text": {
-            "displayName": "Text",
-            "description": "Markdown oder HTML anzeigen"
-        },
-        "Image": {
-            "displayName": "Bild",
-            "description": "Ein Bild anzeigen"
-        },
-        "Container": {
-            "displayName": "Container",
-            "description": "Wrapper für mehrere Komponenten"
-        },
-        "Dropdown": {
-            "displayName": "Auswahlliste",
-            "description": "Wählen Sie einen Wert aus den Optionen"
-        },
-        "Multiselect": {
-            "displayName": "Multiselekt",
-            "description": "Mehrere Werte aus Optionen auswählen"
-        },
-        "RichTextEditor": {
-            "displayName": "Text-Editor",
-            "description": "Reichhaltiger Text-Editor"
-        },
-        "Map": {
-            "displayName": "Karte",
-            "description": "Google Maps anzeigen"
-        },
-        "QrScanner": {
-            "displayName": "QR Scanner",
-            "description": "QR-Codes scannen und die Daten speichern"
-        },
-        "StarRating": {
-            "displayName": "Bewertung",
-            "description": "Sterne Bewertung"
-        },
-        "Divider": {
-            "displayName": "Teiler",
-            "description": "Trennzeichen zwischen Komponenten"
-        },
-        "FilePicker": {
-            "displayName": "Datei-Wähler",
-            "description": "Datei-Wähler"
-        },
-        "Calendar": {
-            "displayName": "Kalender",
-            "description": "Kalender"
-        },
-        "Iframe": {
-            "displayName": "Iframe",
-            "description": "Ein Iframe anzeigen"
-        },
-        "CodeEditor": {
-            "displayName": "Code-Editor",
-            "description": "Code-Editor"
-        },
-        "Tabs": {
-            "displayName": "Tabs",
-            "description": "Tabs Komponenten"
-        },
-        "Timer": {
-            "displayName": "Timer",
-            "description": "timer"
-        },
-        "Listview": {
-            "displayName": "Listenansicht",
-            "description": "Wrapper für mehrere Komponenten"
-        },
-        "Tags": {
-            "displayName": "Tags",
-            "description": "Inhalte können als Tags angezeigt werden"
-        },
-        "Pagination": {
-            "displayName": "Paginierung",
-            "description": "Paginierung"
-        },
-        "CircularProgressbar": {
-            "displayName": "Kreisförmiger Fortschrittsbalken",
-            "description": "Anzeige des Fortschritts mit kreisförmigem Fortschrittsbalken"
-        },
-        "Spinner": {
-            "displayName": "Spinner",
-            "description": "Spinner kann verwendet werden, um den Ladestatus anzuzeigen"
-        },
-        "Statistics": {
-            "displayName": "Statistiken",
-            "description": "Statistik kann zur Anzeige verschiedener statistischer Informationen verwendet werden"
-        },
-        "RangeSlider": {
-            "displayName": "Schieberegler",
-            "description": "Kann verwendet werden, um Schieberegler in einem gewissen Umfang anzuzeigen"
-        },
-        "Timeline": {
-            "displayName": "Timeline",
-            "description": "Visuelle Darstellung einer Abfolge von Ereignissen"
-        },
-        "SvgImage": {
-            "displayName": "Svg-Bild",
-            "description": "Svg-Bild"
-        },
-        "Html": {
-            "displayName": "HTML Viewer",
-            "description": "HTML Viewer"
-        },
-        "VerticalDivider": {
-            "displayName": "Vertikaler Teiler",
-            "description": "Vertikaler Teiler zwischen Komponenten"
-        },
-        "CustomComponent": {
-            "displayName": "Benutzerdefinierte Komponente",
-            "description": "Fügen Sie Ihre eigene React-Komponente hinzu"
-        },
-        "ButtonGroup": {
-            "displayName": "Tasten-Gruppe",
-            "description": "TastenGruppe"
-        },
-        "PDF": {
-            "displayName": "PDF",
-            "description": "PDF-Datei einbetten"
-        },
-        "Steps": {
-            "displayName": "Schritte",
-            "description": "Schritte"
-        },
-        "KanbanBoard": {
-            "displayName": "Kanban Board",
-            "description": "Kanban Board"
-        },
-        "ColorPicker": {
-            "displayName": "Farbwähler",
-            "description": "Farbwähler-Palette"
-        },
-        "TreeSelect": {
-            "displayName": "Tree Select",
-            "description": "Werte aus einer Baumansicht auswählen"
-        }
+      "common": {
+        "properties": "Eigenschaften",
+        "events": "Ereignisse",
+        "layout": "Layout",
+        "styles": "Stile",
+        "general": "Allgemein",
+        "validation": "Validierung",
+        "documentation": "{{componentMeta}} Dokumentation",
+        "widgetNameEmptyError": "Widget-Name darf nicht leer sein",
+        "componentNameExistsError": "Komponentenname existiert bereits",
+        "invalidWidgetName": "Ungültiger Widget-Name. Sollte unik sein und nur Buchstaben, Zahlen und Unterstriche enthalten."
+      },
+      "commonProperties": {
+        "visibility": "Sichtbarkeit",
+        "disable": "Deaktivieren",
+        "borderRadius": "Rand Radius",
+        "boxShadow": "Box Schatten",
+        "tooltip": "Tooltip",
+        "showOnDesktop": "Auf Desktop anzeigen",
+        "showOnMobile": "Auf Handy anzeigen",
+        "showLoadingState": "Ladezustand anzeigen",
+        "backgroundColor": "Hintergrund Farbe",
+        "textColor": "Text Farbe",
+        "loaderColor": "Farbe des Loaders",
+        "defaultValue": "Standardwert",
+        "placeholder": "Platzhalter",
+        "label": "Label",
+        "title": "Titel",
+        "code": "Code",
+        "data": "Daten",
+        "tableData": "Tabelle Daten",
+        "tableColumns": "Tabellenspalten",
+        "searverSideSearch": "Server-seitige Suche",
+        "loadingState": "Ladezustand",
+        "serverSidePagination": "Server-seitige Paginierung",
+        "clientSidePagination": "Client-seitige Paginierung",
+        "serverSideSearch": "Server-seitige Suche",
+        "showSearchBox": "Suchfeld anzeigen",
+        "showDownloadButton": "Download-Schaltfläche anzeigen",
+        "showFilterButton": "Filter Taste anzeigen",
+        "showBulkUpdateActions": "Bulk-Update-Aktionen anzeigen",
+        "bulkSelection": "Mehrfache Auswahl",
+        "highlightSelectedRow": "Ausgewählte Zeile markieren",
+        "actionButtonRadius": "Aktionstaste Radius",
+        "tableType": "Tabelle Typ",
+        "cellSize": "Cell size",
+        "setPage": "Seite eistellen",
+        "page": "Seite",
+        "buttonText": "Taste Text",
+        "click": "Hier klicken",
+        "setText": "Text einstellen",
+        "text": "Text",
+        "markerColor": "Farbe des Markers",
+        "showAxes": "Achsen anzeigen",
+        "showGridLines": "Gitterlinien anzeigen",
+        "chartType": "Diagrammtyp",
+        "jsonDescription": "Json Beschreibung",
+        "usePlotlyJsonSchema": "Plotly JSON-Schema verwenden",
+        "padding": "Padding",
+        "hideTitleBar": "Titelleiste ausblenden",
+        "hideCloseButton": "Schließen-Taste ausblenden",
+        "hideOnEscape": "Bei Escape Verstecken",
+        "modalSize": "Modal Größe",
+        "open": "Öffnen",
+        "close": "Schließen",
+        "regex": "Regex",
+        "minLength": "Min. Länge",
+        "maxLength": "Max. Länge",
+        "customValidation": "Benutzerdefinierte Validierung",
+        "clear": "Löschen",
+        "minimumValue": "Minimaler Wert",
+        "maximumValue": "Maximaler Wert",
+        "format": "Format",
+        "enableTimeSelection": "Zeitauswahl aktivieren?",
+        "enableDateSelection": "Datumsauswahl aktivieren?",
+        "disabledDates": "Deaktivierte Dateien",
+        "setChecked": "Als geprüft einstellen",
+        "status": "status",
+        "defaultStatus": "Standard-Status",
+        "checkboxColor": "Ankreuzfeld Farbe",
+        "optionValues": "Werte Option",
+        "optionLabels": "Etiketten Option",
+        "activeColor": "Aktive Farbe",
+        "selectOption": "Option auswählen",
+        "option": "Option",
+        "toggleSwitchColor": "Kippschalter Farbe",
+        "defaultStartDate": "Standard-Startdatum",
+        "defaultEndDate": "Standard-Enddatum",
+        "textSize": "Text Größe",
+        "alignText": "Text ausrichten",
+        "url": "URL",
+        "alternativeText": "Alternativer Text",
+        "zoomButton": "Zoom-Taste",
+        "borderType": "Umrandungstyp",
+        "imageFit": "Bildanpassung",
+        "optionsLoadingState": "Ladezustand Optionen",
+        "selectedTextColor": "Ausgewählte Textfarbe",
+        "select": "Wählen Sie",
+        "deselectOption": "Option abwählen",
+        "clearSelections": "Selektionen löschen",
+        "enableSelectAllOption": "Aktivieren Sie die Option 'Alle auswählen'",
+        "initialLocation": "Ursprünglicher Standort",
+        "defaultMarkers": "Standard-Marker",
+        "addNewMarkers": "Neue Marker hinzufügen",
+        "searchForPlaces": "Suche nach Orten",
+        "setLocation": "Standort festlegen",
+        "latitude": "Breitengrad",
+        "longitude": "Längengrad",
+        "numberOfStars": "Anzahl der Sterne",
+        "defaultNoOfSelectedStars": "Standardanzahl der gewählten Sterne",
+        "enableHalfStar": "Halben Stern aktivieren",
+        "tooltips": "QuickInfos",
+        "starColor": "Stern Farbe",
+        "labelColor": "Etikett Farbe",
+        "dividerColor": "Teiler Farbe",
+        "clearFiles": "Dateien löschen",
+        "instructionText": "Anleitung Text",
+        "useDropZone": "Drop-Zone verwenden",
+        "useFilePicker": "Dateipicker verwenden",
+        "pickMultipleFiles": "Mehrere Dateien auswählen",
+        "maxFileCount": "Maximale Dateianzahl",
+        "acceptFileTypes": "Dateitypen akzeptieren",
+        "maxSizeLimitBytes": "Maximale Größe (Bytes)",
+        "minSizeLimitBytes": "Mindestgröße (Bytes)",
+        "parseContent": "Inhalt analysieren",
+        "fileType": "Dateityp",
+        "dateFormat": "Datumsformat",
+        "defaultDate": "Standard-Datum",
+        "events": "Events",
+        "resources": "Ressourcen",
+        "defaultView": "Standardansicht",
+        "startTimeOnWeekAndDayView": "Startzeit in der Wochen- und Tagesansicht",
+        "endTimeOnWeekAndDayView": "Endzeit in der Wochen- und Tagesansicht",
+        "showToolbar": "Symbolleiste anzeigen",
+        "showViewSwitcher": "Ansichtsumschalter anzeigen",
+        "highlightToday": "Heute hervorheben",
+        "showPopoverWhenEventIsClicked": "Popover anzeigen, wenn ein Event angeklickt wird",
+        "cellSizeInViewsClassifiedByResource": "Zellgröße in Ansichten, klassifiziert nach Ressource",
+        "headerDateFormatOnWeekView": "Kopfzeilen-Datumsformat in der Wochenansicht",
+        "showLineNumber": "Zeilennummer anzeigen",
+        "mode": "Modus",
+        "tabs": "Tabs",
+        "defaultTab": "Standard Tab",
+        "hideTabs": "Tabs ausblenden",
+        "highlightColor": "Farbe des Highlights",
+        "tabWidth": "Breite des Tabs",
+        "setCurrentTab": "Aktuelle Tab einstellen",
+        "id": "Id",
+        "timerType": "Timer-Typ",
+        "listData": "Daten auflisten",
+        "rowHeight": "Höhe der Zeile",
+        "showBottomBorder": "Unteren Rand anzeigen",
+        "tags": "Tags",
+        "numberOfPages": "Anzahl der Seiten",
+        "defaultPageIndex": "Standard-Seitenindex",
+        "progress": "Fortschritt",
+        "color": "Farbe",
+        "strokeWidth": "Breite des Hubs",
+        "counterClockwise": "Gegen den Uhrzeigersinn",
+        "circleRatio": "Kreisverhältnis",
+        "colour": "Farbe",
+        "size": "Größe",
+        "primaryValueLabel": "Primärer Wert Etikett",
+        "primaryValue": "Primärer Wert",
+        "hideSecondaryValue": "Sekundärwert ausblenden",
+        "secondaryValueLabel": "Etikett für den Sekundärwert",
+        "secondaryValue": "Sekundärer Wert",
+        "secondarySignDisplay": "Sekundäres Zeichen anzeigen",
+        "primaryLabelColour": "Primäre Etikettenfarbe",
+        "primaryTextColour": "Primäre Textfarbe",
+        "secondaryLabelColour": "Sekundäres Etikett Farbe",
+        "secondaryTextColour": "Sekundäre Textfarbe",
+        "min": "Min",
+        "max": "Max",
+        "value": "Werr",
+        "twoHandles": "Zwei handles",
+        "lineColor": "Farbe der Linie",
+        "handleColor": "Handle Farbe",
+        "trackColor": "Spur Farbe",
+        "timelineData": "Daten im Überblick",
+        "hideDate": "Datum verbergen",
+        "svgData": "Svg  daten",
+        "rawHtml": "Raw HTML",
+        "values": "Werte",
+        "labels": "Labels",
+        "defaultSelected": "Default ausgewählen",
+        "enableMutipleSelection": "Mehrfachauswahl aktivieren",
+        "selectedTextColour": "Ausgewählte Textfarbe",
+        "selectedBackgroundColor": "Hintergrund Farbe einstellen",
+        "fileUrl": "Datei URL",
+        "scalePageToWidth": "Seite auf Breite skalieren",
+        "showPageControls": "Seitensteuerungen anzeigen",
+        "steps": "Stufen",
+        "currentStep": "Aktuelle Stufe",
+        "stepsSelectable": "Wählbare Stufen",
+        "theme": "Thema",
+        "columns": "Spalten",
+        "cardData": "Kartendaten",
+        "enableAddCard": "Karte hinzufügen aktivieren",
+        "width": "Breite",
+        "minWidth": "Min. Breite",
+        "accentColor": "Akzentfarbe",
+        "defaultColor": "Default Farbe",
+        "setColor": "Farbe einstellen",
+        "structure": "Struktur",
+        "checkedValues": "Kontrollierte Werte",
+        "expandedValues": "Erweitertes Wertesystem"
+      },
+      "Table": {
+        "displayName": "Tabelle",
+        "description": "Anzeige von paginierten Tabellendaten",
+        "columnType": "Spalten Typ",
+        "columnName": "Spaltenname",
+        "overflow": "Überlauf",
+        "key": "Schlüssel",
+        "textColor": "Text Farbe",
+        "validation": "Validierung",
+        "regex": "Regex",
+        "minLength": "Minimale Länge",
+        "maxLength": "Maximale Länge",
+        "customRule": "Benutzerdefinierte Regel",
+        "values": "Werte",
+        "labels": "Etiketten",
+        "cellBgColor": "Hintergrundfarbe der Zelle",
+        "dateDisplayformat": "Format der Datumsanzeige",
+        "dateParseformat": "Format der Datumsauswertung",
+        "showTime": "Uhrzeit anzeigen",
+        "makeEditable": "Bearbeitbar machen",
+        "buttonText": "Text der Taste",
+        "buttonPosition": "Position der Taste",
+        "remove": "Entfernen",
+        "addButton": "+ Taste hinzufügen",
+        "addColumn": "+ Spalte hinzufügen",
+        "noActionMessage": "Diese Tabelle hat keine Aktionsschaltflächen"
+      },
+      "Button": {
+        "displayName": "Taste",
+        "description": "Ausgelöste Aktionen: Abfragen, Warnungen usw."
+      },
+      "Chart": {
+        "displayName": "Diagramm",
+        "description": "Diagramme anzeigen"
+      },
+      "Modal": {
+        "displayName": "Modal",
+        "description": "Durch Ereignisse ausgelöstes Modal"
+      },
+      "TextInput": {
+        "displayName": "Textfeld",
+        "description": "Textfeld für Formulare"
+      },
+      "NumberInput": {
+        "displayName": "Nummernfeld",
+        "description": "Nummernfeld für Formulare"
+      },
+      "PasswordInput": {
+        "displayName": "Password-Eingabefeld",
+        "description": "Passwort-Eingabefeld für Formulare"
+      },
+      "Datepicker": {
+        "displayName": "Datum-Auswahl",
+        "description": "Wählen Sie ein Datum und eine Uhrzeit"
+      },
+      "Checkbox": {
+        "displayName": "Ankreuzfeld",
+        "description": "Ein einzelnes Ankreuzfeld"
+      },
+      "Radio-button": {
+        "displayName": "Optionsfeld",
+        "description": "Optionsfelder"
+      },
+      "ToggleSwitch": {
+        "displayName": "Kippschalter",
+        "description": "Kippschalter"
+      },
+      "Textarea": {
+        "displayName": "Textbereich",
+        "description": "Formularfeld für den Textbereich"
+      },
+      "DateRangePicker": {
+        "displayName": "Bereichspicker",
+        "description": "Wählen Sie einen Datumsbereich"
+      },
+      "Text": {
+        "displayName": "Text",
+        "description": "Markdown oder HTML anzeigen"
+      },
+      "Image": {
+        "displayName": "Bild",
+        "description": "Ein Bild anzeigen"
+      },
+      "Container": {
+        "displayName": "Container",
+        "description": "Wrapper für mehrere Komponenten"
+      },
+      "Dropdown": {
+        "displayName": "Auswahlliste",
+        "description": "Wählen Sie einen Wert aus den Optionen"
+      },
+      "Multiselect": {
+        "displayName": "Multiselekt",
+        "description": "Mehrere Werte aus Optionen auswählen"
+      },
+      "RichTextEditor": {
+        "displayName": "Text-Editor",
+        "description": "Reichhaltiger Text-Editor"
+      },
+      "Map": {
+        "displayName": "Karte",
+        "description": "Google Maps anzeigen"
+      },
+      "QrScanner": {
+        "displayName": "QR Scanner",
+        "description": "QR-Codes scannen und die Daten speichern"
+      },
+      "StarRating": {
+        "displayName": "Bewertung",
+        "description": "Sterne Bewertung"
+      },
+      "Divider": {
+        "displayName": "Teiler",
+        "description": "Trennzeichen zwischen Komponenten"
+      },
+      "FilePicker": {
+        "displayName": "Datei-Wähler",
+        "description": "Datei-Wähler"
+      },
+      "Calendar": {
+        "displayName": "Kalender",
+        "description": "Kalender"
+      },
+      "Iframe": {
+        "displayName": "Iframe",
+        "description": "Ein Iframe anzeigen"
+      },
+      "CodeEditor": {
+        "displayName": "Code-Editor",
+        "description": "Code-Editor"
+      },
+      "Tabs": {
+        "displayName": "Tabs",
+        "description": "Tabs Komponenten"
+      },
+      "Timer": {
+        "displayName": "Timer",
+        "description": "timer"
+      },
+      "Listview": {
+        "displayName": "Listenansicht",
+        "description": "Wrapper für mehrere Komponenten"
+      },
+      "Tags": {
+        "displayName": "Tags",
+        "description": "Inhalte können als Tags angezeigt werden"
+      },
+      "Pagination": {
+        "displayName": "Paginierung",
+        "description": "Paginierung"
+      },
+      "CircularProgressbar": {
+        "displayName": "Kreisförmiger Fortschrittsbalken",
+        "description": "Anzeige des Fortschritts mit kreisförmigem Fortschrittsbalken"
+      },
+      "Spinner": {
+        "displayName": "Spinner",
+        "description": "Spinner kann verwendet werden, um den Ladestatus anzuzeigen"
+      },
+      "Statistics": {
+        "displayName": "Statistiken",
+        "description": "Statistik kann zur Anzeige verschiedener statistischer Informationen verwendet werden"
+      },
+      "RangeSlider": {
+        "displayName": "Schieberegler",
+        "description": "Kann verwendet werden, um Schieberegler in einem gewissen Umfang anzuzeigen"
+      },
+      "Timeline": {
+        "displayName": "Timeline",
+        "description": "Visuelle Darstellung einer Abfolge von Ereignissen"
+      },
+      "SvgImage": {
+        "displayName": "Svg-Bild",
+        "description": "Svg-Bild"
+      },
+      "Html": {
+        "displayName": "HTML Viewer",
+        "description": "HTML Viewer"
+      },
+      "VerticalDivider": {
+        "displayName": "Vertikaler Teiler",
+        "description": "Vertikaler Teiler zwischen Komponenten"
+      },
+      "CustomComponent": {
+        "displayName": "Benutzerdefinierte Komponente",
+        "description": "Fügen Sie Ihre eigene React-Komponente hinzu"
+      },
+      "ButtonGroup": {
+        "displayName": "Tasten-Gruppe",
+        "description": "TastenGruppe"
+      },
+      "PDF": {
+        "displayName": "PDF",
+        "description": "PDF-Datei einbetten"
+      },
+      "Steps": {
+        "displayName": "Schritte",
+        "description": "Schritte"
+      },
+      "KanbanBoard": {
+        "displayName": "Kanban Board",
+        "description": "Kanban Board"
+      },
+      "ColorPicker": {
+        "displayName": "Farbwähler",
+        "description": "Farbwähler-Palette"
+      },
+      "TreeSelect": {
+        "displayName": "Tree Select",
+        "description": "Werte aus einer Baumansicht auswählen"
+      }
     },
     "leftSidebar": {
-        "Inspector": {
-            "text": "Inspektor",
-            "tip": "Inspektor"
-        },
-        "Sources": {
-            "text": "Quellen",
-            "tip": "Datenquellen hinzufügen oder bearbeiten",
-            "dataSources": "Datenquellen",
-            "addDataSource": "+ Datenquelle hinzufügen"
-        },
-        "Debugger": {
-            "text": "Debugger",
-            "tip": "Debugger",
-            "errors": "Fehler",
-            "noErrors": "Keine Fehler gefunden",
-            "clear": "löschen"
-        },
-        "Comments": {
-            "text": "Kommentare",
-            "tip": "Ein-Aus-Schalter für Kommentare",
-            "commentBody": "Es sind keine Kommentare vorhanden",
-            "typeComment": "Geben Sie hier Ihren Kommentar ein"
-        },
-        "Settings": {
-            "text": "Einstellungen",
-            "tip": "Globale Einstellungen",
-            "hideHeader": "Den Header für gestartete Apps ausblenden",
-            "maintenanceMode": "Wartungsmodus",
-            "maxWidthOfCanvas": "Maximale Breite der Arbeitsfläche",
-            "maxHeightOfCanvas": "Maximale Höhe der Arbeitsfläche",
-            "backgroundColorOfCanvas": "Hintergrundfarbe der Arbeitsfläche"
-        },
-        "Back": {
-            "text": "Zurück",
-            "tip": "Zurück zur Startseite"
-        }
+      "Pages": {
+        "text": "Seiten",
+        "tip": "Seiten"
+      },
+      "Inspector": {
+        "text": "Inspektor",
+        "tip": "Inspektor"
+      },
+      "Sources": {
+        "text": "Quellen",
+        "tip": "Datenquellen hinzufügen oder bearbeiten",
+        "dataSources": "Datenquellen",
+        "addDataSource": "+ Datenquelle hinzufügen"
+      },
+      "Debugger": {
+        "text": "Debugger",
+        "tip": "Debugger",
+        "errors": "Fehler",
+        "noErrors": "Keine Fehler gefunden",
+        "allLog": "Alle Protokolle",
+        "noLogs": "Keine Protokolle gefunden",
+        "clear": "löschen"
+      },
+      "Comments": {
+        "text": "Kommentare",
+        "tip": "Ein-Aus-Schalter für Kommentare",
+        "commentBody": "Es sind keine Kommentare vorhanden",
+        "typeComment": "Geben Sie hier Ihren Kommentar ein"
+      },
+      "Settings": {
+        "text": "Einstellungen",
+        "tip": "Globale Einstellungen",
+        "hideHeader": "Den Header für gestartete Apps ausblenden",
+        "maintenanceMode": "Wartungsmodus",
+        "maxWidthOfCanvas": "Maximale Breite der Arbeitsfläche",
+        "maxHeightOfCanvas": "Maximale Höhe der Arbeitsfläche",
+        "backgroundColorOfCanvas": "Hintergrundfarbe der Arbeitsfläche",
+        "appMode": "App-Modus",
+        "exportApp": "App exportieren",
+        "exportThisApp": "Exportieren Sie diese App",
+        "appSlug": "Einzigartiger App-Slug",
+        "globalSettings": "Globale Einstellungen",
+        "urlFriendly": "Der URL-freundliche 'Slug' besteht aus Kleinbuchstaben, Zahlen und Bindestrichen",
+        "appLink": "App-Link"
+      },
+      "Back": {
+        "text": "Zurück",
+        "tip": "Zurück zur Startseite"
+      },
+      "addingPageHandler": {
+        "min1": "Der Seitenname sollte mindestens 1 Zeichen lang sein",
+        "max50": "Der Seitenname darf 50 Zeichen nicht überschreiten"
+      }
     }
-}
+  }
+  

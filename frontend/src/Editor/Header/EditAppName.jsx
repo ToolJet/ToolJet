@@ -4,6 +4,7 @@ import { appsService } from '@/_services';
 import { handleHttpErrorMessages, validateName } from '@/_helpers/utils';
 import InfoOrErrorBox from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 function EditAppName({ appId, appName = '', onNameChanged }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -15,6 +16,7 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
   const [warningText, setWarningText] = useState('');
 
   const inputRef = useRef(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setName(appName);
@@ -134,9 +136,7 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
       <InfoOrErrorBox
         active={isError || isEditing}
         message={
-          errorMessage ||
-          warningText ||
-          (name.length >= 50 ? 'Maximum length has been reached' : 'App name should be unique and max 50 characters')
+          errorMessage || warningText || (name.length >= 50 ? t('editor.infoOrError1') : t('editor.infoOrError2'))
         }
         isWarning={warningText || name.length >= 50}
         isError={isError}

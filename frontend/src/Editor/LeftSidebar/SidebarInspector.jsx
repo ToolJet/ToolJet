@@ -12,6 +12,7 @@ import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useEditorStore } from '@/_stores/editorStore';
 import DataSourceIcon from '@/Editor/QueryManager/Components/DataSourceIcon';
+import { useTranslation } from 'react-i18next';
 
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
@@ -30,7 +31,7 @@ export const LeftSidebarInspector = ({
   pinned,
 }) => {
   const dataSources = useGlobalDataSources();
-
+  const { t } = useTranslation();
   const dataQueries = useDataQueries();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -232,7 +233,7 @@ export const LeftSidebarInspector = ({
       style={{ resize: 'horizontal', minWidth: 288 }}
     >
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Inspector">
+        <HeaderSection.PanelHeader title={t('leftSidebar.Inspector.text', 'Inspector')}>
           <div className="d-flex justify-content-end">
             <ButtonSolid
               title={`${pinned ? 'Unpin' : 'Pin'}`}

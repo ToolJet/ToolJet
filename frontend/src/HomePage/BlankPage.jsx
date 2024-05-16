@@ -56,11 +56,11 @@ export const BlankPage = function BlankPage({
               <div className="row homepage-empty-container">
                 <div className="col-7">
                   <h3 className="empty-welcome-header" data-cy="empty-homepage-welcome-header">
-                    {t('blankPage.welcomeToToolJet', 'Welcome to your new ToolJet workspace')}
+                    {t('homePage.blankPage.welcomeToToolJet', 'Welcome to your new ToolJet workspace')}
                   </h3>
                   <p className={`empty-title`} data-cy="empty-homepage-description">
                     {t(
-                      'blankPage.getStartedCreateNewApp',
+                      'homePage.blankPage.getStartedCreateNewApp',
                       'You can get started by creating a new application or by creating an application using a template in ToolJet Library.'
                     )}
                   </p>
@@ -75,7 +75,7 @@ export const BlankPage = function BlankPage({
                         fill={'#FDFDFE'}
                         disabled={appCreationDisabled}
                       >
-                        Create new application
+                        {t('homePage.blankPage.createNewApplication', 'Create new application')}
                       </ButtonSolid>
                     </div>
                     <div className="col-6">
@@ -94,7 +94,8 @@ export const BlankPage = function BlankPage({
                           data-cy="import-an-application"
                           disabled={appCreationDisabled}
                         >
-                          &nbsp;{t('blankPage.importApplication', 'Import an app')}
+                          &nbsp;
+                          {t('homePage.blankPage.importApplication', 'Import an app')}
                           <input
                             type="file"
                             ref={fileInput}
@@ -114,7 +115,7 @@ export const BlankPage = function BlankPage({
               {!appCreationDisabled && (
                 <div>
                   <div className="hr-text" data-cy="action-option">
-                    Or choose from templates
+                    {t('homePage.blankPage.orChooseFromTemplate', 'Or choose from templates')}
                   </div>
                   <div className="row" data-cy="app-template-row">
                     {staticTemplates.map(({ id, name }) => {

@@ -199,7 +199,7 @@ class ManageAppUsersComponent extends React.Component {
 
     return (
       <ToolTip
-        message={TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE}
+        message={this.props.t('editor.shareModal.shareURL', TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE)}
         placement={!this.props.isVersionReleased ? 'bottom' : 'left'}
         show={shouldWeDisableShareModal}
       >

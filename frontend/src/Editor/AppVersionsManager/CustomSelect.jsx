@@ -6,9 +6,11 @@ import { EditVersion } from './EditVersionModal';
 import { CreateVersion } from './CreateVersionModal';
 import { ConfirmDialog } from '@/_components';
 import { defaultAppEnvironments } from '@/_helpers/utils';
+import { useTranslation } from 'react-i18next';
 
 export const Menu = (props) => {
   const isEditable = props.selectProps.isEditable;
+  const { t } = useTranslation();
   return (
     <components.Menu {...props}>
       <div>
@@ -67,7 +69,7 @@ export const Menu = (props) => {
                 fill="#3E63DD"
               />
             </svg>
-            Create new version
+            {t('editor.header.createNewVersion', 'Create new version')}
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useTranslation } from 'react-i18next';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -35,6 +36,7 @@ const LeftSidebarPageSelector = ({
   pinned,
   setPinned,
 }) => {
+  const { t } = useTranslation();
   const [allpages, setPages] = useState(pages);
   const [haveUserPinned, setHaveUserPinned] = useState(false);
   const currentState = useCurrentState();
@@ -84,7 +86,7 @@ const LeftSidebarPageSelector = ({
       <div className="card-body p-0 pb-5">
         <HeaderSection darkMode={darkMode}>
           <HeaderSection.PanelHeader
-            title="Pages"
+            title={t('leftSidebar.Pages.text', 'Pages')}
             settings={
               <GlobalSettings
                 darkMode={darkMode}

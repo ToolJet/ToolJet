@@ -150,19 +150,19 @@ export const GlobalSettings = ({
       <div id="" className={cx({ 'dark-theme': darkMode })}>
         <div bsPrefix="global-settings-popover" className="global-settings-panel">
           <HeaderSection darkMode={darkMode}>
-            <HeaderSection.PanelHeader title="Global settings" />
+            <HeaderSection.PanelHeader title={t('leftSidebar.Settings.globalSettings', 'Global settings')} />
           </HeaderSection>
           <div className="card-body">
             <div className="app-slug-container">
               <div className="row">
                 <div className="col tj-app-input input-with-icon">
                   <label className="field-name" data-cy="app-slug-label">
-                    Unique app slug
+                    {t('leftSidebar.Settings.appSlug', 'Unique app slug')}
                   </label>
                   <input
                     type="text"
                     className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'} slug-input`}
-                    placeholder={t('editor.appSlug', 'Unique app slug')}
+                    placeholder={t('leftSidebar.Settings.appSlug', 'Unique app slug')}
                     maxLength={50}
                     onChange={(e) => {
                       e.persist();
@@ -190,17 +190,19 @@ export const GlobalSettings = ({
                   ) : isSlugUpdated ? (
                     <label className="label label-success" data-cy="app-slug-accepted-label">{`Slug accepted!`}</label>
                   ) : (
-                    <label
-                      className="label label-info"
-                      data-cy="app-slug-info-label"
-                    >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+                    <label className="label label-info" data-cy="app-slug-info-label">
+                      {t(
+                        'leftSidebar.Settings.urlFriendly',
+                        "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+                      )}
+                    </label>
                   )}
                 </div>
               </div>
               <div className="row">
                 <div className="col modal-main tj-app-input">
                   <label className="field-name" data-cy="app-link-label">
-                    App link
+                    {t('leftSidebar.Settings.appLink', 'App link')}
                   </label>
                   <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="app-link-field">
                     {!slugProgress ? (
@@ -382,7 +384,9 @@ export const GlobalSettings = ({
               </div>
               <AppModeToggle globalSettingsChanged={globalSettingsChanged} />
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
-                <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
+                <p className="tj-text-xsm color-slate12 w-full m-auto">
+                  {t('leftSidebar.Settings.exportApp', 'Export app')}
+                </p>
                 <div>
                   <ButtonSolid
                     variant="secondary"
@@ -397,7 +401,7 @@ export const GlobalSettings = ({
                     iconWidth="16"
                     data-cy="button-user-status-change"
                   >
-                    Export this app
+                    {t('leftSidebar.Settings.exportThisApp', 'Export this app')}
                   </ButtonSolid>
                 </div>
               </div>

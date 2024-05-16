@@ -11,6 +11,7 @@ import { shallow } from 'zustand/shallow';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import FileRemove from '@/_ui/Icon/solidIcons/FIleRemove';
 import Home from '@/_ui/Icon/solidIcons/Home';
+import { useTranslation } from 'react-i18next';
 
 export const PageHandler = ({
   darkMode,
@@ -214,13 +215,14 @@ export const PageHandler = ({
 };
 
 export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
+  const { t } = useTranslation();
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
-      toast('Page name should have at least 1 character', {
+      toast(t('leftSidebar.addingPageHandler.min1', 'Page name should have at least 1 character'), {
         icon: '⚠️',
       });
     } else if (pageName.trim().length > 50) {
-      toast('Page name cannot exceed 50 characters', {
+      toast(t('leftSidebar.addingPageHandler.max50', 'Page name cannot exceed 50 characters'), {
         icon: '⚠️',
       });
     } else {

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
@@ -22,6 +23,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [sources, setSources] = useState();
+  const { t } = useTranslation();
 
   const searchBoxRef = useRef(null);
 
@@ -206,7 +208,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           })}
           style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
           data-tooltip-id="tooltip-for-open-filter"
-          data-tooltip-content="Show sort/filter"
+          data-tooltip-content={t('editor.queryDatePane.showSortFilter', 'Show sort/filter')}
           data-cy={`query-filter-button`}
         >
           <Filter width="13" height="13" fill="var(--slate12)" />

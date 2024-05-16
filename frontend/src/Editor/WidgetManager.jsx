@@ -128,7 +128,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
   return (
     <div className={`components-container ${isVersionReleased && 'disabled'}`}>
-      <p className="widgets-manager-header">Components</p>
+      <p className="widgets-manager-header">{t('globals.components')}</p>
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}
