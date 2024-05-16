@@ -355,7 +355,11 @@ export default function DragContainer({
             transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
             transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
 
-            e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+            const roundedTransformY = Math.round(transformY / 10) * 10;
+            transformY = transformY % 10 === 5 ? roundedTransformY - 10 : roundedTransformY;
+            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
+              Math.round(transformY / 10) * 10
+            }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }
