@@ -13,8 +13,9 @@ export class AppAuthenticationDto {
   password: string;
 
   @IsString()
+  @IsOptional()
   @IsNotEmpty()
-  redirectTo: string;
+  redirectTo?: string;
 }
 
 export class AppSignupDto {
