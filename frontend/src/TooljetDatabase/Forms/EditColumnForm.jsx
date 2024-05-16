@@ -403,8 +403,8 @@ const ColumnForm = ({
     return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
   }
 
-  function isMatchingForeignKeyColumnDetails(columnHeader) {
-    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+  function isMatchingForeignKeyColumnDetails(columnName) {
+    const matchingColumn = foreignKeyDetails.find((foreignKey) => foreignKey.column_names[0] === columnName);
     return matchingColumn;
   }
 
@@ -472,7 +472,19 @@ const ColumnForm = ({
               className="form-control"
               data-cy="column-name-input-field"
               autoComplete="off"
-              onChange={(e) => setColumnName(e.target.value)}
+              onChange={(e) => {
+                setForeignKeyDetails((prevState) => {
+                  return prevState.map((item) => {
+                    return {
+                      ...item,
+                      column_names: item.column_names.map((col) => {
+                        return col === columnName ? e.target.value : col;
+                      }),
+                    };
+                  });
+                });
+                setColumnName(e.target.value);
+              }}
               autoFocus
             />
           </div>
@@ -608,18 +620,18 @@ const ColumnForm = ({
               {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(selectedColumn?.Header) && isForeignKey && (
                 <div className="foreignKey-details mt-0">
                   <span className="foreignKey-text">
-                    {isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.column_names[0]}
+                    {isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]}
                   </span>
                   <div className="foreign-key-relation">
                     <ForeignKeyRelationIcon width="13" height="13" />
                   </div>
                   <span className="foreignKey-text">{`${
-                    isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.referenced_table_name
-                  }.${isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.referenced_column_names[0]}`}</span>
+                    isMatchingForeignKeyColumnDetails(columnName)?.referenced_table_name
+                  }.${isMatchingForeignKeyColumnDetails(columnName)?.referenced_column_names[0]}`}</span>
                   <div
                     className="editForeignkey"
                     onClick={() => {
-                      openEditForeignKey(isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.column_names[0]);
+                      openEditForeignKey(isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]);
                     }}
                   >
                     <EditIcon width="17" height="18" />

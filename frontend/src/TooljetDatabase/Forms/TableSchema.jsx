@@ -25,6 +25,7 @@ function TableSchema({
   indexHover,
   editColumns,
   foreignKeyDetails,
+  setForeignKeyDetails,
   existingForeignKeyDetails,
 }) {
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
@@ -147,6 +148,16 @@ function TableSchema({
                 onChange={(e) => {
                   e.persist();
                   const prevColumns = { ...columnDetails };
+                  setForeignKeyDetails((prevState) => {
+                    return prevState.map((item) => {
+                      return {
+                        ...item,
+                        column_names: item.column_names.map((col) => {
+                          return col === columnDetails[index].column_name ? e.target.value : col;
+                        }),
+                      };
+                    });
+                  });
                   prevColumns[index].column_name = e.target.value;
                   setColumns(prevColumns);
                 }}
