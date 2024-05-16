@@ -90,10 +90,9 @@ export const Container = ({
 
   const { appId } = useAppInfo();
 
-  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
+  const { appVersionsId, isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
-      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
       isEditorFreezed: state.isEditorFreezed,
     }),

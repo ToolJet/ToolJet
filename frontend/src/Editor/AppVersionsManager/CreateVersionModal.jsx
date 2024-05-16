@@ -125,6 +125,7 @@ export const CreateVersion = ({
 
   useEffect(() => {
     if (featureAccess?.gitSync) fetchOrgGit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

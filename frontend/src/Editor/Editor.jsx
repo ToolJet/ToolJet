@@ -60,7 +60,6 @@ import {
   computeComponentPropertyDiff,
   findAllEntityReferences,
   isParamFromTableColumn,
-  resetAllStores,
   defaultWhiteLabellingSettings,
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';

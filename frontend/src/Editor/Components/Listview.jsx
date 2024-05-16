@@ -14,7 +14,6 @@ export const Listview = function Listview({
   properties,
   styles,
   fireEvent,
-  setExposedVariable,
   setExposedVariables,
   darkMode,
   dataCy,
