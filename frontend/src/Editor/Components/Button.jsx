@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 import * as Icons from '@tabler/icons-react';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
@@ -56,6 +57,8 @@ export const Button = function Button(props) {
 
   const computedTextColor =
     '#FFFFFF' === textColor ? (type === 'primary' ? 'var(--text-on-solid)' : 'var(--text-primary)') : textColor;
+  const computedLoaderColor =
+    '#FFFFFF' === loaderColor ? (type === 'primary' ? loaderColor : 'var(--primary-brand)') : loaderColor;
 
   const computedBgColor =
     '#4368E3' === backgroundColor
@@ -72,15 +75,17 @@ export const Button = function Button(props) {
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height,
-    display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
     '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
-    '--loader-color': tinycolor(loaderColor ?? 'var(--icons-on-solid)').toString(),
+    '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
     boxShadow: type == 'primary' && boxShadow,
     padding: '0px 12px',
-    cursor: 'pointer',
+    // cursor: 'pointer',
     opacity: disable && '50%',
+    display: visibility ? (loading ? 'flex' : '') : 'none',
+    justifyContent: 'center',
+    alignItems: 'center',
   };
 
   useEffect(() => {
@@ -166,63 +171,66 @@ export const Button = function Button(props) {
         position: 'relative',
         height,
       }}
+      disabled={disable || loading}
     >
       <button
-        disabled={disable || loading}
         className={cx('overflow-hidden', {
-          'btn-loading': loading,
           'btn-custom': hasCustomBackground,
           'jet-button ': type == 'primary',
           'jet-outline-button ': type == 'outline',
         })}
         style={computedStyles}
         onClick={handleClick}
-        onMouseOver={() => {
-          fireEvent('onHover');
-        }}
         data-cy={dataCy}
         type="default"
+        onMouseEnter={() => {
+          fireEvent('onHover');
+        }}
       >
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            display: !loading ? 'flex' : 'none',
-            alignItems: 'center',
-            flexDirection: direction == 'left' ? 'row-reverse' : 'row',
-            justifyContent: 'center',
-            gap: '6px',
-          }}
-        >
+        {!loading ? (
           <div
             style={{
-              overflow: 'hidden',
+              height: '100%',
+              width: '100%',
+              display: !loading ? 'flex' : 'none',
+              alignItems: 'center',
+              flexDirection: direction == 'left' ? 'row-reverse' : 'row',
+              justifyContent: 'center',
+              gap: '6px',
             }}
           >
-            <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
-              <p
-                className="tj-text-sm"
-                style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
-              >
-                {label}
-              </p>
-            </span>
-          </div>
-          {iconVisibility && (
-            <div className="d-flex">
-              {!props.isResizing && !loading && (
-                <IconElement
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    color: computedIconColor,
-                  }}
-                  stroke={1.5}
-                />
-              )}
+            <div
+              style={{
+                overflow: 'hidden',
+              }}
+            >
+              <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
+                <p
+                  className="tj-text-sm"
+                  style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                >
+                  {label}
+                </p>
+              </span>
             </div>
-          )}
-        </div>
+            {iconVisibility && (
+              <div className="d-flex">
+                {!props.isResizing && !loading && (
+                  <IconElement
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      color: computedIconColor,
+                    }}
+                    stroke={1.5}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <Loader color={computedLoaderColor} width="16" />
+        )}
       </button>
     </div>
   );
