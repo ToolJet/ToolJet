@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/_components';
 import { Tooltip } from 'react-tooltip';
 import { getColumnDataType, dataTypes } from '../constants';
 import { TooljetDatabaseContext } from '../index';
+import cx from 'classnames';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -327,7 +328,9 @@ function ForeignKeyRelation({
     <>
       <div className="foreignkey-relation-container">
         <div className="foreign-key-heading">
-          <span className="foreign-key-sub-title">Foreign key relation</span>
+          <span className={cx('foreign-key-sub-title', { 'foreign-key-sub-title-light': !darkMode })}>
+            Foreign key relation
+          </span>
           <p className="tj-text-xsm">
             A foreign key relation helps to link rows from existing tables with rows in this table based on a common
             column.

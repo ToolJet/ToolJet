@@ -10,6 +10,7 @@ import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
 import { serialDataType } from '../constants';
+import cx from 'classnames';
 
 const TableForm = ({
   selectedTable = {},
@@ -249,12 +250,12 @@ const TableForm = ({
     <div className="drawer-card-wrapper">
       <div className="card-header">
         {!isEditMode && (
-          <h3 className="card-title" data-cy="create-new-table-header">
+          <h3 className={cx('card-title', { 'card-title-light': !darkMode })} data-cy="create-new-table-header">
             Create a new table
           </h3>
         )}
         {isEditMode && (
-          <h3 className="card-title" data-cy="edit-table-header">
+          <h3 className={cx('card-title', { 'card-title-light': !darkMode })} data-cy="edit-table-header">
             Edit table
           </h3>
         )}
@@ -272,7 +273,7 @@ const TableForm = ({
             </div>
           )}
           <div className="">
-            <div className="form-label" data-cy="table-name-label">
+            <div className={cx('form-label', { 'form-label-light': !darkMode })} data-cy="table-name-label">
               Table name
             </div>
             <div className="tj-app-input">
