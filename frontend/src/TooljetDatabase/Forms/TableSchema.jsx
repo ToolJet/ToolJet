@@ -13,6 +13,7 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
+import Skeleton from 'react-loading-skeleton';
 
 function TableSchema({
   columns,
@@ -296,6 +297,12 @@ function TableSchema({
                     No table selected
                   </div>
                 }
+                loader={
+                  <div className="mx-2">
+                    <Skeleton count={2} height={40} className="skeleton mt-2" />
+                  </div>
+                }
+                isLoading={true}
                 value={
                   columnDetails[index].column_default !== null
                     ? { value: columnDetails[index].column_default, label: columnDetails[index].column_default }
