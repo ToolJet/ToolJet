@@ -131,7 +131,6 @@ const EditorInput = ({
   usePortalEditor = true,
   renderPreview,
   portalProps,
-  ignoreValidation,
   lang,
   isFocused,
   componentId,

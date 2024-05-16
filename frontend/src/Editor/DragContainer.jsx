@@ -152,7 +152,7 @@ export default function DragContainer({
       const boxes = document.querySelectorAll('.jet-container');
       var timer;
       boxes.forEach((box) => {
-        box.addEventListener('scroll', function handleClick(event) {
+        box.addEventListener('scroll', function handleClick() {
           if (timer) {
             clearTimeout(timer);
           }
