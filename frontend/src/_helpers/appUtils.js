@@ -334,19 +334,6 @@ export async function runTransformation(
         currentState.page
       );
     } catch (err) {
-      const $error = err.name;
-      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-      if (mode === 'edit') {
-        toast(
-          <span className="text-break">
-            <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
-            {$errorMessage || 'Unknown error'}
-          </span>,
-          {
-            type: 'error',
-          }
-        );
-      }
       result = {
         message: err.stack.split('\n')[0],
         status: 'failed',
@@ -935,7 +922,10 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
   const queryPanelState = useSuperStore.getState().modules[_ref.moduleName].useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
-
+  const queryEvents = useSuperStore
+    .getState()
+    .modules[_ref.moduleName].useAppDataStore.getState()
+    .events.filter((event) => event.target === 'data_query' && event.sourceId === query.id);
   setPreviewLoading(true);
   if (queryPreviewData) {
     setPreviewData('');
@@ -983,6 +973,22 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             query,
             'edit'
           );
+          if (finalData.status === 'failed') {
+            useSuperStore
+              .getState()
+              .modules[_ref.moduleName].useCurrentStateStore.getState()
+              .actions.setErrors({
+                [query.name]: {
+                  type: 'transformations',
+                  data: finalData,
+                  options: options,
+                },
+              });
+            onEvent(_ref, 'onDataQueryFailure', queryEvents);
+            setPreviewLoading(false);
+            resolve({ status: data.status, data: finalData });
+            return;
+          }
         }
 
         if (calledFromQuery) {
@@ -1010,26 +1016,40 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatusCode === 422: {
             // const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             // toast.error(`${err.message}`);
-            let err;
-            if (query.kind == 'tooljetdb') {
-              err = data?.error || data;
-            } else if (query.kind == 'runjs') {
-              err = data?.status === 'failed' && data?.data?.message ? { message: data?.data?.message } : data;
-            } else if (query.kind == 'runpy') {
-              err = data?.data?.status === 'failed' ? { message: data?.data?.message } : data;
-            } else {
-              err = data?.status === 'failed' && data?.description ? { message: data?.description } : data;
+            let errorData = {};
+            switch (query.kind) {
+              case 'runpy':
+                errorData = data.data;
+                break;
+              case 'tooljetdb':
+                if (data?.error) {
+                  errorData = {
+                    message: data?.error?.message || 'Something went wrong',
+                    description: data?.error?.message || 'Something went wrong',
+                    status: data?.statusText || 'Failed',
+                    data: data?.error || {},
+                  };
+                } else {
+                  errorData = data;
+                }
+                break;
+              default:
+                errorData = data;
+                break;
             }
+            onEvent(_ref, 'onDataQueryFailure', queryEvents);
+            useSuperStore
+              .getState()
+              .modules[_ref.moduleName].useCurrentStateStore.getState()
+              .actions.setErrors({
+                [query.name]: {
+                  type: 'query',
+                  kind: query.kind,
+                  data: errorData,
+                  options: options,
+                },
+              });
 
-            toast(
-              <span className="text-break">
-                <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
-                {err?.message ? err?.message : 'Something went wrong'}
-              </span>,
-              {
-                type: 'error',
-              }
-            );
             break;
           }
           case queryStatus === 'needs_oauth': {
@@ -1042,9 +1062,18 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatus === 'Created' ||
             queryStatus === 'Accepted' ||
             queryStatus === 'No Content': {
-            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-              icon: '🚀',
-            });
+            useSuperStore
+              .getState()
+              .modules[_ref.moduleName].useCurrentStateStore.getState()
+              .actions.setCurrentState({
+                succededQuery: {
+                  [query.name]: {
+                    type: 'query',
+                    kind: query.kind,
+                  },
+                },
+              });
+            onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
             break;
           }
         }
@@ -1247,28 +1276,6 @@ export function runQuery(
             });
           resolve(data);
           onEvent(_self, 'onDataQueryFailure', queryEvents);
-          if (mode !== 'view') {
-            let err;
-            if (query.kind == 'tooljetdb') {
-              err = data?.error || data;
-            } else if (query.kind == 'runjs') {
-              err = data?.status === 'failed' && data?.data?.message ? { message: data?.data?.message } : data;
-            } else if (query.kind == 'runpy') {
-              err = data?.data?.status === 'failed' ? { message: data?.data?.message } : data;
-            } else {
-              err = data?.status === 'failed' && data?.description ? { message: data?.description } : data;
-            }
-
-            toast(
-              <span className="text-break">
-                <b style={{ whiteSpace: 'nowrap' }}>{query.name}:&nbsp;</b>
-                {err?.message ? err?.message : 'Something went wrong'}
-              </span>,
-              {
-                type: 'error',
-              }
-            );
-          }
           return;
         } else {
           let rawData = data.data;
