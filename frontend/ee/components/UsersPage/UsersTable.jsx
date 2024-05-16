@@ -7,8 +7,7 @@ import { Pagination } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
-import { humanizeifDefaultGroupName } from '@/_helpers/utils';
-import { decodeEntities } from '@/_helpers/utils';
+import { humanizeifDefaultGroupName, decodeEntities } from '@/_helpers/utils';
 
 const UsersTable = ({
   isLoading,

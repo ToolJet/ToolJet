@@ -12,22 +12,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
   return (
     <div className="table-content-wrapper">
       {options.length === 0 && (
-        <div
-          style={{
-            border: '2px dashed #ccc',
-            borderRadius: '6px',
-            padding: '10px',
-            textAlign: 'center',
-            color: '#ccc',
-            width: '654px',
-            height: '32px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            marginBottom: '10px',
-          }}
-        >
+        <div className="empty-key-value">
           <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
           <span>There are no key value pairs added</span>
         </div>
