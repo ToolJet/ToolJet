@@ -492,6 +492,7 @@ export const Container = ({
     const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y, gw }) => {
       const _canvasWidth = gw ? gw * noOfGrids : canvasWidth;
       let newWidth = Math.round((width * noOfGrids) / _canvasWidth);
+      y = Math.round(y / 10) * 10;
       gw = gw ? gw : gridWidth;
       const parent = boxes[id]?.component?.parent;
       if (y < 0) {
