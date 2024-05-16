@@ -192,3 +192,45 @@ export const createDataQuery = (versionId, url, key, value) => {
     });
   });
 };
+
+export const createrestAPIQuery = (data) => {
+  const { app_id, app_version_id, name, key, value } = data;
+
+  const data_source_id = Cypress.env(`${name}-id`);
+
+  const requestBody = {
+    app_id: app_id,
+    app_version_id: app_version_id,
+    name: name,
+    kind: "restapi",
+    options: {
+      method: "get",
+      url: "",
+      url_params: [["", ""]],
+      headers: [[`{{constants.${key}}}`, `{{constants.${value}}}`]],
+      body: [["", ""]],
+      json_body: null,
+      body_toggle: false,
+      transformationLanguage: "javascript",
+      enableTransformation: false,
+    },
+    data_source_id: data_source_id,
+    plugin_id: null,
+  };
+
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    const headers = {
+      "Tj-Workspace-Id": Cypress.env("workspaceId"),
+      Cookie: `tj_auth_token=${cookie.value}`,
+    };
+    cy.request({
+      method: "POST",
+      url: "http://localhost:3000/api/data_queries",
+      headers: headers,
+      body: requestBody,
+    }).then((response) => {
+      expect(response.status).to.equal(201);
+      cy.log("Data query created successfully:", response.body);
+    });
+  });
+};
