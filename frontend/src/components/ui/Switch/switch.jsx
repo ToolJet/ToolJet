@@ -2,9 +2,11 @@ import * as React from 'react';
 import * as SwitchPrimitives from '@radix-ui/react-switch';
 
 import { cn } from '@/lib/utils';
+import { Label } from '../Label/label';
 
 const Switch = React.forwardRef(({ className, ...props }, ref) => (
-  <SwitchPrimitives.Root
+  <div>
+    <SwitchPrimitives.Root
     className={cn(
       'tw-peer tw-inline-flex tw-h-6 tw-w-11 tw-shrink-0 tw-cursor-pointer tw-items-center tw-rounded-full tw-border-2 tw-border-transparent tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-background-accent-strong focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-white disabled:tw-cursor-not-allowed disabled:tw-opacity-50 data-[state=checked]:tw-bg-background-accent-strong data-[state=unchecked]:tw-bg-slider-track',
       className
@@ -18,6 +20,11 @@ const Switch = React.forwardRef(({ className, ...props }, ref) => (
       )}
     />
   </SwitchPrimitives.Root>
+  <div>
+  <Label>{props.label}</Label>
+  <Label>{props.helper}</Label>
+  </div>
+  </div>
 ));
 Switch.displayName = SwitchPrimitives.Root.displayName;
 

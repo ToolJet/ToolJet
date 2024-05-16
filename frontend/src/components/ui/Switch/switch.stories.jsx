@@ -16,10 +16,17 @@ export default {
     disabled: {
       control: "boolean",
     },
+    label: {
+        control: "text",
+    },
     required: {
       control: "boolean",
     },
   },
 };
 
-export const Primary = {};
+export const RocketSwitch = {};
+
+export const RocketSwitchWithLabel = {};
+
+export const RocketSwitchWithLabelAndHelper = {};
