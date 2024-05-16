@@ -834,12 +834,20 @@ button {
   }
 
   .homepage-search {
-    background: transparent;
+    background: none !important;
     color: var(--slate12);
     height: 20px;
+    border: none !important;
 
     &:focus {
-      background: none;
+      background: none !important;
+      border: none !important;
+    }
+
+    &:hover {
+      background: none !important;
+      border: none !important;      
+      color: var(--slate12);       
     }
   }
 }
@@ -7948,7 +7956,8 @@ tbody {
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
 
-  &[data-name="Profile settings"] {
+  &[data-name="Profile settings"],
+  &[data-name="Workspace constants"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
   }
@@ -8091,12 +8100,13 @@ tbody {
 .pagination-container {
   display: flex;
   padding: 0px;
-  height: 20px;
+  height: 20px !important;
 
   .form-control {
     padding: 0 4px;
     width: fit-content;
-    max-width: 30px;
+    width: 30px !important;
+    height: 20px !important;
     text-align: center;
   }
 
@@ -8682,6 +8692,10 @@ tbody {
   justify-content: center;
   align-items: center;
   color: var(--slate11);
+
+  .with-border{
+    border-bottom: 1px solid var(--slate5) !important;
+  }
 
   a {
     text-decoration: none;
@@ -12682,7 +12696,7 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1.5rem;
+  padding-top: 1.5rem;
 }
 
 .blank-page-wrapper {
@@ -12885,4 +12899,8 @@ tbody {
   &:active {
     background-color: var(--interactive-overlays-fill-pressed) !important;
   }
+}
+
+div.ds-svg-container svg {
+  padding: 2px;
 }
