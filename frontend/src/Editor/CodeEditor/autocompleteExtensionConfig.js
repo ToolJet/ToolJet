@@ -94,8 +94,11 @@ export const generateHints = (hints, totalReferences = 1, input) => {
         const doc = view.state.doc;
         const { from: _, to: end } = doc.lineAt(from);
         const actualStartIndex = input.lastIndexOf('{{');
+        // console.log('---arpit:: check', { actualStartIndex, end, to });
+        const pickedFrom =
+          actualStartIndex === 0 && end - to > 2 ? from - currentWord.length : actualStartIndex + (end - to);
         const pickedCompletionConfig = {
-          from: actualStartIndex + (end - to),
+          from: pickedFrom,
           to: to,
           insert: completion.label,
         };
@@ -107,9 +110,11 @@ export const generateHints = (hints, totalReferences = 1, input) => {
         }
 
         if (totalReferences > 1 && completion.type !== 'js_methods') {
-          let queryInput = input;
-          const currentWord = queryInput.split('{{').pop().split('}}')[0];
-          pickedCompletionConfig.from = from !== to ? from : from - currentWord.length;
+          const splitIndex = from;
+          const substring = doc.toString().substring(0, splitIndex).split('{{').pop();
+
+          console.log('--arpit:: currentWord', { actualStartIndex, from, end, to, substring });
+          pickedCompletionConfig.from = from - substring.length;
         }
 
         const dispatchConfig = {
