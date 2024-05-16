@@ -158,6 +158,10 @@ const EditorInput = ({
         currentWord = currentWord.replace(/{{|}}/g, '');
       }
 
+      if (currentWord.includes(' ')) {
+        currentWord = currentWord.split(' ').pop();
+      }
+
       // remove \n from the current word if it is present
       currentWord = currentWord.replace(/\n/g, '');
 
