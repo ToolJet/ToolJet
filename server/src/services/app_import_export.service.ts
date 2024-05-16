@@ -1190,7 +1190,7 @@ export class AppImportExportService {
     let currentEnvironmentId: string;
 
     for (const appVersion of appVersions) {
-      const appEnvIds: string[] = [...organization.appEnvironments.map((env) => env.id)];
+      const appEnvIds: string[] = [...organization?.appEnvironments.map((env) => env.id)];
 
       //app is exported to CE
       if (defaultAppEnvironments.length === 1) {
