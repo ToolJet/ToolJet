@@ -51,7 +51,6 @@ export const EventManager = ({
 
   const {
     appId,
-    apps,
     events: allAppEvents,
     eventsUpdatedLoader,
     eventsCreatedLoader,
@@ -60,7 +59,6 @@ export const EventManager = ({
     setEventToDeleteLoaderIndex,
   } = useAppDataStore((state) => ({
     appId: state.appId,
-    apps: state.apps,
     events: state.events,
     eventsUpdatedLoader: state.eventsUpdatedLoader,
     eventsCreatedLoader: state.eventsCreatedLoader,

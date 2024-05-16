@@ -9,7 +9,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
-const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }, ref) => {
+const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }) => {
   return (
     <div className="table-column-datepicker-input-container">
       <input
