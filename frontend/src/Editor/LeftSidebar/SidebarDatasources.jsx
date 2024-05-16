@@ -270,8 +270,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
                   <div className="d-flex align-items-center" style={{ color: 'black' }}>
                     <p>
                       We are deprecating local data sources soon. Please migrate local data sources to global data
-                      sources immediately to safeguard your applications from this breaking change. Refer to the
-                      migration guide &nbsp;{' '}
+                      sources immediately to safeguard your applications from this breaking change.
                     </p>
                   </div>
                 </Alert>
