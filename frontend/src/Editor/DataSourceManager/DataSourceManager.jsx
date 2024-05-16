@@ -836,6 +836,7 @@ class DataSourceManagerComponent extends React.Component {
                           style={{ width: '160px' }}
                           data-cy="data-source-name-input-filed"
                           autoFocus
+                          autoComplete="off"
                         />
                         {!this.props.isEditing && (
                           <span className="input-icon-addon">
