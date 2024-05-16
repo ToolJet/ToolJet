@@ -51,3 +51,26 @@ input.form-control,
     }
 
   }
+
+  .empty-key-value {
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    color: #ccc;
+    width: 625px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .trash {
+    height: 32px;
+    display: flex;
+    justify-content: 'center';
+    align-items: 'center';
+  }
+  
