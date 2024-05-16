@@ -10,16 +10,20 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
-  color: #11181C;
 }
-.card-sub-title{
+.card-sub-title-light{
   color: #000000 !important;
 }
 .card-title{
   font-size: 18px;
   line-height: 28px;
   font-weight: 500;
-  color: #11181C;
+}
+
+.form-label-light,
+.card-title-light,
+.foreign-key-sub-title-light{
+  color: #11181C !important;
 }
 
 .edit-row-dropdown {
