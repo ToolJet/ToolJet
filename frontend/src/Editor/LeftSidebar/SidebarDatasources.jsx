@@ -272,13 +272,6 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
                       We are deprecating local data sources soon. Please migrate local data sources to global data
                       sources immediately to safeguard your applications from this breaking change. Refer to the
                       migration guide &nbsp;{' '}
-                      <a
-                        href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Here
-                      </a>
                     </p>
                   </div>
                 </Alert>
