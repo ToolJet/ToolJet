@@ -1,32 +1,70 @@
-import * as React from "react";
-import { Switch } from "./switch";
+import * as React from 'react';
+import { Switch } from './switch';
 
 // Storybook configuration
 export default {
-  title: "Components/Switch",
+  title: 'Components/Switch',
   component: Switch,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
   argTypes: {
     checked: {
-      control: "boolean",
+      control: 'boolean',
     },
     disabled: {
-      control: "boolean",
+      control: 'boolean',
     },
     label: {
-        control: "text",
+      control: 'text',
+    },
+    helper: {
+      control: 'text',
+    },
+    size: {
+      options: ['default', 'large'],
+      control: 'radio',
+    },
+    align: {
+      options: ['left', 'right'],
+      control: 'radio',
     },
     required: {
-      control: "boolean",
+      control: 'boolean',
     },
   },
 };
 
-export const RocketSwitch = {};
+const Template = (args) => <Switch {...args} />;
 
-export const RocketSwitchWithLabel = {};
+export const RocketSwitch = Template.bind({});
+RocketSwitch.args = {};
 
-export const RocketSwitchWithLabelAndHelper = {};
+export const RocketSwitchWithLabel = (args) => {
+  return <Switch {...args} label="Remember me" />;
+};
+RocketSwitchWithLabel.args = {
+  ...RocketSwitch.args,
+};
+
+export const RocketSwitchWithLeadingLabel = (args) => {
+  return <Switch {...args} label="Remember me" align="right" />;
+};
+RocketSwitchWithLeadingLabel.args = {
+  ...RocketSwitch.args,
+};
+
+export const RocketSwitchWithLabelAndHelper = (args) => {
+  return <Switch {...args} label="Remember me" helper="Save my login details for next time." />;
+};
+RocketSwitchWithLabelAndHelper.args = {
+  ...RocketSwitch.args,
+};
+
+export const RocketSwitchWithLeadingLabelAndHelper = (args) => {
+  return <Switch {...args} label="Remember me" helper="Save my login details for next time." align="right" />;
+};
+RocketSwitchWithLeadingLabelAndHelper.args = {
+  ...RocketSwitch.args,
+};
