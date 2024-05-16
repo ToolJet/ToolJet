@@ -23,10 +23,16 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
       .flat();
   }
 
+  const deprecatedWorkspaceVarsHints = ['client', 'server'];
+
   const appHints = hints['appHints'].filter((cm) => {
     const { hint } = cm;
 
     if (hint.includes('actions') || hint.endsWith('run()')) {
+      return false;
+    }
+
+    if (deprecatedWorkspaceVarsHints.includes(hint)) {
       return false;
     }
 

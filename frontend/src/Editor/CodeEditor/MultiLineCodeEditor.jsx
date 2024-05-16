@@ -129,6 +129,8 @@ const MultiLineCodeEditor = (props) => {
       null,
       nearestSubstring
     ).map((hint) => {
+      if (hint.label.startsWith('client') || hint.label.startsWith('server')) return;
+
       delete hint['apply'];
 
       hint.apply = (view, completion, from, to) => {
