@@ -52,9 +52,13 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
   });
 
-  const queryInput = originalQueryInput || input;
-
-  const suggestions = generateHints([...jsHints, ...autoSuggestionList], totalReferences, queryInput);
+  const searchInput = input.replace(/{{|}}/g, '');
+  const suggestions = generateHints(
+    [...jsHints, ...autoSuggestionList],
+    totalReferences,
+    originalQueryInput,
+    searchInput
+  );
   return orderSuggestions(suggestions, fieldType);
 };
 
@@ -68,7 +72,7 @@ function orderSuggestions(suggestions, validationType) {
   return [...matchingSuggestions, ...otherSuggestions];
 }
 
-export const generateHints = (hints, totalReferences = 1, input) => {
+export const generateHints = (hints, totalReferences = 1, input, searchText) => {
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
@@ -94,7 +98,7 @@ export const generateHints = (hints, totalReferences = 1, input) => {
         const doc = view.state.doc;
         const { from: _, to: end } = doc.lineAt(from);
         const actualStartIndex = input.lastIndexOf('{{');
-        // console.log('---arpit:: check', { actualStartIndex, end, to });
+
         const pickedFrom =
           actualStartIndex === 0 && end - to > 2 ? from - currentWord.length : actualStartIndex + (end - to);
         const pickedCompletionConfig = {
@@ -109,11 +113,17 @@ export const generateHints = (hints, totalReferences = 1, input) => {
           pickedCompletionConfig.from = from;
         }
 
-        if (totalReferences > 1 && completion.type !== 'js_methods') {
+        const multiReferenceInSingleIndentifier = totalReferences == 1 && searchText !== currentWord;
+
+        if (multiReferenceInSingleIndentifier) {
+          const splitAtSearchString = doc.toString().split(searchText)[0];
+          const newFrom = splitAtSearchString.length;
+
+          pickedCompletionConfig.from = newFrom;
+        } else if (totalReferences > 1 && completion.type !== 'js_methods') {
           const splitIndex = from;
           const substring = doc.toString().substring(0, splitIndex).split('{{').pop();
 
-          console.log('--arpit:: currentWord', { actualStartIndex, from, end, to, substring });
           pickedCompletionConfig.from = from - substring.length;
         }
 
