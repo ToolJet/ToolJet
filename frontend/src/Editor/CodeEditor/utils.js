@@ -97,7 +97,7 @@ export const createJavaScriptSuggestions = () => {
   return allMethods;
 };
 
-const resolveWorkspaceVariables = (query, state) => {
+const resolveWorkspaceVariables = (query) => {
   let resolvedStr = query;
   let error = null;
   let valid = false;

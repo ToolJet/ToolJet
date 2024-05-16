@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { computeCoercion, getCurrentNodeType, resolveReferences } from './utils';
-import { EditorContext } from '../Context/EditorContextWrapper';
 import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';

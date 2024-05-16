@@ -8,7 +8,6 @@ import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
@@ -80,7 +79,6 @@ const DraggableBox = React.memo(
       }),
       shallow
     );
-    const currentState = useCurrentState();
 
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
@@ -180,7 +178,7 @@ const DraggableBox = React.memo(
                 e.stopPropagation();
               }
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={() => {
               if (useGridStore.getState().draggingComponentId) return;
               setHoveredComponent('');
             }}
