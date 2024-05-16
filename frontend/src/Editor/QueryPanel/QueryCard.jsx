@@ -118,7 +118,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
                   <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
                     Important <br />
                     Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
-                    Check Documentation for Help
                   </Tooltip>
                 </>
               )}
