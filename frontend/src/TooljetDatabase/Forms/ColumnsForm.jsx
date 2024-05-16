@@ -68,7 +68,7 @@ const ColumnsForm = ({
   return (
     <div className="create-column-drawer">
       <div className="card-header">
-        <h3 className="card-title" data-cy="add-columns-header">
+        <h3 className="card-sub-title" data-cy="add-columns-header">
           Table schema
         </h3>
       </div>
