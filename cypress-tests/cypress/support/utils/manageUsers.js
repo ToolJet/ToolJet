@@ -122,7 +122,7 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
-
+  cy.wait(3000)
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
   cy.get(usersSelector.buttonDownloadTemplate).click();
   cy.wait(4000)

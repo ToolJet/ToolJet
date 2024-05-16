@@ -731,23 +731,6 @@ export const retrieveWhiteLabelText = () => {
   return custom_label ? custom_label : defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
 };
 
-export const pageTitles = {
-  INSTANCE_SETTINGS: 'Settings',
-  WORKSPACE_SETTINGS: 'Workspace settings',
-  INTEGRATIONS: 'Marketplace',
-  WORKFLOWS: 'Workflows',
-  DATABASE: 'Database',
-  DATA_SOURCES: 'Data sources',
-  AUDIT_LOGS: 'Audit logs',
-  ACCOUNT_SETTINGS: 'Profile settings',
-  SETTINGS: 'Profile settings',
-  EDITOR: 'Editor',
-  WORKFLOW_EDITOR: 'workflowEditor',
-  VIEWER: 'Viewer',
-  DASHBOARD: 'Dashboard',
-  WORKSPACE_CONSTANTS: 'Workspace constants',
-};
-
 export const fetchAndSetWindowTitle = async (pageDetails) => {
   const whiteLabelText = `${retrieveWhiteLabelText()}`;
   let pageTitleKey = pageDetails?.page || '';
@@ -1372,3 +1355,68 @@ export const humanizeifDefaultGroupName = (groupName) => {
       return groupName;
   }
 };
+
+export const pageTitles = {
+  INSTANCE_SETTINGS: 'Settings',
+  WORKSPACE_SETTINGS: 'Workspace settings',
+  INTEGRATIONS: 'Marketplace',
+  WORKFLOWS: 'Workflows',
+  DATABASE: 'Database',
+  DATA_SOURCES: 'Data sources',
+  AUDIT_LOGS: 'Audit logs',
+  ACCOUNT_SETTINGS: 'Profile settings',
+  SETTINGS: 'Profile settings',
+  EDITOR: 'Editor',
+  WORKFLOW_EDITOR: 'workflowEditor',
+  VIEWER: 'Viewer',
+  DASHBOARD: 'Dashboard',
+  WORKSPACE_CONSTANTS: 'Workspace constants',
+};
+
+export const setWindowTitle = async (pageDetails, location) => {
+  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  const pathToTitle = {
+    'instance-settings': pageTitles.INSTANCE_SETTINGS,
+    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
+    integrations: pageTitles.INTEGRATIONS,
+    workflows: pageTitles.WORKFLOWS,
+    database: pageTitles.DATABASE,
+    'data-sources': pageTitles.DATA_SOURCES,
+    'audit-logs': pageTitles.AUDIT_LOGS,
+    'account-settings': pageTitles.ACCOUNT_SETTINGS,
+    settings: pageTitles.SETTINGS,
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+  };
+  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
+    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
+  }
+  switch (pageTitleKey) {
+    case pageTitles.VIEWER: {
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
+    }
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
+    }
+    default: {
+      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
+      break;
+    }
+  }
+  if (pageTitle) {
+    document.title = !(pageDetails?.preview === false)
+      ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
+      : `${pageTitle}`;
+  }
+};
+
+//For <>& UI display issues
+export function decodeEntities(encodedString) {
+  return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
+}

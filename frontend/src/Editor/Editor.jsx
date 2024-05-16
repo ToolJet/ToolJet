@@ -82,7 +82,7 @@ import AutoLayoutAlert from './AutoLayoutAlert';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
-import { decimalToHex, EditorConstants } from './editorConstants';
+import { decimalToHex, EditorConstants, maskedWorkspaceConstantStr } from './editorConstants';
 import {
   findComponentsWithReferences,
   handleLowPriorityWork,
@@ -451,7 +451,7 @@ const EditorComponent = (props) => {
       const orgConstants = {};
 
       constants.map((constant) => {
-        orgConstants[constant.name] = constant.value;
+        orgConstants[constant.name] = maskedWorkspaceConstantStr;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({

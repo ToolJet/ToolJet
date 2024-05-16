@@ -3,7 +3,7 @@ import Select, { components } from 'react-select';
 import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -13,7 +13,6 @@ import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 import { canCreateDataSource } from '@/_helpers';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
@@ -93,10 +92,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
                 key={source.id}
                 className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
                 data-tooltip-id="tooltip-for-add-query-dd-option"
-                data-tooltip-content={source.name}
+                data-tooltip-content={decodeEntities(source.name)}
                 data-cy={`ds-${source.name.toLowerCase()}`}
               >
-                {source.name}
+                {decodeEntities(source.name)}
                 <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
               </div>
             ),

@@ -200,7 +200,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const fetchConstantsAndEnvironments = async () => {
-    const orgConstants = await orgEnvironmentConstantService.getAll();
+    const orgConstants = await orgEnvironmentConstantService.getAll(true);
 
     if (orgConstants?.constants?.length > 1) {
       orgConstants.constants.sort((a, b) => {

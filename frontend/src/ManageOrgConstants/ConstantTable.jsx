@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { Tooltip } from 'react-tooltip';
+import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
+import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 
 const ConstantTable = ({
   constants = [],
@@ -10,6 +12,19 @@ const ConstantTable = ({
   isLoading = false,
 }) => {
   const tableRef = React.createRef(null);
+  const [showValues, setShowValues] = useState({});
+  const toggleShowValue = (id) => {
+    setShowValues((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const displayValue = (constant) => {
+    return String(constant.value).length > (canUpdateDeleteConstant ? 30 : 50)
+      ? String(constant.value).substring(0, canUpdateDeleteConstant ? 30 : 50) + '...'
+      : constant.value;
+  };
 
   const calculateOffset = () => {
     const elementHeight = tableRef.current.getBoundingClientRect().top;
@@ -53,7 +68,6 @@ const ConstantTable = ({
               </tbody>
             ) : (
               <tbody>
-                <Tooltip id="tooltip-for-org-constant-cell" />
                 {constants.map((constant) => (
                   <tr key={constant.id}>
                     <td className="p-3">
@@ -67,18 +81,12 @@ const ConstantTable = ({
                           : constant.name}
                       </span>
                     </td>
-                    <td className="text-muted p-3">
+                    <td className="text-muted p-3" style={{ width: '350px' }}>
                       <a
                         className="text-reset user-email"
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
-                        data-tooltip-id="tooltip-for-org-constant-cell"
-                        data-tooltip-content={constant.value}
-                        data-tooltip-offset={5}
-                        data-tooltip-place={constant.value.length > 50 ? 'right' : 'bottom'}
                       >
-                        {String(constant.value).length > (canUpdateDeleteConstant ? 30 : 50)
-                          ? String(constant.value).substring(0, canUpdateDeleteConstant ? 30 : 50) + '...'
-                          : constant.value}
+                        {!showValues[constant.id] ? '*'.repeat(displayValue(constant).length) : displayValue(constant)}
                       </a>
                     </td>
 
@@ -88,6 +96,36 @@ const ConstantTable = ({
                           style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
                           data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
                         >
+                          <div
+                            onClick={() => toggleShowValue(constant.id)}
+                            data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-constant-visibility`}
+                          >
+                            {!showValues[constant.id] ? (
+                              <EyeHide
+                                fill={
+                                  darkMode
+                                    ? String(constant.value)?.length
+                                      ? '#D1D5DB'
+                                      : '#656565'
+                                    : String(constant.value)?.length
+                                    ? '#384151'
+                                    : '#D1D5DB'
+                                }
+                              />
+                            ) : (
+                              <EyeShow
+                                fill={
+                                  darkMode
+                                    ? String(constant.value)?.length
+                                      ? '#D1D5DB'
+                                      : '#656565'
+                                    : String(constant.value)?.length
+                                    ? '#384151'
+                                    : '#D1D5DB'
+                                }
+                              />
+                            )}
+                          </div>
                           <ButtonSolid
                             variant="secondary"
                             style={{ minWidth: '100px' }}
