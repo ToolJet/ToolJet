@@ -298,7 +298,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   }
 
   if (!validationSchema || isEmpty(validationSchema)) {
-    return [true, error, resolvedValue];
+    return [true, error, resolvedValue, resolvedValue];
   }
 
   if (error) {
