@@ -86,6 +86,7 @@ export class TooljetDbImportExportService {
 
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       return { tableNameMapping, tooljet_database: tjdbDatabase };
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();

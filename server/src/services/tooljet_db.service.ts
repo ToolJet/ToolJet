@@ -308,9 +308,9 @@ export class TooljetDbService {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
 
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (queryRunner?.transactionDepth < 1) await queryRunner.release();
+      if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (tjdbQueryRunner?.transactionDepth < 1) await tjdbQueryRunner.release();
+      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -984,7 +984,7 @@ export class TooljetDbService {
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (tjdbQueryRunner?.transactionDepth < 1) await tjdbQueryRunner.release();
+      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
 
       return { statusCode: 200, message: 'Foreign key relation created successfully!' };
     } catch (err) {
