@@ -267,9 +267,17 @@ class RawManageOrgVarsComponent extends React.Component {
           make the switch to Workspace constants
         </div>
       ) : (
-        <div className="text-muted">
-          Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use Workspace constant
-          instead.
+        <div className="text-muted p-3">
+          We have launched workspace constants and sunsetting workspace variables very soon. Please migrate workspace
+          variables immediately to safeguard your applications from this breaking change. Please refer to the migration
+          guide{' '}
+          <a
+            href="https://docs.tooljet.com/docs/org-management/workspaces/workspace-variables-migration"
+            target="_blank"
+            rel="noreferrer"
+          >
+            here
+          </a>
         </div>
       );
 
