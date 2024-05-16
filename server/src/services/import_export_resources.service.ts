@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { AppImportExportService } from './app_import_export.service';
@@ -10,6 +10,8 @@ import { isEmpty } from 'lodash';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { transformTjdbImportDto } from 'src/helpers/tjdb_dto_transforms';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class ImportExportResourcesService {
@@ -17,7 +19,12 @@ export class ImportExportResourcesService {
     private readonly appImportExportService: AppImportExportService,
     private readonly appsService: AppsService,
     private readonly tooljetDbImportExportService: TooljetDbImportExportService,
-    private readonly auditLoggerService: AuditLoggerService
+    private readonly auditLoggerService: AuditLoggerService,
+    // TODO: remove optional decorator when
+    // ENABLE_TOOLJET_DB flag is deprecated
+    @Optional()
+    @InjectEntityManager('tooljetDb')
+    private readonly tooljetDbManager: EntityManager
   ) {}
 
   async export(user: User, exportResourcesDto: ExportResourcesDto) {
@@ -63,6 +70,8 @@ export class ImportExportResourcesService {
         tableNameMapping[tjdbImportDto.id] = createdTable;
         imports.tooljet_database.push(createdTable);
       }
+
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     }
 
     if (importResourcesDto.app) {
