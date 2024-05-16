@@ -4,6 +4,24 @@
   }
 }
 
+.form-label,
+.card-sub-title,
+.foreign-key-sub-title{
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #11181C;
+}
+.card-sub-title{
+  color: #000000 !important;
+}
+.card-title{
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+  color: #11181C;
+}
+
 .edit-row-dropdown {
   height: 36px !important;
 
