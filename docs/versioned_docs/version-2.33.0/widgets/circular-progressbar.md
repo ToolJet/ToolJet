@@ -4,13 +4,7 @@ title: Circular Progressbar
 ---
 # Circular Progressbar
 
-Circular Progressbar widget can be used to show progress in a progress circle.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/circular-progressbar/cpb-v2.png" alt="ToolJet - Widget Reference - Circular progress bar" />
-
-</div>
+The Circular Progressbar component can be used to show progress in a progress circle.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -48,7 +42,7 @@ There are currently no exposed variables for the component.
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
 Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
