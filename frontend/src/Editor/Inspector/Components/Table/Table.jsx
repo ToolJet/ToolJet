@@ -172,7 +172,7 @@ class TableComponent extends React.Component {
         style={{
           width: '280px',
           maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
-          // overflowY: 'auto',
+          overflowY: 'auto',
           zIndex: '9999',
         }}
       >
