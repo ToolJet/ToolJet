@@ -161,16 +161,6 @@ A foreign key relation refers to linking one column or set of columns of the cur
 ### Exception
 - The foreign key created with a column having integer data type in the source table can also reference a column of serial data type in the target table.
 
-### Available Actions
-
-| Option | Description |
-| --- | --- |
-| No Action | If a row in the target table is updated, it will throw an error if there are rows in the source table referencing it. |
-| Cascade | Updates to rows in the target table will be reflected in the corresponding rows of the source table that reference it. |
-| Restrict | No updates can be made to the target table. |
-| Set to NULL | If a default value is present, this option will set the foreign key value in the source table to NULL. |
-| Set to Default | If a default value is present, this option will set the foreign key value in the source table to the default value of the column. |
-
 ### Creating Foreign Key
 
 While creating/editing a table(target), you will be able to add one or more than one Foreign Keys referencing the column(s) of other existing(source) tables.
@@ -188,6 +178,16 @@ To create a Foreign Key relationship, follow these steps:
 
 
 </div>
+
+### Available Actions
+
+| Option | Description |
+| --- | --- |
+| No Action | If a row in the target table is updated, it will throw an error if there are rows in the source table referencing it. |
+| Cascade | Updates to rows in the target table will be reflected in the corresponding rows of the source table that reference it. |
+| Restrict | No updates can be made to the target table. |
+| Set to NULL | If a default value is present, this option will set the foreign key value in the source table to NULL. |
+| Set to Default | If a default value is present, this option will set the foreign key value in the source table to the default value of the column. |
 
 ### Referential Integrity
 
