@@ -148,13 +148,6 @@ You cannot delete a Primary Key of a target table if it is being used as a forei
 
 A foreign key relation refers to linking one column or set of columns of the current table with one column or set of columns in an existing table. This relationship establishes a connection between the two tables, enabling the current source table to reference the existing target table. While creating a Foreign Key relationship, you can select the desired [action](#available-actions) to be performed on the source row when the referenced(target) row is updated or deleted.
 
-<!-- ### Limitations
-- Self-references are not allowed i.e. Target table and Source table cannot be the same.
-- The target table must contain a column having the same data type as the column in the source table.
-- No foreign key can be created with a column of serial data type in the source table.
-- The foreign key created with a column having integer data type in the source table can also reference a column of serial data type in the target table.
-- The source table must already exist before creating the Foreign Key relationship. -->
-
 ### Constraints
 - The target table must contain a column having the same data type as the column in the source table.
 - The column that has to be referenced in the target table must have Unique constraint explicitly.
@@ -195,6 +188,23 @@ To create a Foreign Key relationship, follow these steps:
 
 
 </div>
+
+### Referential Integrity
+
+The foreign key constraint ensures referential integrity between the source and target tables. This constraint enforces that the foreign key column in the source table has one of the unique values present in the foreign key column in the target table. <br/>
+- When creating a new row in the source table the column with the foreign key relation will have a dropdown with the unique values present in the target table. This ensures that the data in the source table is always consistent with the data in the target table. 
+- On the bottom of the dropdown, there is a button to **Open referenced table** which will take you to the target table.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/create-new-row-fk.png" alt="ToolJet database" />
+</div>
+
+- When editing the value of a foreign key cell in an existing row of the source table, the dropdown will show the unique values present in the target table. This ensures that even when the data in the source table is being updated, it is always consistent with the data in the target table.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/edit-row-fk.png" alt="ToolJet database" />
+</div>
+
 
 ### Example
 
