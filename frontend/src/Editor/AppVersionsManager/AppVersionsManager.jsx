@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { decodeEntities } from '@/_helpers/utils';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
@@ -80,7 +81,7 @@ export const AppVersionsManager = function ({
       .del(appId, versionId)
       .then(() => {
         toast.dismiss(deleteingToastId);
-        toast.success(`Version - ${versionName} Deleted`);
+        toast.success(`Version - ${decodeEntities(versionName)} Deleted`);
         resetDeleteModal();
         setGetAppVersionStatus(appVersionLoadingStatus.loading);
       })
@@ -111,7 +112,7 @@ export const AppVersionsManager = function ({
             })}
             style={{ maxWidth: '100%' }}
           >
-            {appVersion.name}
+            {decodeEntities(appVersion.name)}
           </div>
         </div>
         {isEditable && appVersion.id !== releasedVersionId && (
