@@ -67,6 +67,17 @@ This operation deletes a record in the table. You can delete a single record or 
 
 </div>
 
+### Modifying Tables with Foreign Key Constraints
+
+When you are creating, updating, or deleting records in a table that has a foreign key constraint, you need to ensure that the foreign key constraint is not violated. 
+- If you are trying to create/update a new row in the source table, you need to ensure that the foreign key value exists in the target table. Otherwise, the operation will fail with an error message.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/violate-fk.gif" alt="ToolJet database"/>
+</div>
+
+- Similarly, if you are trying to delete a row in the target table, you need to ensure that the foreign key value is not being referenced in the source table.
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Join Tables
