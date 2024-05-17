@@ -19,7 +19,7 @@ import { DataSourcesService } from '../../src/services/data_sources.service';
 import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppsService } from '@services/apps.service';
-import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
+import { CreateDataQueryDto, UpdateDataQueryDto, UpdatingReferencesOptionsDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
 import { decode } from 'js-base64';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
@@ -212,6 +212,21 @@ export class DataQueriesController {
     return decamelizedQuery;
   }
 
+  //* On Updating references, need update the options of multiple queries
+  @UseGuards(JwtAuthGuard)
+  @Patch()
+  async bulkUpdate(@User() user, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
+    const appVersionId = updatingReferencesOptions.app_version_id;
+    const app = await this.appsService.findAppFromVersion(appVersionId);
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+    if (!ability.can('getQueries', app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    return await this.dataQueriesService.bulkUpdateQueryOptions(updatingReferencesOptions.data_queries_options);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') dataQueryId) {
@@ -383,19 +398,33 @@ export class DataQueriesController {
   }
 
   async validateQueryActionsAgainstEnvironment(organizationId: string, appVersionId: string, errorMessage: string) {
-    if (appVersionId) {
-      const environments: AppEnvironment[] = await AppEnvironment.find({
-        where: {
-          organizationId,
-        },
-      });
-      const appVersion: AppVersion = await this.appsService.findVersion(appVersionId);
-      const currentEnvironment: AppEnvironment = environments.find(
-        (environment) => environment.id === appVersion.currentEnvironmentId
-      );
-      if (environments?.length > 1 && currentEnvironment.priority !== 1) {
-        throw new BadRequestException(errorMessage);
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (appVersionId) {
+        const environmentsCount = await manager.count(AppEnvironment, {
+          where: {
+            organizationId,
+          },
+        });
+        const currentEnvironment = await manager
+          .createQueryBuilder('app_versions', 'av')
+          .select('ae.*')
+          .innerJoin('app_environments', 'ae', 'av.current_environment_id = ae.id')
+          .where('av.id = :id', { id: appVersionId })
+          .getRawOne();
+        //TODO: Remove this once the currentEnvironment nul intermittent issue is completly fixed.
+        if (!currentEnvironment) {
+          const appVersion = await manager.findOne(AppVersion, {
+            where: {
+              id: appVersionId,
+            },
+          });
+          console.log('ERROR_CURRENT_ENVIRONMENT_NULL_FOR_QUERY_CREATION', appVersion);
+        }
+        const isPromotedVersion = environmentsCount > 1 && currentEnvironment && currentEnvironment?.priority !== 1;
+        if (isPromotedVersion) {
+          throw new BadRequestException(errorMessage);
+        }
       }
-    }
+    });
   }
 }

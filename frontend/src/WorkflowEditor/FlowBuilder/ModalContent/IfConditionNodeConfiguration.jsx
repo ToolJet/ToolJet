@@ -1,5 +1,5 @@
 import React from 'react';
-import { CodeHinter } from '../../../Editor/CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export default function IfConditionNodeConfiguration({ node, darkMode, editorSessionActions }) {
   return (

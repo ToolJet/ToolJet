@@ -27,7 +27,6 @@ $border-radius: 4px;
       }
 
       .card-header {
-        // background-color: var(--slate3);
         height: 28px;
         border-radius: 4px;
         color: var(--slate11);
@@ -535,7 +534,7 @@ $border-radius: 4px;
         }
 
         .delete-field-option {
-          height: 34px;
+          height: 32.2px;
           flex: 0 0 28px;
           background: #ffffff;
           width: 34px;
@@ -1197,6 +1196,11 @@ $border-radius: 4px;
   .transformation-editor {
     margin-top: 28px;
 
+    .transformation-container {
+      min-width: 470px !important;
+      width: 100% !important;
+    }
+
     &>div.rounded-3 {
       padding: 0 24px !important;
     }
@@ -1224,14 +1228,9 @@ $border-radius: 4px;
   }
 
   .runjs-editor {
-    background-color: var(--base) !important;
-    border: 1px solid var(--slate5);
-    border-radius: 6px;
-
     .card-header {
       background-color: var(--slate1);
       color: var(--slate9);
-      border-radius: 6px 6px 0px 0px;
     }
 
     .CodeMirror-scroll,
@@ -1651,8 +1650,8 @@ $border-radius: 4px;
 }
 
 .copilot-section-header {
-  background-color: var(--slate2);
-  border: 1px solid var(--slate5);
+  background-color: var(--surfaces-surface-01);
+  border: 1px solid var(--borders-disabled-on-white);
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
 }
@@ -1664,12 +1663,15 @@ $border-radius: 4px;
 }
 
 .query-hinter {
-  border: 1px solid var(--slate5);
   border-radius: 0px 0px 6px 6px;
 
   .cm-s-base16-light.CodeMirror,
   .CodeMirror-scroll,
   .CodeMirror-gutters {
     background-color: var(--slate3) !important;
+  }
+
+  .cm-scroller {
+    border-bottom-left-radius: 4px;
   }
 }

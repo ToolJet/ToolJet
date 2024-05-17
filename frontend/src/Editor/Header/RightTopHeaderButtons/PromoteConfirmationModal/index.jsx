@@ -9,18 +9,23 @@ import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
 import '@/_styles/versions.scss';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
+import { shallow } from 'zustand/shallow';
 
 export default function EnvironmontConfirmationModal(props) {
-  const { data, editingVersion, onEnvChange, onClose, fetchEnvironments } = props;
-
-  //TODO: Bug when creating a new version, the app_id is not set in the version object instead it is set as appId.
-
-  const { appId } = useAppInfo();
+  const { data, editingVersion, appEnvironmentChanged, onClose } = props;
   const [promtingEnvirontment, setPromtingEnvirontment] = useState(false);
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(data);
   const { t } = useTranslation();
   const { current_organization_id } = authenticationService.currentSessionValue;
+
+  const { promoteAppVersionAction } = useEnvironmentsAndVersionsStore(
+    (state) => ({
+      promoteAppVersionAction: state.actions.promoteAppVersionAction,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     setShow(data);
@@ -35,41 +40,40 @@ export default function EnvironmontConfirmationModal(props) {
   const handleConfirm = () => {
     setPromtingEnvirontment(true);
 
-    appVersionService
-      .promoteEnvironment(appId, editingVersion?.id, data.current.id)
-      .then(async () => {
+    promoteAppVersionAction(
+      editingVersion?.id,
+      async (response) => {
         toast.success(`${editingVersion.name} has been promoted to ${data.target.name}!`);
-        fetchEnvironments();
-        if (data?.current?.name == 'development') {
-          try {
-            const gitData = await gitSyncService.getAppConfig(current_organization_id, editingVersion?.id);
-            const appGit = gitData?.app_git;
-            const body = {
-              gitAppName: appGit?.git_app_name,
-              versionId: editingVersion?.id,
-              lastCommitMessage: ` ${editingVersion.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
-              gitVersionName: editingVersion?.name,
-            };
-            await gitSyncService.gitPush(body, appGit?.id, editingVersion?.id);
-            toast.success('Changes committed successfully');
-          } catch (err) {
-            const status = err?.statusCode;
-            const error = err?.error;
-            if (!(status === 404 && error === 'Git Configuration not found')) {
-              toast.error(err?.error);
-            }
-          }
-        }
-        onEnvChange(data.target);
-        useAppVersionStore.getState().actions.setAppVersionCurrentEnvironment(data.target);
+        // if (data?.current?.name == 'development') {
+        //   try {
+        //     const gitData = await gitSyncService.getAppConfig(current_organization_id, editingVersion?.id);
+        //     const appGit = gitData?.app_git;
+        //     const body = {
+        //       gitAppName: appGit?.git_app_name,
+        //       versionId: editingVersion?.id,
+        //       lastCommitMessage: ` ${editingVersion.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
+        //       gitVersionName: editingVersion?.name,
+        //     };
+        //     await gitSyncService.gitPush(body, appGit?.id, editingVersion?.id);
+        //     toast.success('Changes committed successfully');
+        //   } catch (err) {
+        //     const status = err?.statusCode;
+        //     const error = err?.error;
+        //     if (!(status === 404 && error === 'Git Configuration not found')) {
+        //       toast.error(err?.error);
+        //     }
+        //   }
+        // }
+        appEnvironmentChanged(response, true);
         setPromtingEnvirontment(false);
         onClose();
-      })
-      .catch((error) => {
+      },
+      (error) => {
         console.error(error);
         toast.error(`${editingVersion.name} could not be promoted to ${data.target.name}. Please try again!`);
         setPromtingEnvirontment(false);
-      });
+      }
+    );
   };
 
   if (!editingVersion) return null;

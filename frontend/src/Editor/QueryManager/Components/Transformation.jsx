@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import 'codemirror/theme/base16-light.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/hint/show-hint';
-import 'codemirror/addon/search/match-highlighter';
-import 'codemirror/addon/hint/show-hint.css';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { getRecommendation } from '@/Editor/CodeBuilder/utils';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +13,7 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -198,81 +193,79 @@ return data.filter(row => row.amount > 1000);
       <br></br>
       <div className="d-flex copilot-codehinter-wrap">
         <div className="form-label"></div>
-        <div className="col flex-grow-1">
-          {enableTransformation && (
-            <div
-              className="rounded-3"
-              style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
-            >
-              <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
-                <div className="d-flex">
-                  <div className="d-flex align-items-center border transformation-language-select-wrapper">
-                    <span className="px-2">Language</span>
-                  </div>
-                  <Select
-                    options={[
-                      { name: 'JavaScript', value: 'javascript' },
-                      { name: 'Python', value: 'python' },
-                    ]}
-                    value={lang}
-                    search={true}
-                    onChange={(value) => {
-                      setLang(value);
-                      changeOption('transformationLanguage', value);
-                      changeOption('transformation', state[value]);
-                    }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={computeSelectStyles(darkMode, 140)}
-                    useCustomStyles={true}
-                  />
-                </div>
-                <div
-                  data-tooltip-id="tooltip-for-active-copilot"
-                  data-tooltip-content="Activate Copilot in the workspace settings"
-                >
-                  <Button
-                    onClick={handleCallToGPT}
-                    darkMode={darkMode}
-                    size="sm"
-                    classNames={`${fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
-                    styles={{
-                      width: '100%',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      borderColor: darkMode && 'transparent',
-                    }}
-                    disabled={!isCopilotEnabled}
-                  >
-                    <Button.Content title={'Generate code'} />
-                  </Button>
-                </div>
 
-                {!isCopilotEnabled && (
-                  <ReactTooltip
-                    id="tooltip-for-active-copilot"
-                    className="tooltip"
-                    style={{ backgroundColor: '#e6eefe', color: '#222' }}
-                  />
-                )}
+        {enableTransformation && (
+          <div
+            className="transformation-container"
+            style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
+          >
+            <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
+              <div className="d-flex">
+                <div className="d-flex align-items-center border transformation-language-select-wrapper">
+                  <span className="px-2">Language</span>
+                </div>
+                <Select
+                  options={[
+                    { name: 'JavaScript', value: 'javascript' },
+                    { name: 'Python', value: 'python' },
+                  ]}
+                  value={lang}
+                  search={true}
+                  onChange={(value) => {
+                    setLang(value);
+                    changeOption('transformationLanguage', value);
+                    changeOption('transformation', state[value]);
+                  }}
+                  placeholder={t('globals.select', 'Select') + '...'}
+                  styles={computeSelectStyles(darkMode, 140)}
+                  useCustomStyles={true}
+                />
               </div>
-              <div className="codehinter-border-bottom mx-3"></div>
-              <CodeHinter
-                initialValue={state[lang]}
-                mode={lang}
-                theme={darkMode ? 'monokai' : 'base16-light'}
-                lineNumbers={true}
-                height={'300px'}
-                className="query-hinter"
-                ignoreBraces={true}
-                onChange={(value) => changeOption('transformation', value)}
-                componentName={`transformation`}
-                cyLabel={'transformation-input'}
-                callgpt={handleCallToGPT}
-                isCopilotEnabled={isCopilotEnabled}
-              />
+              <div
+                data-tooltip-id="tooltip-for-active-copilot"
+                data-tooltip-content="Activate Copilot in the workspace settings"
+              >
+                <Button
+                  onClick={handleCallToGPT}
+                  darkMode={darkMode}
+                  size="sm"
+                  classNames={`${fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
+                  styles={{
+                    width: '100%',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    borderColor: darkMode && 'transparent',
+                  }}
+                  disabled={!isCopilotEnabled}
+                >
+                  <Button.Content title={'Generate code'} />
+                </Button>
+              </div>
+
+              {!isCopilotEnabled && (
+                <ReactTooltip
+                  id="tooltip-for-active-copilot"
+                  className="tooltip"
+                  style={{ backgroundColor: '#e6eefe', color: '#222' }}
+                />
+              )}
             </div>
-          )}
-        </div>
+            <div className="codehinter-border-bottom mx-3"></div>
+            <CodeHinter
+              type="multiline"
+              initialValue={state[lang] ?? ''}
+              lang={lang}
+              lineNumbers={true}
+              height={400}
+              className="query-hinter"
+              onChange={(value) => changeOption('transformation', value)}
+              componentName={`transformation`}
+              cyLabel={'transformation-input'}
+              callgpt={handleCallToGPT}
+              isCopilotEnabled={isCopilotEnabled}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

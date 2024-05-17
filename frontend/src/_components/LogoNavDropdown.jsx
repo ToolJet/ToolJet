@@ -5,17 +5,14 @@ import { authenticationService } from '@/_services';
 import { getPrivateRoute, redirectToDashboard } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
-import { useEditorActions } from '@/_stores/editorStore';
 
 export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
   const { admin } = authenticationService?.currentSessionValue ?? {};
   const isWorkflows = type === 'workflows';
   const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
-  const { updateEditorState } = useEditorActions();
 
   const handleBackClick = (e) => {
     e.preventDefault();
-    updateEditorState({ isLoading: true });
     // Force a reload for clearing interval triggers
     redirectToDashboard();
   };

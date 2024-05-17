@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import { LicenseBanner } from '@/LicenseBanner';
 import { licenseService, customStylesService } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -86,14 +86,13 @@ export default function CustomStylesEditor({ darkMode }) {
               </div>
               <div className="w-100 p-4 custom-css-input-container">
                 <CodeHinter
-                  currentState={styles}
+                  type="multiline"
                   initialValue={!disabled ? styles : ''}
-                  mode="css"
-                  theme={darkMode ? 'monokai' : 'base16-light'}
-                  height={700}
+                  lang="css"
+                  className="query-hinter"
                   onChange={(value) => setStyles(value)}
-                  enablePreview={false}
-                  disabled={disabled}
+                  componentName="cusotmStyles"
+                  cyLabel={`custom-styles`}
                   placeholder={disabled ? styles : ''}
                 />
                 <div className="w-100 mt-2 custom-css-input-container org-settings-info small p-3 mb-3 rounded d-flex">

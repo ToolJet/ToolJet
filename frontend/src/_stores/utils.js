@@ -218,6 +218,9 @@ const computePageUpdate = (appDiff, currentPageId, opts) => {
     } else if (opts.includes('pageDefinitionChanged')) {
       updateDiff = appDiff?.pages[currentPageId];
 
+      //remove invalid diffs that are added to pageDiff
+      delete updateDiff.components;
+
       type = updateType.pageDefinitionChanged;
 
       if (opts.includes('addNewPage')) {
@@ -348,67 +351,144 @@ function toRemoveExposedvariablesFromComponentDiff(object) {
   return copy;
 }
 
-export function isPDFSupported() {
-  const browser = getBrowserUserAgent();
-
-  if (!browser) {
-    return true;
+export function createReferencesLookup(refState, forQueryParams = false, initalLoad = false) {
+  if (forQueryParams && _.isEmpty(refState['parameters'])) {
+    return { suggestionList: [] };
   }
 
-  const isChrome = browser.name === 'Chrome' && browser.major >= 92;
-  const isEdge = browser.name === 'Edge' && browser.major >= 92;
-  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
-  const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
+  const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
-  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
+  const state = _.cloneDeep(refState);
+  const queries = forQueryParams ? {} : state['queries'];
+  const actions = initalLoad
+    ? [
+        'runQuery',
+        'setVariable',
+        'unSetVariable',
+        'showAlert',
+        'logout',
+        'showModal',
+        'closeModal',
+        'setLocalStorage',
+        'copyToClipboard',
+        'goToApp',
+        'generateFile',
+        'setPageVariable',
+        'unsetPageVariable',
+        'switchPage',
+      ]
+    : [];
 
-  return isChrome || isEdge || isSafari || isFirefox;
-}
+  if (!forQueryParams) {
+    // eslint-disable-next-line no-unused-vars
+    _.forIn(queries, (query, key) => {
+      if (!query.hasOwnProperty('run')) {
+        query.run = true;
+      }
+    });
+  }
 
-export function getBrowserUserAgent(userAgent) {
-  var regexps = {
-      Chrome: [/Chrome\/(\S+)/],
-      Firefox: [/Firefox\/(\S+)/],
-      MSIE: [/MSIE (\S+);/],
-      Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
-      Safari: [/Version\/(\S+).*?Safari\//],
-    },
-    re,
-    m,
-    browser,
-    version;
+  const currentState = !forQueryParams && initalLoad ? _.merge(state, { queries }) : state;
+  const suggestionList = [];
+  const map = new Map();
 
-  if (userAgent === undefined) userAgent = navigator.userAgent;
+  const hintsMap = new Map();
+  const resolvedRefs = new Map();
+  const resolvedRefTypes = new Map();
 
-  for (browser in regexps)
-    while ((re = regexps[browser].shift()))
-      if ((m = userAgent.match(re))) {
-        version = m[1].match(new RegExp('[^.]+(?:.[^.]+){0,1}'))[0];
-        const { major, minor } = extractVersion(version);
-        return {
-          name: browser,
-          major,
-          minor,
-        };
+  const buildMap = (data, path = '') => {
+    const keys = Object.keys(data);
+    keys.forEach((key, index) => {
+      const uniqueId = _.uniqueId();
+      const value = data[key];
+      const _type = Object.prototype.toString.call(value).slice(8, -1);
+      const prevType = map.get(path)?.type;
+
+      let newPath = '';
+      if (path === '') {
+        newPath = key;
+      } else if (prevType === 'Array') {
+        newPath = `${path}[${index}]`;
+      } else {
+        newPath = `${path}.${key}`;
       }
 
-  return null;
-}
+      if (_type === 'Object') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      }
+      if (_type === 'Array') {
+        map.set(newPath, { type: _type });
 
-function extractVersion(versionStr) {
-  // Split the string by "."
-  const parts = versionStr.split('.');
+        if (path.startsWith('queries') && key === 'data' && value.length > 30000) {
+          // do nothing
+        } else {
+          buildMap(value, newPath);
+        }
+      } else {
+        map.set(newPath, { type: _type });
+      }
 
-  // Check for valid input
-  if (parts.length === 0 || parts.some((part) => isNaN(part))) {
-    return { major: null, minor: null };
+      // Populate hints and refs
+
+      hintsMap.set(newPath, uniqueId);
+      resolvedRefs.set(uniqueId, value);
+      const resolveRefType = getCurrentNodeType(value);
+      resolvedRefTypes.set(uniqueId, resolveRefType);
+    });
+  };
+
+  buildMap(currentState, '');
+
+  map.forEach((__, key) => {
+    if (key.endsWith('run') && key.startsWith('queries')) {
+      return suggestionList.push({ hint: `${key}()`, type: 'Function' });
+    }
+    return suggestionList.push({ hint: key, type: resolvedRefTypes.get(hintsMap.get(key)) });
+  });
+  if (!forQueryParams && initalLoad) {
+    actions.forEach((action) => {
+      suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
+    });
   }
 
-  // Extract major version
-  const major = parseInt(parts[0], 10);
+  return { suggestionList, hintsMap, resolvedRefs };
+}
 
-  // Handle minor version (default to 0)
-  const minor = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+export function findAllEntityReferences(node, allRefs) {
+  if (typeof node === 'object') {
+    for (let key in node) {
+      const value = node[key];
+      if (
+        typeof value === 'string' &&
+        value.includes('{{') &&
+        value.includes('}}') &&
+        (value.startsWith('{{components') || value.startsWith('{{queries'))
+      ) {
+        const referenceExists = value;
 
-  return { major, minor };
+        if (referenceExists) {
+          const ref = value.replace('{{', '').replace('}}', '');
+
+          const entityName = ref.split('.')[1];
+
+          allRefs.push(entityName);
+        }
+      } else if (typeof value === 'object') {
+        findAllEntityReferences(value, allRefs);
+      }
+    }
+  }
+  return allRefs;
+}
+
+export function findEntityId(entityName, map, reverseMap) {
+  for (const [key, value] of map.entries()) {
+    const lookupid = value;
+    const reverseValue = reverseMap.get(lookupid);
+
+    if (reverseValue === entityName) {
+      return key;
+    }
+  }
 }

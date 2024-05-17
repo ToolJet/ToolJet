@@ -281,6 +281,7 @@ export class AuthService {
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
+        currentOrganizationName: organization.name,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         super_admin: user.userType === 'instance',
         groupPermissions: await this.usersService.groupPermissions(user, manager),
@@ -1123,26 +1124,36 @@ export class AuthService {
   }
 
   async generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
-    const currentOrganizationId = currentOrganization?.id
-      ? currentOrganization?.id
-      : user?.organizationIds?.includes(user?.defaultOrganizationId)
-      ? user.defaultOrganizationId
-      : user?.organizationIds?.[0];
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const currentOrganizationId = currentOrganization?.id
+        ? currentOrganization?.id
+        : user?.organizationIds?.includes(user?.defaultOrganizationId)
+        ? user.defaultOrganizationId
+        : user?.organizationIds?.[0];
 
-    const activeWorkspacesCount = await this.organizationUsersService.getActiveWorkspacesCount(user.id);
-    const noWorkspaceAttachedInTheSession = activeWorkspacesCount === 0;
-    const isAllWorkspacesArchived = await this.organizationUsersService.isAllWorkspacesArchivedBySuperAdmin(user.id);
+      const organizationDetails = currentOrganization
+        ? currentOrganization
+        : await manager.findOneOrFail(Organization, {
+            where: { id: currentOrganizationId },
+            select: ['slug', 'name', 'id'],
+          });
 
-    return decamelizeKeys({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      noWorkspaceAttachedInTheSession,
-      isAllWorkspacesArchived,
-      currentOrganizationId,
-      currentOrganizationSlug: currentOrganization?.slug,
-      ...(appData && { appData }),
+      const activeWorkspacesCount = await this.organizationUsersService.getActiveWorkspacesCount(user.id);
+      const noWorkspaceAttachedInTheSession = activeWorkspacesCount === 0;
+      const isAllWorkspacesArchived = await this.organizationUsersService.isAllWorkspacesArchivedBySuperAdmin(user.id);
+
+      return decamelizeKeys({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        noWorkspaceAttachedInTheSession,
+        isAllWorkspacesArchived,
+        currentOrganizationId,
+        currentOrganizationSlug: organizationDetails?.slug,
+        currentOrganizationName: organizationDetails.name,
+        ...(appData && { appData }),
+      });
     });
   }
 

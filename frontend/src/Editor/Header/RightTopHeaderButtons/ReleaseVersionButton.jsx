@@ -3,13 +3,13 @@ import cx from 'classnames';
 import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import ReleaseConfirmation from './ReleaseConfirmation';
+import ReleaseConfirmation from '@/Editor/ReleaseConfirmation';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const ReleaseVersionButton = function DeployVersionButton({ appId, appName, fetchApp, onVersionRelease }) {
+export const ReleaseVersionButton = function DeployVersionButton({ onVersionRelease }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
@@ -26,26 +26,21 @@ export const ReleaseVersionButton = function DeployVersionButton({ appId, appNam
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
 
+    const { id: versionToBeReleased, name, app_id, appId } = editingVersion;
+
     appsService
-      .saveApp(appId, {
-        name: appName,
-        current_version_id: editingVersion.id,
-      })
+      .releaseVersion(app_id || appId, versionToBeReleased)
       .then(() => {
-        toast(`Version ${editingVersion.name} released`, {
+        toast(`Version ${name} released`, {
           icon: '🚀',
         });
-        fetchApp && fetchApp();
-        onVersionRelease(editingVersion.id);
+        onVersionRelease(versionToBeReleased);
         setIsReleasing(false);
         setShowConfirmation(false);
       })
       .catch((_error) => {
         toast.error('Oops, something went wrong');
         setIsReleasing(false);
-      })
-      .finally(() => {
-        useAppVersionStore.getState().actions.updateReleasedVersionId(editingVersion.id);
       });
   };
 
