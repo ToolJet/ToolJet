@@ -8,7 +8,7 @@ Circular Progressbar widget can be used to show progress in a progress circle.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/circular-progressbar/cpb.png" alt="ToolJet - Widget Reference - Circular progress bar" />
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/cpb-v2.png" alt="ToolJet - Widget Reference - Circular progress bar" />
 
 </div>
 
