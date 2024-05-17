@@ -34,13 +34,13 @@ const MultiLineCodeEditor = (props) => {
     className,
     onChange,
     componentName,
-    cyLabel,
     lineNumbers,
     placeholder,
     hideSuggestion,
     suggestions: hints,
     portalProps,
     showPreview,
+    paramLabel = '',
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
@@ -190,10 +190,11 @@ const MultiLineCodeEditor = (props) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [hints]);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   return (
     <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
-      <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
+      <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
@@ -214,7 +215,7 @@ const MultiLineCodeEditor = (props) => {
           callgpt={null}
         >
           <ErrorBoundary>
-            <div className="codehinter-container w-100 ">
+            <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`}>
               <CodeMirror
                 value={currentValue}
                 placeholder={placeholder}

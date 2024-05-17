@@ -27,7 +27,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
-
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
   //! Re render the component when the componentName changes as the initialValue is not updated
@@ -126,7 +125,7 @@ const EditorInput = ({
   onBlurUpdate,
   placeholder = '',
   error,
-  cyLabel,
+  cyLabel = '',
   componentName,
   usePortalEditor = true,
   renderPreview,
@@ -136,6 +135,7 @@ const EditorInput = ({
   componentId,
   type,
   delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
+  paramLabel = '',
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -236,12 +236,13 @@ const EditorInput = ({
   };
 
   const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
+  cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div
       ref={currentEditorHeightRef}
       className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`}
-      cyLabel={cyLabel}
+      data-cy={`${cyLabel}-input-field`}
     >
       {usePortalEditor && (
         <CodeHinter.PopupIcon
