@@ -275,18 +275,6 @@ const EditRowForm = ({
     }
   };
 
-  const primaryColumn = columns.find((column) => column.constraints_type.is_primary_key)?.accessor || null;
-  const serialDatatypeColumn = columns.find((column) => column.constraints_type.is_primary_key);
-
-  const options = selectedTableData.map((row) => {
-    return {
-      value: row[primaryColumn],
-      label: row[primaryColumn],
-    };
-  });
-
-  const headerText = primaryColumn;
-
   let matchingObject = {};
   let matchingObjectForCharacter = {};
 
