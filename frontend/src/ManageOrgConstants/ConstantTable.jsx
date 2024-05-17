@@ -36,7 +36,7 @@ const ConstantTable = ({
 
   return (
     <div className="container-xl">
-      <div className="card constant-table-card" style={{ border: 'none' }}>
+      <div className="card constant-table-card">
         <div
           className="fixedHeader table-responsive constant-table-wrapper px-2"
           ref={tableRef}

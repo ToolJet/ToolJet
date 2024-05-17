@@ -8544,6 +8544,7 @@ tbody {
     width: fit-content;
     width: 30px !important;
     height: 20px !important;
+    margin-bottom: 0px !important;
     text-align: center;
   }
 
@@ -12276,6 +12277,7 @@ tbody {
   .workspace-constant-card-body {
     min-height: calc(100vh - 408px);
     background: var(--base);
+
   }
 
   .constant-table-wrapper {
@@ -15371,4 +15373,9 @@ tbody {
 
 div.ds-svg-container svg {
   padding: 2px;
+}
+
+.custom-textarea-height {
+  height: 300px;
+  min-height: 300px;
 }

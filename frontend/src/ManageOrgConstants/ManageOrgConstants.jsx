@@ -98,9 +98,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const updateTableData = (orgContants, envName, start, end, activeTabChanged = false) => {
     const constantsForEnvironment = orgContants
       .filter((constant) => {
-        const envConstant = constant?.values.find((value) => value.environmentName === envName);
+        const envConstant = constant?.values.find((value) => value.environmentName === envName && value.value);
 
-        return envConstant && envConstant.value !== '';
+        return envConstant && envConstant?.value !== '';
       })
       .map((constant) => {
         return {
@@ -411,7 +411,13 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                   <div className="d-flex manage-constant-wrapper-card">
                     {constants.length > 0 ? (
                       <div className="w-100 workspace-constant-card-body">
-                        <div className="align-items-center d-flex p-3 justify-content-between">
+                        <div
+                          className="align-items-center d-flex p-3 justify-content-between"
+                          style={{
+                            border: '1px solid var(--slate6)',
+                            borderRadius: '6px',
+                          }}
+                        >
                           <div className="tj-text-sm font-weight-500" data-cy="env-name">
                             {capitalize(activeTabEnvironment?.name)}
                           </div>
