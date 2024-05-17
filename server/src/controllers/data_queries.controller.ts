@@ -398,19 +398,33 @@ export class DataQueriesController {
   }
 
   async validateQueryActionsAgainstEnvironment(organizationId: string, appVersionId: string, errorMessage: string) {
-    if (appVersionId) {
-      const environments: AppEnvironment[] = await AppEnvironment.find({
-        where: {
-          organizationId,
-        },
-      });
-      const appVersion: AppVersion = await this.appsService.findVersion(appVersionId);
-      const currentEnvironment: AppEnvironment = environments.find(
-        (environment) => environment.id === appVersion.currentEnvironmentId
-      );
-      if (environments?.length > 1 && currentEnvironment.priority !== 1) {
-        throw new BadRequestException(errorMessage);
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (appVersionId) {
+        const environmentsCount = await manager.count(AppEnvironment, {
+          where: {
+            organizationId,
+          },
+        });
+        const currentEnvironment = await manager
+          .createQueryBuilder('app_versions', 'av')
+          .select('ae.*')
+          .innerJoin('app_environments', 'ae', 'av.current_environment_id = ae.id')
+          .where('av.id = :id', { id: appVersionId })
+          .getRawOne();
+        //TODO: Remove this once the currentEnvironment nul intermittent issue is completly fixed.
+        if (!currentEnvironment) {
+          const appVersion = await manager.findOne(AppVersion, {
+            where: {
+              id: appVersionId,
+            },
+          });
+          console.log('ERROR_CURRENT_ENVIRONMENT_NULL_FOR_QUERY_CREATION', appVersion);
+        }
+        const isPromotedVersion = environmentsCount > 1 && currentEnvironment && currentEnvironment?.priority !== 1;
+        if (isPromotedVersion) {
+          throw new BadRequestException(errorMessage);
+        }
       }
-    }
+    });
   }
 }
