@@ -130,9 +130,26 @@ const DepericatedAlertForWorkspaceVariable = ({ text }) => {
   );
 };
 
+const InfoAlertForWorkspaceConstant = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-green"
+      cls="codehinter workspace-constants-alert-banner p-1 mb-0 mt-2"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div>{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.Portal = Portal;
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.DepericatedAlert = DepericatedAlertForWorkspaceVariable;
+CodeHinter.InfoAlert = InfoAlertForWorkspaceConstant;
 
 CodeHinter.propTypes = {
   type: PropTypes.string.isRequired,

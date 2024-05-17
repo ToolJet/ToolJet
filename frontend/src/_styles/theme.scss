@@ -10149,6 +10149,19 @@ tbody {
   border-color: var(--amber3);
 }
 
+.workspace-variables-alert-banner {
+  width: inherit;
+  background-color: #EBF9EB;
+  border-color: #46A758;
+}
+
+.codehinter.alert-component.workspace-constants-alert-banner {
+  color: #46A758;
+  border-color: #EBF9EB;
+  background-color: #EBF9EB;
+  font-size: 12px;
+}
+
 .add-new-variables-button {
   margin-bottom: 20px;
   width: 169px;
