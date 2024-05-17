@@ -3,7 +3,7 @@ import Plus from '@/_ui/Icon/solidIcons/Plus';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox as SearchBox2 } from '@/_components/SearchBox';
 import DataSourceIcon from './DataSourceIcon';
@@ -180,11 +180,11 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
                       handleChangeDataSource(source);
                     }}
                     data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
-                    data-tooltip-content={source.name}
+                    data-tooltip-content={decodeEntities(source.name)}
                     data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                   >
                     <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
-                    <span className="text-truncate">{source.name}</span>
+                    <span className="text-truncate">{decodeEntities(source.name)}</span>
                     <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
                   </ButtonSolid>
                 </Col>

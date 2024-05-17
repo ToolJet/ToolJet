@@ -5,7 +5,7 @@ import { components } from 'react-select';
 import { EditVersion } from './EditVersionModal';
 import { CreateVersion } from './CreateVersionModal';
 import { ConfirmDialog } from '@/_components';
-import { defaultAppEnvironments } from '@/_helpers/utils';
+import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 
 export const Menu = (props) => {
@@ -21,7 +21,7 @@ export const Menu = (props) => {
         >
           <div className="row" style={{ padding: '8px 12px' }}>
             <div className="col-10 text-truncate tj-text-xsm color-slate12">
-              {props?.selectProps?.value?.appVersionName}
+              {props?.selectProps?.value?.appVersionName && decodeEntities(props?.selectProps?.value?.appVersionName)}
             </div>
             {isEditable && !props?.selectProps?.value?.isReleasedVersion && (
               <div className="col-1">
@@ -105,7 +105,7 @@ export const SingleValue = ({ selectProps }) => {
         className={cx('app-version-name text-truncate', { 'color-light-green': selectProps.value.isReleasedVersion })}
         data-cy={`${selectProps.value?.appVersionName}-current-version-text`}
       >
-        {selectProps.value?.appVersionName}
+        {selectProps.value?.appVersionName && decodeEntities(selectProps.value?.appVersionName)}
       </div>
     </div>
   );
@@ -136,7 +136,7 @@ export const CustomSelect = ({ ...props }) => {
           defaultAppEnvironments.length > 1
             ? 'Deleting a version will permanently remove it from all environments.'
             : ''
-        }Are you sure you want to delete this version - ${deleteVersion.versionName}?`}
+        }Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />

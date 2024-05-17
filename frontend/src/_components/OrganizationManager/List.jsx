@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { getAvatar } from '@/_helpers/utils';
+import { getAvatar, decodeEntities } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
 
@@ -44,7 +44,7 @@ export const OrganizationList = function () {
         </div>
         <ToolTip message={org.name} placement="right">
           <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
-            {org.name}
+            {decodeEntities(org.name)}
           </div>
         </ToolTip>
       </div>
