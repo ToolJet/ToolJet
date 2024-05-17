@@ -751,7 +751,9 @@ export const fetchAndSetWindowTitle = async (pageDetails) => {
       break;
     }
   }
-  document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
+  document.title = !(pageDetails?.preview === false)
+    ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
+    : `${decodeEntities(pageTitle)}`;
 };
 
 // to set favicon and title from router for individual pages
@@ -789,8 +791,8 @@ export const setFaviconAndTitle = async (whiteLabelFavicon, whiteLabelText, loca
   const pageTitle = pathToTitle[pageTitleKey];
   if (pageTitleKey && !isEditorOrViewerGoingToRender) {
     document.title = pageTitle
-      ? `${pageTitle} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
-      : `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
+      ? `${decodeEntities(pageTitle)} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
+      : `${decodeEntities(whiteLabelText) || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
   }
 };
 
@@ -1412,7 +1414,7 @@ export const setWindowTitle = async (pageDetails, location) => {
   if (pageTitle) {
     document.title = !(pageDetails?.preview === false)
       ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
-      : `${pageTitle}`;
+      : `${decodeEntities(pageTitle)}`;
   }
 };
 
