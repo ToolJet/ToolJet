@@ -179,15 +179,27 @@ To create a Foreign Key relationship, follow these steps:
 
 </div>
 
-### Available Actions
+### Foreign Key Actions
+
+When creating a foreign key relationship, ToolJet Database lets you choose from several actions to be performed on the source row when the referenced row in the target table is updated or deleted.
+
+#### On Update
 
 | Option | Description |
 | --- | --- |
-| No Action | If a row in the target table is updated, it will throw an error if there are rows in the source table referencing it. |
-| Cascade | Updates to rows in the target table will be reflected in the corresponding rows of the source table that reference it. |
-| Restrict | No updates can be made to the target table. |
-| Set to NULL | If a default value is present, this option will set the foreign key value in the source table to NULL. |
-| Set to Default | If a default value is present, this option will set the foreign key value in the source table to the default value of the column. |
+| Restrict (default) | Restrict any updates on target table if any referenced row is being updated. |
+| Cascade | Any updates in referenced row in target table will show up in the source table as well. |
+| Set NULL | Any updates in referenced row in target table will set it's instances in the source table as NULL. |
+| Set to Default | Any updates referenced row in target table will set it's instances in the source table as default value of foreign key column of source table. |
+
+#### On Delete
+
+| Option | Description |
+| --- | --- |
+| Restrict (default) | Restrict any deletion on target table if any referenced row is being updated. |
+| Cascade | Any deletion of referenced row in target table will delete the row having it's instance in the source table as well. |
+| Set NULL | Any deletion of referenced row in target table will set it's instances in the source table as NULL. |
+| Set to Default | Any deletion of referenced row in target table will set it's instances in the source table as default value of foreign key column of source table. |
 
 ### Referential Integrity
 
