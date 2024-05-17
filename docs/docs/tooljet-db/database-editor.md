@@ -87,10 +87,13 @@ The constraints for the primary key column ensure the integrity and uniqueness o
 
 <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/single-field-pk.gif" alt="ToolJet database"/>
 
-#### Limitations
+#### Constraints
 - The primary key column cannot contain null values.
-- The primary key column cannot have the Boolean data type.
 - The primary key column must have unique values across all rows.
+
+#### Limitations
+- Every table must have at least one primary key.
+- The primary key column cannot have the Boolean data type.
 
 ### Creating Composite Primary Key
 
@@ -104,10 +107,12 @@ By utilizing a composite primary key, you can uniquely identify records based on
 
 <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/composite-pk.gif" alt="ToolJet database"/>
 
-#### Limitations
+#### Constraints
 - None of the composite key columns can contain null values.
-- The composite key columns cannot be of the Boolean data type.
 - The combination of values across all composite key columns must be unique for each row in the table.
+
+#### Limitation
+- The composite key columns cannot be of the Boolean data type.
 
 ### Modifying Primary Key
 
@@ -143,12 +148,25 @@ You cannot delete a Primary Key of a target table if it is being used as a forei
 
 A foreign key relation refers to linking one column or set of columns of the current table with one column or set of columns in an existing table. This relationship establishes a connection between the two tables, enabling the current source table to reference the existing target table. While creating a Foreign Key relationship, you can select the desired [action](#available-actions) to be performed on the source row when the referenced(target) row is updated or deleted.
 
-### Limitations
+<!-- ### Limitations
 - Self-references are not allowed i.e. Target table and Source table cannot be the same.
 - The target table must contain a column having the same data type as the column in the source table.
 - No foreign key can be created with a column of serial data type in the source table.
 - The foreign key created with a column having integer data type in the source table can also reference a column of serial data type in the target table.
-- The source table must already exist before creating the Foreign Key relationship.
+- The source table must already exist before creating the Foreign Key relationship. -->
+
+### Constraints
+- The target table must contain a column having the same data type as the column in the source table.
+- The column that has to be referenced in the target table must have Unique constraint explicitly.
+- The target table must already exist before adding the Foreign Key relationship in the source table.
+
+### Limitations
+- Self-references are not allowed i.e. Target table and Source table cannot be the same.
+- No foreign key can be created with a column of serial data type in the source table.
+- No foreign key can be reference a column in target table that is a part of its composite Primary key.
+
+### Exception
+- The foreign key created with a column having integer data type in the source table can also reference a column of serial data type in the target table.
 
 ### Available Actions
 
@@ -186,20 +204,20 @@ First, create the following two tables in the ToolJet Database:
 
 **Customers**
 
-| Column Name | Data Type | Primary Key    | Null | Unique  |
-|-------------|-----------|:--------------:|:------:|:--------:|
-| customer_id | int       | ✅             | ❌    | ✅      |
-| name        | varchar   | ❌             | ❌    | ❌      |
-| email       | varchar   | ❌             | ❌    | ✅      |
+| Column Name | Data Type | Primary Key    | Not Null | Unique   |
+|-------------|-----------|:--------------:|:--------:|:--------:|
+| customer_id | int       | ✅             | ✅        | ✅       |
+| name        | varchar   | ❌             | ✅        | ❌       |
+| email       | varchar   | ❌             | ✅        | ✅       |
 
 **Orders**
 
-| Column Name  | Data Type | Primary Key    | Null | Unique  |
-|--------------|-----------|:--------------:|:------:|:--------:|
-| order_id     | int       |  ✅            | ❌    | ✅      |
-| customer_id  | int       |  ❌            | ❌    | ❌      |
-| order_date   | varchar   |  ❌            | ❌    | ❌      |
-| total_amount | float     |  ❌            | ❌    | ❌      |
+| Column Name  | Data Type | Primary Key    | Not Null | Unique   |
+|--------------|-----------|:--------------:|:--------:|:--------:|
+| order_id     | int       |  ✅            | ✅        | ✅       |
+| customer_id  | int       |  ❌            | ✅        | ❌       |
+| order_date   | varchar   |  ❌            | ✅        | ❌       |
+| total_amount | float     |  ❌            | ✅        | ❌       |
 
 We want to create a foreign key relationship between the `customer_id` column in the `Orders` table and the `customer_id` column in the `Customers` table.
 
