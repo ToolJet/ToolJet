@@ -26,6 +26,7 @@ const TableForm = ({
   onEdit,
   onClose,
   updateSelectedTable,
+  initiator,
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
@@ -330,6 +331,7 @@ const TableForm = ({
           (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
         showToolTipForFkOnReadDocsSection={true}
+        initiator={initiator}
       />
       <ConfirmDialog
         title={'Change in primary key'}

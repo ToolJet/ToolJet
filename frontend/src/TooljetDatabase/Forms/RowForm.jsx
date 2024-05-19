@@ -13,7 +13,7 @@ import ArrowRight from '../Icons/ArrowRight.svg';
 
 import './styles.scss';
 
-const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails }) => {
+const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails, initiator }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
 
@@ -458,6 +458,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
         onClose={onClose}
         onCreate={handleSubmit}
         shouldDisableCreateBtn={Object.values(matchingObject).includes('')}
+        initiator={initiator}
       />
     </div>
   );

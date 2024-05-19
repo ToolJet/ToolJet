@@ -427,6 +427,7 @@ function ForeignKeyRelation({
           editForeignKeyInCreateTable={editForeignKeyInCreateTable}
           selectedForeignkeyIndex={selectedForeignkeyIndex}
           setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}
+          initiator="ForeignKeyTableForm"
         />
       </Drawer>
       <ConfirmDialog

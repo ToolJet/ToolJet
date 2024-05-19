@@ -61,6 +61,7 @@ const CreateRowDrawer = ({
           onClose={() => setIsCreateRowDrawerOpen(false)}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="CreateRowForm"
         />
       </Drawer>
     </>

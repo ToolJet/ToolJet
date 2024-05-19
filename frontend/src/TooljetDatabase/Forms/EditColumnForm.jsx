@@ -33,6 +33,7 @@ const ColumnForm = ({
   isEditColumn = true,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  initiator,
 }) => {
   const nullValue = selectedColumn?.constraints_type?.is_not_null ?? false;
   const uniqueConstraintValue = selectedColumn?.constraints_type?.is_unique ?? false;
@@ -668,6 +669,7 @@ const ColumnForm = ({
               isForeignKeyDraweOpen={isForeignKeyDraweOpen}
               onDeletePopup={() => setOnDeletePopup(true)}
               selectedForeignkeyIndex={selectedForeignkeyIndex}
+              initiator="ForeignKeyTableForm"
             />
           </Drawer>
 
@@ -775,6 +777,7 @@ const ColumnForm = ({
           onEdit={handleEdit}
           shouldDisableCreateBtn={columnName === ''}
           showToolTipForFkOnReadDocsSection={true}
+          initiator={initiator}
         />
       </div>
       <ConfirmDialog

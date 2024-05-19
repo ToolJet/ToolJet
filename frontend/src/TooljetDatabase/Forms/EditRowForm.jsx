@@ -23,6 +23,7 @@ const EditRowForm = ({
   selectedRowObj = null,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  initiator,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
@@ -514,6 +515,7 @@ const EditRowForm = ({
           onClose={onClose}
           onEdit={handleSubmit}
           shouldDisableCreateBtn={Object.values(matchingObject).includes('') || (isSubset && isSubsetForCharacter)}
+          initiator={initiator}
         />
       )}
     </div>

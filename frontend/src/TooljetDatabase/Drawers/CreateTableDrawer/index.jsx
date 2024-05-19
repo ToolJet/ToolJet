@@ -47,6 +47,7 @@ export default function CreateTableDrawer() {
             setIsCreateTableDrawerOpen(false);
           }}
           onClose={() => setIsCreateTableDrawerOpen(false)}
+          initiator="CreateTableForm"
         />
       </Drawer>
     </>
