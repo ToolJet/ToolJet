@@ -28,7 +28,7 @@ const CreateRowDrawer = ({
     <>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
-          onCreate={() => {
+          onCreate={(bypass) => {
             const limit = pageSize;
             setSortFilters({});
             setQueryFilters({});
@@ -56,7 +56,7 @@ const CreateRowDrawer = ({
 
             const tableElement = document.querySelector('.tj-db-table');
             if (tableElement) tableElement.scrollTop = 0;
-            setIsCreateRowDrawerOpen(false);
+            if (!bypass) setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
           referencedColumnDetails={referencedColumnDetails}

@@ -1278,13 +1278,12 @@ export const triggerKeyboardShortcut = (keyCallbackFnArray, initiator) => {
   const keyboardShortcutStore = useKeyboardShortcutStore.getState();
   const handleKeydown = (event) => {
     pressedKeys.push(event.key);
-    const stringPressedKeys = pressedKeys.join(',');
+    const stringPressedKeys = pressedKeys.join(', ');
     const currentComponent = keyboardShortcutStore.actions.getTopComponent();
     if (initiator !== currentComponent) return;
     for (const { key, callbackFn, args = [] } of keyCallbackFnArray) {
       if (key === stringPressedKeys) {
         callbackFn(...args);
-        pressedKeys.length = 0;
         break;
       }
     }

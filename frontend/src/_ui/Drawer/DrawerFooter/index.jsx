@@ -6,6 +6,7 @@ import './styles.scss';
 import { ToolTip } from '@/_components/ToolTip';
 import { triggerKeyboardShortcut } from '@/_helpers/utils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 function DrawerFooter({
   fetching,
@@ -59,6 +60,10 @@ function DrawerFooter({
           addEnterCallback(onCreate);
         }
       }
+
+      if (formType === 'CreateRowForm') {
+        keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: onCreate, args: [true] });
+      }
     }
 
     const cleanup = triggerKeyboardShortcut(keyCallbackFnArray, initiator);
@@ -79,6 +84,18 @@ function DrawerFooter({
             <a className="read-documentation">Read documentation</a>
           </div>
         </ToolTip> */}
+        {initiator === 'CreateRowForm' && (
+          <div className="tjdb-shotcut-text-container">
+            <div className="tjdb-shift-shortcut-box">
+              <SolidIcon name="shiftbutton" />
+            </div>
+            <SolidIcon name="plus" width={10} />
+            <div className="mr-5 tjdb-enter-shortcut-box">
+              <SolidIcon name="enterbutton" />
+            </div>
+            <div className="fw-400 tjdb-cell-menu-shortcuts-text">Create this row & add one more row</div>
+          </div>
+        )}
         <div className="d-flex action-btns">
           {(isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit))) ||
           (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ||
@@ -102,7 +119,7 @@ function DrawerFooter({
                   fill="#fff"
                   leftIcon="floppydisk"
                 >
-                  Save changes
+                  Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
               )}
               {isCreateColumn && (
@@ -113,7 +130,7 @@ function DrawerFooter({
                     onCreate();
                   }}
                 >
-                  Create
+                  Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
               )}
             </>
@@ -126,7 +143,7 @@ function DrawerFooter({
                   onCreate();
                 }}
               >
-                Create
+                Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
               </ButtonSolid>
             </>
           ) : isForeignKeyDraweOpen && editForeignKeyInCreateTable ? (
@@ -138,7 +155,7 @@ function DrawerFooter({
                 fill="#fff"
                 leftIcon="floppydisk"
               >
-                Save changes
+                Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
               </ButtonSolid>
             </>
           ) : (
@@ -151,7 +168,7 @@ function DrawerFooter({
                   fill="#fff"
                   leftIcon="floppydisk"
                 >
-                  Save changes
+                  Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
               )}
               {!isEditMode && (
@@ -162,7 +179,7 @@ function DrawerFooter({
                     onCreate();
                   }}
                 >
-                  Create
+                  Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
               )}
             </>

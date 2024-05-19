@@ -193,7 +193,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (bypass) => {
     setFetching(true);
     const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
     setFetching(false);
@@ -202,7 +202,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
       return;
     }
     toast.success(`Row created successfully`);
-    onCreate && onCreate();
+    onCreate && onCreate(bypass);
   };
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
