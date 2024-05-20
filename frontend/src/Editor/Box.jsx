@@ -166,7 +166,14 @@ export const Box = memo(
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
     const { events } = useAppInfo();
-    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Checkbox'];
+    const shouldAddBoxShadowAndVisibility = [
+      'TextInput',
+      'PasswordInput',
+      'NumberInput',
+      'Text',
+      'Checkbox',
+      'ToggleSwitchV2',
+    ];
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
@@ -182,6 +189,7 @@ export const Box = memo(
       mode === 'edit' && component.validate
         ? validateProperties(resolvedProperties, componentMeta.properties)
         : [resolvedProperties, []];
+
     if (shouldAddBoxShadowAndVisibility.includes(component.component)) {
       validatedProperties.visibility = validatedProperties.visibility !== false ? true : false;
     }
