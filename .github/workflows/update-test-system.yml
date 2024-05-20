@@ -13,7 +13,7 @@ env:
 
 jobs:
   Build-and-update-image:
-    runs-on: ubuntu-22.04
+    runs-on: macos-latest
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'test-system-deploy' }}
 
@@ -75,15 +75,19 @@ jobs:
           gcloud components install gke-gcloud-auth-plugin
           gcloud init
 
-      - name: Set up SSH key
+      - name: gcloud command
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan 35.209.30.169 >> ~/.ssh/known_hosts
+          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "adish@ce-test-system"
 
-      - name: Execute deployment script via SSH
-        run: ssh -i ~/.ssh/id_ed25519 adish@tooljet.com@35.209.30.169 'ls'
+      # - name: Set up SSH key
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+      #     chmod 600 ~/.ssh/id_ed25519
+      #     ssh-keyscan 35.209.30.169 >> ~/.ssh/known_hosts
+
+      # - name: Execute deployment script via SSH
+      #   run: ssh -i ~/.ssh/id_ed25519 adish@tooljet.com@35.209.30.169 'ls'
 
       - name: Commands to check the .shh file
         run: |
