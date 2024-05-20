@@ -43,32 +43,41 @@ function DrawerFooter({
     };
 
     const formType = initiator;
-    if (!(shouldDisableCreateBtn || fetching)) {
-      if (formType.startsWith('Create')) {
-        addEnterCallback(onCreate);
-      } else if (formType.startsWith('Edit')) {
+    if (formType.startsWith('Create')) {
+      addEnterCallback(onCreate);
+    } else if (formType.startsWith('Edit')) {
+      addEnterCallback(onEdit);
+    } else {
+      const shouldAddEnterForEdit = (isEditColumn || isCreateColumn) && isForeignKeyForColumnDrawer;
+      if (shouldAddEnterForEdit) {
+        addEnterCallback(isEditColumn ? onEdit : onCreate);
+      } else if (isForeignKeyDraweOpen && editForeignKeyInCreateTable) {
+        addEnterCallback(onEdit);
+      } else if (isEditMode) {
         addEnterCallback(onEdit);
       } else {
-        const shouldAddEnterForEdit = (isEditColumn || isCreateColumn) && isForeignKeyForColumnDrawer;
-        if (shouldAddEnterForEdit) {
-          addEnterCallback(isEditColumn ? onEdit : onCreate);
-        } else if (isForeignKeyDraweOpen && editForeignKeyInCreateTable) {
-          addEnterCallback(onEdit);
-        } else if (isEditMode) {
-          addEnterCallback(onEdit);
-        } else {
-          addEnterCallback(onCreate);
-        }
+        addEnterCallback(onCreate);
       }
+    }
 
-      if (formType === 'CreateRowForm') {
-        keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: onCreate, args: [true] });
-      }
+    if (formType === 'CreateRowForm') {
+      keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: onCreate, args: [true] });
     }
 
     const cleanup = triggerKeyboardShortcut(keyCallbackFnArray, initiator);
     return cleanup;
-  }, [shouldDisableCreateBtn, fetching, onCreate, onEdit, onClose]);
+  }, [
+    onCreate,
+    onEdit,
+    onClose,
+    initiator,
+    isEditColumn,
+    isCreateColumn,
+    isForeignKeyForColumnDrawer,
+    isForeignKeyDraweOpen,
+    isEditMode,
+    editForeignKeyInCreateTable,
+  ]);
 
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">

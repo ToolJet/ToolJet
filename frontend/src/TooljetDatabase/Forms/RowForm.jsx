@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
@@ -16,7 +16,7 @@ import './styles.scss';
 const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails, initiator, fnCaller }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
-
+  const inputRefs = useRef({});
   const primaryKeyColumns = [];
   const nonPrimaryKeyColumns = [];
   columns.forEach((column) => {
@@ -69,6 +69,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(defaultActiveTab());
   const [inputValues, setInputValues] = useState(inputValuesDefaultValues());
+  const [errorMap, setErrorMap] = useState({});
 
   useEffect(() => {
     rowColumns.map(({ accessor, dataType, column_default }, index) => {
@@ -205,11 +206,64 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     }
   }, [fnCaller]);
 
+  useEffect(() => {
+    rowColumns.forEach(({ accessor }) => {
+      if (data[accessor] != '') {
+        const inputElement = inputRefs.current?.[accessor];
+        inputElement?.style?.setProperty('background-color', '#FFFFFF', 'important');
+        setErrorMap((prev) => {
+          return { ...prev, [accessor]: '' };
+        });
+      }
+    });
+  }, [data]);
+
   const handleSubmit = async (bypass) => {
     setFetching(true);
+    let flag = 0;
+    rowColumns.forEach(({ accessor, dataType }) => {
+      if (['double precision', 'bigint', 'integer'].includes(dataType) && data[accessor] === '') {
+        flag = 1;
+        setErrorMap((prev) => {
+          return { ...prev, [accessor]: 'Cannot be empty' };
+        });
+        const inputElement = inputRefs.current?.[accessor];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+      }
+    });
+    if (flag) {
+      setFetching(false);
+      return;
+    }
     const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
     setFetching(false);
     if (error) {
+      if (error?.message.includes('Unique constraint violated')) {
+        const columnName = error?.message.split('.')?.[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Value already exists' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+      } else if (error?.message.includes('Invalid input syntax for type')) {
+        const errorMessageSplit = error?.message.split(':');
+        const columnValue = errorMessageSplit[1]?.slice(2, -1);
+        const mainErrorMessageSplit = errorMessageSplit?.[0]?.split('type ');
+        const columnType = mainErrorMessageSplit?.[mainErrorMessageSplit.length - 1];
+        const columnNamesWithSameValue = Object.keys(data).filter(
+          (key) => String(data[key]).toLowerCase() === columnValue
+        );
+        rowColumns.forEach(({ accessor, dataType }) => {
+          if (columnNamesWithSameValue.includes(accessor) && dataType === columnType) {
+            setErrorMap((prev) => {
+              return { ...prev, [accessor]: `Data type mismatch` };
+            });
+            const inputElement = inputRefs.current?.[accessor];
+            inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+          }
+        });
+      }
+
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
       return;
     }
@@ -271,21 +325,36 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 placeholder={
                   isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
                 }
-                className={
-                  isSerialDataTypeColumn && !darkMode
-                    ? 'primary-idKey-light'
-                    : isSerialDataTypeColumn && darkMode
-                    ? 'primary-idKey-dark'
-                    : !darkMode
-                    ? 'form-control'
-                    : 'form-control dark-form-row'
-                }
+                className={`
+                  ${
+                    isSerialDataTypeColumn && !darkMode
+                      ? 'primary-idKey-light'
+                      : isSerialDataTypeColumn && darkMode
+                      ? 'primary-idKey-dark'
+                      : !darkMode
+                      ? 'form-control'
+                      : 'form-control dark-form-row'
+                  }  ${errorMap[columnName] ? 'input-error-border' : ''}`}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
                 autoComplete="off"
+                ref={(el) => (inputRefs.current[columnName] = el)}
               />
             )}
             {inputValues[index].value === null && (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
+            )}
+
+            {errorMap[columnName] && (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#DB4324',
+                }}
+                data-cy="app-name-error-label"
+              >
+                {errorMap[columnName]}
+              </small>
             )}
           </div>
         );
