@@ -78,10 +78,9 @@ jobs:
       - name: Connect to VM using GCP command
         run: |
           gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system"
-          chmod 700 ~/home/runner/.ssh/google_compute_engine.pub
+          ls ~/.ssh
 
-          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system"
-          ls -lah
+          # ls -lah
 
            # # Stop the Docker containers
            # sudo docker-compose down
@@ -100,7 +99,7 @@ jobs:
           # sudo docker-compose up -d
 
           #View containers
-          sudo docker ps
+          # sudo docker ps
 
       - uses: actions/github-script@v6
         with:
