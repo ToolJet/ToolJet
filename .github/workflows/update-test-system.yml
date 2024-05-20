@@ -86,7 +86,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_INSTANCE_IP }}
-          username: adish
+          username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
           script: |
             ls -lah
