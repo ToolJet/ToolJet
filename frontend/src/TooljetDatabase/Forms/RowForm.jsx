@@ -13,7 +13,7 @@ import ArrowRight from '../Icons/ArrowRight.svg';
 
 import './styles.scss';
 
-const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails, initiator }) => {
+const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails, initiator, fnCaller }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
 
@@ -27,10 +27,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     }
   });
 
-  const rowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
-
-  const [fetching, setFetching] = useState(false);
-  const [activeTab, setActiveTab] = useState(() => {
+  const defaultActiveTab = () => {
     if (Array.isArray(rowColumns)) {
       return rowColumns.map((item) => {
         if (item.column_default === null || item.constraints_type.is_primary_key === true) {
@@ -42,10 +39,10 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     } else {
       return [];
     }
-  });
+  };
 
-  const [inputValues, setInputValues] = useState(
-    Array.isArray(rowColumns)
+  const inputValuesDefaultValues = () => {
+    return Array.isArray(rowColumns)
       ? rowColumns.map((item, _index) => {
           if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
@@ -65,8 +62,13 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           }
           return { value: '', checkboxValue: false, disabled: false, label: '' };
         })
-      : []
-  );
+      : [];
+  };
+
+  const rowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
+  const [fetching, setFetching] = useState(false);
+  const [activeTab, setActiveTab] = useState(defaultActiveTab());
+  const [inputValues, setInputValues] = useState(inputValuesDefaultValues());
 
   useEffect(() => {
     rowColumns.map(({ accessor, dataType, column_default }, index) => {
@@ -175,23 +177,33 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     setData({ ...data, [columnName]: value });
   };
 
+  const defaultDataValues = () => {
+    return rowColumns.reduce((result, column) => {
+      const { dataType, column_default } = column;
+      if (dataType !== 'serial') {
+        if (column.dataType === 'boolean') {
+          result[column.accessor] = column_default ? column_default : false;
+        } else {
+          result[column.accessor] = column_default ? column_default : '';
+        }
+      }
+      return result;
+    }, {});
+  };
+
   useEffect(() => {
     toast.dismiss();
-    setData(
-      rowColumns.reduce((result, column) => {
-        const { dataType, column_default } = column;
-        if (dataType !== 'serial') {
-          if (column.dataType === 'boolean') {
-            result[column.accessor] = column_default ? column_default : false;
-          } else {
-            result[column.accessor] = column_default ? column_default : '';
-          }
-        }
-        return result;
-      }, {})
-    );
+    setData(defaultDataValues());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (fnCaller) {
+      setActiveTab(defaultActiveTab());
+      setInputValues(inputValuesDefaultValues());
+      setData(defaultDataValues());
+    }
+  }, [fnCaller]);
 
   const handleSubmit = async (bypass) => {
     setFetching(true);
