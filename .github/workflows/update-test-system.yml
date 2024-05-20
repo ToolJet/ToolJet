@@ -78,7 +78,7 @@ jobs:
       - name: SSH into GCP VM instance
         uses: appleboy/ssh-action@master
         with:
-          host: 35.209.30.169
+          host: 34.70.145.182
           username: adish
           key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
           script: |
