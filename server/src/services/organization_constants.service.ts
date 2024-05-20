@@ -49,6 +49,8 @@ export class OrganizationConstantsService {
                 if (decryptValue) {
                   valueResult['value'] = decryptedOrRawValue;
                 }
+              } else {
+                valueResult['value'] = '';
               }
               return valueResult;
             })
