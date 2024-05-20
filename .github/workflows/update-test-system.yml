@@ -80,7 +80,7 @@ jobs:
           gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system" --ssh-key-file
           chmod 700 ~/home/runner/.ssh/google_compute_engine.pub
 
-          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system" --ssh-key-file ~/home/runner/.ssh/google_compute_engine.pub
+          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system"
           ls -lah
 
            # # Stop the Docker containers
