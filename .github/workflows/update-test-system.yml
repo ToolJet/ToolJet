@@ -77,35 +77,30 @@ jobs:
 
       - name: Connect to VM using GCP command
         run: |
-          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "adish@ce-test-system"
+          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system" --ssh-key-file
+          chmod 700 ~/home/runner/.ssh/google_compute_engine.pub
 
-      - name: SSH into GCP VM instance
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.GCP_INSTANCE_IP }}
-          username: admin
-          key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
-          script: |
-            ls -lah
+          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system" --ssh-key-file ~/home/runner/.ssh/google_compute_engine.pub
+          ls -lah
 
-            # # Stop the Docker containers
-            # sudo docker-compose down
+           # # Stop the Docker containers
+           # sudo docker-compose down
 
-            # # Remove the existing tooljet/* images
-            # sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
+          # # Remove the existing tooljet/* images
+          # sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
 
-            # #checking images
-            # sudo docker images
+          # #checking images
+          # sudo docker images
 
-            # # Update docker-compose.yml with the new image
-            # sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          # # Update docker-compose.yml with the new image
+          # sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
 
-            # # Start the Docker containers
-            # cat docker-compose.yaml
-            # sudo docker-compose up -d
+          # # Start the Docker containers
+          # cat docker-compose.yaml
+          # sudo docker-compose up -d
 
-            #View containers
-            sudo docker ps
+          #View containers
+          sudo docker ps
 
       - uses: actions/github-script@v6
         with:
