@@ -83,7 +83,7 @@ jobs:
           ssh-keyscan 35.209.30.169 >> ~/.ssh/known_hosts
 
       - name: Execute deployment script via SSH
-        run: ssh -i ~/.ssh/id_ed25519 adish@tooljet.com@35.209.30.169
+        run: ssh -i ~/.ssh/id_ed25519 adish@tooljet.com@35.209.30.169 'bash -s' < ls
 
       - name: Commands to check the .shh file
         run: |
