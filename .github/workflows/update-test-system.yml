@@ -78,6 +78,9 @@ jobs:
       - name: Connect to VM using GCP command
         run: |
           gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system"
+
+      - name: Commands to check the .shh file
+        run: |
           ls ~/.ssh
 
           # ls -lah
