@@ -263,13 +263,13 @@ class RawManageOrgVarsComponent extends React.Component {
     const renderDeprecationText =
       variables?.length > 0 ? (
         <div class="text-muted">
-          Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use Workspace constant
-          instead.
+          Workspace variables will no longer be supported after April 30, 2024. To maintain optimal performance, please
+          make the switch to Workspace constants
         </div>
       ) : (
         <div className="text-muted">
-          Workspace variables will no longer be supported after April 30, 2024. To maintain optimal performance, please
-          make the switch to Workspace constants
+          Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use Workspace constant
+          instead.
         </div>
       );
 
