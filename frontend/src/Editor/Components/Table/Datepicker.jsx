@@ -198,7 +198,7 @@ export const Datepicker = function Datepicker({
     <div ref={pickerRef}>
       <DatePickerComponent
         className={`input-field form-control validation-without-icon px-2`}
-        popperClassName={cx({
+        popperClassName={cx('tj-table-datepicker', {
           'tj-timepicker-widget': !isDateSelectionEnabled && isTimeChecked,
           'tj-datepicker-widget': isDateSelectionEnabled,
           'theme-dark dark-theme': darkMode,

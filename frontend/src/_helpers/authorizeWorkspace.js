@@ -61,6 +61,9 @@ export const authorizeWorkspace = () => {
             /* If the user is trying to load the app viewer and the app id / slug not found */
             redirectToErrorPage(ERROR_TYPES.INVALID);
           } else if (error?.data?.statusCode == 422) {
+            if (isThisWorkspaceLoginPage()) {
+              return redirectToErrorPage(ERROR_TYPES.INVALID);
+            }
             redirectToErrorPage(ERROR_TYPES.UNKNOWN);
           } else {
             const subpath = getSubpath();
