@@ -79,7 +79,9 @@ export class OrganizationConstantsService {
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
         .leftJoinAndSelect('organization_constants.orgEnvironmentConstantValues', 'org_environment_constant_values')
         .where('organization_constants.organization_id = :organizationId', { organizationId })
-        .andWhere('org_environment_constant_values.environment_id = :environmentId', { environmentId });
+        .andWhere('org_environment_constant_values.environment_id = :environmentId', { environmentId })
+        .andWhere('org_environment_constant_values.value IS NOT NULL')
+        .andWhere("org_environment_constant_values.value <> ''");
       const result = await query.getMany();
 
       const constantsWithValues = result.map(async (constant) => {
