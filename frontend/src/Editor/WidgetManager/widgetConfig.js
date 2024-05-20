@@ -2654,7 +2654,7 @@ export const widgets = [
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
       },
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         customRule: { value: null },
       },
     },
@@ -2941,7 +2941,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       validation: {
-        mandatory: { value: false },
+        mandatory: { value: '{{false}}' },
         customRule: { value: null },
       },
       properties: {
