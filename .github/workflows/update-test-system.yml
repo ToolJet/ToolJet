@@ -80,10 +80,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan ce-test-system >> ~/.ssh/known_hosts
+          ssh-keyscan 35.209.30.169 >> ~/.ssh/known_hosts
 
       - name: Execute deployment script via SSH
-        run: ssh -i ~/.ssh/id_ed25519 adish@tooljet.com@ce-test-system
+        run: ssh -i ~/.ssh/id_ed25519 adish@tooljet.com@35.209.30.169
 
       - name: Commands to check the .shh file
         run: |
