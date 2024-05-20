@@ -77,7 +77,7 @@ jobs:
 
       - name: Connect to VM using GCP command
         run: |
-          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system" --ssh-key-file
+          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system"
           chmod 700 ~/home/runner/.ssh/google_compute_engine.pub
 
           gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "githubaction@ce-test-system"
