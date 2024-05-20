@@ -13,7 +13,7 @@ env:
 
 jobs:
   Build-and-update-image:
-    runs-on: macos-latest
+    runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'test-system-deploy' }}
 
@@ -75,42 +75,37 @@ jobs:
           gcloud components install gke-gcloud-auth-plugin
           gcloud init
 
-      - name: gcloud command
-        run: |
-          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "adish@ce-test-system"
-
-      # - name: Set up SSH key
+      # - name: Connect to VM using GCP command
       #   run: |
-      #     mkdir -p ~/.ssh
-      #     echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-      #     chmod 600 ~/.ssh/id_ed25519
-      #     ssh-keyscan 35.209.30.169 >> ~/.ssh/known_hosts
+      #     gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "adish@ce-test-system" --ssh-key-file ~/.ssh/gcp_compute_engine
 
-      # - name: Execute deployment script via SSH
-      #   run: ssh -i ~/.ssh/id_ed25519 adish@tooljet.com@35.209.30.169 'ls'
+      - name: SSH into GCP VM instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: 35.209.30.169
+          username: adish@tooljet.com
+          key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
+          script: |
+            ls -lah
 
-      - name: Commands to check the .shh file
-        run: |
-          # ls -lah
+            # # Stop the Docker containers
+            # sudo docker-compose down
 
-           # # Stop the Docker containers
-           # sudo docker-compose down
+            # # Remove the existing tooljet/* images
+            # sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
 
-          # # Remove the existing tooljet/* images
-          # sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
+            # #checking images
+            # sudo docker images
 
-          # #checking images
-          # sudo docker images
+            # # Update docker-compose.yml with the new image
+            # sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
 
-          # # Update docker-compose.yml with the new image
-          # sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+            # # Start the Docker containers
+            # cat docker-compose.yaml
+            # sudo docker-compose up -d
 
-          # # Start the Docker containers
-          # cat docker-compose.yaml
-          # sudo docker-compose up -d
-
-          #View containers
-          # sudo docker ps
+            #View containers
+            sudo docker ps
 
       - uses: actions/github-script@v6
         with:
