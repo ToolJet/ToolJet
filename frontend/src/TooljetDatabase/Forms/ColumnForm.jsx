@@ -389,6 +389,7 @@ const ColumnForm = ({
           onClose={() => {
             setIsForeignKeyDraweOpen(false);
           }}
+          className="tj-db-drawer"
         >
           <ForeignKeyTableForm
             tableName={selectedTable.table_name}

@@ -69,7 +69,6 @@
   position: fixed;
   pointer-events: none;
   z-index: 0;
-  transition: opacity 0.3s ease;
 
 }
 
@@ -90,5 +89,11 @@
     opacity: 1;
     pointer-events: auto;
     z-index: 1001;
+  }
+}
+.tj-db-drawer{
+  .backdrop{
+    transition: opacity 0.3s ease;
+
   }
 }
