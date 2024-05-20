@@ -422,6 +422,7 @@ export class DataQueriesService {
           if (Array.isArray(curr)) {
             for (let j = 0; j < curr.length; j++) {
               const inner = curr[j];
+              constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
                 const resolved = await this.resolveConstants(inner, organization_id, environmentId);
@@ -604,7 +605,7 @@ export class DataQueriesService {
 
         if (variables?.length > 0) {
           for (const variable of variables) {
-            object = object.replace(variable, options[variable]);
+            object = object.replace(variable, await this.resolveConstants(variable, organization_id, environmentId));
           }
         }
         return object;
