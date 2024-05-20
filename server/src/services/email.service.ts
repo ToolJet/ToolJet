@@ -68,6 +68,7 @@ export class EmailService {
       const info = await this.mailerService.sendMail(message);
       console.log('Message sent: %s', info);
     } catch (error) {
+      if (this.NODE_ENV === 'test' || this.NODE_ENV == 'development') return;
       console.error('Email sent error', error);
     }
   }
