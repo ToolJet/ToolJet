@@ -3,9 +3,7 @@ name: Test system deploy
 on:
   pull_request_target:
     types: [labeled, unlabeled, closed]
-
   workflow_dispatch:
-
 
 env:
   PR_NUMBER: ${{ github.event.number }}
@@ -23,7 +21,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
         run: |
           mkdir -p ~/.docker/cli-plugins
@@ -59,32 +56,34 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: SSH into EC2 instance
-        uses: appleboy/ssh-action@master
+      - name: Authenticate GCP profile
+        uses: 'google-github-actions/auth@v2'
         with:
-          host: ${{ secrets.EC2_INSTANCE_IP }}
-          username: admin
-          key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Connect to GCP
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: tooljet-us
+          version: '>= 363.0.0'
+
+      - name: Install Google Cloud SDK
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud init
+
+      - name: SSH into GCP VM instance
+        run: |
+          gcloud compute --project "tooljet-us" ssh --zone "us-central1-a" "adish@ce-test-system"
           script: |
             ls -lah
 
-            # Stop the Docker containers
-            sudo docker-compose down
-
-            # Remove the existing tooljet/* images
-            sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
-
-            #checking images
-            sudo docker images
-
-            # Update docker-compose.yml with the new image
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
-
-            # Start the Docker containers
-            cat docker-compose.yaml
-            sudo docker-compose up -d
-
-            #View containers
+            # sudo docker-compose down
+            # sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
+            # sudo docker images
+            # sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+            # cat docker-compose.yaml
+            # sudo docker-compose up -d
             sudo docker ps
 
       - uses: actions/github-script@v6
@@ -106,4 +105,4 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['test-system-deployed']
-            })            
+            }) 
