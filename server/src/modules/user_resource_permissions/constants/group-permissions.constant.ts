@@ -18,6 +18,14 @@ export const DATA_BASE_CONSTRAINTS = {
     dbConstraint: DataBaseConstraints.GROUP_NAME_UNIQUE,
     message: 'Group name should be unique in workspace',
   },
+  GROUP_USER_UNIQUE: {
+    dbConstraint: DataBaseConstraints.GROUP_USER_UNIQUE,
+    message: 'User already present in the group',
+  },
+  GRANULAR_PERMISSIONS_NAME_UNIQUE: {
+    dbConstraint: DataBaseConstraints.GRANULAR_PERMISSIONS_NAME_UNIQUE,
+    message: 'Granular permission name should be unique',
+  },
 };
 
 export const DEFAULT_GROUP_PERMISSIONS = {

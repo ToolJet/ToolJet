@@ -15,17 +15,19 @@ import { GroupUsers } from 'src/entities/group_users.entity';
 import { GranularPermissionsService } from './granular_permissions.service';
 import {
   getAllUserGroupsQuery,
-  getRoleUsersListQuery,
   getUserDetailQuery,
-  getUserRoleQuery,
   validateAddGroupUserOperation,
   validateDeleteGroupUserOperation,
   validateUpdateGroupOperation,
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
+import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 
 @Injectable()
 export class GroupPermissionsServiceV2 {
-  constructor(private granularPermissionsService: GranularPermissionsService) {}
+  constructor(
+    private granularPermissionsService: GranularPermissionsService,
+    private groupPermissionsUtilityService: GroupPermissionsUtilityService
+  ) {}
 
   /**
    * Creates a new group permission for a specified organization.
@@ -70,7 +72,11 @@ export class GroupPermissionsServiceV2 {
     if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
 
     validateUpdateGroupOperation(group, updateGroupPermissionDto);
-    const getEndUsersList = await this.getRoleUsersList(USER_ROLE.END_USER, group.organizationId, group.id);
+    const getEndUsersList = await this.groupPermissionsUtilityService.getRoleUsersList(
+      USER_ROLE.END_USER,
+      group.organizationId,
+      group.id
+    );
     const editPermissionsPresent = Object.values(updateGroupPermissionDto).some(
       (value) => typeof value === 'boolean' && value === true
     );
@@ -99,8 +105,10 @@ export class GroupPermissionsServiceV2 {
 
   private async createGroupUser(user: User, group: GroupPermissions, manager?: EntityManager): Promise<GroupUsers> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const groupUser = manager.create(GroupUsers, { groupId: group.id, userId: user.id });
-      return await manager.save(groupUser);
+      return await catchDbException(async () => {
+        const groupUser = manager.create(GroupUsers, { groupId: group.id, userId: user.id });
+        return await manager.save(groupUser);
+      }, [DATA_BASE_CONSTRAINTS.GROUP_USER_UNIQUE]);
     }, manager);
   }
 
@@ -132,7 +140,7 @@ export class GroupPermissionsServiceV2 {
     const group = await this.getGroup(groupId);
     validateAddGroupUserOperation(group, user);
 
-    const role = await this.getUserRole(userId, organizationId);
+    const role = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId);
     const editPermissionsPresent = Object.values(group).some((value) => typeof value === 'boolean' && value === true);
     //NEED TO CHECK FOR EDITOR LEVEL PERMISSION IN GRANULAR PERMISSIONS
 
@@ -141,14 +149,5 @@ export class GroupPermissionsServiceV2 {
     }
 
     return await this.createGroupUser(user, group);
-  }
-
-  async getRoleUsersList(role: USER_ROLE, organizationId: string, groupPermissionId?: string): Promise<User[]> {
-    const query = getRoleUsersListQuery(role, organizationId, groupPermissionId);
-    return await query.getMany();
-  }
-
-  async getUserRole(userId: string, organizationId: string): Promise<GroupPermissions> {
-    return await getUserRoleQuery(userId, organizationId).getOne();
   }
 }

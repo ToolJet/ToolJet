@@ -1,3 +1,4 @@
+import { CreateGranularPermissionDto } from '@dto/granular-permissions.dto';
 import {
   AddGroupUserDto,
   CreateGroupPermissionDto,
@@ -5,18 +6,25 @@ import {
   UpdateGroupPermissionDto,
 } from '@dto/group_permissions.dto';
 import { JwtAuthGuard } from '@module/auth/jwt-auth.guard';
+import { validateGranularPermissionCreateOperation } from '@module/user_resource_permissions/utility/granular-permissios.utility';
 import { validateCreateGroupOperation } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { GranularPermissionsService } from '@services/granular_permissions.service';
 import { GroupPermissionsServiceV2 } from '@services/group_permissions.service.v2';
 import { UserRoleService } from '@services/user-role.service';
 import { User } from 'src/decorators/user.decorator';
+import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 
 @Controller({
   path: 'group_permissions',
   version: '2',
 })
 export class GroupPermissionsControllerV2 {
-  constructor(private groupPermissionsService: GroupPermissionsServiceV2, private userRoleService: UserRoleService) {}
+  constructor(
+    private groupPermissionsService: GroupPermissionsServiceV2,
+    private userRoleService: UserRoleService,
+    private granularPermissionsService: GranularPermissionsService
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -43,6 +51,7 @@ export class GroupPermissionsControllerV2 {
   async update(@User() user, @Param('id') id: string, @Body() updateGroupDto: UpdateGroupPermissionDto) {
     return await this.groupPermissionsService.updateGroup(id, updateGroupDto);
   }
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') id: string) {
@@ -73,5 +82,24 @@ export class GroupPermissionsControllerV2 {
   async updateUserRole(@User() user, @Body() editRoleDto: EditUserRoleDto) {
     const { organizationId } = user;
     return await this.userRoleService.editDefaultGroupUserRole(editRoleDto, organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('granular-permissions')
+  async createGranularPermissions(@User() user, @Body() createGranularPermissionsDto: CreateGranularPermissionDto) {
+    //Check for license validation first here
+    const { groupId } = createGranularPermissionsDto;
+    const group = await this.groupPermissionsService.getGroup(groupId);
+    validateGranularPermissionCreateOperation(group);
+    return await this.granularPermissionsService.create(createGranularPermissionsDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('granular-permissions')
+  async getAllGranularPermissions(@User() user, @Param('id') groupId: string): Promise<GranularPermissions[]> {
+    const granularPermissions: GranularPermissions[] = await this.granularPermissionsService.getAll({
+      groupId: groupId,
+    });
+    return granularPermissions;
   }
 }

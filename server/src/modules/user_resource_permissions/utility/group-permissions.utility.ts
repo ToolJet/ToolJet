@@ -1,4 +1,4 @@
-import { SelectQueryBuilder, createQueryBuilder } from 'typeorm';
+import { EntityManager, SelectQueryBuilder, createQueryBuilder } from 'typeorm';
 import { USER_ROLE, GROUP_PERMISSIONS_TYPE } from '../constants/group-permissions.constant';
 import { User } from 'src/entities/user.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
@@ -10,9 +10,11 @@ import { GroupUsers } from 'src/entities/group_users.entity';
 export function getRoleUsersListQuery(
   role: USER_ROLE,
   organizationId: string,
+  manager: EntityManager,
   groupPermissionId?: string
 ): SelectQueryBuilder<User> {
-  const query = createQueryBuilder(User, 'user')
+  const query = manager
+    .createQueryBuilder(User, 'user')
     .select([
       'users.id',
       'users.firstName',
@@ -55,8 +57,13 @@ export function getUserDetailQuery(userId: string, organizationId: string): Sele
   return query;
 }
 
-export function getUserRoleQuery(userId: string, organizationId: string): SelectQueryBuilder<GroupPermissions> {
-  const query = createQueryBuilder(GroupPermissions, 'role')
+export function getUserRoleQuery(
+  userId: string,
+  organizationId: string,
+  manager: EntityManager
+): SelectQueryBuilder<GroupPermissions> {
+  const query = manager
+    .createQueryBuilder(GroupPermissions, 'role')
     .innerJoin('role.groupUsers', 'groupUsers', 'groupUsers.userId = :userId', { userId })
     .where('role.type = :type', { type: GROUP_PERMISSIONS_TYPE.DEFAULT })
     .andWhere('role.organizationId = :organizationId', { organizationId });
@@ -100,7 +107,7 @@ export function getAllUserGroupsQuery(userId: string, organizationId: string): S
       userId,
     })
     .andWhere('group.type = :type', {
-      type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+      type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
     });
   return query;
 }

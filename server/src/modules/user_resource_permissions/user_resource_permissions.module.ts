@@ -3,10 +3,11 @@ import { GroupPermissionsControllerV2 } from '@controllers/group_permissions.con
 import { GroupPermissionsServiceV2 } from '@services/group_permissions.service.v2';
 import { GranularPermissionsService } from '@services/granular_permissions.service';
 import { UserRoleService } from '@services/user-role.service';
+import { GroupPermissionsUtilityService } from './services/group-permissions.utility.service';
 
 @Module({
   controllers: [GroupPermissionsControllerV2],
   imports: [],
-  providers: [GroupPermissionsServiceV2, GranularPermissionsService, UserRoleService],
+  providers: [GroupPermissionsServiceV2, GranularPermissionsService, UserRoleService, GroupPermissionsUtilityService],
 })
 export class UserResourcePermissionsModule {}

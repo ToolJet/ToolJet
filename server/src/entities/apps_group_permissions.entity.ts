@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -12,11 +13,12 @@ import {
 import { GranularPermissions } from './granular_permissions.entity';
 import { GroupApps } from './group_apps.entity';
 
-@Entity({ name: 'granular_permissions' })
+@Entity({ name: 'apps_group_permissions' })
 export class AppsGroupPermissions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ name: 'granular_permission_id' })
   granularPermissionId: string;
 

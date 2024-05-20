@@ -16,6 +16,10 @@ export class AddAppsGroupPermissionsTable1714015596201 implements MigrationInter
         );
             `
     );
+
+    await queryRunner.query(
+      `CREATE INDEX idx_granular_permission_id ON apps_group_permissions(granular_permission_id);`
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

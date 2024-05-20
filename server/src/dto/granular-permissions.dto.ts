@@ -2,8 +2,9 @@ import { Transform } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsEnum } from 'class-validator';
 import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 import {
-  AppsGroupPermissionsActions,
-  GranularPermissionResourceItem,
+  ResourceGroupActions,
+  GranularPermissionAddResourceItems,
+  GranularPermissionDeleteResourceItems,
 } from '@module/user_resource_permissions/interface/granular-permissions.interface';
 
 export class CreateGranularPermissionDto {
@@ -27,20 +28,16 @@ export class UpdateGranularPermissionDto {
   @IsOptional()
   name: string;
 
-  @IsEnum(ResourceType)
-  @IsNotEmpty()
-  type: ResourceType;
-
   @IsBoolean()
   @IsOptional()
   isAll: boolean;
 
   @IsOptional()
-  resourceActions: AppsGroupPermissionsActions;
+  actions: ResourceGroupActions;
 
   @IsOptional()
-  resourcesToAdd: GranularPermissionResourceItem[];
+  resourcesToAdd: GranularPermissionAddResourceItems;
 
   @IsOptional()
-  resourcesToDelete: GranularPermissionResourceItem[];
+  resourcesToDelete: GranularPermissionDeleteResourceItems;
 }

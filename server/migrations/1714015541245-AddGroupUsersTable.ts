@@ -1,3 +1,4 @@
+import { DATA_BASE_CONSTRAINTS } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddGroupUsersTable1714015541245 implements MigrationInterface {
@@ -12,6 +13,7 @@ export class AddGroupUsersTable1714015541245 implements MigrationInterface {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         CONSTRAINT fk_group_id FOREIGN KEY (group_id) REFERENCES group_permissions(id) ON DELETE CASCADE
+        CONSTRAINT ${DATA_BASE_CONSTRAINTS.GROUP_USER_UNIQUE.dbConstraint} UNIQUE (user_id, group_id)
     );
         `
     );
