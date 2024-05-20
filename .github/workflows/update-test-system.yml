@@ -83,7 +83,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: 35.209.30.169
-          username: adish@tooljet.com
+          username: adish
           key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
           script: |
             ls -lah
