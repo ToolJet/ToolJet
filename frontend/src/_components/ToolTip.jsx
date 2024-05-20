@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export function ToolTip({
   message,
@@ -11,6 +12,7 @@ export function ToolTip({
   delay = { show: 50, hide: 100 },
   show = true,
   tooltipClassName = '',
+  style = {},
 }) {
   if (!show) {
     return children;
@@ -20,7 +22,11 @@ export function ToolTip({
       trigger={trigger}
       placement={placement}
       delay={delay}
-      overlay={<Tooltip className={tooltipClassName}>{message}</Tooltip>}
+      overlay={
+        <Tooltip style={style} className={tooltipClassName}>
+          {message}
+        </Tooltip>
+      }
     >
       {children}
     </OverlayTrigger>

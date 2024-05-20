@@ -206,10 +206,11 @@ export class DataQueriesService {
           } catch (error) {
             if (error.constructor.name === 'OAuthUnauthorizedClientError') {
               // unauthorized error need to re-authenticate
+              const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
               return {
                 status: 'needs_oauth',
                 data: {
-                  auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+                  auth_url: result.url,
                 },
               };
             }
@@ -267,10 +268,11 @@ export class DataQueriesService {
             }
           );
         } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi' || dataSource.kind === 'graphql') {
+          const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
           return {
             status: 'needs_oauth',
             data: {
-              auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+              auth_url: result.url,
             },
           };
         } else {
@@ -397,7 +399,7 @@ export class DataQueriesService {
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     let tokenOptions: any;
-    if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
+    if (['googlesheets', 'slack', 'zendesk', 'salesforce'].includes(dataSource.kind)) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
     } else {
       const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
@@ -439,6 +441,7 @@ export class DataQueriesService {
           if (Array.isArray(curr)) {
             for (let j = 0; j < curr.length; j++) {
               const inner = curr[j];
+              constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
                 const resolved = await this.resolveConstants(inner, organization_id, environmentId);
@@ -621,7 +624,7 @@ export class DataQueriesService {
 
         if (variables?.length > 0) {
           for (const variable of variables) {
-            object = object.replace(variable, options[variable]);
+            object = object.replace(variable, await this.resolveConstants(variable, organization_id, environmentId));
           }
         }
         return object;

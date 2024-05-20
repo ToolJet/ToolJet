@@ -330,13 +330,16 @@ export class AuthService {
       const { name, slug } = generateNextNameAndSlug('My workspace');
       const personalWorkspace = await this.organizationsService.create(name, slug, null, manager);
       /* Create the user or attach user groups to the user */
+      const lifeCycleParms = signingUpOrganization
+        ? getUserStatusAndSource(lifecycleEvents.USER_WORKSPACE_SIGN_UP)
+        : getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP);
       const user = await this.usersService.create(
         {
           email,
           password,
           ...(firstName && { firstName }),
           ...(lastName && { lastName }),
-          ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
+          ...lifeCycleParms,
         },
         personalWorkspace.id,
         ['all_users', 'admin'],
@@ -526,7 +529,7 @@ export class AuthService {
         );
       }
       case hasWorkspaceInviteButUserWantsInstanceSignup: {
-        const firstTimeSignup = existingUser.source !== SOURCE.SIGNUP;
+        const firstTimeSignup = ![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(existingUser.source as SOURCE);
         if (firstTimeSignup) {
           /* Invite user doing instance signup. So reset name fields and set password */
           await this.usersService.updateUser(
@@ -1028,7 +1031,9 @@ export class AuthService {
 
     if (accountYetToActive) {
       /* User has invite url which got after the workspace signup */
-      if (source === 'signup') {
+      const isInstanceSignupInvite = !!accountToken && !organizationToken && source === SOURCE.SIGNUP;
+      const isOrganizationSignupInvite = organizationAndAccountInvite && source === SOURCE.WORKSPACE_SIGNUP;
+      if (isInstanceSignupInvite || isOrganizationSignupInvite) {
         const responseObj = {
           email,
           name: fullName(firstName, lastName),
