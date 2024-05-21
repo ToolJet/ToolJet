@@ -479,6 +479,7 @@ const DynamicForm = ({
                     'form-label': isHorizontalLayout,
                     'align-items-center': !isHorizontalLayout,
                   })}
+                  style={{ minWidth: '100px' }}
                 >
                   {label && (
                     <label
@@ -523,6 +524,7 @@ const DynamicForm = ({
                   'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                   'w-100': isHorizontalLayout && type !== 'codehinter',
                 })}
+                style={{ width: '100%' }}
               >
                 <Element
                   {...getElementProps(obj[key])}
