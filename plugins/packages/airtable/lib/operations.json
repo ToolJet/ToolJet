@@ -77,6 +77,17 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "recAOzdIHaRpvRaGE"
+      },
+      "filter_by_formula": {
+        "label": "Filter By Formula",
+        "key": "filter_by_formula",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter formula",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "column1 * column2 > 100"
       }
     },
     "retrieve_record": {
