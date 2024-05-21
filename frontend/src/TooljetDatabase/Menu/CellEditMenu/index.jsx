@@ -162,7 +162,7 @@ export const CellEditMenu = ({
         <div className={`d-flex flex-column ${isBoolean ? 'gap-4' : 'gap-3'}`}>
           {isForeignKey && (
             <DropDownSelect
-              buttonClasses="border border-end-1 foreignKeyAcces-container"
+              buttonClasses="border border-end-1 tjdb-foreignKeyAccess-container"
               showPlaceHolder={true}
               options={referencedFKDataList}
               darkMode={darkMode}

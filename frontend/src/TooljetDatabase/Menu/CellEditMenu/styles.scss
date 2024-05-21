@@ -53,9 +53,11 @@
     }
 }
 
-.foreignKeyAcces-container {
+.tjdb-foreignKeyAccess-container {
+    border-radius: 4px;
 
     button {
+        border-radius: 4px !important;
 
         .text-truncate {
             width: 90% !important;
