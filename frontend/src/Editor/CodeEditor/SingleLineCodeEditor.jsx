@@ -323,7 +323,6 @@ const DynamicEditorBridge = (props) => {
   const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
-
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
@@ -341,7 +340,11 @@ const DynamicEditorBridge = (props) => {
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div
             style={{ marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center justify-content-end "
+            className={`d-flex align-items-center ${
+              paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel)
+                ? 'justify-content-end'
+                : 'justify-content-start'
+            }`}
           >
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div className="col-auto pt-0 fx-common fx-button-container">

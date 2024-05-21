@@ -908,7 +908,7 @@ export const EventManager = ({
                             onChange={(value) => {
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
-                            paramLabel={'  '}
+                            paramLabel={' '}
                             paramType={param?.type}
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
