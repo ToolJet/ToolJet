@@ -89,7 +89,7 @@ export function AppModal({
           setInfoText('');
           closeModal();
         }
-      } catch (error) {
+      } catch (e) {
         toast.error(e.error, {
           position: 'top-center',
         });
