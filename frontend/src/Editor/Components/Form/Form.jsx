@@ -79,8 +79,9 @@ export const Form = function Form(props) {
       },
     };
     setExposedVariables(exposedVariables);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid, formEvents]);
+  }, []);
 
   const extractData = (data) => {
     const result = {};

@@ -60,6 +60,7 @@ export const Code = ({
         styleDefinition={component?.component?.definition?.styles ?? {}}
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
+        cyLabel=""
       />
     </div>
   );

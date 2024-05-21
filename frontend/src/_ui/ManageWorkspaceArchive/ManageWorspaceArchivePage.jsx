@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import cx from 'classnames';
 import { organizationService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -11,8 +11,8 @@ import { appendWorkspaceId } from '@/_helpers/routes';
 import WorkspaceListingTable from './WorkspaceListingTable';
 import { SearchBox } from '@/_components/SearchBox';
 import ModalBase from '@/_ui/Modal';
-import { Spinner } from 'react-bootstrap';
 import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
+import { shallow } from 'zustand/shallow';
 
 const WORKSPACE_STATUS = {
   ARCHIVED: 'archived',
@@ -23,7 +23,7 @@ class ManageWorkspaceArchivePage extends Component {
   constructor(props) {
     super(props);
     const session = authenticationService.currentSessionValue;
-    const { current_organization_id: currentOrganizationId, organizations: currentOrganizations } = session;
+    const { current_organization_id: currentOrganizationId } = session;
 
     this.defaultState = {
       isLoading: true,
@@ -37,7 +37,7 @@ class ManageWorkspaceArchivePage extends Component {
       currentPage: 1,
       totalPageActive: 1,
       totalPageArchived: 1,
-      currentOrganizations: currentOrganizations,
+      currentOrganizations: props.organizationsList,
       currentTab: WORKSPACE_STATUS.ACTIVE,
       activeWorkspace: [],
       totalActive: 0,
@@ -276,6 +276,10 @@ class ManageWorkspaceArchivePage extends Component {
       variant: 'dangerPrimary',
       leftIcon: 'archive',
     };
+
+    const organizationsArray = currentOrganizations.length ? currentOrganizations : this.props.organizationsList;
+    const organizations = organizationsArray.filter((org) => org.id !== currentOrganizationId);
+
     return (
       <ErrorBoundary showFallback={false}>
         <div>
@@ -283,7 +287,7 @@ class ManageWorkspaceArchivePage extends Component {
             showCloseButton={true}
             darkMode={this.props.darkMode}
             title={'The current workspace will be archived. Select an active workspace to continue this session.'}
-            organizations={currentOrganizations.filter((org) => org.id !== currentOrganizationId)}
+            organizations={organizations}
             switchOrganization={this.switchOrganizationAndArchive}
             show={showSwitchModel}
             headerText={'Archive current workspace'}
@@ -419,4 +423,21 @@ class ManageWorkspaceArchivePage extends Component {
   }
 }
 
-export const ManageWorkspaceArchivePageComponent = withTranslation()(ManageWorkspaceArchivePage);
+const withStore = (Component) => (props) => {
+  const { fetchOrganizations, organizationsList } = useCurrentSessionStore(
+    (state) => ({
+      organizationsList: state.organizations,
+      fetchOrganizations: state.actions.fetchOrganizations,
+    }),
+    shallow
+  );
+
+  useEffect(() => {
+    fetchOrganizations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return <Component {...props} organizationsList={organizationsList} />;
+};
+
+export const ManageWorkspaceArchivePageComponent = withTranslation()(withStore(ManageWorkspaceArchivePage));

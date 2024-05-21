@@ -22,7 +22,7 @@ export const PreviewBox = ({
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
   const getPreviewContent = (content, type) => {
-    if (!content) return currentValue;
+    if (content === undefined || content === null) return currentValue;
     try {
       switch (type) {
         case 'Object':
@@ -68,7 +68,6 @@ export const PreviewBox = ({
 
   useEffect(() => {
     const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
-
     if (!validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
     }
