@@ -903,11 +903,12 @@ export const EventManager = ({
                           data-cy="action-options-text-input-field"
                         >
                           <CodeHinter
-                            type="basic"
+                            type="fxEditor"
                             initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
+                            paramLabel={'  '}
                             paramType={param?.type}
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
