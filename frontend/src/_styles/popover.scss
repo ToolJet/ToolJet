@@ -9,6 +9,7 @@
   overflow: auto;
   background-color: var(--base) !important;
   border-right: 2px solid var(--slate6, #313538);
+  z-index: 201;
 
 
   select {

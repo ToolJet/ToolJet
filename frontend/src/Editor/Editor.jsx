@@ -2310,6 +2310,7 @@ const EditorComponent = (props) => {
                       `px solid ${computeCanvasBackgroundColor()}`,
                     height: computeCanvasContainerHeight(),
                     background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
+                    zIndex: 200,
                   }}
                   onMouseUp={handleCanvasContainerMouseUp}
                   ref={canvasContainerRef}
