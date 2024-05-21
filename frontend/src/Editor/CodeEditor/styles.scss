@@ -201,7 +201,7 @@
     }
 }
 
-.ͼ1 .cm-placeholder{
+.ͼ1 .cm-placeholder {
     vertical-align: middle;
 }
 
@@ -247,9 +247,19 @@
     }
 }
 
+.modal-body {
+    .codehinter-multi-line-input {
+        .cm-editor {
+            height: 100%;
+        }
+    }
+}
 
 .codehinter-multi-line-input {
+    height: 100%;
+
     .cm-editor {
+        min-height: 300px;
         height: 300px;
         max-height: fit-content !important;
 
@@ -477,6 +487,7 @@
 
 .cm-content {
     max-width: 98%;
+    flex-shrink: 1 !important;
 }
 
 .cm-line {
