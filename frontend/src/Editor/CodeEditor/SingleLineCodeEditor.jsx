@@ -304,7 +304,7 @@ const DynamicEditorBridge = (props) => {
     initialValue,
     type,
     fxActive,
-    paramType,
+    paramType = 'code',
     paramLabel,
     paramName,
     fieldMeta,
@@ -341,7 +341,11 @@ const DynamicEditorBridge = (props) => {
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div
             style={{ marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center justify-content-end "
+            className={`d-flex align-items-center ${
+              paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel)
+                ? 'justify-content-end'
+                : 'justify-content-start'
+            }`}
           >
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div className="col-auto pt-0 fx-common fx-button-container">

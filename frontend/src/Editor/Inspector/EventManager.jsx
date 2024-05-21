@@ -898,12 +898,12 @@ export const EventManager = ({
                       ) : (
                         <div
                           className={`${
-                            param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
-                          } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            param?.type ? '' : 'fx-container-eventmanager-code'
+                          } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                           data-cy="action-options-text-input-field"
                         >
                           <CodeHinter
-                            type="basic"
+                            type="fxEditor"
                             initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
