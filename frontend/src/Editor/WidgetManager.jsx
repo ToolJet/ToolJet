@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
@@ -7,9 +7,14 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { SearchBox } from '@/_components';
 
-export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode }) {
+export const WidgetManager = function WidgetManager({
+  componentTypes,
+  zoomLevel,
+  darkMode,
+  searchQuery,
+  setSearchQuery,
+}) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
-  const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -125,6 +130,10 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       );
     }
   }
+  useEffect(() => {
+    if (searchQuery) filterComponents(searchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className={`components-container ${isVersionReleased && 'disabled'}`}>
@@ -132,7 +141,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}
-          initialValue={''}
+          initialValue={searchQuery}
           callBack={(e) => handleSearchQueryChange(e)}
           onClearCallback={() => {
             setSearchQuery('');
