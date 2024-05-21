@@ -218,15 +218,17 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
 };
 
 const queryHasStringOtherThanVariable = (query) => {
-  if (query.startsWith('{{') && query.includes(' ')) {
-    return true;
+  const startsWithDoubleCurly = query.startsWith('{{');
+  const endsWithDoubleCurly = query.endsWith('}}');
+
+  if (startsWithDoubleCurly && endsWithDoubleCurly) {
+    // Extract the content within the curly braces
+    const content = query.slice(2, -2).trim();
+    // Check if there is a space within the content
+    return content.includes(' ');
   }
 
-  if (query.startsWith('{{') && query.endsWith('}}')) {
-    return false;
-  }
-
-  return true;
+  return false;
 };
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
@@ -249,7 +251,12 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   }
 
   const queryHasJSCode = queryHasStringOtherThanVariable(query);
-  const useJSResolvers = queryHasStringOtherThanVariable(query) || getDynamicVariables(query)?.length > 1;
+  let useJSResolvers = queryHasJSCode || getDynamicVariables(query)?.length > 1;
+
+  if (!queryHasJSCode && getDynamicVariables(query)?.length === 1 && !query.startsWith('{{') && query.includes('{{')) {
+    useJSResolvers = true;
+  }
+
   const customWidgetResolvers = ['listItem'];
   const isCustomResolvers = customWidgetResolvers.some((resolver) => query.includes(resolver));
 
@@ -291,7 +298,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   }
 
   if (!validationSchema || isEmpty(validationSchema)) {
-    return [true, error, resolvedValue];
+    return [true, error, resolvedValue, resolvedValue];
   }
 
   if (error) {

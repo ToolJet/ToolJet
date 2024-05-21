@@ -201,8 +201,8 @@
     }
 }
 
-.cm-placeholder {
-    // width: 100% !important;
+.ͼ1 .cm-placeholder{
+    vertical-align: middle;
 }
 
 .code-hinter-wrapper {
@@ -499,6 +499,23 @@
 
         .cm-editor {
             height: 100%;
+        }
+    }
+}
+
+.table-column-popover {
+    .cm-tooltip-autocomplete {
+        left: auto !important;
+        max-width: 100% !important;
+
+        ul {
+            min-width: auto !important;
+        }
+    }
+
+    .column-popover-card-ui {
+        .cm-tooltip-autocomplete {
+            max-width: 100% !important;
         }
     }
 }
