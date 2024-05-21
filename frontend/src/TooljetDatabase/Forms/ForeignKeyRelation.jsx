@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/_components';
 import { Tooltip } from 'react-tooltip';
 import { getColumnDataType, dataTypes } from '../constants';
 import { TooljetDatabaseContext } from '../index';
+import cx from 'classnames';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -378,7 +379,15 @@ function ForeignKeyRelation({
               opacity="1"
               secondaryFill="#FFFFFF"
             />
-            &nbsp;&nbsp; <span className={`${darkMode ? 'add-relation-text-dark' : ''}`}>Add relation</span>
+            &nbsp;&nbsp;{' '}
+            <span
+              className={cx({
+                'add-relation-text-dark': darkMode,
+                'add-relation-text-enabled': !disableAddRelationButton,
+              })}
+            >
+              Add relation
+            </span>
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
