@@ -48,9 +48,8 @@ function ForeignKeyRelation({
   const existingReferencedColumnName = foreignKeyDetails[selectedForeignkeyIndex]?.referenced_column_names[0];
   const currentReferencedTableName = targetTable?.value;
   const currentReferencedColumnName = targetColumn?.value;
-  const disabledFillColor = darkMode ? '#4A4A4A' : '#E4E7EB';
+  const disabledFillColor = darkMode ? '#545B64' : '#E4E7EB';
   const enabledFillColor = '#3E63DD';
-  const secondaryFillColour = darkMode ? '#E4E7EB' : '#FFFFFF';
 
   const onCloseForeignKeyDrawer = () => {
     setIsForeignKeyDraweOpen(false);
@@ -377,9 +376,9 @@ function ForeignKeyRelation({
               width="15"
               fill={disableAddRelationButton ? disabledFillColor : enabledFillColor}
               opacity="1"
-              secondaryFill={secondaryFillColour}
+              secondaryFill="#FFFFFF"
             />
-            &nbsp;&nbsp; Add relation
+            &nbsp;&nbsp; <span className={`${darkMode ? 'add-relation-text-dark' : ''}`}>Add relation</span>
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
