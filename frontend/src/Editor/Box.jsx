@@ -10,6 +10,7 @@ import { Container } from './Components/Container';
 import { Tabs } from './Components/Tabs';
 import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
+import { DropdownV2 } from './Components/DropdownV2/DropdownV2';
 import { Checkbox } from './Components/Checkbox';
 import { Datepicker } from './Components/Datepicker';
 import { DaterangePicker } from './Components/DaterangePicker';
@@ -82,6 +83,7 @@ export const AllComponents = {
   Tabs,
   RichTextEditor,
   DropDown,
+  DropdownV2,
   Checkbox,
   Datepicker,
   DaterangePicker,

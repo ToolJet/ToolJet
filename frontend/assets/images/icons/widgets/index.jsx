@@ -16,6 +16,7 @@ import Divider from './divider.jsx';
 import DividerHorizondal from './dividerhorizontal.jsx';
 import Downstatistics from './downstatistics.jsx';
 import Dropdown from './dropdown.jsx';
+import DropdownV2 from './dropdownV2.jsx';
 import Filepicker from './filepicker.jsx';
 import Form from './form.jsx';
 import Frame from './frame.jsx';
@@ -54,7 +55,6 @@ import Timeline from './timeline.jsx';
 import Timer from './timer.jsx';
 import Toggleswitch from './toggleswitch.jsx';
 import ToggleSwitchV2 from './toggleswitchV2.jsx';
-
 import Treeselect from './treeselect.jsx';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
@@ -95,6 +95,8 @@ const WidgetIcon = (props) => {
       return <Downstatistics {...props} />;
     case 'dropdown':
       return <Dropdown {...props} />;
+    case 'dropdownV2':
+      return <DropdownV2 {...props} />;
     case 'filepicker':
       return <Filepicker {...props} />;
     case 'form':

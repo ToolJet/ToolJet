@@ -7,7 +7,15 @@ import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
 
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput', 'ToggleSwitchV2', 'Checkbox'];
+const SHOW_ADDITIONAL_ACTIONS = [
+  'Text',
+  'TextInput',
+  'NumberInput',
+  'PasswordInput',
+  'ToggleSwitchV2',
+  'Checkbox',
+  'DropdownV2',
+];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
   TextInput: 'Data',
@@ -88,7 +96,17 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Table', 'ToggleSwitchV2', 'Checkbox'],
+    General: [
+      'Modal',
+      'TextInput',
+      'PasswordInput',
+      'NumberInput',
+      'Text',
+      'Table',
+      'ToggleSwitchV2',
+      'Checkbox',
+      'DropdownV2',
+    ],
     Layout: [],
   };
   if (component.component.component === 'Listview') {

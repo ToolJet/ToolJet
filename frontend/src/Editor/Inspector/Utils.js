@@ -46,7 +46,8 @@ export function renderCustomStyles(
     componentConfig.component == 'PasswordInput' ||
     componentConfig.component == 'ToggleSwitchV2' ||
     componentConfig.component == 'Checkbox' ||
-    componentConfig.component == 'Table'
+    componentConfig.component == 'Table' ||
+    componentConfig.component == 'DropdownV2'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
