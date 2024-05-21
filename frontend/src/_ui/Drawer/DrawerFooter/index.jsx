@@ -102,7 +102,7 @@ function DrawerFooter({
             <div className="mr-5 tjdb-enter-shortcut-box">
               <SolidIcon name="enterbutton" />
             </div>
-            <div className="fw-400 tjdb-cell-menu-shortcuts-text">Create this row & add one more row</div>
+            <div className="fw-400 tjdb-cell-menu-shortcuts-text">Create this row & add another</div>
           </div>
         )}
         <div className="d-flex action-btns">
