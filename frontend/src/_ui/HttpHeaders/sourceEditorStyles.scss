@@ -1,4 +1,6 @@
-input.form-control,
+.query-manager-border-color {
+
+  input.form-control,
   textarea,
   .input-control {
     gap: 16px !important;
@@ -10,7 +12,7 @@ input.form-control,
     transition: none;
     height: 35px;
     padding-left: 0.4375rem;
-    padding-right: 0.4375rem;
+    padding-right: 30rem;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
     overflow-x: 'auto';
@@ -51,26 +53,28 @@ input.form-control,
     }
 
   }
+}
 
-  .empty-key-value {
-    border: 2px dashed #ccc;
-    border-radius: 6px;
-    padding: 10px;
-    text-align: center;
-    color: #ccc;
-    width: inherit;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    margin-bottom: 10px;
-  }
 
-  .trash {
-    height: 32px;
-    display: flex;
-    justify-content: 'center';
-    align-items: 'center';
-  }
-  
+
+.empty-key-value {
+  border: 2px dashed #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  color: #ccc;
+  width: inherit;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.trash {
+  height: 32px;
+  display: flex;
+  justify-content: 'center';
+  align-items: 'center';
+}

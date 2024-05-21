@@ -189,7 +189,7 @@ const PreviewContainer = ({
         width: '250px',
         maxWidth: '350px',
         marginRight: 2,
-        zIndex: 199,
+        zIndex: 1400,
       }}
       onMouseEnter={() => setCursorInsidePreview(true)}
       onMouseLeave={() => setCursorInsidePreview(false)}

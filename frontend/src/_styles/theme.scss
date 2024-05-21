@@ -847,8 +847,8 @@ button {
 
     &:hover {
       background: none !important;
-      border: none !important;      
-      color: var(--slate12);       
+      border: none !important;
+      color: var(--slate12);
     }
   }
 }
@@ -8590,7 +8590,7 @@ tbody {
 
 .logo-nav-card {
   transform: translate(5px, 50px) !important;
-  z-index: 202;
+  z-index: 101;
 }
 
 .theme-dark {
@@ -9279,7 +9279,7 @@ tbody {
   align-items: center;
   color: var(--slate11);
 
-  .with-border{
+  .with-border {
     border-bottom: 1px solid var(--slate5) !important;
   }
 
@@ -13811,11 +13811,13 @@ tbody {
 .color-slate-11 {
   color: var(--slate11) !important;
 }
-.custom-gap-7{
-  gap:7px
+
+.custom-gap-7 {
+  gap: 7px
 }
-.custom-gap-6{
-  gap:6px
+
+.custom-gap-6 {
+  gap: 6px
 }
 
 .custom-gap-2 {
@@ -14202,6 +14204,7 @@ tbody {
 .share-disabled {
   opacity: 0.4;
 }
+
 .bold-text {
   font-weight: 500;
 }
@@ -15196,7 +15199,7 @@ tbody {
 
 .add-new-group-modal {
   .modal-title {
-    display: flex;  
+    display: flex;
     align-items: center;
 
     .paid-feature-banner {
@@ -15285,6 +15288,7 @@ tbody {
 .wrapper-div-code-editor:hover .fx-button-container {
   opacity: 1;
 }
+
 .canvas-container {
   scrollbar-color: transparent;
   scrollbar-width: thin;
