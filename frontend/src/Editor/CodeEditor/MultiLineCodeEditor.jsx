@@ -63,7 +63,9 @@ const MultiLineCodeEditor = (props) => {
   }, []);
 
   const handleOnBlur = () => {
-    onChange(currentValue);
+    setTimeout(() => {
+      onChange(currentValue);
+    }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
