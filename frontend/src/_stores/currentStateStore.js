@@ -108,7 +108,6 @@ useCurrentStateStore.subscribe((state) => {
           variables: state.variables,
           client: state.client,
           server: state.server,
-          constants: state.constants,
         });
         useResolveStore.getState().actions.pageSwitched(false);
       },
