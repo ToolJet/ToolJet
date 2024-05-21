@@ -24,15 +24,28 @@ export default class AirtableQueryService implements QueryService {
         case 'list_records': {
           const pageSize = queryOptions.page_size || '';
           const offset = queryOptions.offset || '';
+          const filterFormula = queryOptions.filter_by_formula || '';
 
-          response = await got(
-            `https://api.airtable.com/v0/${baseId}/${tableName}/?pageSize=${pageSize}&offset=${offset}`,
-            {
-              method: 'get',
-              headers: this.authHeader(apiToken),
-            }
-          );
-
+          if (filterFormula) {
+            response = await got(
+              `https://api.airtable.com/v0/${baseId}/${tableName}/listRecords/?pageSize=${pageSize}&offset=${offset}`,
+              {
+                method: 'post',
+                headers: this.authHeader(apiToken),
+                json: {
+                  filterByFormula: filterFormula,
+                },
+              }
+            );
+          } else {
+            response = await got(
+              `https://api.airtable.com/v0/${baseId}/${tableName}/?pageSize=${pageSize}&offset=${offset}`,
+              {
+                method: 'get',
+                headers: this.authHeader(apiToken),
+              }
+            );
+          }
           result = JSON.parse(response.body);
           break;
         }
