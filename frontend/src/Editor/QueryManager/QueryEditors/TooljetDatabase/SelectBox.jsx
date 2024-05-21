@@ -290,6 +290,12 @@ function DataSourceSelect({
                       'ms-1 ': props?.data?.icon,
                       'flex-grow-1': !showDescription,
                     })}
+                    style={{
+                      width: '80%',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                    }}
                   >
                     {children}
                   </span>
