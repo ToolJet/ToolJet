@@ -715,58 +715,62 @@ const ColumnForm = ({
               </div>
             </div>
           </ToolTip>
-          <ToolTip
-            message={
-              selectedColumn.constraints_type.is_primary_key === true
-                ? 'Primary key values must be unique'
-                : selectedColumn.dataType === 'serial' &&
+          {dataType !== 'boolean' && (
+            <ToolTip
+              message={
+                selectedColumn.constraints_type.is_primary_key === true
+                  ? 'Primary key values must be unique'
+                  : selectedColumn.dataType === 'serial' &&
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type value must be unique'
+                  : null
+              }
+              placement="top"
+              tooltipClassName="tooltip-table-edit-column"
+              style={toolTipPlacementStyle}
+              show={
+                selectedColumn.constraints_type?.is_primary_key === true ||
+                (selectedColumn.dataType === 'serial' &&
                   (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type value must be unique'
-                : null
-            }
-            placement="top"
-            tooltipClassName="tooltip-table-edit-column"
-            style={toolTipPlacementStyle}
-            show={
-              selectedColumn.constraints_type?.is_primary_key === true ||
-              (selectedColumn.dataType === 'serial' &&
-                (selectedColumn.constraints_type.is_primary_key !== true ||
-                  selectedColumn.constraints_type.is_primary_key === true))
-            }
-          >
-            <div className="row mb-1">
-              <div className="col-1">
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={
-                      !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key
-                        ? true
-                        : isUniqueConstraint
-                    }
-                    onChange={(e) => {
-                      setIsUniqueConstraint(e.target.checked);
-                    }}
-                    disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
-                  />
-                </label>
+                    selectedColumn.constraints_type.is_primary_key === true))
+              }
+            >
+              <div className="row mb-1">
+                <div className="col-1">
+                  <label className={`form-switch`}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={
+                        !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key
+                          ? true
+                          : isUniqueConstraint
+                      }
+                      onChange={(e) => {
+                        setIsUniqueConstraint(e.target.checked);
+                      }}
+                      disabled={
+                        selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key
+                      }
+                    />
+                  </label>
+                </div>
+                <div className="col d-flex flex-column">
+                  <p className="m-0 p-0 fw-500">
+                    {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
+                      ? 'UNIQUE'
+                      : 'NOT UNIQUE'}
+                  </p>
+                  <p className="fw-400 secondary-text tj-text-xsm">
+                    {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
+                      ? 'Unique value constraint is added'
+                      : 'Unique value constraint is not added'}
+                  </p>
+                </div>
               </div>
-              <div className="col d-flex flex-column">
-                <p className="m-0 p-0 fw-500">
-                  {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
-                    ? 'UNIQUE'
-                    : 'NOT UNIQUE'}
-                </p>
-                <p className="fw-400 secondary-text tj-text-xsm">
-                  {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
-                    ? 'Unique value constraint is added'
-                    : 'Unique value constraint is not added'}
-                </p>
-              </div>
-            </div>
-          </ToolTip>
+            </ToolTip>
+          )}
         </div>
         <DrawerFooter
           isEditMode={true}
