@@ -119,7 +119,7 @@ export class CreatePostgrestTableDto {
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
-    message: 'Table name can only contain letters, numbers and underscores',
+    message: 'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores',
   })
   @Validate(SQLInjectionValidator)
   table_name: string;
@@ -147,7 +147,7 @@ export class PostgrestForeignKeyDto {
   @MaxLength(31, { message: 'Referenced table name must be less than 32 characters' })
   @MinLength(1, { message: 'Referenced table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
-    message: 'Table name can only contain letters, numbers and underscores',
+    message: 'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores',
   })
   @Validate(SQLInjectionValidator)
   referenced_table_name: string;
@@ -227,7 +227,7 @@ export class EditTableDto {
   @IsNotEmpty()
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
-    message: 'Table name can only contain letters, numbers and underscores',
+    message: 'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores',
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   table_name: string;
@@ -238,7 +238,7 @@ export class EditTableDto {
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
-    message: 'Table name can only contain letters, numbers and underscores',
+    message: 'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores',
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;

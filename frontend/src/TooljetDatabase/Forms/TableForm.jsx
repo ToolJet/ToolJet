@@ -130,7 +130,9 @@ const TableForm = ({
 
     const tableNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     if (!tableNameRegex.test(tableName)) {
-      toast.error('Table name can only contain alphabets, numbers and underscores');
+      toast.error(
+        'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores'
+      );
       return false;
     }
 

@@ -599,7 +599,7 @@ const MenuList = ({
           {children}
         </div>
       )}
-      {onAdd && (
+      {onAdd && !(isLoadingFKDetails && loader) && (
         <div
           className={cx('mt-2 border-slate3-top', {
             'tj-foreignKey p-1': foreignKeyAccess || foreignKeyAccessInRowForm,
