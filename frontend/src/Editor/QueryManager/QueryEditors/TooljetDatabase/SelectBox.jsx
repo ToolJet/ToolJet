@@ -284,22 +284,27 @@ function DataSourceSelect({
                         viewBox=""
                       />
                     ))}
-
-                  <span
-                    className={cx({
-                      'ms-1 ': props?.data?.icon,
-                      'flex-grow-1': !showDescription,
-                    })}
-                    style={{
-                      width: '80%',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                    }}
+                  <ToolTip
+                    message={children}
+                    placement="top"
+                    tooltipClassName="tjdb-cell-tooltip"
+                    show={isCellEdit && children?.length > 30}
                   >
-                    {children}
-                  </span>
-
+                    <span
+                      className={cx({
+                        'ms-1 ': props?.data?.icon,
+                        'flex-grow-1': !showDescription,
+                      })}
+                      style={{
+                        width: '80%',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {children}
+                    </span>
+                  </ToolTip>
                   {foreignKeyAccess && showRedirection && props.isFocused && (
                     <Maximize
                       width={16}
