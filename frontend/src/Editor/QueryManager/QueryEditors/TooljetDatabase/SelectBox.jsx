@@ -51,6 +51,7 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  columnDataType = '',
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -94,9 +95,11 @@ function DataSourceSelect({
     const filterQuery = new PostgrestQueryBuilder();
     selectQuery.select(referencedColumns?.referenced_column_names[0]);
     let query = `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`;
+
     if (!isEmpty(searchValue)) {
-      // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
-      filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
+      columnDataType === 'character varying'
+        ? filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`)
+        : filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
       query = query + `&${filterQuery.url.toString()}`;
     }
 

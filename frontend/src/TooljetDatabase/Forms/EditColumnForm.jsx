@@ -549,6 +549,7 @@ const ColumnForm = ({
                     setReferencedColumnDetails={setReferencedColumnDetails}
                     scrollEventForColumnValus={true}
                     cellColumnName={selectedColumn?.Header}
+                    columnDataType={dataType}
                   />
                 )}
               </div>

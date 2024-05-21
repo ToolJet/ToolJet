@@ -331,6 +331,7 @@ function TableSchema({
                 setReferencedColumnDetails={setReferencedColumnDetails}
                 scrollEventForColumnValus={true}
                 cellColumnName={columnDetails[index].column_name}
+                columnDataType={columnDetails[index].data_type}
               />
             ) : (
               <ToolTip

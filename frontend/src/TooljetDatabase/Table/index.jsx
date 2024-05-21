@@ -1307,6 +1307,7 @@ const Table = ({ collapseSidebar }) => {
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
                                       cellHeader={cell.column.Header}
+                                      dataType={cell.column.dataType}
                                     >
                                       <div
                                         className="input-cell-parent"
