@@ -789,6 +789,14 @@ export const setFaviconAndTitle = async (whiteLabelFavicon, whiteLabelText, loca
   };
   const pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path));
   const pageTitle = pathToTitle[pageTitleKey];
+
+  //For undefined routes
+
+  if (pageTitle === undefined) {
+    document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
+    return;
+  }
+
   if (pageTitleKey && !isEditorOrViewerGoingToRender) {
     document.title = pageTitle
       ? `${decodeEntities(pageTitle)} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
