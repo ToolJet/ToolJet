@@ -80,7 +80,7 @@ function DrawerFooter({
     editForeignKeyInCreateTable,
   ]);
 
-  const isReadDocsTrue =
+  const isDrawerWithDocumentation =
     initiator === 'CreateTableForm' ||
     initiator === 'EditTableForm' ||
     initiator === 'CreateColumnForm' ||
@@ -91,15 +91,11 @@ function DrawerFooter({
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
       <div
         className={cx(
-          { 'd-flex justify-content-end drawer-footer-btn-wrap': !isReadDocsTrue },
-          { 'd-flex justify-content-between drawer-footer-btn-wrap': isReadDocsTrue }
+          { 'd-flex justify-content-end drawer-footer-btn-wrap': !isDrawerWithDocumentation },
+          { 'd-flex justify-content-between drawer-footer-btn-wrap': isDrawerWithDocumentation }
         )}
       >
-        {(initiator === 'CreateTableForm' ||
-          initiator === 'EditTableForm' ||
-          initiator === 'CreateColumnForm' ||
-          initiator === 'EditColumnForm' ||
-          initiator === 'ForeignKeyTableForm') && (
+        {isDrawerWithDocumentation && (
           <ToolTip
             message={'Foreign key relations checks for referential integrity between two tables.'}
             placement="top"
