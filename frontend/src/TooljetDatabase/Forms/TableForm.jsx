@@ -320,7 +320,6 @@ const TableForm = ({
           hasPrimaryKey !== true ||
           (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
-        showToolTipForFkOnReadDocsSection={true}
         initiator={initiator}
       />
       <ConfirmDialog

@@ -782,7 +782,6 @@ const ColumnForm = ({
             }
           }}
           shouldDisableCreateBtn={columnName === ''}
-          showToolTipForFkOnReadDocsSection={true}
           initiator={initiator}
         />
       </div>
