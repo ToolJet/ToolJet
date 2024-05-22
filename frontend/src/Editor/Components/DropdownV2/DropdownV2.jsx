@@ -8,7 +8,6 @@ import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
 import TriangleDownCenter from '@/_ui/Icon/solidIcons/TriangleDownCenter';
 import TriangleUpCenter from '@/_ui/Icon/solidIcons/TriangleUpCenter';
 import cx from 'classnames';
-// import { CustomMenuList } from '../Table/CustomSelect';
 import { useEditorStore } from '@/_stores/editorStore';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { has, isObject, pick } from 'lodash';
@@ -25,7 +24,6 @@ export const CustomMenuList = ({ optionsLoadingState, darkMode, selectProps, inp
 
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
-      {/* <Menu {...{ ...props, ...selectProps }}> */}
       <div className="dropdown-widget-custom-menu-list" onClick={(e) => e.stopPropagation()}>
         <div className="dropdown-widget-search-box-wrapper">
           {!inputValue && (
@@ -70,7 +68,6 @@ export const CustomMenuList = ({ optionsLoadingState, darkMode, selectProps, inp
           )}
         </MenuList>
       </div>
-      {/* </Menu> */}
     </div>
   );
 };
@@ -174,7 +171,7 @@ export const DropdownV2 = ({
     placeholder,
     display_values,
     values,
-    dropdownLoadingState,
+    loadingState: dropdownLoadingState,
     disabledState,
     optionVisibility,
     optionDisable,
@@ -538,7 +535,7 @@ export const DropdownV2 = ({
               MenuList: (props) => (
                 <CustomMenuList
                   {...props}
-                  optionsLoadingState={properties.loadingState}
+                  optionsLoadingState={properties.optionsLoadingState}
                   darkMode={darkMode}
                   inputRef={inputRef}
                 />
@@ -560,7 +557,6 @@ export const DropdownV2 = ({
               isFocused: isFocused || undefined,
             }}
             inputValue={inputValue}
-            optionLoadingState={properties.loadingState}
             setInputValue={setInputValue}
           />
         </div>

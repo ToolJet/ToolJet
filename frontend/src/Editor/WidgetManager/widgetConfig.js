@@ -4027,7 +4027,7 @@ export const widgets = [
         },
         accordian: 'Options',
       },
-      loadingState: {
+      optionsLoadingState: {
         type: 'toggle',
         displayName: 'Options loading state',
         validation: {
@@ -4035,7 +4035,7 @@ export const widgets = [
         },
         accordian: 'Options',
       },
-      dropdownLoadingState: {
+      loadingState: {
         type: 'toggle',
         displayName: 'Show loading state',
         validation: {
@@ -4243,11 +4243,11 @@ export const widgets = [
         value: { value: '{{"2"}}' },
         values: { value: '{{["1","2","3"]}}' },
         display_values: { value: '{{["Option 1", "Option 2", "Option 3"]}}' },
-        loadingState: { value: '{{false}}' },
+        optionsLoadingState: { value: '{{false}}' },
         placeholder: { value: 'select' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        dropdownLoadingState: { value: '{{false}}' },
+        loadingState: { value: '{{false}}' },
         optionVisibility: { value: '{{[true, true, true]}}' },
         optionDisable: { value: '{{[false, false, false]}}' },
         tooltip: { value: '' },
@@ -4259,9 +4259,9 @@ export const widgets = [
         auto: { value: '{{true}}' },
         fieldBorderRadius: { value: '6' },
         justifyContent: { value: 'left' },
-        selectedTextColor: { value: '#11181C' },
+        selectedTextColor: { value: '#1B1F24' },
         fieldBorderColor: { value: '#CCD1D5' },
-        errTextColor: { value: '#DB4324' },
+        errTextColor: { value: '#D72D39' },
         fieldBackgroundColor: { value: '#fff' },
         direction: { value: 'alignLeft' },
         alignment: { value: 'side' },
@@ -4269,7 +4269,7 @@ export const widgets = [
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         icon: { value: 'IconHome2' },
         iconVisibility: { value: false },
-        iconColor: { value: '#DB4324' },
+        iconColor: { value: '#CFD3D859' },
         accentColor: { value: '#4368E3' },
       },
     },

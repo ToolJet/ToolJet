@@ -458,7 +458,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             componentMeta,
             paramUpdated,
             dataQueries,
-            'loadingState',
+            'optionsLoadingState',
             'properties',
             currentState,
             allComponents
