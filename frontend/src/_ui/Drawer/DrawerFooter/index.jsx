@@ -89,7 +89,7 @@ function DrawerFooter({
   };
   const drawerNames = Object.keys(drawerDocumentationsLinks);
   const isDrawerWithDocumentation = drawerNames.some((drawerName) => drawerName === initiator);
-  const isDrawerWithDocumentationLink = drawerDocumentationsLinks[initiator];
+  const documentationLink = drawerDocumentationsLinks[initiator];
 
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
@@ -108,7 +108,7 @@ function DrawerFooter({
           >
             <div className="d-flex align-items-center">
               <Student />
-              <a href={isDrawerWithDocumentationLink} target="_blank" className="read-documentation" rel="noreferrer">
+              <a href={documentationLink} target="_blank" className="read-documentation" rel="noreferrer">
                 Read documentation
               </a>
             </div>
