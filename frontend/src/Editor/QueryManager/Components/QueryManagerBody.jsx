@@ -181,28 +181,24 @@ export const QueryManagerBody = ({
 
   const renderQueryElement = () => {
     return (
-      <div>
-        <div>
-          <div
-            className={cx({
-              'disabled ': isVersionReleased,
-            })}
-          >
-            <ElementToRender
-              key={selectedQuery?.id}
-              pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
-              selectedDataSource={selectedDataSource}
-              options={selectedQuery?.options}
-              optionsChanged={optionsChanged}
-              optionchanged={optionchanged}
-              currentState={currentState}
-              darkMode={darkMode}
-              isEditMode={true} // Made TRUE always to avoid setting default options again
-              queryName={queryName}
-              onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
-            />
-          </div>
-        </div>
+      <div
+        className={cx({
+          'disabled ': isVersionReleased,
+        })}
+      >
+        <ElementToRender
+          key={selectedQuery?.id}
+          pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
+          selectedDataSource={selectedDataSource}
+          options={selectedQuery?.options}
+          optionsChanged={optionsChanged}
+          optionchanged={optionchanged}
+          currentState={currentState}
+          darkMode={darkMode}
+          isEditMode={true} // Made TRUE always to avoid setting default options again
+          queryName={queryName}
+          onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
+        />
       </div>
     );
   };
@@ -238,7 +234,7 @@ export const QueryManagerBody = ({
 
   const renderQueryOptions = () => {
     return (
-      <div style={{ padding: '0 32px' }}>
+      <div>
         <div
           className={cx(`d-flex pb-1`, {
             'disabled ': isVersionReleased,
@@ -317,11 +313,7 @@ export const QueryManagerBody = ({
   if (selectedQueryId !== selectedQuery?.id) return;
 
   return (
-    <div
-      className={`row row-deck query-details ${
-        selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
-      }`}
-    >
+    <div className={` query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}>
       {selectedQuery?.data_source_id && selectedDataSource !== null ? activeTab == 1 && renderChangeDataSource() : null}
       {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : activeTab == 1 && renderQueryElement()}
       {selectedDataSource === null || !selectedQuery

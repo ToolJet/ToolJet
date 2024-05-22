@@ -424,7 +424,7 @@ const DynamicForm = ({
     };
 
     return (
-      <div className={`${isHorizontalLayout ? '' : 'row'}`}>
+      <div className={`${isHorizontalLayout ? '' : 'row p-0'}`}>
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className, key: propertyKey } = obj[key];
           const Element = getElement(type);
@@ -516,7 +516,7 @@ const DynamicForm = ({
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
       return (
         <>
-          <div className={`${isHorizontalLayout ? '' : 'row'}`}>
+          <div className={`${isHorizontalLayout ? '' : 'row p-0'}`}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
             <div
               className={cx('', {
