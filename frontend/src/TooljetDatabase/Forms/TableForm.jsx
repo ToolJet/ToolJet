@@ -260,7 +260,7 @@ const TableForm = ({
           </h3>
         )}
       </div>
-      <div>
+      <div className="card-body-wrapper">
         <div className="card-body">
           {isEditMode && (
             <div className="edit-warning-info mb-3">
