@@ -80,12 +80,7 @@ function DrawerFooter({
     editForeignKeyInCreateTable,
   ]);
 
-  const isDrawerWithDocumentation =
-    initiator === 'CreateTableForm' ||
-    initiator === 'EditTableForm' ||
-    initiator === 'CreateColumnForm' ||
-    initiator === 'EditColumnForm' ||
-    initiator === 'ForeignKeyTableForm';
+  const isDrawerWithDocumentation = initiator === 'ForeignKeyTableForm';
 
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
@@ -97,7 +92,7 @@ function DrawerFooter({
       >
         {isDrawerWithDocumentation && (
           <ToolTip
-            message={'Foreign key relations checks for referential integrity between two tables.'}
+            message={'Foreign key relations checks for referential integrity between two tables. Read more.'}
             placement="top"
             tooltipClassName="tootip-table read-docs-fk"
             show={showToolTipForFkOnReadDocsSection}
@@ -105,7 +100,7 @@ function DrawerFooter({
             <div className="d-flex align-items-center">
               <Student />
               <a
-                href="https://docs.tooljet.com/docs/tooljet-db/database-editor/#foreign-key"
+                href="https://docs.tooljet.com/docs/tooljet-db/database-editor"
                 target="_blank"
                 className="read-documentation"
                 rel="noreferrer"
