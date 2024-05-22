@@ -794,9 +794,10 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
   let parameters = userSuppliedParameters;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
 
   setPreviewLoading(true);
+  setPreviewPanelExpanded(true);
   if (queryPreviewData) {
     setPreviewData('');
   }

@@ -11,6 +11,7 @@ const initialState = {
   queryPreviewData: '',
   showCreateQuery: false,
   nameInputFocussed: false,
+  previewPanelExpanded: false,
 };
 
 export const useQueryPanelStore = create(
@@ -34,6 +35,7 @@ export const useQueryPanelStore = create(
         setPreviewData: (data) => set({ queryPreviewData: data }),
         setShowCreateQuery: (showCreateQuery) => set({ showCreateQuery }),
         setNameInputFocussed: (nameInputFocussed) => set({ nameInputFocussed }),
+        setPreviewPanelExpanded: (previewPanelExpanded) => set({ previewPanelExpanded }),
       },
     }),
     { name: 'Query Panel Store' }
@@ -51,3 +53,5 @@ export const useShowCreateQuery = () =>
   useQueryPanelStore((state) => [state.showCreateQuery, state.actions.setShowCreateQuery]);
 export const useNameInputFocussed = () =>
   useQueryPanelStore((state) => [state.nameInputFocussed, state.actions.setNameInputFocussed]);
+export const usePreviewPanelExpanded = () =>
+  useQueryPanelStore((state) => [state.previewPanelExpanded, state.actions.setPreviewPanelExpanded]);
