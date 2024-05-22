@@ -80,8 +80,8 @@ class SignupPageComponent extends React.Component {
         .activateAccountWithToken(email, password, organizationToken)
         .then((response) => onInvitedUserSignUpSuccess(response, this.props.navigate))
         .catch((errorObj) => {
-          if (typeof errorObj?.error?.error === 'string') {
-            toast.error(errorObj?.error?.error);
+          if (errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string') {
+            toast.error(errorObj?.error[0]);
           }
           const emailError = errorObj?.error?.inputError;
           this.setState({ isLoading: false, emailError });
