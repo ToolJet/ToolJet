@@ -88,6 +88,43 @@ const Table = ({ collapseSidebar }) => {
   const [progress, setProgress] = useState(0);
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+  const [cachedOptions, setCahedOptions] = useState([]);
+
+  useEffect(() => {
+    const selectQuery = new PostgrestQueryBuilder();
+    // Checking that the selected column is available in ForeignKey
+
+    const referencedColumns = foreignKeys?.map((item) => item.column_names[0]);
+    if (!referencedColumns?.referenced_column_names?.length) return;
+    selectQuery.select(referencedColumns?.referenced_column_names[0]);
+
+    tooljetDatabaseService
+      .findOne(
+        organizationId,
+        foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
+        `${selectQuery.url.toString()}&limit=${15}&offset=${0}`
+      )
+      .then(({ data = [], error }) => {
+        if (error) {
+          toast.error(
+            error?.message ??
+              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+          );
+          return;
+        }
+
+        if (Array.isArray(data) && data?.length > 0) {
+          const dataToCache = data.map((item) => {
+            const [key, _value] = Object.entries(item);
+            return {
+              label: key[1] === null ? 'Null' : key[1],
+              value: key[1] === null ? 'Null' : key[1],
+            };
+          });
+          setCahedOptions((prevData) => [...prevData, ...dataToCache]);
+        }
+      });
+  }, [foreignKeys]);
 
   const prevSelectedTableRef = useRef({});
   const tooljetDbTableRef = useRef(null);
@@ -1307,6 +1344,7 @@ const Table = ({ collapseSidebar }) => {
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
                                       cellHeader={cell.column.Header}
+                                      cachedOptions={cachedOptions}
                                     >
                                       <div
                                         className="input-cell-parent"

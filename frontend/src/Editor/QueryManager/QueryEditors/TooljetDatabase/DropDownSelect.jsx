@@ -46,6 +46,7 @@ const DropDownSelect = ({
   fetchTables,
   onTableClick,
   referencedForeignKeyDetails = [],
+  cachedOptions,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -182,6 +183,7 @@ const DropDownSelect = ({
             actions={actions}
             actionName={actionName}
             referencedForeignKeyDetails={referencedForeignKeyDetails}
+            cachedOptions={cachedOptions}
           />
         </Popover>
       }

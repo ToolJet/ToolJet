@@ -33,6 +33,7 @@ export const CellEditMenu = ({
   foreignKeys,
   setReferencedColumnDetails,
   cellHeader,
+  cachedOptions,
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -189,6 +190,7 @@ export const CellEditMenu = ({
               foreignKeys={foreignKeys}
               setReferencedColumnDetails={setReferencedColumnDetails}
               cellColumnName={cellHeader}
+              cachedOptions={cachedOptions}
             />
           )}
           {/*  Boolean View */}
