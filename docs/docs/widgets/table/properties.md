@@ -13,11 +13,12 @@ The Table component displays and manages data, connecting seamlessly with databa
 
 ## Data
 To populate the Table with data, you need to provide the data in the form of an array of objects under its `Data` property. You can utilize data from queries by referring query data to populate the Table. 
+
 The Table component will **automatically generate all the required columns** when the data is provided. The Table also loads one level of **nested data**. 
 
 Example - Passing an array:
 ```js
-{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}
+{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com', contact:{number: 8881212, address: '25, Huntley Road, Newark'} }]}}
 ```
 
 Example - Passing a query data:
@@ -25,6 +26,8 @@ Example - Passing a query data:
 {{queries.restapi1.data}}
 //replace restapi1 with your query name
 ```
+
+
 
 ## Columns
 

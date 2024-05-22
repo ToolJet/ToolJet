@@ -10,27 +10,25 @@ title: Button
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-| :----------- | :----------- | :----------- |
-| Button text | Used to set the label of the button. | Any **String** value: `Send Message`, `Delete`, or `{{queries.xyz.data.action}}` |
-| Loading state | The loading state is used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to `{{true}}` or `{{false}}`  |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Label         | Text to display on the button.           | String (e.g., `Submit`).         |
 
 ## Events
-
-Events are actions that can be triggered programmatically when the user interacts with the component. Click on the component handle to open its properties on the right. Go to the **Events** accordion and click on **+ Add handler**.
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 | :----------- | :----------- |
 | On click | The On click event is triggered when the button is clicked. |
-| On hover | The On hover event is triggered when the mouse cursor is moved over the button. Just like any other event on ToolJet, you can set multiple handlers for on click event. |
+| On hover | The On hover event is triggered when the mouse cursor is moved over the button. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :----------- | :----------- | :----------- |
+| Button text | Used to set the label of the button. | Any **String** value: `Send Message`, `Delete`, or `{{queries.xyz.data.action}}` |
+| Loading state | The loading state is used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to `{{true}}` or `{{false}}`  |
 
 </div>
 
@@ -42,11 +40,11 @@ Following actions of Button component can be controlled using the component spec
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :----------- | :----------- | :--------|
-| click | Regulate the click of a button via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.button1.click()` |
-| setText | Control the button's text using component specific action from any of the event handler. You can also | Use RunJS query to execute component specific actions: `await components.button1.setText('New Button Text')` |
-| disable |  Disable the button using the component specific action from any of the event handler. You can also | Use RunJS query to execute this action: `await components.button1.disable(true)` or `await components.button1.disable(false)` |
-| visibility | Hide the button using the component specific action from any of the event handler. You can also| Use RunJS query to execute this action: `await components.button1.visibility(true)` or `await components.button1.visibility(false)` |
-| loading | Sets the loading state of the button dynamically using the component specific actions from any of the event handler. | Use this action from RunJS: `await components.button1.loading(true)` or `await components.button1.loading(false)` |
+| click() | Regulate the click of the button. | Employ a RunJS query to execute component-specific actions such as `await components.button1.click()` or trigger it using an event.|
+| setText() | Sets the label of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.button1.setText('Update')`) or trigger it using an event. |
+| setVisibility() | Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.button1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.button1.setDisable(true)`) or trigger it using an event. |
 
 </div>
 
@@ -57,48 +55,50 @@ Following actions of Button component can be controlled using the component spec
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :----------- | :----------- | :---------- |
 | buttonText | This variable stores the text displayed on the button. | Access the value dynamically through JavaScript using the following syntax: `{{components.button1.buttonText}}` |
+| <div style={{ width:"100px"}}> isValid </div> | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.button1.isValid}}`).|
+| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.button1.isLoading}}`).|
+| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.button1.isVisible}}`).|
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+## Additional Actions
 
-## General
-#### Tooltip
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Button to Submit Form` ).                       |
 
-A Tooltip is often used to display additional information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
+## Devices
 
-<div style={{textAlign: 'left'}}>
+**Show on desktop**
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/button/buttontooltip.png" alt="ToolJet - Widget Reference - Tooltip" />
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-</div>
+**Show on mobile**
 
-</div>
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Layout
+---
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | 
-| :----------- | :----------- | 
-| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**.|  
-| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
+# Styles 
 
-</div>
+## Button
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+| <div style={{ width:"100px"}}> Buttob Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+| Type        | Sets the fill value of the Button component.                                                   | Select `Solid` for a button with a solid background and `Outline` for a transparent button with an outline.          |
+| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Text color    | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Border color    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Loader color    | Sets the loader color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using `fx`.                                     |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using `fx`.                                            |
 
-## Styles
+## Container
 
-| <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-| :----------- | :----------- | :----------- |
-| Background color | Change the background color. | Choose color from the colorpicker or enter the Hex color code. ex: `#000000` |
-| Text color | Change the text color. | Choose color from the colorpicker or enter the Hex color code. ex: `#000000` |
-| Loader color | Change the color of the loader (if loading state is enabled) | Choose color from the colorpicker or enter the Hex color code. ex: `#000000` |
-| Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{true}}` |
-| Disable | Disable the button. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{false}}` |
-| Border radius | Add a border radius to the button using this property. | Any numerical value from `0` to `100` |
-| Border color | Change the border color of the button. | Choose color from the colorpicker or enter the Hex color code. ex: `#000000` |
-| Box Shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example: `9px 11px 5px 5px #00000040`` |
+**Padding** <br/>
+Allows you to maintain a standard padding by enabling the `Default` option.
 
-</div>
