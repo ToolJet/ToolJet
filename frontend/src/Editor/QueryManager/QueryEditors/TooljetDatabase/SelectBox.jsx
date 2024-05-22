@@ -34,7 +34,7 @@ function DataSourceSelect({
   showDescription = false,
   foreignKeyAccessInRowForm,
   isCellEdit,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -185,7 +185,7 @@ function DataSourceSelect({
     const shouldLoadFKDataFirstPage = !isLoadingFKDetails && isEmpty(searchValue) && !isInitialForeignKeyDataLoaded;
     const shouldLoadFKSearchDataFirstPage = !isLoadingFKDetails && !isEmpty(searchValue);
 
-    if (scrollEventForColumnValus) {
+    if (scrollEventForColumnValues) {
       if (shouldLoadFKSearchDataFirstPage) {
         setDefaultStateForSearch();
         fetchForeignKeyDetails(1, 0, false, searchValue, foreignKeys, organizationId);
@@ -208,7 +208,7 @@ function DataSourceSelect({
 
   useEffect(() => {
     return () => {
-      if (scrollEventForColumnValus) {
+      if (scrollEventForColumnValues) {
         setIsInitialForeignKeyDataLoaded(false);
         setTotalRecords(0);
         setPageNumber(1);
@@ -394,7 +394,7 @@ function DataSourceSelect({
                     columnInfoForTable={columnInfoForTable}
                     showColumnInfo={showColumnInfo}
                     foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                    scrollEventForColumnValus={scrollEventForColumnValus}
+                    scrollEventForColumnValues={scrollEventForColumnValues}
                     scrollContainerRef={scrollContainerRef}
                     foreignKeys={foreignKeys}
                     cellColumnName={cellColumnName}
@@ -445,7 +445,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && !scrollEventForColumnValus && { Control: () => '' }),
+          ...(optionsCount < 5 && !scrollEventForColumnValues && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
@@ -541,7 +541,7 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={scrollEventForColumnValus && searchValue ? searchResults : options}
+        options={scrollEventForColumnValues && searchValue ? searchResults : options}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
@@ -569,7 +569,7 @@ const MenuList = ({
   showColumnInfo,
   options,
   foreignKeyAccessInRowForm,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   scrollContainerRef,
   foreignKeys,
   cellColumnName,
@@ -602,12 +602,12 @@ const MenuList = ({
         emptyError
       ) : (
         <div
-          ref={scrollEventForColumnValus ? scrollContainerRef : innerRef}
+          ref={scrollEventForColumnValues ? scrollContainerRef : innerRef}
           style={menuListStyles}
           id="query-ds-select-menu"
           onClick={(e) => e.stopPropagation()}
           onScroll={
-            scrollEventForColumnValus && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
+            scrollEventForColumnValues && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
           }
         >
           {children}
@@ -624,7 +624,7 @@ const MenuList = ({
             variant="secondary"
             size="md"
             className="w-100"
-            onClick={scrollEventForColumnValus ? handleNavigateToReferencedTable : onAdd}
+            onClick={scrollEventForColumnValues ? handleNavigateToReferencedTable : onAdd}
           >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}

@@ -28,7 +28,7 @@ export const CellEditMenu = ({
   referencedColumnDetails = [],
   referenceColumnName = '',
   isForeignKey = false,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -184,7 +184,7 @@ export const CellEditMenu = ({
               onAdd={true}
               addBtnLabel={'Open referenced table'}
               isCellEdit={true}
-              scrollEventForColumnValus={scrollEventForColumnValus}
+              scrollEventForColumnValues={scrollEventForColumnValues}
               organizationId={organizationId}
               foreignKeys={foreignKeys}
               setReferencedColumnDetails={setReferencedColumnDetails}

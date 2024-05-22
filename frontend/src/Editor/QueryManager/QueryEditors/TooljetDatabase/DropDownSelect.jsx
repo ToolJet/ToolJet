@@ -33,7 +33,7 @@ const DropDownSelect = ({
   topPlaceHolder = '',
   showPlaceHolderInForeignKeyDrawer = false,
   isCellEdit = false,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -165,7 +165,7 @@ const DropDownSelect = ({
             showDescription={showDescription}
             foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
             isCellEdit={isCellEdit}
-            scrollEventForColumnValus={scrollEventForColumnValus}
+            scrollEventForColumnValues={scrollEventForColumnValues}
             organizationId={organizationId}
             foreignKeys={foreignKeys}
             setReferencedColumnDetails={setReferencedColumnDetails}

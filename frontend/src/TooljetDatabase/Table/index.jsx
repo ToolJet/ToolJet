@@ -1302,7 +1302,7 @@ const Table = ({ collapseSidebar }) => {
                                       }
                                       isForeignKey={isMatchingForeignKeyColumn(cell.column.Header)}
                                       darkMode={darkMode}
-                                      scrollEventForColumnValus={true}
+                                      scrollEventForColumnValues={true}
                                       organizationId={organizationId}
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
