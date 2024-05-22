@@ -80,12 +80,16 @@ function DrawerFooter({
     editForeignKeyInCreateTable,
   ]);
 
-  const isDrawerWithDocumentation =
-    initiator === 'CreateTableForm' ||
-    initiator === 'EditTableForm' ||
-    initiator === 'CreateColumnForm' ||
-    initiator === 'EditColumnForm' ||
-    initiator === 'ForeignKeyTableForm';
+  const drawerDocumentationsLinks = {
+    CreateTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#create-new-table',
+    EditTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#rename-table',
+    CreateColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#add-new-column',
+    EditColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#edit-column',
+    ForeignKeyTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#foreign-key',
+  };
+  const drawerNames = Object.keys(drawerDocumentationsLinks);
+  const isDrawerWithDocumentation = drawerNames.some((drawerName) => drawerName === initiator);
+  const isDrawerWithDocumentationLink = drawerDocumentationsLinks[initiator];
 
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
@@ -104,22 +108,7 @@ function DrawerFooter({
           >
             <div className="d-flex align-items-center">
               <Student />
-              <a
-                href={
-                  initiator === 'ForeignKeyTableForm'
-                    ? 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#foreign-key'
-                    : initiator === 'CreateTableForm'
-                    ? 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#create-new-table'
-                    : initiator === 'EditTableForm'
-                    ? 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#rename-table'
-                    : initiator === 'CreateColumnForm'
-                    ? 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#add-new-column'
-                    : 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#edit-column'
-                }
-                target="_blank"
-                className="read-documentation"
-                rel="noreferrer"
-              >
+              <a href={isDrawerWithDocumentationLink} target="_blank" className="read-documentation" rel="noreferrer">
                 Read documentation
               </a>
             </div>
