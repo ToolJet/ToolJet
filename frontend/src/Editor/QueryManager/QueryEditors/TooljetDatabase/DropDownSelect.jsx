@@ -46,6 +46,8 @@ const DropDownSelect = ({
   fetchTables,
   onTableClick,
   referencedForeignKeyDetails = [],
+  isCreateRow = false,
+  isEditRow = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -182,6 +184,8 @@ const DropDownSelect = ({
             actions={actions}
             actionName={actionName}
             referencedForeignKeyDetails={referencedForeignKeyDetails}
+            isCreateRow={isCreateRow}
+            isEditRow={isEditRow}
           />
         </Popover>
       }

@@ -242,6 +242,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 setReferencedColumnDetails={setReferencedColumnDetails}
                 scrollEventForColumnValus={true}
                 cellColumnName={columnName}
+                isCreateRow={true}
               />
             ) : (
               <input

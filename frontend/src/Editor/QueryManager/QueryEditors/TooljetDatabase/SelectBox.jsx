@@ -51,6 +51,8 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  isCreateRow,
+  isEditRow,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -288,7 +290,7 @@ function DataSourceSelect({
                     message={children}
                     placement="top"
                     tooltipClassName="tjdb-cell-tooltip"
-                    show={isCellEdit && children?.length > 30}
+                    show={(isCellEdit || isCreateRow || isEditRow) && children?.length > 30}
                   >
                     <span
                       className={cx({
