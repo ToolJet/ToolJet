@@ -198,10 +198,12 @@ export const NumberInput = function NumberInput({
     setValue(Number(parseFloat(e.target.value)));
     if (e.target.value == '') {
       setValue(null);
-      setExposedVariable('value', null).then(fireEvent('onChange'));
+      setExposedVariable('value', null);
+      fireEvent('onChange');
     }
     if (!isNaN(Number(parseFloat(e.target.value)))) {
-      setExposedVariable('value', Number(parseFloat(e.target.value))).then(fireEvent('onChange'));
+      setExposedVariable('value', Number(parseFloat(e.target.value)));
+      fireEvent('onChange');
     }
   };
   useEffect(() => {
@@ -223,7 +225,8 @@ export const NumberInput = function NumberInput({
     const newValue = (value || 0) + 1;
     setValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue).then(fireEvent('onChange'));
+      setExposedVariable('value', newValue);
+      fireEvent('onChange');
     }
   };
   const handleDecrement = (e) => {
@@ -231,7 +234,8 @@ export const NumberInput = function NumberInput({
     const newValue = (value || 0) - 1;
     setValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue).then(fireEvent('onChange'));
+      setExposedVariable('value', newValue);
+      fireEvent('onChange');
     }
   };
   useEffect(() => {
@@ -245,13 +249,15 @@ export const NumberInput = function NumberInput({
       if (text) {
         const newValue = Number(parseFloat(text));
         setValue(newValue);
-        setExposedVariable('value', text).then(fireEvent('onChange'));
+        setExposedVariable('value', text);
+        fireEvent('onChange');
       }
     });
 
     setExposedVariable('clear', async function () {
       setValue('');
-      setExposedVariable('value', '').then(fireEvent('onChange'));
+      setExposedVariable('value', '');
+      fireEvent('onChange');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
