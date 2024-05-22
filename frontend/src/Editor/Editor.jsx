@@ -2223,7 +2223,6 @@ const EditorComponent = (props) => {
         <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
           <EditorHeader
             darkMode={props.darkMode}
-            appDefinition={_.cloneDeep(appDefinition)}
             canUndo={canUndo}
             canRedo={canRedo}
             handleUndo={handleUndo}
