@@ -107,6 +107,7 @@ const EditRowDrawer = ({
           selectedRowObj={selectedRowObj}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="EditRowForm"
         />
       </Drawer>
     </>

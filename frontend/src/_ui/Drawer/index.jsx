@@ -48,14 +48,6 @@ const Drawer = ({
     updatePageScroll();
   }, [isOpen]);
 
-  const onKeyPress = (e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  };
-
-  useEventListener('keyup', onKeyPress);
-
   if (!isTransitioning && removeWhenClosed && !isOpen) {
     return null;
   }
