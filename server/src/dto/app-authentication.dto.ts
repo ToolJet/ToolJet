@@ -10,6 +10,8 @@ export class AppAuthenticationDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(5, { message: 'Password should contain more than 5 characters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
 
   @IsString()
@@ -32,7 +34,7 @@ export class AppSignupDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(5, { message: 'Password should contain more than 5 characters' })
-  @MaxLength(100, { message: 'Password length should not be more than 100' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
 
   @IsOptional()
@@ -56,6 +58,7 @@ export class AppPasswordResetDto {
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
 
   @IsString()
@@ -67,6 +70,7 @@ export class ChangePasswordDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
-  @MinLength(5)
+  @MinLength(5, { message: 'Password should contain more than 5 characters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   newPassword: string;
 }

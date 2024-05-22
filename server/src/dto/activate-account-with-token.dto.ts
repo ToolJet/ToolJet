@@ -10,8 +10,8 @@ export class ActivateAccountWithTokenDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(5, { message: 'Password should contain more than 5 letters' })
-  @MaxLength(100, { message: 'Password length should be limited to 100' })
+  @MinLength(5, { message: 'Password should contain more than 5 characters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
 
   @IsString()
