@@ -909,6 +909,7 @@ export const EventManager = ({
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
                             paramType={param?.type}
+                            paramLabel={' '}
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
                             component={component}
