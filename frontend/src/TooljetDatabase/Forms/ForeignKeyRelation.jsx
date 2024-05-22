@@ -379,7 +379,7 @@ function ForeignKeyRelation({
               opacity="1"
               secondaryFill="#ffffff"
             />
-            &nbsp;&nbsp; Add relation
+            <span className="add-text">Add relation</span>
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>

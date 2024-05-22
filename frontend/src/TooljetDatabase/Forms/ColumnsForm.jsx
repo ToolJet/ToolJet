@@ -129,8 +129,8 @@ const ColumnsForm = ({
             }}
             data-cy="add-more-columns-button"
           >
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp; Add more columns
+            <AddRectangle width="14" height="14" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            <span className="add-text">Add more columns</span>
           </ButtonSolid>
         </div>
 
