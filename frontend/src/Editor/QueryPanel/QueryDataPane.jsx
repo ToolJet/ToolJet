@@ -95,14 +95,6 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
         <div className="queries-header row d-flex align-items-center justify-content-between">
           <div className="col-auto d-flex">
             <button
-              onClick={toggleQueryEditor}
-              className="btn-query-panel-header"
-              data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Hide query panel"
-            >
-              <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
-            </button>
-            <button
               onClick={() => {
                 showSearchBox && setSearchTermForFilters('');
                 setShowSearchBox((showSearchBox) => !showSearchBox);

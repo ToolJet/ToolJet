@@ -89,7 +89,20 @@ $border-radius: 4px;
 }
 
 .query-pane {
-  z-index: 101;
+  &.collapsed {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      border: 1px solid var(--slate5);
+      border-width: 1px 0px 0px 0px;
+      background-color: var(--base);
+      border-width: 2px 0px 0px 0px;
+    }
+  }
+
   height: 400px;
   position: fixed;
   left: 48px;
@@ -102,6 +115,35 @@ $border-radius: 4px;
   border: 1px solid var(--slate5);
   border-width: 1px 0px 0px 0px;
   background-color: var(--base);
+
+  &#query-manager {
+    border-width: 3px 0px 0px 0px;
+  }
+
+  .vr {
+    margin: 0 5px;
+    opacity: 1;
+    background-color: #E4E7EB;
+    height: 17px;
+    align-self: center;
+  }
+
+  .query-manager-toggle-button {
+    padding: 5px;
+    border-radius: 5px;
+    margin-right: 6px;
+    width: 58px;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover {
+      background: #f1f1f1;
+    }
+    &~h5 {
+      padding: 4px;
+      margin: 0 7px;
+    }
+  }
 
   .table-responsive {
     scrollbar-width: none;
@@ -231,6 +273,7 @@ $border-radius: 4px;
 
   .query-definition-pane-wrapper {
     flex: 1;
+    padding-bottom: 40px;
     background-color: var(--base);
     overflow-x: hidden;
     overflow-y: scroll;
@@ -319,6 +362,7 @@ $border-radius: 4px;
 
     .queries-container {
       width: 100%;
+      padding-bottom: 40px;
       background-color: var(--base);
 
       .queries-header {
@@ -1020,6 +1064,48 @@ $border-radius: 4px;
   }
 
   .preview-section {
+    position: absolute;
+    bottom: 40px;
+    left: 288px;
+    width: calc(100% - 288px);
+    z-index: 1;
+    transition: height 0.2s ease-in-out;
+    height: 30px;
+    .preview-content{
+      background-color: var(--slate3);
+      height: 100%;
+      width: 100%;
+    }
+    &.expanded{
+      height: 70%;
+      .preview-content{
+        overflow-y: auto;
+      }
+    }
+    .preview-toggle{
+      padding: 4px 6px;
+      background-color: #fff;
+      border-top: 1px solid #E4E7EB;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .left{
+        span {
+          color: #6A727C;
+          font-family: 'source-code-pro', Menlo, 'Courier New', Consolas, monospace;
+          font-size: 12px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 16px;
+          vertical-align: middle;
+        }
+        cursor: pointer;
+      }
+    }
+  
+
     ul {
       margin: 0 !important;
       padding: 0.5em !important;
@@ -1064,8 +1150,8 @@ $border-radius: 4px;
     }
 
     .preview-data-container {
-      min-height: 65px;
       background-color: var(--slate3);
+      overflow-y: auto;
     }
   }
 
