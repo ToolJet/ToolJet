@@ -624,7 +624,7 @@ class ViewerComponent extends React.Component {
         >
           <Confirm
             show={queryConfirmationList.length > 0}
-            message={'Do you want to run this query?'}
+            message={'Do you want to run this query'}
             onConfirm={(queryConfirmationData) =>
               onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationData, true, 'view')
             }

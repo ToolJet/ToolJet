@@ -1687,7 +1687,7 @@ const EditorComponent = (props) => {
     <div className={`editor wrapper`}>
       <Confirm
         show={queryConfirmationList?.length > 0}
-        message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
+        message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}`}
         onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationData, true)}
         onCancel={() => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationList[0])}
         queryConfirmationData={queryConfirmationList[0]}

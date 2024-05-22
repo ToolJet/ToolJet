@@ -1021,7 +1021,7 @@ class DataSourceManagerComponent extends React.Component {
           <ConfirmDialog
             title={'Add datasource'}
             show={dataSourceConfirmModalProps.isOpen}
-            message={`Do you want to add ${dataSourceConfirmModalProps?.dataSource?.name}?`}
+            message={`Do you want to add ${dataSourceConfirmModalProps?.dataSource?.name}`}
             onConfirm={() => createSelectedDataSource(dataSourceConfirmModalProps.dataSource)}
             onCancel={this.resetDataSourceConfirmModal}
             confirmButtonText={'Add datasource'}

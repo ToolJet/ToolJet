@@ -292,7 +292,10 @@ export const QueryManagerBody = ({
             />
           )}
         </div>
-        <div className={cx('mt-2 d-flex', { 'disabled ': isVersionReleased })}>
+        <div
+          className={cx('d-flex', { 'disabled ': isVersionReleased })}
+          style={{ marginBottom: '16px', marginTop: '12px' }}
+        >
           <div
             className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
           >

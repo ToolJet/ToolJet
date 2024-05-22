@@ -39,6 +39,7 @@ export const QueryManagerHeader = forwardRef(
       }),
       shallow
     );
+    console.log('queryName---,', selectedQuery);
 
     useEffect(() => {
       if (selectedQuery?.name) {
@@ -165,18 +166,20 @@ export const QueryManagerHeader = forwardRef(
             >
               Setup
             </p>
-            <p
-              className="m-0 d-flex align-items-center h-100"
-              onClick={() => setActiveTab(2)}
-              style={{
-                borderBottom: activeTab == 2 ? ' 2px solid #3E63DD' : '',
-                cursor: 'pointer',
-                padding: '6px 8px',
-                color: activeTab == 2 ? ' var(--text-default)' : 'var(--text-placeholder)',
-              }}
-            >
-              Transformation
-            </p>
+            {selectedQuery?.kind !== 'runjs' && (
+              <p
+                className="m-0 d-flex align-items-center h-100"
+                onClick={() => setActiveTab(2)}
+                style={{
+                  borderBottom: activeTab == 2 ? ' 2px solid #3E63DD' : '',
+                  cursor: 'pointer',
+                  padding: '6px 8px',
+                  color: activeTab == 2 ? ' var(--text-default)' : 'var(--text-placeholder)',
+                }}
+              >
+                Transformation
+              </p>
+            )}
             <p
               className="m-0 d-flex align-items-center h-100"
               onClick={() => setActiveTab(3)}

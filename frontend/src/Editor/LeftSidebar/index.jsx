@@ -296,7 +296,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
       <ConfirmDialog
         show={showLeaveDialog}
-        message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
+        message={'The unsaved changes will be lost if you leave the editor, do you want to leave'}
         onConfirm={() => router.push('/')}
         onCancel={() => setShowLeaveDialog(false)}
         darkMode={darkMode}
