@@ -72,16 +72,18 @@ function SourceKeyRelation({
             isDisabled: columns?.data_type === 'serial' ? true : false,
           },
         ]
-      : Object.values(columns).map((item) => {
-          return {
-            name: item?.column_name,
-            label: item?.column_name,
-            icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails?.[0]?.icon,
-            value: item?.column_name,
-            dataType: item?.data_type,
-            isDisabled: item?.data_type === 'serial' ? true : false,
-          };
-        });
+      : Object.values(columns)
+          .filter((item) => item.data_type !== 'boolean') // Exclude boolean columns
+          .map((item) => {
+            return {
+              name: item?.column_name,
+              label: item?.column_name,
+              icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails?.[0]?.icon,
+              value: item?.column_name,
+              dataType: item?.data_type,
+              isDisabled: item?.data_type === 'serial' ? true : false,
+            };
+          });
 
   const tableList = tables
     .filter((item) => item?.table_name !== tableName)
