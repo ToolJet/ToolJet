@@ -1221,7 +1221,7 @@ export class OrganizationsService {
     return;
   }
 
-  async createSampleDB(organizationId, manager: EntityManager) {
+  async createSampleDB(organizationId, manager?: EntityManager) {
     const config = {
       name: 'Sample data source',
       kind: 'postgresql',
@@ -1261,22 +1261,25 @@ export class OrganizationsService {
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
     ];
-    const dataSource = manager.create(DataSource, config);
-    await manager.save(dataSource);
 
-    const allEnvs: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const dataSource = manager.create(DataSource, config);
+      await manager.save(dataSource);
 
-    await Promise.all(
-      allEnvs?.map(async (env) => {
-        const parsedOptions = await this.dataSourceService.parseOptionsForCreate(options);
-        await manager.save(
-          manager.create(DataSourceOptions, {
-            environmentId: env.id,
-            dataSourceId: dataSource.id,
-            options: parsedOptions,
-          })
-        );
-      })
-    );
+      const allEnvs: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
+
+      await Promise.all(
+        allEnvs?.map(async (env) => {
+          const parsedOptions = await this.dataSourceService.parseOptionsForCreate(options);
+          await manager.save(
+            manager.create(DataSourceOptions, {
+              environmentId: env.id,
+              dataSourceId: dataSource.id,
+              options: parsedOptions,
+            })
+          );
+        })
+      );
+    }, manager);
   }
 }

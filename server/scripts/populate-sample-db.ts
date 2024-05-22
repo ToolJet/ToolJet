@@ -23,13 +23,8 @@ function createPGconnection(envVars): Client {
     database: envVars.SAMPLE_DB,
     password: envVars.SAMPLE_PG_DB_PASS,
     port: envVars.SAMPLE_PG_DB_PORT,
+    ssl: { rejectUnauthorized: false },
   };
-
-  if (envVars?.DATABASE_URL)
-    config = {
-      ...config,
-      ssl: { rejectUnauthorized: false },
-    };
 
   if (envVars?.CA_CERT) {
     config = {
