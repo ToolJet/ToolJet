@@ -61,8 +61,6 @@ const verifyConstant = (value, definedConstants) => {
 };
 
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
-  const isConstant = type === 'Workspace Constant';
-  const hiddenWorkspaceConstantText = 'Workspace constant values are hidden';
   const invalidConstants = verifyConstant(value, state.constants);
   let preview;
   let error;
@@ -70,9 +68,6 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     [preview, error] = [value, `Undefined constants: ${invalidConstants}`];
   } else {
     [preview, error] = resolveReferences(value, state, null, {}, true, true);
-    if (isConstant) {
-      preview = hiddenWorkspaceConstantText;
-    }
   }
 
   const previewType = typeof preview;
@@ -84,7 +79,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     : error?.toString();
   const isValidError = error && errorMessage !== 'HiddenEnvironmentVariable';
 
-  if (error && (!isValidError || error?.toString().includes('Undefined constants:'))) {
+  if (error && !isValidError) {
     resolvedValue = errorMessage;
   }
 
@@ -109,6 +104,8 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     }
   };
 
+  const isConstant = type === 'Workspace Constant';
+
   const [heightRef, currentHeight] = useHeight();
 
   const slideInStyles = useSpring({
@@ -130,7 +127,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
           <div className="alert-banner-type-text">
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 800, textTransform: 'capitalize' }}>
-                {isValidError ? 'Error' : isConstant ? null : ` ${type} - ${previewType}`}
+                {isValidError ? 'Error' : ` ${type} - ${previewType}`}
               </div>
             </div>
             {getPreviewContent(resolvedValue, previewType)}

@@ -103,8 +103,6 @@ export function CodeHinter({
 }) {
   const context = useContext(CodeHinterContext);
 
-  const hiddenWorkspaceConstantText = 'Workspace constant values are hidden';
-
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
     lineNumbers: lineNumbers ?? false,
@@ -136,8 +134,6 @@ export function CodeHinter({
   // Todo: Remove this when workspace variables are deprecated
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
-
-  const isWorkspaceConstant = typeof currentValue === 'string' && currentValue.includes('constants.');
 
   const constantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
 
@@ -269,7 +265,7 @@ export function CodeHinter({
       globalPreviewCopy = preview;
       globalErrorCopy = null;
       setResolvingError(null);
-      setResolvedValue(isWorkspaceConstant ? hiddenWorkspaceConstantText : preview);
+      setResolvedValue(preview);
     }
 
     return [globalPreviewCopy, globalErrorCopy];
@@ -281,7 +277,7 @@ export function CodeHinter({
     return () => {
       if (enablePreview) {
         setPrevCurrentValue(null);
-        setResolvedValue(isWorkspaceConstant ? hiddenWorkspaceConstantText : globalPreviewCopy);
+        setResolvedValue(globalPreviewCopy);
         setResolvingError(globalErrorCopy);
       }
     };
@@ -377,9 +373,9 @@ export function CodeHinter({
           <div>
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
-                {!isWorkspaceConstant && previewType}
+                {previewType}
               </div>
-              {isFocused && !isWorkspaceConstant && (
+              {isFocused && (
                 <div className="preview-icons position-relative">
                   <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="Copy to clipboard" />
                 </div>
