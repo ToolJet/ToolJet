@@ -197,15 +197,7 @@ export function resolveReferences(
             return [{}, error];
           }
 
-          const query = object?.value || object;
-
-          const [valid, _, _resolvedValue, value] = newResolver(query, null, customObjects);
-
-          if (!valid) {
-            return defaultValue;
-          } else {
-            return value || _resolvedValue;
-          }
+          return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
