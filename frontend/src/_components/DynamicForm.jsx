@@ -432,7 +432,7 @@ const DynamicForm = ({
 
           return (
             <div
-              className={cx('my-2', {
+              className={cx('', {
                 'col-md-12': !className && !isHorizontalLayout,
                 [className]: !!className,
                 'd-flex': isHorizontalLayout,
@@ -485,10 +485,13 @@ const DynamicForm = ({
                 </div>
               )}
               <div
-                className={cx({
-                  'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
-                  'w-100': isHorizontalLayout && type !== 'codehinter',
-                })}
+                className={cx(
+                  {
+                    'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                    'w-100': isHorizontalLayout && type !== 'codehinter',
+                  },
+                  'dynamic-form-element'
+                )}
               >
                 <Element
                   {...getElementProps(obj[key])}
@@ -516,7 +519,7 @@ const DynamicForm = ({
           <div className={`${isHorizontalLayout ? '' : 'row'}`}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
             <div
-              className={cx('my-2', {
+              className={cx('', {
                 'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
                 'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,

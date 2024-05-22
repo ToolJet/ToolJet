@@ -174,9 +174,9 @@
                 "goToAllDatasources": "Go to all Datasource",
                 "send": "Send"
             },
-            "runQueryOnApplicationLoad": "Run this query on application load?",
-            "confirmBeforeQueryRun": "Request confirmation before running query?",
-            "notificationOnSuccess": "Show notification on success?",
+            "runQueryOnApplicationLoad": "Run this query on application load",
+            "confirmBeforeQueryRun": "Request confirmation before running query",
+            "notificationOnSuccess": "Show notification on success",
             "successMessage": "Success Message",
             "queryRanSuccessfully": "Query ran successfully",
             "notificationDuration": "Notification duration (s)",
@@ -207,6 +207,7 @@
                 "pageIndex": "Page index",
                 "component": "Component",
                 "addHandler": "New event handler",
+                "addNewEvent": "Add new event",
                 "addEventHandler": "+ Add event handler",
                 "emptyMessage": "This {{componentName}} doesn't have any event handlers",
                 "page": "Page"
@@ -286,9 +287,9 @@
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder"
                     },
-                    "groupOptions":{
-                        "deleteGroup":"Delete Group",
-                        "duplicateGroup":"Duplicate Group"
+                    "groupOptions": {
+                        "deleteGroup": "Delete Group",
+                        "duplicateGroup": "Duplicate Group"
                     }
                 },
                 "manageSSO": {
@@ -496,7 +497,7 @@
             "properties": "Properties",
             "events": "Events",
             "layout": "Layout",
-            "devices":"Devices",
+            "devices": "Devices",
             "styles": "Styles",
             "general": "General",
             "validation": "Validation",
@@ -728,10 +729,10 @@
             "addColumn": "Add column",
             "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
-            "horizontalAlignment":"Horizontal alignment",
-            "textAlignment":"Text alignment",
-            "deciamalPlaces":"Decimal Places",
-            "imageFit":"Image fit"
+            "horizontalAlignment": "Horizontal alignment",
+            "textAlignment": "Text alignment",
+            "deciamalPlaces": "Decimal Places",
+            "imageFit": "Image fit"
         },
         "Button": {
             "displayName": "Button",
@@ -944,7 +945,7 @@
             "typeComment": "Type your comment here"
         },
         "Settings": {
-            "text": "Settings",
+            "text": "Triggers",
             "tip": "Global Settings",
             "hideHeader": "Hide header for launched apps",
             "maintenanceMode": "Maintenance mode",

@@ -4,6 +4,10 @@
 $border-radius: 4px;
 
 .query-manager {
+  .react-select__value-container {
+    margin-bottom: 0px !important;
+  }
+
   user-select: none;
 
   .btn {
@@ -41,7 +45,7 @@ $border-radius: 4px;
             height: inherit;
 
             .query-param-text {
-              color: var(--slate12);
+              color: var(--text-default);
               font-weight: 500 !important;
             }
 
@@ -74,8 +78,7 @@ $border-radius: 4px;
   }
 
   .query-details {
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding: 16px;
   }
 
   .query-name-field input {
@@ -616,7 +619,7 @@ $border-radius: 4px;
     font-size: 12px;
     padding: 0 !important;
     height: 32px;
-    color: var(--slate11);
+    color: var(--text-placeholder) !important;
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--slate5) !important;
@@ -639,15 +642,16 @@ $border-radius: 4px;
 
   .list-group-item.active {
     background-color: transparent !important;
-    color: var(--indigo9);
     z-index: inherit !important;
     border-bottom: 2px solid var(--indigo9) !important;
+    color: var(--text-default) !important;
+
   }
 
   .list-group-item.active:hover {
     background-color: var(--indigo3) !important;
     border-radius: 6px 6px 0 0;
-    color: var(--indigo9) !important;
+    color: var(--text-default) !important;
   }
 }
 
@@ -1052,15 +1056,15 @@ $border-radius: 4px;
 
   .query-details {
     .form-label {
-      color: var(--slate9) !important;
+      color: var(--text-placeholder) !important;
       font-size: 12px;
       font-weight: 500;
       line-height: 20px;
       margin-bottom: 0 !important;
-      width: 100px;
+      width: 68px !important;
       display: flex;
       padding: 0;
-      margin-right: 12px;
+      margin-right: 16px;
     }
 
     .preview-data-container {
@@ -1642,8 +1646,8 @@ $border-radius: 4px;
 }
 
 .copilot-section-header {
-  background-color: var(--slate2);
-  border: 1px solid var(--slate5);
+  background-color: var(--surfaces-surface-01);
+  border: 1px solid var(--borders-disabled-on-white);
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
 }

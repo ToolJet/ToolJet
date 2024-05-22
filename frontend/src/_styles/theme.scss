@@ -846,8 +846,8 @@ button {
 
     &:hover {
       background: none !important;
-      border: none !important;      
-      color: var(--slate12);       
+      border: none !important;
+      color: var(--slate12);
     }
   }
 }
@@ -5103,9 +5103,13 @@ div#driver-page-overlay {
   color: $light-gray;
 }
 
+.dynamic-form-element {
+  flex: 1 !important;
+}
+
 .dynamic-form-row {
-  margin-top: 20px !important;
-  margin-bottom: 20px !important;
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
 }
 
 #transformation-popover-container {
@@ -8704,7 +8708,7 @@ tbody {
   align-items: center;
   color: var(--slate11);
 
-  .with-border{
+  .with-border {
     border-bottom: 1px solid var(--slate5) !important;
   }
 
@@ -10808,6 +10812,7 @@ tbody {
     top: 5px;
     cursor: pointer;
   }
+
   .copy-icon {
     position: absolute;
     right: 8px;
@@ -12446,6 +12451,10 @@ tbody {
 }
 
 .copilot-codehinter-wrap {
+  .form-label {
+    display: none !important;
+  }
+
   .CodeMirror.cm-s-monokai.CodeMirror-wrap {
     border-radius: 0px;
   }

@@ -19,6 +19,7 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import ParameterList from './ParameterList';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -28,11 +29,13 @@ export const QueryManagerBody = ({
   apps,
   appDefinition,
   setOptions,
+  activeTab,
 }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const sampleDataSource = useSampleDataSource();
+  const paramListContainerRef = useRef(null);
 
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
@@ -103,6 +106,38 @@ export const QueryManagerBody = ({
     const currentValue = selectedQuery?.options?.[option] ?? false;
     optionchanged(option, !currentValue);
   };
+  const optionsChangedforParmas = (newOptions) => {
+    setOptions(newOptions);
+    updateDataQuery(cloneDeep(newOptions));
+  };
+
+  const handleAddParameter = (newParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
+      const newOptions = {
+        ...prevOptions,
+        parameters: [...(prevOptions?.parameters ?? []), newParameter],
+      };
+      optionsChangedforParmas(newOptions);
+    }
+  };
+
+  const handleParameterChange = (index, updatedParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
+      const updatedParameters = [...prevOptions.parameters];
+      updatedParameters[index] = updatedParameter;
+      optionsChangedforParmas({ ...prevOptions, parameters: updatedParameters });
+    }
+  };
+
+  const handleParameterRemove = (index) => {
+    const prevOptions = { ...options };
+    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
+    optionsChangedforParmas({ ...prevOptions, parameters: updatedParameters });
+  };
 
   const renderDataSourcesList = () => {
     return (
@@ -146,7 +181,7 @@ export const QueryManagerBody = ({
 
   const renderQueryElement = () => {
     return (
-      <div style={{ padding: '0 32px' }}>
+      <div>
         <div>
           <div
             className={cx({
@@ -166,7 +201,6 @@ export const QueryManagerBody = ({
               queryName={queryName}
               onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
             />
-            {renderTransformation()}
           </div>
         </div>
       </div>
@@ -210,7 +244,7 @@ export const QueryManagerBody = ({
             'disabled ': isVersionReleased,
           })}
         >
-          <div className="form-label">{t('editor.queryManager.settings', 'Settings')}</div>
+          <div className="form-label">{t('editor.queryManager.settings', 'Triggers')}</div>
           <div className="flex-grow-1">
             {Object.keys(customToggles).map((toggle, index) => (
               <CustomToggleFlag
@@ -244,22 +278,37 @@ export const QueryManagerBody = ({
       return '';
     }
     return (
-      <div className={cx('mt-2 d-flex px-4 mb-3', { 'disabled ': isVersionReleased })}>
-        <div
-          className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
-        >
-          Data Source
+      <>
+        <div className="" ref={paramListContainerRef}>
+          {selectedQuery && (
+            <ParameterList
+              parameters={options.parameters}
+              handleAddParameter={handleAddParameter}
+              handleParameterChange={handleParameterChange}
+              handleParameterRemove={handleParameterRemove}
+              currentState={currentState}
+              darkMode={darkMode}
+              containerRef={paramListContainerRef}
+            />
+          )}
         </div>
-        <div className="d-flex flex-grow-1">
-          <ChangeDataSource
-            dataSources={selectableDataSources}
-            value={selectedDataSource}
-            onChange={(newDataSource) => {
-              changeDataQuery(newDataSource);
-            }}
-          />
+        <div className={cx('mt-2 d-flex', { 'disabled ': isVersionReleased })}>
+          <div
+            className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+          >
+            Source
+          </div>
+          <div className="d-flex align-items-end" style={{ width: '364px' }}>
+            <ChangeDataSource
+              dataSources={selectableDataSources}
+              value={selectedDataSource}
+              onChange={(newDataSource) => {
+                changeDataQuery(newDataSource);
+              }}
+            />
+          </div>
         </div>
-      </div>
+      </>
     );
   };
 
@@ -267,13 +316,17 @@ export const QueryManagerBody = ({
 
   return (
     <div
-      className={`row row-deck px-2 mt-0 query-details ${
+      className={`row row-deck query-details ${
         selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
       }`}
     >
-      {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
-      {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : renderQueryElement()}
-      {selectedDataSource !== null ? renderQueryOptions() : null}
+      {selectedQuery?.data_source_id && selectedDataSource !== null ? activeTab == 1 && renderChangeDataSource() : null}
+      {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : activeTab == 1 && renderQueryElement()}
+      {selectedDataSource === null || !selectedQuery
+        ? renderDataSourcesList()
+        : activeTab == 2 && renderTransformation()}
+
+      {selectedDataSource !== null ? activeTab == 3 && renderQueryOptions() : null}
     </div>
   );
 };

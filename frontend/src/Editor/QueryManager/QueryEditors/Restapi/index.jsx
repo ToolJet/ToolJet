@@ -133,74 +133,76 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
 
     return (
-      <div className={`d-flex`}>
-        <div className="form-label flex-shrink-0">Request</div>
-        <div className="flex-grow-1 overflow-hidden">
-          <div className="rest-api-methods-select-element-container">
-            <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
-              <label className="font-weight-bold color-slate12">Method</label>
-              <Select
-                options={[
-                  { label: 'GET', value: 'get' },
-                  { label: 'POST', value: 'post' },
-                  { label: 'PUT', value: 'put' },
-                  { label: 'PATCH', value: 'patch' },
-                  { label: 'DELETE', value: 'delete' },
-                ]}
-                onChange={(value) => {
-                  changeOption(this, 'method', value);
-                }}
-                value={currentValue}
-                defaultValue={{ label: 'GET', value: 'get' }}
-                placeholder="Method"
-                width={100}
-                height={32}
-                styles={this.customSelectStyles(this.props.darkMode, 91)}
-                useCustomStyles={true}
-              />
-            </div>
+      <>
+        <div className={`d-flex`}>
+          <div className="form-label flex-shrink-0"></div>
+          <div className="flex-grow-1 overflow-hidden">
+            <div className="rest-api-methods-select-element-container">
+              <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
+                <label className="font-weight-medium color-slate12">Method</label>
+                <Select
+                  options={[
+                    { label: 'GET', value: 'get' },
+                    { label: 'POST', value: 'post' },
+                    { label: 'PUT', value: 'put' },
+                    { label: 'PATCH', value: 'patch' },
+                    { label: 'DELETE', value: 'delete' },
+                  ]}
+                  onChange={(value) => {
+                    changeOption(this, 'method', value);
+                  }}
+                  value={currentValue}
+                  defaultValue={{ label: 'GET', value: 'get' }}
+                  placeholder="Method"
+                  width={100}
+                  height={32}
+                  styles={this.customSelectStyles(this.props.darkMode, 91)}
+                  useCustomStyles={true}
+                />
+              </div>
 
-            <div className={`field w-100 rest-methods-url`}>
-              <div className="font-weight-bold color-slate12">URL</div>
-              <div className="d-flex">
-                {dataSourceURL && (
-                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
-                )}
-                <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={options.url}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => {
-                      changeOption(this, 'url', value);
-                    }}
-                    placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
-                    componentName={`${queryName}::url`}
-                    mode="javascript"
-                    lineNumbers={false}
-                    height={'32px'}
-                  />
+              <div className={`field w-100 rest-methods-url`}>
+                <div className="font-weight-medium color-slate12">URL</div>
+                <div className="d-flex">
+                  {dataSourceURL && (
+                    <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+                  )}
+                  <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={options.url}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      onChange={(value) => {
+                        changeOption(this, 'url', value);
+                      }}
+                      placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
+                      componentName={`${queryName}::url`}
+                      mode="javascript"
+                      lineNumbers={false}
+                      height={'32px'}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <div className={`query-pane-restapi-tabs`}>
-            <Tabs
-              theme={this.props.darkMode ? 'monokai' : 'default'}
-              options={this.state.options}
-              onChange={this.handleChange}
-              onJsonBodyChange={this.handleJsonBodyChanged}
-              removeKeyValuePair={this.removeKeyValuePair}
-              addNewKeyValuePair={this.addNewKeyValuePair}
-              darkMode={this.props.darkMode}
-              componentName={queryName}
-              bodyToggle={this.state.options.body_toggle}
-              setBodyToggle={this.onBodyToggleChanged}
-            />
-          </div>
         </div>
-      </div>
+
+        <div className={`query-pane-restapi-tabs`}>
+          <Tabs
+            theme={this.props.darkMode ? 'monokai' : 'default'}
+            options={this.state.options}
+            onChange={this.handleChange}
+            onJsonBodyChange={this.handleJsonBodyChanged}
+            removeKeyValuePair={this.removeKeyValuePair}
+            addNewKeyValuePair={this.addNewKeyValuePair}
+            darkMode={this.props.darkMode}
+            componentName={queryName}
+            bodyToggle={this.state.options.body_toggle}
+            setBodyToggle={this.onBodyToggleChanged}
+          />
+        </div>
+      </>
     );
   }
 }

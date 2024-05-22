@@ -35,8 +35,8 @@ export default ({
           return (
             <>
               <div className="row-container query-manager-border-color" key={index}>
-                <div className="fields-container mb-2">
-                  <div className="field col-4 overflow-hidden border-top border-bottom border-start rounded-start">
+                <div className="fields-container">
+                  <div className="field col-4 overflow-hidden border-top border-bottom">
                     <CodeHinter
                       initialValue={option[0]}
                       theme={theme}
@@ -57,7 +57,7 @@ export default ({
                     />
                   </div>
                   <button
-                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end ${
+                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom  ${
                       darkMode ? 'delete-field-option-dark' : ''
                     }`}
                     role="button"
@@ -86,10 +86,10 @@ export default ({
           />
         </div>
       ) : (
-        <div className="d-flex mb-2" style={{ maxHeight: '32px', marginLeft: '5px' }}>
+        <div className="d-flex mb-2" style={{ maxHeight: '32px', marginTop: '4px' }}>
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(paramType)}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp;{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
+            {t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
           </ButtonSolid>
         </div>
       )}

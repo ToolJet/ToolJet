@@ -1,7 +1,8 @@
   .add-new-btn {
-    padding: 6px 16px;       
+    padding: 6px 16px;
     width: 100%;
     font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid var(--borders-default, #CCD1D5);
+    color: var(--text-default, #1B1F24) !important;
   }
-
-   

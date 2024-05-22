@@ -20,198 +20,182 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
-import { cloneDeep } from 'lodash';
 
-import ParameterList from './ParameterList';
 import { decodeEntities } from '@/_helpers/utils';
 
-export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
-  const { renameQuery } = useDataQueriesActions();
-  const selectedQuery = useSelectedQuery();
-  const selectedDataSource = useSelectedDataSource();
-  const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
-  const queryName = selectedQuery?.name ?? '';
-  const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
-  const { queries } = currentState;
-  const { isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state.isVersionReleased,
-      editingVersionId: state.editingVersion?.id,
-    }),
-    shallow
-  );
-
-  const { updateDataQuery } = useDataQueriesActions();
-
-  useEffect(() => {
-    if (selectedQuery?.name) {
-      setShowCreateQuery(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedQuery?.name]);
-
-  const isInDraft = selectedQuery?.status === 'draft';
-
-  const executeQueryNameUpdation = (newName) => {
-    const { name } = selectedQuery;
-    if (name === newName || !newName) {
-      return false;
-    }
-
-    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
-    if (isNewQueryNameAlreadyExists) {
-      toast.error('Query name already exists');
-      return false;
-    }
-
-    if (newName) {
-      renameQuery(selectedQuery?.id, newName, editorRef);
-      return true;
-    }
-  };
-
-  const buttonLoadingState = (loading, disabled = false) => {
-    return cx(
-      `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
-      { 'theme-dark ': darkMode },
-      { disabled: disabled || !selectedDataSource }
+export const QueryManagerHeader = forwardRef(
+  ({ darkMode, options, editorRef, setOptions, setActiveTab, activeTab }, ref) => {
+    const { renameQuery } = useDataQueriesActions();
+    const selectedQuery = useSelectedQuery();
+    const selectedDataSource = useSelectedDataSource();
+    const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
+    const queryName = selectedQuery?.name ?? '';
+    const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
+    const { queries } = currentState;
+    const { isVersionReleased } = useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state.isVersionReleased,
+        editingVersionId: state.editingVersion?.id,
+      }),
+      shallow
     );
-  };
 
-  const previewButtonOnClick = () => {
-    const _options = { ...options };
-    const query = {
-      data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
-      pluginId: selectedDataSource.pluginId,
-      options: _options,
-      kind: selectedDataSource.kind,
-      name: queryName,
+    useEffect(() => {
+      if (selectedQuery?.name) {
+        setShowCreateQuery(false);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedQuery?.name]);
+
+    const isInDraft = selectedQuery?.status === 'draft';
+
+    const executeQueryNameUpdation = (newName) => {
+      const { name } = selectedQuery;
+      if (name === newName || !newName) {
+        return false;
+      }
+
+      const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
+      if (isNewQueryNameAlreadyExists) {
+        toast.error('Query name already exists');
+        return false;
+      }
+
+      if (newName) {
+        renameQuery(selectedQuery?.id, newName, editorRef);
+        return true;
+      }
     };
-    previewQuery(editorRef, query, false, undefined)
-      .then(() => {
-        ref.current.scrollIntoView();
-      })
-      .catch(({ error, data }) => {
-        console.log(error, data);
-      });
-  };
 
-  const renderRunButton = () => {
-    const { isLoading } = queries[selectedQuery?.name] ?? false;
-    return (
-      <span
-        {...(isInDraft && {
-          'data-tooltip-id': 'query-header-btn-run',
-          'data-tooltip-content': 'Connect a data source to run',
-        })}
-      >
-        <button
-          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
-          data-cy="query-run-button"
-          disabled={isInDraft}
+    const buttonLoadingState = (loading, disabled = false) => {
+      return cx(
+        `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
+        { 'theme-dark ': darkMode },
+        { disabled: disabled || !selectedDataSource }
+      );
+    };
+
+    const previewButtonOnClick = () => {
+      const _options = { ...options };
+      const query = {
+        data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+        pluginId: selectedDataSource.pluginId,
+        options: _options,
+        kind: selectedDataSource.kind,
+        name: queryName,
+      };
+      previewQuery(editorRef, query, false, undefined)
+        .then(() => {
+          ref.current.scrollIntoView();
+        })
+        .catch(({ error, data }) => {
+          console.log(error, data);
+        });
+    };
+
+    const renderRunButton = () => {
+      const { isLoading } = queries[selectedQuery?.name] ?? false;
+      return (
+        <span
           {...(isInDraft && {
             'data-tooltip-id': 'query-header-btn-run',
-            'data-tooltip-content': 'Publish the query to run',
+            'data-tooltip-content': 'Connect a data source to run',
           })}
         >
-          <span
-            className={cx({
-              invisible: isLoading,
+          <button
+            onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
+            className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)}`}
+            data-cy="query-run-button"
+            disabled={isInDraft}
+            {...(isInDraft && {
+              'data-tooltip-id': 'query-header-btn-run',
+              'data-tooltip-content': 'Publish the query to run',
             })}
           >
-            <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
-          </span>
-          <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
-        </button>
-        {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
-      </span>
-    );
-  };
+            <span
+              className={cx({
+                invisible: isLoading,
+              })}
+            >
+              <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
+            </span>
+            <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
+          </button>
+          {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+        </span>
+      );
+    };
 
-  const renderButtons = () => {
-    if (selectedQuery === null || showCreateQuery) return;
-    const { isLoading } = queries[selectedQuery?.name] ?? false;
-    return (
-      <>
-        <PreviewButton
-          onClick={previewButtonOnClick}
-          buttonLoadingState={buttonLoadingState}
-          isRunButtonLoading={isLoading}
-        />
-        {renderRunButton()}
-      </>
-    );
-  };
-
-  const optionsChanged = (newOptions) => {
-    setOptions(newOptions);
-    updateDataQuery(cloneDeep(newOptions));
-  };
-
-  const handleAddParameter = (newParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-      const newOptions = {
-        ...prevOptions,
-        parameters: [...(prevOptions?.parameters ?? []), newParameter],
-      };
-      optionsChanged(newOptions);
-    }
-  };
-
-  const handleParameterChange = (index, updatedParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
-      const updatedParameters = [...prevOptions.parameters];
-      updatedParameters[index] = updatedParameter;
-      optionsChanged({ ...prevOptions, parameters: updatedParameters });
-    }
-  };
-
-  const handleParameterRemove = (index) => {
-    const prevOptions = { ...options };
-    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChanged({ ...prevOptions, parameters: updatedParameters });
-  };
-
-  const paramListContainerRef = useRef(null);
-
-  return (
-    <div className="row header">
-      <div className="col font-weight-500">
-        {selectedQuery && (
-          <NameInput
-            onInput={executeQueryNameUpdation}
-            value={queryName}
-            darkMode={darkMode}
-            isDiabled={isVersionReleased}
+    const renderButtons = () => {
+      if (selectedQuery === null || showCreateQuery) return;
+      const { isLoading } = queries[selectedQuery?.name] ?? false;
+      return (
+        <>
+          {renderRunButton()}
+          <PreviewButton
+            onClick={previewButtonOnClick}
+            buttonLoadingState={buttonLoadingState}
+            isRunButtonLoading={isLoading}
           />
-        )}
+        </>
+      );
+    };
 
-        <div
-          className="query-parameters-list col w-100 d-flex justify-content-center font-weight-500"
-          ref={paramListContainerRef}
-        >
+    return (
+      <div className="row header" style={{ padding: '8px 16px' }}>
+        <div className="col font-weight-500 p-0">
           {selectedQuery && (
-            <ParameterList
-              parameters={options.parameters}
-              handleAddParameter={handleAddParameter}
-              handleParameterChange={handleParameterChange}
-              handleParameterRemove={handleParameterRemove}
-              currentState={currentState}
+            <NameInput
+              onInput={executeQueryNameUpdation}
+              value={queryName}
               darkMode={darkMode}
-              containerRef={paramListContainerRef}
+              isDiabled={isVersionReleased}
             />
           )}
+          <div className="d-flex" style={{ marginBottom: '-8px', gap: '3px' }}>
+            <p
+              className="m-0 d-flex align-items-center h-100"
+              onClick={() => setActiveTab(1)}
+              style={{
+                borderBottom: activeTab == 1 ? ' 2px solid #3E63DD' : '',
+                cursor: 'pointer',
+                padding: '6px 8px',
+                color: activeTab == 1 ? ' var(--text-default)' : 'var(--text-placeholder)',
+              }}
+            >
+              Setup
+            </p>
+            <p
+              className="m-0 d-flex align-items-center h-100"
+              onClick={() => setActiveTab(2)}
+              style={{
+                borderBottom: activeTab == 2 ? ' 2px solid #3E63DD' : '',
+                cursor: 'pointer',
+                padding: '6px 8px',
+                color: activeTab == 2 ? ' var(--text-default)' : 'var(--text-placeholder)',
+              }}
+            >
+              Transformation
+            </p>
+            <p
+              className="m-0 d-flex align-items-center h-100"
+              onClick={() => setActiveTab(3)}
+              style={{
+                borderBottom: activeTab == 3 ? ' 2px solid #3E63DD' : '',
+                cursor: 'pointer',
+                padding: '6px 8px',
+                color: activeTab == 3 ? ' var(--text-default)' : 'var(--text-placeholder)',
+              }}
+            >
+              Settings
+            </p>
+          </div>
         </div>
+        <div className="query-header-buttons">{renderButtons()}</div>
       </div>
-      <div className="query-header-buttons me-3">{renderButtons()}</div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
   const previewLoading = usePreviewLoading();
@@ -220,7 +204,7 @@ const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
   return (
     <button
       onClick={onClick}
-      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
+      className={`default-tertiary-button  ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">

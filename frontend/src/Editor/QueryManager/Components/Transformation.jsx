@@ -143,23 +143,8 @@ return data.filter(row => row.amount > 1000);
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
         <div className="d-flex flex-fill">
-          <OverlayTrigger
-            trigger="click"
-            placement="top"
-            rootClose
-            overlay={labelPopoverContent}
-            container={document.getElementsByClassName('query-details')[0]}
-          >
-            <span
-              className="color-slate9 font-weight-500 form-label"
-              data-cy={'label-query-transformation'}
-              style={{ textDecoration: 'underline 2px dashed', textDecorationColor: 'var(--slate8)' }}
-            >
-              {t('editor.queryManager.transformation.transformations', 'Transformations')}
-            </span>
-          </OverlayTrigger>
           <div className="flex-grow-l">
-            <div className="align-items-center d-flex">
+            <div className=" d-flex flex-column">
               <div className="mb-0">
                 <span className="d-flex">
                   <CustomToggleSwitch
@@ -169,12 +154,13 @@ return data.filter(row => row.amount > 1000);
                     darkMode={darkMode}
                     dataCy={'transformation'}
                   />
-                  <span className="ps-1">Enable</span>
+                  <span className="ps-1">Enable transformation</span>
                 </span>
               </div>
-              <EducativeLabel darkMode={darkMode} />
+              <div className="d-flex  text-placeholder justify-content-end">
+                <p>Powered by AI copilot </p>
+              </div>
             </div>
-            <div></div>
           </div>
         </div>
       </div>
@@ -184,8 +170,7 @@ return data.filter(row => row.amount > 1000);
         <div className="col flex-grow-1">
           {enableTransformation && (
             <div
-              className="rounded-3"
-              style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
+              style={{ borderRadius: '6px', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
             >
               <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
                 <div className="d-flex">
@@ -229,63 +214,6 @@ return data.filter(row => row.amount > 1000);
           )}
         </div>
       </div>
-    </div>
-  );
-};
-
-const EducativeLabel = ({ darkMode }) => {
-  const popoverContent = (
-    <Popover
-      id={`transformation-popover-container`}
-      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'} p-0`}
-    >
-      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
-        <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
-        <div className="d-flex flex-column card-body">
-          <h4 className="mb-2">ToolJet x OpenAI</h4>
-          <p className="mb-2">
-            <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong> helps you write your queries
-            faster. It uses OpenAI&apos;s GPT-3.5 to suggest queries based on your data.
-          </p>
-
-          <Button
-            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
-            darkMode={darkMode}
-            size="sm"
-            classNames="default-secondary-button"
-            styles={{ width: '100%', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
-          >
-            <Button.Content title={'Read more'} />
-          </Button>
-        </div>
-      </div>
-    </Popover>
-  );
-
-  const title = () => {
-    return (
-      <>
-        Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}> &nbsp;AI copilot</strong>
-      </>
-    );
-  };
-
-  return (
-    <div className="d-flex align-items-center ">
-      <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1 copilot-toggle">
-        <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
-      </Button.UnstyledButton>
-      <OverlayTrigger
-        overlay={popoverContent}
-        rootClose
-        trigger="click"
-        placement="right"
-        container={document.getElementsByClassName('query-details')[0]}
-      >
-        <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
-          <Information width={18} fill={'var(--indigo9)'} />
-        </span>
-      </OverlayTrigger>
     </div>
   );
 };

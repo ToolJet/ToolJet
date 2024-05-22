@@ -34,7 +34,7 @@ export const CustomToggleSwitch = ({
         <label htmlFor={action} className="slider round"></label>
       </label>
       {label && (
-        <span className={`${darkMode ? 'color-white' : 'color-light-slate-12'}`} data-cy={`${dataCy}-toggle-label`}>
+        <span className={`text-default`} data-cy={`${dataCy}-toggle-label`}>
           {label}
         </span>
       )}
