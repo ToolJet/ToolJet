@@ -265,7 +265,6 @@ export const QueryManagerBody = ({
           optionchanged={optionchanged}
         />
         {renderEventManager()}
-        <Preview darkMode={darkMode} />
       </div>
     );
   };
@@ -330,6 +329,7 @@ export const QueryManagerBody = ({
         : activeTab == 2 && renderTransformation()}
 
       {selectedDataSource !== null ? activeTab == 3 && renderQueryOptions() : null}
+      <Preview darkMode={darkMode} />
     </div>
   );
 };

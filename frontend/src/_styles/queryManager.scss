@@ -142,6 +142,7 @@ $border-radius: 4px;
     &:hover {
       background: #f1f1f1;
     }
+
     &~h5 {
       padding: 4px;
       margin: 0 7px;
@@ -1075,18 +1076,23 @@ $border-radius: 4px;
     z-index: 1;
     transition: height 0.2s ease-in-out;
     height: 30px;
-    .preview-content{
+    padding: 0px !important;
+
+    .preview-content {
       background-color: var(--slate3);
       height: 100%;
       width: 100%;
     }
-    &.expanded{
+
+    &.expanded {
       height: 70%;
-      .preview-content{
+
+      .preview-content {
         overflow-y: auto;
       }
     }
-    .preview-toggle{
+
+    .preview-toggle {
       padding: 4px 6px;
       background-color: #fff;
       border-top: 1px solid #E4E7EB;
@@ -1095,7 +1101,7 @@ $border-radius: 4px;
       align-items: center;
       justify-content: space-between;
 
-      .left{
+      .left {
         span {
           color: #6A727C;
           font-family: 'source-code-pro', Menlo, 'Courier New', Consolas, monospace;
@@ -1105,10 +1111,11 @@ $border-radius: 4px;
           line-height: 16px;
           vertical-align: middle;
         }
+
         cursor: pointer;
       }
     }
-  
+
 
     ul {
       margin: 0 !important;

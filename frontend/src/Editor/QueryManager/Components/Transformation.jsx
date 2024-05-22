@@ -5,21 +5,14 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-import { Popover, OverlayTrigger } from 'react-bootstrap';
-import { useTranslation } from 'react-i18next';
-import Select from '@/_ui/Select';
+import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 
 const noop = () => {};
-import { Button } from '@/_ui/LeftSidebar';
-import Information from '@/_ui/Icon/solidIcons/Information';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
-  const { t } = useTranslation();
-
   const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
   const defaultValue = {
@@ -93,52 +86,6 @@ return data.filter(row => row.amount > 1000);
     }
   }
 
-  const computeSelectStyles = (darkMode, width) => {
-    return {
-      ...queryManagerSelectComponentStyle(darkMode, width),
-      control: (provided) => ({
-        ...provided,
-        display: 'flex',
-        boxShadow: 'none',
-        backgroundColor: darkMode ? '#2b3547' : '#ffffff',
-        borderRadius: '0 6px 6px 0',
-        height: 32,
-        minHeight: 32,
-        borderWidth: '1px 1px 1px 0',
-        cursor: 'pointer',
-        borderColor: darkMode ? 'inherit' : ' #D7DBDF',
-        '&:hover': {
-          backgroundColor: darkMode ? '' : '#F8F9FA',
-        },
-        '&:active': {
-          backgroundColor: darkMode ? '' : '#F8FAFF',
-          borderColor: '#3E63DD',
-          borderWidth: '1px 1px 1px 1px',
-          boxShadow: '0px 0px 0px 2px #C6D4F9 ',
-        },
-      }),
-    };
-  };
-
-  const labelPopoverContent = (
-    <Popover
-      id="transformation-popover-container"
-      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme tj-dark-mode'} p-0`}
-    >
-      <p className={`transformation-popover`} data-cy={`transformation-popover`}>
-        {t(
-          'editor.queryManager.transformation.transformationToolTip',
-          'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
-        )}
-        <br />
-        <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
-          {t('globals.readDocumentation', 'Read documentation')}
-        </a>
-        .
-      </p>
-    </Popover>
-  );
-
   return (
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
@@ -173,26 +120,44 @@ return data.filter(row => row.amount > 1000);
               style={{ borderRadius: '6px', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
             >
               <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
-                <div className="d-flex">
-                  <div className="d-flex align-items-center border transformation-language-select-wrapper">
-                    <span className="px-2">Language</span>
-                  </div>
-                  <Select
-                    options={[
-                      { name: 'JavaScript', value: 'javascript' },
-                      { name: 'Python', value: 'python' },
-                    ]}
-                    value={lang}
-                    search={true}
-                    onChange={(value) => {
+                <div className="right">
+                  <Tab.Container
+                    activeKey={lang}
+                    onSelect={(value) => {
                       setLang(value);
                       changeOption('transformationLanguage', value);
                       changeOption('transformation', state[value]);
                     }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={computeSelectStyles(darkMode, 140)}
-                    useCustomStyles={true}
-                  />
+                    defaultActiveKey="JavaScript"
+                  >
+                    <Row className="m-0">
+                      <Col className="keys text-center d-flex align-items-center">
+                        <ListGroup
+                          className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
+                          variant="flush"
+                          style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
+                        >
+                          {['JavaScript', 'Python'].map((tab) => (
+                            <ListGroup.Item
+                              key={tab}
+                              eventKey={tab.toLowerCase()}
+                              style={{ minWidth: '74px', textAlign: 'center' }}
+                              className="rounded"
+                              disabled={!enableTransformation}
+                            >
+                              <span
+                                data-cy={`preview-tab-${String(tab).toLowerCase()}`}
+                                style={{ width: '100%' }}
+                                className="rounded"
+                              >
+                                {tab}
+                              </span>
+                            </ListGroup.Item>
+                          ))}
+                        </ListGroup>
+                      </Col>
+                    </Row>
+                  </Tab.Container>
                 </div>
               </div>
               <div className="codehinter-border-bottom mx-3"></div>
