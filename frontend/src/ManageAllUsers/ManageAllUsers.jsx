@@ -148,7 +148,7 @@ class ManageAllUsersComponent extends React.Component {
         this.setState({ archivingFromAllOrgs: false });
         this.toggleArchiveModal();
       })
-      .catch(({ error }) => {
+      .catch(() => {
         toast.error('Could not archive user. Please try again!');
         this.setState({ archivingFromAllOrgs: false });
         this.toggleArchiveModal();

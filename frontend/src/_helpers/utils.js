@@ -550,6 +550,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
   }
 
   const currentState = getCurrentState();
+
   let result = {},
     error = null;
 

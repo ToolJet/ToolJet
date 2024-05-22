@@ -70,7 +70,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
 
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
-  const isWorkspaceConstant = typeof currentValue === 'string' && currentValue.includes('constants.');
 
   return (
     <div
@@ -89,7 +88,6 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
         isWorkspaceVariable={isWorkspaceVariable}
-        isWorkspaceConstant={isWorkspaceConstant}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         isPortalOpen={restProps?.portalProps?.isOpen}

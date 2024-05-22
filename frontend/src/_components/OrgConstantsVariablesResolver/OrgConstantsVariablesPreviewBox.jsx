@@ -62,7 +62,6 @@ const verifyConstant = (value, definedConstants) => {
 
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   const isConstant = type === 'Workspace Constant';
-  const hiddenWorkspaceConstantText = 'Workspace constant values are hidden';
   const invalidConstants = verifyConstant(value, state.constants);
   let preview;
   let error;
@@ -70,11 +69,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     [preview, error] = [value, `Undefined constants: ${invalidConstants}`];
   } else {
     [preview, error] = resolveReferences(value, state, null, {}, true, true);
-    if (isConstant) {
-      preview = hiddenWorkspaceConstantText;
-    }
   }
-
   const previewType = typeof preview;
 
   let resolvedValue = preview;
@@ -134,7 +129,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
                 style={{ fontWeight: 800, textTransform: 'capitalize' }}
                 data-cy="alert-banner-type-text"
               >
-                {isValidError ? 'Error' : isConstant ? null : ` ${type} - ${previewType}`}
+                {isValidError ? 'Error' : ` ${type} - ${previewType}`}
               </div>
             </div>
             {getPreviewContent(resolvedValue, previewType)}

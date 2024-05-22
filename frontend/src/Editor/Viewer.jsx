@@ -451,13 +451,16 @@ class ViewerComponent extends React.Component {
       variablesResult = constants;
     } else {
       const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
-
       variablesResult = constants;
     }
-
+    const environmentResult = await this.getEnvironmentDetails(this.state.environmentId);
+    const { environment } = environmentResult;
     if (variablesResult && Array.isArray(variablesResult)) {
       variablesResult.forEach((constant) => {
-        orgConstants[constant.name] = maskedWorkspaceConstantStr;
+        const condition = (value) =>
+          this.state.environmentId ? value.id === this.state.environmentId : value.id === environment?.id;
+        const constantValue = constant.values.find(condition)['value'];
+        orgConstants[constant.name] = constantValue;
       });
       return {
         constants: orgConstants,

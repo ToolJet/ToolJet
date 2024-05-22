@@ -451,7 +451,7 @@ const EditorComponent = (props) => {
       const orgConstants = {};
 
       constants.map((constant) => {
-        orgConstants[constant.name] = maskedWorkspaceConstantStr;
+        orgConstants[constant.name] = constant.value;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({

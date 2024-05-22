@@ -170,7 +170,7 @@ const PreviewContainer = ({
   isPortalOpen,
   ...restProps
 }) => {
-  const { validationSchema, isWorkspaceVariable, isWorkspaceConstant, errorStateActive, previewPlacement } = restProps;
+  const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement } = restProps;
 
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -294,7 +294,6 @@ const PreviewContainer = ({
           </Card>
         </div>
         {isWorkspaceVariable && <CodeHinter.DepericatedAlert text={'Deprecating soon'} />}
-        {isWorkspaceConstant && <CodeHinter.InfoAlert text={'Workspace constant values are hidden'} />}
       </Popover.Body>
     </Popover>
   );
