@@ -86,8 +86,9 @@ function DataSourceSelect({
     const offset = (page - 1) * limit;
 
     if (isFirstPageLoaded && offset >= totalRecords) return;
+    if (foreignKeys.length < 1) return;
     setIsLoadingFKDetails(true);
-    const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+    const referencedColumns = foreignKeys.find((item) => item.column_names[0] === cellColumnName);
     if (!referencedColumns?.referenced_column_names?.length) return;
 
     const selectQuery = new PostgrestQueryBuilder();
@@ -113,7 +114,7 @@ function DataSourceSelect({
         }
 
         const totalFKRecords = headers['content-range'].split('/')[1] || 0;
-        if (Array.isArray(data) && data?.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           if (isEmpty(searchValue)) {
             if (page === 1) setIsInitialForeignKeyDataLoaded(true);
             setReferencedColumnDetails((prevData) => [...prevData, ...data]);
