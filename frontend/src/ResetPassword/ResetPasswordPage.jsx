@@ -35,7 +35,7 @@ class ResetPasswordComponent extends React.Component {
   };
 
   handlePasswordInput = (event) => {
-    const input = event.target.value?.trim();
+    const input = event.target.value;
     this.setState({
       [event.target.name]: input,
     });
