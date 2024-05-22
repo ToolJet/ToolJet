@@ -9,6 +9,7 @@ import LeftNav from '../../Icons/LeftNav.svg';
 import RightNav from '../../Icons/RightNav.svg';
 import cx from 'classnames';
 import './styles.scss';
+import styles from './styles.module.scss';
 
 export const CellEditMenu = ({
   darkMode = false,
@@ -36,6 +37,7 @@ export const CellEditMenu = ({
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
+  const [shouldCloseFkMenu, setShouldCloseFKMenu] = useState(0);
   const [selectedForeignKeyValue, setSelectedForeignKeyValue] = useState({
     value: previousCellValue === 'Null' ? null : previousCellValue,
     label: previousCellValue === 'Null' ? null : previousCellValue,
@@ -86,6 +88,10 @@ export const CellEditMenu = ({
     setReferencedColumnDetails([]);
     setSelectedValue(previousCellValue);
     close();
+  };
+
+  const closeFKMenu = () => {
+    setShouldCloseFKMenu((prev) => prev + 1);
   };
 
   const handleKeyDown = (e) => {
@@ -149,6 +155,103 @@ export const CellEditMenu = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellValue]);
 
+  const SaveChangesSection = () => {
+    return (
+      <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex flex-column align-items-start gap-1">
+          <div className="d-flex align-items-center gap-1">
+            <div className={`fw-500 ${styles.tjdbCellMenuShortcutsInfo}`}>
+              <SolidIcon name="enterbutton" />
+            </div>
+            <div className={`fw-400 ${styles.tjdbCellMenuShortcutsText}`}>Save Changes</div>
+          </div>
+          <div className="d-flex align-items-center gap-1">
+            <div className={`fw-500 ${styles.tjdbCellMenuShortcutsInfo}`}>Esc</div>
+            <div className={`fw-400 ${styles.tjdbCellMenuShortcutsText}`}>Discard Changes</div>
+          </div>
+        </div>
+        <div className="d-flex flex-column align-items-end gap-1">
+          {columnDetails?.constraints_type.is_not_null === false && (
+            <div className="d-flex align-items-center gap-2">
+              <div className="d-flex flex-column">
+                <span className="fw-400 fs-12">Set to null</span>
+              </div>
+              <div>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={nullValue}
+                    onChange={() => handleNullChange(!nullValue)}
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+          {columnDetails?.column_default !== null && (
+            <div className="d-flex align-items-center gap-2">
+              <div className="d-flex flex-column">
+                <span className="fw-400 fs-12">Set to default</span>
+              </div>
+              <div>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={defaultValue}
+                    onChange={() => handleDefaultChange(columnDetails?.column_default, !defaultValue)}
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const SaveChangesFooter = ({ isForeignKeyInEditCell }) => {
+    return (
+      <div
+        className={cx('d-flex align-items-center gap-2', {
+          'justify-content-between': isBoolean,
+          'justify-content-end': !isBoolean,
+        })}
+      >
+        {isBoolean ? (
+          <div className="cell-editmenu-keyActions">
+            <div className="leftNav-parent-container">
+              <LeftNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
+            </div>
+            <div className="rightNav-parent-container">
+              <RightNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
+            </div>
+            <div className="navigate-title fs-10">Navigate</div>
+          </div>
+        ) : null}
+        <div className="d-flex" style={{ gap: '8px' }}>
+          <ButtonSolid
+            onClick={isForeignKeyInEditCell ? closeFKMenu : closePopover}
+            variant="tertiary"
+            size="sm"
+            className="fs-12"
+          >
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid
+            onClick={() => saveFunction(selectedValue)}
+            disabled={cellValue == previousCellValue ? true : false}
+            variant="primary"
+            size="sm"
+            className="fs-12"
+          >
+            Save
+          </ButtonSolid>
+        </div>
+      </div>
+    );
+  };
+
   const popover = (
     <Popover
       className={`${darkMode && 'dark-theme'} tjdb-table-cell-edit-popover`}
@@ -160,37 +263,6 @@ export const CellEditMenu = ({
     >
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className={`d-flex flex-column ${isBoolean ? 'gap-4' : 'gap-3'}`}>
-          {isForeignKey && (
-            <DropDownSelect
-              buttonClasses="border border-end-1 foreignKeyAcces-container"
-              showPlaceHolder={true}
-              options={referencedFKDataList}
-              darkMode={darkMode}
-              emptyError={
-                <div className="dd-select-alert-error m-2 d-flex align-items-center">
-                  <Information />
-                  No table selected
-                </div>
-              }
-              value={selectedForeignKeyValue}
-              onChange={(value) => {
-                setSelectedForeignKeyValue({
-                  label: value.value === 'Null' ? null : value.value,
-                  value: value.value === 'Null' ? null : value.value,
-                });
-                setCellValue(value.value === 'Null' ? null : value.value);
-                setNullValue(value.value === 'Null' ? true : false);
-              }}
-              onAdd={true}
-              addBtnLabel={'Open referenced table'}
-              isCellEdit={true}
-              scrollEventForColumnValus={scrollEventForColumnValus}
-              organizationId={organizationId}
-              foreignKeys={foreignKeys}
-              setReferencedColumnDetails={setReferencedColumnDetails}
-              cellColumnName={cellHeader}
-            />
-          )}
           {/*  Boolean View */}
           {isBoolean && (
             <div className="d-flex align-items-start gap-2">
@@ -226,92 +298,10 @@ export const CellEditMenu = ({
             </div>
           )}
 
-          {!isBoolean && (
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="d-flex flex-column align-items-start gap-1">
-                <div className="d-flex align-items-center gap-1">
-                  <div className="fw-500 tjdb-cell-menu-shortcuts-info">
-                    <SolidIcon name="enterbutton" />
-                  </div>
-                  <div className="fw-400 tjdb-cell-menu-shortcuts-text">Save Changes</div>
-                </div>
-                <div className="d-flex align-items-center gap-1">
-                  <div className="fw-500 tjdb-cell-menu-shortcuts-info">Esc</div>
-                  <div className="fw-400 tjdb-cell-menu-shortcuts-text">Discard Changes</div>
-                </div>
-              </div>
-              <div className="d-flex flex-column align-items-end gap-1">
-                {columnDetails?.constraints_type.is_not_null === false && (
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="d-flex flex-column">
-                      <span className="fw-400 fs-12">Set to null</span>
-                    </div>
-                    <div>
-                      <label className={`form-switch`}>
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={nullValue}
-                          onChange={() => handleNullChange(!nullValue)}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                )}
-                {columnDetails?.column_default !== null && (
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="d-flex flex-column">
-                      <span className="fw-400 fs-12">Set to default</span>
-                    </div>
-                    <div>
-                      <label className={`form-switch`}>
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={defaultValue}
-                          onChange={() => handleDefaultChange(columnDetails?.column_default, !defaultValue)}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {!isBoolean && <SaveChangesSection />}
 
           {/* Footer */}
-          <div
-            className={cx('d-flex align-items-center gap-2', {
-              'justify-content-between': isBoolean,
-              'justify-content-end': !isBoolean,
-            })}
-          >
-            {isBoolean ? (
-              <div className="cell-editmenu-keyActions">
-                <div className="leftNav-parent-container">
-                  <LeftNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
-                </div>
-                <div className="rightNav-parent-container">
-                  <RightNav style={{ verticalAlign: 'baseline' }} width={8} height={8} />
-                </div>
-                <div className="navigate-title fs-10">Navigate</div>
-              </div>
-            ) : null}
-            <div className="d-flex" style={{ gap: '8px' }}>
-              <ButtonSolid onClick={closePopover} variant="tertiary" size="sm" className="fs-12">
-                Cancel
-              </ButtonSolid>
-              <ButtonSolid
-                onClick={() => saveFunction(selectedValue)}
-                disabled={cellValue == previousCellValue ? true : false}
-                variant="primary"
-                size="sm"
-                className="fs-12"
-              >
-                Save
-              </ButtonSolid>
-            </div>
-          </div>
+          <SaveChangesFooter />
         </div>
       </Popover.Body>
     </Popover>
@@ -319,7 +309,49 @@ export const CellEditMenu = ({
 
   return (
     <OverlayTrigger show={show} trigger="click" placement="bottom-start" rootclose overlay={popover} defaultShow>
-      {children}
+      {isForeignKey ? (
+        <DropDownSelect
+          buttonClasses="border border-end-1 foreignKeyAcces-container"
+          showPlaceHolder={true}
+          options={referencedFKDataList}
+          darkMode={darkMode}
+          emptyError={
+            <div className="dd-select-alert-error m-2 d-flex align-items-center">
+              <Information />
+              No table selected
+            </div>
+          }
+          value={selectedForeignKeyValue}
+          onChange={(value) => {
+            setSelectedForeignKeyValue({
+              label: value.value === 'Null' ? null : value.value,
+              value: value.value === 'Null' ? null : value.value,
+            });
+            setCellValue(value.value === 'Null' ? null : value.value);
+            setNullValue(value.value === 'Null' ? true : false);
+          }}
+          onAdd={true}
+          closeFKMenu={closeFKMenu}
+          saveFKValue={() => saveFunction(cellValue)}
+          addBtnLabel={'Open referenced table'}
+          isCellEdit={true}
+          scrollEventForColumnValus={scrollEventForColumnValus}
+          organizationId={organizationId}
+          foreignKeys={foreignKeys}
+          setReferencedColumnDetails={setReferencedColumnDetails}
+          cellColumnName={cellHeader}
+          customChildren={
+            <div className={`d-flex flex-column gap-3`} style={{ padding: '10px' }}>
+              <SaveChangesSection />
+              <SaveChangesFooter isForeignKeyInEditCell={true} />
+            </div>
+          }
+          isForeignKeyInEditCell={true}
+          shouldCloseFkMenu={shouldCloseFkMenu}
+        />
+      ) : (
+        children
+      )}
     </OverlayTrigger>
   );
 };
