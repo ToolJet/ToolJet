@@ -1552,6 +1552,7 @@ export const addComponents = (
 ) => {
   const finalComponents = {};
   const componentMap = {};
+  let newComponent = {};
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
 
@@ -1599,12 +1600,13 @@ export const addComponents = (
       componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
     }
 
-    const newComponent = {
+    newComponent = {
       component: {
         ...componentData,
         name: componentName,
       },
       layouts: component.layouts,
+      id: newComponentId,
     };
 
     finalComponents[newComponentId] = newComponent;
@@ -1617,7 +1619,10 @@ export const addComponents = (
   }
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
-  !isCloning && toast.success('Component pasted succesfully');
+  if (!isCloning) {
+    toast.success('Component pasted succesfully');
+    return newComponent;
+  }
 };
 
 export const addNewWidgetToTheEditor = (

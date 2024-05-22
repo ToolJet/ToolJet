@@ -117,7 +117,7 @@ export const Container = ({
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
             const cliptext = await navigator.clipboard.readText();
-            addComponents(
+            const newComponent = addComponents(
               currentPageId,
               appDefinition,
               appDefinitionChanged,
@@ -125,6 +125,7 @@ export const Container = ({
               JSON.parse(cliptext),
               true
             );
+            setSelectedComponent(newComponent.id, newComponent.component);
           } catch (err) {
             console.log(err);
           }
