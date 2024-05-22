@@ -7,6 +7,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { triggerKeyboardShortcut } from '@/_helpers/utils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import cx from 'classnames';
 
 function DrawerFooter({
   fetching,
@@ -79,20 +80,45 @@ function DrawerFooter({
     editForeignKeyInCreateTable,
   ]);
 
+  const isReadDocsTrue =
+    initiator === 'CreateTableForm' ||
+    initiator === 'EditTableForm' ||
+    initiator === 'CreateColumnForm' ||
+    initiator === 'EditColumnForm' ||
+    initiator === 'ForeignKeyTableForm';
+
   return (
     <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
-      <div className="d-flex justify-content-end drawer-footer-btn-wrap">
-        {/* <ToolTip
-          message={'Foreign key relations checks for referential integrity between two tables.'}
-          placement="top"
-          tooltipClassName="tootip-table read-docs-fk"
-          show={showToolTipForFkOnReadDocsSection}
-        >
-          <div className="d-flex align-items-center">
-            <Student />
-            <a className="read-documentation">Read documentation</a>
-          </div>
-        </ToolTip> */}
+      <div
+        className={cx(
+          { 'd-flex justify-content-end drawer-footer-btn-wrap': !isReadDocsTrue },
+          { 'd-flex justify-content-between drawer-footer-btn-wrap': isReadDocsTrue }
+        )}
+      >
+        {(initiator === 'CreateTableForm' ||
+          initiator === 'EditTableForm' ||
+          initiator === 'CreateColumnForm' ||
+          initiator === 'EditColumnForm' ||
+          initiator === 'ForeignKeyTableForm') && (
+          <ToolTip
+            message={'Foreign key relations checks for referential integrity between two tables.'}
+            placement="top"
+            tooltipClassName="tootip-table read-docs-fk"
+            show={showToolTipForFkOnReadDocsSection}
+          >
+            <div className="d-flex align-items-center">
+              <Student />
+              <a
+                href="https://docs.tooljet.com/docs/tooljet-db/database-editor/#foreign-key"
+                target="_blank"
+                className="read-documentation"
+                rel="noreferrer"
+              >
+                Read documentation
+              </a>
+            </div>
+          </ToolTip>
+        )}
         {initiator === 'CreateRowForm' && (
           <div className="tjdb-shotcut-text-container">
             <div className="tjdb-shift-shortcut-box">
