@@ -138,9 +138,7 @@ const Option = (props) => {
             <CheckMark width={'20'} fill={'var(--primary-brand)'} />
           </span>
         )}
-        <span className="text-truncate" style={{ color: props.isDisabled ? '#889096' : 'unset' }}>
-          {props.label}
-        </span>
+        <span style={{ color: props.isDisabled ? '#889096' : 'unset', wordBreak: 'break-all' }}>{props.label}</span>
       </div>
     </components.Option>
   );
@@ -159,9 +157,6 @@ export const DropdownV2 = ({
   component,
   exposedVariables,
   dataCy,
-  adjustHeightBasedOnAlignment,
-  currentLayout,
-  width,
 }) => {
   let {
     label,
@@ -286,12 +281,6 @@ export const DropdownV2 = ({
   }, [advanced, value, JSON.stringify(schema)]);
 
   useEffect(() => {
-    if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label, currentLayout]);
-
-  useEffect(() => {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
@@ -318,7 +307,6 @@ export const DropdownV2 = ({
     setExposedVariable('selectOption', async function (value) {
       let _value = value;
       if (isObject(value) && has(value, 'value')) _value = value?.value;
-      console.log(value, 'value');
       selectOption(_value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -438,6 +426,7 @@ export const DropdownV2 = ({
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
+      display: 'flex',
     }),
     menuList: (provided) => ({
       ...provided,
