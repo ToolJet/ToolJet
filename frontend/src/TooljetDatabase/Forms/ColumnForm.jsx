@@ -178,11 +178,11 @@ const ColumnForm = ({
     // toast.success(`Foreign key Added successfully for selected column`);
   };
 
-  const referenceTableDetails = referencedColumnDetails?.map((item) => {
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
     const [key, _value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
 
