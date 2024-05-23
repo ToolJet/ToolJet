@@ -127,7 +127,7 @@ $border-radius: 4px;
   .vr {
     margin: 0 5px;
     opacity: 1;
-    background-color: #E4E7EB;
+    background-color: var(--slate5);
     height: 17px;
     align-self: center;
   }
@@ -138,13 +138,16 @@ $border-radius: 4px;
     width: 58px;
     text-align: center;
     cursor: pointer;
+    color: var(--slate12) !important;
+
 
     &:hover {
-      background: #f1f1f1;
+      background: var(--slate3);
     }
     &~h5 {
       // padding: 4px;
       margin: 0 26px;
+      color: var(--slate12) !important;
     }
   }
 
@@ -1089,8 +1092,8 @@ $border-radius: 4px;
     }
     .preview-toggle{
       padding: 4px 6px;
-      background-color: #fff;
-      border-top: 1px solid #E4E7EB;
+      background-color: var(--base);
+      border-top: 1px solid  var(--slate5);
       width: 100%;
       display: flex;
       align-items: center;
@@ -1098,7 +1101,7 @@ $border-radius: 4px;
 
       .left{
         span {
-          color: #6A727C;
+          color: var(--slate12);
           font-family: 'source-code-pro', Menlo, 'Courier New', Consolas, monospace;
           font-size: 12px;
           font-style: normal;
@@ -1106,10 +1109,12 @@ $border-radius: 4px;
           line-height: 16px;
           vertical-align: middle;
         }
+        svg{
+          fill: var(--slate12) !important;
+        }
         cursor: pointer;
       }
     }
-  
 
     ul {
       margin: 0 !important;
