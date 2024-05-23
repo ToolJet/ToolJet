@@ -23,13 +23,13 @@ const CreateRowDrawer = ({
     setQueryFilters,
     columns,
   } = useContext(TooljetDatabaseContext);
-  const [fnCaller, setFnCaller] = useState(0);
+  const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
 
   return (
     <>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
-          onCreate={(bypass) => {
+          onCreate={(shouldKeepDrawerOpen) => {
             const limit = pageSize;
             setSortFilters({});
             setQueryFilters({});
@@ -57,14 +57,14 @@ const CreateRowDrawer = ({
 
             const tableElement = document.querySelector('.tj-db-table');
             if (tableElement) tableElement.scrollTop = 0;
-            if (!bypass) setIsCreateRowDrawerOpen(false);
-            setFnCaller((prev) => prev + 1);
+            if (!shouldKeepDrawerOpen) setIsCreateRowDrawerOpen(false);
+            setShouldResetRowForm((prev) => prev + 1);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
           initiator="CreateRowForm"
-          fnCaller={fnCaller}
+          shouldResetRowForm={shouldResetRowForm}
         />
       </Drawer>
     </>
