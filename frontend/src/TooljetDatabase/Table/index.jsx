@@ -94,12 +94,16 @@ const Table = ({ collapseSidebar }) => {
   const fetchFkDataForColumn = (foreignKey, currentIndex) => {
     // responsible to fetch the fk column details for all available fk's and cache them
     return new Promise((resolve, reject) => {
-      if (!foreignKey?.referenced_column_names?.length || !foreignKey?.referenced_table_id) return resolve();
+      if (!foreignKey?.referenced_column_names?.length) return resolve();
       const selectQuery = new PostgrestQueryBuilder();
 
       selectQuery.select(foreignKey?.referenced_column_names[0]);
       tooljetDatabaseService
-        .findOne(organizationId, foreignKeys?.length > 0, `${selectQuery.url.toString()}&limit=${15}&offset=${0}`)
+        .findOne(
+          organizationId,
+          foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
+          `${selectQuery.url.toString()}&limit=${15}&offset=${0}`
+        )
         .then(({ headers, data = [], error }) => {
           if (error) {
             toast.error(
