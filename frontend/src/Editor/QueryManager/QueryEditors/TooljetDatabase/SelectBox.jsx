@@ -222,6 +222,11 @@ function DataSourceSelect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const customFilterOption = (option, inputValue) => {
+    if (!option.label) return null;
+    return option.label.toString().toLowerCase().includes(inputValue.toString().toLowerCase());
+  };
+
   return (
     <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <Select
@@ -544,6 +549,7 @@ function DataSourceSelect({
         }}
         placeholder="Search"
         options={scrollEventForColumnValus && searchValue ? searchResults : options}
+        filterOption={scrollEventForColumnValus ? null : customFilterOption}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
