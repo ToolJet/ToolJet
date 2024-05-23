@@ -61,7 +61,7 @@ const verifyConstant = (value, definedConstants) => {
 };
 
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
-  const invalidConstants = verifyConstant(value, state.constants || {});
+  const invalidConstants = verifyConstant(value, state?.constants || {});
   let preview;
   let error;
   if (invalidConstants?.length) {
