@@ -19,6 +19,7 @@ import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.ent
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { decode } from 'js-base64';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DataSourcesService {
@@ -29,6 +30,7 @@ export class DataSourcesService {
     private appEnvironmentService: AppEnvironmentService,
     private usersService: UsersService,
     private licenseService: LicenseService,
+    private configService: ConfigService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
@@ -722,5 +724,67 @@ export class DataSourcesService {
       }
     }
     return result;
+  }
+
+  private async getAllSampleDataSource(organizationId?: string, manager?: EntityManager): Promise<DataSource[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(DataSource, {
+        where: {
+          ...(organizationId && { organizationId }),
+          type: DataSourceTypes.SAMPLE,
+        },
+      });
+    }, manager);
+  }
+
+  async updateSampleDs() {
+    const options = [
+      {
+        key: 'host',
+        value: this.configService.get<string>('PG_HOST'),
+        encrypted: true,
+      },
+      {
+        key: 'port',
+        value: this.configService.get<string>('PG_PORT'),
+        encrypted: true,
+      },
+      {
+        key: 'database',
+        value: 'sample_db',
+      },
+      {
+        key: 'username',
+        value: this.configService.get<string>('PG_USER'),
+        encrypted: true,
+      },
+      {
+        key: 'password',
+        value: this.configService.get<string>('PG_PASS'),
+        encrypted: true,
+      },
+      {
+        key: 'ssl_enabled',
+        value: false,
+        encrypted: true,
+      },
+      { key: 'ssl_certificate', value: 'none', encrypted: false },
+    ];
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const allSampleDs = await this.getAllSampleDataSource(null, manager);
+      if (!allSampleDs?.length) {
+        return;
+      }
+      for (const ds of allSampleDs) {
+        const { organizationId } = ds;
+        const newOptions = await this.parseOptionsForUpdate(ds, options);
+        const allEnvs = await this.appEnvironmentService.getAll(organizationId);
+        await Promise.all(
+          allEnvs.map(async (envToUpdate) => {
+            await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, ds.id, manager);
+          })
+        );
+      }
+    });
   }
 }

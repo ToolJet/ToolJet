@@ -503,6 +503,7 @@ export class DataQueriesService {
           if (Array.isArray(curr)) {
             for (let j = 0; j < curr.length; j++) {
               const inner = curr[j];
+              constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
                 const resolved = await this.resolveConstants(inner, organization_id, environmentId);

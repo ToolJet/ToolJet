@@ -148,7 +148,7 @@ class ManageAllUsersComponent extends React.Component {
         this.setState({ archivingFromAllOrgs: false });
         this.toggleArchiveModal();
       })
-      .catch(({ error }) => {
+      .catch(() => {
         toast.error('Could not archive user. Please try again!');
         this.setState({ archivingFromAllOrgs: false });
         this.toggleArchiveModal();
@@ -280,10 +280,12 @@ class ManageAllUsersComponent extends React.Component {
       variant: !isArchived ? 'dangerPrimary' : 'primary',
       leftIcon: 'archive',
     };
-    const body =
-      updatingUser?.status === 'active'
-        ? 'Archiving the user will restrict their access to all their workspaces and exclude them from the count of users covered by your plan. Are you sure you want to continue?'
-        : `Unarchiving the user will activate them in the instance and include them in the count of users covered by your plan. Are you sure you want to continue?`;
+
+    const statusCheck = ['active', 'invited', 'verified'].includes(updatingUser?.status);
+
+    const body = statusCheck
+      ? 'Archiving the user will restrict their access to all their workspaces and exclude them from the count of users covered by your plan. Are you sure you want to continue?'
+      : `Unarchiving the user will activate them in the instance and include them in the count of users covered by your plan. Are you sure you want to continue?`;
 
     return (
       <ModalBase

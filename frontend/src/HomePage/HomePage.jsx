@@ -36,7 +36,6 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import Skeleton from 'react-loading-skeleton';
 import FolderFilter from './FolderFilter';
-import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 
@@ -1271,7 +1270,7 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {
+                {(isLoading || meta.total_count > 0 || currentFolder.count === 0) && (
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}
@@ -1289,7 +1288,7 @@ class HomePageComponent extends React.Component {
                     appType={this.props.appType}
                     basicPlan={featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid}
                   />
-                }
+                )}
               </div>
               <div className="footer-container">
                 {this.pageCount() > MAX_APPS_PER_PAGE && (

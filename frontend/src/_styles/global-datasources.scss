@@ -7,6 +7,7 @@
     background: var(--base);
     display: grid;
     grid-template-rows: auto 1fr auto;
+    border-right: 1px solid var(--slate5);
 
     .add-datasource-btn {
         height: 40px;
@@ -176,6 +177,7 @@
 .datasource-selection-confirm-backdrop {
     z-index: 1060;
     opacity: 0.4 !important;
+    border-left: 1px solid var(--slate5);
 }
 
 .datasource-list-container {
@@ -197,7 +199,8 @@
             }
 
             input {
-                background: transparent;
+                background: none !important;
+                border: none !important;
             }
         }
     }

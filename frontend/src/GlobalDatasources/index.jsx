@@ -29,13 +29,13 @@ export const GlobalDatasources = (props) => {
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [environmentLoading, setEnvironmentLoading] = useState(false);
-  const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
+  const [activeDatasourceList, setActiveDatasourceList] = useState('#commonlyused');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const [featureAccess, setFeatureAccess] = useState({});
 
   useEffect(() => {
-    if (dataSources?.length == 0) updateSidebarNAV('Databases');
+    if (dataSources?.length == 0) updateSidebarNAV('Commonly used');
     fetchFeatureAccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -43,7 +43,7 @@ export const GlobalDatasources = (props) => {
   useEffect(() => {
     selectedDataSource
       ? updateSidebarNAV(selectedDataSource.name)
-      : !activeDatasourceList && updateSidebarNAV('Databases');
+      : !activeDatasourceList && updateSidebarNAV('Commonly used');
 
     //if user selected a new datasource to create one. switch to development env
     if (!selectedDataSource) setCurrentEnvironment(returnDevelopmentEnv(environments));
@@ -139,7 +139,7 @@ export const GlobalDatasources = (props) => {
         }
         if (orderedDataSources.length && resetSelection) {
           if (!canCreateDataSource()) {
-            setActiveDatasourceList('#databases');
+            setActiveDatasourceList('#commonlyused');
             setSelectedDataSource(null);
           } else if (!canUpdateDataSource()) {
             setSelectedDataSource(orderedDataSources[0]);
@@ -151,7 +151,7 @@ export const GlobalDatasources = (props) => {
           }
         }
         if (!orderedDataSources.length) {
-          setActiveDatasourceList('#databases');
+          setActiveDatasourceList('#commonlyused');
         }
         setLoading(false);
       })

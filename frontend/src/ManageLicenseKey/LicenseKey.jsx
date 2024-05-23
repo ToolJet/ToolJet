@@ -80,7 +80,9 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess, darkMode }) => {
             <div style={{ position: 'relative' }}>
               <Textarea
                 placeholder="Enter license key"
-                className={cx('form-control', { 'errored-textarea': featureAccess?.licenseStatus?.isExpired })}
+                className={cx('form-control custom-textarea-height', {
+                  'errored-textarea': featureAccess?.licenseStatus?.isExpired,
+                })}
                 rows="12"
                 value={licenseKey}
                 onChange={(e) => optionChanged(e.target.value)}

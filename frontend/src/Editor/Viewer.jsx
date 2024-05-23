@@ -61,6 +61,7 @@ import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
+const maskedWorkspaceConstantStr = '**************';
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -450,15 +451,12 @@ class ViewerComponent extends React.Component {
       variablesResult = constants;
     } else {
       const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
-
       variablesResult = constants;
     }
-
     const environmentResult = await this.getEnvironmentDetails(this.state.environmentId);
     const { environment } = environmentResult;
-
     if (variablesResult && Array.isArray(variablesResult)) {
-      variablesResult.map((constant) => {
+      variablesResult.forEach((constant) => {
         const condition = (value) =>
           this.state.environmentId ? value.id === this.state.environmentId : value.id === environment?.id;
         const constantValue = constant.values.find(condition)['value'];

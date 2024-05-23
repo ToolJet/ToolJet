@@ -835,12 +835,20 @@ button {
   }
 
   .homepage-search {
-    background: transparent;
+    background: none !important;
     color: var(--slate12);
     height: 20px;
+    border: none !important;
 
     &:focus {
-      background: none;
+      background: none !important;
+      border: none !important;
+    }
+
+    &:hover {
+      background: none !important;
+      border: none !important;
+      color: var(--slate12);
     }
   }
 }
@@ -8529,12 +8537,14 @@ tbody {
 .pagination-container {
   display: flex;
   padding: 0px;
-  height: 20px;
+  height: 20px !important;
 
   .form-control {
     padding: 0 4px;
     width: fit-content;
-    max-width: 30px;
+    width: 30px !important;
+    height: 20px !important;
+    margin-bottom: 0px !important;
     text-align: center;
   }
 
@@ -9268,6 +9278,10 @@ tbody {
   justify-content: center;
   align-items: center;
   color: var(--slate11);
+
+  .with-border {
+    border-bottom: 1px solid var(--slate5) !important;
+  }
 
   a {
     text-decoration: none;
@@ -10134,6 +10148,19 @@ tbody {
 .codehinter.alert-component.workspace-variables-alert-banner {
   color: var(--amber8);
   border-color: var(--amber3);
+}
+
+.workspace-variables-alert-banner {
+  width: inherit;
+  background-color: #EBF9EB;
+  border-color: #46A758;
+}
+
+.codehinter.alert-component.workspace-constants-alert-banner {
+  color: #46A758;
+  border-color: #EBF9EB;
+  background-color: #EBF9EB;
+  font-size: 12px;
 }
 
 .add-new-variables-button {
@@ -12250,6 +12277,7 @@ tbody {
   .workspace-constant-card-body {
     min-height: calc(100vh - 408px);
     background: var(--base);
+
   }
 
   .constant-table-wrapper {
@@ -13783,11 +13811,13 @@ tbody {
 .color-slate-11 {
   color: var(--slate11) !important;
 }
-.custom-gap-7{
-  gap:7px
+
+.custom-gap-7 {
+  gap: 7px
 }
-.custom-gap-6{
-  gap:6px
+
+.custom-gap-6 {
+  gap: 6px
 }
 
 .custom-gap-2 {
@@ -14174,6 +14204,7 @@ tbody {
 .share-disabled {
   opacity: 0.4;
 }
+
 .bold-text {
   font-weight: 500;
 }
@@ -14967,6 +14998,10 @@ tbody {
 
 .workspace-constants-wrapper {
   height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 1.5rem;
 }
 
 .blank-page-wrapper {
@@ -15164,7 +15199,7 @@ tbody {
 
 .add-new-group-modal {
   .modal-title {
-    display: flex;  
+    display: flex;
     align-items: center;
 
     .paid-feature-banner {
@@ -15253,6 +15288,7 @@ tbody {
 .wrapper-div-code-editor:hover .fx-button-container {
   opacity: 1;
 }
+
 .canvas-container {
   scrollbar-color: transparent;
   scrollbar-width: thin;
@@ -15337,4 +15373,13 @@ tbody {
     }
 
   }
+}
+
+div.ds-svg-container svg {
+  padding: 2px;
+}
+
+.custom-textarea-height {
+  height: 300px;
+  min-height: 300px;
 }
