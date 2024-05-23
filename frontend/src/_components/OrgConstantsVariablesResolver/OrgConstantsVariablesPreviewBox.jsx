@@ -62,14 +62,7 @@ const verifyConstant = (value, definedConstants) => {
 
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   const isConstant = type === 'Workspace Constant';
-  const invalidConstants = verifyConstant(value, state.constants);
-  let preview;
-  let error;
-  if (invalidConstants?.length) {
-    [preview, error] = [value, `Undefined constants: ${invalidConstants}`];
-  } else {
-    [preview, error] = resolveReferences(value, state, null, {}, true, true);
-  }
+  const [preview, error] = resolveReferences(value, state, null, {}, true, true);
   const previewType = typeof preview;
 
   let resolvedValue = preview;
@@ -79,7 +72,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     : error?.toString();
   const isValidError = error && errorMessage !== 'HiddenEnvironmentVariable';
 
-  if (error && (!isValidError || error?.toString().includes('Undefined constants:'))) {
+  if (error && !isValidError) {
     resolvedValue = errorMessage;
   }
 

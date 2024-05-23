@@ -26,6 +26,7 @@ const initialState = {
     variables: {},
   },
   succededQuery: {},
+  constants: {},
   isEditorReady: false,
 };
 
