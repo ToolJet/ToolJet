@@ -1,7 +1,12 @@
+.query-manager {
+  .manage-event-btn {
+    width: 330px;
+  }
+}
+
 .manage-event-btn {
   border-radius: 6px;
   background-color: var(--interactive-default);
-  width: 330px;
 
   &:hover {
     background-color: var(--interactive-hover);
