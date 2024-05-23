@@ -59,7 +59,6 @@ const Preview = ({ darkMode }) => {
           className="left"
         >
           <ArrowDownTriangle
-            fill="#6A727C"
             width={15}
             style={{
               transform: !previewPanelExpanded ? 'rotate(180deg)' : '',
