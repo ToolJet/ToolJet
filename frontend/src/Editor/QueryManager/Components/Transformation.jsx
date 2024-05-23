@@ -5,56 +5,120 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
+import { Tab, ListGroup, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/_ui/LeftSidebar';
+import Information from '@/_ui/Icon/solidIcons/Information';
 const noop = () => {};
 
-export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
-  const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
-
-  const defaultValue = {
-    javascript: `// write your code here
+const defaultValue = {
+  javascript: `// write your code here
 // return value will be set as data and the original data will be available as rawData
 return data.filter(row => row.amount > 1000);
-    `,
-    python: `# write your code here
+  `,
+  python: `# write your code here
 # return value will be set as data and the original data will be available as rawData
 [row for row in data if row['amount'] > 1000]
-    `,
-  };
+  `,
+};
 
-  const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
+const labelPopoverContent = (darkMode, t) => (
+  <Popover
+    id="transformation-popover-container"
+    className={`${darkMode && 'popover-dark-themed theme-dark dark-theme tj-dark-mode'} p-0`}
+  >
+    <p className="transformation-popover" data-cy="transformation-popover">
+      {t(
+        'editor.queryManager.transformation.transformationToolTip',
+        'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
+      )}
+      <br />
+      <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+        {t('globals.readDocumentation', 'Read documentation')}
+      </a>
+      .
+    </p>
+  </Popover>
+);
 
-  const [state, setState] = useLocalStorageState('transformation', defaultValue);
-
-  function toggleEnableTransformation() {
-    setEnableTransformation((prev) => !prev);
-    changeOption('enableTransformation', !enableTransformation);
+const getNonActiveTransformations = (activeLang) => {
+  switch (activeLang) {
+    case 'javascript':
+      return { python: defaultValue.python };
+    case 'python':
+      return { javascript: defaultValue.javascript };
+    default:
+      return {};
   }
+};
+
+const EducativeLabel = ({ darkMode }) => {
+  const popoverContent = (
+    <Popover
+      id="transformation-popover-container"
+      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'} p-0`}
+    >
+      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
+        <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
+        <div className="d-flex flex-column card-body">
+          <h4 className="mb-2">ToolJet x OpenAI</h4>
+          <p className="mb-2">
+            <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong> helps you write your queries
+            faster. It uses OpenAI&apos;s GPT-3.5 to suggest queries based on your data.
+          </p>
+          <Button
+            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
+            darkMode={darkMode}
+            size="sm"
+            classNames="default-secondary-button"
+            styles={{ width: '100%', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
+          >
+            <Button.Content title="Read more" />
+          </Button>
+        </div>
+      </div>
+    </Popover>
+  );
+
+  return (
+    <div>
+      <OverlayTrigger
+        overlay={popoverContent}
+        rootClose
+        trigger="click"
+        placement="right"
+        container={document.getElementsByClassName('query-details')[0]}
+      >
+        <span style={{ cursor: 'pointer' }} data-cy="transformation-info-icon" className="lh-1">
+          <Information width={18} fill="#CCD1D5" />
+        </span>
+      </OverlayTrigger>
+    </div>
+  );
+};
+
+export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
+  const [lang, setLang] = useState(options?.transformationLanguage ?? 'javascript');
+  const [enableTransformation, setEnableTransformation] = useState(options.enableTransformation);
+  const [state, setState] = useLocalStorageState('transformation', defaultValue);
+  const { t } = useTranslation();
 
   useEffect(() => {
-    if (lang !== (options.transformationLanguage ?? 'javascript')) {
-      changeOption('transformationLanguage', lang);
-      changeOption('transformation', state[lang]);
-    }
-
+    changeOption('transformationLanguage', lang);
+    changeOption('transformation', state[lang]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
   useEffect(() => {
-    if (options.enableTransformation) {
-      lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
-      setState({ ...state, [lang]: options.transformation ?? defaultValue[lang] });
-    }
+    setState((prevState) => ({ ...prevState, [lang]: options.transformation ?? defaultValue[lang] }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(options.transformation)]);
+  }, [options.transformation]);
 
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
-
     if (selectedQueryId !== queryId) {
       const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
       const finalState = _.merge(
@@ -62,116 +126,110 @@ return data.filter(row => row.amount > 1000);
         { [options?.transformationLanguage ?? lang]: options.transformation ?? defaultValue[lang] },
         nonLangdefaultCode
       );
-
       setState(finalState);
-      return localStorage.setItem('selectedQuery', queryId);
+      localStorage.setItem('selectedQuery', queryId);
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryId]);
 
-  function getNonActiveTransformations(activeLang) {
-    switch (activeLang) {
-      case 'javascript':
-        return {
-          python: defaultValue.python,
-        };
-      case 'python':
-        return {
-          javascript: defaultValue.javascript,
-        };
-
-      default:
-        break;
-    }
-  }
+  const toggleEnableTransformation = () => {
+    const newEnableTransformation = !enableTransformation;
+    setEnableTransformation(newEnableTransformation);
+    changeOption('enableTransformation', newEnableTransformation);
+  };
 
   return (
-    <div className="field  transformation-editor">
-      <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
-        <div className="d-flex flex-fill">
-          <div className="flex-grow-l">
-            <div className=" d-flex flex-column">
-              <div className="mb-0">
-                <span className="d-flex">
-                  <CustomToggleSwitch
-                    isChecked={enableTransformation}
-                    toggleSwitchFunction={toggleEnableTransformation}
-                    action="enableTransformation"
-                    darkMode={darkMode}
-                    dataCy={'transformation'}
-                  />
-                  <span className="ps-1">Enable transformation</span>
+    <div className="field transformation-editor">
+      <div className="align-items-center gap-2 d-flex" style={{ position: 'relative', height: '20px' }}>
+        <div className="d-flex flex-column">
+          <div className="mb-0">
+            <span className="d-flex">
+              <CustomToggleSwitch
+                isChecked={enableTransformation}
+                toggleSwitchFunction={toggleEnableTransformation}
+                action="enableTransformation"
+                darkMode={darkMode}
+                dataCy="transformation"
+              />
+              <OverlayTrigger
+                trigger="click"
+                placement="bottom"
+                rootClose
+                overlay={labelPopoverContent(darkMode, t)}
+                container={document.getElementsByClassName('query-details')[0]}
+              >
+                <span
+                  style={{ textDecoration: 'underline 2px dashed', textDecorationColor: 'var(--slate8)' }}
+                  className="ps-1 text-default"
+                >
+                  {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
                 </span>
-              </div>
-              <div className="d-flex  text-placeholder justify-content-end">
-                <p>Powered by AI copilot </p>
-              </div>
-            </div>
+              </OverlayTrigger>
+            </span>
+          </div>
+          <div className="d-flex text-placeholder justify-content-end">
+            <p>Powered by AI copilot</p>
+            <EducativeLabel darkMode={darkMode} />
           </div>
         </div>
       </div>
-      <br></br>
+      <br />
       <div className="d-flex copilot-codehinter-wrap">
         <div className="form-label"></div>
         <div className="col flex-grow-1">
           {enableTransformation && (
-            <div
-              style={{ borderRadius: '6px', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
-            >
+            <div style={{ borderRadius: '6px', marginBottom: '20px', background: darkMode ? '#272822' : '#F8F9FA' }}>
               <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
-                <div className="right">
-                  <Tab.Container
-                    activeKey={lang}
-                    onSelect={(value) => {
-                      setLang(value);
-                      changeOption('transformationLanguage', value);
-                      changeOption('transformation', state[value]);
-                    }}
-                    defaultActiveKey="JavaScript"
-                  >
-                    <Row className="m-0">
-                      <Col className="keys text-center d-flex align-items-center">
-                        <ListGroup
-                          className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
-                          variant="flush"
-                          style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
-                        >
-                          {['JavaScript', 'Python'].map((tab) => (
-                            <ListGroup.Item
-                              key={tab}
-                              eventKey={tab.toLowerCase()}
-                              style={{ minWidth: '74px', textAlign: 'center' }}
+                <Tab.Container
+                  activeKey={lang}
+                  onSelect={(value) => {
+                    setLang(value);
+                    changeOption('transformationLanguage', value);
+                    changeOption('transformation', state[value]);
+                  }}
+                  defaultActiveKey="javascript"
+                >
+                  <Row className="m-0">
+                    <Col className="keys text-center d-flex align-items-center">
+                      <ListGroup
+                        className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
+                        variant="flush"
+                        style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
+                      >
+                        {['JavaScript', 'Python'].map((tab) => (
+                          <ListGroup.Item
+                            key={tab}
+                            eventKey={tab.toLowerCase()}
+                            style={{ minWidth: '74px', textAlign: 'center' }}
+                            className="rounded"
+                            disabled={!enableTransformation}
+                          >
+                            <span
+                              data-cy={`preview-tab-${tab.toLowerCase()}`}
                               className="rounded"
-                              disabled={!enableTransformation}
+                              style={{ width: '100%' }}
                             >
-                              <span
-                                data-cy={`preview-tab-${String(tab).toLowerCase()}`}
-                                style={{ width: '100%' }}
-                                className="rounded"
-                              >
-                                {tab}
-                              </span>
-                            </ListGroup.Item>
-                          ))}
-                        </ListGroup>
-                      </Col>
-                    </Row>
-                  </Tab.Container>
-                </div>
+                              {tab}
+                            </span>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    </Col>
+                  </Row>
+                </Tab.Container>
               </div>
               <div className="codehinter-border-bottom mx-3"></div>
               <CodeHinter
                 initialValue={state[lang]}
                 mode={lang}
                 theme={darkMode ? 'monokai' : 'base16-light'}
-                lineNumbers={true}
-                height={'300px'}
+                lineNumbers
+                height="300px"
                 className="query-hinter"
-                ignoreBraces={true}
+                ignoreBraces
                 onChange={(value) => changeOption('transformation', value)}
-                componentName={`transformation`}
-                cyLabel={'transformation-input'}
+                componentName="transformation"
+                cyLabel="transformation-input"
                 callgpt={noop}
                 isCopilotEnabled={false}
               />
