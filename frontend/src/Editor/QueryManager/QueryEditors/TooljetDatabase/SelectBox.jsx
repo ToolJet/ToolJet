@@ -601,6 +601,7 @@ const MenuList = ({
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 225 - 48;
+    if (scrollEventForColumnValues) menuListStyles.minHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
 
