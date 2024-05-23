@@ -47,7 +47,7 @@ const DropDownSelect = ({
   onTableClick,
   referencedForeignKeyDetails = [],
   customChildren,
-  isForeignKeyInEditCell,
+  isForeignKeyInEditCell = false,
   shouldCloseFkMenu,
   closeFKMenu,
   saveFKValue,
@@ -55,7 +55,7 @@ const DropDownSelect = ({
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
   const [showMenu, setShowMenu] = useShowPopover(
-    isForeignKeyInEditCell ? true : false,
+    isForeignKeyInEditCell,
     `#${popoverId.current}`,
     `#${popoverBtnId.current}`
   );
@@ -221,7 +221,9 @@ const DropDownSelect = ({
             setShowMenu(true);
           }}
         >
-          <span style={{ display: 'inline-block', width: '100%' }}>{selected.label}</span>
+          <span style={{ display: 'inline-block', width: '100%', color: darkMode ? '#fff' : '' }}>
+            {selected.label}
+          </span>
         </div>
       ) : (
         <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
