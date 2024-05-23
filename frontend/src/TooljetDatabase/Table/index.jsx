@@ -144,7 +144,6 @@ const Table = ({ collapseSidebar }) => {
     );
 
     results.forEach((result, index) => {
-      console.log('kiran ::', { result });
       if (result.status === 'fulfilled' && result.value) {
         dataToCache[result.value.key] = result.value.value;
       } else if (result.status === 'rejected') {
