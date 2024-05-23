@@ -94,6 +94,11 @@ export const CellEditMenu = ({
     setShouldCloseFKMenu((prev) => prev + 1);
   };
 
+  const saveFKValue = () => {
+    saveFunction(cellValue);
+    closeFKMenu();
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowRight' && isBoolean) {
       e.preventDefault();
@@ -239,7 +244,7 @@ export const CellEditMenu = ({
             Cancel
           </ButtonSolid>
           <ButtonSolid
-            onClick={() => saveFunction(selectedValue)}
+            onClick={isForeignKeyInEditCell ? saveFKValue : () => saveFunction(selectedValue)}
             disabled={cellValue == previousCellValue ? true : false}
             variant="primary"
             size="sm"
@@ -332,7 +337,7 @@ export const CellEditMenu = ({
           }}
           onAdd={true}
           closeFKMenu={closeFKMenu}
-          saveFKValue={() => saveFunction(cellValue)}
+          saveFKValue={saveFKValue}
           addBtnLabel={'Open referenced table'}
           isCellEdit={true}
           scrollEventForColumnValus={scrollEventForColumnValus}

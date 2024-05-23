@@ -217,6 +217,9 @@ const DropDownSelect = ({
           className={`col-auto`}
           style={{ position: 'relative', left: '-10px', top: '2px', paddingLeft: '10px', paddingBottom: '4px' }}
           id={popoverBtnId.current}
+          onClick={() => {
+            setShowMenu(true);
+          }}
         >
           <span style={{ display: 'inline-block', width: '100%' }}>{selected.label}</span>
         </div>
