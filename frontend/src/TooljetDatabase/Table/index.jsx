@@ -88,42 +88,79 @@ const Table = ({ collapseSidebar }) => {
   const [progress, setProgress] = useState(0);
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+
   const [cachedOptions, setCahedOptions] = useState([]);
 
-  useEffect(() => {
-    const selectQuery = new PostgrestQueryBuilder();
-    // Checking that the selected column is available in ForeignKey
+  const fetchFkDataForColumn = (currentColumn, currentIndex) => {
+    // responsible to fetch the fk column details for all available fk's and cache them
+    return new Promise((resolve, reject) => {
+      if (!currentColumn?.referenced_column_names?.length) return resolve();
+      const selectQuery = new PostgrestQueryBuilder();
 
-    const referencedColumns = foreignKeys?.map((item) => item.column_names[0]);
-    if (!referencedColumns?.referenced_column_names?.length) return;
-    selectQuery.select(referencedColumns?.referenced_column_names[0]);
+      selectQuery.select(currentColumn?.referenced_column_names[0]);
+      tooljetDatabaseService
+        .findOne(
+          organizationId,
+          foreignKeys?.length > 0 && currentColumn?.referenced_table_id,
+          `${selectQuery.url.toString()}&limit=${15}&offset=${0}`
+        )
+        .then(({ headers, data = [], error }) => {
+          if (error) {
+            toast.error(
+              error?.message ??
+                `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[currentIndex].referenced_table_name}"`
+            );
+            return reject(error);
+          }
+          const totalFKRecords = headers['content-range'].split('/')[1] || 0;
 
-    tooljetDatabaseService
-      .findOne(
-        organizationId,
-        foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
-        `${selectQuery.url.toString()}&limit=${15}&offset=${0}`
+          if (Array.isArray(data) && data.length > 0) {
+            const dataToCache = data.map((item) => {
+              const [key, _value] = Object.entries(item);
+              return {
+                label: key[1] === null ? 'Null' : key[1],
+                value: key[1] === null ? 'Null' : key[1],
+              };
+            });
+            resolve({
+              key: currentColumn.referenced_column_names[0],
+              value: {
+                data: [...dataToCache],
+                totalFKRecords,
+              },
+            });
+          } else {
+            resolve();
+          }
+        });
+    });
+  };
+
+  const fetchAllFkData = async () => {
+    const dataToCache = {};
+
+    await Promise.all(
+      foreignKeys.map((currentColumn, currentIndex) =>
+        fetchFkDataForColumn(currentColumn, currentIndex)
+          .then((result) => {
+            if (result) {
+              dataToCache[result.key] = result.value;
+            }
+          })
+          .catch((error) => {
+            console.error(`Error fetching data for column ${currentColumn?.referenced_column_names[0]}:`, error);
+          })
       )
-      .then(({ data = [], error }) => {
-        if (error) {
-          toast.error(
-            error?.message ??
-              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-          );
-          return;
-        }
+    );
 
-        if (Array.isArray(data) && data?.length > 0) {
-          const dataToCache = data.map((item) => {
-            const [key, _value] = Object.entries(item);
-            return {
-              label: key[1] === null ? 'Null' : key[1],
-              value: key[1] === null ? 'Null' : key[1],
-            };
-          });
-          setCahedOptions((prevData) => [...prevData, ...dataToCache]);
-        }
-      });
+    return dataToCache;
+  };
+
+  useEffect(() => {
+    // This use effect runs whenever fk's are changed the result we get from fetchALlFkData we cache it in state so that we can persist it.
+    fetchAllFkData().then((dataToCache) => {
+      setCahedOptions(dataToCache);
+    });
   }, [foreignKeys]);
 
   const prevSelectedTableRef = useRef({});
@@ -1344,7 +1381,7 @@ const Table = ({ collapseSidebar }) => {
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
                                       cellHeader={cell.column.Header}
-                                      cachedOptions={cachedOptions}
+                                      cachedOptions={cachedOptions[cell.column.Header]}
                                     >
                                       <div
                                         className="input-cell-parent"

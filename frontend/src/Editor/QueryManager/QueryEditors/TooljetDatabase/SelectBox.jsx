@@ -51,7 +51,7 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
-  cachedOptions = [],
+  cachedOptions = {},
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -202,9 +202,10 @@ function DataSourceSelect({
         );
       } else if (shouldLoadFKDataFirstPage && !isEmpty(cachedOptions)) {
         setIsInitialForeignKeyDataLoaded(true);
-        setReferencedColumnDetails((prevData) => [...prevData, ...cachedOptions]);
+        const data = cachedOptions?.data ?? [];
+        setReferencedColumnDetails((prevData) => [...prevData, ...data]);
         setPageNumber((prevPageNumber) => prevPageNumber + 1);
-        setTotalRecords(15);
+        setTotalRecords(cachedOptions?.totalFKRecords);
       }
     }
 
