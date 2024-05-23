@@ -8,7 +8,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
     return <div className="mb-3"></div>;
   }
   return (
-    <div className="mb-3 mt-2 pt-1 flex-grow-1">
+    <div className="flex-grow-1" style={{ margin: '16px 0px' }}>
       <div className="d-flex" style={{ marginBottom: '16px' }}>
         <label className="form-label" data-cy={'label-success-message-input'} style={{ width: 150 }}>
           {t('editor.queryManager.successMessage', 'Message')}
