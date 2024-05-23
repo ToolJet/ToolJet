@@ -72,27 +72,10 @@ export class GranularPermissionsService {
         resourcesToDelete,
         resourcesToAdd,
       };
-      const groupEditors = await this.groupPermissionsUtilityService.getRoleUsersList(
-        USER_ROLE.END_USER,
-        organizationId,
-        id,
-        manager
-      );
-
-      //Resource update level
-      const editPermissionsPresent = Object.values(actions).some(
-        (value) => typeof value === 'boolean' && value === true
-      );
-      if (groupEditors.length && editPermissionsPresent)
-        throw new BadRequestException({
-          message: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
-          data: groupEditors,
-        });
-
       await catchDbException(async () => {
         await manager.update(GranularPermissions, id, updateGranularPermission);
       }, [DATA_BASE_CONSTRAINTS.GRANULAR_PERMISSIONS_NAME_UNIQUE]);
-      await this.updateResourcePermissions(updateResource, manager);
+      await this.updateResourcePermissions(updateResource, organizationId, manager);
     }, manager);
   }
 
@@ -123,7 +106,7 @@ export class GranularPermissionsService {
     return resourceGranularPermissions;
   }
 
-  async createAppGroupPermission(
+  private async createAppGroupPermission(
     granularPermissions: GranularPermissions,
     createAppPermissionsObj?: CreateAppsPermissionsObject,
     manager?: EntityManager
@@ -136,26 +119,44 @@ export class GranularPermissionsService {
     }, manager);
   }
 
-  async updateResourcePermissions(
+  private async updateResourcePermissions(
     updateResourceGroupPermissionsObject: UpdateResourceGroupPermissionsObject,
+    organizationId: string,
     manager?: EntityManager
   ) {
     const { granularPermissions } = updateResourceGroupPermissionsObject;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       switch (granularPermissions.type) {
         case ResourceType.APP:
-          await this.updateAppsGroupPermission(updateResourceGroupPermissionsObject, manager);
+          await this.updateAppsGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
           break;
       }
     }, manager);
   }
 
-  async updateAppsGroupPermission(
+  private async updateAppsGroupPermission(
     UpdateResourceGroupPermissionsObject: UpdateResourceGroupPermissionsObject,
+    organizationId: string,
     manager?: EntityManager
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { granularPermissions, actions, resourcesToDelete, resourcesToAdd } = UpdateResourceGroupPermissionsObject;
+      const groupEditors = await this.groupPermissionsUtilityService.getRoleUsersList(
+        USER_ROLE.END_USER,
+        organizationId,
+        granularPermissions.groupId,
+        manager
+      );
+
+      //Resource update level
+      const editPermissionsPresent = Object.values(actions).some(
+        (value) => typeof value === 'boolean' && value === true
+      );
+      if (groupEditors.length && editPermissionsPresent)
+        throw new BadRequestException({
+          message: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
+          data: groupEditors,
+        });
       const appsGroupPermissions = await manager.findOne(AppsGroupPermissions, {
         where: {
           granularPermissionId: granularPermissions.id,

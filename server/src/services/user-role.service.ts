@@ -84,10 +84,8 @@ export class UserRoleService {
   ): Promise<void> {
     const { newRole, userId } = editRoleDto;
     const userRole = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId);
-    const userGroup = userRole.groupUsers[0];
     if (!userRole) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
-
-    const newRoleGroup = await this.getRoleGroup(newRole, organizationId);
+    const userGroup = userRole.groupUsers[0];
 
     if (userRole.name == newRole)
       throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
@@ -104,8 +102,7 @@ export class UserRoleService {
           if (editPermissionsPresent) await this.groupPermissionsService.deleteGroupUser(customUserGroup.id, manager);
         }
       }
-      const newUserRole = manager.create(GroupUsers, { groupId: newRoleGroup.id, userId });
-      await manager.save(newUserRole);
+      await this.addUserRole({ role: newRole, userId }, organizationId, manager);
     }, manager);
   }
 

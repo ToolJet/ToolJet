@@ -1,5 +1,5 @@
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { GROUP_PERMISSIONS_TYPE } from '../constants/group-permissions.constant';
+import { USER_ROLE } from '../constants/group-permissions.constant';
 import { BadRequestException } from '@nestjs/common';
 import { ERROR_HANDLER } from '../constants/granular-permissions.constant';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
@@ -7,8 +7,13 @@ import { GranularPermissionQuerySearchParam } from '../interface/granular-permis
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 
 export function validateGranularPermissionCreateOperation(group: GroupPermissions) {
-  if (group.type != GROUP_PERMISSIONS_TYPE.DEFAULT)
-    throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_GRANULAR_PERMISSIONS);
+  if (group.name != USER_ROLE.ADMIN)
+    throw new BadRequestException(ERROR_HANDLER.ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS);
+}
+
+export function validateGranularPermissionUpdateOperation(group: GroupPermissions) {
+  if (group.name != USER_ROLE.ADMIN)
+    throw new BadRequestException(ERROR_HANDLER.ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS);
 }
 
 export function getAllGranularPermissionQuery(
@@ -50,6 +55,7 @@ export function getGranularPermissionQuery(
 ): SelectQueryBuilder<GranularPermissions> {
   const query = manager
     .createQueryBuilder(GranularPermissions, 'granularPermissions')
+    .innerJoinAndSelect('granularPermissions.group', 'groupPermissions')
     .innerJoin(
       'apps_group_permissions',
       'appsGroupPermissions',

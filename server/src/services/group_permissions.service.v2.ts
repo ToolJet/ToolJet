@@ -59,10 +59,11 @@ export class GroupPermissionsServiceV2 {
   }
 
   async getGroup(id: string, manager?: EntityManager): Promise<GroupPermissions> {
-    const entityManager: EntityManager = manager ? manager : getManager();
-    return await entityManager.findOne(GroupPermissions, {
-      where: { id },
-    });
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOne(GroupPermissions, {
+        where: { id },
+      });
+    }, manager);
   }
 
   async updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto, manager?: EntityManager) {
