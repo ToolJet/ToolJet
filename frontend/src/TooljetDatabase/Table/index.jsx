@@ -144,7 +144,7 @@ const Table = ({ collapseSidebar }) => {
     );
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled' && result.value) {
+      if (result.status === 'fulfilled' && result.value && result.value.value) {
         dataToCache[result.value.key] = result.value.value;
       } else if (result.status === 'rejected') {
         const foreignKey = foreignKeys[index];

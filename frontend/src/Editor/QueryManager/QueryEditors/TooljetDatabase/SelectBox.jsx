@@ -202,10 +202,10 @@ function DataSourceSelect({
         );
       } else if (shouldLoadFKDataFirstPage && !isEmpty(cachedOptions)) {
         setIsInitialForeignKeyDataLoaded(true);
-        const data = cachedOptions?.data ?? [];
+        const data = cachedOptions.data;
         setReferencedColumnDetails((prevData) => [...prevData, ...data]);
         setPageNumber((prevPageNumber) => prevPageNumber + 1);
-        setTotalRecords(cachedOptions?.totalFKRecords);
+        setTotalRecords(cachedOptions.totalFKRecords);
       }
     }
 
