@@ -914,8 +914,10 @@ export function runQuery(
   // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
+
   if (shouldSetPreviewData) {
+    setPreviewPanelExpanded(true);
     setPreviewLoading(true);
     queryPreviewData && setPreviewData('');
   }
