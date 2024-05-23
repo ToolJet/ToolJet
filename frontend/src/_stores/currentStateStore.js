@@ -55,7 +55,14 @@ export const useCurrentStateStore = create(
         },
         setEditorReady: (isEditorReady) => set({ isEditorReady }),
         initializeCurrentStateOnVersionSwitch: () => {
-          set({ ...initialState }, false, { type: 'INITIALIZE_CURRENT_STATE_ON_VERSION_SWITCH', initialState });
+          const newInitialState = {
+            ...initialState,
+            constants: get().constants,
+          };
+          set({ ...newInitialState }, false, {
+            type: 'INITIALIZE_CURRENT_STATE_ON_VERSION_SWITCH',
+            newInitialState,
+          });
         },
       },
     }),
