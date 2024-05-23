@@ -93,7 +93,7 @@ const EducativeLabel = ({ darkMode }) => {
         container={document.getElementsByClassName('query-details')[0]}
       >
         <span style={{ cursor: 'pointer' }} data-cy="transformation-info-icon" className="lh-1">
-          <Information width={18} fill="#CCD1D5" />
+          <Information width={18} fill="#CCD1D5" style={{ position: 'absolute', left: '152px' }} />
         </span>
       </OverlayTrigger>
     </div>
