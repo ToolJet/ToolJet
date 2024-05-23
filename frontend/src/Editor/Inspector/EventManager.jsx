@@ -520,7 +520,7 @@ export const EventManager = ({
 
             {event.actionId === 'go-to-app' && (
               <GotoApp
-                event={event}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
@@ -823,7 +823,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'switch-page' && (
               <SwitchPage
-                event={event}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
