@@ -1072,9 +1072,11 @@ $border-radius: 4px;
     transition: height 0.2s ease-in-out;
     height: 30px;
     .preview-content{
+      transition: height 0.2s ease-in-out;
       background-color: var(--slate3);
-      height: 100%;
+      overflow-y: hidden;
       width: 100%;
+      height: 100%;
     }
     &.expanded{
       height: 70%;
