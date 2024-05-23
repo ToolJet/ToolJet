@@ -45,6 +45,7 @@ export function Authorize({ navigate }) {
     } else {
       authParams.token = router.query[configs.params.token];
       authParams.state = router.query[configs.params.state];
+      authParams.iss = router.query[configs.params.iss];
     }
 
     /* If the params has SAMLResponse the SAML auth is success */
