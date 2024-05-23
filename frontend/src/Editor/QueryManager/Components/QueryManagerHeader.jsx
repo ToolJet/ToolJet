@@ -39,7 +39,6 @@ export const QueryManagerHeader = forwardRef(
       }),
       shallow
     );
-    console.log('queryName---,', selectedQuery);
 
     useEffect(() => {
       if (selectedQuery?.name) {
@@ -93,6 +92,11 @@ export const QueryManagerHeader = forwardRef(
           console.log(error, data);
         });
     };
+    const tabs = [
+      { id: 1, label: 'Setup' },
+      { id: 2, label: 'Transformation', condition: selectedQuery?.kind !== 'runjs' },
+      { id: 3, label: 'Settings' },
+    ];
 
     const renderRunButton = () => {
       const { isLoading } = queries[selectedQuery?.name] ?? false;
@@ -153,46 +157,28 @@ export const QueryManagerHeader = forwardRef(
               isDiabled={isVersionReleased}
             />
           )}
-          <div className="d-flex" style={{ marginBottom: '-9px', gap: '3px' }}>
-            <p
-              className="m-0 d-flex align-items-center h-100"
-              onClick={() => setActiveTab(1)}
-              style={{
-                borderBottom: activeTab == 1 ? ' 2px solid #3E63DD' : '',
-                cursor: 'pointer',
-                padding: '6px 8px',
-                color: activeTab == 1 ? ' var(--text-default)' : 'var(--text-placeholder)',
-              }}
-            >
-              Setup
-            </p>
-            {selectedQuery?.kind !== 'runjs' && (
-              <p
-                className="m-0 d-flex align-items-center h-100"
-                onClick={() => setActiveTab(2)}
-                style={{
-                  borderBottom: activeTab == 2 ? ' 2px solid #3E63DD' : '',
-                  cursor: 'pointer',
-                  padding: '6px 8px',
-                  color: activeTab == 2 ? ' var(--text-default)' : 'var(--text-placeholder)',
-                }}
-              >
-                Transformation
-              </p>
-            )}
-            <p
-              className="m-0 d-flex align-items-center h-100"
-              onClick={() => setActiveTab(3)}
-              style={{
-                borderBottom: activeTab == 3 ? ' 2px solid #3E63DD' : '',
-                cursor: 'pointer',
-                padding: '6px 8px',
-                color: activeTab == 3 ? ' var(--text-default)' : 'var(--text-placeholder)',
-              }}
-            >
-              Settings
-            </p>
-          </div>
+          {selectedQuery && (
+            <div className="d-flex" style={{ marginBottom: '-15px', gap: '3px' }}>
+              {tabs.map(
+                (tab) =>
+                  (tab.condition === undefined || tab.condition) && (
+                    <p
+                      key={tab.id}
+                      className="m-0 d-flex align-items-center h-100"
+                      onClick={() => setActiveTab(tab.id)}
+                      style={{
+                        borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
+                        cursor: 'pointer',
+                        padding: '0px 8px 6px 8px',
+                        color: activeTab === tab.id ? 'var(--text-default)' : 'var(--text-placeholder)',
+                      }}
+                    >
+                      {tab.label}
+                    </p>
+                  )
+              )}
+            </div>
+          )}
         </div>
         <div className="query-header-buttons">{renderButtons()}</div>
       </div>

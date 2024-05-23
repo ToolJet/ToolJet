@@ -87,7 +87,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             data-cy={`runjs-add-param-button`}
             style={{ background: 'none', border: 'none' }}
           >
-            <p className="m-0">
+            <p className="m-0 text-default">
               <PlusRectangle fill={'var(--icons-default)'} width={15} />
               <span style={{ marginLeft: '6px' }}>Add</span>
             </p>
