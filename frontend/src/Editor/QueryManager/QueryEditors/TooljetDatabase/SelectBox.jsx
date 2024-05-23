@@ -34,7 +34,7 @@ function DataSourceSelect({
   showDescription = false,
   foreignKeyAccessInRowForm,
   isCellEdit,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -87,8 +87,9 @@ function DataSourceSelect({
     const offset = (page - 1) * limit;
 
     if (isFirstPageLoaded && offset >= totalRecords) return;
+    if (foreignKeys.length < 1) return;
     setIsLoadingFKDetails(true);
-    const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+    const referencedColumns = foreignKeys.find((item) => item.column_names[0] === cellColumnName);
     if (!referencedColumns?.referenced_column_names?.length) return;
 
     const selectQuery = new PostgrestQueryBuilder();
@@ -116,7 +117,7 @@ function DataSourceSelect({
         }
 
         const totalFKRecords = headers['content-range'].split('/')[1] || 0;
-        if (Array.isArray(data) && data?.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           if (isEmpty(searchValue)) {
             if (page === 1) setIsInitialForeignKeyDataLoaded(true);
             setReferencedColumnDetails((prevData) => [...prevData, ...data]);
@@ -187,7 +188,7 @@ function DataSourceSelect({
     const shouldLoadFKDataFirstPage = !isLoadingFKDetails && isEmpty(searchValue) && !isInitialForeignKeyDataLoaded;
     const shouldLoadFKSearchDataFirstPage = !isLoadingFKDetails && !isEmpty(searchValue);
 
-    if (scrollEventForColumnValus) {
+    if (scrollEventForColumnValues) {
       if (shouldLoadFKSearchDataFirstPage) {
         setDefaultStateForSearch();
         fetchForeignKeyDetails(1, 0, false, searchValue, foreignKeys, organizationId);
@@ -210,7 +211,7 @@ function DataSourceSelect({
 
   useEffect(() => {
     return () => {
-      if (scrollEventForColumnValus) {
+      if (scrollEventForColumnValues) {
         setIsInitialForeignKeyDataLoaded(false);
         setTotalRecords(0);
         setPageNumber(1);
@@ -401,7 +402,7 @@ function DataSourceSelect({
                     columnInfoForTable={columnInfoForTable}
                     showColumnInfo={showColumnInfo}
                     foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                    scrollEventForColumnValus={scrollEventForColumnValus}
+                    scrollEventForColumnValues={scrollEventForColumnValues}
                     scrollContainerRef={scrollContainerRef}
                     foreignKeys={foreignKeys}
                     cellColumnName={cellColumnName}
@@ -452,7 +453,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && !scrollEventForColumnValus && { Control: () => '' }),
+          ...(optionsCount < 5 && !scrollEventForColumnValues && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
@@ -548,8 +549,8 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={scrollEventForColumnValus && searchValue ? searchResults : options}
-        filterOption={scrollEventForColumnValus ? null : customFilterOption}
+        options={scrollEventForColumnValues && searchValue ? searchResults : options}
+        filterOption={scrollEventForColumnValues ? null : customFilterOption}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
@@ -577,7 +578,7 @@ const MenuList = ({
   showColumnInfo,
   options,
   foreignKeyAccessInRowForm,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   scrollContainerRef,
   foreignKeys,
   cellColumnName,
@@ -610,12 +611,12 @@ const MenuList = ({
         emptyError
       ) : (
         <div
-          ref={scrollEventForColumnValus ? scrollContainerRef : innerRef}
+          ref={scrollEventForColumnValues ? scrollContainerRef : innerRef}
           style={menuListStyles}
           id="query-ds-select-menu"
           onClick={(e) => e.stopPropagation()}
           onScroll={
-            scrollEventForColumnValus && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
+            scrollEventForColumnValues && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
           }
         >
           {children}
@@ -632,7 +633,7 @@ const MenuList = ({
             variant="secondary"
             size="md"
             className="w-100"
-            onClick={scrollEventForColumnValus ? handleNavigateToReferencedTable : onAdd}
+            onClick={scrollEventForColumnValues ? handleNavigateToReferencedTable : onAdd}
           >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}

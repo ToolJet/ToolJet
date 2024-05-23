@@ -240,7 +240,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeys}
                 setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
+                scrollEventForColumnValues={true}
                 cellColumnName={columnName}
                 columnDataType={dataType}
               />
