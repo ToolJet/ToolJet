@@ -91,17 +91,17 @@ const Table = ({ collapseSidebar }) => {
 
   const [cachedOptions, setCahedOptions] = useState([]);
 
-  const fetchFkDataForColumn = (currentColumn, currentIndex) => {
+  const fetchFkDataForColumn = (foreignKey, currentIndex) => {
     // responsible to fetch the fk column details for all available fk's and cache them
     return new Promise((resolve, reject) => {
-      if (!currentColumn?.referenced_column_names?.length) return resolve();
+      if (!foreignKey?.referenced_column_names?.length) return resolve();
       const selectQuery = new PostgrestQueryBuilder();
 
-      selectQuery.select(currentColumn?.referenced_column_names[0]);
+      selectQuery.select(foreignKey?.referenced_column_names[0]);
       tooljetDatabaseService
         .findOne(
           organizationId,
-          foreignKeys?.length > 0 && currentColumn?.referenced_table_id,
+          foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
           `${selectQuery.url.toString()}&limit=${15}&offset=${0}`
         )
         .then(({ headers, data = [], error }) => {
@@ -123,7 +123,7 @@ const Table = ({ collapseSidebar }) => {
               };
             });
             resolve({
-              key: currentColumn.referenced_column_names[0],
+              key: foreignKey.referenced_column_names[0],
               value: {
                 data: [...dataToCache],
                 totalFKRecords,
@@ -140,7 +140,7 @@ const Table = ({ collapseSidebar }) => {
     const dataToCache = {};
 
     const results = await Promise.allSettled(
-      foreignKeys.map((currentColumn, currentIndex) => fetchFkDataForColumn(currentColumn, currentIndex))
+      foreignKeys.map((foreignKey, currentIndex) => fetchFkDataForColumn(foreignKey, currentIndex))
     );
 
     results.forEach((result, index) => {
@@ -148,8 +148,8 @@ const Table = ({ collapseSidebar }) => {
       if (result.status === 'fulfilled' && result.value) {
         dataToCache[result.value.key] = result.value.value;
       } else if (result.status === 'rejected') {
-        const currentColumn = foreignKeys[index];
-        console.error(`Error fetching data for column ${currentColumn?.referenced_column_names[0]}:`, result.reason);
+        const foreignKey = foreignKeys[index];
+        console.error(`Error fetching data for column ${foreignKey?.referenced_column_names[0]}:`, result.reason);
       }
     });
 
