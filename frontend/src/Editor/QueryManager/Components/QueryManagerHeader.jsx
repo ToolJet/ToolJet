@@ -153,7 +153,7 @@ export const QueryManagerHeader = forwardRef(
               isDiabled={isVersionReleased}
             />
           )}
-          <div className="d-flex" style={{ marginBottom: '-8px', gap: '3px' }}>
+          <div className="d-flex" style={{ marginBottom: '-9px', gap: '3px' }}>
             <p
               className="m-0 d-flex align-items-center h-100"
               onClick={() => setActiveTab(1)}
