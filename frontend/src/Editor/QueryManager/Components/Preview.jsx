@@ -107,7 +107,7 @@ const Preview = ({ darkMode }) => {
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <div className="position-relative h-100">
             {previewLoading && (
-              <center className="position-absolute w-100 h-100 flex justify-content-center align-content-center ">
+              <center style={{ display: 'grid', placeItems: 'center' }} className="position-absolute w-100 h-100">
                 <div className="spinner-border text-azure" role="status"></div>
               </center>
             )}

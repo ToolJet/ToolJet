@@ -1073,12 +1073,13 @@ $border-radius: 4px;
     z-index: 1;
     transition: height 0.2s ease-in-out;
     height: 30px;
-    padding: 0px !important;
 
     .preview-content {
+      transition: height 0.2s ease-in-out;
       background-color: var(--slate3);
-      height: 100%;
+      overflow-y: hidden;
       width: 100%;
+      height: 100%;
     }
 
     &.expanded {
