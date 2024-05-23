@@ -16,7 +16,8 @@
   "openid": {
     "name": "Open ID",
     "params": {
-      "token": "code"
+      "token": "code",
+      "iss": "iss"
     }
   },
   "saml": {

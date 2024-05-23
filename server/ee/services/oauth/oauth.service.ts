@@ -217,7 +217,7 @@ export class OauthService {
     }
     const { enableSignUp, domain } = organization;
     const { sso, configs } = ssoConfigs;
-    const { token, username, password } = ssoResponse;
+    const { token, username, password, iss } = ssoResponse;
 
     let userResponse: UserResponse;
     switch (sso) {
@@ -237,6 +237,7 @@ export class OauthService {
           ...configs,
           configId,
           codeVerifier: cookies['oidc_code_verifier'],
+          iss,
         });
         break;
 
@@ -569,4 +570,5 @@ interface SSOResponse {
   signupOrganizationId?: string;
   invitationToken?: string;
   redirectTo?: string;
+  iss?: string;
 }
