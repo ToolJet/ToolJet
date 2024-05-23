@@ -17,6 +17,7 @@ const initialState = {
     variables: {},
   },
   succededQuery: {},
+  constants: {},
 };
 
 export const useCurrentStateStore = create(
