@@ -89,7 +89,7 @@ const Table = ({ collapseSidebar }) => {
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
-  const [cachedOptions, setCahedOptions] = useState([]);
+  const [cachedOptions, setCahedOptions] = useState({});
 
   const fetchFkDataForColumn = (foreignKey, currentIndex) => {
     // responsible to fetch the fk column details for all available fk's and cache them
