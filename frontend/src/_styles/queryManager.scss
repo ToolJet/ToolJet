@@ -1152,7 +1152,7 @@ $border-radius: 4px;
       font-weight: 500;
       line-height: 20px;
       margin-bottom: 0 !important;
-      width: 68px !important;
+      width: 140px;
       display: flex;
       padding: 0;
       margin-right: 16px;
@@ -1249,6 +1249,10 @@ $border-radius: 4px;
     }
 
     .query-manager-events {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+
       .card {
 
         .event-handler-display,

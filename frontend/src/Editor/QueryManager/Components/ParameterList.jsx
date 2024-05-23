@@ -57,7 +57,7 @@ const ParameterList = ({
     <div className="d-flex">
       <p
         className="text-placeholder font-weight-medium"
-        style={{ marginRight: '16px', marginBottom: '0px', width: '68px' }}
+        style={{ marginRight: '16px', marginBottom: '0px', width: '140px' }}
       >
         Parameters
       </p>

@@ -208,7 +208,7 @@ export const QueryManagerBody = ({
     return (
       <div className="d-flex">
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
-        <div className="query-manager-events pb-4 flex-grow-1">
+        <div className="query-manager-events pb-4">
           <EventManager
             sourceId={selectedQuery?.id}
             eventSourceType="data_query" //check
@@ -254,12 +254,15 @@ export const QueryManagerBody = ({
             ))}
           </div>
         </div>
-        <SuccessNotificationInputs
-          currentState={currentState}
-          options={options}
-          darkMode={darkMode}
-          optionchanged={optionchanged}
-        />
+        <div className="d-flex">
+          <div className="form-label">{}</div>
+          <SuccessNotificationInputs
+            currentState={currentState}
+            options={options}
+            darkMode={darkMode}
+            optionchanged={optionchanged}
+          />
+        </div>
         {renderEventManager()}
       </div>
     );

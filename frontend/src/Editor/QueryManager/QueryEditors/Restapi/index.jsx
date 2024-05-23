@@ -131,11 +131,10 @@ class Restapi extends React.Component {
     const queryName = this.props.queryName;
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
-
     return (
       <>
         <div className={`d-flex`}>
-          <div className="form-label flex-shrink-0"></div>
+          {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
           <div className="flex-grow-1 overflow-hidden">
             <div className="rest-api-methods-select-element-container">
               <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
