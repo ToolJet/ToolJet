@@ -86,9 +86,14 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
+  z-index: 11;
 }
 
 .query-pane {
+  &.expanded {
+    z-index: 12 !important;
+  }
+
   &.collapsed {
     &::before {
       content: "";
@@ -129,9 +134,8 @@ $border-radius: 4px;
   }
 
   .query-manager-toggle-button {
-    padding: 5px;
     border-radius: 5px;
-    margin-right: 6px;
+    margin-right: 26px;
     width: 58px;
     text-align: center;
     cursor: pointer;
@@ -141,8 +145,8 @@ $border-radius: 4px;
     }
 
     &~h5 {
-      padding: 4px;
-      margin: 0 7px;
+      // padding: 4px;
+      margin: 0 26px;
     }
   }
 
@@ -1072,7 +1076,7 @@ $border-radius: 4px;
     width: calc(100% - 288px);
     z-index: 1;
     transition: height 0.2s ease-in-out;
-    height: 30px;
+    height: 29px;
 
     .preview-content {
       transition: height 0.2s ease-in-out;
