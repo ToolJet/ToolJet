@@ -139,19 +139,19 @@ const Table = ({ collapseSidebar }) => {
   const fetchAllFkData = async () => {
     const dataToCache = {};
 
-    await Promise.all(
-      foreignKeys.map((currentColumn, currentIndex) =>
-        fetchFkDataForColumn(currentColumn, currentIndex)
-          .then((result) => {
-            if (result) {
-              dataToCache[result.key] = result.value;
-            }
-          })
-          .catch((error) => {
-            console.error(`Error fetching data for column ${currentColumn?.referenced_column_names[0]}:`, error);
-          })
-      )
+    const results = await Promise.allSettled(
+      foreignKeys.map((currentColumn, currentIndex) => fetchFkDataForColumn(currentColumn, currentIndex))
     );
+
+    results.forEach((result, index) => {
+      console.log('kiran ::', { result });
+      if (result.status === 'fulfilled' && result.value) {
+        dataToCache[result.value.key] = result.value.value;
+      } else if (result.status === 'rejected') {
+        const currentColumn = foreignKeys[index];
+        console.error(`Error fetching data for column ${currentColumn?.referenced_column_names[0]}:`, result.reason);
+      }
+    });
 
     return dataToCache;
   };
@@ -1381,7 +1381,7 @@ const Table = ({ collapseSidebar }) => {
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
                                       cellHeader={cell.column.Header}
-                                      cachedOptions={cachedOptions[cell.column.Header]}
+                                      cachedOptions={cachedOptions?.[cell.column.Header]}
                                     >
                                       <div
                                         className="input-cell-parent"
