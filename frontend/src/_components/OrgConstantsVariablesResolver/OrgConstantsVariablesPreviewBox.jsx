@@ -61,7 +61,14 @@ const verifyConstant = (value, definedConstants) => {
 };
 
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
-  const [preview, error] = resolveReferences(value, state, null, {}, true, true);
+  const invalidConstants = verifyConstant(value, state.constants || {});
+  let preview;
+  let error;
+  if (invalidConstants?.length) {
+    [preview, error] = [value, `Undefined constants: ${invalidConstants}`];
+  } else {
+    [preview, error] = resolveReferences(value, state, null, {}, true, true);
+  }
 
   const previewType = typeof preview;
 
