@@ -26,9 +26,8 @@ export default class AirtableQueryService implements QueryService {
           const offset = queryOptions.offset || '';
           const fields = queryOptions.fields || '';
 
-          const parsedFields = JSON.parse(fields);
-
           if (fields) {
+            const parsedFields = JSON.parse(fields);
             response = await got(
               `https://api.airtable.com/v0/${baseId}/${tableName}/listRecords/?pageSize=${pageSize}&offset=${offset}`,
               {
