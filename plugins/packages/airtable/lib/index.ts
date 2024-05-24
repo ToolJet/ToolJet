@@ -15,8 +15,6 @@ export default class AirtableQueryService implements QueryService {
     const baseId = queryOptions.base_id;
     const tableName = queryOptions.table_name;
 
-    console.log('QueryOptions: ', queryOptions);
-
     // Below condition for API Key is kept for Backward compatibility and needs migration to be removed later on.
     if (sourceOptions.api_key) apiToken = sourceOptions.api_key;
     if (sourceOptions.personal_access_token) apiToken = sourceOptions.personal_access_token;
@@ -30,16 +28,16 @@ export default class AirtableQueryService implements QueryService {
 
           if (fields) {
             const parsedFields = JSON.parse(fields);
-            const page_size = Number(pageSize);
-            response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/listRecords`, {
-              method: 'post',
-              headers: this.authHeader(apiToken),
-              json: {
-                fields: parsedFields,
-                pageSize: page_size,
-                offset: offset,
-              },
-            });
+            response = await got(
+              `https://api.airtable.com/v0/${baseId}/${tableName}/listRecords/?pageSize=${pageSize}&offset=${offset}`,
+              {
+                method: 'post',
+                headers: this.authHeader(apiToken),
+                json: {
+                  fields: parsedFields,
+                },
+              }
+            );
           } else {
             response = await got(
               `https://api.airtable.com/v0/${baseId}/${tableName}/?pageSize=${pageSize}&offset=${offset}`,
