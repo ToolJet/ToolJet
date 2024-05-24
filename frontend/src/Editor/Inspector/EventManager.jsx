@@ -912,6 +912,7 @@ export const EventManager = ({
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
                             component={component}
+                            isEventManagerParam={true}
                           />
                         </div>
                       )}
