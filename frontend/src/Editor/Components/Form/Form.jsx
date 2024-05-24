@@ -66,19 +66,16 @@ export const Form = function Form(props) {
   const mounted = useMounted();
 
   useEffect(() => {
-    const exposedVariables = {
-      resetForm: async function () {
-        resetComponent();
-      },
-      submitForm: async function () {
-        if (isValid) {
-          onEvent('onSubmit', formEvents).then(() => resetComponent());
-        } else {
-          fireEvent('onInvalid');
-        }
-      },
-    };
-    setExposedVariables(exposedVariables);
+    setExposedVariable('resetForm', async function () {
+      resetComponent();
+    });
+    setExposedVariable('submitForm', async function () {
+      if (isValid) {
+        onEvent('onSubmit', formEvents).then(() => resetComponent());
+      } else {
+        fireEvent('onInvalid');
+      }
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
