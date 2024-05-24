@@ -783,10 +783,6 @@ const EditorComponent = (props) => {
     const currentEnvironmentId = editorEnvironment.id;
     useEditorStore.getState().actions.setCurrentAppEnvironmentId(currentEnvironmentId);
     await fetchOrgEnvironmentConstants(currentEnvironmentId);
-    await useDataSourcesStore
-      .getState()
-      .actions.fetchGlobalDataSources(organizationId, editing_version?.id, currentEnvironmentId);
-    await fetchDataSources(editing_version?.id, currentEnvironmentId);
 
     updateState({
       slug,
@@ -816,7 +812,10 @@ const EditorComponent = (props) => {
       ({ homePageId }) => {
         handleLowPriorityWork(async () => {
           useResolveStore.getState().actions.updateLastUpdatedRefs(['constants']);
-
+          await useDataSourcesStore
+            .getState()
+            .actions.fetchGlobalDataSources(organizationId, editing_version?.id, currentEnvironmentId);
+          await fetchDataSources(editing_version?.id, currentEnvironmentId);
           commonLowPriorityActions(events, { homePageId });
         });
       },

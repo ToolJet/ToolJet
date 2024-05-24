@@ -1395,7 +1395,7 @@ export function runQuery(
 
           resolve({ status: 'failed', message: error });
         });
-    }, 0);
+    }, 100);
   });
 }
 
