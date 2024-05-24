@@ -181,6 +181,8 @@ function TableSchema({
                       }`}</span>
                     </div>
                   </div>
+                ) : columnDetails[index]?.data_type === 'boolean' ? (
+                  'Boolean type column cannot have a foreign key relation'
                 ) : (
                   'No foreign key relation'
                 )
