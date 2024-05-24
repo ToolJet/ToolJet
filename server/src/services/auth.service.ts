@@ -225,6 +225,7 @@ export class AuthService {
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
+        currentOrganizationName: organization.name,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
@@ -329,13 +330,16 @@ export class AuthService {
       const { name, slug } = generateNextNameAndSlug('My workspace');
       const personalWorkspace = await this.organizationsService.create(name, slug, null, manager);
       /* Create the user or attach user groups to the user */
+      const lifeCycleParms = signingUpOrganization
+        ? getUserStatusAndSource(lifecycleEvents.USER_WORKSPACE_SIGN_UP)
+        : getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP);
       const user = await this.usersService.create(
         {
           email,
           password,
           ...(firstName && { firstName }),
           ...(lastName && { lastName }),
-          ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
+          ...lifeCycleParms,
         },
         personalWorkspace.id,
         ['all_users', 'admin'],
@@ -525,7 +529,7 @@ export class AuthService {
         );
       }
       case hasWorkspaceInviteButUserWantsInstanceSignup: {
-        const firstTimeSignup = existingUser.source !== SOURCE.SIGNUP;
+        const firstTimeSignup = ![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(existingUser.source as SOURCE);
         if (firstTimeSignup) {
           /* Invite user doing instance signup. So reset name fields and set password */
           await this.usersService.updateUser(
@@ -914,23 +918,28 @@ export class AuthService {
   }
 
   async generateSessionPayload(user: User, currentOrganization: Organization) {
-    const currentOrganizationId = currentOrganization?.id
-      ? currentOrganization?.id
-      : user?.organizationIds?.includes(user?.defaultOrganizationId)
-      ? user.defaultOrganizationId
-      : user?.organizationIds?.[0];
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const currentOrganizationId = currentOrganization?.id
+        ? currentOrganization?.id
+        : user?.organizationIds?.includes(user?.defaultOrganizationId)
+        ? user.defaultOrganizationId
+        : user?.organizationIds?.[0];
+      const organizationDetails = currentOrganization
+        ? currentOrganization
+        : await manager.findOneOrFail(Organization, {
+            where: { id: currentOrganizationId },
+            select: ['slug', 'name', 'id'],
+          });
 
-    const activeWorkspacesCount = await this.organizationUsersService.getActiveWorkspacesCount(user.id);
-    const noWorkspaceAttachedInTheSession = activeWorkspacesCount === 0;
-
-    return decamelizeKeys({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      noWorkspaceAttachedInTheSession,
-      currentOrganizationId,
-      currentOrganizationSlug: currentOrganization?.slug,
+      return decamelizeKeys({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        currentOrganizationSlug: organizationDetails.slug,
+        currentOrganizationName: organizationDetails.name,
+        currentOrganizationId,
+      });
     });
   }
 
@@ -1022,7 +1031,9 @@ export class AuthService {
 
     if (accountYetToActive) {
       /* User has invite url which got after the workspace signup */
-      if (source === 'signup') {
+      const isInstanceSignupInvite = !!accountToken && !organizationToken && source === SOURCE.SIGNUP;
+      const isOrganizationSignupInvite = organizationAndAccountInvite && source === SOURCE.WORKSPACE_SIGNUP;
+      if (isInstanceSignupInvite || isOrganizationSignupInvite) {
         const responseObj = {
           email,
           name: fullName(firstName, lastName),
