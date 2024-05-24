@@ -3987,37 +3987,6 @@ export const widgets = [
         },
         accordian: 'Options',
       },
-      values: {
-        type: 'code',
-        displayName: 'Option values',
-        conditionallyRender: {
-          key: 'advanced',
-          value: false,
-        },
-        validation: {
-          schema: {
-            type: 'array',
-            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
-          },
-        },
-        accordian: 'Options',
-      },
-      display_values: {
-        type: 'code',
-        displayName: 'Option labels',
-        conditionallyRender: {
-          key: 'advanced',
-          value: false,
-        },
-        validation: {
-          schema: {
-            type: 'array',
-            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
-          },
-        },
-        accordian: 'Options',
-      },
-
       schema: {
         type: 'code',
         displayName: 'Schema',
@@ -4239,12 +4208,14 @@ export const widgets = [
           value:
             "{{[\t{label: 'Option 1',value: '1',disable: false,visible: true,default: true},{label: 'Option 2',value: '2',disable: false,visible: true},{label: 'Option 3',value: '3',disable: false,visible: true}\t]}}",
         },
+        options: {
+          value:
+            "{{[\t{label: 'Option 1',value: '1',disable: false,visible: true,default: true},{label: 'Option 2',value: '2',disable: false,visible: true},{label: 'Option 3',value: '3',disable: false,visible: true}\t]}}",
+        },
         label: { value: 'Select' },
         value: { value: '{{"2"}}' },
-        values: { value: '{{["1","2","3"]}}' },
-        display_values: { value: '{{["Option 1", "Option 2", "Option 3"]}}' },
         optionsLoadingState: { value: '{{false}}' },
-        placeholder: { value: 'select' },
+        placeholder: { value: 'Select an option' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         loadingState: { value: '{{false}}' },

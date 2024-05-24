@@ -20,7 +20,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     component,
     dataQueries,
     paramUpdated,
-    paramsUpdated,
     currentState,
     eventsChanged,
     apps,
@@ -29,23 +28,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   } = restProps;
 
   const constructOptions = () => {
-    const labels = resolveReferences(component?.component?.definition?.properties?.display_values?.value, currentState);
-    const values = resolveReferences(component?.component?.definition?.properties?.values?.value, currentState);
-    const disabledOptions = resolveReferences(
-      component?.component?.definition?.properties?.optionDisable?.value,
-      currentState
-    );
-    const visibleOptions = resolveReferences(
-      component?.component?.definition?.properties?.optionVisibility?.value,
-      currentState
-    );
-    const _options = values?.map((value, index) => ({
-      value,
-      label: labels?.[index],
-      visible: visibleOptions?.[index],
-      isDisabled: disabledOptions?.[index],
-    }));
-    return _options;
+    const options = resolveReferences(component?.component?.definition?.properties?.options?.value, currentState);
+    return options;
   };
 
   const _markedAsDefault = resolveReferences(component?.component?.definition?.properties?.value?.value, currentState);
@@ -78,32 +62,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   const updateAllOptionsParams = (options) => {
-    paramsUpdated([
-      {
-        param: { name: 'values' },
-        attr: 'value',
-        value: options.map((option) => option.value),
-        paramType: 'properties',
-      },
-      {
-        param: { name: 'display_values' },
-        attr: 'value',
-        value: options.map((option) => option.label),
-        paramType: 'properties',
-      },
-      {
-        param: { name: 'optionVisibility' },
-        attr: 'value',
-        value: options.map((option) => option.visible),
-        paramType: 'properties',
-      },
-      {
-        param: { name: 'optionDisable' },
-        attr: 'value',
-        value: options.map((option) => option.isDisabled),
-        paramType: 'properties',
-      },
-    ]);
+    paramUpdated({ name: 'options' }, 'value', options, 'properties');
   };
 
   const generateNewOptions = () => {
@@ -123,7 +82,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       value,
       label,
       visible: true,
-      isDisabled: false,
+      disable: false,
     };
   };
 
@@ -144,38 +103,28 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
+          ...option,
           label,
-          value: option.value,
         };
       }
       return option;
     });
     setOptions(_options);
-    paramUpdated(
-      { name: 'display_values' },
-      'value',
-      _options.map((option) => option.label),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   const handleValueChange = (value, index) => {
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
-          label: option.label,
+          ...option,
           value,
         };
       }
       return option;
     });
     setOptions(_options);
-    paramUpdated(
-      { name: 'values' },
-      'value',
-      _options.map((option) => option.value),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   const reorderOptions = async (startIndex, endIndex) => {
@@ -212,13 +161,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       return option;
     });
     setOptions(_options);
-
-    paramUpdated(
-      { name: 'optionVisibility' },
-      'value',
-      _options.map((option) => option.visible),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   const handleDisableChange = (value, index) => {
@@ -227,18 +170,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       if (i === index) {
         return {
           ...option,
-          isDisabled: _value,
+          disable: _value,
         };
       }
       return option;
     });
     setOptions(_options);
-    paramUpdated(
-      { name: 'optionDisable' },
-      'value',
-      _options.map((option) => option.isDisabled),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   useEffect(() => {
@@ -247,10 +185,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOverlay = (item, index) => {
     return (
-      <Popover id="popover-basic" className={`${darkMode && 'dark-theme'}`} style={{ minWidth: '248px' }}>
+      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
         <Popover.Body>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="form-label">
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
+            <label data-cy={`label-column-name`} className="font-weight-500 mb-1">
               {'Option label'}
             </label>
             <CodeHinter
@@ -263,8 +201,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleLabelChange(value, index)}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="form-label">
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
+            <label data-cy={`label-column-name`} className="font-weight-500 mb-1">
               {'Option value'}
             </label>
             <CodeHinter
@@ -286,14 +224,14 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               component={component}
               type={'toggle'}
-              paramLabel={'Mark this as default option'}
+              paramLabel={'Make this default option'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.visible !== false}
+              initialValue={item.visible}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -303,10 +241,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleVisibilityChange(value, index)}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.isDisabled}
+              initialValue={item.disable}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -332,7 +270,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <Droppable droppableId="droppable">
             {({ innerRef, droppableProps, placeholder }) => (
               <div className="w-100" {...droppableProps} ref={innerRef}>
-                {options.map((item, index) => {
+                {options?.map((item, index) => {
                   return (
                     <Draggable key={item.value} draggableId={item.value} index={index}>
                       {(provided, snapshot) => (
@@ -360,27 +298,25 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                   <div className="col-auto d-flex align-items-center">
                                     <SortableList.DragHandle show />
                                   </div>
-                                  <div className="col text-truncate cursor-pointer" style={{ paddingLeft: '8px' }}>
+                                  <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
                                     {item.label}
                                   </div>
                                   <div className="col-auto">
-                                    <span
-                                      onClick={() => {
-                                        handleDeleteOption(index);
-                                      }}
-                                    >
-                                      {index === hoveredOptionIndex && (
-                                        <ButtonSolid
-                                          variant="tertiary"
-                                          size="xs"
-                                          className={'inspector-select-option-btn'}
-                                        >
-                                          <span className="d-flex">
-                                            <Trash fill={'#E54D2E'} width={'14'} />
-                                          </span>
-                                        </ButtonSolid>
-                                      )}
-                                    </span>
+                                    {index === hoveredOptionIndex && (
+                                      <ButtonSolid
+                                        variant="danger"
+                                        size="xs"
+                                        className={'delete-icon-btn'}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteOption(index);
+                                        }}
+                                      >
+                                        <span className="d-flex">
+                                          <Trash fill={'var(--tomato9)'} width={12} />
+                                        </span>
+                                      </ButtonSolid>
+                                    )}
                                   </div>
                                 </div>
                               </ListGroup.Item>

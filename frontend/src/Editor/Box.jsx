@@ -168,7 +168,14 @@ export const Box = memo(
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
     const { events } = useAppInfo();
-    const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Checkbox'];
+    const shouldAddBoxShadowAndVisibility = [
+      'TextInput',
+      'PasswordInput',
+      'NumberInput',
+      'Text',
+      'Checkbox',
+      'DropdownV2',
+    ];
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
