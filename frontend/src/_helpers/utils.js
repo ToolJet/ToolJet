@@ -14,7 +14,6 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, erase
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { validateMultilineCode } from './utility';
-import { resolveReferences as newResolver } from '@/Editor/CodeEditor/utils';
 
 const reservedKeyword = ['app', 'window'];
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';

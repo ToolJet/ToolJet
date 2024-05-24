@@ -20,8 +20,6 @@ import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
-import { useEditorStore } from '@/_stores/editorStore';
-import { shallow } from 'zustand/shallow';
 import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
 
 const DynamicForm = ({
@@ -48,12 +46,6 @@ const DynamicForm = ({
   const prevDataSourceIdRef = React.useRef(selectedDataSource?.id);
 
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
-  const { isEditorActive } = useEditorStore(
-    (state) => ({
-      isEditorActive: state?.isEditorActive,
-    }),
-    shallow
-  );
 
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
