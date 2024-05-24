@@ -145,7 +145,7 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-        cellValue = cellValue === undefined ? '' : cellValue;
+        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
         switch (columnType) {
           case 'string':
           case undefined:
@@ -597,16 +597,13 @@ export default function generateColumnsData({
                   readOnly={!isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
-                      () => {
-                        fireEvent('OnTableToggleCellChanged', {
-                          column: column,
-                          rowId: cell.row.id,
-                          row: cell.row.original,
-                          tableColumnEvents,
-                        });
-                      }
-                    );
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    fireEvent('OnTableToggleCellChanged', {
+                      column: column,
+                      rowId: cell.row.id,
+                      row: cell.row.original,
+                      tableColumnEvents,
+                    });
                   }}
                 />
               </div>

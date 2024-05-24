@@ -60,6 +60,8 @@ await queries.getSalesData.run()
 
 value = queries.getSalesData.getData()
 #replace getSalesData with your query name
+
+value
 ```
 
 #### Trigger a query and retrieve its raw data:
@@ -69,6 +71,8 @@ await queries.getCustomerData.run()
 
 value = queries.getCustomerData.getRawData()
 #replace getCustomerData with your query name
+
+value
 ```
 
 #### Trigger a query and retrieve its loading state:
@@ -78,13 +82,21 @@ await queries.getTodos.run()
 
 value = queries.getTodos.getLoadingState()
 #replace getTodos with your query name
+
+value
 ```
 
 ## Get Variables
 
-To immediately access a variable or page variable after setting it in the **Run Python code**, you can use the below functions:
+To set and access variables or page variables in **Run Python code**, you can use the below functions:
 
-#### Set and retrieve a variable:
+#### Set a variable:
+```py
+actions.setVariable('color','blue')
+#replace color with your desired variable name
+```
+
+#### Immediately retrieve a variable after setting it:
 ```py
 actions.setVariable('mode','dark')
 #replace mode with your desired variable name
@@ -93,7 +105,13 @@ actions.getVariable('mode')
 #replace mode with your desired variable name
 ```
 
-#### Set and retrieve a page-specific variable:
+#### Set a page-specific variable:
+```py
+actions.setPageVariable('version',1)
+#replace version with your desired variable name
+```
+
+#### Immediately retrieve a page-specific variable after setting it:
 ```py
 actions.setPageVariable('number',1)
 #replace number with your desired variable name
@@ -147,3 +165,9 @@ return sum(product["price"] for product in data["products"] if product["category
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).
 :::
+
+## Refer Python Query Data in Components
+
+Just like other dynamic values, you can refer the data returned by **Run Python code** queries using double curly braces`{{}}`.
+
+For instance, if you have a **Run Python code** query named *updatedProductInfo*, you can pass `{{queries.updatedProductInfo.data}}` under the `Data` property of a Table component to populate it with the data returned by the *updatedProductInfo* query. 

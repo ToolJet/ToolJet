@@ -25,13 +25,13 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles, isValidUUID } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
-import { useEditorStore } from '@/_stores/editorStore';
+import { flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
@@ -40,13 +40,16 @@ import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
-import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
 import ViewerSidebarNavigation from './Viewer/ViewerSidebarNavigation';
 import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
+import { useResolveStore } from '@/_stores/resolverStore';
+import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
+import { findAllEntityReferences } from '@/_stores/utils';
+import { dfs } from '@/_stores/handleReferenceTransactions';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import TooljetBanner from './Viewer/TooljetBanner';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -99,6 +102,165 @@ class ViewerComponent extends React.Component {
       appDefinition: { ...appDefData },
       pages: appDefData.pages,
     });
+
+    useEditorStore.getState().actions.updateEditorState({
+      appDefinition: appDefData,
+    });
+    useResolveStore.getState().actions.resetStore();
+  };
+
+  onViewerLoadUpdateEntityReferences = (pageId, loadType) => {
+    const appDefData = useEditorStore.getState().appDefinition;
+    const appJson = JSON.parse(JSON.stringify(appDefData));
+    const currentPageId = pageId ?? this.state.currentPageId;
+    const currentComponents = appJson.pages[currentPageId].components;
+    let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
+    let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
+    const globalSettings = appJson['globalSettings'];
+
+    const entittyReferencesInGlobalSettings = findAllEntityReferences(globalSettings, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInQueryOptions = findAllEntityReferences(dataQueries, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const manager = useResolveStore.getState().referenceMapper;
+
+    if (Array.isArray(entittyReferencesInGlobalSettings) && entittyReferencesInGlobalSettings?.length > 0) {
+      let newGlobalSettings = JSON.parse(JSON.stringify(globalSettings));
+      entittyReferencesInGlobalSettings.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newGlobalSettings = dfs(newGlobalSettings, entity, value);
+        }
+      });
+
+      const newAppDefinition = {
+        ...appJson,
+        globalSettings: {
+          ...appJson.globalSettings,
+          newGlobalSettings,
+        },
+      };
+
+      useEditorStore.getState().actions.setCanvasBackground({
+        backgroundFxQuery: newGlobalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: newGlobalSettings?.canvasBackgroundColor,
+      });
+
+      useEditorStore.getState().actions.updateEditorState({
+        isUpdatingEditorStateInProcess: false,
+        appDefinition: newAppDefinition,
+      });
+    }
+
+    if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {
+      let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
+
+      entityReferencesInComponentDefinitions.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+
+          newComponentDefinition = dfs(newComponentDefinition, entity, value);
+        }
+      });
+
+      const appDefinition = useEditorStore.getState().appDefinition;
+      const newAppDefinition = {
+        ...appDefinition,
+        pages: {
+          ...appDefinition.pages,
+          [currentPageId]: {
+            ...appDefinition.pages[currentPageId],
+            components: newComponentDefinition,
+          },
+        },
+      };
+
+      useEditorStore.getState().actions.updateEditorState({
+        isUpdatingEditorStateInProcess: false,
+        appDefinition: newAppDefinition,
+      });
+
+      this.setState({
+        appDefinition: newAppDefinition,
+      });
+    }
+
+    if (Array.isArray(entityReferencesInQueryOptions) && entityReferencesInQueryOptions?.length > 0) {
+      let newQueryOptions = {};
+      dataQueries?.forEach((query) => {
+        newQueryOptions[query.id] = query.options;
+        ``;
+      });
+
+      entityReferencesInQueryOptions.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newQueryOptions = dfs(newQueryOptions, entity, value);
+        }
+      });
+
+      dataQueries = dataQueries.map((query) => {
+        const queryId = query.id;
+        const dqOptions = newQueryOptions[queryId];
+
+        return {
+          ...query,
+          options: dqOptions,
+        };
+      });
+
+      useDataQueriesStore.getState().actions.setDataQueries(dataQueries, 'mappingUpdate');
+    }
+
+    if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
+      let newEvents = JSON.parse(JSON.stringify(allEvents));
+
+      entityReferencesInEvents.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newEvents = dfs(newEvents, entity, value);
+        }
+      });
+
+      this.props.updateState({
+        events: newEvents,
+      });
+    }
+
+    computeComponentState(currentComponents).then(async () => {
+      this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
+      useCurrentStateStore.getState().actions.setEditorReady(true);
+
+      if (loadType === 'appload') {
+        this.runQueries(dataQueries);
+      }
+
+      const currentPageEvents = this.state.events.filter(
+        (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
+      );
+
+      await this.handleEvent('onPageLoad', currentPageEvents);
+    });
   };
 
   setStateForContainer = async (data, appVersionId) => {
@@ -126,6 +288,19 @@ class ViewerComponent extends React.Component {
       dataQueries = data.data_queries;
     }
     const queryConfirmationList = [];
+    const referencesManager = useResolveStore.getState().referenceMapper;
+    const newQueries = dataQueries
+      .map((dq) => {
+        if (!referencesManager.get(dq.id)) {
+          return {
+            id: dq.id,
+            name: dq.name,
+          };
+        }
+      })
+      .filter((c) => c !== undefined);
+
+    useResolveStore.getState().actions.addEntitiesToMap(newQueries);
 
     if (dataQueries.length > 0) {
       dataQueries.forEach((query) => {
@@ -165,6 +340,9 @@ class ViewerComponent extends React.Component {
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
+    useEditorStore.getState().actions.updateEditorState({
+      currentPageId: currentPageId,
+    });
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -187,7 +365,27 @@ class ViewerComponent extends React.Component {
       ...constants,
     });
     useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
+
     this.props.updateState({ events: data.events ?? [] });
+    const currentPageComponents = appDefData?.pages[currentPage.id]?.components;
+
+    if (currentPageComponents && !_.isEmpty(currentPageComponents)) {
+      const referenceManager = useResolveStore.getState().referenceMapper;
+
+      const newComponents = Object.keys(currentPageComponents).map((componentId) => {
+        const component = currentPageComponents[componentId];
+
+        if (!referenceManager.get(componentId)) {
+          return {
+            id: componentId,
+            name: component.component.name,
+          };
+        }
+      });
+
+      useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+    }
+
     this.setState(
       {
         currentUser,
@@ -205,18 +403,7 @@ class ViewerComponent extends React.Component {
         events: data.events ?? [],
       },
       () => {
-        const components = appDefData?.pages[currentPageId]?.components || {};
-
-        computeComponentState(components).then(async () => {
-          this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
-          this.runQueries(dataQueries);
-
-          const currentPageEvents = this.state.events.filter(
-            (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
-          );
-
-          await this.handleEvent('onPageLoad', currentPageEvents);
-        });
+        this.onViewerLoadUpdateEntityReferences(currentPage.id, 'appload');
       }
     );
   };
@@ -289,6 +476,7 @@ class ViewerComponent extends React.Component {
         if (authentication_failed && !isAppPublic) {
           return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
+        useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
         setWindowTitle({
@@ -316,6 +504,11 @@ class ViewerComponent extends React.Component {
     await appService
       .fetchAppByVersion(appId, versionId)
       .then((data) => {
+        setWindowTitle({
+          page: pageTitles.VIEWER,
+          appName: data.name,
+          preview: true,
+        });
         this.setStateForApp(data);
         this.setStateForContainer(data, versionId);
       })
@@ -456,13 +649,7 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
-            const currentPageEvents = this.state.events.filter(
-              (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
-            );
-
-            await this.handleEvent('onPageLoad', currentPageEvents);
-          });
+          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components);
         }
       );
     }
@@ -487,8 +674,7 @@ class ViewerComponent extends React.Component {
 
   computeCanvasBackgroundColor = () => {
     const bgColor =
-      (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
-        this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
+      (this.props.canvasBackground?.backgroundFxQuery || this.props.canvasBackground?.canvasBackgroundColor) ??
       '#2f3c4c';
     const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
     if (['#2f3c4c', '#F2F2F5', '#edeff5'].includes(resolvedBackgroundColor)) {
@@ -516,6 +702,8 @@ class ViewerComponent extends React.Component {
     const defaultParams = getPreviewQueryParams();
 
     if (this.state.currentPageId === id) return;
+    useCurrentStateStore.getState().actions.setEditorReady(false);
+    useResolveStore.getState().actions.resetStore();
 
     const { handle } = this.state.appDefinition.pages[id];
 
@@ -533,20 +721,58 @@ class ViewerComponent extends React.Component {
       ? `version=${navigationParams.version}`
       : '';
 
-    this.props.navigate(
-      `/applications/${this.state.slug}/${handle}?${!_.isEmpty(defaultParams) ? navigationParamsString : ''}${
-        queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''
-      }`,
-      {
-        state: {
-          isSwitchingPage: true,
-        },
+    useEditorStore.getState().actions.updateEditorState({
+      currentPageId: id,
+    });
+
+    const currentPageComponents = this.state.appDefinition?.pages[id]?.components;
+
+    if (currentPageComponents && !_.isEmpty(currentPageComponents)) {
+      const referenceManager = useResolveStore.getState().referenceMapper;
+
+      const newComponents = Object.keys(currentPageComponents).map((componentId) => {
+        const component = currentPageComponents[componentId];
+
+        if (!referenceManager.get(componentId)) {
+          return {
+            id: componentId,
+            name: component.component.name,
+          };
+        }
+      });
+
+      try {
+        useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+      } catch (error) {
+        console.error(error);
       }
-    );
+    }
+
+    const toNavigate = `/applications/${this.state.slug}/${handle}?${
+      !_.isEmpty(defaultParams) ? navigationParamsString : ''
+    }${queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''}`;
+
+    this.props.navigate(toNavigate, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+    this.onViewerLoadUpdateEntityReferences(id, 'page-switch');
   };
 
   handleEvent = (eventName, events, options) => {
-    return onEvent(this.getViewerRef(), eventName, events, options, 'view');
+    const latestEvents = useAppDataStore.getState().events;
+
+    const filteredEvents = latestEvents.filter((event) => {
+      const foundEvent = events.find((e) => e.id === event.id);
+      return foundEvent && foundEvent.name === eventName;
+    });
+
+    try {
+      return onEvent(this.getViewerRef(), eventName, filteredEvents, options, 'view');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   computeCanvasMaxWidth = () => {
@@ -631,6 +857,7 @@ class ViewerComponent extends React.Component {
             {this.props.currentLayout !== 'mobile' && (
               <DesktopHeader
                 showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                isAppLoaded={isAppLoaded}
                 appName={this.state.app?.name ?? null}
                 changeDarkMode={this.changeDarkMode}
                 darkMode={this.props.darkMode}
@@ -744,21 +971,7 @@ class ViewerComponent extends React.Component {
                           </>
                         )}
                       </div>
-                      <div
-                        className="powered-with-tj"
-                        onClick={() => {
-                          const url = `https://tooljet.com/?utm_source=powered_by_banner&utm_medium=${
-                            useAppDataStore.getState()?.metadata?.instance_id
-                          }&utm_campaign=self_hosted`;
-                          window.open(url, '_blank');
-                        }}
-                      >
-                        Built with
-                        <span className={'powered-with-tj-icon'}>
-                          <TooljetLogoIcon />
-                        </span>
-                        <TooljetLogoText fill={this.props.darkMode ? '#ECEDEE' : '#11181C'} />
-                      </div>
+                      {isAppLoaded && <TooljetBanner isDarkMode={this.props.darkMode} />}
                       {/* Following div is a hack to prevent showing mobile drawer navigation coming from left*/}
                       {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                       {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
@@ -775,14 +988,55 @@ class ViewerComponent extends React.Component {
 }
 const withStore = (Component) => (props) => {
   const currentState = useCurrentStateStore();
-  const { currentLayout, queryConfirmationList } = useEditorStore(
+  const { currentLayout, queryConfirmationList, currentPageId, appDefinition, canvasBackground } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
       queryConfirmationList: state?.queryConfirmationList,
+      currentPageId: state?.currentPageId,
+      appDefinition: state?.appDefinition,
+      canvasBackground: state.canvasBackground,
     }),
     shallow
   );
+
+  const { updateComponentsNeedsUpdateOnNextRender } = useEditorActions();
   const { updateState } = useAppDataActions();
+
+  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    flushComponentsToRender(updatedComponentIds);
+  }
+
+  React.useEffect(() => {
+    if (lastUpdatedRef.length > 0) {
+      const currentComponents = appDefinition?.pages?.[currentPageId]?.components || {};
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, lastUpdatedRef);
+
+      if (componentIdsWithReferences.length > 0) {
+        setTimeout(() => {
+          batchUpdateComponents(componentIdsWithReferences);
+        }, 400);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastUpdatedRef]);
+
   const { isAppDarkMode } = useAppDarkMode();
   return (
     <Component
@@ -793,6 +1047,7 @@ const withStore = (Component) => (props) => {
       updateState={updateState}
       queryConfirmationList={queryConfirmationList}
       darkMode={isAppDarkMode}
+      canvasBackground={canvasBackground}
     />
   );
 };
