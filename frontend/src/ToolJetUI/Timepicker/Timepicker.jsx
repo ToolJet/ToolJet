@@ -20,7 +20,7 @@ const Timepicker = ({ timeFormat, onChange, selected, maxTime, minTime, darkMode
         timeFormat={timeFormat}
         minTime={minTime}
         timeInputLabel=""
-        popperClassName={cx('tj-timepicker-popper', { 'theme-dark dark-theme': darkMode })}
+        popperClassName={cx('tj-timepicker-popper tj-table-datepicker', { 'theme-dark dark-theme': darkMode })}
       />
     </div>
   );

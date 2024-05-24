@@ -24,13 +24,38 @@ const DropDownSelect = ({
   showPlaceHolder = false,
   highlightSelected = true,
   buttonClasses = '',
+  foreignKeyAccess = false,
+  showRedirection = false,
+  columnInfoForTable,
+  showColumnInfo = false,
+  showDescription = false,
+  foreignKeyAccessInRowForm = false,
+  topPlaceHolder = '',
+  showPlaceHolderInForeignKeyDrawer = false,
+  isCellEdit = false,
+  scrollEventForColumnValus,
+  organizationId,
+  foreignKeys,
+  setReferencedColumnDetails,
+  shouldShowForeignKeyIcon = false,
+  cellColumnName,
+  tableName,
+  targetTable,
+  actions,
+  actionName,
+  fetchTables,
+  onTableClick,
+  referencedForeignKeyDetails = [],
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
   const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
   const [selected, setSelected] = useState(value);
-  const selectRef = useRef();
   const [isOverflown, setIsOverflown] = useState(false);
+  // Applicable when drop down is used to list FK data
+  const [isInitialForeignKeyDataLoaded, setIsInitialForeignKeyDataLoaded] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [pageNumber, setPageNumber] = useState(1);
 
   useEffect(() => {
     if (showMenu) {
@@ -42,6 +67,7 @@ const DropDownSelect = ({
     if (Array.isArray(value) || selected?.value !== value?.value || selected?.label !== value?.label) {
       setSelected(value);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
@@ -61,6 +87,7 @@ const DropDownSelect = ({
     if (isNewOverFlown !== isOverflown) {
       setIsOverflown(isNewOverFlown);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
   function checkElementPosition() {
@@ -70,14 +97,9 @@ const DropDownSelect = ({
     }
 
     const elementRect = selectControl.getBoundingClientRect();
-
     // Check proximity to top
     const halfScreenHeight = window.innerHeight / 2;
-
-    if (elementRect.top <= halfScreenHeight) {
-      return 'bottom-start';
-    }
-
+    if (elementRect.top <= halfScreenHeight) return 'bottom-start';
     return 'top-start';
   }
 
@@ -98,17 +120,26 @@ const DropDownSelect = ({
     <OverlayTrigger
       show={showMenu && !disabled}
       placement={checkElementPosition()}
-      // placement="auto"
-      // arrowOffsetTop={90}
-      // arrowOffsetLeft={90}
       overlay={
         <Popover
           key={'page.i'}
           id={popoverId.current}
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{
-            width: '244px',
-            maxWidth: '246px',
+            width: foreignKeyAccess
+              ? '403px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '244px',
+            maxWidth: foreignKeyAccess
+              ? '403px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '246px',
             overflow: 'hidden',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }}
@@ -127,6 +158,30 @@ const DropDownSelect = ({
             addBtnLabel={addBtnLabel}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
+            foreignKeyAccess={foreignKeyAccess}
+            showRedirection={showRedirection}
+            columnInfoForTable={columnInfoForTable}
+            showColumnInfo={showColumnInfo}
+            showDescription={showDescription}
+            foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
+            isCellEdit={isCellEdit}
+            scrollEventForColumnValus={scrollEventForColumnValus}
+            organizationId={organizationId}
+            foreignKeys={foreignKeys}
+            setReferencedColumnDetails={setReferencedColumnDetails}
+            shouldShowForeignKeyIcon={shouldShowForeignKeyIcon}
+            cellColumnName={cellColumnName}
+            isInitialForeignKeyDataLoaded={isInitialForeignKeyDataLoaded}
+            setIsInitialForeignKeyDataLoaded={setIsInitialForeignKeyDataLoaded}
+            totalRecords={totalRecords}
+            setTotalRecords={setTotalRecords}
+            pageNumber={pageNumber}
+            setPageNumber={setPageNumber}
+            tableName={tableName}
+            targetTable={targetTable}
+            actions={actions}
+            actionName={actionName}
+            referencedForeignKeyDetails={referencedForeignKeyDetails}
           />
         </Popover>
       }
@@ -142,16 +197,19 @@ const DropDownSelect = ({
               return;
             }
             setShowMenu((show) => !show);
+            if (onTableClick === true) {
+              fetchTables();
+            }
           }}
           className={cx(
             {
               'justify-content-start': !shouldCenterAlignText,
               'justify-content-centre': shouldCenterAlignText,
+              'border-1 tdb-dropdown-btn-foreignKeyAccess': foreignKeyAccess || foreignKeyAccessInRowForm,
+              'border-0 tdb-dropdown-btn': !foreignKeyAccess || !foreignKeyAccessInRowForm,
             },
-            'tdb-dropdown-btn',
             'gap-0',
             'w-100',
-            'border-0',
             'rounded-0',
             'position-relative',
             'font-weight-normal',
@@ -176,7 +234,9 @@ const DropDownSelect = ({
                 selected?.label
               )
             ) : showPlaceHolder ? (
-              <span style={{ color: '#9e9e9e' }}>Select..</span>
+              <span style={{ color: '#9e9e9e' }}>
+                {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
+              </span>
             ) : (
               ''
             )}

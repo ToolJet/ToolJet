@@ -103,7 +103,7 @@ export default function JoinSort({ darkMode }) {
                 />
               </Col>
               <Col sm="6" className="p-0 d-flex">
-                <div className="flex-grow-1 overflow-hidden">
+                <div className="flex-grow-1">
                   <DropDownSelect
                     buttonClasses="border border-end-0"
                     showPlaceHolder
