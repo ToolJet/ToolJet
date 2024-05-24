@@ -7,8 +7,12 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
-
-  const title = ` [${capitalize(logProps?.type)} ${logProps?.key}]`;
+  let titleLogType = logProps?.type;
+  // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
+  if (titleLogType === 'transformations') {
+    titleLogType = 'query';
+  }
+  const title = ` [${capitalize(titleLogType)} ${logProps?.key}]`;
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
