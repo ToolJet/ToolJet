@@ -1142,6 +1142,7 @@ export function runQuery(
               });
               resolve(finalData);
               onEvent(_self, 'onDataQueryFailure', queryEvents);
+              setPreviewLoading(false);
               return;
             }
           }
