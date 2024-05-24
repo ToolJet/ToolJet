@@ -168,11 +168,13 @@ export const PasswordInput = function PasswordInput({
   useEffect(() => {
     setExposedVariable('setText', async function (text) {
       setPasswordValue(text);
-      setExposedVariable('value', text).then(fireEvent('onChange'));
+      setExposedVariable('value', text);
+      fireEvent('onChange');
     });
     setExposedVariable('clear', async function () {
       setPasswordValue('');
-      setExposedVariable('value', '').then(fireEvent('onChange'));
+      setExposedVariable('value', '');
+      fireEvent('onChange');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setPasswordValue]);
