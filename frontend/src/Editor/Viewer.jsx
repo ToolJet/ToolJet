@@ -592,6 +592,7 @@ class ViewerComponent extends React.Component {
     const isMobileDevice = this.state.deviceWindowWidth < 600;
     useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     window.addEventListener('message', this.handleMessage);
+    window.addEventListener('resize', this.setCanvasAreaWidth);
     this.resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width } = entry.contentRect;
@@ -684,6 +685,10 @@ class ViewerComponent extends React.Component {
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
+  };
+
+  setCanvasAreaWidth = () => {
+    this.setState({ canvasAreaWidth: this.getCanvasWidth() });
   };
 
   computeCanvasBackgroundColor = () => {
@@ -810,6 +815,7 @@ class ViewerComponent extends React.Component {
   componentWillUnmount() {
     this.subscription && this.subscription.unsubscribe();
     this.resizeObserver.disconnect();
+    window.removeEventListener('resize', this.setCanvasAreaWidth);
   }
   render() {
     const {
@@ -989,7 +995,7 @@ class ViewerComponent extends React.Component {
                                   return onComponentOptionChanged(component, optionName, value);
                                 }}
                                 onComponentOptionsChanged={onComponentOptionsChanged}
-                                canvasWidth={canvasAreaWidth}
+                                widthOfCanvas={canvasAreaWidth}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
                                 darkMode={this.props.darkMode}
