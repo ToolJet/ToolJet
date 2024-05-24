@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
-// import { createRoot } from 'react-dom/client';
+
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';
@@ -8,7 +8,6 @@ import { App } from './App';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-// import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
 const AppWithProfiler = Sentry.withProfiler(App);
@@ -21,7 +20,6 @@ appService
     const path = config?.SUB_PATH || '/';
     i18n
       .use(Backend)
-      // .use(LanguageDetector)
       .use(initReactI18next)
       .init({
         load: 'languageOnly',

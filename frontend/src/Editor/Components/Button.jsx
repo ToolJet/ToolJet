@@ -20,7 +20,7 @@ export const Button = function Button(props) {
   } = styles;
 
   const { loadingState, disabledState } = properties;
-  const [label, setLabel] = useState(properties.text);
+  const [label, setLabel] = useState(typeof properties.text === 'string' ? properties.text : '');
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
@@ -29,8 +29,10 @@ export const Button = function Button(props) {
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
 
   useEffect(() => {
-    setLabel(properties.text);
-    setExposedVariable('buttonText', properties.text);
+    if (typeof properties.text === 'string') {
+      setLabel(properties.text);
+      setExposedVariable('buttonText', properties.text);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text]);
 

@@ -50,7 +50,8 @@
         "type": "codehinter",
         "placeholder": "{ \"name\": \"\" }",
         "description": "Enter query",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "index_document": {
@@ -72,7 +73,8 @@
         "mode": "javascript",
         "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
         "description": "Enter body",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "get": {
@@ -86,7 +88,6 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter index"
-        
       },
       "id": {
         "label": "Id",
@@ -130,7 +131,8 @@
         "mode": "javascript",
         "placeholder": "{ doc: { page_count: 225 } }",
         "description": "Enter body",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     }
   }

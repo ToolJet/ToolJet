@@ -1,6 +1,6 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { getMonth, getYear } from 'date-fns';
+import moment from 'moment';
 import { range } from 'lodash';
 
 const CustomDatePickerHeader = ({
@@ -27,7 +27,7 @@ const CustomDatePickerHeader = ({
     'December',
   ];
 
-  const years = range(1990, getYear(new Date()) + 1, 1);
+  const years = range(1990, moment(new Date()).year() + 1, 1);
 
   return (
     <>
@@ -51,7 +51,7 @@ const CustomDatePickerHeader = ({
         </button>
         <div style={{ marginRight: '8px' }}>
           <select
-            value={months[getMonth(date)]}
+            value={months[moment(date).month()]}
             onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
             className="tj-datepicker-widget-month-selector"
           >
@@ -62,7 +62,7 @@ const CustomDatePickerHeader = ({
             ))}
           </select>
           <select
-            value={getYear(date)}
+            value={moment(date).year()}
             onChange={({ target: { value } }) => changeYear(value)}
             className="tj-datepicker-widget-year-selector"
             style={{ padding: '4px 6px' }}

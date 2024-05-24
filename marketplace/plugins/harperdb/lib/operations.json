@@ -28,7 +28,8 @@
         "key": "sql_query",
         "type": "codehinter",
         "description": "Enter your SQL query",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "nosql": {
@@ -90,7 +91,8 @@
           "mode": "javascript",
           "description": "Enter records to insert",
           "placeholder": "[{id: 1, name: 'Jose', age: 24}]",
-          "height": "150px"
+          "height": "150px",
+          "editorType": "extendedSingleLine"
         }
       },
       "update": {
@@ -119,7 +121,8 @@
           "mode": "javascript",
           "description": "Enter records to update",
           "placeholder": "[{id: 1, age: 25}]",
-          "height": "150px"
+          "height": "150px",
+          "editorType": "extendedSingleLine"
         }
       },
       "delete": {
@@ -148,7 +151,8 @@
           "mode": "javascript",
           "description": "Enter hash attribute - primary key to delete records",
           "placeholder": "[123, 65]",
-          "height": "150px"
+          "height": "150px",
+          "editorType": "extendedSingleLine"
         }
       },
       "search_by_hash": {
@@ -305,6 +309,7 @@
           "mode": "javascript",
           "description": "Enter Conditions to Filter",
           "height": "150px",
+          "editorType": "extendedSingleLine",
           "placeholder": "[{'search_attribute': 'age', 'search_type': 'between', 'search_value': [25, 29]}, {'search_attribute': 'weight_lbs', 'search_type': 'greater_than', 'search_value': 40}]"
         }
       }
