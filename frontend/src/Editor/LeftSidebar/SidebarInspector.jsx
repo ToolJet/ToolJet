@@ -142,7 +142,7 @@ export const LeftSidebarInspector = ({
             iconName: 'disable',
             jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
             className: 'component-icon',
-            tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
             isInfoIcon: true,
           });
         }
@@ -153,6 +153,42 @@ export const LeftSidebarInspector = ({
             jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        return icons;
+      }
+
+      if (!_.isEmpty(component) && component.component === 'Button') {
+        const icons = [];
+
+        if (componentExposedVariables.disable) {
+          icons.push({
+            iconName: 'disable',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        if (componentExposedVariables.visibility) {
+          icons.push({
+            iconName: 'visibility',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        if (componentExposedVariables.loading) {
+          icons.push({
+            iconName: 'loading',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setLoading as an alternative',
             isInfoIcon: true,
           });
         }

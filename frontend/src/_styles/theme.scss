@@ -2900,9 +2900,32 @@ input:focus-visible {
   }
 }
 
-.jet-button {
+.jet-outline-button {
+  outline: none;
+  border: 1px solid;
+
+
   &.btn-custom:hover {
     background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
+
+  }
+
+}
+
+.jet-button {
+  outline: none;
+  border: 1px solid;
+
+  &.btn-custom:hover {
+    background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
   }
 }
 

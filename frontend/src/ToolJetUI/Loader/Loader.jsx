@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Loader = ({ width, style, absolute = true }) => {
+const Loader = ({ width, style, absolute = true, color = '#3E63DD' }) => {
   const viewBoxSize = 240; // Increase the viewBox size as needed
 
   return (
@@ -11,7 +11,7 @@ const Loader = ({ width, style, absolute = true }) => {
         height={width}
         viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
         fill="none"
-        color="#3E63DD"
+        color={color}
       >
         <defs>
           <linearGradient id="spinner-secondHalf">

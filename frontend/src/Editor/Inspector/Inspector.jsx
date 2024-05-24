@@ -52,7 +52,7 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
+const NEW_REVAMPED_COMPONENTS = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table', 'Button'];
 
 export const Inspector = ({
   componentDefinitionChanged,
