@@ -14,6 +14,88 @@ import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import ArrowRight from '@/TooljetDatabase/Icons/ArrowRight.svg';
 
+function CustomMenuList({ ...props }) {
+  const { selectProps } = props;
+  const { tjdbMenuListProps } = selectProps;
+
+  const selectedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isSelected) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const focusedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isFocused) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const handleScrollThrottled = throttle(tjdbMenuListProps.handleInfiniteScroll, 500);
+  return (
+    <React.Fragment>
+      <MenuList
+        {...props}
+        onAdd={tjdbMenuListProps.onAdd}
+        addBtnLabel={tjdbMenuListProps.addBtnLabel}
+        emptyError={tjdbMenuListProps.emptyError}
+        foreignKeyAccess={tjdbMenuListProps.foreignKeyAccess}
+        columnInfoForTable={tjdbMenuListProps.columnInfoForTable}
+        showColumnInfo={tjdbMenuListProps.showColumnInfo}
+        foreignKeyAccessInRowForm={tjdbMenuListProps.foreignKeyAccessInRowForm}
+        scrollEventForColumnValues={tjdbMenuListProps.scrollEventForColumnValues}
+        scrollContainerRef={tjdbMenuListProps.scrollContainerRef}
+        foreignKeys={tjdbMenuListProps.foreignKeys}
+        cellColumnName={tjdbMenuListProps.cellColumnName}
+        isLoadingFKDetails={tjdbMenuListProps.isLoadingFKDetails}
+        handleScrollThrottled={handleScrollThrottled}
+      />
+      {tjdbMenuListProps.foreignKeyAccess && tjdbMenuListProps.showDescription && tjdbMenuListProps.actions && (
+        <>
+          <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+          <div
+            style={{
+              height: 'fit-content',
+              padding: '8px 12px',
+            }}
+          >
+            <div className="tj-header-h8 tj-text">
+              {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+            </div>
+            <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+              {
+                <GenerateActionsDescription
+                  targetTable={
+                    tjdbMenuListProps.targetTable?.value ||
+                    tjdbMenuListProps.targetTable?.label ||
+                    tjdbMenuListProps.targetTable?.name
+                  }
+                  sourceTable={tjdbMenuListProps.tableName}
+                  actionName={tjdbMenuListProps.actionName}
+                  label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                />
+              }
+            </span>
+          </div>
+        </>
+      )}
+    </React.Fragment>
+  );
+}
+
+const customComponents = { MenuList: CustomMenuList };
+
 function DataSourceSelect({
   darkMode,
   isDisabled,
@@ -250,8 +332,27 @@ function DataSourceSelect({
         menuIsOpen
         autoFocus
         hideSelectedOptions={false}
+        tjdbMenuListProps={{
+          handleInfiniteScroll: handleInfiniteScroll,
+          onAdd: onAdd,
+          addBtnLabel: addBtnLabel,
+          emptyError: emptyError,
+          foreignKeyAccess: foreignKeyAccess,
+          columnInfoForTable: columnInfoForTable,
+          showColumnInfo: showColumnInfo,
+          foreignKeyAccessInRowForm: foreignKeyAccessInRowForm,
+          scrollEventForColumnValues: scrollEventForColumnValues,
+          scrollContainerRef: scrollContainerRef,
+          foreignKeys: foreignKeys,
+          cellColumnName: cellColumnName,
+          isLoadingFKDetails: isLoadingFKDetails,
+          showDescription: showDescription,
+          actions: actions,
+          targetTable: targetTable,
+          tableName: tableName,
+          actionName: actionName,
+        }}
         components={{
-          // ...(isMulti && {
           Option: ({ children, ...props }) => {
             return (
               <components.Option {...props}>
@@ -269,7 +370,6 @@ function DataSourceSelect({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        // width: '20px',
                       }}
                     >
                       <Form.Check // prettier-ignore
@@ -277,7 +377,6 @@ function DataSourceSelect({
                         id={props.value}
                         className="me-1"
                         checked={props.isSelected}
-                        // label={`default ${type}`}
                       />
                     </div>
                   )}
@@ -362,94 +461,7 @@ function DataSourceSelect({
               </components.Option>
             );
           },
-          // }),
-          MenuList: useCallback(
-            (props) => {
-              const selectedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isSelected) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-
-              const focusedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isFocused) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-
-              const handleScrollThrottled = throttle(handleInfiniteScroll, 500);
-
-              return (
-                <React.Fragment>
-                  <MenuList
-                    {...props}
-                    onAdd={onAdd}
-                    addBtnLabel={addBtnLabel}
-                    emptyError={emptyError}
-                    foreignKeyAccess={foreignKeyAccess}
-                    columnInfoForTable={columnInfoForTable}
-                    showColumnInfo={showColumnInfo}
-                    foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                    scrollEventForColumnValues={scrollEventForColumnValues}
-                    scrollContainerRef={scrollContainerRef}
-                    foreignKeys={foreignKeys}
-                    cellColumnName={cellColumnName}
-                    isLoadingFKDetails={isLoadingFKDetails}
-                    handleScrollThrottled={handleScrollThrottled}
-                  />
-                  {foreignKeyAccess && showDescription && actions && (
-                    <>
-                      <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
-                      <div
-                        style={{
-                          // minHeight: '140px',
-                          height: 'fit-content',
-                          padding: '8px 12px',
-                        }}
-                      >
-                        <div className="tj-header-h8 tj-text">
-                          {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                        </div>
-                        <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
-                          {
-                            <GenerateActionsDescription
-                              targetTable={targetTable?.value || targetTable?.label || targetTable?.name}
-                              sourceTable={tableName}
-                              actionName={actionName}
-                              label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                            />
-                          }
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </React.Fragment>
-              );
-            },
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            [
-              onAdd,
-              addBtnLabel,
-              emptyError,
-              pageNumber,
-              searchPageNumber,
-              searchValue,
-              // isInitialForeignKeyDataLoaded,
-              isLoadingFKDetails,
-            ]
-          ),
+          ...customComponents,
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
@@ -458,12 +470,9 @@ function DataSourceSelect({
         styles={{
           control: (style) => ({
             ...style,
-            // width: '240px',
             background: 'var(--base)',
             color: 'var(--slate9)',
             borderWidth: '0',
-            // borderBottom: '1px solid var(--slate7)',
-            // marginBottom: '1px',
             boxShadow: 'none',
             borderRadius: '4px 4px 0 0',
             borderBottom: '1px solid var(--slate-05, #E6E8EB)',
@@ -497,8 +506,6 @@ function DataSourceSelect({
             ...style,
             fontSize: '100%',
             color: 'var(--slate-11, #687076)',
-            // font-size: 12px;
-            // font-style: normal;
             fontWeight: 500,
             lineHeight: '20px',
             textTransform: 'uppercase',
@@ -557,7 +564,6 @@ function DataSourceSelect({
         maxMenuHeight={400}
         minMenuHeight={300}
         value={selected}
-        // inputValue={searchValue}
         onInputChange={(value) => {
           handleChange(value);
         }}
