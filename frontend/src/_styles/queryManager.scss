@@ -381,8 +381,9 @@ $border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 8px 12px;
+        padding: 8px;
         gap: 12px;
+        flex-direction: row-reverse;
 
         .queries-search {
           height: 28px !important;

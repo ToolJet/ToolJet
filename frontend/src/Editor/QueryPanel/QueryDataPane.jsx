@@ -93,27 +93,27 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
     <div className="data-pane">
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
         <div className="queries-header row d-flex align-items-center justify-content-between">
-          <div className="col-auto d-flex">
-            <button
-              onClick={() => {
-                showSearchBox && setSearchTermForFilters('');
-                setShowSearchBox((showSearchBox) => !showSearchBox);
-              }}
-              className={cx('btn-query-panel-header mx-1', {
-                active: showSearchBox,
-              })}
-              data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Open quick search"
-              data-cy="query-search-button"
-            >
-              <Search width="14" height="14" fill="var(--slate12)" />
-            </button>
+          <div className="col-auto d-flex" style={{ gap: '2px' }}>
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
               clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
+            <button
+              onClick={() => {
+                showSearchBox && setSearchTermForFilters('');
+                setShowSearchBox((showSearchBox) => !showSearchBox);
+              }}
+              className={cx('btn-query-panel-header', {
+                active: showSearchBox,
+              })}
+              data-tooltip-id="tooltip-for-query-panel-header-btn"
+              data-tooltip-content="Open quick search"
+              data-cy="query-search-button"
+            >
+              <Search width="14" height="14" fill="var(--icons-default)" />
+            </button>
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
           <AddDataSourceButton darkMode={darkMode} />
@@ -252,11 +252,10 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             }
             setShowMenu((show) => !show);
           }}
-          className="px-1 pe-3 ps-2 gap-0"
+          style={{ height: '28px', width: '28px', padding: '0px' }}
           data-cy={`show-ds-popover-button`}
         >
-          <Plus style={{ height: '16px' }} />
-          Add
+          <Plus style={{ height: '14px' }} fill="var(--icons-strong)" />
         </ButtonSolid>
       </span>
     </OverlayTrigger>
