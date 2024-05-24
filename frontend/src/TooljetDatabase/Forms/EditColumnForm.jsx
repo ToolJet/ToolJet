@@ -571,11 +571,13 @@ const ColumnForm = ({
               message={
                 dataType === 'serial'
                   ? 'Foreign key relation cannot be created for serial type column'
+                  : dataType === 'boolean'
+                  ? 'Foreign key relation cannot be created for boolean type column'
                   : 'Fill in column details to create a foreign key relation'
               }
               placement="top"
               tooltipClassName="tootip-table"
-              show={dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
+              show={dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName) || dataType === 'boolean'}
             >
               <div className="col-1">
                 <label className={`form-switch`}>
@@ -594,7 +596,11 @@ const ColumnForm = ({
                       }
                     }}
                     disabled={
-                      dataType?.value === 'serial' || dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName)
+                      dataType?.value === 'serial' ||
+                      dataType === 'serial' ||
+                      isEmpty(dataType) ||
+                      isEmpty(columnName) ||
+                      dataType === 'boolean'
                     }
                   />
                 </label>
