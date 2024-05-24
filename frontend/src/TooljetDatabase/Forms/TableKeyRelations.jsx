@@ -245,7 +245,7 @@ function SourceKeyRelation({
             <Source width={18} height={18} />
             <p className="mb-0 source-title">SOURCE</p>
           </div>
-          <span className="source-description">The current table on which foreign Key constraint is being added</span>
+          <span className="source-description">The current table on which foreign key constraint is being added</span>
         </div>
         <TableDetailsDropdown
           firstColumnName={'Table'}
