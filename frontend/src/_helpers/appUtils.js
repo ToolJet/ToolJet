@@ -356,7 +356,6 @@ export async function runTransformation(
   const data = rawData;
 
   let result = [];
-
   const currentState = getCurrentState() || {};
 
   if (transformationLanguage === 'python') {
@@ -368,7 +367,7 @@ export async function runTransformation(
   if (transformationLanguage === 'javascript') {
     try {
       const evalFunction = Function(
-        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page'],
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants'],
         transformation
       );
 
@@ -380,7 +379,8 @@ export async function runTransformation(
         currentState.queries,
         currentState.globals,
         currentState.variables,
-        currentState.page
+        currentState.page,
+        currentState.constants
       );
     } catch (err) {
       const $error = err.name;

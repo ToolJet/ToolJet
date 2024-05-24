@@ -7,7 +7,7 @@ import { Pagination } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
-import { humanizeifDefaultGroupName } from '@/_helpers/utils';
+import { humanizeifDefaultGroupName, decodeEntities } from '@/_helpers/utils';
 import { ResetPasswordModal } from '@/_components/ResetPasswordModal';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { NoActiveWorkspaceModal } from './NoActiveWorkspaceModal';
@@ -135,7 +135,7 @@ const UsersTable = ({
                           className="mx-3 tj-text tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
-                          <OverflowTooltip>{user.name}</OverflowTooltip>
+                          <OverflowTooltip>{decodeEntities(user.name)}</OverflowTooltip>
                         </span>
                       </td>
                       <td className="text-muted">

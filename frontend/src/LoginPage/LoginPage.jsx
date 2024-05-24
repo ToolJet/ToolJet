@@ -129,13 +129,14 @@ class LoginPageComponent extends React.Component {
     const noLoginMethodsEnabled =
       !configs?.form && !configs?.git && !configs?.google && !configs?.openid && !configs?.ldap && !configs?.saml;
 
-    const shouldShowLoginMethods =
+    const isAnySSOEnabled =
       configs?.google?.enabled ||
       configs?.git?.enabled ||
-      configs?.form?.enabled ||
       configs?.ldap?.enabled ||
       configs?.saml?.enabled ||
       configs?.openid?.enabled;
+
+    const shouldShowLoginMethods = configs?.form?.enabled || isAnySSOEnabled;
     const workspaceSignUpEnabled = this.organizationId && configs?.enable_sign_up;
     const instanceSignUpEnabled = !this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up);
     const isSignUpCTAEnabled = workspaceSignUpEnabled || instanceSignUpEnabled;
@@ -216,7 +217,7 @@ class LoginPageComponent extends React.Component {
                           setRedirectUrlToCookie={() => this.setRedirectUrlToCookie()}
                           buttonText={'Sign in with'}
                         />
-                        {shouldShowLoginMethods && configs?.form?.enabled && (
+                        {configs?.form?.enabled && isAnySSOEnabled && (
                           <div className="separator-onboarding ">
                             <div className="mt-2 separator" data-cy="onboarding-separator">
                               <h2>

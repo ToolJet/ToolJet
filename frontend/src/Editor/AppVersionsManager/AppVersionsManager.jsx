@@ -8,6 +8,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { ToolTip } from '@/_components/ToolTip';
+import { decodeEntities } from '@/_helpers/utils';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
@@ -125,7 +126,7 @@ export const AppVersionsManager = function ({
           setAppDefinitionFromVersion(newVersionDef, selectedEnvironment);
         }
         toast.dismiss(deleteingToastId);
-        toast.success(`Version - ${versionName} Deleted`);
+        toast.success(`Version - ${decodeEntities(versionName)} Deleted`);
         resetDeleteModal();
         setGetAppVersionStatus(appVersionLoadingStatus.loaded);
       },
@@ -152,7 +153,7 @@ export const AppVersionsManager = function ({
               })}
               style={{ maxWidth: '100%' }}
             >
-              {appVersion.name}
+              {decodeEntities(appVersion.name)}
             </div>
           </ToolTip>
         </div>

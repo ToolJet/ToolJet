@@ -17,13 +17,18 @@ export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
     redirectToDashboard();
   };
 
-  const backToLinkProps = isWorkflows ? { to: getPrivateRoute('workflows') } : { onClick: handleBackClick };
+  const backToLinkProps = { to: getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard') };
 
   const getOverlay = () => {
     const { admin } = authenticationService?.currentSessionValue ?? {};
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
-        <Link className="dropdown-item tj-text tj-text-xsm" data-cy="back-to-app-option" {...backToLinkProps}>
+        <Link
+          className="dropdown-item tj-text tj-text-xsm"
+          data-cy="back-to-app-option"
+          onClick={handleBackClick}
+          {...backToLinkProps}
+        >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>
