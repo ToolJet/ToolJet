@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const ReleaseVersionButton = function DeployVersionButton({ appId, appName, fetchApp, onVersionRelease }) {
+export const ReleaseVersionButton = function DeployVersionButton({ onVersionRelease }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
@@ -24,17 +24,15 @@ export const ReleaseVersionButton = function DeployVersionButton({ appId, appNam
     setShowPageDeletionConfirmation(false);
     setIsReleasing(true);
 
+    const { id: versionToBeReleased, name, app_id, appId } = editingVersion;
+
     appsService
-      .saveApp(appId, {
-        name: appName,
-        current_version_id: editingVersion.id,
-      })
+      .releaseVersion(app_id || appId, versionToBeReleased)
       .then(() => {
-        toast(`Version ${editingVersion.name} released`, {
+        toast(`Version ${name} released`, {
           icon: '🚀',
         });
-        fetchApp && fetchApp();
-        onVersionRelease(editingVersion.id);
+        onVersionRelease(versionToBeReleased);
         setIsReleasing(false);
       })
       .catch((_error) => {

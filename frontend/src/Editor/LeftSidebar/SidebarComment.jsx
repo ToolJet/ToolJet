@@ -30,13 +30,14 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
   const [notifications, setNotifications] = React.useState([]);
 
   React.useEffect(() => {
-    if (appVersionsId && appId) {
+    if (isActive) {
       commentsService.getNotifications(appId, false, appVersionsId, currentPageId).then(({ data }) => {
         setNotifications(data);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appVersionsId, currentPageId, appId]);
+  }, [isActive]);
+
   return (
     <LeftSidebarItem
       commentBadge={notifications?.length > 0}
