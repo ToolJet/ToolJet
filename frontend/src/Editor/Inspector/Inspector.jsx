@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
@@ -16,7 +15,7 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
@@ -102,13 +101,19 @@ export const Inspector = ({
     shallow
   );
   const { t } = useTranslation();
-  useHotkeys('backspace', () => {
-    if (isVersionReleased) return;
-    setWidgetDeleteConfirmation(true);
+  useHotkeys(
+    'backspace',
+    () => {
+      if (isVersionReleased) return;
+      setWidgetDeleteConfirmation(true);
+    },
+    { scopes: 'editor' }
+  );
+  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY), {
+    scopes: 'editor',
   });
-  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
-  const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
+  const componentMeta = JSON.parse(JSON.stringify(allComponents?.[selectedComponentId]?.component));
 
   const isMounted = useMounted();
 
@@ -324,13 +329,9 @@ export const Inspector = ({
         paramUpdated={paramUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
-        // eventUpdated={eventUpdated}
-        // eventOptionUpdated={eventOptionUpdated}
         components={allComponents}
         currentState={currentState}
         darkMode={darkMode}
-        // eventsChanged={eventsChanged}
-        // apps={apps} !check
         pages={pages}
         allComponents={allComponents}
       />
