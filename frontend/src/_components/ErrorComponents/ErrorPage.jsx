@@ -89,8 +89,8 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
                 style={{ marginRight: '8px' }}
               >
                 <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
+                  fillRule="evenodd"
+                  clipRule="evenodd"
                   d="M9.04781 4.74972C11.4683 4.12777 13.9525 5.09359 15.3103 7.06516L9.04781 4.74972ZM15.3103 7.06516H13.0002C12.54 7.06516 12.1669 7.43826 12.1669 7.8985C12.1669 8.35873 12.54 8.73183 13.0002 8.73183H16.6754C16.6882 8.73213 16.701 8.73213 16.7138 8.73183H17.1669C17.6271 8.73183 18.0002 8.35873 18.0002 7.8985V3.73183C18.0002 3.27159 17.6271 2.8985 17.1669 2.8985C16.7066 2.8985 16.3335 3.27159 16.3335 3.73183V5.65205C14.5274 3.42705 11.5358 2.38951 8.6328 3.13556L8.63262 3.1356C7.31403 3.47477 6.11263 4.16649 5.15728 5.13656C4.20193 6.10663 3.52867 7.31846 3.2097 8.64209C2.89073 9.96571 2.93808 11.3512 3.34669 12.65C3.75529 13.9487 4.50972 15.1118 5.52907 16.0143C6.54843 16.9169 7.79425 17.525 9.13292 17.7733C10.4716 18.0217 11.8526 17.9009 13.1279 17.4241C14.4032 16.9472 15.5246 16.1322 16.3718 15.0664C17.2191 14.0006 17.7603 12.7243 17.9373 11.3744C17.9971 10.918 17.6757 10.4996 17.2194 10.4397C16.7631 10.3799 16.3446 10.7013 16.2848 11.1576C16.1471 12.2076 15.7262 13.2003 15.0672 14.0292C14.4082 14.8582 13.536 15.4921 12.5441 15.863C11.5523 16.2339 10.4781 16.3278 9.43693 16.1346C8.39574 15.9415 7.42677 15.4685 6.63394 14.7665C5.84111 14.0645 5.25433 13.1599 4.93653 12.1498C4.61873 11.1396 4.5819 10.062 4.82998 9.03255C5.07807 8.00306 5.60172 7.06053 6.34477 6.30603C7.08778 5.55157 8.02213 5.01359 9.04763 4.74977"
                   fill="rgba(var(--tblr-btn-color), 1)"
                 />
@@ -107,13 +107,17 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
               {t('globals.workspace-modal.continue-btn', 'Open app')}
             </button>
           )}
-          <button
-            className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
-            onClick={() => redirectToDashboard()}
-            data-cy="back-to-home-button"
-          >
-            {t('globals.workspace-modal.continue-btn', errorMsg?.cta)}
-          </button>
+          {errorMsg?.cta ? (
+            <button
+              className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
+              onClick={() => redirectToDashboard()}
+              data-cy="back-to-home-button"
+            >
+              {t('globals.workspace-modal.continue-btn', errorMsg.cta)}
+            </button>
+          ) : (
+            <span className="pb-1"></span>
+          )}
         </Modal.Footer>
       </Modal>
     </div>

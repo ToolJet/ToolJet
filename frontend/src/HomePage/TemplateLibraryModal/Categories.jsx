@@ -3,10 +3,14 @@ import FolderList from '@/_ui/FolderList/FolderList';
 
 const categoryTitles = {
   all: 'All categories',
-  sales: 'Sales',
-  'product-management': 'Product management',
+  'customer-support': 'Customer support',
+  'data-and-analytics': 'Data and analytics',
+  'developer-utilities': 'Developer utilities',
+  'financial-services': 'Financial services',
+  'human-resources': 'Human resources',
   operations: 'Operations',
-  'data-and-analytics': 'Data and Analytics',
+  'product-management': 'Product management',
+  'sales-and-marketing': 'Sales and marketing',
 };
 
 export default function Categories(props) {
@@ -18,11 +22,22 @@ export default function Categories(props) {
           selectedItem={category.id === selectedCategory.id}
           onClick={() => selectCategory(category)}
           key={category.id}
+          dataCy={`${String(categoryTitles[category.id]).toLowerCase().replace(/\s+/g, '-')}`}
         >
           <div className="d-flex template-list-items-wrap">
-            <p className="tj-text tj-text-sm">{categoryTitles[category.id]}</p>
+            <p
+              className="tj-text tj-text-sm"
+              data-cy={`${String(categoryTitles[category.id]).toLowerCase().replace(/\s+/g, '-')}-category-title`}
+            >
+              {categoryTitles[category.id]}
+            </p>
           </div>
-          <p className="tj-text tj-text-sm">{category.count}</p>
+          <p
+            className="tj-text tj-text-sm"
+            data-cy={`${String(categoryTitles[category.id]).toLowerCase().replace(/\s+/g, '-')}-category-count`}
+          >
+            {category.count}
+          </p>
         </FolderList>
       ))}
     </div>

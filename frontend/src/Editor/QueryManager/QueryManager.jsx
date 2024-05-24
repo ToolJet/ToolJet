@@ -4,7 +4,12 @@ import { QueryManagerHeader } from './Components/QueryManagerHeader';
 import { QueryManagerBody } from './Components/QueryManagerBody';
 import { runQuery } from '@/_helpers/appUtils';
 import { defaultSources } from './constants';
-import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_stores/dataSourcesStore';
+import {
+  useDataSources,
+  useGlobalDataSources,
+  useLoadingDataSources,
+  useSampleDataSource,
+} from '@/_stores/dataSourcesStore';
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { CodeHinterContext } from '@/Editor/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
@@ -12,6 +17,7 @@ import { resolveReferences } from '@/_helpers/utils';
 const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
   const loadingDataSources = useLoadingDataSources();
   const dataSources = useDataSources();
+  const sampleDataSource = useSampleDataSource();
   const globalDataSources = useGlobalDataSources();
   const queryToBeRun = useQueryToBeRun();
   const selectedQuery = useSelectedQuery();
@@ -32,9 +38,9 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
 
   useEffect(() => {
     if (selectedQuery) {
-      const selectedDS = [...dataSources, ...globalDataSources].find(
-        (datasource) => datasource.id === selectedQuery?.data_source_id
-      );
+      const selectedDS = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
+        .filter(Boolean)
+        .find((datasource) => datasource.id === selectedQuery?.data_source_id);
       //TODO: currently type is not taken into account. May create issues in importing REST apis. to be revamped when import app is revamped
       if (
         selectedQuery?.kind in defaultSources &&

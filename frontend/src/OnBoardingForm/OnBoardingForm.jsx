@@ -25,6 +25,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companySize: '',
     phoneNumber: '',
   });
+  const source = new URLSearchParams(location?.search).get('source');
 
   const pageProps = {
     formData,
@@ -44,6 +45,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           companySize: formData.companySize,
           role: formData.role,
           token: token,
+          source,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,
@@ -208,9 +210,9 @@ export function Page1({ formData, setFormData, setPage, page, setCompleted, isLo
 
   return (
     <div className="onboarding-pages-wrapper">
-      {ON_BOARDING_ROLES.map((field) => (
+      {ON_BOARDING_ROLES.map((field, index) => (
         <div key={field}>
-          <OnBoardingRadioInput {...props} field={field} />
+          <OnBoardingRadioInput {...props} field={field} index={index} />
         </div>
       ))}
       <ContinueButton {...btnProps} />
@@ -230,9 +232,9 @@ export function Page2({ formData, setFormData, setPage, page, setCompleted, isLo
   };
   return (
     <div className="onboarding-pages-wrapper">
-      {ON_BOARDING_SIZE.map((field) => (
+      {ON_BOARDING_SIZE.map((field, index) => (
         <div key={field}>
-          <OnBoardingRadioInput {...props} field={field} />
+          <OnBoardingRadioInput {...props} field={field} index={index} />
         </div>
       ))}
       <ContinueButton {...btnProps} />

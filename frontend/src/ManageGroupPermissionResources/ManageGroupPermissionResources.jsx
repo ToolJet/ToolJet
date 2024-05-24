@@ -353,7 +353,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         .replace(/\s+/g, '-')}-group-name-update-link`}
                       className="tj-text-xsm font-weight-500 edit-group"
                     >
-                      <SolidIcon fill="#28303F" name="editrectangle" width="14" />
+                      <SolidIcon name="editrectangle" width="14" />
                       Rename
                     </Link>
                   </div>

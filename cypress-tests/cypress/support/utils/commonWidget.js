@@ -40,13 +40,16 @@ export const openEditorSidebar = (widgetName = "") => {
 export const verifyAndModifyToggleFx = (
   paramName,
   defaultValue,
-  toggleModification = true
+  toggleModification = true,
+  hiddenFx = true
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
     paramName
   );
-  cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).realHover();
+  if (hiddenFx) {
+    cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).realHover();
+  }
   cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
@@ -61,11 +64,14 @@ export const addDefaultEventHandler = (message) => {
   cy.get(commonWidgetSelector.addEventHandlerLink)
     .should("contain.text", commonWidgetText.addEventHandlerLink)
     .click();
+  cy.intercept("PUT", "events").as("events");
   cy.get(commonWidgetSelector.eventHandlerCard).click();
+  cy.wait(1000);
   cy.get(commonWidgetSelector.alertMessageInputField)
     .find('[data-cy*="-input-field"]')
     .eq(0)
     .clearAndTypeOnCodeMirror(message);
+  cy.get('[data-cy="run-only-if-input-field"]').click({ force: true });
 };
 
 export const addAndVerifyTooltip = (widgetSelector, message) => {
@@ -94,6 +100,7 @@ export const verifyComponentValueFromInspector = (
   value,
   openStatus = "closed"
 ) => {
+  cy.wait(3000);
   cy.get(commonWidgetSelector.sidebarinspector).click();
   if (openStatus == "closed") {
     cy.get(commonWidgetSelector.inspectorNodeComponents).click();
@@ -359,7 +366,9 @@ export const addTextWidgetToVerifyValue = (customfunction) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("Text", 600, 80);
   openEditorSidebar("text1");
-  verifyAndModifyParameter("Text", codeMirrorInputLabel(customfunction));
+  cy.get(
+    '[data-cy="textcomponenttextinput-input-field"] '
+  ).clearAndTypeOnCodeMirror(codeMirrorInputLabel(customfunction));
   cy.forceClickOnCanvas();
   cy.waitForAutoSave();
 };

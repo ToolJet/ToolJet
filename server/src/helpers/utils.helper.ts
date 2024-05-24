@@ -200,26 +200,42 @@ export const generateInviteURL = (
   invitationToken: string,
   organizationToken?: string,
   organizationId?: string,
-  source?: string
+  source?: string,
+  redirectTo?: string
 ) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-
-  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${
-    organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
-  }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
+  const baseURL = `${host}${subpath ? subpath : '/'}`;
+  const inviteSupath = `invitations/${invitationToken}`;
+  const organizationSupath = `${organizationToken ? `/workspaces/${organizationToken}` : ''}`;
+  let queryString = new URLSearchParams({
+    ...(organizationId && { oid: organizationId }),
+    ...(source && { source }),
+    ...(redirectTo && { redirectTo }),
+  }).toString();
+  queryString = queryString ? `?${queryString}` : '';
+  return `${baseURL}${inviteSupath}${organizationSupath}${queryString}`;
 };
 
-export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
+export const generateOrgInviteURL = (
+  organizationToken: string,
+  organizationId?: string,
+  fullUrl = true,
+  redirectTo?: string
+) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
-  }`;
+  }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
 
 export function extractMajorVersion(version) {
   return semver.valid(semver.coerce(version));
+}
+
+export function checkVersionCompatibility(importingVersion) {
+  return semver.gte(semver.coerce(globalThis.TOOLJET_VERSION), semver.coerce(importingVersion));
 }
 
 /**
@@ -236,16 +252,36 @@ export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
   return semver.satisfies(semver.coerce(version), '>= 2.24.0');
 }
 
-export const getMaxCopyNumber = (existNameList) => {
+export function isVersionGreaterThanOrEqual(version1: string, version2: string) {
+  if (!version1) return false;
+
+  const v1Parts = version1.split('-')[0].split('.').map(Number);
+  const v2Parts = version2.split('-')[0].split('.').map(Number);
+
+  for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+    const v1Part = +v1Parts[i] || 0;
+    const v2Part = +v2Parts[i] || 0;
+
+    if (v1Part < v2Part) {
+      return false;
+    } else if (v1Part > v2Part) {
+      return true;
+    }
+  }
+
+  return true;
+}
+
+export const getMaxCopyNumber = (existNameList, splitChar = '_') => {
   if (existNameList.length == 0) return '';
   const filteredNames = existNameList.filter((name) => {
-    const parts = name.group.split('_');
+    const parts = name.split(splitChar);
     return !isNaN(parseInt(parts[parts.length - 1]));
   });
 
   // Extracting numbers from the filtered names
   const numbers = filteredNames.map((name) => {
-    const parts = name.group.split('_');
+    const parts = name.split(splitChar);
     return parseInt(parts[parts.length - 1]);
   });
 
@@ -253,4 +289,30 @@ export const getMaxCopyNumber = (existNameList) => {
   // Creating the new name with maxNumber + 1
   const maxNumber = Math.max(...numbers, 0);
   return maxNumber + 1;
+};
+
+export const fullName = (firstName: string, lastName: string) => `${firstName || ''}${lastName ? ` ${lastName}` : ''}`;
+
+export const isValidDomain = (email: string, restrictedDomain: string): boolean => {
+  if (!email) {
+    return false;
+  }
+  const domain = email.substring(email.lastIndexOf('@') + 1);
+
+  if (!restrictedDomain) {
+    return true;
+  }
+  if (!domain) {
+    return false;
+  }
+  if (
+    !restrictedDomain
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e)
+      .includes(domain)
+  ) {
+    return false;
+  }
+  return true;
 };

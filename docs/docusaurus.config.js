@@ -10,7 +10,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/icon.svg',
+  favicon: 'img/tooljet-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
@@ -122,13 +122,16 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.27.0',
+          lastVersion: '2.36.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
         sitemap: {
-          ignorePatterns: ['/1.x.x/', '/docs/1.x.x/'],
+          changefreq: 'weekly',
+          priority: 0.5,
+          ignorePatterns: ['/docs/1.x.x/**'],
+          filename: 'sitemap.xml',
         },
         googleTagManager: isProd
           ? {

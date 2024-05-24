@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as csv from 'fast-csv';
@@ -14,6 +14,9 @@ const MAX_ROW_COUNT = 1000;
 export class TooljetDbBulkUploadService {
   constructor(
     private readonly manager: EntityManager,
+    // TODO: remove optional decorator when
+    // ENABLE_TOOLJET_DB flag is deprecated
+    @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly tooljetDbService: TooljetDbService
@@ -43,7 +46,6 @@ export class TooljetDbBulkUploadService {
   ): Promise<{ processedRows: number; rowsInserted: number; rowsUpdated: number }> {
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
-      ignoreEmpty: true,
       strictColumnHandling: true,
       discardUnmappedColumns: true,
     });
@@ -67,7 +69,10 @@ export class TooljetDbBulkUploadService {
           idstoUpdate.add(row.id);
           rowsToUpdate.push(row);
         } else {
-          rowsToInsert.push(row);
+          // TODO: Revise logic for primary key instead of hardcoded id column
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, ...rowWithoutId } = row;
+          rowsToInsert.push(rowWithoutId);
         }
       })
       .on('error', (error) => {
@@ -155,10 +160,7 @@ export class TooljetDbBulkUploadService {
       const columnsInCsv = Object.keys(row);
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
-        const convertedValue = this.validateDataType(row[columnInCsv], columnDetails.data_type);
-
-        if (convertedValue) result[columnInCsv] = this.validateDataType(row[columnInCsv], columnDetails.data_type);
-
+        result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
         return result;
       }, {});
 
@@ -168,29 +170,29 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  validateDataType(columnValue: string, supportedDataType: SupportedDataTypes) {
+  convertToDataType(columnValue: string, supportedDataType: SupportedDataTypes) {
     if (!columnValue) return null;
 
     switch (supportedDataType) {
       case 'boolean':
-        return this.validateBoolean(columnValue);
+        return this.convertBoolean(columnValue);
       case 'integer':
       case 'double precision':
       case 'bigint':
-        return this.validateNumber(columnValue, supportedDataType);
+        return this.convertNumber(columnValue, supportedDataType);
       default:
         return columnValue;
     }
   }
 
-  validateBoolean(str: string) {
+  convertBoolean(str: string) {
     const parsedString = str.toLowerCase().trim();
     if (parsedString === 'true' || parsedString === 'false') return str;
 
     throw `${str} is not a valid boolean string`;
   }
 
-  validateNumber(str: string, dataType: 'integer' | 'bigint' | 'double precision') {
+  convertNumber(str: string, dataType: 'integer' | 'bigint' | 'double precision') {
     if (dataType === 'integer' && !isNaN(parseInt(str, 10))) return str;
     if (dataType === 'double precision' && !isNaN(parseFloat(str))) return str;
     if (dataType === 'bigint' && typeof BigInt(str) === 'bigint') return str;

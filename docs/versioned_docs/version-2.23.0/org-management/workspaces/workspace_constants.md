@@ -5,6 +5,10 @@ title: Workspace Constants
 
 Workspace constants are predefined values(usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. They allow you to store important data or configurations that should remain unchanged during the application's runtime. This doc will guide you through the usage and management of workspace constants within your workspaces. 
 
+:::danger
+Workspace constants are handled server-side and are not intended for use in query transformations or RunJS and RunPy queries. For these operations, employ variables and page variables instead.
+:::
+
 ## Environment-Specific Configurations
 
 Users can define environment-specific configurations by setting different values for constants across environments. It is useful for managing sensitive information such as API keys, database credentials, or external service endpoints. For Community edition only production environment is available and for Cloud/EE we will have multi environments (development, staging, production).

@@ -19,18 +19,7 @@ Once the data sources are connected, ToolJet can run **queries** on these data s
 
 <img src="/img/v2-beta/getting_started/intro.webp" alt="Getting started Demo app" width="100%" height="100%" loading="eager" />
 
-<!-- Why ToolJet section is commented out.
 
-## Why ToolJet
-
-When you're building an internal tool, there are a lot of tools and frameworks available. But with ToolJet, you can save developers' hours by allowing them to build full-stack business applications in minutes.
-
-- **Open-Source**: ToolJet is Open-Source, you can go through the ToolJet codebase on **[GitHub](https://github.com/ToolJet/ToolJet)** or you can **deploy ToolJet on your infrastructure**.
-- **Full-stack platform**: ToolJet has a **[built-in database](/docs/tooljet-database)**, **[External datasources](/docs/data-sources/airtable)**, and a frontend builder so you can build a full-stack app right inside it. ToolJet comes with Custom Component for importing your own **react components** and the ability to write custom **JavaScript** and **Python** code.
-- **Extensible**: Didn't find the **component** or **datasource** that fit your application's requirements? You can always build your own **component** and **datasource** using our **plugin development kit**.
-- **Powerful Apps**: With ToolJet, developers can quickly build powerful custom internal tools for their Support, Operations and Sales teams. Build CRUD apps, Dashboards, Admin Panels, CRMs and much more.
-
--->
 
 ## How ToolJet works
 
@@ -168,7 +157,7 @@ ToolJet application's User interface is constructed using Components like Tables
 
     </div>
 
-4. Go to the **Table properties** by clicking on the component handle and bind the data returned by the query in the **Table data** property. When building apps in ToolJet anything inside `{{}}` is JavaScript and we javascript dot notation to get the data from query and populate the table using **{{queries.tooljetdb1.data}}**. The table will be auto-populated once the table data is entered.
+4. Go to the **Table properties** by clicking on the component handle and bind the data returned by the query in the **Table data** property. When building apps in ToolJet anything inside `{{}}` is JavaScript and we javascript dot notation to get the data from query and populate the table using `{{queries.tooljetdb1.data}}`. The table will be auto-populated once the table data is entered.
     <div style={{textAlign: 'center'}}>
 
     <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/tabledata.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
@@ -231,7 +220,7 @@ Find more Tutorials on our **[Blog](https://blog.tooljet.com/)**.
 
 ## For ToolJet Contributors
 
-To contribute to ToolJet code, plugins, and documentation, refer to our **[Contributing Guide](/docs/category/contributing-guide)**.
+To contribute to ToolJet code, plugins, and documentation, refer to our **[Contributing Guide](/docs/2.15.0/category/contributing-guide)**.
 
 [![GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)](https://github.com/ToolJet/ToolJet/contributors)
 [![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)

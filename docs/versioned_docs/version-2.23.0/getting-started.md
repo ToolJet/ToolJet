@@ -19,18 +19,7 @@ Once the data sources are connected, ToolJet can run **queries** on these data s
 
 <img src="/img/v2-beta/getting_started/intro.webp" alt="Getting started Demo app" width="100%" height="100%" loading="eager" />
 
-<!-- Why ToolJet section is commented out.
 
-## Why ToolJet
-
-When you're building an internal tool, there are a lot of tools and frameworks available. But with ToolJet, you can save developers' hours by allowing them to build full-stack business applications in minutes.
-
-- **Open-Source**: ToolJet is Open-Source, you can go through the ToolJet codebase on **[GitHub](https://github.com/ToolJet/ToolJet)** or you can **deploy ToolJet on your infrastructure**.
-- **Full-stack platform**: ToolJet has a **[built-in database](/docs/tooljet-database)**, **[External datasources](/docs/data-sources/airtable)**, and a frontend builder so you can build a full-stack app right inside it. ToolJet comes with Custom Component for importing your own **react components** and the ability to write custom **JavaScript** and **Python** code.
-- **Extensible**: Didn't find the **component** or **datasource** that fit your application's requirements? You can always build your own **component** and **datasource** using our **plugin development kit**.
-- **Powerful Apps**: With ToolJet, developers can quickly build powerful custom internal tools for their Support, Operations and Sales teams. Build CRUD apps, Dashboards, Admin Panels, CRMs and much more.
-
--->
 
 ## How ToolJet works
 
@@ -283,7 +272,7 @@ We are ready with the labels, let's place the input components next to the label
 |:----------------|:-------------------|:-----------------|
 | Text Input      | taskNameInput      | Development      |
 | Number Input    | taskDurationInput  | 1         |
-| Date Picker     | taskDateInput      | {{moment().format("DD/MM/YYYY")}}|
+| Date Picker     | taskDateInput      | `{{moment().format("DD/MM/YYYY")}}`|
 | Textarea        | taskDescriptionInput| Creating a modal component |
 
 <div style={{textAlign: 'center'}}>
@@ -306,11 +295,11 @@ Rename the query to *addLog*, select **Create row** as Operations and use the be
 
 | Column Name    | Keys                | 
 | :-------------- | :------------------------ |
-| employee       | {{globals.currentUser.email}}  |
-| taskname       | {{components.taskNameInput.value}}  |
-| duration       | {{components.taskDurationInput.value}}  |
-| dateoftask       | {{components.taskDateInput.value}}  |
-| taskdescription       | {{components.taskDescriptionInput.value}}  |
+| employee       | `{{globals.currentUser.email}}`  |
+| taskname       | `{{components.taskNameInput.value}}`  |
+| duration       | `{{components.taskDurationInput.value}}`  |
+| dateoftask       | `{{components.taskDateInput.value}}`  |
+| taskdescription       | `{{components.taskDescriptionInput.value}}`  |
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/add-log-config.png" alt="Configuration for the addLog query" />
@@ -462,7 +451,7 @@ Find more Tutorials on our **[Blog](https://blog.tooljet.com/)**.
 
 ## For ToolJet Contributors
 
-To contribute to ToolJet code, plugins, and documentation, refer to our **[Contributing Guide](/docs/category/contributing-guide)**.
+To contribute to ToolJet code, plugins, and documentation, refer to our **[Contributing Guide](/docs/2.23.0/category/contributing-guide)**.
 
 [![GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)](https://github.com/ToolJet/ToolJet/contributors)
 [![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)

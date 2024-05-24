@@ -61,7 +61,7 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
+            message="ToolJet community image published:\n\`tooljet/tooljet-ce:${{ github.event.release.tag_name }}\`"
           else
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
           fi
@@ -115,7 +115,7 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! tooljet/tooljet-ce:${{ github.event.inputs.image }}"
+            message="ToolJet community image published:\n\`tooljet/tooljet-ce:${{ github.event.inputs.image }}\`"
           else
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.inputs.image }}"
           fi

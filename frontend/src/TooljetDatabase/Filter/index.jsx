@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -8,11 +8,16 @@ import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery }) => {
+const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery, setFilterEnable, filterEnable }) => {
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const filterKeys = Object.keys(filters);
   const isMounted = useMounted();
+
+  const reset = () => {
+    setFilters({});
+    setShow(false);
+  };
 
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'dark-theme': darkMode })} data-cy="filter-section">
@@ -55,9 +60,13 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
   const checkIsFilterObjectEmpty = (filter) =>
     !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value);
   const areFiltersApplied = !show && Object.values(filters).some(checkIsFilterObjectEmpty);
+  const filtersApplied = Object.values(filters).some(checkIsFilterObjectEmpty) ? true : false;
+
+  filtersApplied === true ? setFilterEnable(true) : setFilterEnable(false);
 
   React.useEffect(() => {
     if (Object.keys(filters).length === 0 && isMounted) {
+      reset();
       resetFilterQuery();
     } else {
       Object.keys(filters).map((key) => {
@@ -82,7 +91,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
           if (show && isEmpty(filters)) setFilters({ 0: {} });
           setShow(show);
         }}
-        placement="bottom"
+        placement="bottom-start"
         overlay={popover}
       >
         <button

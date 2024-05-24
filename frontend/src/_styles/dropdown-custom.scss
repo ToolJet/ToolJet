@@ -19,7 +19,7 @@
 }
 
 .react-select__single-value {
-    color: var(--slate12) !important;
+    color: var(--slate12) ;
 }
 
 .react-select__menu {
@@ -98,6 +98,44 @@
 .css-nw08ma-menu {
     box-shadow: none !important;
 }
-.react-select__menu-portal{
+
+.react-select__menu-portal {
     z-index: 9999 !important;
 }
+
+// following is the styles for table select column type menu list and options styles. If its same for all the select elements in the editor, then we can make it common and not specific for table select
+.table-select-custom-menu-list{
+    .react-select__menu-list{
+        padding: 2px;
+        // this is needed otherwise :active state doesn't look nice, gap is required
+        display: flex;
+        flex-direction: column;
+        gap: 4px !important;
+        background-color: var(--base) !important;
+        overflow-y: auto;
+    }
+    .react-select__option{
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 12px;
+        align-self: stretch;
+        align-items: center;
+        color: var(--slate12) !important;
+        border-radius: 6px;
+        /* Paragraph/Extrasmall/Regular */
+        font-family: 'IBM Plex Sans';
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px; /* 166.667% */
+        &.react-select__option--is-selected{
+            color: var(--indigo9) !important;
+        }
+        &:active{
+            background: var(--base) !important;
+            box-shadow: 0px 0px 0px 4px var(--slate6);
+            color : var(--slate12) !important;
+        }
+    }
+}
+
