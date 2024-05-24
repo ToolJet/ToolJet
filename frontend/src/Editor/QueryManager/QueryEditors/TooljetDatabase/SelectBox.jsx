@@ -491,7 +491,7 @@ function DataSourceSelect({
           }),
           option: (style, { data: { isNested }, isFocused, isDisabled, isSelected }) => ({
             ...style,
-            cursor: 'pointer',
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
             color: isDisabled ? 'var(--slate8, #c1c8cd)' : 'inherit',
             backgroundColor:
               isSelected && highlightSelected
