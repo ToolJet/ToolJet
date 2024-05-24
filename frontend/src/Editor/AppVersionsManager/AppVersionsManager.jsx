@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -28,6 +29,7 @@ export const AppVersionsManager = function ({
     versionName: '',
     showModal: false,
   });
+  const { setPreviewData, setSelectedQuery } = useQueryPanelActions();
 
   const { releasedVersionId, editingVersion, appVersions, setAppVersions } = useAppVersionStore(
     (state) => ({
@@ -61,6 +63,8 @@ export const AppVersionsManager = function ({
       .then((data) => {
         const isCurrentVersionReleased = data.currentVersionId ? true : false;
         setAppDefinitionFromVersion(data, isCurrentVersionReleased);
+        setPreviewData('');
+        setSelectedQuery(null);
       })
       .catch((error) => {
         toast.error(error);
