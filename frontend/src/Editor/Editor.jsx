@@ -527,7 +527,6 @@ const EditorComponent = (props) => {
     props.setEditorOrViewer('editor');
     await runForInitialLoad();
     await fetchOrgEnvironmentVariables();
-    await fetchOrgEnvironmentConstants();
     initComponentVersioning();
     initRealtimeSave();
     initEventListeners();
@@ -750,7 +749,7 @@ const EditorComponent = (props) => {
     setWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
     current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
-
+    await fetchOrgEnvironmentConstants();
     updateState({
       slug,
       isMaintenanceOn,
