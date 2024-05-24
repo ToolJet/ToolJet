@@ -499,7 +499,7 @@ function DataSourceSelect({
                 : isFocused && !isNested
                 ? 'var(--slate4)'
                 : isDisabled
-                ? 'var(--slate3, #f1f3f5)'
+                ? 'transparent'
                 : isDisabled && isFocused
                 ? 'var(--slate3, #f1f3f5)'
                 : 'transparent',
