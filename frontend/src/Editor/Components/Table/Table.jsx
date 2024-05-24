@@ -147,6 +147,7 @@ export function Table({
     maxRowHeightValue,
     borderColor,
     isMaxRowHeightAuto,
+    columnHeaderWrap,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
@@ -1336,11 +1337,14 @@ export function Table({
                                           data-cy={`column-header-${String(column.exportValue)
                                             .toLowerCase()
                                             .replace(/\s+/g, '-')}`}
-                                          className={`header-text ${
-                                            column.id === 'selection' &&
-                                            column.columnType === 'selector' &&
-                                            'selector-column'
-                                          }`}
+                                          className={cx('header-text', {
+                                            'selector-column':
+                                              column.id === 'selection' && column.columnType === 'selector',
+                                            'text-truncate':
+                                              resolveReferences(columnHeaderWrap, currentState) === 'fixed',
+                                            'wrap-wrapper':
+                                              resolveReferences(columnHeaderWrap, currentState) === 'wrap',
+                                          })}
                                         >
                                           {column.render('Header')}
                                         </div>

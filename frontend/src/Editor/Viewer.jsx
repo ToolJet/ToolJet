@@ -60,6 +60,7 @@ class ViewerComponent extends React.Component {
     const slug = this.props.params.slug;
     this.subscription = null;
     this.props.setEditorOrViewer('viewer');
+    this.canvasRef = React.createRef();
     this.state = {
       slug,
       deviceWindowWidth,
@@ -70,6 +71,9 @@ class ViewerComponent extends React.Component {
       isAppLoaded: false,
       pages: {},
       homepage: null,
+      isSidebarPinned: localStorage.getItem('isPagesSidebarPinned') === 'false' ? false : true,
+      isSidebarHovered: false,
+      canvasAreaWidth: null,
     };
   }
 
@@ -588,6 +592,17 @@ class ViewerComponent extends React.Component {
     const isMobileDevice = this.state.deviceWindowWidth < 600;
     useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     window.addEventListener('message', this.handleMessage);
+    window.addEventListener('resize', this.setCanvasAreaWidth);
+    this.resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width } = entry.contentRect;
+        this.setState({ canvasAreaWidth: width });
+      }
+    });
+
+    if (this.canvasRef.current) {
+      this.resizeObserver.observe(this.canvasRef.current);
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -670,6 +685,10 @@ class ViewerComponent extends React.Component {
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
+  };
+
+  setCanvasAreaWidth = () => {
+    this.setState({ canvasAreaWidth: this.getCanvasWidth() });
   };
 
   computeCanvasBackgroundColor = () => {
@@ -760,6 +779,11 @@ class ViewerComponent extends React.Component {
     this.onViewerLoadUpdateEntityReferences(id, 'page-switch');
   };
 
+  toggleSidebarPinned = () => {
+    this.setState({ isSidebarPinned: !this.state.isSidebarPinned });
+    localStorage.setItem('isPagesSidebarPinned', JSON.stringify(!this.state.isSidebarPinned));
+  };
+
   handleEvent = (eventName, events, options) => {
     const latestEvents = useAppDataStore.getState().events;
 
@@ -790,6 +814,8 @@ class ViewerComponent extends React.Component {
 
   componentWillUnmount() {
     this.subscription && this.subscription.unsubscribe();
+    this.resizeObserver.disconnect();
+    window.removeEventListener('resize', this.setCanvasAreaWidth);
   }
   render() {
     const {
@@ -800,6 +826,8 @@ class ViewerComponent extends React.Component {
       defaultComponentStateComputed,
       dataQueries,
       canvasWidth,
+      isSidebarPinned,
+      canvasAreaWidth,
     } = this.state;
 
     const currentCanvasWidth = canvasWidth;
@@ -899,20 +927,25 @@ class ViewerComponent extends React.Component {
                         currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                         switchPage={this.switchPage}
                         darkMode={this.props.darkMode}
+                        isSidebarPinned={isSidebarPinned}
+                        toggleSidebarPinned={this.toggleSidebarPinned}
                       />
                     )}
                     <div
-                      className="flex-grow-1 d-flex justify-content-center"
+                      className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
+                        close: !isSidebarPinned,
+                      })}
                       style={{
                         backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
                         marginLeft:
                           appDefinition?.showViewerNavigation && this.props.currentLayout !== 'mobile'
-                            ? '200px'
+                            ? '210px'
                             : 'auto',
                       }}
                     >
                       <div
                         className="canvas-area"
+                        ref={this.canvasRef}
                         style={{
                           width: isMobilePreviewMode ? '450px' : currentCanvasWidth,
                           maxWidth: isMobilePreviewMode ? '450px' : canvasMaxWidth,
@@ -962,7 +995,7 @@ class ViewerComponent extends React.Component {
                                   return onComponentOptionChanged(component, optionName, value);
                                 }}
                                 onComponentOptionsChanged={onComponentOptionsChanged}
-                                canvasWidth={this.getCanvasWidth()}
+                                widthOfCanvas={canvasAreaWidth}
                                 dataQueries={dataQueries}
                                 currentPageId={this.state.currentPageId}
                                 darkMode={this.props.darkMode}

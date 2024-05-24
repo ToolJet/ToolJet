@@ -12,6 +12,7 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import './pages-sidebar.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -2899,9 +2900,32 @@ input:focus-visible {
   }
 }
 
-.jet-button {
+.jet-outline-button {
+  outline: none;
+  border: 1px solid;
+
+
   &.btn-custom:hover {
     background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
+
+  }
+
+}
+
+.jet-button {
+  outline: none;
+  border: 1px solid;
+
+  &.btn-custom:hover {
+    background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
   }
 }
 
