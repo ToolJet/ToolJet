@@ -14,7 +14,12 @@ import {
   useColumnOrder,
 } from 'react-table';
 import cx from 'classnames';
-import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
+import {
+  resolveReferences,
+  validateWidget,
+  determineJustifyContentValue,
+  resolveWidgetFieldValue,
+} from '@/_helpers/utils';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { Pagination } from './Pagination';
@@ -404,11 +409,11 @@ export function Table({
   let tableData = [],
     dynamicColumn = [];
 
-  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value, currentState);
+  const useDynamicColumn = resolveWidgetFieldValue(component.definition.properties?.useDynamicColumn?.value);
   if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+    tableData = resolveWidgetFieldValue(component.definition.properties.data.value);
     dynamicColumn = useDynamicColumn
-      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
+      ? resolveWidgetFieldValue(component.definition.properties?.columnData?.value) ?? []
       : [];
     if (!Array.isArray(tableData)) {
       tableData = [];
@@ -590,7 +595,7 @@ export function Table({
     if (
       tableData.length != 0 &&
       component.definition.properties.autogenerateColumns?.value &&
-      (useDynamicColumn || mode === 'edit')
+      (useDynamicColumn || mode === 'edit' || mode === 'view')
     ) {
       const generatedColumnFromData = autogenerateColumns(
         tableData,
@@ -649,7 +654,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: -1 },
+      initialState: { pageIndex: 0, pageSize: 1 },
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,

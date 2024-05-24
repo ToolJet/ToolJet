@@ -2,16 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
-import { getPrivateRoute, redirectToDashboard } from '@/_helpers/routes';
+import { getPrivateRoute, redirectToDashboard, dashboardUrl } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from './AppLogo';
-import { useEditorActions } from '@/_stores/editorStore';
 
 export default function LogoNavDropdown({ darkMode }) {
-  const { updateEditorState } = useEditorActions();
   const handleBackClick = (e) => {
     e.preventDefault();
-    updateEditorState({ isLoading: true });
     // Force a reload for clearing interval triggers
     redirectToDashboard();
   };
@@ -20,7 +17,12 @@ export default function LogoNavDropdown({ darkMode }) {
     const { admin } = authenticationService?.currentSessionValue ?? {};
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
-        <Link className="dropdown-item tj-text tj-text-xsm" data-cy="back-to-app-option" onClick={handleBackClick}>
+        <Link
+          className="dropdown-item tj-text tj-text-xsm"
+          data-cy="back-to-app-option"
+          onClick={handleBackClick}
+          to={getPrivateRoute('dashboard')}
+        >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
           <span>Back to apps</span>
         </Link>

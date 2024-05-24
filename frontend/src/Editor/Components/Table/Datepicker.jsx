@@ -9,7 +9,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
-const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }, ref) => {
+const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }) => {
   return (
     <div className="table-column-datepicker-input-container">
       <input
@@ -198,7 +198,7 @@ export const Datepicker = function Datepicker({
     <div ref={pickerRef}>
       <DatePickerComponent
         className={`input-field form-control validation-without-icon px-2`}
-        popperClassName={cx({
+        popperClassName={cx('tj-table-datepicker', {
           'tj-timepicker-widget': !isDateSelectionEnabled && isTimeChecked,
           'tj-datepicker-widget': isDateSelectionEnabled,
           'theme-dark dark-theme': darkMode,
