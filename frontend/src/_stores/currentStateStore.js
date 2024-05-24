@@ -22,6 +22,7 @@ const initialState = {
   },
   succededQuery: {},
   isEditorReady: false,
+  constants: {},
 };
 
 function generatePath(obj, targetKey, currentPath = '') {
