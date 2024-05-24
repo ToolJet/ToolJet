@@ -3,23 +3,27 @@ id: dynamodb
 title: DynamoDB
 ---
 
-# DynamoDB
+<div style={{paddingBottom:'24px'}}>
 
-DynamoDB is a managed non-relational database service provided by Amazon. ToolJet has the capability to connect to DynamoDB for reading and writing data.
-
-## Connection
-
-To establish a connection with the DynamoDB data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/dynamogds-v2.png" alt="DynamoDB" />
+**DynamoDB** is a managed non-relational database service provided by Amazon. ToolJet has the capability to connect to DynamoDB for reading and writing data.
 
 </div>
 
-ToolJet supports connecting to DynamoDB using three methods: **IAM credentials**, **AWS Instance Profile**, or **AWS ARN Role**.
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-When using **IAM credentials**, you will need to provide the following information:
+## Connection
+
+To establish a connection with the **DynamoDB** data source, you can either click on the **+Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/dynamogds-v2.png" alt="DynamoDB" />
+
+</div>
+
+ToolJet supports connecting to DynamoDB using three methods: **IAM Credentials**, **AWS Instance Credentials**, or **AWS ARN Role**.
+
+When using **IAM Credentials**, you will need to provide the following information:
 
 - **Region**
 - **Access key**
@@ -29,15 +33,15 @@ It is recommended to create a dedicated IAM user for the database in order to ha
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/iam.png" alt="ToolJet - DynamoDB connection" width="600" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/iam-v2.png" alt="ToolJet - DynamoDB connection" />
 
 </div>
 
-To connect to DynamoDB using an **AWS Instance Profile**, select the option to **Use AWS Instance Profile**. This will utilize the IAM role attached to the EC2 instance where ToolJet is running. The WebIdentityToken parameter obtained from a successful login with an identity provider is used to access the metadata service of an ECS container and the EC2 instance.
+To connect to DynamoDB using an **AWS Instance Credentials**, select the option to **Use AWS Instance Credentials**. This will utilize the IAM role attached to the EC2 instance where ToolJet is running. The WebIdentityToken parameter obtained from a successful login with an identity provider is used to access the metadata service of an ECS container and the EC2 instance.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/awsinstance.png" alt="ToolJet - DynamoDB connection" width="600" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/awsinstance-v2.png" alt="ToolJet - DynamoDB connection" />
 
 </div>
 
@@ -48,29 +52,37 @@ If you prefer to use an **AWS ARN Role**, you will need to provide the following
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/arn.png" alt="ToolJet - DynamoDB connection" width="600" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/arn-v2.png" alt="ToolJet - DynamoDB connection" />
 
 </div>
 
 :::info
-Click the **Test connection** button to verify the correctness of the provided credentials and the accessibility of the database to the ToolJet server. Finally, click the **Save** button to save the data source configuration.
+Click on the **Test Connection** button to verify the correctness of the provided credentials and the accessibility of the database to the ToolJet server. Finally, click on the **Save** button to save the data source configuration.
 :::
-
-## Querying DynamoDB
-
-To perform queries on DynamoDB, click the `+` button in the query manager located at the bottom panel of the editor. Select the previously added database as the data source for the query. Choose the desired operation and click 'Save' to store the query.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/queries.png" alt="ToolJet - DynamoDB connection" />
 
 </div>
 
-To execute the query, click the 'Run' button. Note that the query must be saved before running.
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Querying DynamoDB
+
+To perform queries on **DynamoDB**, click on the **+Add** button in the query manager located at the bottom panel of the editor. Select the previously added database as the data source for the query. Choose the desired operation and click on the **Run** button to run the query.
+
+<div style={{textAlign: 'center'}}>
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/queries-v2.png" alt="ToolJet - DynamoDB connection" />
+
+</div>
 
 :::tip
 You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Operations
 
 - **[List Tables](#list-tables)**
 - **[Get Item](#get-item)**
@@ -82,15 +94,23 @@ You can apply transformations to the query results. Refer to our transformations
 - **[Create Table](#create-table)**
 - **[Put Item](#put-item)**
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### List Tables
 
-Returns an array of table names associated with the current account and endpoint. The output from List Tables is paginated, with each page returning a maximum of 100 table names.
+Returns an array of table names associated with the current account and endpoint. The output from *List Tables* is paginated, with each page returning a maximum of 100 table names.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/listtables.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/listtables-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Get Item
 
@@ -117,9 +137,13 @@ Syntax for Key name:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/getitem.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/getitem-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Query Table
 
@@ -150,9 +174,13 @@ Syntax for Query condition:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/querytable.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/querytable-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Scan Table
 
@@ -170,9 +198,13 @@ Syntax for Scan condition:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/scantable.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/scantable-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Delete Item
 
@@ -181,7 +213,7 @@ Deletes a single item from a table. You must specify the primary key for the ite
 **Required parameters:**
 
 - **Table**
-- **Key Name**
+- **Key name**
 
 Syntax for Key name:
 
@@ -202,9 +234,13 @@ Syntax for Key name:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/deleteitem.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/deleteitem-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Update Item
 
@@ -233,9 +269,13 @@ Syntax for Update Condition:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/updateitem.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/updateitem-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Describe Table
 
@@ -247,9 +287,13 @@ This operation in DynamoDB retrieves metadata and configuration details about a 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/describetable.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/describetable-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Create Table
 
@@ -310,9 +354,13 @@ Syntax for Table Parameters:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/createtable.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/createtable-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Put Item
 
@@ -338,6 +386,8 @@ Syntax for New Item Details:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/dynamodb/updateitem.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/putitem-v2.png" alt="ToolJet - DynamoDB operations" />
+
+</div>
 
 </div>
