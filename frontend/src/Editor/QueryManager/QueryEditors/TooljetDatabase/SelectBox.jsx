@@ -219,6 +219,12 @@ function DataSourceSelect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const modifiedOptions = [...options].sort((a, b) => {
+    if (a.isDisabled && !b.isDisabled) return -1;
+    if (!a.isDisabled && b.isDisabled) return 1;
+    return 0;
+  });
+
   return (
     <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <Select
@@ -347,7 +353,7 @@ function DataSourceSelect({
                 </div>
                 {foreignKeyAccess && props.data.isDisabled && (
                   <div style={{ fontSize: '12px', color: '#889096', cursor: 'not-allowed' }}>
-                    Foreign key relation cannot be created for serial type column
+                    {`Foreign key relation cannot be created for ${props?.data.dataType} type column`}
                   </div>
                 )}
               </components.Option>
@@ -527,7 +533,7 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={scrollEventForColumnValus && searchValue ? searchResults : options}
+        options={scrollEventForColumnValus && searchValue ? searchResults : modifiedOptions}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
