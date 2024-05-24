@@ -605,7 +605,7 @@ export class DataQueriesService {
 
         if (variables?.length > 0) {
           for (const variable of variables) {
-            object = object.replace(variable, await this.resolveConstants(variable, organization_id, environmentId));
+            object = object.replace(variable, options[variable]);
           }
         }
         return object;
