@@ -180,11 +180,13 @@ export const TextInput = function TextInput({
     const exposedVariables = {
       setText: async function (text) {
         setValue(text);
-        setExposedVariable('value', text).then(fireEvent('onChange'));
+        setExposedVariable('value', text);
+        fireEvent('onChange');
       },
       clear: async function () {
         setValue('');
-        setExposedVariable('value', '').then(fireEvent('onChange'));
+        setExposedVariable('value', '');
+        fireEvent('onChange');
       },
     };
     setExposedVariables(exposedVariables);

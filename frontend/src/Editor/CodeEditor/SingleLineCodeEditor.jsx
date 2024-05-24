@@ -315,6 +315,7 @@ const DynamicEditorBridge = (props) => {
     onChange,
     styleDefinition,
     onVisibilityChange,
+    isEventManagerParam = false,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -323,6 +324,9 @@ const DynamicEditorBridge = (props) => {
   const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+
+  const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
+
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
@@ -338,16 +342,13 @@ const DynamicEditorBridge = (props) => {
           </div>
         )}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
-          <div
-            style={{ marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className={`d-flex align-items-center ${
-              paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel)
-                ? 'justify-content-end'
-                : 'justify-content-start'
-            }`}
-          >
+          <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
-              <div className="col-auto pt-0 fx-common fx-button-container">
+              <div
+                className={`col-auto pt-0 fx-common fx-button-container ${
+                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
+                }`}
+              >
                 <FxButton
                   active={codeShow}
                   onPress={() => {

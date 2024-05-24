@@ -15193,6 +15193,10 @@ tbody {
   transition: opacity 0.3s ease;
 }
 
+.show-fx-button-container {
+  opacity: 1 !important;
+}
+
 .wrapper-div-code-editor:hover .fx-button-container {
   opacity: 1;
 }
