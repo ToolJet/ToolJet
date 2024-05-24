@@ -595,7 +595,7 @@ export function Table({
     if (
       tableData.length != 0 &&
       component.definition.properties.autogenerateColumns?.value &&
-      (useDynamicColumn || mode === 'edit')
+      (useDynamicColumn || mode === 'edit' || mode === 'view')
     ) {
       const generatedColumnFromData = autogenerateColumns(
         tableData,
