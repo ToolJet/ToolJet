@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
-// import { createRoot } from 'react-dom/client';
+
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';

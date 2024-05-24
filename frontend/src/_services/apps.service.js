@@ -25,6 +25,7 @@ export const appsService = {
   getAppUsers,
   getVersions,
   getTables,
+  releaseVersion,
 };
 
 function validateReleasedApp(slug) {
@@ -203,4 +204,15 @@ function cloneResource(body) {
 function getTables(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
+}
+
+function releaseVersion(appId, versionToBeReleased) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify({ versionToBeReleased }),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/release`, requestOptions).then(handleResponse);
 }

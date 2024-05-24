@@ -6,7 +6,7 @@ import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
 import FxButton from '../../../../CodeBuilder/Elements/FxButton';
-import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const TIMEZONE_OPTIONS = [
   { name: 'UTC', value: 'Etc/UTC' },
