@@ -98,8 +98,22 @@ export const useResolveStore = create(
 
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(partialRefState);
 
-        const lookupHintsMap = new Map([...get().lookupTable.hints]);
-        const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
+        const _hintsMap = get().lookupTable.hints;
+        const resolvedRefsMap = get().lookupTable.resolvedRefs;
+
+        let lookupHintsMap, lookupResolvedRefs;
+
+        if (_hintsMap.size > 0) {
+          lookupHintsMap = new Map([..._hintsMap]);
+        } else {
+          lookupHintsMap = new Map();
+        }
+
+        if (resolvedRefsMap.size > 0) {
+          lookupResolvedRefs = new Map([...resolvedRefsMap]);
+        } else {
+          lookupResolvedRefs = new Map();
+        }
 
         const newUpdatedrefs = [];
 

@@ -6,7 +6,7 @@ import { Modal, Button, Tab, Row, Col, ListGroup, ModalBody } from 'react-bootst
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
-import { getWorkspaceId, deepEqual, returnDevelopmentEnv } from '@/_helpers/utils';
+import { getWorkspaceId, deepEqual, returnDevelopmentEnv, decodeEntities } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
 import {
   DataBaseSources,
@@ -900,10 +900,11 @@ class DataSourceManagerComponent extends React.Component {
                           type="text"
                           onChange={(e) => this.onNameChanged(e.target.value)}
                           className="form-control-plaintext form-control-plaintext-sm color-slate12"
-                          value={selectedDataSource.name}
+                          value={decodeEntities(selectedDataSource.name)}
                           style={{ width: '160px' }}
                           data-cy="data-source-name-input-filed"
                           autoFocus
+                          autoComplete="off"
                         />
                         {!this.props.isEditing && (
                           <span className="input-icon-addon">

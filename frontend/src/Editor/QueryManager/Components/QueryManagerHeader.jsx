@@ -25,6 +25,7 @@ import { defaultSources } from '../constants';
 import { cloneDeep } from 'lodash';
 
 import ParameterList from './ParameterList';
+import { decodeEntities } from '@/_helpers/utils';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -332,7 +333,7 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
               }
             )}
           >
-            <span className="text-truncate">{name} </span>
+            <span className="text-truncate">{decodeEntities(name)} </span>
             <span
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}

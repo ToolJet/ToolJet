@@ -65,7 +65,7 @@ const BoxUI = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(customResolvables), readOnly]);
 
-  let exposedVariables = !_.isEmpty(currentState?.component) ? currentState?.components[component.name] ?? {} : {};
+  let exposedVariables = !_.isEmpty(currentState?.components) ? currentState?.components[component.name] ?? {} : {};
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
