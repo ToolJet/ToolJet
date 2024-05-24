@@ -24,6 +24,13 @@ export class Layout {
   @Column({ name: 'component_id' })
   componentId: string;
 
+  @Column({
+    type: 'enum',
+    enumName: 'dimension_unit',
+    name: 'dimension_unit',
+    enum: ['count', 'percent'],
+  })
+  dimensionUnit: string;
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 

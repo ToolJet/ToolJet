@@ -4,6 +4,7 @@ import moment from 'moment';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
@@ -26,6 +27,31 @@ function Logs({ logProps, idx }) {
     paddingTop: '8px',
     pointerEvents: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'default',
   };
+
+  const { setSelectedComponents } = useEditorActions();
+
+  const handleSelectComponentOnEditor = (componentId) => {
+    const isAlreadySelected = useEditorStore
+      .getState()
+      ?.selectedComponents.find((component) => component.id === componentId);
+
+    if (!isAlreadySelected) {
+      const currentPageId = useEditorStore.getState()?.currentPageId;
+      const currentPageComponents = useEditorStore.getState()?.appDefinition[currentPageId]?.components;
+      const component = currentPageComponents?.find((comp) => comp.id === componentId);
+
+      setSelectedComponents([{ id: componentId, component }], false);
+    }
+  };
+
+  const callbackActions = [
+    {
+      for: 'all',
+      actions: [{ name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true }],
+      enableForAllChildren: true,
+      enableFor1stLevelChildren: true,
+    },
+  ];
 
   const renderNavToDisabledPageMessage = () => {
     const text = message.split(logProps.page);
@@ -83,10 +109,12 @@ function Logs({ logProps, idx }) {
           useIcons={false}
           useIndentedBlock={true}
           enableCopyToClipboard={false}
-          useActions={false}
+          useActions={true}
           actionIdentifier="id"
           expandWithLabels={true}
           fontSize={'10px'}
+          actionsList={callbackActions}
+          treeType="debugger"
         />
       )}
       <hr className="border-1 border-bottom bg-grey" />
