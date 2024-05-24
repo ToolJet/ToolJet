@@ -98,8 +98,6 @@ import cx from 'classnames';
 setAutoFreeze(false);
 enablePatches();
 
-const maskedWorkspaceConstantStr = '**************';
-
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
@@ -447,7 +445,8 @@ const EditorComponent = (props) => {
     orgEnvironmentConstantService.getAll().then(({ constants }) => {
       const orgConstants = {};
       constants.map((constant) => {
-        orgConstants[constant.name] = maskedWorkspaceConstantStr;
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
