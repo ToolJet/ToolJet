@@ -27,7 +27,7 @@ const CustomDatePickerHeader = ({
     'December',
   ];
 
-  const years = range(1990, moment(new Date()).year() + 1, 1);
+  const years = range(1900, 2101);
 
   return (
     <>
