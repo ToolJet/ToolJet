@@ -3942,8 +3942,8 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     validation: {
-      customRule: { type: 'code', displayName: 'Custom validation' },
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+      customRule: { type: 'code', displayName: 'Custom validation' },
     },
     properties: {
       label: {
@@ -4229,7 +4229,6 @@ export const widgets = [
         labelWidth: { value: '33' },
         auto: { value: '{{true}}' },
         fieldBorderRadius: { value: '6' },
-        justifyContent: { value: 'left' },
         selectedTextColor: { value: '#1B1F24' },
         fieldBorderColor: { value: '#CCD1D5' },
         errTextColor: { value: '#D72D39' },
@@ -4240,7 +4239,7 @@ export const widgets = [
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         icon: { value: 'IconHome2' },
         iconVisibility: { value: false },
-        iconColor: { value: '#CFD3D859' },
+        iconColor: { value: '#6A727C' },
         accentColor: { value: '#4368E3' },
       },
     },

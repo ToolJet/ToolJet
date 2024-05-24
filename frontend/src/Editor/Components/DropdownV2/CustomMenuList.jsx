@@ -15,7 +15,7 @@ const CustomMenuList = ({ optionsLoadingState, darkMode, selectProps, inputRef, 
         <div className="dropdown-widget-search-box-wrapper">
           {!inputValue && (
             <span className="">
-              <SolidIcon name="search" width="14" />
+              <SolidIcon name="search01" width="14" />
             </span>
           )}
           <input
