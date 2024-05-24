@@ -15,6 +15,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'ToggleSwitchV2',
   'Checkbox',
   'DropdownV2',
+  'MultiselectV2'
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -106,6 +107,7 @@ export const baseComponentProperties = (
       'ToggleSwitchV2',
       'Checkbox',
       'DropdownV2',
+      'MultiselectV2',
     ],
     Layout: [],
   };

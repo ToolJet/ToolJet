@@ -15,6 +15,7 @@ import { Checkbox } from './Components/Checkbox';
 import { Datepicker } from './Components/Datepicker';
 import { DaterangePicker } from './Components/DaterangePicker';
 import { Multiselect } from './Components/Multiselect';
+import { MultiselectV2 } from './Components/MultiselectV2/MultiselectV2';
 import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
 import { Map } from './Components/Map/Map';
@@ -125,6 +126,7 @@ export const AllComponents = {
   Icon,
   Form,
   BoundedBox,
+  MultiselectV2
 };
 
 /**
@@ -306,18 +308,17 @@ export const Box = memo(
               ? null
               : ['hover', 'focus']
             : !validatedGeneralProperties.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
+              ? null
+              : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${
-                  shouldAddBoxShadowAndVisibility.includes(component.component)
-                    ? validatedProperties.tooltip
-                    : validatedGeneralProperties.tooltip
-                }`
+              ? `${shouldAddBoxShadowAndVisibility.includes(component.component)
+                ? validatedProperties.tooltip
+                : validatedGeneralProperties.tooltip
+              }`
               : `${t(`widget.${component.name}.description`, component.description)}`,
           })
         }

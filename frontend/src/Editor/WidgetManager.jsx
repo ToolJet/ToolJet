@@ -103,7 +103,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     ];
     const integrationItems = ['Map'];
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
-    const legacyItems = ['ToggleSwitchLegacy', 'DropdownLegacy'];
+    const legacyItems = ['ToggleSwitchLegacy', 'DropdownLegacy', 'MultiselectLegacy'];
 
     filteredComponents.forEach((f) => {
       if (searchQuery) allWidgets.push(f);

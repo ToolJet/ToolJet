@@ -32,6 +32,7 @@ import Listview from './listview.jsx';
 import Map from './map.jsx';
 import Modal from './modal.jsx';
 import Multiselect from './multiselect.jsx';
+import MultiselectV2 from './multiselectV2.jsx';
 import Numberinput from './numberinput.jsx';
 import Pagination from './pagination.jsx';
 import Passwordinput from './passwordinput.jsx';
@@ -127,6 +128,8 @@ const WidgetIcon = (props) => {
       return <Modal {...props} />;
     case 'multiselect':
       return <Multiselect {...props} />;
+    case 'multiselectV2':
+      return <MultiselectV2 {...props} />;
     case 'numberinput':
       return <Numberinput {...props} />;
     case 'pagination':

@@ -219,22 +219,22 @@ export const DropdownV2 = ({
   const selectOptions = useMemo(() => {
     let _selectOptions = advanced
       ? [
-          ...schema
-            .filter((data) => data.visible)
-            .map((value) => ({
-              ...value,
-              isDisabled: value.disable,
-            })),
-        ]
+        ...schema
+          .filter((data) => data.visible)
+          .map((value) => ({
+            ...value,
+            isDisabled: value.disable,
+          })),
+      ]
       : [
-          ...values
-            .map((value, index) => {
-              if (optionVisibility[index] !== false) {
-                return { label: display_values[index], value: value, isDisabled: optionDisable[index] };
-              }
-            })
-            .filter((option) => option),
-        ];
+        ...values
+          .map((value, index) => {
+            if (optionVisibility[index] !== false) {
+              return { label: display_values[index], value: value, isDisabled: optionDisable[index] };
+            }
+          })
+          .filter((option) => option),
+      ];
 
     return _selectOptions;
   }, [advanced, schema, display_values, values, optionDisable, optionVisibility]);
@@ -364,22 +364,22 @@ export const DropdownV2 = ({
         borderColor: !isValid
           ? 'var(--status-error-strong)'
           : state.isFocused
-          ? accentColor != '#4368E3'
-            ? accentColor
-            : 'var(--primary-accent-strong)'
-          : fieldBorderColor != '#CCD1D5'
-          ? fieldBorderColor
-          : isDropdownDisabled || isDropdownLoading
-          ? '1px solid var(--borders-disabled-on-white)'
-          : 'var(--borders-default)',
+            ? accentColor != '#4368E3'
+              ? accentColor
+              : 'var(--primary-accent-strong)'
+            : fieldBorderColor != '#CCD1D5'
+              ? fieldBorderColor
+              : isDropdownDisabled || isDropdownLoading
+                ? '1px solid var(--borders-disabled-on-white)'
+                : 'var(--borders-default)',
         '--tblr-input-border-color-darker': tinycolor(fieldBorderColor).darken(24).toString(),
         backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
           ? fieldBackgroundColor
           : isDropdownDisabled || isDropdownLoading
-          ? darkMode
-            ? 'var(--surfaces-app-bg-default)'
-            : 'var(--surfaces-surface-03)'
-          : 'var(--surfaces-surface-01)',
+            ? darkMode
+              ? 'var(--surfaces-app-bg-default)'
+              : 'var(--surfaces-surface-03)'
+            : 'var(--surfaces-surface-01)',
         '&:hover': {
           borderColor: 'var(--tblr-input-border-color-darker)',
         },
@@ -432,7 +432,7 @@ export const DropdownV2 = ({
         darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
           ? 'var(--surfaces-surface-01)'
           : fieldBackgroundColor,
-      color: darkMode && ['#11181C'].includes(selectedTextColor) ? '#ECEDEE' : selectedTextColor,
+      color: selectedTextColor !== '#1B1F24' ? selectedTextColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
       padding: '8px 6px 8px 38px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',

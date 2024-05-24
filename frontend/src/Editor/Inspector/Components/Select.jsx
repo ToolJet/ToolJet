@@ -20,7 +20,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     component,
     dataQueries,
     paramUpdated,
-    paramsUpdated,
     currentState,
     eventsChanged,
     apps,
@@ -28,24 +27,11 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     pages,
   } = restProps;
 
+  const isMultiSelect = component?.component?.component === 'MultiselectV2';
+
   const constructOptions = () => {
-    const labels = resolveReferences(component?.component?.definition?.properties?.display_values?.value, currentState);
-    const values = resolveReferences(component?.component?.definition?.properties?.values?.value, currentState);
-    const disabledOptions = resolveReferences(
-      component?.component?.definition?.properties?.optionDisable?.value,
-      currentState
-    );
-    const visibleOptions = resolveReferences(
-      component?.component?.definition?.properties?.optionVisibility?.value,
-      currentState
-    );
-    const _options = values?.map((value, index) => ({
-      value,
-      label: labels?.[index],
-      visible: visibleOptions?.[index],
-      isDisabled: disabledOptions?.[index],
-    }));
-    return _options;
+    const options = resolveReferences(component?.component?.definition?.properties?.options?.value, currentState);
+    return options;
   };
 
   const _markedAsDefault = resolveReferences(component?.component?.definition?.properties?.value?.value, currentState);
@@ -78,32 +64,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   const updateAllOptionsParams = (options) => {
-    paramsUpdated([
-      {
-        param: { name: 'values' },
-        attr: 'value',
-        value: options.map((option) => option.value),
-        paramType: 'properties',
-      },
-      {
-        param: { name: 'display_values' },
-        attr: 'value',
-        value: options.map((option) => option.label),
-        paramType: 'properties',
-      },
-      {
-        param: { name: 'optionVisibility' },
-        attr: 'value',
-        value: options.map((option) => option.visible),
-        paramType: 'properties',
-      },
-      {
-        param: { name: 'optionDisable' },
-        attr: 'value',
-        value: options.map((option) => option.isDisabled),
-        paramType: 'properties',
-      },
-    ]);
+    paramUpdated(
+      { name: 'options' },
+      'value',
+      options,
+      'properties'
+    );
   };
 
   const generateNewOptions = () => {
@@ -112,7 +78,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     let currentNumber = options.length + 1;
     let value = currentNumber;
     while (!found) {
-      label = `Option ${currentNumber}`;
+      label = `option${currentNumber}`;
       value = currentNumber.toString();
       if (options.find((option) => option.label === label) === undefined) {
         found = true;
@@ -123,7 +89,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       value,
       label,
       visible: true,
-      isDisabled: false,
+      disable: false,
     };
   };
 
@@ -144,38 +110,28 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
+          ...option,
           label,
-          value: option.value,
         };
       }
       return option;
     });
     setOptions(_options);
-    paramUpdated(
-      { name: 'display_values' },
-      'value',
-      _options.map((option) => option.label),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   const handleValueChange = (value, index) => {
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
-          label: option.label,
+          ...option,
           value,
         };
       }
       return option;
     });
     setOptions(_options);
-    paramUpdated(
-      { name: 'values' },
-      'value',
-      _options.map((option) => option.value),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   const reorderOptions = async (startIndex, endIndex) => {
@@ -195,9 +151,21 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const handleMarkedAsDefaultChange = (value, index) => {
     const isMarkedAsDefault = resolveReferences(value, currentState);
-    const _value = isMarkedAsDefault ? options[index]?.value : '';
-    setMarkedAsDefault(_value);
-    paramUpdated({ name: 'value' }, 'value', _value, 'properties');
+    if (isMultiSelect) {
+      const _value = options[index]?.value;
+      let _markedAsDefault = []
+      if (isMarkedAsDefault && !markedAsDefault.includes(_value)) {
+        _markedAsDefault = [...markedAsDefault, _value]
+      } else {
+        _markedAsDefault = markedAsDefault.filter((value) => value !== _value);
+      }
+      setMarkedAsDefault(_markedAsDefault);
+      paramUpdated({ name: 'value' }, 'value', _markedAsDefault, 'properties');
+    } else {
+      const _value = isMarkedAsDefault ? options[index]?.value : '';
+      setMarkedAsDefault(_value);
+      paramUpdated({ name: 'value' }, 'value', _value, 'properties');
+    }
   };
 
   const handleVisibilityChange = (value, index) => {
@@ -212,13 +180,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       return option;
     });
     setOptions(_options);
-
-    paramUpdated(
-      { name: 'optionVisibility' },
-      'value',
-      _options.map((option) => option.visible),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   const handleDisableChange = (value, index) => {
@@ -227,18 +189,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       if (i === index) {
         return {
           ...option,
-          isDisabled: _value,
+          disable: _value,
         };
       }
       return option;
     });
     setOptions(_options);
-    paramUpdated(
-      { name: 'optionDisable' },
-      'value',
-      _options.map((option) => option.isDisabled),
-      'properties'
-    );
+    updateAllOptionsParams(_options);
   };
 
   useEffect(() => {
@@ -280,20 +237,20 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={markedAsDefault === item.value}
+              initialValue={isMultiSelect ? markedAsDefault.includes(item.value) : markedAsDefault === item.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               component={component}
               type={'toggle'}
-              paramLabel={'Mark this as default option'}
+              paramLabel={'Make this default option'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.visible !== false}
+              initialValue={item.visible}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -306,7 +263,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.isDisabled}
+              initialValue={item.disable}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -323,7 +280,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOptions = () => {
     return (
-      <List>
+      <List style={{ marginBottom: '20px' }}>
         <DragDropContext
           onDragEnd={(result) => {
             onDragEnd(result);
@@ -332,7 +289,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <Droppable droppableId="droppable">
             {({ innerRef, droppableProps, placeholder }) => (
               <div className="w-100" {...droppableProps} ref={innerRef}>
-                {options.map((item, index) => {
+                {options?.map((item, index) => {
                   return (
                     <Draggable key={item.value} draggableId={item.value} index={index}>
                       {(provided, snapshot) => (
@@ -442,15 +399,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         )}
         {isDynamicOptionsEnabled
           ? renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              'schema',
-              'properties',
-              currentState,
-              allComponents
-            )
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'schema',
+            'properties',
+            currentState,
+            allComponents
+          )
           : _renderOptions()}
         {isDynamicOptionsEnabled &&
           renderElement(
@@ -459,6 +416,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'optionsLoadingState',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isMultiSelect &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showAllOption',
             'properties',
             currentState,
             allComponents

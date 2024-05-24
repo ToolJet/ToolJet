@@ -63,6 +63,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'ToggleSwitchV2',
   'Checkbox',
   'DropdownV2',
+  'MultiselectV2',
 ];
 
 export const Inspector = ({
@@ -693,6 +694,7 @@ const GetAccordion = React.memo(
         return <Form {...restProps} />;
 
       case 'DropdownV2':
+      case 'MultiselectV2':
         return <Select {...restProps} />;
 
       default: {
