@@ -63,7 +63,9 @@ const MultiLineCodeEditor = (props) => {
   }, []);
 
   const handleOnBlur = () => {
-    onChange(currentValue);
+    setTimeout(() => {
+      onChange(currentValue);
+    }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
@@ -215,7 +217,7 @@ const MultiLineCodeEditor = (props) => {
           callgpt={null}
         >
           <ErrorBoundary>
-            <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`}>
+            <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
                 value={currentValue}
                 placeholder={placeholder}

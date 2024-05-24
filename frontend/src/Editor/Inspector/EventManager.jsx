@@ -520,7 +520,7 @@ export const EventManager = ({
 
             {event.actionId === 'go-to-app' && (
               <GotoApp
-                event={event}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
@@ -823,7 +823,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'switch-page' && (
               <SwitchPage
-                event={event}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
@@ -903,15 +903,17 @@ export const EventManager = ({
                           data-cy="action-options-text-input-field"
                         >
                           <CodeHinter
-                            type="basic"
+                            type="fxEditor"
                             initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
+                            paramLabel={' '}
                             paramType={param?.type}
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
                             component={component}
+                            isEventManagerParam={true}
                           />
                         </div>
                       )}
