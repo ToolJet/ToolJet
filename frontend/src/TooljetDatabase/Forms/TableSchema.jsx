@@ -380,7 +380,7 @@ function TableSchema({
             <ToolTip
               message={
                 columnDetails[index]?.data_type === 'boolean'
-                  ? 'Boolean data type cannot be a primary key'
+                  ? 'Boolean type column cannot be a primary key'
                   : 'There must be atleast one Primary key'
               }
               placement="top"
