@@ -1,7 +1,12 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
-import { usePreviewLoading, usePreviewData, usePreviewPanelExpanded } from '@/_stores/queryPanelStore';
+import {
+  usePreviewLoading,
+  usePreviewData,
+  usePreviewPanelExpanded,
+  useQueryPanelStore,
+} from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 
@@ -42,7 +47,7 @@ const Preview = ({ darkMode }) => {
       return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
     }
   };
-  const [previewPanelExpanded, setPreviewPanelExpanded] = usePreviewPanelExpanded();
+  const previewPanelExpanded = usePreviewPanelExpanded();
   return (
     <div
       className={`
@@ -54,7 +59,7 @@ const Preview = ({ darkMode }) => {
       <div className="preview-toggle">
         <div
           onClick={() => {
-            setPreviewPanelExpanded(!previewPanelExpanded);
+            useQueryPanelStore.getState().actions.setPreviewPanelExpanded(!previewPanelExpanded);
           }}
           className="left"
         >

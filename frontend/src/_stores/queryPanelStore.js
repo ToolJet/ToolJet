@@ -53,5 +53,4 @@ export const useShowCreateQuery = () =>
   useQueryPanelStore((state) => [state.showCreateQuery, state.actions.setShowCreateQuery]);
 export const useNameInputFocussed = () =>
   useQueryPanelStore((state) => [state.nameInputFocussed, state.actions.setNameInputFocussed]);
-export const usePreviewPanelExpanded = () =>
-  useQueryPanelStore((state) => [state.previewPanelExpanded, state.actions.setPreviewPanelExpanded]);
+export const usePreviewPanelExpanded = () => useQueryPanelStore((state) => state.previewPanelExpanded);
