@@ -159,6 +159,21 @@ export const LeftSidebarInspector = ({
 
         return icons;
       }
+      if (!_.isEmpty(component) && component.component === 'Checkbox') {
+        const icons = [];
+
+        if (componentExposedVariables.setChecked) {
+          icons.push({
+            iconName: 'setChecked',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setValue as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        return icons;
+      }
 
       if (!_.isEmpty(component) && component.component === 'Button') {
         const icons = [];

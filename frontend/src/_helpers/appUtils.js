@@ -1845,7 +1845,7 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentMetaData.defaultSize.width;
   const defaultHeight = componentMetaData.defaultSize.height;
 
-  componentData.name = computeComponentName(componentData.component, currentComponents);
+  componentData.name = computeComponentName(componentData.name, currentComponents);
 
   let left = 0;
   let top = 0;

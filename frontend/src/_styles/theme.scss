@@ -842,8 +842,8 @@ button {
 
     &:hover {
       background: none !important;
-      border: none !important;      
-      color: var(--slate12);       
+      border: none !important;
+      color: var(--slate12);
     }
   }
 }
@@ -8731,7 +8731,7 @@ tbody {
   align-items: center;
   color: var(--slate11);
 
-  .with-border{
+  .with-border {
     border-bottom: 1px solid var(--slate5) !important;
   }
 
@@ -10829,6 +10829,7 @@ tbody {
     top: 5px;
     cursor: pointer;
   }
+
   .copy-icon {
     position: absolute;
     right: 8px;
@@ -12944,6 +12945,7 @@ tbody {
 .wrapper-div-code-editor:hover .fx-button-container {
   opacity: 1;
 }
+
 .action-description-highlighter {
   color: var(--indigo9) !important;
 }
@@ -13053,6 +13055,28 @@ tbody {
   &:active {
     background-color: var(--interactive-overlays-fill-pressed) !important;
   }
+}
+
+.widget-version-identifier {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  border-radius: 0px 8px 0px 8px;
+  height: 16px;
+  width: 35px;
+  font-size: 10px;
+  color: var(--text-on-solid) !important;
+  font-weight: 500;
+}
+
+.widget-version-old-identifier {
+  background-color: #BF4F03;
+  @extend .widget-version-identifier
+}
+
+.widget-version-new-identifier {
+  background-color: #1E823B;
+  @extend .widget-version-identifier
 }
 
 .tjdb-table-tooltip {

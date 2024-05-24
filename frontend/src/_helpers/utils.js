@@ -342,7 +342,7 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   return widgetFieldValue;
 }
 
-export function validateWidget({ validationObject, widgetValue, currentState, customResolveObjects }) {
+export function validateWidget({ validationObject, widgetValue, currentState, component, customResolveObjects }) {
   let isValid = true;
   let validationError = null;
 
@@ -408,10 +408,12 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMandatory = resolveWidgetFieldValue(mandatory, false, customResolveObjects);
 
-  if (resolvedMandatory == true) {
-    if (!widgetValue) {
-      return { isValid: false, validationError: `Field cannot be empty` };
-    }
+  if (resolvedMandatory == true && !widgetValue) {
+    return {
+      isValid: false,
+      validationError:
+        !widgetValue && component !== 'Checkbox' && component !== 'ToggleSwitchV2' && `Field cannot be empty`,
+    };
   }
   return {
     isValid,
