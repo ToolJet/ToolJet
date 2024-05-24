@@ -182,7 +182,9 @@ function TableSchema({
                     </div>
                   </div>
                 ) : columnDetails[index]?.data_type === 'boolean' ? (
-                  'Boolean type column cannot have a foreign key relation'
+                  'Foreign key relation cannot be created for boolean type column'
+                ) : columnDetails[index]?.data_type === 'serial' ? (
+                  'Foreign key relation cannot be created for serial type column'
                 ) : (
                   'No foreign key relation'
                 )
