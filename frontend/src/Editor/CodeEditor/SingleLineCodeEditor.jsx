@@ -304,7 +304,7 @@ const DynamicEditorBridge = (props) => {
     initialValue,
     type,
     fxActive,
-    paramType,
+    paramType = 'code',
     paramLabel,
     paramName,
     fieldMeta,
