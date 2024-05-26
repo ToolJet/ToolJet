@@ -38,7 +38,7 @@ const buttonVariants = cva('tw-flex tw-justify-center tw-items-center tw-font-me
         tw-interactive-focus-nonsolid tw-focus-visible:tw-interactive-focus-outline`,
       ghost: `
         tw-border-none tw-text-text-default tw-bg-[#ffffff00] hover:tw-bg-button-outline-hover
-        active:tw-bg-button-outline-pressed tw-focus-visible:tw-bg-button-outline
+        active:tw-bg-button-outline-pressed tw-focus-visible:tw-bg-button-outline disabled:tw-bg-transparent
         tw-interactive-focus-nonsolid tw-disabled:tw-text-text-disabled tw-focus-visible:tw-interactive-focus-outline tw-border-none`,
       ghostBrand: `
         tw-border-none tw-text-text-accent tw-bg-[#ffffff00] hover:tw-bg-button-secondary-hover
@@ -136,7 +136,7 @@ const Button = forwardRef(
     ref
   ) => {
     const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
-    const Comp = asChild ? Slot : 'button';
+    const Comp = asChild ? Slot : 'Button';
     const leadingIconElement = leadingIcon && (
       <SolidIcon name={leadingIcon} height={getIconSize(size)} width={getIconSize(size)} fill={iconFillColor} />
     );
@@ -146,7 +146,7 @@ const Button = forwardRef(
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, iconOnly, className }))}
+        className={cn(buttonVariants({ variant, size, iconOnly }), className)}
         ref={ref}
         disabled={disabled}
         {...props}

@@ -33,25 +33,38 @@ const checkVariants = cva('', {
   },
 });
 
-const checkPositionVariants = cva('', {
+const checkPositionVariants = cva('tw-flex', {
   variants: {
     align: {
-      left: `tw-flex tw-space-x-[12px]`,
-      right: `tw-flex tw-flex-row-reverse tw-space-x-[96px] tw-space-x-reverse`,
+      left: ``,
+      right: `tw-flex-row-reverse tw-space-x-[96px] tw-space-x-reverse`,
     },
   },
+  compoundVariants: [
+    {
+      align: 'left',
+      size: 'default',
+      className: 'tw-space-x-[6px]',
+    },
+    {
+      align: 'left',
+      size: 'large',
+      className: 'tw-space-x-[12px]',
+    },
+  ],
   defaultVariants: {
     align: 'left',
+    size: 'default',
   },
 });
 
 const Checkbox = React.forwardRef(({ className, type, size, intermediate, align, ...props }, ref) => (
-  <div className={cn(checkPositionVariants({ align }), `${props.helper ? '' : 'tw-items-center'}`)}>
+  <div className={cn(checkPositionVariants({ align, size }), `${props.helper ? '' : 'tw-items-center'}`)}>
     <CheckboxPrimitive.Root
       ref={ref}
       className={cn(
         checkVariants({ type, size }),
-        `tw-peer tw-flex tw-justify-center tw-items-center tw-shrink-0 tw-border tw-border-solid tw-border-[1px] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-icon-brand focus-visible:data-[state=checked]:tw-ring-offset-2 ${
+        `tw-peer tw-mt-[2px] tw-flex tw-justify-center tw-items-center tw-shrink-0 tw-border tw-border-solid tw-border-[1px] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-icon-brand focus-visible:data-[state=checked]:tw-ring-offset-2 ${
           props.disabled
             ? 'tw-cursor-not-allowed tw-bg-[#CCD1D5]/30 tw-border-border-weak'
             : 'tw-bg-background-surface-layer-01 tw-border-border-default'
@@ -78,16 +91,12 @@ const Checkbox = React.forwardRef(({ className, type, size, intermediate, align,
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
     {props.label && (
-      <div
-        className={`tw-flex tw-flex-col ${
-          props.helper ? (props.size === 'large' ? 'tw-space-y-[4px]' : 'tw-space-y-[2px]') : ''
-        }`}
-      >
+      <div className={`tw-flex tw-flex-col ${props.helper ? (props.size === 'large' ? 'tw-space-y-[2px]' : '') : ''}`}>
         <Label
           htmlFor="label"
           type="label"
           size={size || 'default'}
-          className={`${props.disabled ? '!tw-text-text-disabled' : ''}`}
+          className={`tw-font-normal ${props.disabled ? '!tw-text-text-disabled' : ''}`}
         >
           {props.label}
         </Label>
@@ -96,7 +105,7 @@ const Checkbox = React.forwardRef(({ className, type, size, intermediate, align,
           type="helper"
           size={size || 'default'}
           disabled={props.disabled}
-          className={`${props.disabled ? '!tw-text-text-disabled' : ''}`}
+          className={`tw-font-normal ${props.disabled ? '!tw-text-text-disabled' : ''}`}
         >
           {props.helper}
         </Label>
