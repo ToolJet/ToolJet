@@ -87,7 +87,8 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 
 ## Button
 
-| <div style={{ width:"100px"}}> Buttob Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+| <div style={{ width:"100px"}}> Button Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
 | Type        | Sets the fill value of the Button component.                                                   | Select `Solid` for a button with a solid background and `Outline` for a transparent button with an outline.          |
 | Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
 | Text color    | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
