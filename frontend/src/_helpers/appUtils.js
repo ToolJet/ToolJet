@@ -1619,10 +1619,8 @@ export const addComponents = (
   }
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
-  if (!isCloning) {
-    toast.success('Component pasted succesfully');
-    return newComponent;
-  }
+  toast.success('Component pasted succesfully');
+  return newComponent;
 };
 
 export const addNewWidgetToTheEditor = (
