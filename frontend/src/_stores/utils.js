@@ -264,8 +264,9 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
 
           if (doesActionsExist || doesColumnsExist) {
             const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value) || [];
-            const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
+            let columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
 
+            columns = removeEmptyValues(columns);
             metaDiff.definition = {
               ...metaDiff.definition,
               [attribute]: {
@@ -293,7 +294,6 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
       if (result[id]?.definition) {
         delete result[id].definition;
       }
-
       result[id].type = componentMeta.component;
       result[id].parent = component.component.parent ?? null;
       result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
@@ -314,7 +314,6 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
 
     type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
   }
-
   return { updateDiff, type, operation };
 };
 
@@ -474,3 +473,17 @@ export function findEntityId(entityName, map, reverseMap) {
     }
   }
 }
+//remove null,undefined,empty string
+export const removeEmptyValues = (arr) => {
+  if (!Array.isArray(arr)) {
+    throw new TypeError('Expected an array');
+  }
+
+  return arr
+    .filter((item) => item && typeof item === 'object' && Object.keys(item).length > 0) // Filter out null, undefined, and empty objects
+    .map((obj) => {
+      return Object.fromEntries(
+        Object.entries(obj).filter(([_, value]) => value !== null && value !== undefined && value !== '')
+      );
+    });
+};
