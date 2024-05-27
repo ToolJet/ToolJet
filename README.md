@@ -127,4 +127,4 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself wi
 </a>
 
 ## License
-ToolJet © 2023, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
+ToolJet © 2024, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
