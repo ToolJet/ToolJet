@@ -7,7 +7,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { SearchBox } from '@/_components';
 
-export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode }) {
+export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode, disabled }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
@@ -132,7 +132,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className={`components-container ${isVersionReleased && 'disabled'}`}>
+    <div className={`components-container ${(isVersionReleased || disabled) && 'disabled'}`}>
       <p className="widgets-manager-header">Components</p>
       <div className="input-icon tj-app-input">
         <SearchBox

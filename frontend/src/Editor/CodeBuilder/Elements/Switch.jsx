@@ -17,10 +17,10 @@ const Switch = ({ value, onChange, cyLabel, meta, paramName, isIcon, component }
           <ToggleGroupItem
             key={option.value}
             value={option.value}
-            isIcon={isIcon}
+            isIcon={meta.isIcon}
             style={{ width: meta?.fullWidth ? '100%' : '67px' }}
           >
-            {isIcon ? option?.iconName ?? '' : option?.displayName}
+            {meta.isIcon ? option?.iconName ?? '' : option?.displayName}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

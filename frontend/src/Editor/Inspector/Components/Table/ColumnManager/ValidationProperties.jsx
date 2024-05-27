@@ -1,11 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import ReactDatePicker from 'react-datepicker';
 import moment from 'moment';
 import Timepicker from '@/ToolJetUI/Timepicker/Timepicker';
 import CustomDatePickerHeader from '@/Editor/Components/Table/CustomDatePickerHeader';
 import { resolveReferences } from '../../../../../_helpers/utils';
+import cx from 'classnames';
 
 const getDate = (date, format) => {
   const dateMomentInstance = date && moment(date, format);
@@ -185,7 +186,9 @@ export const ValidationProperties = ({
               showTimeSelectOnly={validation.showOnlyTime}
               placeholderText={validation?.placeholder ?? ''}
               renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
-              popperClassName={darkMode && 'theme-dark dark-theme'}
+              popperClassName={cx('tj-table-datepicker', {
+                'theme-dark dark-theme': darkMode,
+              })}
             />
           </div>
         );
@@ -208,7 +211,19 @@ export const ValidationProperties = ({
         );
       default:
         return (
-          <div data-cy={validation.dataCy} className="field flex-fill" key={validation.property}>
+          <div
+            data-cy={validation.dataCy}
+            className="field flex-fill"
+            key={validation.property}
+            style={
+              validation?.property === 'minValue' || //for number & string
+              validation?.property === 'maxValue' ||
+              validation?.property === 'minLength' ||
+              validation?.property === 'maxLength'
+                ? { width: '50%' }
+                : null
+            }
+          >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <CodeHinter
               currentState={currentState}
