@@ -193,6 +193,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             </label>
             <CodeHinter
               currentState={currentState}
+              type={'basic'}
               initialValue={item.label}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -207,6 +208,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             </label>
             <CodeHinter
               currentState={currentState}
+              type={'basic'}
               initialValue={item.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -223,12 +225,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               component={component}
-              type={'toggle'}
+              type={'basic'}
               paramLabel={'Make this default option'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
+              // paramMeta={{ type: 'toggle', displayName: 'Make editable' }}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          {/* <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
               initialValue={item.visible}
@@ -236,7 +239,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               component={component}
-              type={'toggle'}
+              type={'fxEditor'}
               paramLabel={'Visibility'}
               onChange={(value) => handleVisibilityChange(value, index)}
             />
@@ -249,11 +252,11 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               component={component}
-              type={'toggle'}
+              type={'fxEditor'}
               paramLabel={'Disable'}
               onChange={(value) => handleDisableChange(value, index)}
             />
-          </div>
+          </div> */}
         </Popover.Body>
       </Popover>
     );

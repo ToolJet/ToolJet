@@ -1,6 +1,6 @@
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
@@ -13,7 +13,6 @@ import './dropdownV2.scss';
 import CustomValueContainer from './CustomValueContainer';
 import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
-import Label from '@/_ui/Label';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -100,7 +99,6 @@ export const DropdownV2 = ({
   const [inputValue, setInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const inputRef = React.useRef(null); // Ref for the input search box
-  const labelRef = useRef();
 
   function findDefaultItem(schema) {
     let _schema = schema;
@@ -339,44 +337,52 @@ export const DropdownV2 = ({
     }),
   };
 
-  // const labelStyles = {
-  //     [direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
-  //     color: labelColor !== '#1B1F24' ? labelColor : 'var(--text-primary)',
-  //     justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
-  // };
+  const labelStyles = {
+    [direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
+    color: labelColor !== '#1B1F24' ? labelColor : 'var(--text-primary)',
+    justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+  };
 
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
   return (
     <>
       <div
-        data-cy={`label-${String(component.name).toLowerCase()} `}
-        className={`dropdown-widget  d-flex  ${
-          alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) ||
-            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
-            ? 'flex-column'
-            : 'align-items-center '
-        }  ${direction === 'right' && alignment === 'side' ? 'flex-row-reverse' : ''}
-    ${direction === 'right' && alignment === 'top' ? 'text-right' : ''}
-    ${visibility || 'invisible'}`}
+        className="dropdown-widget g-0"
         style={{
-          position: 'relative',
-          whiteSpace: 'nowrap',
-          width: '100%',
+          // height: _height,
+          display: visibility ? 'flex' : 'none',
+          flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
         }}
+        onMouseDown={(event) => {
+          onComponentClick(id, component, event);
+          // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
+          useEditorStore.getState().actions.setHoveredComponent('');
+        }}
+        data-cy={dataCy}
       >
-        <Label
-          label={label}
-          width={labelWidth}
-          labelRef={labelRef}
-          darkMode={darkMode}
-          color={labelColor}
-          defaultAlignment={alignment}
-          direction={direction}
-          auto={labelAutoWidth}
-          isMandatory={isMandatory}
-          _width={_width}
-        />
+        <div
+          className={`my-auto text-truncate`}
+          style={{
+            alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+            width: alignment === 'top' || labelAutoWidth ? 'auto' : `${_width}%`,
+            // maxWidth: alignment === 'top' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+            maxWidth: alignment === 'side' ? '70%' : '100%',
+          }}
+        >
+          <label style={labelStyles} className="font-size-12 font-weight-500 py-0 my-0 d-flex">
+            <span
+              style={{
+                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {label}
+            </span>
+            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+          </label>
+        </div>
         <div className="w-100 px-0 h-100" ref={ref}>
           <Select
             ref={selectref}
@@ -430,13 +436,11 @@ export const DropdownV2 = ({
         </div>
       </div>
       <div
-        className={`${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
+        className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
         style={{
           color: errTextColor,
-          justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
-          fontSize: '11px',
-          fontWeight: '400',
-          lineHeight: '16px',
+          justifyContent: direction === 'alignRight' ? 'flex-start' : 'flex-end',
+          marginTop: alignment === 'top' ? '1.25rem' : '0.25rem',
         }}
       >
         {!isValid && validationError}

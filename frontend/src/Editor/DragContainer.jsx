@@ -533,8 +533,8 @@ export default function DragContainer({
 
             const _gridWidth = useGridStore.getState().subContainerWidths[draggedOverElemId] || gridWidth;
             const currentParentId = boxes.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
-            let left = e.lastEvent.translate[0];
-            let top = e.lastEvent.translate[1];
+            let left = e.lastEvent?.translate[0];
+            let top = e.lastEvent?.translate[1];
 
             if (['Listview', 'Kanban'].includes(widgets[draggedOverElemId]?.component?.component)) {
               const elemContainer = e.target.closest('.real-canvas');
