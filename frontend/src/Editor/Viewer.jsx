@@ -61,7 +61,6 @@ import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
-const maskedWorkspaceConstantStr = '**************';
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);

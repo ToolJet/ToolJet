@@ -2356,7 +2356,7 @@ const EditorComponent = (props) => {
                         </div>
                       )}
                       {defaultComponentStateComputed && (
-                        <>
+                        <div>
                           <Container
                             widthOfCanvas={canvasWidth}
                             socket={socket}
@@ -2383,7 +2383,7 @@ const EditorComponent = (props) => {
                             canvasWidth={canvasWidth}
                             onDragging={(isDragging) => setIsDragging(isDragging)}
                           />
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
