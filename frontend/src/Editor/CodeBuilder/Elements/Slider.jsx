@@ -5,13 +5,14 @@ import * as Slider from '@radix-ui/react-slider';
 import './Slider.scss';
 import { debounce } from 'lodash';
 
-function Slider1({ value, onChange, component }) {
+function Slider1({ value, onChange, component, styleDefinition }) {
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
-
+  const isDisabled =
+    styleDefinition?.auto?.value === '{{false}}' ? false : styleDefinition?.auto?.value === '{{true}}' ? true : false;
   useEffect(() => {
     setSliderValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [component.id]);
+  }, [component?.id]);
 
   const debouncedOnChange = debounce((value) => {
     onChange(value);
@@ -32,7 +33,7 @@ function Slider1({ value, onChange, component }) {
   return (
     <div className="d-flex flex-column " style={{ width: '142px', marginBottom: '16px', position: 'relative' }}>
       <CustomInput
-        disabled={component.component.definition.styles.auto.value}
+        disabled={isDisabled}
         value={sliderValue}
         staticText="% of the field"
         onInputChange={onInputChange}
@@ -48,9 +49,9 @@ function Slider1({ value, onChange, component }) {
           value={[sliderValue]}
           onValueChange={handleSliderChange}
           onValueCommit={(value) => {
-            onChange(value);
+            onChange(`{{${value}}}`);
           }}
-          disabled={component.component.definition.styles.auto.value}
+          disabled={isDisabled}
         >
           <Slider.Track className="SliderTrack">
             <Slider.Range className="SliderRange" />

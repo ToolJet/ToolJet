@@ -102,7 +102,13 @@ const Preview = ({ darkMode }) => {
               >
                 <Tab.Pane eventKey="json" transition={false}>
                   <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
-                    <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
+                    <JSONTree
+                      theme={theme}
+                      data={queryPreviewData}
+                      invertTheme={!darkMode}
+                      collectionLimit={100}
+                      hideRoot={true}
+                    />
                   </div>
                 </Tab.Pane>
                 <Tab.Pane eventKey="raw" transition={false}>
