@@ -610,7 +610,7 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN ${column['column_name']}`;
+    const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN "${column['column_name']}"`;
     try {
       const result = await this.tooljetDbManager.query(query);
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
