@@ -33,8 +33,6 @@ export const useCurrentStateStore = create(
       ...initialState,
       actions: {
         setCurrentState: (currentState) => {
-          const start = performance.now();
-
           const diffing = JSON.parse(JSON.stringify(diff(get(), currentState)));
 
           let newState = get();
@@ -47,14 +45,6 @@ export const useCurrentStateStore = create(
             });
 
             set(newState);
-
-            const end = performance.now();
-
-            console.log('arpit:: setCurrentState', end - start, {
-              diffing,
-
-              newState,
-            });
           }
         },
         setErrors: (error) => {
