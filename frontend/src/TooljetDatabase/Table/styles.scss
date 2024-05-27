@@ -469,3 +469,11 @@
 
   }
 }
+
+.tooltip-table-dashboard {
+  max-width: 500px !important;
+
+  .tooltip-inner {
+    max-width: 100% !important;
+  }
+}

@@ -1259,6 +1259,7 @@ const Table = ({ collapseSidebar }) => {
                                 cell.column.dataType !== 'boolean' &&
                                 cell.value !== ''
                               }
+                              tooltipClassName="tooltip-table-dashboard"
                             >
                               <div
                                 className={`${
