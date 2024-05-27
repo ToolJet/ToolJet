@@ -18,6 +18,8 @@ import { Chart } from '@/Editor/Components/Chart';
 import { Map as MapComponent } from '@/Editor/Components/Map/Map';
 import { QrScanner } from '@/Editor/Components/QrScanner/QrScanner';
 import { ToggleSwitch } from '@/Editor/Components/Toggle';
+import { ToggleSwitchV2 } from '@/Editor/Components/ToggleV2';
+
 import { RadioButton } from '@/Editor/Components/RadioButton';
 import { StarRating } from '@/Editor/Components/StarRating';
 import { Divider } from '@/Editor/Components/Divider';
@@ -121,6 +123,7 @@ export const AllComponents = {
   Icon,
   Form,
   BoundedBox,
+  ToggleSwitchV2,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
