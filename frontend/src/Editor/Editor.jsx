@@ -1305,7 +1305,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      const deleteFromMap = [componentId, ...childComponents];
+      const deleteFromMap = [componentId, ...childComponents.map(({ componentId }) => componentId)];
       const deletedComponentNames = deleteFromMap.map((id) => {
         return appDefinition.pages[currentPageId].components[id].component.name;
       });
