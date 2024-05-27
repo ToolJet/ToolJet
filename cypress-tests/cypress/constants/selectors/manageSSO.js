@@ -59,4 +59,5 @@ export const ssoSelector = {
   disablePasswordHelperText: '[data-cy="disable-password-helper-text"]',
   defaultGoogle: '[data-cy="dropdown-options-google"]',
   defaultGithub: '[data-cy="dropdown-options-git"]',
+  workspaceSignUpHeader: '[data-cy="workspace-signup-header"]'
 };
