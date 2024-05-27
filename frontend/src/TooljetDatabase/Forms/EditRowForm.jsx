@@ -234,6 +234,7 @@ const EditRowForm = ({
                 setReferencedColumnDetails={setReferencedColumnDetails}
                 scrollEventForColumnValues={true}
                 cellColumnName={columnName}
+                columnDataType={dataType}
               />
             ) : (
               <input

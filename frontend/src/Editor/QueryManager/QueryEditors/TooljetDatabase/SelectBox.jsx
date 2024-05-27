@@ -14,6 +14,88 @@ import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import ArrowRight from '@/TooljetDatabase/Icons/ArrowRight.svg';
 
+function CustomMenuList({ ...props }) {
+  const { selectProps } = props;
+  const { tjdbMenuListProps } = selectProps;
+
+  const selectedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isSelected) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const focusedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isFocused) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const handleScrollThrottled = throttle(tjdbMenuListProps.handleInfiniteScroll, 500);
+  return (
+    <React.Fragment>
+      <MenuList
+        {...props}
+        onAdd={tjdbMenuListProps.onAdd}
+        addBtnLabel={tjdbMenuListProps.addBtnLabel}
+        emptyError={tjdbMenuListProps.emptyError}
+        foreignKeyAccess={tjdbMenuListProps.foreignKeyAccess}
+        columnInfoForTable={tjdbMenuListProps.columnInfoForTable}
+        showColumnInfo={tjdbMenuListProps.showColumnInfo}
+        foreignKeyAccessInRowForm={tjdbMenuListProps.foreignKeyAccessInRowForm}
+        scrollEventForColumnValues={tjdbMenuListProps.scrollEventForColumnValues}
+        scrollContainerRef={tjdbMenuListProps.scrollContainerRef}
+        foreignKeys={tjdbMenuListProps.foreignKeys}
+        cellColumnName={tjdbMenuListProps.cellColumnName}
+        isLoadingFKDetails={tjdbMenuListProps.isLoadingFKDetails}
+        handleScrollThrottled={handleScrollThrottled}
+      />
+      {tjdbMenuListProps.foreignKeyAccess && tjdbMenuListProps.showDescription && tjdbMenuListProps.actions && (
+        <>
+          <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+          <div
+            style={{
+              height: 'fit-content',
+              padding: '8px 12px',
+            }}
+          >
+            <div className="tj-header-h8 tj-text">
+              {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+            </div>
+            <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+              {
+                <GenerateActionsDescription
+                  targetTable={
+                    tjdbMenuListProps.targetTable?.value ||
+                    tjdbMenuListProps.targetTable?.label ||
+                    tjdbMenuListProps.targetTable?.name
+                  }
+                  sourceTable={tjdbMenuListProps.tableName}
+                  actionName={tjdbMenuListProps.actionName}
+                  label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                />
+              }
+            </span>
+          </div>
+        </>
+      )}
+    </React.Fragment>
+  );
+}
+
+const customComponents = { MenuList: CustomMenuList };
+
 function DataSourceSelect({
   darkMode,
   isDisabled,
@@ -51,6 +133,7 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  columnDataType = '',
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -95,9 +178,11 @@ function DataSourceSelect({
     const filterQuery = new PostgrestQueryBuilder();
     selectQuery.select(referencedColumns?.referenced_column_names[0]);
     let query = `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`;
+
     if (!isEmpty(searchValue)) {
-      // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
-      filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
+      columnDataType === 'character varying'
+        ? filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`)
+        : filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
       query = query + `&${filterQuery.url.toString()}`;
     }
 
@@ -220,6 +305,11 @@ function DataSourceSelect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const customFilterOption = (option, inputValue) => {
+    if (!option.label) return null;
+    return option.label.toString().toLowerCase().includes(inputValue.toString().toLowerCase());
+  };
+
   return (
     <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <Select
@@ -242,8 +332,27 @@ function DataSourceSelect({
         menuIsOpen
         autoFocus
         hideSelectedOptions={false}
+        tjdbMenuListProps={{
+          handleInfiniteScroll: handleInfiniteScroll,
+          onAdd: onAdd,
+          addBtnLabel: addBtnLabel,
+          emptyError: emptyError,
+          foreignKeyAccess: foreignKeyAccess,
+          columnInfoForTable: columnInfoForTable,
+          showColumnInfo: showColumnInfo,
+          foreignKeyAccessInRowForm: foreignKeyAccessInRowForm,
+          scrollEventForColumnValues: scrollEventForColumnValues,
+          scrollContainerRef: scrollContainerRef,
+          foreignKeys: foreignKeys,
+          cellColumnName: cellColumnName,
+          isLoadingFKDetails: isLoadingFKDetails,
+          showDescription: showDescription,
+          actions: actions,
+          targetTable: targetTable,
+          tableName: tableName,
+          actionName: actionName,
+        }}
         components={{
-          // ...(isMulti && {
           Option: ({ children, ...props }) => {
             return (
               <components.Option {...props}>
@@ -261,7 +370,6 @@ function DataSourceSelect({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        // width: '20px',
                       }}
                     >
                       <Form.Check // prettier-ignore
@@ -269,7 +377,6 @@ function DataSourceSelect({
                         id={props.value}
                         className="me-1"
                         checked={props.isSelected}
-                        // label={`default ${type}`}
                       />
                     </div>
                   )}
@@ -354,94 +461,7 @@ function DataSourceSelect({
               </components.Option>
             );
           },
-          // }),
-          MenuList: useCallback(
-            (props) => {
-              const selectedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isSelected) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-
-              const focusedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isFocused) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-
-              const handleScrollThrottled = throttle(handleInfiniteScroll, 500);
-
-              return (
-                <React.Fragment>
-                  <MenuList
-                    {...props}
-                    onAdd={onAdd}
-                    addBtnLabel={addBtnLabel}
-                    emptyError={emptyError}
-                    foreignKeyAccess={foreignKeyAccess}
-                    columnInfoForTable={columnInfoForTable}
-                    showColumnInfo={showColumnInfo}
-                    foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                    scrollEventForColumnValues={scrollEventForColumnValues}
-                    scrollContainerRef={scrollContainerRef}
-                    foreignKeys={foreignKeys}
-                    cellColumnName={cellColumnName}
-                    isLoadingFKDetails={isLoadingFKDetails}
-                    handleScrollThrottled={handleScrollThrottled}
-                  />
-                  {foreignKeyAccess && showDescription && actions && (
-                    <>
-                      <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
-                      <div
-                        style={{
-                          // minHeight: '140px',
-                          height: 'fit-content',
-                          padding: '8px 12px',
-                        }}
-                      >
-                        <div className="tj-header-h8 tj-text">
-                          {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                        </div>
-                        <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
-                          {
-                            <GenerateActionsDescription
-                              targetTable={targetTable?.value || targetTable?.label || targetTable?.name}
-                              sourceTable={tableName}
-                              actionName={actionName}
-                              label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                            />
-                          }
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </React.Fragment>
-              );
-            },
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            [
-              onAdd,
-              addBtnLabel,
-              emptyError,
-              pageNumber,
-              searchPageNumber,
-              searchValue,
-              // isInitialForeignKeyDataLoaded,
-              isLoadingFKDetails,
-            ]
-          ),
+          ...customComponents,
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
@@ -450,12 +470,9 @@ function DataSourceSelect({
         styles={{
           control: (style) => ({
             ...style,
-            // width: '240px',
             background: 'var(--base)',
             color: 'var(--slate9)',
             borderWidth: '0',
-            // borderBottom: '1px solid var(--slate7)',
-            // marginBottom: '1px',
             boxShadow: 'none',
             borderRadius: '4px 4px 0 0',
             borderBottom: '1px solid var(--slate-05, #E6E8EB)',
@@ -489,8 +506,6 @@ function DataSourceSelect({
             ...style,
             fontSize: '100%',
             color: 'var(--slate-11, #687076)',
-            // font-size: 12px;
-            // font-style: normal;
             fontWeight: 500,
             lineHeight: '20px',
             textTransform: 'uppercase',
@@ -542,13 +557,13 @@ function DataSourceSelect({
         }}
         placeholder="Search"
         options={scrollEventForColumnValues && searchValue ? searchResults : options}
+        filterOption={scrollEventForColumnValues ? null : customFilterOption}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
         maxMenuHeight={400}
         minMenuHeight={300}
         value={selected}
-        // inputValue={searchValue}
         onInputChange={(value) => {
           handleChange(value);
         }}
@@ -592,6 +607,7 @@ const MenuList = ({
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 225 - 48;
+    if (scrollEventForColumnValues) menuListStyles.minHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
 
