@@ -7,8 +7,9 @@ import { ButtonSolid } from '@/_components/AppButton';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getRedirectTo, getSubpath, returnWorkspaceIdIfNeed } from '@/_helpers/routes';
+import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 
 const LdapLoginPageComponent = ({ darkMode, ...props }) => {
   const [username, setUserName] = useState('');
@@ -19,6 +20,7 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
   const [showPassword, setShowPassword] = useState(false);
   const { organizationId: organizationSlug } = useParams();
   const [loginOrganizationId, setLoginOrganizationId] = useState(organizationSlug);
+  const navigate = useNavigate();
 
   const handleChange = (event) => {
     switch (event.target.name) {
@@ -35,7 +37,6 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
 
   useEffect(() => {
     setGettingConfigsState(true);
-    authenticationService.deleteLoginOrganizationId();
     authenticationService.getOrganizationConfigs(organizationSlug).then(
       (configs) => {
         if (configs?.id) setLoginOrganizationId(configs.id);
@@ -65,15 +66,16 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
       setLoading(true);
       authenticationService
         .signInViaOAuth(config?.config_id, 'ldap', { username, password, organizationId: loginOrganizationId })
-        .then(({ redirect_url }) => {
+        .then(({ redirect_url, ...restResponse }) => {
+          setLoading(false);
           if (redirect_url) {
             window.location.href = redirect_url;
             return;
           }
-          setLoading(false);
-          const path = getRedirectTo();
-          const redirectPath = `${returnWorkspaceIdIfNeed(path, organizationSlug)}${path && path !== '/' ? path : ''}`;
-          window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+          if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
+          else {
+            onLoginSuccess(restResponse, navigate);
+          }
         })
         .catch((err) => {
           toast.error(`LDAP login failed - ${err?.error || 'something went wrong'}`);

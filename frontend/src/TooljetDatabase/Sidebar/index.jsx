@@ -6,7 +6,6 @@ import cx from 'classnames';
 
 export default function Sidebar({ collapseSidebar }) {
   const [bannerVisible, setBannerVisible] = useState(false);
-
   return (
     <div className={cx('tooljet-database-sidebar col d-flex flex-column', { 'visually-hidden': collapseSidebar })}>
       <div className={`sidebar-container ${!bannerVisible ? '' : 'sidebar-container-with-banner'}`}>

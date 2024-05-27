@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { lowercaseString } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
@@ -10,7 +10,14 @@ export class AppAuthenticationDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(5, { message: 'Password should contain more than 5 characters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  redirectTo: string;
 }
 
 export class AppSignupDto {
@@ -26,8 +33,17 @@ export class AppSignupDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(5, { message: 'Password should contain more than 5 letters' })
+  @MinLength(5, { message: 'Password should contain more than 5 characters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
+
+  @IsOptional()
+  @IsUUID()
+  organizationId: string;
+
+  @IsString()
+  @IsOptional()
+  redirectTo: string;
 }
 
 export class AppForgotPasswordDto {
@@ -42,6 +58,7 @@ export class AppPasswordResetDto {
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
 
   @IsString()
@@ -53,6 +70,7 @@ export class ChangePasswordDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
-  @MinLength(5)
+  @MinLength(5, { message: 'Password should contain more than 5 characters' })
+  @MaxLength(100, { message: 'Password should be Max 100 characters' })
   newPassword: string;
 }

@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 import { posthog } from 'posthog-js';
-
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
   useSelectedQuery,
@@ -26,6 +26,7 @@ import { defaultSources } from '../constants';
 import { cloneDeep } from 'lodash';
 
 import ParameterList from './ParameterList';
+import { decodeEntities } from '@/_helpers/utils';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, appId, setOptions }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -224,7 +225,7 @@ const PreviewButton = ({ buttonLoadingState, onClick, selectedQuery, isRunButton
   const previewLoading = usePreviewLoading();
   const selectedDataSource = useSelectedDataSource();
   const hasPermissions =
-    selectedDataSource?.scope === 'global'
+    selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
@@ -335,7 +336,7 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
               }
             )}
           >
-            <span className="text-truncate">{name} </span>
+            <span className="text-truncate">{decodeEntities(name)} </span>
             <span
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}

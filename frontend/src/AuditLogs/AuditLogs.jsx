@@ -13,7 +13,7 @@ import { CustomToggleSwitch } from '../Editor/QueryManager/Components/CustomTogg
 import { Button } from '@/_ui/LeftSidebar';
 import { BreadCrumbContext } from '@/App/App';
 import { LicenseBannerCloud } from '@/LicenseBannerCloud';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import Skeleton from 'react-loading-skeleton';
@@ -60,7 +60,7 @@ const AuditLogs = (props) => {
   }, [dateRangePickerValue, defaultValueForMinDate, licenseType, maxDuration]);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  const { super_admin, admin, current_organization_id, instance_id } = authenticationService.currentSessionValue;
+  const { super_admin, admin, current_organization_id } = authenticationService.currentSessionValue;
   const DEMO_LINK = `https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=tooljet-cloud&workspace_id=${current_organization_id}`;
 
   const perPage = 7;
@@ -893,7 +893,6 @@ const AuditLogs = (props) => {
                                       </div>
                                     </div>
                                   )}
-
                                   <AuditLogs.GenerateFilterBy data={selectedSearchOptions} closeFilter={closeFilter} />
                                 </div>
                               </div>
@@ -992,8 +991,6 @@ const AuditLogs = (props) => {
         </LicenseBannerCloud>
       </Layout>
     );
-  } else {
-    return <Navigate to={`/${current_organization_id}`} />;
   }
 };
 

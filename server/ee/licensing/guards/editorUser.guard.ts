@@ -1,5 +1,4 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException } from '@nestjs/common';
-import { UsersService } from '@services/users.service';
 import { getManager } from 'typeorm';
 import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
 import { OrganizationLicenseService } from '@services/organization_license.service';
@@ -7,11 +6,7 @@ import { LicenseService } from '@services/license.service';
 
 @Injectable()
 export class EditorUserCountGuard implements CanActivate {
-  constructor(
-    private usersService: UsersService,
-    private OrgLicenseService: OrganizationLicenseService,
-    private licenseService: LicenseService
-  ) {}
+  constructor(private OrgLicenseService: OrganizationLicenseService, private licenseService: LicenseService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

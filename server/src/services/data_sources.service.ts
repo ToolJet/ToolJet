@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
@@ -19,6 +19,7 @@ import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.ent
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { decode } from 'js-base64';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DataSourcesService {
@@ -29,6 +30,7 @@ export class DataSourcesService {
     private appEnvironmentService: AppEnvironmentService,
     private usersService: UsersService,
     private licenseService: LicenseService,
+    private configService: ConfigService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
@@ -53,7 +55,8 @@ export class DataSourcesService {
         .leftJoinAndSelect('data_source.plugin', 'plugin')
         .leftJoinAndSelect('plugin.iconFile', 'iconFile')
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
-        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
+        .where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
         if (!canPerformCreateOrDelete) {
@@ -99,8 +102,25 @@ export class DataSourcesService {
         .andWhere('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
         .getMany();
 
+      const sampleDataSourceQuery = await manager
+        .createQueryBuilder(DataSource, 'data_source')
+        .where('data_source.organizationId = :organizationId', { organizationId })
+        .andWhere('data_source.type = :type', { type: DataSourceTypes.SAMPLE })
+        .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')
+        .leftJoinAndSelect('data_source.plugin', 'plugin')
+        .leftJoinAndSelect('plugin.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
+
+      let sampleDataSource: DataSource[] = [];
+      if (scope === DataSourceScopes.GLOBAL) {
+        sampleDataSource = await sampleDataSourceQuery.getMany();
+      }
+
+      const dataSourceList = [...result, ...sampleDataSource];
+
       //remove tokenData from restapi datasources
-      const dataSources = result?.map((ds) => {
+      const dataSources = dataSourceList?.map((ds) => {
         if (ds.kind === 'restapi') {
           const options = {};
           Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
@@ -332,6 +352,10 @@ export class DataSourcesService {
   ): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
 
+    if (dataSource.type === DataSourceTypes.SAMPLE) {
+      throw new BadRequestException('Cannot update configuration of sample data source');
+    }
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(
         LICENSE_FIELD.MULTI_ENVIRONMENT,
@@ -380,6 +404,10 @@ export class DataSourcesService {
   }
 
   async delete(dataSourceId: string) {
+    const dataSource = await this.findOne(dataSourceId);
+    if (dataSource.type === DataSourceTypes.SAMPLE) {
+      throw new BadRequestException('Cannod delete sample data source');
+    }
     return await this.dataSourcesRepository.delete(dataSourceId);
   }
 
@@ -702,5 +730,67 @@ export class DataSourcesService {
       }
     }
     return result;
+  }
+
+  private async getAllSampleDataSource(organizationId?: string, manager?: EntityManager): Promise<DataSource[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(DataSource, {
+        where: {
+          ...(organizationId && { organizationId }),
+          type: DataSourceTypes.SAMPLE,
+        },
+      });
+    }, manager);
+  }
+
+  async updateSampleDs() {
+    const options = [
+      {
+        key: 'host',
+        value: this.configService.get<string>('PG_HOST'),
+        encrypted: true,
+      },
+      {
+        key: 'port',
+        value: this.configService.get<string>('PG_PORT'),
+        encrypted: true,
+      },
+      {
+        key: 'database',
+        value: 'sample_db',
+      },
+      {
+        key: 'username',
+        value: this.configService.get<string>('PG_USER'),
+        encrypted: true,
+      },
+      {
+        key: 'password',
+        value: this.configService.get<string>('PG_PASS'),
+        encrypted: true,
+      },
+      {
+        key: 'ssl_enabled',
+        value: false,
+        encrypted: true,
+      },
+      { key: 'ssl_certificate', value: 'none', encrypted: false },
+    ];
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const allSampleDs = await this.getAllSampleDataSource(null, manager);
+      if (!allSampleDs?.length) {
+        return;
+      }
+      for (const ds of allSampleDs) {
+        const { organizationId } = ds;
+        const newOptions = await this.parseOptionsForUpdate(ds, options);
+        const allEnvs = await this.appEnvironmentService.getAll(organizationId);
+        await Promise.all(
+          allEnvs.map(async (envToUpdate) => {
+            await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, ds.id, manager);
+          })
+        );
+      }
+    });
   }
 }

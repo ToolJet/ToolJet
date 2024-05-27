@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
-import { authenticationService, organizationService } from '@/_services';
+import { authenticationService } from '@/_services';
 import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import cx from 'classnames';
 import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import { ToolTip } from '@/_components';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import { decodeEntities } from '@/_helpers/utils';
 
 const Menu = (props) => {
   const { t } = useTranslation();
@@ -80,7 +81,7 @@ const SingleValue = ({ selectProps }) => {
     <ToolTip message={selectProps?.value?.name}>
       <div className="d-inline-flex align-items-center">
         <div data-cy="workspace-name" className="tj-text-xsm">
-          {selectProps.value.name}
+          {decodeEntities(selectProps.value.name)}
         </div>
       </div>
     </ToolTip>

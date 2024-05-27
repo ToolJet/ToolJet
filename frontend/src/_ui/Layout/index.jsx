@@ -17,6 +17,8 @@ import Beta from '../Beta';
 import Settings from '@/_components/Settings';
 import './styles.scss';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { useLicenseState, useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
 
 function Layout({
   children,
@@ -27,7 +29,12 @@ function Layout({
   toggleCollapsibleSidebar = () => {},
 }) {
   const router = useRouter();
-  const [featureAccess, setFeatureAccess] = useState({});
+  const { featureAccess } = useLicenseStore(
+    (state) => ({
+      featureAccess: state.featureAccess,
+    }),
+    shallow
+  );
   const [whiteLabelLogo, setWhiteLabelLogo] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_LOGO);
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
@@ -37,13 +44,6 @@ function Layout({
     }
 
     return permissions.some((p) => p[action]);
-  };
-
-  const fetchFeatureAccess = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      setFeatureAccess({ ...data });
-    });
-    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   const canCreateDataSource = () => {
@@ -71,7 +71,7 @@ function Layout({
   };
 
   useEffect(() => {
-    fetchFeatureAccess();
+    useLicenseStore.getState().actions.fetchFeatureAccess();
     const fetchData = async () => {
       const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
       let whiteLabelLogo;
@@ -87,7 +87,6 @@ function Layout({
       whiteLabelLogo = useWhiteLabellingStore.getState().whiteLabelLogo;
       setWhiteLabelLogo(whiteLabelLogo);
     };
-
     fetchData();
   }, []);
 

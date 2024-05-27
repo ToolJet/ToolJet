@@ -16,7 +16,6 @@ import {
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
-import { addNewUser } from "Support/utils/onboarding";
 import { groupsSelector } from "Selectors/manageGroups";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import {
@@ -27,7 +26,7 @@ import {
     createGroup,
 } from "Support/utils/common";
 
-import { AddDataSourceToGroup } from "Support/utils/eeCommon";
+import { AddDataSourceToGroup, addNewUserEE } from "Support/utils/eeCommon";
 
 import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
 
@@ -175,7 +174,7 @@ describe("Global Datasource Manager", () => {
         data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.text1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-        addNewUser(data.userName1, data.userEmail1);
+        addNewUserEE(data.userName1, data.userEmail1);
         cy.logoutApi();
 
         cy.defaultWorkspaceLogin();
@@ -245,7 +244,7 @@ describe("Global Datasource Manager", () => {
         data.text2 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.groupName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-        addNewUser(data.userName1, data.userEmail1);
+        addNewUserEE(data.userName1, data.userEmail1);
         cy.logoutApi();
 
         cy.defaultWorkspaceLogin();

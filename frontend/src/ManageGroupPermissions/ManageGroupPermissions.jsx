@@ -3,7 +3,7 @@ import { groupPermissionService, licenseService, authenticationService } from '@
 import { Tooltip } from 'react-tooltip';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { withTranslation, useTranslation } from 'react-i18next';
+import { withTranslation } from 'react-i18next';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import posthog from 'posthog-js';

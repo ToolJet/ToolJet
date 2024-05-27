@@ -71,6 +71,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       AppEnvironment,
       AppVersion,
       Metadata,
+      DataSource,
     ]),
     InstanceSettingsModule,
     WhiteLabellingModule,
@@ -113,6 +114,6 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
     SAMLGuard,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
-  exports: [OrganizationsService],
+  exports: [OrganizationsService, OrganizationUsersService],
 })
 export class OrganizationsModule {}

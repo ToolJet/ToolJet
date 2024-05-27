@@ -6,29 +6,40 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useEditorActions, useEditorState } from '@/_stores/editorStore';
+import { useEditorState } from '@/_stores/editorStore';
+import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 
 export const CreateVersion = ({
   appId,
-  appVersions,
-  setAppVersions,
   setAppDefinitionFromVersion,
   showCreateAppVersion,
   setShowCreateAppVersion,
 }) => {
   const { featureAccess } = useEditorState();
   const { current_organization_id } = authenticationService.currentSessionValue;
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
 
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [fetchingOrgGit, setFetchingOrgGit] = useState(false);
   const [cancommit, setCommitEnabled] = useState(false);
   const [orgGit, setOrgGit] = useState(null);
+  const {
+    versionsPromotedToEnvironment: appVersions,
+    createNewVersionAction,
+    selectedEnvironment,
+  } = useEnvironmentsAndVersionsStore(
+    (state) => ({
+      appVersionsLazyLoaded: state.appVersionsLazyLoaded,
+      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+      lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
+      createNewVersionAction: state.actions.createNewVersionAction,
+      selectedEnvironment: state.selectedEnvironment,
+    }),
+    shallow
+  );
+
   const { t } = useTranslation();
-  const { currentAppEnvironmentId } = useEditorState();
+
   const { editingVersion } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
@@ -56,21 +67,20 @@ export const CreateVersion = ({
 
     setIsCreatingVersion(true);
 
-    appVersionService
-      .create(appId, versionName, selectedVersion.id, currentAppEnvironmentId)
-      .then((data) => {
+    //TODO: pass environmentId to the func
+    createNewVersionAction(
+      appId,
+      versionName,
+      selectedVersion.id,
+      (newVersion) => {
         toast.success('Version Created');
-        appVersionService.getAll(appId).then((data) => {
-          setVersionName('');
-          setIsCreatingVersion(false);
-          setAppVersions(data.versions);
-          setShowCreateAppVersion(false);
-        });
-
+        setVersionName('');
+        setIsCreatingVersion(false);
+        setShowCreateAppVersion(false);
         appVersionService
-          .getAppVersionData(appId, data.id)
+          .getAppVersionData(appId, newVersion.id)
           .then((data) => {
-            setAppDefinitionFromVersion(data);
+            setAppDefinitionFromVersion(data, selectedEnvironment);
             if (cancommit) {
               const body = {
                 gitAppName: orgGit?.git_app_name,
@@ -80,7 +90,7 @@ export const CreateVersion = ({
               };
               gitSyncService
                 .gitPush(body, orgGit?.id, data?.editing_version?.id)
-                .then((data) => {
+                .then(() => {
                   toast.success('Changes commited successfully');
                 })
                 .catch((error) => {
@@ -91,11 +101,12 @@ export const CreateVersion = ({
           .catch((error) => {
             toast.error(error);
           });
-      })
-      .catch((error) => {
+      },
+      (error) => {
         toast.error(error?.error);
         setIsCreatingVersion(false);
-      });
+      }
+    );
   };
 
   const fetchOrgGit = () => {
@@ -114,6 +125,7 @@ export const CreateVersion = ({
 
   useEffect(() => {
     if (featureAccess?.gitSync) fetchOrgGit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

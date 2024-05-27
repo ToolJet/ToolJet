@@ -20,11 +20,11 @@ import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { SSOGuard } from '@ee/licensing/guards/sso.guard';
+import { CreateWorkspaceGuard } from 'src/modules/organizations/create-workspace.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -82,7 +82,7 @@ export class OrganizationsController {
     return decamelizeKeys({ organizations: organizationsWithLicenseType });
   }
 
-  @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard)
+  @UseGuards(JwtAuthGuard, CreateWorkspaceGuard)
   @Post()
   async create(
     @User() user,
@@ -108,7 +108,6 @@ export class OrganizationsController {
       const result = await this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
     }
-
     const result = await this.organizationsService.fetchOrganizationDetails(organizationId, [true], true, true);
     if (!result) throw new NotFoundException();
 
@@ -134,7 +133,7 @@ export class OrganizationsController {
     return;
   }
 
-  @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard, CreateWorkspaceGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch('/name')
   async updateName(@Body('name') name, @User() user) {

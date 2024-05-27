@@ -3,7 +3,7 @@ import Plus from '@/_ui/Icon/solidIcons/Plus';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox as SearchBox2 } from '@/_components/SearchBox';
 import DataSourceIcon from './DataSourceIcon';
@@ -13,14 +13,18 @@ import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { Tooltip } from 'react-tooltip';
 import { canCreateDataSource } from '@/_helpers';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import '../queryManager.theme.scss';
 
-function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalDataSources }) {
+function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, darkMode, globalDataSources }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources];
   const [searchTerm, setSearchTerm] = useState();
   const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);
   const navigate = useNavigate();
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
+
+  const docLink = 'sampledb.com';
 
   const handleChangeDataSource = (source) => {
     createDataQuery(source);
@@ -89,6 +93,50 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
             );
           })}
         </div>
+        {!!sampleDataSource && (
+          <div>
+            <label className="form-label sample-db-data-query-picker-form-label" data-cy={`landing-page-label-default`}>
+              Sample data sources
+            </label>
+
+            <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
+              <ButtonSolid
+                key={`${sampleDataSource.id}-${sampleDataSource.kind}`}
+                variant="tertiary"
+                size="sm"
+                onClick={() => {
+                  handleChangeDataSource(sampleDataSource);
+                }}
+                className="text-truncate"
+                data-cy={`${sampleDataSource.kind.toLowerCase().replace(/\s+/g, '-')}-sample-db-add-query-card`}
+              >
+                <DataSourceIcon source={sampleDataSource} height={14} />{' '}
+                {sampleDataSource.kind == 'postgresql' ? 'PostgreSQL' : 'ToolJetDB'}
+              </ButtonSolid>
+            </div>
+
+            {/* Info icon */}
+            <div className="open-doc-link-container">
+              <div className="col-md-1 info-btn">
+                <SolidIcon name="informationcircle" fill="#3E63DD" />
+              </div>
+              <div className="col-md-11">
+                <div className="message" data-cy="warning-text">
+                  <p>
+                    This is a shared resource and may show varying data due to real-time updates. It&apos;s reset daily
+                    for some consistency, but please note it&apos;s designed for user exploration, not production
+                    use.&nbsp;
+                    <a onClick={handleAddClick} target="_blank" rel="noopener noreferrer" className="opn-git-btn">
+                      Explore available data sources
+                    </a>{' '}
+                    <SolidIcon name="open" width={'8'} height={'8'} viewBox={'0 0 10 10'} />
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
             {`Available Data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
@@ -129,11 +177,11 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                       handleChangeDataSource(source);
                     }}
                     data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
-                    data-tooltip-content={source.name}
+                    data-tooltip-content={decodeEntities(source.name)}
                     data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                   >
                     <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
-                    <span className="text-truncate">{source.name}</span>
+                    <span className="text-truncate">{decodeEntities(source.name)}</span>
                     <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
                   </ButtonSolid>
                 </Col>

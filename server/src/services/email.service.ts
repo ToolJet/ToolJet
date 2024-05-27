@@ -118,11 +118,12 @@ export class EmailService {
     organizationInvitationToken?: string,
     organizationId?: string,
     organizationName?: string,
-    sender?: string
+    sender?: string,
+    redirectTo?: string
   ) {
     await this.init(organizationId);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId);
+    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo);
     const subject = isOrgInvite ? `Welcome to ${this.WHITE_LABEL_TEXT || 'ToolJet'}` : 'Set up your account!';
     const footerText = isOrgInvite
       ? `You have received this email as an invitation to join ${this.WHITE_LABEL_TEXT}’s workspace`
@@ -161,11 +162,12 @@ export class EmailService {
     sender: string,
     invitationtoken: string,
     organizationName: string,
-    organizationId?: string
+    organizationId: string,
+    redirectTo?: string
   ) {
-    await this.init(organizationId);
+    await this.init();
     const subject = `Welcome to ${this.WHITE_LABEL_TEXT || 'ToolJet'}`;
-    const inviteUrl = generateOrgInviteURL(invitationtoken);
+    const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo);
     const templateData = {
       name: name || '',
       inviteUrl,

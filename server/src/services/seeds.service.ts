@@ -99,6 +99,12 @@ export class SeedsService {
     });
   }
 
+  async getAllOrganizations(manager?: EntityManager): Promise<Organization[]> {
+    return await this.entityManager.transaction(async (manager) => {
+      return await manager.find(Organization);
+    });
+  }
+
   async createDefaultUserGroups(manager: EntityManager, user: User): Promise<void> {
     const defaultGroups = ['all_users', 'admin'];
     for (const group of defaultGroups) {

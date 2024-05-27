@@ -5,11 +5,11 @@ import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
 import got from 'got';
 import { User } from 'src/entities/user.entity';
-import { UsersService } from '@services/users.service';
 import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { LicenseCountsService } from './license_counts.service';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import License from '@ee/licensing/configs/License';
@@ -22,9 +22,9 @@ export class MetadataService {
     @InjectRepository(Metadata)
     private metadataRepository: Repository<Metadata>,
     private configService: ConfigService,
-    private usersService: UsersService,
+    private organizationLicenseService: OrganizationLicenseService,
     private licenseService: LicenseService,
-    private organizationLicenseService: OrganizationLicenseService
+    private licenseCountsService: LicenseCountsService
   ) {}
 
   async getMetaData() {

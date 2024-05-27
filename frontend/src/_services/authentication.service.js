@@ -10,7 +10,7 @@ import {
 import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
-import { getRedirectToWithParams } from '@/_helpers/routes';
+import { getRedirectTo, getRedirectToWithParams } from '@/_helpers/routes';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 const currentSessionSubject = new BehaviorSubject({
@@ -22,11 +22,15 @@ const currentSessionSubject = new BehaviorSubject({
   app_group_permissions: null,
   data_source_group_permissions: null,
   organizations: [],
+  isUserLoggingIn: false,
   authentication_status: null,
   authentication_failed: null,
+  isOrgSwitchingFailed: null,
   isUserUpdated: false,
   load_app: false, //key is used only in the viewer mode
   instance_id: null,
+  noWorkspaceAttachedInTheSession: false,
+  triggeredOnce: null,
 });
 
 export const authenticationService = {
@@ -50,6 +54,7 @@ export const authenticationService = {
   resetPassword,
   saveLoginOrganizationId,
   getLoginOrganizationId,
+  //TODO: delete this function from files if not needed
   deleteLoginOrganizationId,
   forgotPassword,
   resendInvite,
@@ -59,20 +64,44 @@ export const authenticationService = {
   activateTrial,
   getLoginOrganizationSlug,
   saveLoginOrganizationSlug,
-  deleteLoginOrganizationSlug,
+  getInvitedUserSession,
+  activateAccountWithToken,
+  getSignupOrganizationId,
+  getSignupOrganizationSlug,
+  getInviteFlowIndetifier,
+  setSignUpOrganizationDetails,
+  deleteAllAuthCookies,
 };
 
+function setSignUpOrganizationDetails(organizationId, organizationSlug, inviteFlowIdentifier) {
+  organizationId && setCookie('signup-workspace-id', organizationId);
+  organizationSlug && setCookie('signup-workspace-slug', organizationSlug);
+  inviteFlowIdentifier && setCookie('invite-flow-identifier', inviteFlowIdentifier);
+}
+
+function deleteAllAuthCookies() {
+  const cookiesToDelete = [
+    'login-workspace',
+    'login-workspace-slug',
+    'signup-workspace-id',
+    'signup-workspace-slug',
+    'invite-flow-identifier',
+  ];
+
+  cookiesToDelete.forEach((cookieName) => eraseCookie(cookieName));
+}
+
 function login(email, password, organizationId) {
+  const redirectTo = getRedirectTo();
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, redirectTo }),
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      authenticationService.updateCurrentSession(user);
       return user;
     });
 }
@@ -116,8 +145,20 @@ function getLoginOrganizationId() {
   return getCookie('login-workspace');
 }
 
+function getSignupOrganizationId() {
+  return getCookie('signup-workspace-id');
+}
+
 function deleteLoginOrganizationId() {
   eraseCookie('login-workspace');
+}
+
+function getSignupOrganizationSlug() {
+  return getCookie('signup-workspace-slug');
+}
+
+function getInviteFlowIndetifier() {
+  return getCookie('invite-flow-identifier');
 }
 
 function saveLoginOrganizationSlug(organizationSlug) {
@@ -126,10 +167,6 @@ function saveLoginOrganizationSlug(organizationSlug) {
 
 function getLoginOrganizationSlug() {
   return getCookie('login-workspace-slug');
-}
-
-function deleteLoginOrganizationSlug() {
-  eraseCookie('login-workspace-slug');
 }
 
 async function getOrganizationConfigs(organizationId) {
@@ -152,19 +189,28 @@ async function getOrganizationConfigs(organizationId) {
   }
 }
 
-function signup(email, name, password) {
+function signup(email, name, password, organizationId, redirectTo) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, name, password }),
+    body: JSON.stringify({ email, name, password, organizationId, redirectTo }),
+    credentials: 'include',
   };
 
-  return fetch(`${config.apiUrl}/signup`, requestOptions)
-    .then(handleResponse)
-    .then((user) => {
-      return user;
-    });
+  return fetch(`${config.apiUrl}/signup`, requestOptions).then(handleResponse);
 }
+
+function activateAccountWithToken(email, password, organizationToken) {
+  const requestOptions = {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, organizationToken }),
+  };
+
+  return fetch(`${config.apiUrl}/activate-account-with-token`, requestOptions).then(handleResponse);
+}
+
 function resendInvite(email) {
   const requestOptions = {
     method: 'POST',
@@ -324,11 +370,14 @@ function logout(avoidRedirection = false, organizationId = null) {
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {
   const organizationId = getLoginOrganizationId();
+  const signupOrganizationId = getSignupOrganizationId();
+  const invitationToken = getInviteFlowIndetifier();
+  const redirectTo = getCookie('redirectPath');
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ ...ssoResponse, organizationId }),
+    body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };
 
   const url = configId ? configId : `common/${ssoType}`;
@@ -350,4 +399,10 @@ function authorize() {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
+}
+
+function getInvitedUserSession({ accountToken, organizationToken }) {
+  const body = { organizationToken, ...(accountToken && { accountToken }) };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/invited-user-session`, requestOptions).then(handleResponseWithoutValidation);
 }

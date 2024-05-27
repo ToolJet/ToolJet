@@ -12,7 +12,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
-import { validateName } from '@/_helpers/utils';
+import { validateName, decodeEntities } from '@/_helpers/utils';
 const { defaultIcon } = configs;
 import posthog from 'posthog-js';
 import { authenticationService } from '@/_services';
@@ -167,7 +167,7 @@ export default function AppCard({
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
             >
-              {app.name}
+              {decodeEntities(app.name)}
             </h3>
           </ToolTip>
         </div>
@@ -199,6 +199,7 @@ export default function AppCard({
                       folder_id: currentFolder?.id,
                     });
                   }}
+                  reloadDocument
                 >
                   <button
                     type="button"

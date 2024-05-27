@@ -1,12 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Observable } from 'rxjs';
+import { InstanceSettingsService } from '@services/instance_settings.service';
+import { INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class SignupDisableGuard implements CanActivate {
-  constructor(private configService: ConfigService) {}
+  constructor(private instanceSettingsService: InstanceSettingsService) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    return this.configService.get<string>('DISABLE_SIGNUPS') !== 'true';
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const enableSignUp = await this.instanceSettingsService.getSettings(INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP);
+    return request.body.organizationId || enableSignUp;
   }
 }

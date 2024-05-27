@@ -1,28 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService, organizationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { getAvatar } from '@/_helpers/utils';
+import { getAvatar, decodeEntities } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
+import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
+import { shallow } from 'zustand/shallow';
 
+/* TODO: 
+  each workspace related component has organizations list component which can be moved to a single wrapper. 
+  otherwise this component will intiate everytime we switch between pages
+*/
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentSessionValue;
-  const [organizationList, setOrganizationList] = useState([]);
-  const [getOrgStatus, setGetOrgStatus] = useState('');
+  const { fetchOrganizations, organizationList, isGettingOrganizations } = useCurrentSessionStore(
+    (state) => ({
+      organizationList: state.organizations,
+      isGettingOrganizations: state.isGettingOrganizations,
+      fetchOrganizations: state.actions.fetchOrganizations,
+    }),
+    shallow
+  );
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [workspacesLimit, setWorkspacesLimit] = useState({});
 
   useEffect(() => {
-    setGetOrgStatus('loading');
     organizationService.getWorkspacesLimit().then((data) => {
       setWorkspacesLimit(data?.workspacesCount);
     });
-    const sessionObservable = authenticationService.currentSession.subscribe((newSession) => {
-      setOrganizationList(newSession.organizations ?? []);
-      if (newSession.organizations?.length > 0) setGetOrgStatus('success');
-    });
-
-    () => sessionObservable.unsubscribe();
+    fetchOrganizations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const switchOrganization = (id) => {
@@ -48,7 +55,7 @@ export const OrganizationList = function () {
         </div>
         <ToolTip message={org.name} placement="right">
           <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
-            {org.name}
+            {decodeEntities(org.name)}
           </div>
         </ToolTip>
         {org?.license_type !== 'basic' && !org?.is_license_expired && (
@@ -62,7 +69,7 @@ export const OrganizationList = function () {
     <div className="org-select-container">
       <CustomSelect
         workspacesLimit={workspacesLimit}
-        isLoading={getOrgStatus === 'loading'}
+        isLoading={isGettingOrganizations}
         options={options}
         value={current_organization_id}
         onChange={(id) => switchOrganization(id)}

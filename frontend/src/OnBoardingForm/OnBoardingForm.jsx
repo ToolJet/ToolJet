@@ -20,7 +20,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source = null }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +35,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     phoneNumber: '',
     requestedTrial: false,
   });
+  const source = new URLSearchParams(location?.search).get('source');
 
   const pageProps = {
     formData,

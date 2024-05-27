@@ -489,8 +489,10 @@ describe("Superadmin", () => {
       });
     });
 
+    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
+    cy.clearAndType(commonSelectors.passwordInputField, "password");
+    cy.get(commonSelectors.signInButton).click();
     cy.get(commonSelectors.acceptInviteButton).click();
-    cy.login(data.email, usersText.password);
     cy.contains(data.email).should("be.visible");
   });
 

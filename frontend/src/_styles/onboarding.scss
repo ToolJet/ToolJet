@@ -312,6 +312,27 @@
 }
 
 
+.sso-btn-disabled {
+    .login-sso-wrapper {
+        border-color: #E4E7EB !important;
+        background-color: #F3F4F6 !important;
+
+        &:hover {
+            box-shadow: none !important;
+        }
+    }
+
+    .sso-button {
+        cursor: not-allowed;
+        background-color: #F3F4F6;
+        pointer-events: none;
+    }
+
+    .sso-info-text {
+        color: #CFD5E0;
+    }
+}
+
 .tj-text-input-label {
     font-weight: 500;
     font-size: 12px;
@@ -1449,7 +1470,7 @@
     }
 
     .active-onboarding-tab {
-        color: $color-dark-slate-12  !important;
+        color: $color-dark-slate-12 !important;
 
         img {
             filter: brightness(0) invert(1);
@@ -1570,7 +1591,7 @@
             box-shadow: 0px 8px 8px -4px rgba(16, 24, 40, 0.03), 0px 20px 24px -4px rgba(16, 24, 40, 0.08);
             border-radius: 6px;
             border: 1px solid var(--slate5);
-            
+
             .header-wrapper {
                 border-bottom: 1px solid var(--slate5);
 
@@ -1579,7 +1600,7 @@
                     padding: 24px 36px 16px 36px;
                     grid-template-columns: 1fr 0.2fr 0.1fr;
                     border-bottom: 1px solid var(--slate-05);
-                }   
+                }
             }
 
             .body {
@@ -1624,7 +1645,6 @@
                                 transform: scale(0);
                                 transition: 120ms transform ease-in-out;
                                 background: var(--indigo9)
-
                             }
 
                             &:checked::before {
@@ -1635,7 +1655,7 @@
 
                     .free-radio {
                         input {
-                            border: 1px solid var(--indigo9) !important; 
+                            border: 1px solid var(--indigo9) !important;
                             color: var(--indigo9);
 
                             &::before {
@@ -1643,10 +1663,10 @@
                             }
                         }
                     }
-    
+
                     .paid-radio {
                         input {
-                            border: 1px solid var(--amber9) !important; 
+                            border: 1px solid var(--amber9) !important;
                             color: var(--amber9);
 
                             &::before {

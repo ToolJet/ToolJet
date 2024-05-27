@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
 import { returnDevelopmentEnv, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import _ from 'lodash';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -28,13 +29,13 @@ export const GlobalDatasources = (props) => {
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [environmentLoading, setEnvironmentLoading] = useState(false);
-  const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
+  const [activeDatasourceList, setActiveDatasourceList] = useState('#commonlyused');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const [featureAccess, setFeatureAccess] = useState({});
 
   useEffect(() => {
-    if (dataSources?.length == 0) updateSidebarNAV('Databases');
+    if (dataSources?.length == 0) updateSidebarNAV('Commonly used');
     fetchFeatureAccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -42,7 +43,7 @@ export const GlobalDatasources = (props) => {
   useEffect(() => {
     selectedDataSource
       ? updateSidebarNAV(selectedDataSource.name)
-      : !activeDatasourceList && updateSidebarNAV('Databases');
+      : !activeDatasourceList && updateSidebarNAV('Commonly used');
 
     fetchAndSetWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
 
@@ -119,7 +120,16 @@ export const GlobalDatasources = (props) => {
             }
             return ds;
           })
-          .sort((a, b) => a.name.localeCompare(b.name));
+          .sort((a, b) => {
+            if (a.type === DATA_SOURCE_TYPE.SAMPLE && b.type !== DATA_SOURCE_TYPE.SAMPLE) {
+              return -1; // a comes before b
+            } else if (a.type !== DATA_SOURCE_TYPE.SAMPLE && b.type === DATA_SOURCE_TYPE.SAMPLE) {
+              return 1; // b comes before a
+            } else {
+              // If types are the same or both are not 'sample', sort by name
+              return a.name.localeCompare(b.name);
+            }
+          });
         setDataSources([...(orderedDataSources ?? [])]);
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
         if (!resetSelection && ds) {
@@ -131,7 +141,7 @@ export const GlobalDatasources = (props) => {
         }
         if (orderedDataSources.length && resetSelection) {
           if (!canCreateDataSource()) {
-            setActiveDatasourceList('#databases');
+            setActiveDatasourceList('#commonlyused');
             setSelectedDataSource(null);
           } else if (!canUpdateDataSource()) {
             setSelectedDataSource(orderedDataSources[0]);
@@ -143,7 +153,7 @@ export const GlobalDatasources = (props) => {
           }
         }
         if (!orderedDataSources.length) {
-          setActiveDatasourceList('#databases');
+          setActiveDatasourceList('#commonlyused');
         }
         setLoading(false);
       })

@@ -28,6 +28,7 @@ export const appsService = {
   getWorkflows,
   getAppsLimit,
   getWorkflowLimit,
+  releaseVersion,
 };
 
 function getWorkflows(id) {
@@ -222,4 +223,15 @@ function getTables(id) {
 function getWorkflowLimit(type) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/workflowlimit/${type}`, requestOptions).then(handleResponse);
+}
+
+function releaseVersion(appId, versionToBeReleased) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify({ versionToBeReleased }),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/release`, requestOptions).then(handleResponse);
 }

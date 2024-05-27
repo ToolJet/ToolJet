@@ -28,7 +28,8 @@
         "key": "query",
         "type": "codehinter",
         "description": "Enter query",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "insert": {
@@ -37,7 +38,8 @@
         "type": "codehinter",
         "description": "Enter array of objects",
         "height": "150px",
-        "placeholder":"Enter array of objects"
+        "editorType": "extendedSingleLine",
+        "placeholder": "Enter array of objects"
       },
       "tablename": {
         "label": "Table name",

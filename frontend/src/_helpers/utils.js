@@ -10,11 +10,13 @@ import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { validateMultilineCode } from './utility';
+
+const reservedKeyword = ['app', 'window'];
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 
 export function findProp(obj, prop, defval) {
@@ -177,7 +179,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -191,7 +193,10 @@ export function resolveReferences(
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          if (reservedKeyword.includes(code)) {
+          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
+          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+
+          if (code.match(keywordRegex)) {
             error = `${code} is a reserved keyword`;
             return [{}, error];
           }
@@ -343,10 +348,11 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
   return str.join('&');
 };
 
-export function resolveWidgetFieldValue(prop, state, _default = [], customResolveObjects = {}) {
+export function resolveWidgetFieldValue(prop, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
   try {
+    const state = getCurrentState();
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
@@ -366,7 +372,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
   const mandatory = validationObject?.mandatory?.value;
-  const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
+  const validationRegex = resolveWidgetFieldValue(regex, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
   if (!re.test(widgetValue)) {
@@ -376,7 +382,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
+  const resolvedMinLength = resolveWidgetFieldValue(minLength, 0, customResolveObjects);
   if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
     return {
       isValid: false,
@@ -384,7 +390,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, undefined, customResolveObjects);
   if (resolvedMaxLength !== undefined) {
     if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
       return {
@@ -394,7 +400,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
+  const resolvedMinValue = resolveWidgetFieldValue(minValue, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
     if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
@@ -414,12 +420,12 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, false, customResolveObjects);
   if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
-  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, false, customResolveObjects);
 
   if (resolvedMandatory == true) {
     if (!widgetValue) {
@@ -541,16 +547,15 @@ export function constructSearchParams(params = {}) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  mode = '',
-  parameters = {},
-  hasParamSupport = false
-) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
+  const isValidCode = validateMultilineCode(code);
+
+  if (isValidCode.status === 'failed') {
+    return isValidCode;
+  }
+
   const currentState = getCurrentState();
+
   let result = {},
     error = null;
 
@@ -700,12 +705,26 @@ export const handleCircularStructureToJSON = () => {
 };
 
 export function hasCircularDependency(obj) {
-  try {
-    JSON.stringify(obj);
-  } catch (e) {
-    return String(e).includes('Converting circular structure to JSON');
+  let seenObjects = new WeakSet();
+
+  function detect(obj) {
+    if (obj && typeof obj === 'object') {
+      if (seenObjects.has(obj)) {
+        // Circular reference found
+        return true;
+      }
+      seenObjects.add(obj);
+
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key) && detect(obj[key])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
-  return false;
+
+  return detect(obj);
 }
 
 export const hightlightMentionedUserInComment = (comment) => {
@@ -776,10 +795,18 @@ export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, location) 
   };
   const pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path));
   const pageTitle = pathToTitle[pageTitleKey];
+
+  //For undefined routes
+
+  if (pageTitle === undefined) {
+    document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
+    return;
+  }
+
   if (pageTitleKey && !isEditorOrViewerGoingToRender) {
     document.title = pageTitle
-      ? `${pageTitle} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
-      : `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
+      ? `${decodeEntities(pageTitle)} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
+      : `${decodeEntities(whiteLabelText) || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
   }
 };
 
@@ -1310,12 +1337,6 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
   return true;
 };
 
-export function eraseRedirectUrl() {
-  const redirectPath = getCookie('redirectPath');
-  redirectPath && eraseCookie('redirectPath');
-  return redirectPath;
-}
-
 export const defaultAppEnvironments = [
   { name: 'development', isDefault: false, priority: 1 },
   { name: 'staging', isDefault: false, priority: 2 },
@@ -1329,7 +1350,6 @@ export const executeWorkflow = async (self, workflowId, _blocking = false, param
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
   return { data: executionResponse.result };
 };
-
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
@@ -1388,6 +1408,11 @@ export const calculateDueDate = (currentPeriodEnd) => {
   return dueMessage;
 };
 
+export function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 export const USER_DRAWER_MODES = {
   EDIT: 'EDIT',
   CREATE: 'CREATE',
@@ -1410,67 +1435,50 @@ export const centsToUSD = (amountInCents) => {
   return (amountInCents / 100).toFixed(2);
 };
 
-export function isPDFSupported() {
-  const browser = getBrowserUserAgent();
-
-  if (!browser) {
-    return true;
+export const setWindowTitle = async (pageDetails, location) => {
+  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  const pathToTitle = {
+    'instance-settings': pageTitles.INSTANCE_SETTINGS,
+    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
+    integrations: pageTitles.INTEGRATIONS,
+    workflows: pageTitles.WORKFLOWS,
+    database: pageTitles.DATABASE,
+    'data-sources': pageTitles.DATA_SOURCES,
+    'audit-logs': pageTitles.AUDIT_LOGS,
+    'account-settings': pageTitles.ACCOUNT_SETTINGS,
+    settings: pageTitles.SETTINGS,
+    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+  };
+  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+  let pageTitleKey = pageDetails?.page || '';
+  let pageTitle = '';
+  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
+    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
   }
-
-  const isChrome = browser.name === 'Chrome' && browser.major >= 92;
-  const isEdge = browser.name === 'Edge' && browser.major >= 92;
-  const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
-  const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
-
-  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
-
-  return isChrome || isEdge || isSafari || isFirefox;
-}
-
-export function getBrowserUserAgent(userAgent) {
-  var regexps = {
-      Chrome: [/Chrome\/(\S+)/],
-      Firefox: [/Firefox\/(\S+)/],
-      MSIE: [/MSIE (\S+);/],
-      Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
-      Safari: [/Version\/(\S+).*?Safari\//],
-    },
-    re,
-    m,
-    browser,
-    version;
-
-  if (userAgent === undefined) userAgent = navigator.userAgent;
-
-  for (browser in regexps)
-    while ((re = regexps[browser].shift()))
-      if ((m = userAgent.match(re))) {
-        version = m[1].match(new RegExp('[^.]+(?:.[^.]+){0,1}'))[0];
-        const { major, minor } = extractVersion(version);
-        return {
-          name: browser,
-          major,
-          minor,
-        };
-      }
-
-  return null;
-}
-
-function extractVersion(versionStr) {
-  // Split the string by "."
-  const parts = versionStr.split('.');
-
-  // Check for valid input
-  if (parts.length === 0 || parts.some((part) => isNaN(part))) {
-    return { major: null, minor: null };
+  switch (pageTitleKey) {
+    case pageTitles.VIEWER: {
+      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
+      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      break;
+    }
+    case pageTitles.EDITOR:
+    case pageTitles.WORKFLOW_EDITOR: {
+      pageTitle = pageDetails?.appName || 'My App';
+      break;
+    }
+    default: {
+      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
+      break;
+    }
   }
+  if (pageTitle) {
+    document.title = !(pageDetails?.preview === false)
+      ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
+      : `${decodeEntities(pageTitle)}`;
+  }
+};
 
-  // Extract major version
-  const major = parseInt(parts[0], 10);
-
-  // Handle minor version (default to 0)
-  const minor = parts.length > 1 ? parseInt(parts[1], 10) : 0;
-
-  return { major, minor };
+//For <>& UI display issues
+export function decodeEntities(encodedString) {
+  return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
 }

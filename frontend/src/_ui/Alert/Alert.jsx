@@ -1,13 +1,22 @@
 import React from 'react';
 
-export const Alert = ({ children, svg, cls = '', imgHeight = null, imgWidth = null, useDarkMode = true }) => {
+export const Alert = ({
+  children,
+  svg,
+  cls = '',
+  imgHeight = null,
+  imgWidth = null,
+  useDarkMode = true,
+  placeSvgTop = false,
+  iconCls,
+}) => {
   const imgStyles = imgHeight && imgWidth ? { height: imgHeight, width: imgWidth } : {};
   const darkMode = useDarkMode ? localStorage.getItem('darkMode') === 'true' : false;
   return (
     <Alert.Container cls={cls} useDarkMode={darkMode}>
-      <div className="d-flex align-items-center">
+      <div className={`d-flex ${iconCls ? iconCls : 'align-items-center '}`}>
         {svg && (
-          <span>
+          <span className={`${placeSvgTop ? 'align-self-start' : ''}`}>
             <img style={imgStyles} src={`assets/images/icons/${svg}.svg`} alt="alert" />
           </span>
         )}
@@ -23,7 +32,18 @@ const Container = ({ children, cls = '', useDarkMode }) => {
 
 const Message = ({ children }) => {
   return (
-    <div data-cy={`alert-info-text`} style={{ fontWeight: 400, width: '100%' }} className="mx-2">
+    <div
+      data-cy={`alert-info-text`}
+      style={{
+        fontWeight: 400,
+        width: '100%',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+        overflowWrap: 'break-word',
+        display: 'block',
+      }}
+      className="mx-2"
+    >
       {children}
     </div>
   );
