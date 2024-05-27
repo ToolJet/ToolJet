@@ -613,18 +613,14 @@ export class TooljetDbService {
     // const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN "${column['column_name']}"`;
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunnner.connect();
-    await tjdbQueryRunnner.startTransaction();
-
     try {
       const result = await tjdbQueryRunnner.dropColumn(internalTable.id, column['column_name']);
-      await tjdbQueryRunnner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await tjdbQueryRunnner.release();
       return result;
     } catch (error) {
-      await tjdbQueryRunnner.rollbackTransaction();
-      await tjdbQueryRunnner.release();
       throw new TooljetDatabaseError(error.message, { origin: 'drop_column', internalTables: [internalTable] }, error);
+    } finally {
+      await tjdbQueryRunnner.release();
     }
   }
 
