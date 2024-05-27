@@ -19,7 +19,7 @@ import {
 import { updateWorkspaceName } from "Support/utils/userPermissions";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
-import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
+import { addNewUser, visitWorkspaceInvitation, newInvite } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { setSignupStatus, enableSignUp } from "Support/utils/manageSSO";
 import { ssoSelector } from "Selectors/manageSSO";
@@ -108,7 +108,7 @@ describe("user invite flow cases", () => {
         );
     });
 
-    it.only("should verify exisiting user workspace signup", () => {
+    it("should verify exisiting user workspace signup", () => {
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.signUpName = fake.firstName;
@@ -140,6 +140,7 @@ describe("user invite flow cases", () => {
         cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
         cy.get(commonSelectors.signUpButton).click();
 
+        cy.defaultWorkspaceLogin();
         visitWorkspaceInvitation(data.email, data.workspaceName);
 
         cy.clearAndType(commonSelectors.workEmailInputField, data.email);
