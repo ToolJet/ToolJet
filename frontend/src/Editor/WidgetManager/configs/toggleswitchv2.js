@@ -1,4 +1,4 @@
-export const toggleswitchv2 = {
+export const toggleSwitchV2Config = {
   name: 'ToggleSwitch',
   displayName: 'Toggle Switch',
   description: 'User-controlled on-off switch',
