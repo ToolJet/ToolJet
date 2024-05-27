@@ -1401,6 +1401,7 @@ export const cloneComponents = (
   isCloning = true,
   isCut = false
 ) => {
+  let addedComponent = {};
   if (selectedComponents.length < 1) return getSelectedText();
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
@@ -1453,7 +1454,7 @@ export const cloneComponents = (
   if (isCloning) {
     const parentId = selectedComponents[0]['component']?.parent ?? undefined;
 
-    addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
+    addedComponent = addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -1468,6 +1469,7 @@ export const cloneComponents = (
   return new Promise((resolve) => {
     useEditorStore.getState().actions.updateEditorState({
       currentSidebarTab: 2,
+      ...(isCloning && { selectedComponents: [{ id: addedComponent.id, component: addedComponent }] }),
     });
     resolve();
   });
@@ -1619,7 +1621,9 @@ export const addComponents = (
   }
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
-  toast.success('Component pasted succesfully');
+  if (!isCloning) {
+    toast.success('Component pasted succesfully');
+  }
   return newComponent;
 };
 
