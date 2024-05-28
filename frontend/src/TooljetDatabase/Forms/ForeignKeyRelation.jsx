@@ -396,6 +396,7 @@ function ForeignKeyRelation({
         onClose={() => {
           onCloseForeignKeyDrawer();
         }}
+        className="tj-db-drawer"
       >
         <ForeignKeyTableForm
           tableName={tableName}
@@ -435,6 +436,7 @@ function ForeignKeyRelation({
           editForeignKeyInCreateTable={editForeignKeyInCreateTable}
           selectedForeignkeyIndex={selectedForeignkeyIndex}
           setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}
+          initiator="ForeignKeyTableForm"
         />
       </Drawer>
       <ConfirmDialog

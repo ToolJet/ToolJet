@@ -27,6 +27,7 @@ const TableForm = ({
   onEdit,
   onClose,
   updateSelectedTable,
+  initiator,
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
@@ -131,7 +132,9 @@ const TableForm = ({
 
     const tableNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     if (!tableNameRegex.test(tableName)) {
-      toast.error('Table name can only contain alphabets, numbers and underscores');
+      toast.error(
+        'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores.'
+      );
       return false;
     }
 
@@ -140,7 +143,6 @@ const TableForm = ({
 
   const handleCreate = async () => {
     if (!validateTableName()) return;
-
     const columnNames = Object.values(columns).map((column) => column.column_name);
     if (columnNames.some((columnName) => isEmpty(columnName))) {
       toast.error('Column names cannot be empty');
@@ -167,14 +169,6 @@ const TableForm = ({
     onCreate && onCreate({ id: data.result.id, table_name: tableName });
     setCreateForeignKeyInEdit(false);
   };
-
-  function handleKeyPress(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (!isEditMode) handleCreate(e);
-      if (isEditMode && selectedTable.table_name !== tableName) handleEdit();
-    }
-  }
 
   const handleEdit = async () => {
     if (!validateTableName()) return;
@@ -289,7 +283,6 @@ const TableForm = ({
                   setTableName(e.target.value);
                 }}
                 autoFocus
-                onKeyPress={handleKeyPress}
               />
             </div>
           </div>
@@ -330,7 +323,7 @@ const TableForm = ({
           hasPrimaryKey !== true ||
           (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
-        showToolTipForFkOnReadDocsSection={true}
+        initiator={initiator}
       />
       <ConfirmDialog
         title={'Change in primary key'}

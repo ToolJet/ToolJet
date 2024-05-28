@@ -673,6 +673,7 @@ export class AppImportExportService {
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
           manager,
+          user.organizationId,
           importingDataQueriesForAppVersion,
           importingDataSource,
           dataSourceForAppVersion,
@@ -923,6 +924,7 @@ export class AppImportExportService {
 
   async createDataQueriesForAppVersion(
     manager: EntityManager,
+    organizationId: string,
     importingDataQueriesForAppVersion: DataQuery[],
     importingDataSource: DataSource,
     dataSourceForAppVersion: DataSource,
@@ -939,7 +941,11 @@ export class AppImportExportService {
     for (const importingQuery of importingQueriesForSource) {
       const options =
         importingDataSource.kind === 'tooljetdb'
-          ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
+          ? this.replaceTooljetDbTableIds(
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1507,7 +1513,11 @@ export class AppImportExportService {
         appVersionId: query.appVersionId,
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
-            ? this.replaceTooljetDbTableIds(query.options, externalResourceMappings['tooljet_database'])
+            ? this.replaceTooljetDbTableIds(
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
@@ -1545,72 +1555,93 @@ export class AppImportExportService {
   }
 
   // Entire function should be santised for Undefined values
-  replaceTooljetDbTableIds(queryOptions: any, tooljetDatabaseMapping: any) {
-    if (queryOptions?.operation && queryOptions.operation === 'join_tables') {
-      const joinOptions = { ...(queryOptions?.join_table ?? {}) };
+  replaceTooljetDbTableIds(queryOptions, tooljetDatabaseMapping, organizationId: string) {
+    if (queryOptions?.operation === 'join_tables')
+      return this.replaceTooljetDbTableIdOnJoin(queryOptions, tooljetDatabaseMapping, organizationId);
 
-      // JOIN Section
-      if (joinOptions?.joins && joinOptions.joins.length > 0) {
-        const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
-          const updatedJoinCondition = { ...joinCondition };
-          // Updating Join tableId
-          if (updatedJoinCondition.table)
-            updatedJoinCondition.table =
-              tooljetDatabaseMapping[updatedJoinCondition.table]?.id ?? updatedJoinCondition.table;
-          // Updating TableId on Conditions in Join Query
-          if (updatedJoinCondition.conditions) {
-            const updatedJoinConditionFilter = this.updateNewTableIdForFilter(
-              updatedJoinCondition.conditions,
-              tooljetDatabaseMapping
-            );
-            updatedJoinCondition.conditions = updatedJoinConditionFilter.conditions;
-          }
+    const mappedTableId = tooljetDatabaseMapping[queryOptions.table_id]?.id;
+    return {
+      ...queryOptions,
+      ...(mappedTableId && { table_id: mappedTableId }),
+      ...(organizationId && { organization_id: organizationId }),
+    };
+  }
 
-          return updatedJoinCondition;
-        });
-        joinOptions.joins = joinsTableIdUpdatedList;
-      }
+  replaceTooljetDbTableIdOnJoin(
+    queryOptions,
+    tooljetDatabaseMapping,
+    organizationId: string
+  ): Partial<{
+    table_id: string;
+    join_table: unknown;
+    organization_id: string;
+  }> {
+    const joinOptions = { ...(queryOptions?.join_table ?? {}) };
 
-      // Filter Section
-      if (joinOptions?.conditions) {
-        joinOptions.conditions = this.updateNewTableIdForFilter(
-          joinOptions.conditions,
-          tooljetDatabaseMapping
-        ).conditions;
-      }
+    // JOIN Section
+    if (joinOptions?.joins && joinOptions.joins.length > 0) {
+      const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
+        const updatedJoinCondition = { ...joinCondition };
+        // Updating Join tableId
+        if (updatedJoinCondition.table)
+          updatedJoinCondition.table =
+            tooljetDatabaseMapping[updatedJoinCondition.table]?.id ?? updatedJoinCondition.table;
+        // Updating TableId on Conditions in Join Query
+        if (updatedJoinCondition.conditions) {
+          const updatedJoinConditionFilter = this.updateNewTableIdForFilter(
+            updatedJoinCondition.conditions,
+            tooljetDatabaseMapping
+          );
+          updatedJoinCondition.conditions = updatedJoinConditionFilter.conditions;
+        }
 
-      // Select Section
-      if (joinOptions?.fields) {
-        joinOptions.fields = joinOptions.fields.map((eachField) => {
-          if (eachField.table) {
-            eachField.table = tooljetDatabaseMapping[eachField.table]?.id ?? eachField.table;
-            return eachField;
-          }
-          return eachField;
-        });
-      }
-
-      // From Section
-      if (joinOptions?.from) {
-        const { name = '' } = joinOptions.from;
-        joinOptions.from = { ...joinOptions.from, name: tooljetDatabaseMapping[name]?.id ?? name };
-      }
-
-      // Sort Section
-      if (joinOptions?.order_by) {
-        joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
-          if (eachOrderBy.table) {
-            eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
-            return eachOrderBy;
-          }
-          return eachOrderBy;
-        });
-      }
-
-      return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id, join_table: joinOptions };
-    } else {
-      return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
+        return updatedJoinCondition;
+      });
+      joinOptions.joins = joinsTableIdUpdatedList;
     }
+
+    // Filter Section
+    if (joinOptions?.conditions) {
+      joinOptions.conditions = this.updateNewTableIdForFilter(
+        joinOptions.conditions,
+        tooljetDatabaseMapping
+      ).conditions;
+    }
+
+    // Select Section
+    if (joinOptions?.fields) {
+      joinOptions.fields = joinOptions.fields.map((eachField) => {
+        if (eachField.table) {
+          eachField.table = tooljetDatabaseMapping[eachField.table]?.id ?? eachField.table;
+          return eachField;
+        }
+        return eachField;
+      });
+    }
+
+    // From Section
+    if (joinOptions?.from) {
+      const { name = '' } = joinOptions.from;
+      joinOptions.from = { ...joinOptions.from, name: tooljetDatabaseMapping[name]?.id ?? name };
+    }
+
+    // Sort Section
+    if (joinOptions?.order_by) {
+      joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
+        if (eachOrderBy.table) {
+          eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
+          return eachOrderBy;
+        }
+        return eachOrderBy;
+      });
+    }
+
+    return {
+      ...queryOptions,
+      table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id,
+      join_table: joinOptions,
+      organization_id: organizationId,
+    };
   }
 
   updateNewTableIdForFilter(joinConditions, tooljetDatabaseMapping) {
