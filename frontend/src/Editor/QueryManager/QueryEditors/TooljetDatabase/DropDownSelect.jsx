@@ -46,6 +46,8 @@ const DropDownSelect = ({
   fetchTables,
   onTableClick,
   referencedForeignKeyDetails = [],
+  loader,
+  isLoading = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -156,6 +158,8 @@ const DropDownSelect = ({
             closePopup={() => setShowMenu(false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
+            loader={loader}
+            isLoading={isLoading}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
             foreignKeyAccess={foreignKeyAccess}
