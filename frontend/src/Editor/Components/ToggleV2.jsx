@@ -289,9 +289,13 @@ export const ToggleSwitchV2 = ({
       {renderInput()}
       {showValidationError && visibility && (
         <div
-          className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: 'var(--status-error-strong)' }}
+          style={{
+            color: 'var(--status-error-strong)',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
         >
           {showValidationError && validationError}
         </div>
