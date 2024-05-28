@@ -1,4 +1,3 @@
----
 spec:
   name: tooljet
   services:
@@ -9,36 +8,39 @@ spec:
       repository: tooljet
       tag: latest
     run_command: "./server/scripts/digitalocean-postbuild.sh"
-    instance_size_slug: basic-s
+    instance_size_slug: "basic-s"
     health_check:
       initial_delay_seconds: 10
-      http_path: "/api/health"
+      http_path: /api/health
     envs:
     - key: NODE_ENV
-      value: production
+      value: "production"
     - key: NODE_OPTIONS
       value: "--max-old-space-size=4096"
     - key: LOCKBOX_MASTER_KEY
       type: SECRET
-      value: REPLACE_ME
+      value: "REPLACE_ME"
     - key: SECRET_KEY_BASE
+      value: "REPLACE_ME"
       type: SECRET
-      value: REPLACE_ME
     - key: DISABLE_SIGNUPS
+      value: "false"
       scope: RUN_TIME
-      value: 'false'
     - key: DEPLOYMENT_PLATFORM
-      value: digitalocean
+      value: "digitalocean"
     - key: DATABASE_URL
       scope: RUN_TIME
       value: "${pg-db.DATABASE_URL}"
     - key: CA_CERT
       scope: RUN_TIME
-      value: "${pg-db.CA_CERT}"
+      value: " ${pg-db.CA_CERT}"
     - key: TOOLJET_HOST
       scope: RUN_TIME
       value: "${APP_URL}"
+    # - key: TOOLJET_SERVER_URL
+    #   scope: RUN_TIME
+    #   value: ${APP_URL}
   databases:
-  - name: pg-db
-    engine: PG
-    production: false
+    - name: pg-db
+      engine: PG
+      production: false
