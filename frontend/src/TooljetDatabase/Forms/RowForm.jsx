@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
@@ -12,11 +12,12 @@ import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 
 import './styles.scss';
+import Skeleton from 'react-loading-skeleton';
 
-const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails }) => {
+const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails, initiator, fnCaller }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
-
+  const inputRefs = useRef({});
   const primaryKeyColumns = [];
   const nonPrimaryKeyColumns = [];
   columns.forEach((column) => {
@@ -27,10 +28,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     }
   });
 
-  const rowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
-
-  const [fetching, setFetching] = useState(false);
-  const [activeTab, setActiveTab] = useState(() => {
+  const defaultActiveTab = () => {
     if (Array.isArray(rowColumns)) {
       return rowColumns.map((item) => {
         if (item.column_default === null || item.constraints_type.is_primary_key === true) {
@@ -42,10 +40,10 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     } else {
       return [];
     }
-  });
+  };
 
-  const [inputValues, setInputValues] = useState(
-    Array.isArray(rowColumns)
+  const inputValuesDefaultValues = () => {
+    return Array.isArray(rowColumns)
       ? rowColumns.map((item, _index) => {
           if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
@@ -65,8 +63,14 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           }
           return { value: '', checkboxValue: false, disabled: false, label: '' };
         })
-      : []
-  );
+      : [];
+  };
+
+  const rowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
+  const [fetching, setFetching] = useState(false);
+  const [activeTab, setActiveTab] = useState(defaultActiveTab());
+  const [inputValues, setInputValues] = useState(inputValuesDefaultValues());
+  const [errorMap, setErrorMap] = useState({});
 
   useEffect(() => {
     rowColumns.map(({ accessor, dataType, column_default }, index) => {
@@ -175,34 +179,97 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     setData({ ...data, [columnName]: value });
   };
 
+  const defaultDataValues = () => {
+    return rowColumns.reduce((result, column) => {
+      const { dataType, column_default } = column;
+      if (dataType !== 'serial') {
+        if (column.dataType === 'boolean') {
+          result[column.accessor] = column_default ? column_default : false;
+        } else {
+          result[column.accessor] = column_default ? column_default : '';
+        }
+      }
+      return result;
+    }, {});
+  };
+
   useEffect(() => {
     toast.dismiss();
-    setData(
-      rowColumns.reduce((result, column) => {
-        const { dataType, column_default } = column;
-        if (dataType !== 'serial') {
-          if (column.dataType === 'boolean') {
-            result[column.accessor] = column_default ? column_default : false;
-          } else {
-            result[column.accessor] = column_default ? column_default : '';
-          }
-        }
-        return result;
-      }, {})
-    );
+    setData(defaultDataValues());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSubmit = async () => {
+  useEffect(() => {
+    if (fnCaller) {
+      setActiveTab(defaultActiveTab());
+      setInputValues(inputValuesDefaultValues());
+      setData(defaultDataValues());
+    }
+  }, [fnCaller]);
+
+  useEffect(() => {
+    rowColumns.forEach(({ accessor }) => {
+      if (data[accessor] != '') {
+        const inputElement = inputRefs.current?.[accessor];
+        inputElement?.style?.setProperty('background-color', '#FFFFFF', 'important');
+        setErrorMap((prev) => {
+          return { ...prev, [accessor]: '' };
+        });
+      }
+    });
+  }, [data]);
+
+  const handleSubmit = async (bypass) => {
     setFetching(true);
+    let flag = 0;
+    rowColumns.forEach(({ accessor, dataType }) => {
+      if (['double precision', 'bigint', 'integer'].includes(dataType) && data[accessor] === '') {
+        flag = 1;
+        setErrorMap((prev) => {
+          return { ...prev, [accessor]: 'Cannot be empty' };
+        });
+        const inputElement = inputRefs.current?.[accessor];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+      }
+    });
+    if (flag) {
+      setFetching(false);
+      return;
+    }
     const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
     setFetching(false);
     if (error) {
+      if (error?.message.includes('Unique constraint violated')) {
+        const columnName = error?.message.split('.')?.[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Value already exists' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+      } else if (error?.message.includes('Invalid input syntax for type')) {
+        const errorMessageSplit = error?.message.split(':');
+        const columnValue = errorMessageSplit[1]?.slice(2, -1);
+        const mainErrorMessageSplit = errorMessageSplit?.[0]?.split('type ');
+        const columnType = mainErrorMessageSplit?.[mainErrorMessageSplit.length - 1];
+        const columnNamesWithSameValue = Object.keys(data).filter(
+          (key) => String(data[key]).toLowerCase() === columnValue
+        );
+        rowColumns.forEach(({ accessor, dataType }) => {
+          if (columnNamesWithSameValue.includes(accessor) && dataType === columnType) {
+            setErrorMap((prev) => {
+              return { ...prev, [accessor]: `Data type mismatch` };
+            });
+            const inputElement = inputRefs.current?.[accessor];
+            inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+          }
+        });
+      }
+
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
       return;
     }
     toast.success(`Row created successfully`);
-    onCreate && onCreate();
+    onCreate && onCreate(bypass);
   };
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
@@ -224,9 +291,17 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 emptyError={
                   <div className="dd-select-alert-error m-2 d-flex align-items-center">
                     <Information />
-                    No table selected
+                    No data available
                   </div>
                 }
+                loader={
+                  <div className="mx-2">
+                    <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
+                    <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                    <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
+                  </div>
+                }
+                isLoading={true}
                 value={inputValues[index]?.value !== null && inputValues[index]}
                 foreignKeyAccessInRowForm={true}
                 disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
@@ -259,21 +334,36 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 placeholder={
                   isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
                 }
-                className={
-                  isSerialDataTypeColumn && !darkMode
-                    ? 'primary-idKey-light'
-                    : isSerialDataTypeColumn && darkMode
-                    ? 'primary-idKey-dark'
-                    : !darkMode
-                    ? 'form-control'
-                    : 'form-control dark-form-row'
-                }
+                className={`
+                  ${
+                    isSerialDataTypeColumn && !darkMode
+                      ? 'primary-idKey-light'
+                      : isSerialDataTypeColumn && darkMode
+                      ? 'primary-idKey-dark'
+                      : !darkMode
+                      ? 'form-control'
+                      : 'form-control dark-form-row'
+                  }  ${errorMap[columnName] ? 'input-error-border' : ''}`}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
                 autoComplete="off"
+                ref={(el) => (inputRefs.current[columnName] = el)}
               />
             )}
             {inputValues[index].value === null && (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
+            )}
+
+            {errorMap[columnName] && (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#DB4324',
+                }}
+                data-cy="app-name-error-label"
+              >
+                {errorMap[columnName]}
+              </small>
             )}
           </div>
         );
@@ -458,6 +548,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
         onClose={onClose}
         onCreate={handleSubmit}
         shouldDisableCreateBtn={Object.values(matchingObject).includes('')}
+        initiator={initiator}
       />
     </div>
   );

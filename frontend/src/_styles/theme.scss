@@ -846,8 +846,8 @@ button {
 
     &:hover {
       background: none !important;
-      border: none !important;      
-      color: var(--slate12);       
+      border: none !important;
+      color: var(--slate12);
     }
   }
 }
@@ -8704,7 +8704,7 @@ tbody {
   align-items: center;
   color: var(--slate11);
 
-  .with-border{
+  .with-border {
     border-bottom: 1px solid var(--slate5) !important;
   }
 
@@ -10808,6 +10808,7 @@ tbody {
     top: 5px;
     cursor: pointer;
   }
+
   .copy-icon {
     position: absolute;
     right: 8px;
@@ -12897,7 +12898,7 @@ tbody {
 .read-docs-fk {
 
   .tooltip-inner {
-    padding: 8px 12px 8px 12px !important;
+    padding: 8px 10px 8px 10px !important;
     font-size: 12px;
     line-height: 20px;
     font-weight: 400;

@@ -51,8 +51,10 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  loader,
+  isLoading = false,
 }) {
-  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
+  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isInitialForeignKeSearchDataLoaded, setIsInitialForeignKeSearchDataLoaded] = useState(false);
@@ -80,7 +82,6 @@ function DataSourceSelect({
         if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
           return;
         }
-
         setIsLoadingFKDetails(true);
         const selectQuery = new PostgrestQueryBuilder();
         // Checking that the selected column is available in ForeignKey
@@ -129,7 +130,7 @@ function DataSourceSelect({
     const handleScrollThrottled = throttle(handleScroll, 500);
 
     if (scrollEventForColumnValus && !searchValue) {
-      if (!isInitialForeignKeyDataLoaded && !isLoadingFKDetails) getForeignKeyDetails(1);
+      if (!isInitialForeignKeyDataLoaded) getForeignKeyDetails(1);
       scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
     }
 
@@ -137,7 +138,7 @@ function DataSourceSelect({
       scrollContainerRef?.current?.removeEventListener('scroll', handleScrollThrottled);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue, pageNumber, totalRecords, isLoadingFKDetails]);
+  }, [searchValue, pageNumber, totalRecords]);
 
   useEffect(() => {
     function handleSearchInSelectBox() {
@@ -192,7 +193,6 @@ function DataSourceSelect({
         // Making the values to default
         if (searchResults.length) setSearchResults([]);
         setIsInitialForeignKeSearchDataLoaded(false);
-
         if (!isLoadingFKDetails) handleSearchInSelectBox(1, true);
       }, 500);
 
@@ -395,6 +395,7 @@ function DataSourceSelect({
                     foreignKeys={foreignKeys}
                     cellColumnName={cellColumnName}
                     isLoadingFKDetails={isLoadingFKDetails}
+                    loader={loader}
                   />
                   {foreignKeyAccess && showDescription && actions && (
                     <>
@@ -426,7 +427,7 @@ function DataSourceSelect({
               );
             },
             // eslint-disable-next-line react-hooks/exhaustive-deps
-            [onAdd, addBtnLabel, emptyError]
+            [onAdd, addBtnLabel, emptyError, isLoadingFKDetails]
           ),
           IndicatorSeparator: () => null,
           DropdownIndicator,
@@ -560,6 +561,7 @@ const MenuList = ({
   foreignKeys,
   cellColumnName,
   isLoadingFKDetails = false,
+  loader,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -580,11 +582,12 @@ const MenuList = ({
     menuListStyles.maxHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
-
   return (
     <>
       {!isEmpty(options) && showColumnInfo && columnInfoForTable}
-      {isEmpty(options) && emptyError && !isLoadingFKDetails ? (
+      {isLoadingFKDetails && loader ? (
+        loader
+      ) : isEmpty(options) && emptyError && !isLoadingFKDetails ? (
         emptyError
       ) : (
         <div
@@ -596,7 +599,7 @@ const MenuList = ({
           {children}
         </div>
       )}
-      {onAdd && (
+      {onAdd && !(isLoadingFKDetails && loader) && (
         <div
           className={cx('mt-2 border-slate3-top', {
             'tj-foreignKey p-1': foreignKeyAccess || foreignKeyAccessInRowForm,
