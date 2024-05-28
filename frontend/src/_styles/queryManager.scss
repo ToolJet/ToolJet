@@ -117,7 +117,7 @@ $border-radius: 4px;
   flex: 1 1 auto;
   font-size: 12px;
   line-height: 20px;
-  border: 1px solid var(--slate5);
+  border-top: 1px solid var(--slate5);
   border-width: 1px 0px 0px 0px;
   background-color: var(--base);
 
@@ -135,20 +135,23 @@ $border-radius: 4px;
 
   .query-manager-toggle-button {
     border-radius: 5px;
-    margin-right: 26px;
-    width: 58px;
+    margin-right: 16px;
+    width: 68px;
     text-align: center;
     cursor: pointer;
     color: var(--slate12) !important;
-
+    border: none;
+    outline: none;
+    padding: 5px 10px;
+    background: transparent;
 
     &:hover {
       background: var(--slate3);
     }
 
-    &~h5 {
+    &~button {
       // padding: 4px;
-      margin: 0 26px;
+      margin: 0 16px;
       color: var(--slate12) !important;
     }
   }
@@ -1074,6 +1077,7 @@ $border-radius: 4px;
   }
 
   .preview-section {
+    // add an invisible border to the top of the preview section
     position: absolute;
     bottom: 40px;
     left: 288px;

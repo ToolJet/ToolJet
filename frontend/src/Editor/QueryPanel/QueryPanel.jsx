@@ -164,14 +164,19 @@ const QueryPanel = ({
         }}
       >
         <div style={{ width: '288px', padding: '5px 12px' }} className="d-flex justify-content align-items-center">
-          <h5
+          <button
             className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
             onClick={toggleQueryEditor}
           >
             {isExpanded ? 'Collapse' : 'Expand'}
-          </h5>
+          </button>
           <div className="vr" />
-          <h5 className="mb-0 font-weight-500 select-none">Queries</h5>
+          <button
+            onClick={toggleQueryEditor}
+            className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
+          >
+            Queries
+          </button>
         </div>
       </div>
       <div
@@ -182,6 +187,9 @@ const QueryPanel = ({
         style={{
           height: `calc(100% - ${isExpanded ? height : 100}%)`,
           cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
+          ...(!isExpanded && {
+            border: 'none',
+          }),
         }}
       >
         <div className="row main-row">

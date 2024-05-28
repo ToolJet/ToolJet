@@ -1,17 +1,40 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
-import { usePreviewLoading, usePreviewData, usePreviewPanelExpanded } from '@/_stores/queryPanelStore';
+import {
+  usePreviewLoading,
+  usePreviewData,
+  usePreviewPanelExpanded,
+  useQueryPanelStore,
+  usePreviewPanelHeight,
+  usePanelHeight,
+} from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
+import { useEventListener } from '@/_hooks/use-event-listener';
 
 const Preview = ({ darkMode }) => {
   const [key, setKey] = useState('raw');
   const [isJson, setIsJson] = useState(false);
+  const [isDragging, setDragging] = useState(false);
+  const [isTopOfPreviewPanel, setIsTopOfPreviewPanel] = useState(false);
+
+  const storedHeight = usePreviewPanelHeight();
+  // initialize height with stored height if present in state
+  const [height, setHeight] = useState(storedHeight);
+  const heightSetOnce = useRef(!!storedHeight);
+  const previewPanelExpanded = usePreviewPanelExpanded();
+
   const [theme, setTheme] = useState(() => getTheme(darkMode));
   const queryPreviewData = usePreviewData();
   const previewLoading = usePreviewLoading();
   const previewPanelRef = useRef();
+  const queryPanelHeight = usePanelHeight();
+
+  useEffect(() => {
+    useQueryPanelStore.getState().actions.updatePreviewPanelHeight(height);
+  }, [height]);
+
   useEffect(() => {
     setTheme(() => getTheme(darkMode));
   }, [darkMode]);
@@ -42,7 +65,66 @@ const Preview = ({ darkMode }) => {
       return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
     }
   };
-  const [previewPanelExpanded, setPreviewPanelExpanded] = usePreviewPanelExpanded();
+
+  useEffect(() => {
+    // query panel collapse scenario
+    if (queryPanelHeight === 95 || queryPanelHeight === 0) {
+      return;
+    }
+    if (queryPanelHeight - 85 < 40) {
+      setHeight(40);
+      return;
+    }
+    if (queryPanelHeight - 85 < height) {
+      setHeight((queryPanelHeight - 85) * 0.7);
+    } else if (!heightSetOnce.current) {
+      setHeight((queryPanelHeight - 85) * 0.7);
+      heightSetOnce.current = true;
+    }
+  }, [queryPanelHeight]);
+
+  const onMouseMove = (e) => {
+    if (previewPanelRef.current) {
+      const componentTop = Math.round(previewPanelRef.current.getBoundingClientRect().top);
+      const clientY = e.clientY;
+
+      if ((clientY >= componentTop - 3) & (clientY <= componentTop + 1)) {
+        setIsTopOfPreviewPanel(true);
+      } else if (isTopOfPreviewPanel) {
+        setIsTopOfPreviewPanel(false);
+      }
+
+      if (isDragging) {
+        const parentHeight = queryPanelHeight;
+        const shift = componentTop - clientY;
+        const currentHeight = previewPanelRef.current.offsetHeight;
+        const newHeight = currentHeight + shift;
+        if (newHeight < 39) {
+          useQueryPanelStore.getState().actions.setPreviewPanelExpanded(false);
+
+          setHeight((queryPanelHeight - 85) * 0.7);
+          return;
+        }
+        if (newHeight > parentHeight - 95) {
+          return;
+        }
+        setHeight(newHeight);
+      }
+    }
+  };
+
+  const onMouseUp = () => {
+    setDragging(false);
+  };
+
+  const onMouseDown = (e) => {
+    e.preventDefault();
+    isTopOfPreviewPanel && setDragging(true);
+  };
+
+  useEventListener('mousemove', onMouseMove);
+  useEventListener('mouseup', onMouseUp);
+
   return (
     <div
       className={`
@@ -50,11 +132,20 @@ const Preview = ({ darkMode }) => {
           previewPanelExpanded ? 'expanded' : ''
         }`}
       ref={previewPanelRef}
+      onMouseDown={onMouseDown}
+      style={{
+        cursor: previewPanelExpanded && (isDragging || isTopOfPreviewPanel) ? 'row-resize' : 'default',
+        height: `${height}px`,
+        ...(!previewPanelExpanded && { height: '29px' }),
+        ...(isDragging && {
+          transition: 'none',
+        }),
+      }}
     >
       <div className="preview-toggle">
         <div
           onClick={() => {
-            setPreviewPanelExpanded(!previewPanelExpanded);
+            useQueryPanelStore.getState().actions.setPreviewPanelExpanded(!previewPanelExpanded);
           }}
           className="left"
         >
