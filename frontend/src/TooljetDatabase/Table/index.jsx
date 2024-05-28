@@ -1580,6 +1580,7 @@ const Table = ({ collapseSidebar }) => {
           isEditColumn={true}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="EditColumnForm"
         />
       </Drawer>
       <ConfirmDialog

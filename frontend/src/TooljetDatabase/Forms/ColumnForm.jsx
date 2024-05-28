@@ -25,6 +25,7 @@ const ColumnForm = ({
   isEditColumn = false,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  initiator,
 }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
@@ -416,6 +417,7 @@ const ColumnForm = ({
             onDelete={onDelete}
             setOnUpdate={setOnUpdate}
             onUpdate={onUpdate}
+            initiator="ForeignKeyTableForm"
           />
         </Drawer>
 
@@ -472,7 +474,7 @@ const ColumnForm = ({
           isEmpty(dataType) ||
           (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
         }
-        showToolTipForFkOnReadDocsSection={true}
+        initiator={initiator}
       />
       <ConfirmDialog
         title={'Delete foreign key'}
