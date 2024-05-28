@@ -1,7 +1,7 @@
 import React from 'react';
 
 const ValidationIcon = ({ result }) => {
-  return result === 'success' ? <ValidationSuccessIcon /> : <ValidationWarningIcon />;
+  return result === 'true' ? <ValidationSuccessIcon /> : <ValidationWarningIcon />;
 };
 
 export default ValidationIcon;
@@ -22,7 +22,12 @@ const ValidationWarningIcon = () => {
 const ValidationSuccessIcon = () => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11ZM8.29601 4.73025C8.42316 4.56676 8.39371 4.33116 8.23023 4.20401C8.06675 4.07686 7.83115 4.10631 7.704 4.26979L5.7005 6.84572C5.65594 6.903 5.57214 6.91043 5.51821 6.86189L4.25086 5.72128C4.09692 5.58274 3.85982 5.59521 3.72127 5.74916C3.58272 5.9031 3.5952 6.14021 3.74914 6.27875L5.01648 7.41936C5.39405 7.75917 5.98065 7.70713 6.29251 7.30617L8.29601 4.73025Z" fill="#1E823B"/>
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11ZM8.29601 4.73025C8.42316 4.56676 8.39371 4.33116 8.23023 4.20401C8.06675 4.07686 7.83115 4.10631 7.704 4.26979L5.7005 6.84572C5.65594 6.903 5.57214 6.91043 5.51821 6.86189L4.25086 5.72128C4.09692 5.58274 3.85982 5.59521 3.72127 5.74916C3.58272 5.9031 3.5952 6.14021 3.74914 6.27875L5.01648 7.41936C5.39405 7.75917 5.98065 7.70713 6.29251 7.30617L8.29601 4.73025Z"
+        fill="#1E823B"
+      />
     </svg>
   );
 };

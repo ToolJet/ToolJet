@@ -2,11 +2,11 @@ import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 
 import { cn } from '@/lib/utils';
-import CheckIcon from './CheckIcon';
-import RadioIcon from './RadioIcon';
+import CheckIcon from './Checkbox Utils/CheckIcon';
+import RadioIcon from './Checkbox Utils/RadioIcon';
 import { cva } from 'class-variance-authority';
 import { Label } from '../Label/label';
-import IntermediateIcon from './IntermediateIcon';
+import IntermediateIcon from './Checkbox Utils/IntermediateIcon';
 
 const checkVariants = cva('', {
   variants: {
@@ -64,7 +64,7 @@ const Checkbox = React.forwardRef(({ className, type, size, intermediate, align,
       ref={ref}
       className={cn(
         checkVariants({ type, size }),
-        `tw-peer tw-mt-[2px] tw-flex tw-justify-center tw-items-center tw-shrink-0 tw-border tw-border-solid tw-border-[1px] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-icon-brand focus-visible:data-[state=checked]:tw-ring-offset-2 ${
+        `tw-peer tw-mt-[2px] tw-flex tw-justify-center tw-items-center tw-shrink-0 tw-border-solid tw-border-[1px] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-icon-brand focus-visible:data-[state=checked]:tw-ring-offset-2 ${
           props.disabled
             ? 'tw-cursor-not-allowed tw-bg-[#CCD1D5]/30 tw-border-border-weak'
             : 'tw-bg-background-surface-layer-01 tw-border-border-default'
@@ -76,12 +76,10 @@ const Checkbox = React.forwardRef(({ className, type, size, intermediate, align,
       <CheckboxPrimitive.Indicator
         className={cn(
           checkVariants({ type, size }),
-          `tw-block tw-flex tw-justify-center tw-items-center ${
-            props.disabled ? 'tw-bg-[#ACB2B9]/45' : 'tw-bg-icon-brand'
-          }`
+          `tw-flex tw-justify-center tw-items-center ${props.disabled ? 'tw-bg-[#ACB2B9]/45' : 'tw-bg-icon-brand'}`
         )}
       >
-        {intermediate === true && props.disabled === false ? (
+        {intermediate === true && props.disabled !== true ? (
           <IntermediateIcon size={size} />
         ) : type === 'radio' ? (
           <RadioIcon size={size} />

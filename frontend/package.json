@@ -16,6 +16,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-toggle-group": "^1.0.4",
+    "@radix-ui/react-tooltip": "^1.0.7",
     "@react-google-maps/api": "^2.18.1",
     "@sentry/react": "^7.100.1",
     "@sentry/tracing": "^7.100.1",

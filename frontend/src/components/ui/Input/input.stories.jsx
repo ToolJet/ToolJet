@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import * as React from 'react';
-import { Input } from './input';
+import Input from './Index';
 
 // Storybook configuration
 export default {
@@ -21,7 +21,7 @@ export default {
       control: 'text',
     },
     onChange: {
-      action: 'changed',
+      control: 'function',
     },
     placeholder: {
       control: 'text',
@@ -45,13 +45,13 @@ export default {
       if: { arg: 'disabled' },
       control: 'text',
     },
-    validationText: {
-      control: 'text',
+    validation: {
+      control: 'function',
     },
     label: {
       control: 'text',
     },
-    'aira-label': {
+    'aria-label': {
       control: 'text',
     },
     required: {
@@ -74,4 +74,50 @@ export default {
   },
 };
 
-export const RocketInput = {};
+const Template = (args) => <Input {...args} />;
+
+export const RocketInput = Template.bind({});
+RocketInput.args = {
+  type: 'text',
+  placeholder: 'Placeholder',
+  name: 'name',
+  id: '#id',
+  size: 'medium',
+  label: 'Label text',
+  'aria-label': 'aria-label',
+};
+
+export const RocketInputWithLeadingVisual = (args) => {
+  return <Input {...args} leadingIcon="search" />;
+};
+RocketInputWithLeadingVisual.args = {
+  ...RocketInput.args,
+};
+
+export const RocketInputWithTrailingAction = (args) => {
+  return <Input {...args} trailingAction="clear" />;
+};
+RocketInputWithTrailingAction.args = {
+  ...RocketInput.args,
+};
+
+export const RocketInputWithHelperText = (args) => {
+  return <Input {...args} helperText="Helper text" />;
+};
+RocketInputWithHelperText.args = {
+  ...RocketInput.args,
+};
+
+export const RocketNumberInput = (args) => {
+  return <Input {...args} type="number" placeholder={'00.00'} />;
+};
+RocketNumberInput.args = {
+  ...RocketInput.args,
+};
+
+export const RocketEditableTitleInput = (args) => {
+  return <Input {...args} type="editable title" placeholder="Editable title" />;
+};
+RocketEditableTitleInput.args = {
+  ...RocketInput.args,
+};
