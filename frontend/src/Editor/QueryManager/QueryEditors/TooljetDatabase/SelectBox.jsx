@@ -528,7 +528,7 @@ function DataSourceSelect({
             ...style,
             cursor: 'pointer',
             color: isDisabled ? 'var(--slate8, #c1c8cd)' : 'inherit',
-            height: '33.5px',
+            minHeight: '33.5px',
             backgroundColor:
               isSelected && highlightSelected
                 ? 'var(--indigo3, #F0F4FF)'
