@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
@@ -23,6 +23,7 @@ const CreateRowDrawer = ({
     setQueryFilters,
     columns,
   } = useContext(TooljetDatabaseContext);
+  const [fnCaller, setFnCaller] = useState(0);
 
   return (
     <>
@@ -33,7 +34,7 @@ const CreateRowDrawer = ({
         className="tj-db-drawer"
       >
         <CreateRowForm
-          onCreate={() => {
+          onCreate={(bypass) => {
             const limit = pageSize;
             setSortFilters({});
             setQueryFilters({});
@@ -61,11 +62,14 @@ const CreateRowDrawer = ({
 
             const tableElement = document.querySelector('.tj-db-table');
             if (tableElement) tableElement.scrollTop = 0;
-            setIsCreateRowDrawerOpen(false);
+            if (!bypass) setIsCreateRowDrawerOpen(false);
+            setFnCaller((prev) => prev + 1);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="CreateRowForm"
+          fnCaller={fnCaller}
         />
       </Drawer>
     </>

@@ -74,6 +74,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
               setIsCreateTableDrawerOpen(false);
             }}
             onClose={() => setIsCreateTableDrawerOpen(false)}
+            initiator="CreateTableForm"
           />
         </Drawer>
       </>

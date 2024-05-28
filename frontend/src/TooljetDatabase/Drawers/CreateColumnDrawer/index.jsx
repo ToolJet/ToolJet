@@ -58,6 +58,7 @@ const CreateColumnDrawer = ({
           rows={rows}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="CreateColumnForm"
         />
       </Drawer>
     </>

@@ -203,6 +203,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           updateSelectedTable={updateSelectedTable}
           onEdit={isEditTable}
           onClose={() => setIsEditTableDrawerOpen(false)}
+          initiator="EditTableForm"
         />
       </Drawer>
       <CreateColumnDrawer
