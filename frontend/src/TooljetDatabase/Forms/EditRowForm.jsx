@@ -33,7 +33,6 @@ const EditRowForm = ({
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
   const [inputValues, setInputValues] = useState([]);
-  const inputRefs = useRef({});
   const [errorMap, setErrorMap] = useState({});
 
   useEffect(() => {
