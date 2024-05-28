@@ -17,6 +17,7 @@ import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDataba
 import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import './styles.scss';
+import Skeleton from 'react-loading-skeleton';
 
 const ColumnForm = ({
   onCreate,
@@ -293,9 +294,17 @@ const ColumnForm = ({
                   emptyError={
                     <div className="dd-select-alert-error m-2 d-flex align-items-center">
                       <Information />
-                      No table selected
+                      No data available
                     </div>
                   }
+                  loader={
+                    <div className="mx-2">
+                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
+                      <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
+                    </div>
+                  }
+                  isLoading={true}
                   value={foreignKeyDefaultValue}
                   foreignKeyAccessInRowForm={true}
                   disabled={dataType === 'serial'}
