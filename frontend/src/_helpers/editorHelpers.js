@@ -14,6 +14,7 @@ import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
+import { MultiselectV2 } from '@/Editor/Components/MultiselectV2';
 import { Modal } from '@/Editor/Components/Modal';
 import { Chart } from '@/Editor/Components/Chart';
 import { Map as MapComponent } from '@/Editor/Components/Map/Map';
@@ -87,6 +88,7 @@ export const AllComponents = {
   Datepicker,
   DaterangePicker,
   Multiselect,
+  MultiselectV2,
   Modal,
   Chart,
   Map: MapComponent,
