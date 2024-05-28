@@ -157,7 +157,7 @@ export const Checkbox = function Checkbox({
           boxShadow,
           alignItems: loading && 'center',
           gap: '6px ',
-          justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
+          justifyContent: `${loading ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
           height,
           whiteSpace: 'nowrap',
         }}

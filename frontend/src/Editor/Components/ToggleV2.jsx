@@ -283,7 +283,7 @@ export const ToggleSwitchV2 = ({
   return (
     <div
       style={{
-        justifyContent: `${loadingState ? 'center' : 'flex-start'}`,
+        justifyContent: `${loading ? 'center' : 'flex-start'}`,
       }}
     >
       {renderInput()}
