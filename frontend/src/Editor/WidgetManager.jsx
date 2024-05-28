@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { SearchBox } from '@/_components';
+import { LEGACY_ITEMS } from './WidgetManager/constants';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode, disabled }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
@@ -103,14 +104,13 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     ];
     const integrationItems = ['Map'];
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
-    const legacyItems = ['ToggleSwitchLegacy', 'DropdownLegacy'];
 
     filteredComponents.forEach((f) => {
       if (searchQuery) allWidgets.push(f);
       if (commonItems.includes(f.name)) commonSection.items.push(f);
       if (formItems.includes(f.name)) formSection.items.push(f);
       else if (integrationItems.includes(f.name)) integrationSection.items.push(f);
-      else if (legacyItems.includes(f.name)) legacySection.items.push(f);
+      else if (LEGACY_ITEMS.includes(f.name)) legacySection.items.push(f);
       else if (layoutItems.includes(f.name)) layoutsSection.items.push(f);
       else otherSection.items.push(f);
     });
