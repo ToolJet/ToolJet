@@ -393,6 +393,7 @@ function ForeignKeyRelation({
         onClose={() => {
           onCloseForeignKeyDrawer();
         }}
+        className="tj-db-drawer"
       >
         <ForeignKeyTableForm
           tableName={tableName}
