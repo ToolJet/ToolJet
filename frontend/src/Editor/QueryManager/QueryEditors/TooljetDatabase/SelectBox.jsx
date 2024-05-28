@@ -190,16 +190,12 @@ function DataSourceSelect({
       columnDataType === 'character varying'
         ? filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`)
         : filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
-      // Filtering out null values & bringing empty values to top
-      filterQuery.is(referencedColumns?.referenced_column_names[0], 'notNull');
-      orderQuery.order(referencedColumns?.referenced_column_names[0], 'nullsfirst');
-      query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
-    } else {
-      // Filtering out null values & bringing empty values to top
-      filterQuery.is(referencedColumns?.referenced_column_names[0], 'notNull');
-      orderQuery.order(referencedColumns?.referenced_column_names[0], 'nullsfirst');
-      query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
     }
+
+    // Filtering out null values & bringing empty values to top
+    filterQuery.is(referencedColumns?.referenced_column_names[0], 'notNull');
+    orderQuery.order(referencedColumns?.referenced_column_names[0], 'nullsfirst');
+    query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
 
     tooljetDatabaseService
       .findOne(organizationId, referencedColumns?.referenced_table_id, query)
