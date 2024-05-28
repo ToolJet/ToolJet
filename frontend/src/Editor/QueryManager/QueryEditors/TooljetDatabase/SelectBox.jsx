@@ -55,6 +55,8 @@ function DataSourceSelect({
   isEditRow,
   isEditColumn,
   isCreateColumn,
+  isEditTable,
+  isCreateTable,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -293,7 +295,13 @@ function DataSourceSelect({
                     placement="top"
                     tooltipClassName="tjdb-cell-tooltip"
                     show={
-                      (isCellEdit || isCreateRow || isEditRow || isCreateColumn || isEditColumn) &&
+                      (isCellEdit ||
+                        isCreateRow ||
+                        isEditRow ||
+                        isCreateColumn ||
+                        isEditColumn ||
+                        isEditTable ||
+                        isCreateTable) &&
                       children?.length > 30
                     }
                   >
