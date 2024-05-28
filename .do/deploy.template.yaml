@@ -5,7 +5,7 @@ spec:
     image:
       registry_type: DOCKER_HUB
       registry: tooljet
-      repository: tooljet
+      repository: tooljet/tooljet
       tag: latest
     run_command: "./server/scripts/digitalocean-postbuild.sh"
     instance_size_slug: "basic-s"
