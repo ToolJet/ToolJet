@@ -12,7 +12,6 @@ export const TextInput = function TextInput({
   properties,
   styles,
   setExposedVariable,
-  setExposedVariables,
   fireEvent,
   component,
   darkMode,
@@ -158,38 +157,32 @@ export const TextInput = function TextInput({
   }, [properties.value]);
 
   useEffect(() => {
-    const exposedVariables = {
-      setFocus: async function () {
-        textInputRef.current.focus();
-      },
-      setBlur: async function () {
-        textInputRef.current.blur();
-      },
-      disable: async function (value) {
-        setDisable(value);
-      },
-      visibility: async function (value) {
-        setVisibility(value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+    setExposedVariable('setBlur', async function () {
+      textInputRef.current.blur();
+    });
+    setExposedVariable('setFocus', async function () {
+      textInputRef.current.focus();
+    });
+    setExposedVariable('disable', async function (value) {
+      setDisable(value);
+    });
+    setExposedVariable('visibility', async function (value) {
+      setVisibility(value);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const exposedVariables = {
-      setText: async function (text) {
-        setValue(text);
-        setExposedVariable('value', text);
-        fireEvent('onChange');
-      },
-      clear: async function () {
-        setValue('');
-        setExposedVariable('value', '');
-        fireEvent('onChange');
-      },
-    };
-    setExposedVariables(exposedVariables);
+    setExposedVariable('setText', async function (text) {
+      setValue(text);
+      setExposedVariable('value', text);
+      fireEvent('onChange');
+    });
+    setExposedVariable('clear', async function () {
+      setValue('');
+      setExposedVariable('value', '');
+      fireEvent('onChange');
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setValue]);
   const iconName = styles.icon; // Replace with the name of the icon you want
