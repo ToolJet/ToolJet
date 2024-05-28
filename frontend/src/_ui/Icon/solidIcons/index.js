@@ -160,11 +160,14 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import PrimaryKey from './PrimaryKey.jsx';
+import ForeignKey from './ForeignKey.jsx';
 import InformationCircle from './InformationCircle.jsx';
 import Open from './Open.jsx';
 import TooljetIcon from './TooljetIcon.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
+import Search01 from './Search01.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -280,6 +283,8 @@ const Icon = (props) => {
       return <FolderDownload {...props} />;
     case 'folderupload':
       return <FolderUpload {...props} />;
+    case 'foreignkey':
+      return <ForeignKey {...props} />;
     case 'fullouterjoin':
       return <FullOuterJoin {...props} />;
     case 'globe':
@@ -362,6 +367,8 @@ const Icon = (props) => {
       return <Plus01 {...props} />;
     case 'plusrectangle':
       return <PlusRectangle {...props} />;
+    case 'primarykey':
+      return <PrimaryKey {...props} />;
     case 'reload':
       return <Reload {...props} />;
     case 'reloaderror':
@@ -382,6 +389,8 @@ const Icon = (props) => {
       return <SadRectangle {...props} />;
     case 'search':
       return <Search {...props} />;
+    case 'search01':
+      return <Search01 {...props} />;
     case 'searchminus':
       return <SearchMinus {...props} />;
     case 'searchplus':

@@ -206,7 +206,7 @@ describe("User permissions", () => {
   it("Should verify Create/Update/Delete workspace variable permission", () => {
     common.navigateToWorkspaceVariable();
     cy.get('[data-cy="alert-info-text"]>>.text-muted').verifyVisibleElement(
-      "have.text", "Can't add or edit workspace variables as we are deprecating them soon. Please use Workspace constant instead."
+      "have.text", "We have launched workspace constants and sunsetting workspace variables very soon. Please migrate workspace variables immediately to safeguard your applications from this breaking change. Please refer to the migration guide here"
     );
     cy.get(
       '[data-cy="go-to-workspace-constants-option-button"]'

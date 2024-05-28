@@ -6,7 +6,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import { resolveReferences } from '@/_helpers/utils';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import ListGroup from 'react-bootstrap/ListGroup';
@@ -64,12 +64,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   const updateAllOptionsParams = (options) => {
-    paramUpdated(
-      { name: 'options' },
-      'value',
-      options,
-      'properties'
-    );
+    paramUpdated({ name: 'options' }, 'value', options, 'properties');
   };
 
   const generateNewOptions = () => {
@@ -153,9 +148,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     const isMarkedAsDefault = resolveReferences(value, currentState);
     if (isMultiSelect) {
       const _value = options[index]?.value;
-      let _markedAsDefault = []
+      let _markedAsDefault = [];
       if (isMarkedAsDefault && !markedAsDefault.includes(_value)) {
-        _markedAsDefault = [...markedAsDefault, _value]
+        _markedAsDefault = [...markedAsDefault, _value];
       } else {
         _markedAsDefault = markedAsDefault.filter((value) => value !== _value);
       }
@@ -204,14 +199,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOverlay = (item, index) => {
     return (
-      <Popover id="popover-basic" className={`${darkMode && 'dark-theme'}`} style={{ minWidth: '248px' }}>
+      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
         <Popover.Body>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="form-label">
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
+            <label data-cy={`label-column-name`} className="font-weight-500 mb-1">
               {'Option label'}
             </label>
             <CodeHinter
               currentState={currentState}
+              type={'basic'}
               initialValue={item.label}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -220,12 +216,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleLabelChange(value, index)}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="form-label">
+          <div className="field mb-3" data-cy={`input-and-label-column-name`}>
+            <label data-cy={`label-column-name`} className="font-weight-500 mb-1">
               {'Option value'}
             </label>
             <CodeHinter
               currentState={currentState}
+              type={'basic'}
               initialValue={item.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -237,40 +234,60 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={isMultiSelect ? markedAsDefault.includes(item.value) : markedAsDefault === item.value}
+              initialValue={`{{${
+                isMultiSelect ? markedAsDefault.includes(item.value) : markedAsDefault === item.value
+              }}}`}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               component={component}
-              type={'toggle'}
+              type={'fxEditor'}
               paramLabel={'Make this default option'}
+              paramName={'isEditable'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
+              fieldMeta={{
+                type: 'toggle',
+                displayName: 'Make editable',
+              }}
+              paramType={'toggle'}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.visible}
+              initialValue={`{{${item.visible}}}`}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               component={component}
-              type={'toggle'}
+              type={'fxEditor'}
               paramLabel={'Visibility'}
               onChange={(value) => handleVisibilityChange(value, index)}
+              paramName={'visible'}
+              fieldMeta={{
+                type: 'toggle',
+                displayName: 'Make editable',
+              }}
+              paramType={'toggle'}
             />
           </div>
-          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.disable}
+              initialValue={`{{${item.disable}}}`}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               component={component}
-              type={'toggle'}
+              type={'fxEditor'}
               paramLabel={'Disable'}
+              paramName={'disable'}
               onChange={(value) => handleDisableChange(value, index)}
+              fieldMeta={{
+                type: 'toggle',
+                displayName: 'Make editable',
+              }}
+              paramType={'toggle'}
             />
           </div>
         </Popover.Body>
@@ -317,27 +334,25 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                   <div className="col-auto d-flex align-items-center">
                                     <SortableList.DragHandle show />
                                   </div>
-                                  <div className="col text-truncate cursor-pointer" style={{ paddingLeft: '8px' }}>
+                                  <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
                                     {item.label}
                                   </div>
                                   <div className="col-auto">
-                                    <span
-                                      onClick={() => {
-                                        handleDeleteOption(index);
-                                      }}
-                                    >
-                                      {index === hoveredOptionIndex && (
-                                        <ButtonSolid
-                                          variant="tertiary"
-                                          size="xs"
-                                          className={'inspector-select-option-btn'}
-                                        >
-                                          <span className="d-flex">
-                                            <Trash fill={'#E54D2E'} width={'14'} />
-                                          </span>
-                                        </ButtonSolid>
-                                      )}
-                                    </span>
+                                    {index === hoveredOptionIndex && (
+                                      <ButtonSolid
+                                        variant="danger"
+                                        size="xs"
+                                        className={'delete-icon-btn'}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteOption(index);
+                                        }}
+                                      >
+                                        <span className="d-flex">
+                                          <Trash fill={'var(--tomato9)'} width={12} />
+                                        </span>
+                                      </ButtonSolid>
+                                    )}
                                   </div>
                                 </div>
                               </ListGroup.Item>
@@ -399,15 +414,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         )}
         {isDynamicOptionsEnabled
           ? renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'schema',
-            'properties',
-            currentState,
-            allComponents
-          )
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'schema',
+              'properties',
+              currentState,
+              allComponents
+            )
           : _renderOptions()}
         {isDynamicOptionsEnabled &&
           renderElement(
