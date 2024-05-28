@@ -1,7 +1,7 @@
 spec:
   name: tooljet
   services:
-  - name: tooljet
+  - environment_slug: tooljet
     image:
       registry_type: DOCKER_HUB
       registry: tooljet
@@ -30,16 +30,16 @@ spec:
       value: "digitalocean"
     - key: DATABASE_URL
       scope: RUN_TIME
-      value: "${pg-db.DATABASE_URL}"
+      value: ${pg-db.DATABASE_URL}
     - key: CA_CERT
       scope: RUN_TIME
-      value: " ${pg-db.CA_CERT}"
+      value: ${pg-db.CA_CERT}
     - key: TOOLJET_HOST
       scope: RUN_TIME
-      value: "${APP_URL}"
-    # - key: TOOLJET_SERVER_URL
-    #   scope: RUN_TIME
-    #   value: ${APP_URL}
+      value: ${APP_URL}
+    - key: TOOLJET_SERVER_URL
+      scope: RUN_TIME
+      value: ${APP_URL}
   databases:
     - name: pg-db
       engine: PG
