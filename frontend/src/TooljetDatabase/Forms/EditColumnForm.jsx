@@ -24,6 +24,7 @@ import { ConfirmDialog } from '@/_components';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import Skeleton from 'react-loading-skeleton';
 
 const ColumnForm = ({
   onClose,
@@ -33,6 +34,7 @@ const ColumnForm = ({
   isEditColumn = true,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  initiator,
 }) => {
   const nullValue = selectedColumn?.constraints_type?.is_not_null ?? false;
   const uniqueConstraintValue = selectedColumn?.constraints_type?.is_unique ?? false;
@@ -248,7 +250,7 @@ const ColumnForm = ({
       column: {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
-        ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue }),
+        ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue === 'Null' ? null : defaultValue }),
         constraints_type: {
           is_not_null: isNotNull,
           is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
@@ -357,10 +359,10 @@ const ColumnForm = ({
   const newChangesInForeignKey = changesInForeignKey();
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
 
@@ -530,9 +532,27 @@ const ColumnForm = ({
                     emptyError={
                       <div className="dd-select-alert-error m-2 d-flex align-items-center">
                         <Information />
-                        No table selected
+                        No data available
                       </div>
                     }
+                    loader={
+                      <div className="mx-2">
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '15px 50px 7px 7px' }}
+                        />
+                        <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '7px 50px 15px 7px' }}
+                        />
+                      </div>
+                    }
+                    isLoading={true}
                     value={foreignKeyDefaultValue}
                     foreignKeyAccessInRowForm={true}
                     disabled={
@@ -637,6 +657,7 @@ const ColumnForm = ({
             onClose={() => {
               onCloseForeignKeyDrawer();
             }}
+            className="tj-db-drawer"
           >
             <ForeignKeyTableForm
               tableName={selectedTable.table_name}
@@ -668,6 +689,7 @@ const ColumnForm = ({
               isForeignKeyDraweOpen={isForeignKeyDraweOpen}
               onDeletePopup={() => setOnDeletePopup(true)}
               selectedForeignkeyIndex={selectedForeignkeyIndex}
+              initiator="ForeignKeyTableForm"
             />
           </Drawer>
 
@@ -772,16 +794,26 @@ const ColumnForm = ({
           isEditMode={true}
           fetching={fetching}
           onClose={onClose}
-          onEdit={handleEdit}
+          onEdit={() => {
+            if (foreignKeyDetails?.length > 0 && !isForeignKey && isMatchingForeignKeyColumn(columnName)) {
+              setOnDeletePopup(true);
+            } else {
+              handleEdit();
+            }
+          }}
           shouldDisableCreateBtn={columnName === ''}
-          showToolTipForFkOnReadDocsSection={true}
+          initiator={initiator}
         />
       </div>
       <ConfirmDialog
-        title={'Delete foreign key'}
+        title={'Delete foreign key relation'}
         show={onDeletePopup}
         message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
-        onConfirm={handleDeleteForeignKeyColumn}
+        onConfirm={
+          foreignKeyDetails?.length > 0 && !isForeignKey && isMatchingForeignKeyColumn(columnName)
+            ? handleEdit
+            : handleDeleteForeignKeyColumn
+        }
         onCancel={() => {
           setOnDeletePopup(false);
         }}
