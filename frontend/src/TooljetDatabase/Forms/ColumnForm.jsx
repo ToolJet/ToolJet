@@ -17,6 +17,7 @@ import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDataba
 import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import './styles.scss';
+import Skeleton from 'react-loading-skeleton';
 
 const ColumnForm = ({
   onCreate,
@@ -25,6 +26,7 @@ const ColumnForm = ({
   isEditColumn = false,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  initiator,
 }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
@@ -178,11 +180,11 @@ const ColumnForm = ({
     // toast.success(`Foreign key Added successfully for selected column`);
   };
 
-  const referenceTableDetails = referencedColumnDetails?.map((item) => {
+  const referenceTableDetails = referencedColumnDetails.map((item) => {
     const [key, _value] = Object.entries(item);
     return {
-      label: key[1],
-      value: key[1],
+      label: key[1] === null ? 'Null' : key[1],
+      value: key[1] === null ? 'Null' : key[1],
     };
   });
 
@@ -292,9 +294,17 @@ const ColumnForm = ({
                   emptyError={
                     <div className="dd-select-alert-error m-2 d-flex align-items-center">
                       <Information />
-                      No table selected
+                      No data available
                     </div>
                   }
+                  loader={
+                    <div className="mx-2">
+                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
+                      <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
+                    </div>
+                  }
+                  isLoading={true}
                   value={foreignKeyDefaultValue}
                   foreignKeyAccessInRowForm={true}
                   disabled={dataType === 'serial'}
@@ -389,6 +399,7 @@ const ColumnForm = ({
           onClose={() => {
             setIsForeignKeyDraweOpen(false);
           }}
+          className="tj-db-drawer"
         >
           <ForeignKeyTableForm
             tableName={selectedTable.table_name}
@@ -415,6 +426,7 @@ const ColumnForm = ({
             onDelete={onDelete}
             setOnUpdate={setOnUpdate}
             onUpdate={onUpdate}
+            initiator="ForeignKeyTableForm"
           />
         </Drawer>
 
@@ -471,7 +483,7 @@ const ColumnForm = ({
           isEmpty(dataType) ||
           (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
         }
-        showToolTipForFkOnReadDocsSection={true}
+        initiator={initiator}
       />
       <ConfirmDialog
         title={'Delete foreign key'}

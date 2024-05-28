@@ -834,12 +834,20 @@ button {
   }
 
   .homepage-search {
-    background: transparent;
+    background: none !important;
     color: var(--slate12);
     height: 20px;
+    border: none !important;
 
     &:focus {
-      background: none;
+      background: none !important;
+      border: none !important;
+    }
+
+    &:hover {
+      background: none !important;
+      border: none !important;
+      color: var(--slate12);
     }
   }
 }
@@ -6990,7 +6998,8 @@ tbody {
     max-width: 230px;
 
     input.form-control {
-      border: none;
+      border: none !important;
+      margin: 0px !important;
       padding: 0px !important;
       background-color: #F8F9FA;
     }
@@ -7003,9 +7012,10 @@ tbody {
     color: #ffffff;
 
     input.form-control {
-      border: none;
+      border: none !important;
+      margin: 0px !important;
       padding: 0px !important;
-      background-color: #242f3c;
+      background-color: #242f3c !important;
     }
   }
 
@@ -7017,8 +7027,9 @@ tbody {
 
     .form-control {
       background-color: var(--indigo2) !important;
-      border: none;
+      border: none !important;
       padding: 0;
+      margin: 0px !important;
       border-radius: 0px;
     }
 
@@ -7053,8 +7064,9 @@ tbody {
     }
 
     input.form-control {
-      border: none;
+      border: none !important;
       padding: 0px !important;
+      margin: 0px !important;
       background-color: #F8F9FA;
     }
   }
@@ -7071,7 +7083,8 @@ tbody {
     }
 
     input.form-control {
-      border: none;
+      border: none !important;
+      margin: 0px !important;
       padding: 0px !important;
       background-color: #242f3c;
     }
@@ -7953,7 +7966,8 @@ tbody {
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
 
-  &[data-name="Profile settings"] {
+  &[data-name="Profile settings"],
+  &[data-name="Workspace constants"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
   }
@@ -8096,12 +8110,13 @@ tbody {
 .pagination-container {
   display: flex;
   padding: 0px;
-  height: 20px;
+  height: 20px !important;
 
   .form-control {
     padding: 0 4px;
     width: fit-content;
-    max-width: 30px;
+    width: 30px !important;
+    height: 20px !important;
     text-align: center;
   }
 
@@ -8688,6 +8703,10 @@ tbody {
   justify-content: center;
   align-items: center;
   color: var(--slate11);
+
+  .with-border {
+    border-bottom: 1px solid var(--slate5) !important;
+  }
 
   a {
     text-decoration: none;
@@ -10789,6 +10808,7 @@ tbody {
     top: 5px;
     cursor: pointer;
   }
+
   .copy-icon {
     position: absolute;
     right: 8px;
@@ -12758,7 +12778,7 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1.5rem;
+  padding-top: 1.5rem;
 }
 
 .blank-page-wrapper {
@@ -12878,7 +12898,7 @@ tbody {
 .read-docs-fk {
 
   .tooltip-inner {
-    padding: 8px 12px 8px 12px !important;
+    padding: 8px 10px 8px 10px !important;
     font-size: 12px;
     line-height: 20px;
     font-weight: 400;
@@ -12996,4 +13016,8 @@ tbody {
     }
 
   }
+}
+
+div.ds-svg-container svg {
+  padding: 2px;
 }

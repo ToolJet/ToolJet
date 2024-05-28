@@ -79,6 +79,7 @@ function BulkUploadDrawer({
         onClose={() => setIsBulkUploadDrawerOpen(false)}
         position="right"
         drawerStyle={{ 'overflow-y': 'hidden' }}
+        className="tj-db-drawer"
       >
         <div className="drawer-card-wrapper">
           <div className="drawer-card-title ">

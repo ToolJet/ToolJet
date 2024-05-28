@@ -55,6 +55,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
           onClose={() => setIsCreateTableDrawerOpen(false)}
           position="right"
           drawerStyle={{ width: '630px' }}
+          className="tj-db-drawer"
         >
           <CreateTableForm
             onCreate={(tableInfo) => {
@@ -73,6 +74,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
               setIsCreateTableDrawerOpen(false);
             }}
             onClose={() => setIsCreateTableDrawerOpen(false)}
+            initiator="CreateTableForm"
           />
         </Drawer>
       </>

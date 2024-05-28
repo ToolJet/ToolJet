@@ -30,6 +30,7 @@ export default function CreateTableDrawer() {
         onClose={() => setIsCreateTableDrawerOpen(false)}
         position="right"
         drawerStyle={{ width: '640px' }}
+        className="tj-db-drawer"
       >
         <CreateTableForm
           onCreate={(tableInfo) => {
@@ -47,6 +48,7 @@ export default function CreateTableDrawer() {
             setIsCreateTableDrawerOpen(false);
           }}
           onClose={() => setIsCreateTableDrawerOpen(false)}
+          initiator="CreateTableForm"
         />
       </Drawer>
     </>
