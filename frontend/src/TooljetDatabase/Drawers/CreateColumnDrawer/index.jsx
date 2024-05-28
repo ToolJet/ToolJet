@@ -18,7 +18,12 @@ const CreateColumnDrawer = ({
 
   return (
     <>
-      <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isCreateColumnDrawerOpen}
+        onClose={() => setIsCreateColumnDrawerOpen(false)}
+        position="right"
+        className="tj-db-drawer"
+      >
         <CreateColumnForm
           onCreate={() => {
             tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {

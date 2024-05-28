@@ -27,7 +27,12 @@ const CreateRowDrawer = ({
 
   return (
     <>
-      <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isCreateRowDrawerOpen}
+        onClose={() => setIsCreateRowDrawerOpen(false)}
+        position="right"
+        className="tj-db-drawer"
+      >
         <CreateRowForm
           onCreate={(shouldKeepDrawerOpen) => {
             const limit = pageSize;
