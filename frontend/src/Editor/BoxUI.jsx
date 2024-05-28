@@ -10,7 +10,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import _ from 'lodash';
 
-const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Checkbox', 'Button'];
 
 const BoxUI = (props) => {
   const { t } = useTranslation();
