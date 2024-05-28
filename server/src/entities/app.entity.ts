@@ -65,6 +65,7 @@ export class App extends BaseEntity {
   })
   appVersions: AppVersion[];
 
+  //Depreciated
   @ManyToMany(() => GroupPermission)
   @JoinTable({
     name: 'app_group_permissions',

@@ -135,6 +135,7 @@ export class MetadataService {
     return { latestVersion: latestVersion || installedVersion };
   }
 
+  //Fetch  as per new permissions
   async fetchTotalEditorCount(manager: EntityManager) {
     const userIdsWithEditPermissions = (
       await manager
@@ -158,6 +159,7 @@ export class MetadataService {
     return totalEditorCount;
   }
 
+  //change as per new permissions
   async fetchTotalViewerCount(manager: EntityManager) {
     return await manager
       .createQueryBuilder(User, 'users')

@@ -293,6 +293,7 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
     });
 }
 
+//TODO:remove this function if its not used
 function authorize() {
   const requestOptions = {
     method: 'GET',

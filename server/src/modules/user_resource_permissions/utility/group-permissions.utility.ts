@@ -64,7 +64,7 @@ export function getUserRoleQuery(
 ): SelectQueryBuilder<GroupPermissions> {
   const query = manager
     .createQueryBuilder(GroupPermissions, 'role')
-    .innerJoin('role.groupUsers', 'groupUsers', 'groupUsers.userId = :userId', { userId })
+    .innerJoinAndSelect('role.groupUsers', 'groupUsers', 'groupUsers.userId = :userId', { userId })
     .where('role.type = :type', { type: GROUP_PERMISSIONS_TYPE.DEFAULT })
     .andWhere('role.organizationId = :organizationId', { organizationId });
 

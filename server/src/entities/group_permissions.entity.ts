@@ -40,6 +40,10 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'org_constant_crud', default: false })
   orgConstantCRUD: boolean;
 
+  @Column({ name: 'org_variable_crud', default: false })
+  orgVariableCRUD: boolean;
+
+  //This should not be part of CE
   @Column({ name: 'data_source_create', default: false })
   dataSourceCreate: boolean;
 

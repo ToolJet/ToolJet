@@ -43,6 +43,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       AppVersion,
       AppUser,
       FolderApp,
+      //Depreciated
       GroupPermission,
       AppGroupPermission,
       User,

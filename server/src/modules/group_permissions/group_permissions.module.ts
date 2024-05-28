@@ -15,6 +15,7 @@ import { File } from 'src/entities/file.entity';
 import { FilesService } from '@services/files.service';
 
 @Module({
+  //Depreciated
   controllers: [GroupPermissionsController],
   imports: [
     TypeOrmModule.forFeature([

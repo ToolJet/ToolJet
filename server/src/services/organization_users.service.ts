@@ -126,6 +126,7 @@ export class OrganizationUsersService {
     return adminsCount <= 1;
   }
 
+  //Need to change this - //Depreciated
   async activeAdminCount(organizationId: string) {
     return await createQueryBuilder(GroupPermission, 'group_permissions')
       .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')

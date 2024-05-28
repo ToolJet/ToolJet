@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 import { GroupPermissions } from './group_permissions.entity';
+import { AppsGroupPermissions } from './apps_group_permissions.entity';
 
 @Entity({ name: 'granular_permissions' })
 export class GranularPermissions extends BaseEntity {
@@ -37,9 +39,9 @@ export class GranularPermissions extends BaseEntity {
   @ManyToOne(() => GroupPermissions, (group) => group.id)
   @JoinColumn({ name: 'group_id' })
   group: GroupPermissions;
-}
 
-// @OneToOne(() => AppsGroupPermissions, (appsGroupPermission) => appsGroupPermission.granularPermissions, {
-//     onDelete: 'CASCADE',
-//   })
-//   appsGroupPermissions: AppsGroupPermissions;
+  @OneToOne(() => AppsGroupPermissions, (appsGroupPermission) => appsGroupPermission.granularPermissions, {
+    onDelete: 'CASCADE',
+  })
+  appsGroupPermissions: AppsGroupPermissions;
+}

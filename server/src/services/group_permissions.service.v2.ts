@@ -113,14 +113,15 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async getAllGroupUsers(groupId: string): Promise<GroupUsers[]> {
-    const manager: EntityManager = getManager();
-    return await manager.find(GroupUsers, {
-      where: {
-        groupId,
-      },
-      relations: ['user'],
-    });
+  async getAllGroupUsers(groupId: string, manager?: EntityManager): Promise<GroupUsers[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(GroupUsers, {
+        where: {
+          groupId,
+        },
+        relations: ['user'],
+      });
+    }, manager);
   }
 
   async getAllUserGroups(userId: string, organizationId: string): Promise<GroupUsers[]> {

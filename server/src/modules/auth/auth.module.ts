@@ -46,10 +46,13 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
       File,
       Organization,
       OrganizationUser,
+      //Depreciated
       GroupPermission,
       App,
       SSOConfigs,
+      //Depreciated
       AppGroupPermission,
+      //Depreciated
       UserGroupPermission,
       DataSource,
       Credential,
@@ -77,6 +80,7 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
     GoogleOAuthService,
     GitOAuthService,
     FilesService,
+    //Need to remove group Permission service since this is not required.
     GroupPermissionsService,
     EncryptionService,
     DataSourcesService,

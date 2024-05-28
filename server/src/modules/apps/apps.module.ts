@@ -56,6 +56,7 @@ import { EventsService } from '@services/events_handler.service';
       User,
       Organization,
       DataSource,
+      //Depreciated
       GroupPermission,
       AppGroupPermission,
       UserGroupPermission,

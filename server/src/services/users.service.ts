@@ -16,6 +16,7 @@ const bcrypt = require('bcrypt');
 
 @Injectable()
 export class UsersService {
+  //Whole user service wherever group permissions are used need to be changed
   constructor(
     private readonly filesService: FilesService,
     @InjectRepository(User)
@@ -76,6 +77,7 @@ export class UsersService {
   async create(
     userParams: Partial<User>,
     organizationId: string,
+    //TODO: This should be a single role parameter
     groups?: string[],
     existingUser?: User,
     isInvite?: boolean,
@@ -104,15 +106,18 @@ export class UsersService {
       } else {
         user = existingUser;
       }
+      //TODO: This should be a single role parameter
       await this.attachUserGroup(groups, organizationId, user.id, manager);
     }, manager);
 
     return user;
   }
 
+  // Modify this function  - Why this function is present here
   async attachUserGroup(groups, organizationId, userId, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       for (const group of groups) {
+        // Need to update this as well
         const orgGroupPermission = await manager.findOne(GroupPermission, {
           where: {
             organizationId: organizationId,
@@ -151,7 +156,9 @@ export class UsersService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
       const user = await manager.findOne(User, { where: { id: userId } });
+      //TODO: Why we have this here......Remove if not needed
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
+      //TODO: Why we have this here......Remove if not needed
       await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
       return user;
     }, manager);
@@ -166,6 +173,7 @@ export class UsersService {
     }, manager);
   }
 
+  //TODO: Remove this function if not needed
   async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
     const orgId = organizationId || user.defaultOrganizationId;
     if (addGroups) {
@@ -188,6 +196,7 @@ export class UsersService {
     }
   }
 
+  //TODO: Remove this function if not needed
   async removeUserGroupPermissionsIfExists(
     manager: EntityManager,
     user: User,
@@ -215,6 +224,7 @@ export class UsersService {
     }
   }
 
+  //TODO: Remove this function if not needed
   async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin'], organizationId: string) {
     const removingAdmin = removeGroups.includes('admin');
     if (!removingAdmin) return;
@@ -233,6 +243,7 @@ export class UsersService {
     if (result == 0) throw new BadRequestException('Atleast one active admin is required.');
   }
 
+  //TODO: Remove this function if not needed
   async hasGroup(user: User, group: string, organizationId?: string, manager?: EntityManager): Promise<boolean> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await manager
@@ -249,11 +260,13 @@ export class UsersService {
     }, manager);
   }
 
+  //Moving to ability servoce
+  //////////---------------------------------------------------------------
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
+    //get all permissions -> Resource
     switch (entityName) {
       case 'App':
         return await this.canUserPerformActionOnApp(user, action, resourceId);
-
       case 'User':
       case 'Plugin':
       case 'GlobalDataSource':
@@ -266,6 +279,7 @@ export class UsersService {
       case 'Folder':
         return await this.canUserPerformActionOnFolder(user, action);
 
+      //TODO: Is this organization constant variable is deprecated
       case 'OrgEnvironmentVariable':
         return await this.canUserPerformActionOnEnvironmentVariable(user, action);
 
@@ -381,6 +395,8 @@ export class UsersService {
     return permissionGrant;
   }
 
+  //----------_Till Here ------------------------------------------
+
   async isUserOwnerOfApp(user: User, appId: string): Promise<boolean> {
     const app: App = await this.appsRepository.findOne({
       where: {
@@ -424,10 +440,12 @@ export class UsersService {
     });
   }
 
+  //---------This neeed to shift to ability service
   canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
     return permissions.some((p) => p[action]);
   }
 
+  /// Need to move to ability service with new logic
   async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
@@ -437,12 +455,14 @@ export class UsersService {
     }, manager);
   }
 
+  // Remove and move to ability  service
   async groupPermissionsForOrganization(organizationId: string) {
     const groupPermissionRepository = getRepository(GroupPermission);
 
     return await groupPermissionRepository.find({ organizationId });
   }
 
+  //Move to group permissions
   async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
@@ -470,6 +490,7 @@ export class UsersService {
     }, manager);
   }
 
+  // Move to group Permissions
   async userGroupPermissions(
     user: User,
     organizationId?: string,

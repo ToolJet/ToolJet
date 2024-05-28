@@ -24,6 +24,7 @@ export class CaslAbilityFactory {
   async organizationUserActions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppAbility>);
 
+    //Need to change this for new ability service
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
     if (isAdmin) {
       can('inviteUser', User);

@@ -22,6 +22,7 @@ import { File } from './file.entity';
 import { Organization } from './organization.entity';
 import { GroupUsers } from './group_users.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
+import { GroupPermissions } from './group_permissions.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -112,6 +113,7 @@ export class User extends BaseEntity {
   })
   avatar?: File;
 
+  //Depreciated
   @ManyToMany(() => GroupPermission)
   @JoinTable({
     name: 'user_group_permissions',
@@ -123,6 +125,18 @@ export class User extends BaseEntity {
     },
   })
   groupPermissions: GroupPermission[];
+
+  @ManyToMany(() => GroupPermissions)
+  @JoinTable({
+    name: 'group_users',
+    joinColumn: {
+      name: 'user_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_id',
+    },
+  })
+  userPermissions: GroupPermissions[];
 
   @OneToMany(() => GroupUsers, (groupUsers) => groupUsers.user, { onDelete: 'CASCADE' })
   userGroups: GroupUsers[];

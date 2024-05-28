@@ -90,6 +90,11 @@ export class UserRoleService {
     if (userRole.name == newRole)
       throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
 
+    if (userRole.name == USER_ROLE.ADMIN) {
+      const groupUsers = await this.groupPermissionsService.getAllGroupUsers(userRole.id);
+      if (groupUsers.length < 2) throw new BadRequestException(ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED);
+    }
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       await this.groupPermissionsService.deleteGroupUser(userGroup.id, manager);
       if (newRole == USER_ROLE.END_USER) {

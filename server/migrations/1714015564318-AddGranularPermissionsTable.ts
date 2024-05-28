@@ -20,7 +20,7 @@ export class AddGranularPermissionsTable1714015564318 implements MigrationInterf
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_group_id FOREIGN KEY (group_id) REFERENCES group_permissions(id) ON DELETE CASCADE,
-        CONSTRAINT ${DATA_BASE_CONSTRAINTS.GROUP_USER_UNIQUE.dbConstraint} UNIQUE (name, group_id)
+        CONSTRAINT ${DATA_BASE_CONSTRAINTS.GRANULAR_PERMISSIONS_NAME_UNIQUE.dbConstraint} UNIQUE (name, group_id)
     );  
        `
     );

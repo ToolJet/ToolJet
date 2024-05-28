@@ -86,4 +86,6 @@ export const ERROR_HANDLER = {
   },
   ADD_GROUP_USER_DEFAULT_GROUP: 'Adding user to default group is not allowed',
   DELETING_DEFAULT_GROUP_USER: 'Deleting default user from default group is not allowed',
+  EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED:
+    'Cannot change role of last present admin, please add another admin and change the role',
 };

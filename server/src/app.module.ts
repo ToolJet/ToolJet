@@ -131,6 +131,7 @@ const imports = [
   CaslModule,
   MetaModule,
   LibraryAppModule,
+  //Need to add new module
   GroupPermissionsModule,
   UserResourcePermissionsModule,
   FilesModule,

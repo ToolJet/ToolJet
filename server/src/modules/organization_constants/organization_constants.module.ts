@@ -49,7 +49,9 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       DataSource,
       DataQuery,
       FolderApp,
+      //Depreciated
       GroupPermission,
+      //Depreciated
       AppGroupPermission,
       Credential,
     ]),

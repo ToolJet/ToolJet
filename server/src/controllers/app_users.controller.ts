@@ -25,6 +25,7 @@ export class AppUsersController {
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, appId);
 
+    //This ability should be transfers to other ability
     if (!ability.can('createUsers', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }

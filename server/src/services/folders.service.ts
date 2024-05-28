@@ -44,6 +44,7 @@ export class FoldersService {
   }
 
   async allFolders(user: User, searchKey?: string): Promise<Folder[]> {
+    //
     const allViewableApps = await viewableAppsQuery(user, searchKey, ['id']).getMany();
 
     const allViewableAppIds = allViewableApps.map((app) => app.id);
@@ -54,6 +55,7 @@ export class FoldersService {
 
     if (allViewableAppIds.length === 0) return [];
 
+    //Check if this can be improved
     return await getFolderQuery(false, allViewableAppIds, user.organizationId).distinct().getMany();
   }
 
@@ -155,6 +157,7 @@ export class FoldersService {
     return viewableAppsInFolder;
   }
 
+  ///change as per new group permissions
   async delete(user: User, id: string) {
     const folder = await this.foldersRepository.findOneOrFail({ id, organizationId: user.organizationId });
     const allViewableApps = await createQueryBuilder(App, 'apps')

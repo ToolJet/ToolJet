@@ -111,6 +111,7 @@ export class SeedsService {
   }
 
   async createGroupAndAssociateUser(group: string, manager: EntityManager, user: User): Promise<void> {
+    //Need to update this for new group permissions
     let groupPermission = await manager.findOne(GroupPermission, {
       where: { organizationId: user.organizationId, group: group },
     });
@@ -130,6 +131,7 @@ export class SeedsService {
         folderUpdate: group == 'admin',
         folderDelete: group == 'admin',
       });
+      //Need to update this as well
       await manager.save(groupPermission);
     }
 
@@ -138,6 +140,7 @@ export class SeedsService {
       userId: user.id,
     });
 
+    //Need to update this as well
     await manager.save(userGroupPermission);
   }
 

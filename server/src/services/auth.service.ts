@@ -203,6 +203,7 @@ export class AuthService {
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
+        //Check this for permissions.........
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
@@ -357,6 +358,7 @@ export class AuthService {
           phoneNumber,
         },
         organization.id,
+        //TODO: Need to add to only admin
         ['all_users', 'admin'],
         null,
         false,

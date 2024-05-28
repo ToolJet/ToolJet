@@ -161,12 +161,14 @@ export class AppsService {
           })
         );
 
+        //Depreciated - Need to change this
         await this.createAppGroupPermissionsForAdmin(app, manager);
         return app;
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     });
   }
 
+  //Need to change this as per new group permissions
   async createAppGroupPermissionsForAdmin(app: App, manager: EntityManager): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
@@ -188,6 +190,7 @@ export class AppsService {
     }, manager);
   }
 
+  //Change this ..
   fetchDefaultAppGroupPermissions(group: string): {
     read: boolean;
     update: boolean;
@@ -211,6 +214,7 @@ export class AppsService {
   }
 
   async count(user: User, searchKey): Promise<number> {
+    //Migrate it to app module utility files
     return await viewableAppsQuery(user, searchKey).getCount();
   }
 
@@ -221,6 +225,7 @@ export class AppsService {
   };
 
   async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
+    //Migrate it to app utility files
     const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
     if (page) {

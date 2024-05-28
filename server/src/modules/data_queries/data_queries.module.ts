@@ -40,6 +40,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       Credential,
       DataSource,
       FolderApp,
+      //Depreciated
       GroupPermission,
       AppGroupPermission,
       User,

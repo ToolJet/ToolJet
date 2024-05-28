@@ -8,6 +8,8 @@ import {
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/utils.helper';
+import { ResourcePermissionObject } from '../interface/permissions-ability.interface';
+import { getUserPermissionsQuery } from '../utility/permission-ability.utility';
 
 @Injectable()
 export class GroupPermissionsUtilityService {
@@ -28,6 +30,16 @@ export class GroupPermissionsUtilityService {
   async getUserRole(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await getUserRoleQuery(userId, organizationId, manager).getOne();
+    }, manager);
+  }
+
+  async getUserPermissions(
+    userId: string,
+    resourcePermissionsObject: ResourcePermissionObject,
+    manager?: EntityManager
+  ): Promise<GroupPermissions> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await getUserPermissionsQuery(userId, resourcePermissionsObject, manager).getMany();
     }, manager);
   }
 }

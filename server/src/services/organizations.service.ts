@@ -105,6 +105,7 @@ export class OrganizationsService {
 
       await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
 
+      //Change as per new group permissions
       const createdGroupPermissions: GroupPermission[] = await this.createDefaultGroupPermissionsForOrganization(
         organization,
         manager
@@ -114,6 +115,7 @@ export class OrganizationsService {
         await this.organizationUserService.create(user, organization, false, manager);
 
         for (const groupPermission of createdGroupPermissions) {
+          //Change as per new group permissions
           await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
         }
       }
@@ -163,6 +165,7 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
   }
 
+  //Change as per new group permissions
   async createDefaultGroupPermissionsForOrganization(organization: Organization, manager?: EntityManager) {
     const defaultGroups = ['all_users', 'admin'];
 
@@ -248,6 +251,7 @@ export class OrganizationsService {
           });
       });
     };
+    //Query as per nw group permissions
     const query = createQueryBuilder(OrganizationUser, 'organization_user')
       .innerJoinAndSelect('organization_user.user', 'user')
       .innerJoinAndSelect(
@@ -275,6 +279,7 @@ export class OrganizationsService {
       .getMany();
 
     return organizationUsers?.map((orgUser) => {
+      //Change as per new group permissions
       return {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName ?? '',
@@ -580,6 +585,7 @@ export class OrganizationsService {
       email: inviteNewUserDto.email,
       ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
+    //TODO: Need to add single role as option and same need to be changed on frontend
     const groups = inviteNewUserDto.groups ?? [];
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -617,6 +623,7 @@ export class OrganizationsService {
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
+        //TODO: Need to add it as single group
         ['all_users', ...groups],
         user,
         true,
@@ -697,6 +704,7 @@ export class OrganizationsService {
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const manager = getManager();
 
+    //New group permissions change
     const groupPermissions = await this.groupPermissionService.findAll(currentUser);
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.group);
 

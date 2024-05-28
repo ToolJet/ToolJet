@@ -4,6 +4,7 @@ import { User } from 'src/entities/user.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { Brackets, createQueryBuilder, SelectQueryBuilder } from 'typeorm';
 
+//Need to change this based on new group permissions
 export function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): SelectQueryBuilder<AppBase> {
   const viewableAppsQb = createQueryBuilder(AppBase, 'viewable_apps');
 
