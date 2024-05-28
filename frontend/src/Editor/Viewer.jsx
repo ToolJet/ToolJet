@@ -48,6 +48,7 @@ import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
+const maskedWorkspaceConstantStr = '**************';
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -245,7 +246,7 @@ class ViewerComponent extends React.Component {
     if (variablesResult && Array.isArray(variablesResult)) {
       variablesResult.map((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = constantValue;
+        orgConstants[constant.name] = maskedWorkspaceConstantStr;
       });
       return {
         constants: orgConstants,

@@ -1573,7 +1573,12 @@ const Table = ({ collapseSidebar }) => {
           </div>
         )}
       </div>
-      <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isEditColumnDrawerOpen}
+        onClose={() => setIsEditColumnDrawerOpen(false)}
+        position="right"
+        className="tj-db-drawer"
+      >
         <EditColumnForm
           selectedColumn={selectedColumn}
           setColumns={setColumns}
@@ -1582,6 +1587,7 @@ const Table = ({ collapseSidebar }) => {
           isEditColumn={true}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="EditColumnForm"
         />
       </Drawer>
       <ConfirmDialog

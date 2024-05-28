@@ -167,6 +167,7 @@ import Open from './Open.jsx';
 import TooljetIcon from './TooljetIcon.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
+import ShiftButtonIcon from './ShiftButtonIcon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -400,6 +401,8 @@ const Icon = (props) => {
       return <Server {...props} />;
     case 'settings':
       return <Settings {...props} />;
+    case 'shiftbutton':
+      return <ShiftButtonIcon {...props} />;
     case 'comments':
       return <Comments {...props} />;
     case 'share':

@@ -370,7 +370,12 @@ function ForeignKeyRelation({
             data-tooltip-id="add-relation-tooltip"
             data-tooltip-content={getTooltipContentFordisableAddRelationButton(tables?.length, tableName, columns)}
           >
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            <AddRectangle
+              width="15"
+              fill={disableAddRelationButton ? 'var(--slate8)' : '#3E63DD'}
+              opacity="1"
+              secondaryFill="#ffffff"
+            />
             &nbsp;&nbsp; Add relation
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
@@ -388,6 +393,7 @@ function ForeignKeyRelation({
         onClose={() => {
           onCloseForeignKeyDrawer();
         }}
+        className="tj-db-drawer"
       >
         <ForeignKeyTableForm
           tableName={tableName}
@@ -427,6 +433,7 @@ function ForeignKeyRelation({
           editForeignKeyInCreateTable={editForeignKeyInCreateTable}
           selectedForeignkeyIndex={selectedForeignkeyIndex}
           setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}
+          initiator="ForeignKeyTableForm"
         />
       </Drawer>
       <ConfirmDialog
