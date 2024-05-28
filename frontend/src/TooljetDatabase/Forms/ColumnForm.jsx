@@ -131,6 +131,12 @@ const ColumnForm = ({
     toast.dismiss();
   }, []);
 
+  useEffect(() => {
+    if (dataType?.value === 'boolean') {
+      setIsUniqueConstraint(false);
+    }
+  }, [dataType]);
+
   const handleTypeChange = (value) => {
     if (value.value === 'serial') {
       setIsUniqueConstraint(true);

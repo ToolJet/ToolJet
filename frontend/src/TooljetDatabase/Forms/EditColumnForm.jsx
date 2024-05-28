@@ -108,6 +108,12 @@ const ColumnForm = ({
   }, []);
 
   useEffect(() => {
+    if (dataType?.value === 'boolean') {
+      setIsUniqueConstraint(false);
+    }
+  }, [dataType]);
+
+  useEffect(() => {
     setForeignKeyDetails(
       foreignKeys?.map((item) => {
         return {
