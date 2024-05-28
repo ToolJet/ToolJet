@@ -1,9 +1,10 @@
 .dropdown-widget-custom-menu-list {
     box-shadow: var(--elevation-400-box-shadow) !important;
+    border-radius: 8px
 }
 
 .dropdown-widget-search-box-wrapper {
-    border-bottom: 1px solid var(--slate4);
+    border-bottom: 1px solid var(--borders-weak-disabled);
     display: flex;
     padding: 12px 8px;
     flex-direction: column;
@@ -16,6 +17,8 @@
     flex-direction: row;
     align-items: center;
     background-color: var(--surfaces-surface-01) !important;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
   
     .dropdown-widget-search-box {
       width: 100%;

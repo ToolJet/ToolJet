@@ -220,21 +220,26 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={markedAsDefault === item.value}
+              initialValue={`{{${markedAsDefault === item.value}}}`}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               component={component}
-              type={'basic'}
+              type={'fxEditor'}
               paramLabel={'Make this default option'}
+              paramName={'isEditable'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
-              // paramMeta={{ type: 'toggle', displayName: 'Make editable' }}
+              fieldMeta={{
+                type: 'toggle',
+                displayName: 'Make editable',
+              }}
+              paramType={'toggle'}
             />
           </div>
-          {/* <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.visible}
+              initialValue={`{{${item.visible}}}`}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -242,21 +247,33 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Visibility'}
               onChange={(value) => handleVisibilityChange(value, index)}
+              paramName={'visible'}
+              fieldMeta={{
+                type: 'toggle',
+                displayName: 'Make editable',
+              }}
+              paramType={'toggle'}
             />
           </div>
           <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.disable}
+              initialValue={`{{${item.disable}}}`}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               component={component}
               type={'fxEditor'}
               paramLabel={'Disable'}
+              paramName={'disable'}
               onChange={(value) => handleDisableChange(value, index)}
+              fieldMeta={{
+                type: 'toggle',
+                displayName: 'Make editable',
+              }}
+              paramType={'toggle'}
             />
-          </div> */}
+          </div>
         </Popover.Body>
       </Popover>
     );

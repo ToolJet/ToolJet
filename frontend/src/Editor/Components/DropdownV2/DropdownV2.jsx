@@ -56,7 +56,7 @@ export const DropdownV2 = ({
   exposedVariables,
   dataCy,
 }) => {
-  let {
+  const {
     label,
     value,
     advanced,
@@ -276,7 +276,12 @@ export const DropdownV2 = ({
 
     singleValue: (provided, _state) => ({
       ...provided,
-      color: darkMode && selectedTextColor === '#11181C' ? '#ECEDEE' : selectedTextColor,
+      color:
+        selectedTextColor !== '#1B1F24'
+          ? selectedTextColor
+          : isDropdownDisabled || isDropdownLoading
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -284,7 +289,6 @@ export const DropdownV2 = ({
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     }),
-
     input: (provided, _state) => ({
       ...provided,
       color: darkMode ? 'white' : 'black',
@@ -301,10 +305,20 @@ export const DropdownV2 = ({
     clearIndicator: (provided, _state) => ({
       ...provided,
       padding: '0px',
+      // '&:hover': {
+      //   padding: '1.33px',
+      //   backgroundColor: 'var(--interactive-overlays-fill-hover)',
+      //   borderRadius: '6px'
+      // },
     }),
     dropdownIndicator: (provided, _state) => ({
       ...provided,
       padding: '0px',
+      // '&:hover': {
+      //   padding: '1.33px',
+      //   backgroundColor: 'var(--interactive-overlays-fill-hover)',
+      //   borderRadius: '6px'
+      // },
     }),
     option: (provided) => ({
       ...provided,
@@ -312,17 +326,24 @@ export const DropdownV2 = ({
         darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
           ? 'var(--surfaces-surface-01)'
           : fieldBackgroundColor,
-      color: darkMode && ['#11181C'].includes(selectedTextColor) ? '#ECEDEE' : selectedTextColor,
+      color:
+        selectedTextColor !== '#1B1F24'
+          ? selectedTextColor
+          : isDropdownDisabled || isDropdownLoading
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
       padding: '8px 6px 8px 38px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       display: 'flex',
+      cursor: 'pointer',
     }),
     menuList: (provided) => ({
       ...provided,
       padding: '8px',
+      borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required
       display: 'flex',
       flexDirection: 'column',
@@ -335,15 +356,11 @@ export const DropdownV2 = ({
     }),
     menu: (provided) => ({
       ...provided,
-      marginTop: '5px',
+      borderRadius: '8px',
+      boxShadow: 'unset',
+      margin: 0,
     }),
   };
-
-  // const labelStyles = {
-  //     [direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
-  //     color: labelColor !== '#1B1F24' ? labelColor : 'var(--text-primary)',
-  //     justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
-  // };
 
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
   return (
@@ -355,7 +372,7 @@ export const DropdownV2 = ({
           ((labelWidth != 0 && label?.length != 0) ||
             (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
-            : 'align-items-center '
+            : 'align-items-center'
         }  ${direction === 'right' && alignment === 'side' ? 'flex-row-reverse' : ''}
     ${direction === 'right' && alignment === 'top' ? 'text-right' : ''}
     ${visibility || 'invisible'}`}
@@ -363,6 +380,11 @@ export const DropdownV2 = ({
           position: 'relative',
           whiteSpace: 'nowrap',
           width: '100%',
+        }}
+        onMouseDown={(event) => {
+          onComponentClick(id, component, event);
+          // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
+          useEditorStore.getState().actions.setHoveredComponent('');
         }}
       >
         <Label
@@ -412,16 +434,17 @@ export const DropdownV2 = ({
               DropdownIndicator: isDropdownLoading ? () => null : CustomDropdownIndicator,
               ClearIndicator: CustomClearIndicator,
             }}
+            {...{
+              menuIsOpen: isFocused || undefined,
+              isFocused: isFocused || undefined,
+            }}
             isClearable
+            // select props
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
             isSearchable={false}
             isDarkMode={darkMode}
-            {...{
-              menuIsOpen: isFocused || undefined,
-              isFocused: isFocused || undefined,
-            }}
             inputValue={inputValue}
             setInputValue={setInputValue}
             optionsLoadingState={properties.optionsLoadingState}
