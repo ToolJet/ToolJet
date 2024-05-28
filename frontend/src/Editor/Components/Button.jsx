@@ -198,7 +198,7 @@ export const Button = function Button(props) {
               alignItems: 'center',
               flexDirection: direction == 'left' ? 'row-reverse' : 'row',
               justifyContent: 'center',
-              gap: '6px',
+              gap: label?.length > 0 && '6px',
             }}
           >
             <div
