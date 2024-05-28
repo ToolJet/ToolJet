@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
-import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -15,7 +13,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery } from '@/_helpers/utils';
-import { redirectToDashboard } from '@/_helpers/routes';
+import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -39,6 +37,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const source = searchParams.get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const redirectTo = searchParams.get('redirectTo');
+  const navigate = useNavigate();
 
   const getUserDetails = () => {
     setIsLoading(true);
@@ -121,7 +120,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       .then((user) => {
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        redirectToDashboard(user, redirectTo);
+        onLoginSuccess(user, navigate, redirectTo);
       })
       .catch((res) => {
         setIsLoading(false);
