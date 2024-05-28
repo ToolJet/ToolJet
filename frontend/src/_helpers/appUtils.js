@@ -122,7 +122,7 @@ export function onComponentOptionsChanged(component, options, id) {
 
         const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
 
-        if (typeof existingRef === 'function') return;
+        if (typeof existingRef === 'function') continue;
 
         const shouldUpdateRef = existingRef !== componentData[option[0]];
 
