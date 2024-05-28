@@ -5,6 +5,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import './dropdownV2.scss';
 import { noop } from 'lodash';
 import { FormCheck } from 'react-bootstrap';
+import cx from 'classnames';
 
 const { MenuList } = components;
 
@@ -17,9 +18,13 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     isSelectAllSelected,
     optionsLoadingState,
     handleSelectAll = noop,
+    darkMode,
   } = selectProps;
   return (
-    <div className="dropdown-widget-custom-menu-list" onClick={(e) => e.stopPropagation()}>
+    <div
+      className={cx('dropdown-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="dropdown-widget-search-box-wrapper">
         {!inputValue && (
           <span className="">
@@ -48,7 +53,6 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           onFocus={onMenuInputFocus}
           placeholder="Search..."
           className="dropdown-widget-search-box"
-          // ref={inputRef} // Assign the ref to the input search box
         />
       </div>
       {showAllOption && !optionsLoadingState && (

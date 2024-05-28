@@ -426,6 +426,7 @@ export const DropdownV2 = ({
               fireEvent('onBlur');
             }}
             placeholder={placeholder}
+            menuPortalTarget={document.body}
             components={{
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
@@ -444,7 +445,7 @@ export const DropdownV2 = ({
             doShowIcon={iconVisibility}
             iconColor={iconColor}
             isSearchable={false}
-            isDarkMode={darkMode}
+            darkMode={darkMode}
             inputValue={inputValue}
             setInputValue={setInputValue}
             optionsLoadingState={properties.optionsLoadingState}
