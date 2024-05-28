@@ -275,7 +275,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
                   value: actions,
                 },
                 columns: {
-                  value: columns,
+                  value: component.component?.definition?.properties?.columns?.value,
                 },
               },
             };
@@ -283,7 +283,6 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
           result[id][attribute] = metaDiff.definition[attribute];
         });
       }
-
       const currentDisplayPreference = currentLayout;
 
       if (currentDisplayPreference === 'mobile') {
