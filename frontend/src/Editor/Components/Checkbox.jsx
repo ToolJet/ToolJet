@@ -135,7 +135,7 @@ export const Checkbox = function Checkbox({
       setExposedVariable('isDisabled', disable);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
+  }, [disable]);
 
   useEffect(() => {
     setExposedVariable('toggle', async function () {
@@ -150,7 +150,7 @@ export const Checkbox = function Checkbox({
   const renderCheckBox = () => (
     <>
       <div
-        data-disabled={disabledState}
+        data-disabled={disable}
         className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
         style={{
           display: visibility ? 'flex' : 'none',
