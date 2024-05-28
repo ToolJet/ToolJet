@@ -60,6 +60,10 @@ function CustomMenuList({ ...props }) {
         cellColumnName={tjdbMenuListProps.cellColumnName}
         isLoadingFKDetails={tjdbMenuListProps.isLoadingFKDetails}
         handleScrollThrottled={handleScrollThrottled}
+        loader={tjdbMenuListProps.loader}
+        searchValue={tjdbMenuListProps.searchValue}
+        isInitialForeignKeySearchDataLoaded={tjdbMenuListProps.isInitialForeignKeySearchDataLoaded}
+        isInitialForeignKeyDataLoaded={tjdbMenuListProps.isInitialForeignKeyDataLoaded}
       />
       {tjdbMenuListProps.foreignKeyAccess && tjdbMenuListProps.showDescription && tjdbMenuListProps.actions && (
         <>
@@ -134,13 +138,15 @@ function DataSourceSelect({
   actionName,
   referencedForeignKeyDetails,
   columnDataType = '',
+  loader,
+  isLoading = false,
 }) {
-  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
+  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchPageNumber, setSearchPageNumber] = useState(1);
   const [totalSearchRecords, setTotalSearchRecords] = useState(0);
-  const [isInitialForeignKeSearchDataLoaded, setIsInitialForeignKeSearchDataLoaded] = useState(false);
+  const [isInitialForeignKeySearchDataLoaded, setIsInitialForeignKeySearchDataLoaded] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
@@ -157,7 +163,7 @@ function DataSourceSelect({
   });
 
   function setDefaultStateForSearch(makeSearchValueToDefault = false) {
-    setIsInitialForeignKeSearchDataLoaded(false);
+    setIsInitialForeignKeySearchDataLoaded(false);
     setTotalSearchRecords(0);
     setSearchPageNumber(1);
     makeSearchValueToDefault && setSearchValue('');
@@ -208,7 +214,7 @@ function DataSourceSelect({
           }
 
           if (!isEmpty(searchValue)) {
-            if (page === 1) setIsInitialForeignKeSearchDataLoaded(true);
+            if (page === 1) setIsInitialForeignKeySearchDataLoaded(true);
             const currentSearchResultList = data.map((item) => ({
               value: item[referencedColumns?.referenced_column_names[0]],
               label: item[referencedColumns?.referenced_column_names[0]],
@@ -240,7 +246,7 @@ function DataSourceSelect({
         : fetchForeignKeyDetails(
             searchPageNumber,
             totalSearchRecords,
-            isInitialForeignKeSearchDataLoaded,
+            isInitialForeignKeySearchDataLoaded,
             searchValue,
             foreignKeys,
             organizationId
@@ -267,8 +273,8 @@ function DataSourceSelect({
   }, [debouncedHandleChange]);
 
   useEffect(() => {
-    const shouldLoadFKDataFirstPage = !isLoadingFKDetails && isEmpty(searchValue) && !isInitialForeignKeyDataLoaded;
-    const shouldLoadFKSearchDataFirstPage = !isLoadingFKDetails && !isEmpty(searchValue);
+    const shouldLoadFKDataFirstPage = isEmpty(searchValue) && !isInitialForeignKeyDataLoaded;
+    const shouldLoadFKSearchDataFirstPage = !isEmpty(searchValue);
 
     if (scrollEventForColumnValues) {
       if (shouldLoadFKSearchDataFirstPage) {
@@ -287,7 +293,6 @@ function DataSourceSelect({
         );
       }
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
@@ -351,6 +356,10 @@ function DataSourceSelect({
           targetTable: targetTable,
           tableName: tableName,
           actionName: actionName,
+          loader: loader,
+          searchValue: searchValue,
+          isInitialForeignKeySearchDataLoaded: isInitialForeignKeySearchDataLoaded,
+          isInitialForeignKeyDataLoaded: isInitialForeignKeyDataLoaded,
         }}
         components={{
           Option: ({ children, ...props }) => {
@@ -589,6 +598,10 @@ const MenuList = ({
   foreignKeys,
   cellColumnName,
   isLoadingFKDetails = false,
+  loader,
+  searchValue,
+  isInitialForeignKeyDataLoaded,
+  isInitialForeignKeySearchDataLoaded,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -610,11 +623,16 @@ const MenuList = ({
     if (scrollEventForColumnValues) menuListStyles.minHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
+  const isInitialDataLoaded = isEmpty(searchValue)
+    ? isInitialForeignKeyDataLoaded
+    : isInitialForeignKeySearchDataLoaded;
 
   return (
     <>
       {!isEmpty(options) && showColumnInfo && columnInfoForTable}
-      {isEmpty(options) && emptyError && !isLoadingFKDetails ? (
+      {isLoadingFKDetails && loader && !isInitialDataLoaded ? (
+        loader
+      ) : isEmpty(options) && emptyError && !isLoadingFKDetails ? (
         emptyError
       ) : (
         <div
@@ -627,9 +645,10 @@ const MenuList = ({
           }
         >
           {children}
+          {isLoadingFKDetails && loader ? loader : null}
         </div>
       )}
-      {onAdd && (
+      {onAdd && !(isLoadingFKDetails && loader) && (
         <div
           className={cx('mt-2 border-slate3-top', {
             'tj-foreignKey p-1': foreignKeyAccess || foreignKeyAccessInRowForm,
