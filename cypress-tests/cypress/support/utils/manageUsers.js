@@ -122,7 +122,7 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
-
+  cy.wait(3000)
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
   cy.get(usersSelector.buttonDownloadTemplate).click();
   cy.wait(4000)
@@ -294,9 +294,9 @@ export const inviteUserWithUserGroups = (
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
   cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.intercept('GET', '/api/organizations').as('org')
+  // cy.intercept('GET', '/api/organizations').as('org')
   cy.get(commonSelectors.signUpButton).click();
-  cy.wait('@org');
+  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 

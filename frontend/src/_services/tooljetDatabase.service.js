@@ -48,7 +48,7 @@ function createColumn(
     column: {
       column_name: columnName,
       data_type: dataType,
-      ...(!isCheckSerialType && { column_default: defaultValue }),
+      ...(!isCheckSerialType && { column_default: defaultValue === 'Null' ? null : defaultValue }),
       constraints_type: {
         is_not_null: isNotNull,
         is_unique: isUniqueConstraint,

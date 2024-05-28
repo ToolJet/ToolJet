@@ -17,7 +17,7 @@ export class OrganizationConstantsService {
     private appEnvironmentService: AppEnvironmentService
   ) {}
 
-  async allEnvironmentConstants(organizationId: string): Promise<OrganizationConstant[]> {
+  async allEnvironmentConstants(organizationId: string, decryptValue: boolean): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
@@ -33,11 +33,21 @@ export class OrganizationConstantsService {
             appEnvironments.map(async (env) => {
               const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
 
-              return {
+              const valueResult = {
                 environmentName: env.name,
-                value: value && value.value.length > 0 ? await this.decryptSecret(organizationId, value.value) : '',
-                id: value.environmentId,
+                id: value ? value.environmentId : undefined, // Safeguard for undefined 'value'
               };
+
+              if (value && value.value.length > 0) {
+                const decryptedOrRawValue = decryptValue
+                  ? await this.decryptSecret(organizationId, value.value)
+                  : value.value;
+
+                if (decryptValue) {
+                  valueResult['value'] = decryptedOrRawValue;
+                }
+              }
+              return valueResult;
             })
           );
 
@@ -54,7 +64,11 @@ export class OrganizationConstantsService {
     });
   }
 
-  async getConstantsForEnvironment(organizationId: string, environmentId: string): Promise<OrganizationConstant[]> {
+  async getConstantsForEnvironment(
+    organizationId: string,
+    environmentId: string,
+    decryptValue: boolean
+  ): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
@@ -64,12 +78,20 @@ export class OrganizationConstantsService {
       const result = await query.getMany();
 
       const constantsWithValues = result.map(async (constant) => {
-        const decryptedValue = await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value);
-        return {
+        const constantResult = {
           id: constant.id,
           name: constant.constantName,
-          value: decryptedValue,
         };
+
+        if (decryptValue && constant.orgEnvironmentConstantValues.length > 0) {
+          const decryptedValue = await this.decryptSecret(
+            organizationId,
+            constant.orgEnvironmentConstantValues[0].value
+          );
+          constantResult['value'] = decryptedValue;
+        }
+
+        return constantResult;
       });
 
       return Promise.all(constantsWithValues);
