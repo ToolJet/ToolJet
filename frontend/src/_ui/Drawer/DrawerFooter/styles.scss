@@ -9,3 +9,43 @@
 	align-items: center !important;
 	gap: 10px !important;
 }
+.tjdb-cell-menu-shortcuts-text {
+	font-size: 12px;
+	color: #7E868C;
+}
+
+.tjdb-enter-shortcut-box {
+	display: flex;
+	justify-content: center;
+	width: 16px;
+	height:16px;
+	margin-right: 6px !important;
+	border-radius: 4px;
+	border: 1px solid #D7DBDF;
+	padding: 4px;
+	font-size: 8px;
+	color: #889096;
+}
+
+.tjdb-shift-shortcut-box {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 26px;
+	height:16px;
+	border-radius: 4px;
+	border: 1px solid #D7DBDF;
+	padding: 4px;
+	font-size: 8px;
+	color: #889096;
+}
+
+.tjdb-shotcut-text-container {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	padding: 0px;
+	align-self: center;
+	justify-self: flex-start;
+	margin-right: auto;
+}
