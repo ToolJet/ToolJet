@@ -16,6 +16,7 @@ export const Button = function Button(props) {
     iconColor,
     direction,
     type,
+    padding,
     iconVisibility,
   } = styles;
 
@@ -76,7 +77,7 @@ export const Button = function Button(props) {
     color: computedTextColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
-    height,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
     '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
@@ -171,7 +172,7 @@ export const Button = function Button(props) {
       className={`widget-button d-flex align-items-center`}
       style={{
         position: 'relative',
-        height,
+        // height,
       }}
       disabled={disable || loading}
     >
