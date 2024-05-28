@@ -48,6 +48,8 @@ const DropDownSelect = ({
   referencedForeignKeyDetails = [],
   isCreateRow = false,
   isEditRow = false,
+  isCreateColumn = false,
+  isEditColumn = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -186,6 +188,8 @@ const DropDownSelect = ({
             referencedForeignKeyDetails={referencedForeignKeyDetails}
             isCreateRow={isCreateRow}
             isEditRow={isEditRow}
+            isEditColumn={isEditColumn}
+            isCreateColumn={isCreateColumn}
           />
         </Popover>
       }
