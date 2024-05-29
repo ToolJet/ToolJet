@@ -1316,6 +1316,14 @@ $border-radius: 4px;
     }
   }
 
+  .delete-field-option:hover {
+    svg {
+      path {
+        fill: $color-light-tomato-10 !important;
+      }
+    }
+  }
+
   .add-tabs:hover {
     svg {
       path {

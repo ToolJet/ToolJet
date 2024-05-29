@@ -66,7 +66,6 @@ const BoxUI = (props) => {
   }, [JSON.stringify(customResolvables), readOnly]);
 
   let exposedVariables = !_.isEmpty(currentState?.components) ? currentState?.components[component.name] ?? {} : {};
-
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);

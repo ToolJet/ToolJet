@@ -61,7 +61,6 @@ import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
-const maskedWorkspaceConstantStr = '**************';
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -177,6 +176,12 @@ class ViewerComponent extends React.Component {
       useEditorStore.getState().actions.updateEditorState({
         isUpdatingEditorStateInProcess: false,
         appDefinition: newAppDefinition,
+      });
+    } else {
+      // Setting the canvas background to the editor store
+      useEditorStore.getState().actions.setCanvasBackground({
+        backgroundFxQuery: globalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: globalSettings?.canvasBackgroundColor,
       });
     }
 

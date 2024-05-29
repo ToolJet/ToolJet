@@ -7107,7 +7107,8 @@ tbody {
     max-width: 230px;
 
     input.form-control {
-      border: none;
+      border: none !important;
+      margin: 0px !important;
       padding: 0px !important;
       background-color: #F8F9FA;
     }
@@ -7120,9 +7121,10 @@ tbody {
     color: #ffffff;
 
     input.form-control {
-      border: none;
+      border: none !important;
+      margin: 0px !important;
       padding: 0px !important;
-      background-color: #242f3c;
+      background-color: #242f3c !important;
     }
   }
 
@@ -7134,8 +7136,9 @@ tbody {
 
     .form-control {
       background-color: var(--indigo2) !important;
-      border: none;
+      border: none !important;
       padding: 0;
+      margin: 0px !important;
       border-radius: 0px;
     }
 
@@ -7170,8 +7173,9 @@ tbody {
     }
 
     input.form-control {
-      border: none;
+      border: none !important;
       padding: 0px !important;
+      margin: 0px !important;
       background-color: #F8F9FA;
     }
   }
@@ -7188,7 +7192,8 @@ tbody {
     }
 
     input.form-control {
-      border: none;
+      border: none !important;
+      margin: 0px !important;
       padding: 0px !important;
       background-color: #242f3c;
     }
@@ -11766,6 +11771,12 @@ tbody {
   display: flex;
 
   .eye-icon {
+    position: absolute;
+    right: 8px;
+    top: 5px;
+    cursor: pointer;
+  }
+  .copy-icon {
     position: absolute;
     right: 8px;
     top: 5px;
