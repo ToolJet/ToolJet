@@ -31,6 +31,9 @@ export class Page {
   @Column()
   hidden: boolean;
 
+  @Column()
+  icon: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

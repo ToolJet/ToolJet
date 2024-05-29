@@ -31,6 +31,9 @@ export class AppVersion extends BaseEntity {
   @Column('simple-json', { name: 'global_settings' })
   globalSettings;
 
+  @Column('simple-json', { name: 'page_settings' })
+  pageSettings;
+
   @Column({ name: 'show_viewer_navigation' })
   showViewerNavigation: boolean;
 
