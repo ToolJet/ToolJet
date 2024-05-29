@@ -23,7 +23,6 @@ const Loader = ({ width, style, absolute = true, color = '#3E63DD' }) => {
             <stop offset="100%" stopOpacity="0.5" stopColor="currentColor" />
           </linearGradient>
         </defs>
-
         <g strokeWidth="24">
           <path
             stroke="url(#spinner-secondHalf)"
@@ -39,16 +38,15 @@ const Loader = ({ width, style, absolute = true, color = '#3E63DD' }) => {
             strokeLinecap="round"
             d={`M 10 ${viewBoxSize / 2} A 96 96 0 0 1 10 ${viewBoxSize / 2 - 2}`}
           />
+          <animateTransform
+            from="0 120 120"
+            to="360 120 120"
+            attributeName="transform"
+            type="rotate"
+            repeatCount="indefinite"
+            dur="1300ms"
+          />
         </g>
-
-        <animateTransform
-          from="0 0 0"
-          to="360 0 0"
-          attributeName="transform"
-          type="rotate"
-          repeatCount="indefinite"
-          dur="1300ms"
-        />
       </svg>
     </div>
   );
