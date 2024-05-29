@@ -54,7 +54,7 @@ export class MoveVisibilityDisabledStatesToProperties1707466537651 implements Mi
       }
 
       // Label and value
-      if (component.type !== 'Text' && component.type !== 'ToggleSwitch' && component.type !== 'Checkbox') {
+      if (component.type !== 'Text') {
         if (properties.label == undefined || null) {
           properties.label = '';
         }
