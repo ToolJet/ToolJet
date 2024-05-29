@@ -39,6 +39,7 @@ import {
   SOURCE,
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_USER_SOURCE,
 } from 'src/helpers/user_lifecycle';
 import { MetadataService } from './metadata.service';
 import { CookieOptions, Response } from 'express';
@@ -351,7 +352,13 @@ export class AuthService {
       await this.organizationUsersService.create(user, personalWorkspace, true, manager);
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
-        const organizationUser = await this.organizationUsersService.create(user, signingUpOrganization, true, manager);
+        const organizationUser = await this.organizationUsersService.create(
+          user,
+          signingUpOrganization,
+          true,
+          manager,
+          WORKSPACE_USER_SOURCE.SIGNUP
+        );
         await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, user.id, manager);
 
         this.emailService
@@ -561,7 +568,13 @@ export class AuthService {
 
   async addUserToTheWorkspace(existingUser: User, signingUpOrganization: Organization, manager: EntityManager) {
     await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, existingUser.id, manager);
-    return this.organizationUsersService.create(existingUser, signingUpOrganization, true, manager);
+    return this.organizationUsersService.create(
+      existingUser,
+      signingUpOrganization,
+      true,
+      manager,
+      WORKSPACE_USER_SOURCE.SIGNUP
+    );
   }
 
   async activateAccountWithToken(activateAccountWithToken: ActivateAccountWithTokenDto, response: any) {
@@ -846,7 +859,17 @@ export class AuthService {
         });
         await this.organizationUsersService.activateOrganization(organizationUser, manager);
       }
-      return this.generateLoginResultPayload(response, user, organization, null, null, loggedInUser, manager);
+      const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
+      loggedInUser = !isWorkspaceSignup ? loggedInUser : null;
+      return this.generateLoginResultPayload(
+        response,
+        user,
+        organization,
+        null,
+        isWorkspaceSignup,
+        loggedInUser,
+        manager
+      );
     });
   }
 
@@ -1019,6 +1042,7 @@ export class AuthService {
       lastName,
       status: invitedUserStatus,
       organizationStatus,
+      organizationUserSource,
       invitedOrganizationId,
       source,
     } = invitedUser;
@@ -1055,6 +1079,18 @@ export class AuthService {
       throw new NotAcceptableException(errorResponse);
     }
 
+    const isWorkspaceSignup =
+      organizationStatus === WORKSPACE_USER_STATUS.INVITED &&
+      !!organizationToken &&
+      invitedUserStatus === USER_STATUS.ACTIVE &&
+      organizationUserSource === WORKSPACE_USER_SOURCE.SIGNUP;
+    if (isWorkspaceSignup) {
+      /* Active user & Organization invite */
+      const responseObj = {
+        organizationUserSource,
+      };
+      return decamelizeKeys(responseObj);
+    }
     /* Send back the organization invite url if the user has old workspace + account invitation URL */
     const doesUserHaveWorkspaceAndAccountInvite =
       organizationAndAccountInvite &&
