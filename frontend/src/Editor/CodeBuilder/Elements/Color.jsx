@@ -5,8 +5,17 @@ import Popover from 'react-bootstrap/Popover';
 import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
 
-export const Color = ({ value, onChange, pickerStyle = {}, cyLabel, asBoxShadowPopover = true, meta, component }) => {
-  value = component?.component?.component == 'Button' ? computeColor(component, value, meta) : value;
+export const Color = ({
+  value,
+  onChange,
+  pickerStyle = {},
+  cyLabel,
+  asBoxShadowPopover = true,
+  meta,
+  component,
+  styleDefinition,
+}) => {
+  value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
 
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';

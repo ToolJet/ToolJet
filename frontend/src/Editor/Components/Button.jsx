@@ -16,6 +16,7 @@ export const Button = function Button(props) {
     iconColor,
     direction,
     type,
+    padding,
     iconVisibility,
   } = styles;
 
@@ -24,6 +25,7 @@ export const Button = function Button(props) {
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
+  const [hovered, setHovered] = useState(false);
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
@@ -76,7 +78,7 @@ export const Button = function Button(props) {
     color: computedTextColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
-    height,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
     '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
@@ -156,6 +158,12 @@ export const Button = function Button(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
+  useEffect(() => {
+    if (hovered) {
+      fireEvent('onHover');
+    }
+  }, [hovered]);
+
   const hasCustomBackground = computedBgColor?.charAt() === '#';
   if (hasCustomBackground) {
     computedStyles['--tblr-btn-color-darker'] = tinycolor(computedBgColor).darken(8).toString();
@@ -171,7 +179,7 @@ export const Button = function Button(props) {
       className={`widget-button d-flex align-items-center`}
       style={{
         position: 'relative',
-        height,
+        // height,
       }}
       disabled={disable || loading}
     >
@@ -185,8 +193,12 @@ export const Button = function Button(props) {
         onClick={handleClick}
         data-cy={dataCy}
         type="default"
-        onMouseEnter={() => {
-          fireEvent('onHover');
+        onMouseOver={() => {
+          //cannot use mouseEnter here since mouse enter does not trigger consistently. Mouseover gets triggered for all child components
+          setHovered(true);
+        }}
+        onMouseLeave={() => {
+          setHovered(false);
         }}
       >
         {!loading ? (
@@ -198,7 +210,7 @@ export const Button = function Button(props) {
               alignItems: 'center',
               flexDirection: direction == 'left' ? 'row-reverse' : 'row',
               justifyContent: 'center',
-              gap: '6px',
+              gap: label?.length > 0 && '6px',
             }}
           >
             <div

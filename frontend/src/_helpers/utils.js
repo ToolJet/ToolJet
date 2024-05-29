@@ -12,6 +12,7 @@ import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { validateMultilineCode } from './utility';
+import { componentTypes } from '@/Editor/WidgetManager/components';
 
 const reservedKeyword = ['app', 'window'];
 
@@ -268,20 +269,20 @@ export function computeComponentName(componentType, currentComponents) {
     (component) => component.component.component === componentType
   );
   let found = false;
-  let componentName = '';
+  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
   let currentNumber = currentComponentsForKind.length + 1;
-
+  let _componentName = '';
   while (!found) {
-    componentName = `${componentType.toLowerCase()}${currentNumber}`;
+    _componentName = `${componentName.toLowerCase()}${currentNumber}`;
     if (
-      Object.values(currentComponents).find((component) => component.component.name === componentName) === undefined
+      Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
       found = true;
     }
     currentNumber = currentNumber + 1;
   }
 
-  return componentName;
+  return _componentName;
 }
 
 export function computeActionName(actions) {
@@ -411,8 +412,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, co
   if (resolvedMandatory == true && !widgetValue) {
     return {
       isValid: false,
-      validationError:
-        !widgetValue && component !== 'Checkbox' && component !== 'ToggleSwitchV2' && `Field cannot be empty`,
+      validationError: `Field cannot be empty`,
     };
   }
   return {
@@ -1300,8 +1300,8 @@ export const setWindowTitle = async (pageDetails, location) => {
   }
 };
 // This function is written only to handle diff colors W.R.T button types
-export const computeColor = (component, value, meta) => {
-  if (component?.component?.definition?.styles?.type?.value == 'primary') return value;
+export const computeColor = (styleDefinition, value, meta) => {
+  if (styleDefinition.type?.value == 'primary') return value;
   else {
     if (meta?.displayName == 'Background') {
       value = value == '#4368E3' ? '#FFFFFF' : value;
