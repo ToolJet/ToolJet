@@ -411,8 +411,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, co
   if (resolvedMandatory == true && !widgetValue) {
     return {
       isValid: false,
-      validationError:
-        !widgetValue && component !== 'Checkbox' && component !== 'ToggleSwitchV2' && `Field cannot be empty`,
+      validationError: `Field cannot be empty`,
     };
   }
   return {
@@ -1300,8 +1299,8 @@ export const setWindowTitle = async (pageDetails, location) => {
   }
 };
 // This function is written only to handle diff colors W.R.T button types
-export const computeColor = (component, value, meta) => {
-  if (component?.component?.definition?.styles?.type?.value == 'primary') return value;
+export const computeColor = (styleDefinition, value, meta) => {
+  if (styleDefinition.type?.value == 'primary') return value;
   else {
     if (meta?.displayName == 'Background') {
       value = value == '#4368E3' ? '#FFFFFF' : value;

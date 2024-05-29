@@ -157,7 +157,7 @@ export const Checkbox = function Checkbox({
           boxShadow,
           alignItems: loading && 'center',
           gap: '6px ',
-          justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
+          justifyContent: `${loading ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
           height,
           whiteSpace: 'nowrap',
         }}
@@ -223,9 +223,13 @@ export const Checkbox = function Checkbox({
       </div>
       {validationError && visibility && (
         <div
-          className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: 'var(--status-error-strong)' }}
+          style={{
+            color: 'var(--status-error-strong)',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
         >
           {validationError}
         </div>
