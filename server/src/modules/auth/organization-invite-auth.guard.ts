@@ -14,12 +14,6 @@ export class OrganizationInviteAuthGuard extends AuthGuard('jwt') {
     request.isInviteSession = true;
     request.isUserNotMandatory = true;
 
-    const organizationUser = await this.organizationUsersService.getUser(request.body.token);
-    if (organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP) {
-      request.user = organizationUser.user;
-      return true;
-    }
-
     if (request?.cookies['tj_auth_token']) {
       try {
         user = await super.canActivate(context);
@@ -28,6 +22,12 @@ export class OrganizationInviteAuthGuard extends AuthGuard('jwt') {
       }
       return user;
     }
+
+    const organizationUser = await this.organizationUsersService.getUser(request.body.token);
+    if (organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP) {
+      return true;
+    }
+
     return false;
   }
 }

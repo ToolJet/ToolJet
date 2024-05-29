@@ -860,7 +860,6 @@ export class AuthService {
         await this.organizationUsersService.activateOrganization(organizationUser, manager);
       }
       const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
-      loggedInUser = !isWorkspaceSignup ? loggedInUser : null;
       return this.generateLoginResultPayload(
         response,
         user,
