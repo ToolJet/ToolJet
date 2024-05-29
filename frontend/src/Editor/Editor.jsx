@@ -1500,6 +1500,12 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: false,
         appDefinition: newAppDefinition,
       });
+    } else {
+      // Setting the canvas background to the editor store
+      setCanvasBackground({
+        backgroundFxQuery: globalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: globalSettings?.canvasBackgroundColor,
+      });
     }
 
     if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {

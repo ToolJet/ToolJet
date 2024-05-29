@@ -168,6 +168,12 @@ class ViewerComponent extends React.Component {
         isUpdatingEditorStateInProcess: false,
         appDefinition: newAppDefinition,
       });
+    } else {
+      // Setting the canvas background to the editor store
+      useEditorStore.getState().actions.setCanvasBackground({
+        backgroundFxQuery: globalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: globalSettings?.canvasBackgroundColor,
+      });
     }
 
     if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {
