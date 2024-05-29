@@ -1,97 +1,92 @@
 import React, { useEffect, useState } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
-class Switch extends React.Component {
-  render() {
-    const {
-      on,
-      onClick,
-      onChange,
-      disabledState,
-      color,
-      alignment,
-      borderColor,
-      setOn,
-      styles,
-      setExposedVariable,
-      fireEvent,
-    } = this.props;
+const Switch = ({
+  on,
+  onClick,
+  onChange,
+  disabledState,
+  color,
+  alignment,
+  borderColor,
+  setOn,
+  styles,
+  setExposedVariable,
+  fireEvent,
+  setUserInteracted,
+}) => {
+  const handleToggleChange = () => {
+    setOn(!on);
+    setExposedVariable('value', !on);
+    fireEvent('onChange');
+    setUserInteracted(true);
+  };
 
-    const handleToggleChange = () => {
-      setOn(!on);
-      setExposedVariable('value', !on);
-      fireEvent('onChange');
-    };
+  const switchStyle = {
+    position: 'relative',
+    display: 'inline-block',
+    width: '28px',
+    height: '18px',
+    marginRight: '0px',
+    paddingRight: '0px',
+  };
 
-    const switchStyle = {
-      position: 'relative',
-      display: 'inline-block',
-      width: '28px',
-      height: '18px',
-      marginRight: '0px',
-      paddingRight: '0px',
-    };
+  const sliderStyle = {
+    position: 'absolute',
+    cursor: 'pointer',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: on ? styles.toggleSwitchColor : styles.uncheckedColor,
+    transition: 'background-color 0.2s',
+    borderRadius: '34px',
+    outline: `1px solid ${styles.borderColor}`,
+  };
 
-    const sliderStyle = {
-      position: 'absolute',
-      cursor: 'pointer',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: on ? styles.toggleSwitchColor : styles.uncheckedColor,
-      transition: 'background-color 0.2s',
-      borderRadius: '34px',
-      outline: `1px solid ${styles.borderColor}`,
-    };
+  const circleStyle = {
+    position: 'absolute',
+    content: '',
+    height: '12px',
+    width: '12px',
+    left: '2px',
+    bottom: '3px',
+    backgroundColor: styles.handleColor,
+    transition: 'transform 0.2s',
+    borderRadius: '50%',
+    transform: on ? 'translateX(12px)' : 'translateX(0)',
+  };
 
-    const circleStyle = {
-      position: 'absolute',
-      content: '',
-      height: '12px',
-      width: '12px',
-      left: '2px',
-      bottom: '3px',
-      backgroundColor: styles.handleColor,
-      transition: 'transform 0.2s',
-      borderRadius: '50%',
-      transform: on ? 'translateX(12px)' : 'translateX(0)',
-    };
+  return (
+    <div>
+      <div className="d-flex" style={switchStyle} onClick={handleToggleChange}>
+        <input
+          type="checkbox"
+          style={{
+            opacity: 0,
+            width: 0,
+            height: 0,
+            backgroundColor: on ? `${color}` : 'white',
+            marginTop: '0px',
+            marginLeft: alignment === 'left' && '-2rem',
+            border: `1 px solid ${borderColor}`,
+          }}
+          disabled={disabledState}
+          className="form-check-input "
+          checked={on}
+          onChange={onChange}
+          onClick={onClick}
+        />
 
-    return (
-      <div>
-        <>
-          <div className="d-flex" style={switchStyle} onClick={handleToggleChange}>
-            <input
-              type="checkbox"
-              style={{
-                opacity: 0,
-                width: 0,
-                height: 0,
-                backgroundColor: on ? `${color}` : 'white',
-                marginTop: '0px',
-                marginLeft: alignment == 'left' && '-2rem',
-                border: `1 px solid ${borderColor}`,
-              }}
-              disabled={disabledState}
-              className="form-check-input "
-              checked={on}
-              onChange={onChange}
-              onClick={onClick}
-            />
-
-            <span style={sliderStyle}>
-              <span style={circleStyle}></span>
-            </span>
-          </div>
-        </>
+        <span style={sliderStyle}>
+          <span style={circleStyle}></span>
+        </span>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export const ToggleSwitchV2 = ({
   height,
@@ -106,53 +101,55 @@ export const ToggleSwitchV2 = ({
 }) => {
   const defaultValue = properties.defaultValue ?? false;
 
-  const [on, setOn] = React.useState(Boolean(defaultValue));
+  const [on, setOn] = useState(Boolean(defaultValue));
   const label = properties.label;
-  const currentState = useCurrentState();
-  const { loadingState, disabledState } = properties;
-  const [showValidationError, setShowValidationError] = useState(true);
   const { isValid, validationError } = validate(on);
-
+  const [showValidationError, setShowValidationError] = useState(true);
   const [loading, setLoading] = useState(properties?.loadingState);
-  const [disable, setDisable] = useState(disabledState || loadingState);
+  const [disable, setDisable] = useState(properties.disabledState || properties.loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
+  const [userInteracted, setUserInteracted] = useState(false);
 
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
 
   const { toggleSwitchColor, boxShadow, alignment, borderColor } = styles;
-
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
 
-  function toggleValue(e) {
+  const toggleValue = (e) => {
     const toggled = e.target.checked;
     setExposedVariable('value', toggled);
     fireEvent('onChange');
-  }
-
+    setUserInteracted(true);
+  };
   // Exposing the initially set false value once on load
+
   useEffect(() => {
     setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+
     setOn(defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
-  const toggle = () => setOn(!on);
+  const toggle = () => {
+    setOn(!on);
+    setUserInteracted(true);
+  };
 
   useEffect(() => {
-    disable !== disabledState && setDisable(properties.disabledState);
+    if (disable !== properties.disabledState) setDisable(properties.disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.disabledState]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
-    loading !== loadingState && setLoading(loadingState);
+    if (loading !== properties.loadingState) setLoading(properties.loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingState]);
+  }, [properties.loadingState]);
 
   useEffect(() => {
     setExposedVariable('label', label);
@@ -168,6 +165,7 @@ export const ToggleSwitchV2 = ({
     setExposedVariable('isLoading', loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
+
   useEffect(() => {
     setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,10 +175,12 @@ export const ToggleSwitchV2 = ({
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
+
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
+
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
       setLoading(loading);
@@ -203,13 +203,14 @@ export const ToggleSwitchV2 = ({
       setExposedVariable('isDisabled', disable);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
+  }, [properties.disabledState]);
 
   useEffect(() => {
     setExposedVariable('toggle', async function () {
       setExposedVariable('value', !on);
       fireEvent('onChange');
       setOn(!on);
+      setUserInteracted(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on]);
@@ -218,20 +219,21 @@ export const ToggleSwitchV2 = ({
     setExposedVariable('setValue', async function (value) {
       setOn(value);
       setExposedVariable('value', value);
+      setUserInteracted(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderInput = () => (
     <div
-      data-disabled={disabledState}
+      data-disabled={properties.disabledState}
       className={`${alignment === 'right' ? 'flex-row-reverse' : 'flex-row'}`}
       style={{
         display: visibility ? 'flex' : 'none',
         boxShadow,
         alignItems: loading && 'center',
         gap: '6px ',
-        justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
+        justifyContent: `${properties.loadingState ? 'center' : alignment === 'left' ? 'space-between' : 'start'}`,
         height,
         whiteSpace: 'nowrap',
         paddingTop: '3px',
@@ -274,6 +276,7 @@ export const ToggleSwitchV2 = ({
             styles={styles}
             setExposedVariable={setExposedVariable}
             fireEvent={fireEvent}
+            setUserInteracted={setUserInteracted}
           />
         </>
       )}
@@ -287,7 +290,7 @@ export const ToggleSwitchV2 = ({
       }}
     >
       {renderInput()}
-      {showValidationError && visibility && (
+      {showValidationError && isMandatory && userInteracted && !on && visibility && (
         <div
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           style={{
@@ -297,7 +300,7 @@ export const ToggleSwitchV2 = ({
             lineHeight: '16px',
           }}
         >
-          {showValidationError && validationError}
+          {validationError}
         </div>
       )}
     </div>
