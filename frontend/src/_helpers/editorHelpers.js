@@ -52,6 +52,7 @@ import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { useEditorStore } from '@/_stores/editorStore';
+import './requestIdleCallbackPolyfill';
 
 export function memoizeFunction(func) {
   const cache = new Map();
