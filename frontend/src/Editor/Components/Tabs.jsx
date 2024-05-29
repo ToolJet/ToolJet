@@ -186,6 +186,7 @@ export const Tabs = function Tabs({
                 color: currentTab == tab.id && parsedHighlightColor,
                 borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
                 overflowWrap: 'anywhere',
+                textAlign: 'center',
               }}
               ref={(el) => {
                 if (el && currentTab == tab.id) {
