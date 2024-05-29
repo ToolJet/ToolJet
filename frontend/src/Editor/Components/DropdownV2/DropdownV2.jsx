@@ -304,21 +304,16 @@ export const DropdownV2 = ({
     }),
     clearIndicator: (provided, _state) => ({
       ...provided,
-      padding: '0px',
-      // '&:hover': {
-      //   padding: '1.33px',
-      //   backgroundColor: 'var(--interactive-overlays-fill-hover)',
-      //   borderRadius: '6px'
-      // },
+      padding: '1.33px',
+      '&:hover': {
+        padding: '1.33px',
+        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        borderRadius: '6px',
+      },
     }),
     dropdownIndicator: (provided, _state) => ({
       ...provided,
       padding: '0px',
-      // '&:hover': {
-      //   padding: '1.33px',
-      //   backgroundColor: 'var(--interactive-overlays-fill-hover)',
-      //   borderRadius: '6px'
-      // },
     }),
     option: (provided) => ({
       ...provided,
