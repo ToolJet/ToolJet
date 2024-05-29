@@ -116,6 +116,14 @@ export const tabsConfig = {
         defaultValue: '#375FCF',
       },
     },
+    borderRadius: {
+      type: 'number',
+      displayName: 'Border radius',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 10,
+      },
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -176,6 +184,7 @@ export const tabsConfig = {
     styles: {
       highlightColor: { value: '#375FCF' },
       visibility: { value: '{{true}}' },
+      borderRadius: { value: '{{10}}' },
       disabledState: { value: '{{false}}' },
       tabWidth: { value: 'auto' },
     },

@@ -18,7 +18,7 @@ export const Tabs = function Tabs({
   darkMode,
   dataCy,
 }) {
-  const { tabWidth, boxShadow } = styles;
+  const { tabWidth, boxShadow, borderRadius } = styles;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -142,7 +142,14 @@ export const Tabs = function Tabs({
     <div
       data-disabled={parsedDisabledState}
       className="jet-tabs card"
-      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
+      style={{
+        height,
+        display: parsedWidgetVisibility ? 'flex' : 'none',
+        backgroundColor: bgColor,
+        boxShadow,
+        borderRadius,
+        overflow: 'hidden',
+      }}
       data-cy={dataCy}
     >
       <ul
