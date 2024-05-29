@@ -35,6 +35,7 @@ export const Tabs = function Tabs({
 
   // set index as id if id is not provided
   parsedTabs = parsedTabs.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
+  const tabsCount = parsedTabs.length;
 
   // Highlight color - for active tab text and border
   const highlightColor = component.definition.styles?.highlightColor?.value ?? '#f44336';
@@ -165,7 +166,7 @@ export const Tabs = function Tabs({
         {parsedTabs.map((tab) => (
           <li
             className="nav-item"
-            style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
+            style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && `${100 / tabsCount}%` }}
             onClick={() => {
               setTabSwitchingOnProgress(true);
 
