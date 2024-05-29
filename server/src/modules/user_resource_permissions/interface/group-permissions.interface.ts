@@ -1,3 +1,4 @@
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { GROUP_PERMISSIONS_TYPE, USER_ROLE } from '../constants/group-permissions.constant';
 import { SearchParamItem } from '@helpers/db-utility/db-utility.interface';
 
@@ -25,4 +26,9 @@ export interface GroupQuerySearchParamObject {
 export interface AddUserRoleObject {
   role: USER_ROLE;
   userId: string;
+}
+
+export interface GetUsersResponse {
+  groupPermissions: GroupPermissions[];
+  length: number;
 }

@@ -10,7 +10,10 @@ import {
 } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { dbTransactionWrap, catchDbException } from 'src/helpers/utils.helper';
 import { EntityManager, getManager } from 'typeorm';
-import { CreateDefaultGroupObject } from '@module/user_resource_permissions/interface/group-permissions.interface';
+import {
+  CreateDefaultGroupObject,
+  GetUsersResponse,
+} from '@module/user_resource_permissions/interface/group-permissions.interface';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import { GranularPermissionsService } from './granular_permissions.service';
 import {
@@ -50,12 +53,17 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async getAllGroup(organizationId: string) {
+  async getAllGroup(organizationId: string): Promise<GetUsersResponse> {
     const manager: EntityManager = getManager();
-    return await manager.findAndCount(GroupPermissions, {
+    const result = await manager.findAndCount(GroupPermissions, {
       where: { organizationId },
       order: { type: 'DESC' },
     });
+    const response: GetUsersResponse = {
+      groupPermissions: result[0],
+      length: result[1],
+    };
+    return response;
   }
 
   async getGroup(id: string, manager?: EntityManager): Promise<GroupPermissions> {
