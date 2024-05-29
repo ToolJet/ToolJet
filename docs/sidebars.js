@@ -65,7 +65,8 @@ const sidebars = {
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',
-        'setup/v2-migration-guide'
+        'setup/v2-migration-guide',
+        'setup/upgrade-to-lts'
       ]
     },
     {
