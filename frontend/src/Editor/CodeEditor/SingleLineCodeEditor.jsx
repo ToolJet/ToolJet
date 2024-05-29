@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty } from 'lodash';
+import { camelCase, isEmpty, noop } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
@@ -310,7 +310,7 @@ const DynamicEditorBridge = (props) => {
     fieldMeta,
     darkMode,
     className,
-    onFxPress,
+    onFxPress = noop,
     cyLabel = '',
     onChange,
     styleDefinition,
