@@ -10,7 +10,7 @@ import { AuditLogsModule } from '../audit_logs/audit_logs.module';
 @Module({
   imports: [AuditLogsModule],
   providers: [LicenseService, OrganizationLicenseService, LicenseCountsService],
-  controllers: [LicenseController, OrganizationLicenseController, LicenseCountsService],
+  controllers: [LicenseController, OrganizationLicenseController],
   exports: [LicenseService, OrganizationLicenseService, LicenseCountsService],
 })
 export class LicenseModule {}

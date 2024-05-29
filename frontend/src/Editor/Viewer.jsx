@@ -61,7 +61,6 @@ import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
-const maskedWorkspaceConstantStr = '**************';
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -556,21 +555,6 @@ class ViewerComponent extends React.Component {
           redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
-    } catch (error) {
-      this.setState({
-        isLoading: false,
-      });
-      if (error?.statusCode === 404) {
-        /* User is not authenticated. but the app url is wrong or of archived workspace */
-        redirectToErrorPage(ERROR_TYPES.INVALID);
-      } else if (error?.statusCode === 403) {
-        redirectToErrorPage(ERROR_TYPES.RESTRICTED);
-      } else if (error?.statusCode === 400) {
-        redirectToSwitchOrArchivedAppPage(error?.data);
-      } else if (error?.statusCode !== 401) {
-        redirectToErrorPage(ERROR_TYPES.UNKNOWN);
-      }
-    }
   };
 
   loadApplicationByVersion = async (appId, versionId) => {
@@ -596,8 +580,7 @@ class ViewerComponent extends React.Component {
           isLoading: false,
         });
       });
-    }
-  };
+    };
 
   setAppDefinitionFromVersion = (data) => {
     this.setState({

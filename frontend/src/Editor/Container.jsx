@@ -328,6 +328,19 @@ export const Container = ({
     [setCanvasHeight, currentLayout, mode]
   );
 
+  useEffect(() => {
+    setIsDragging(draggingState);
+    triggerPosthogEvent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draggingState]);
+  const triggerPosthogEvent = () => {
+    if (draggingState) {
+      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component, appId });
+    } else if (!draggingState && draggingItem) {
+      posthog.capture('drop_widget', { widget: draggingItem?.component?.component, appId });
+    }
+  };
+
   const [{ isOver, isOverCurrent }, drop] = useDrop(
     () => ({
       accept: ItemTypes.BOX,

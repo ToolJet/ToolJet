@@ -3,9 +3,11 @@ import { USER_TYPE, USER_STATUS, WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from 
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { Injectable } from '@nestjs/common';
 import { Brackets, EntityManager } from 'typeorm';
+import { OrganizationLicenseService } from './organization_license.service';
 
 @Injectable()
 export class LicenseCountsService {
+  constructor(private readonly organizationLicenseService: OrganizationLicenseService) {}
   async getUserIdWithEditPermission(manager: EntityManager) {
     const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
     const userIdsWithEditPermissions = (
@@ -103,16 +105,19 @@ export class LicenseCountsService {
       .getCount();
   }
 
-  async getUsersCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
+  async getUsersCount(isOnlyActive?: boolean, manager?: EntityManager, organizationId?: string): Promise<number> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+      const organizationUsersCondition =
+        this.organizationLicenseService.createOrganizationUsersJoinCondition(organizationId);
       const organizationStatusList = [WORKSPACE_STATUS.ACTIVE];
       !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
       !isOnlyActive && organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
       return await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
           statusList,
+          organizationId,
         })
         .innerJoin(
           'organization_users.organization',
