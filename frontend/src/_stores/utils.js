@@ -279,7 +279,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
 
             if (doesActionsExist || doesColumnsExist) {
               const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value) || [];
-              const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
+              // const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
 
               metaDiff.definition = {
                 ...metaDiff.definition,
@@ -289,7 +289,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
                     value: actions,
                   },
                   columns: {
-                    value: columns,
+                    value: component.component?.definition?.properties?.columns?.value,
                   },
                 },
               };
