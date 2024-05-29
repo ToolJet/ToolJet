@@ -410,6 +410,4 @@ export class LicenseService {
 
     return true;
   }
-
-  isBasicPlan = async () => !(await this.getLicenseFieldValue(LICENSE_FIELD.VALID));
 }
