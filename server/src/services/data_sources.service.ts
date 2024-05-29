@@ -505,7 +505,8 @@ export class DataSourcesService {
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
       const provider = findOption(options, 'provider')['value'];
       const authCode = findOption(options, 'code')['value'];
-      const plugin_id = findOption(options, 'plugin_id')['value'];
+      const pluginIdOption = findOption(options, 'plugin_id');
+      const plugin_id = pluginIdOption ? pluginIdOption['value'] : null;
       const queryService = await this.pluginsHelper.getService(plugin_id, provider);
 
       // const queryService = new allPlugins[provider]();
