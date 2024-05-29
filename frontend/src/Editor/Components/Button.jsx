@@ -25,6 +25,7 @@ export const Button = function Button(props) {
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
+  const [hovered, setHovered] = useState(false);
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
@@ -157,6 +158,12 @@ export const Button = function Button(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
+  useEffect(() => {
+    if (hovered) {
+      fireEvent('onHover');
+    }
+  }, [hovered]);
+
   const hasCustomBackground = computedBgColor?.charAt() === '#';
   if (hasCustomBackground) {
     computedStyles['--tblr-btn-color-darker'] = tinycolor(computedBgColor).darken(8).toString();
@@ -186,8 +193,12 @@ export const Button = function Button(props) {
         onClick={handleClick}
         data-cy={dataCy}
         type="default"
-        onMouseEnter={() => {
-          fireEvent('onHover');
+        onMouseOver={() => {
+          //cannot use mouseEnter here since mouse enter does not trigger consistently. Mouseover gets triggered for all child components
+          setHovered(true);
+        }}
+        onMouseLeave={() => {
+          setHovered(false);
         }}
       >
         {!loading ? (
