@@ -425,21 +425,31 @@ class TableComponent extends React.Component {
     ...draggableStyle,
   });
 
-  removeColumn = (index, ref) => {
-    const columns = this.props.component.component.definition.properties.columns;
-    const newValue = columns.value;
-    const removedColumns = newValue.splice(index, 1);
-    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
+  removeColumn = async (index, ref) => {
+    try {
+      const columns = this.props.component.component.definition.properties.columns;
+      const newValue = columns.value;
+      const removedColumns = newValue.splice(index, 1);
+      await this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
 
-    const existingcolumnDeletionHistory =
-      this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
-    const newcolumnDeletionHistory = [
-      ...existingcolumnDeletionHistory,
-      ...removedColumns.map((column) => column.key || column.name),
-    ];
-    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties', true);
+      const existingColumnDeletionHistory =
+        this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
+      const newColumnDeletionHistory = [
+        ...existingColumnDeletionHistory,
+        ...removedColumns.map((column) => column.key || column.name),
+      ];
+      await this.props.paramUpdated(
+        { name: 'columnDeletionHistory' },
+        'value',
+        newColumnDeletionHistory,
+        'properties',
+        true
+      );
 
-    this.deleteEvents(ref, 'table_column');
+      await this.deleteEvents(ref, 'table_column');
+    } catch (error) {
+      console.error('Error updating column:', error);
+    }
   };
 
   reorderColumns = (startIndex, endIndex) => {
