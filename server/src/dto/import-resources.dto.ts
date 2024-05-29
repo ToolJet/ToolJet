@@ -1,6 +1,10 @@
-import { IsUUID, IsOptional, IsString, IsDefined } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsUUID, IsOptional, IsString, IsDefined, ValidateNested } from 'class-validator';
+import { JsonSchemaValidator } from 'src/validators/validation';
+import { Validate } from 'class-validator';
 
 export class ImportResourcesDto {
+  @Validate(JsonSchemaValidator, ['app_import', '2.43.0'])
   @IsUUID()
   organization_id: string;
 
@@ -11,6 +15,8 @@ export class ImportResourcesDto {
   app: ImportAppDto[];
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => ImportTooljetDatabaseDto)
   tooljet_database: ImportTooljetDatabaseDto[];
 }
 
