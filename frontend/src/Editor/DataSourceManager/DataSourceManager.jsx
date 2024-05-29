@@ -5,7 +5,7 @@ import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
-import { getWorkspaceId, deepEqual } from '@/_helpers/utils';
+import { getWorkspaceId, deepEqual, decodeEntities } from '@/_helpers/utils';
 import {
   DataBaseSources,
   ApiSources,
@@ -195,7 +195,7 @@ class DataSourceManagerComponent extends React.Component {
   createDataSource = () => {
     const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
       this.state;
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets'];
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -832,10 +832,11 @@ class DataSourceManagerComponent extends React.Component {
                           type="text"
                           onChange={(e) => this.onNameChanged(e.target.value)}
                           className="form-control-plaintext form-control-plaintext-sm color-slate12"
-                          value={selectedDataSource.name}
+                          value={decodeEntities(selectedDataSource.name)}
                           style={{ width: '160px' }}
                           data-cy="data-source-name-input-filed"
                           autoFocus
+                          autoComplete="off"
                         />
                         {!this.props.isEditing && (
                           <span className="input-icon-addon">

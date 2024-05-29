@@ -28,7 +28,6 @@ export function renderCustomStyles(
   components = {},
   accordian,
   darkMode = false,
-  verticalLine = true,
   placeholder = ''
 ) {
   const componentConfig = component.component;
@@ -44,8 +43,9 @@ export function renderCustomStyles(
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
     componentConfig.component == 'PasswordInput' ||
-    componentConfig.component == 'ToggleSwitch' ||
+    componentConfig.component == 'ToggleSwitchV2' ||
     componentConfig.component == 'Checkbox' ||
+    componentConfig.component == 'Button' ||
     componentConfig.component == 'Table'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
@@ -102,7 +102,6 @@ export function renderCustomStyles(
           paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
         }}
         component={component}
-        verticalLine={verticalLine}
         accordian={accordian}
         placeholder={placeholder}
       />
@@ -120,8 +119,7 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
-  placeholder = '',
-  verticalLine = true
+  placeholder = ''
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -164,7 +162,6 @@ export function renderElement(
         paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
       }}
       component={component}
-      verticalLine={verticalLine}
       placeholder={placeholder}
     />
   );

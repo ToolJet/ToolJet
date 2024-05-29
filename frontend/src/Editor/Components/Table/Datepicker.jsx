@@ -9,34 +9,40 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
-const TjDatepicker = forwardRef(({ value, onClick, styles, dateInputRef, readOnly }, ref) => {
-  return (
-    <div className="table-column-datepicker-input-container">
-      <input
-        onBlur={(e) => {
-          e.stopPropagation();
-        }}
-        className={cx('table-column-datepicker-input text-truncate', {
-          'pointer-events-none': readOnly,
-        })}
-        value={value}
-        onClick={onClick}
-        ref={dateInputRef}
-        style={styles}
-      />
-      {!readOnly && (
-        <span className="cell-icon-display">
-          <SolidIcon
-            width="16"
-            fill={'var(--borders-strong)'}
-            name="calender"
-            className="table-column-datepicker-input-icon"
-          />
-        </span>
-      )}
-    </div>
-  );
-});
+const TjDatepicker = forwardRef(
+  ({ value, onClick, styles, dateInputRef, readOnly, setIsDateInputFocussed, setDateInputValue }, ref) => {
+    return (
+      <div className="table-column-datepicker-input-container">
+        <input
+          className={cx('table-column-datepicker-input text-truncate', {
+            'pointer-events-none': readOnly,
+          })}
+          value={value}
+          onClick={onClick}
+          ref={dateInputRef}
+          style={styles}
+          onChange={(e) => {
+            setIsDateInputFocussed(true);
+            setDateInputValue(e.target.value);
+          }}
+          onFocus={() => {
+            setDateInputValue(value);
+          }}
+        />
+        {!readOnly && (
+          <span className="cell-icon-display">
+            <SolidIcon
+              width="16"
+              fill={'var(--borders-strong)'}
+              name="calender"
+              className="table-column-datepicker-input-icon"
+            />
+          </span>
+        )}
+      </div>
+    );
+  }
+);
 
 export const getDateTimeFormat = (
   dateDisplayFormat,
@@ -92,6 +98,8 @@ export const Datepicker = function Datepicker({
 }) {
   const [date, setDate] = React.useState(null);
   const [excludedDates, setExcludedDates] = React.useState([]);
+  const [isDateInputFocussed, setIsDateInputFocussed] = React.useState(false);
+  const [dateInputValue, setDateInputValue] = React.useState('');
   const pickerRef = React.useRef();
 
   const handleDateChange = (date) => {
@@ -120,6 +128,11 @@ export const Datepicker = function Datepicker({
     } else {
       onChange(computeDateString(_date));
     }
+  };
+
+  const handleInputDateChange = (value) => {
+    const inputDate = moment(value, parseDateFormat).toDate();
+    handleDateChange(inputDate);
   };
 
   useEffect(() => {
@@ -198,17 +211,26 @@ export const Datepicker = function Datepicker({
     <div ref={pickerRef}>
       <DatePickerComponent
         className={`input-field form-control validation-without-icon px-2`}
-        popperClassName={cx({
+        popperClassName={cx('tj-table-datepicker', {
           'tj-timepicker-widget': !isDateSelectionEnabled && isTimeChecked,
           'tj-datepicker-widget': isDateSelectionEnabled,
           'theme-dark dark-theme': darkMode,
         })}
         selected={date}
-        onChange={(date) => handleDateChange(date)}
-        value={computeDateString(date)}
+        onChange={(date) => {
+          setIsDateInputFocussed(false);
+          handleDateChange(date);
+        }}
+        value={isDateInputFocussed ? dateInputValue : computeDateString(date)}
         dateFormat={dateDisplayFormat}
         customInput={
-          <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
+          <TjDatepicker
+            dateInputRef={dateInputRef}
+            readOnly={readOnly}
+            styles={{ color: cellStyles.color }}
+            setIsDateInputFocussed={setIsDateInputFocussed}
+            setDateInputValue={setDateInputValue}
+          />
         }
         showTimeSelect={isTimeChecked}
         showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
@@ -223,6 +245,12 @@ export const Datepicker = function Datepicker({
         popperProps={{ strategy: 'fixed' }}
         timeIntervals={15}
         timeFormat={isTwentyFourHrFormatEnabled ? 'HH:mm' : 'h:mm aa'}
+        onCalendarClose={() => {
+          if (isDateInputFocussed) {
+            handleInputDateChange(dateInputValue);
+          }
+          setIsDateInputFocussed(false);
+        }}
       />
     </div>
   );

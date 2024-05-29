@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import Label from '@/_ui/Label';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
 export const Checkbox = function Checkbox({
   height,
@@ -11,38 +11,34 @@ export const Checkbox = function Checkbox({
   fireEvent,
   setExposedVariable,
   setExposedVariables,
-  darkMode,
   dataCy,
   component,
   validate,
-  isResizing,
+  width,
 }) {
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
   const [checked, setChecked] = React.useState(defaultValueFromProperties);
+  const [value, setValue] = React.useState(defaultValueFromProperties);
+
   const { label } = properties;
-  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+  const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
   const currentState = useCurrentState();
   const { loadingState, disabledState } = properties;
-  const { checkboxColor, boxShadow, alignment, padding, uncheckedColor, borderColor, handleColor } = styles;
+  const { checkboxColor, boxShadow, alignment, uncheckedColor, borderColor, handleColor } = styles;
 
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(checked);
-  // const [calculatedHeight, setCalculatedHeight] = useState(height);
 
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-
-  // useEffect(() => {
-  //   if (padding == 'default') {
-  //     setCalculatedHeight(height + 10);
-  //   }
-  // }, [padding]);
 
   function toggleValue(e) {
     const isChecked = e.target.checked;
     setChecked(isChecked);
+    setValue(isChecked);
+
     setExposedVariable('value', isChecked);
     if (isChecked) {
       fireEvent('onCheck');
@@ -59,18 +55,21 @@ export const Checkbox = function Checkbox({
         fireEvent('onUnCheck');
       }
       setChecked(status);
+      setValue(status);
     };
     const exposedVariables = {
       value: defaultValueFromProperties,
       setChecked: setCheckedAndNotify,
+      setValue: setCheckedAndNotify,
     };
 
     setDefaultvalue(defaultValueFromProperties);
     setChecked(defaultValueFromProperties);
+    setValue(defaultValueFromProperties);
     setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultValueFromProperties, setChecked]);
+  }, [defaultValueFromProperties]);
 
   useEffect(() => {
     disable !== disabledState && setDisable(properties.disabledState);
@@ -143,154 +142,103 @@ export const Checkbox = function Checkbox({
       setExposedVariable('value', !checked);
       fireEvent('onChange');
       setChecked(!checked);
+      setValue(!checked);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked]);
+  }, [checked, value]);
 
   const renderCheckBox = () => (
-    <div
-      data-disabled={disabledState}
-      className={`${alignment === 'right' ? 'flex-row-reverse' : ''}`}
-      style={{
-        display: visibility ? 'flex' : 'none',
-        boxShadow,
-        alignItems: 'center',
-        gap: '8px ',
-        justifyContent: `${loadingState ? 'center' : alignment == 'right' ? 'space-between' : ''}`,
-        height,
-        whiteSpace: 'nowrap',
-      }}
-      data-cy={dataCy}
-    >
-      {loading ? (
-        <Loader width="16" />
-      ) : (
-        <>
-          <div
-            onClick={handleToggleChange}
-            style={{
-              ...checkboxStyle,
-            }}
-          >
-            <input
-              style={{ display: 'none' }}
-              className="form-check-input"
-              type="checkbox"
-              onClick={(e) => {
-                toggleValue(e);
+    <>
+      <div
+        data-disabled={disabledState}
+        className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
+        style={{
+          display: visibility ? 'flex' : 'none',
+          boxShadow,
+          alignItems: loading && 'center',
+          gap: '6px ',
+          justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
+          height,
+          whiteSpace: 'nowrap',
+        }}
+        data-cy={dataCy}
+      >
+        {loading ? (
+          <Loader width="16" />
+        ) : (
+          <>
+            <div
+              onClick={handleToggleChange}
+              style={{
+                ...checkboxStyle,
               }}
-              defaultChecked={defaultValue}
-              checked={checked}
-            />
-            <div style={checkmarkStyle}>
-              {checked && !isResizing && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className=" icon-tabler icon-tabler-check"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke={handleColor}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M5 12l5 5l10 -10" />
-                </svg>
-              )}
-            </div>
-          </div>
-
-          {/* <p
-            className="form-check-label tj-text-xsm"
-            style={{
-              lineHeight: padding == 'none' && '12px',
-              color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
-              display: 'block',
-              overflow: label?.length > 6 && 'hidden', // Hide any content that overflows the box
-              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-              fontWeight: 500,
-              textAlign: alignment == 'right' ? 'right' : 'left',
-              fontSize: '14px',
-            }}
-          >
-            {label}
-            {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
-          </p> */}
-          {/* <>
-            {label && (
-              <label
-                style={{
-                  color: darkMode && textColor === '#11181C' ? '#fff' : textColor,
-
-                  display: 'flex',
-                  fontWeight: 500,
-                  justifyContent: alignment == 'right' ? 'flex-end' : 'flex-start',
-                  fontSize: '12px',
+            >
+              <input
+                style={{ display: 'none' }}
+                className="form-check-input"
+                type="checkbox"
+                onClick={(e) => {
+                  toggleValue(e);
                 }}
-              >
-                <p
-                  style={{
-                    position: 'relative',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    display: 'block',
-                    margin: '0px',
-                    // paddingRight:
-                    //   direction == 'right'
-                    //     ? '6px'
-                    //     : (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top'
-                    //     ? '12px'
-                    //     : '',
-                    // paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
-                  }}
-                >
-                  {label}
-                  {isMandatory && (
-                    <span
-                      style={{
-                        color: '#DB4324',
-                        position: 'absolute',
-                        right: alignment == 'right' ? '0px' : '4px',
-                        top: '0px',
-                      }}
-                    >
-                      *
-                    </span>
-                  )}
-                </p>
-              </label>
-            )}
-          </> */}
+                defaultChecked={defaultValue}
+                checked={checked}
+              />
+              <div style={checkmarkStyle}>
+                {checked && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className=" icon-tabler icon-tabler-check"
+                    width={14}
+                    height={14}
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke={handleColor}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M5 12l5 5l10 -10" />
+                  </svg>
+                )}
+              </div>
+            </div>
 
-          {/* <Label
-            label={label}
-            width={'100%'}
-            // labelRef={labelRef}
-            darkMode={darkMode}
-            color={darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor}
-            defaultAlignment={'side'}
-            direction={alignment}
-            auto={true}
-            isMandatory={isMandatory}
-            _width={'100%'}
-          /> */}
-        </>
+            <OverflowTooltip
+              className="form-check-label"
+              style={{
+                lineHeight: '20px',
+                color: textColor,
+                fontWeight: 400,
+                fontSize: '14px',
+              }}
+              whiteSpace="normal"
+              width={width - 20}
+            >
+              {label}
+              {isMandatory && !checked && <span style={{ color: '#DB4324', marginLeft: '1px' }}>{'*'}</span>}
+            </OverflowTooltip>
+          </>
+        )}
+      </div>
+      {validationError && visibility && (
+        <div
+          className="tj-text-sm"
+          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          style={{ color: 'var(--status-error-strong)' }}
+        >
+          {validationError}
+        </div>
       )}
-    </div>
+    </>
   );
   const checkmarkStyle = {
     position: 'absolute',
-    transform: 'translate(-50%, -50%)',
+    top: '1px',
+    right: '1px',
     visibility: checked ? 'visible' : 'hidden',
-    height: '16px',
-    width: ' 16px',
-    left: padding == 'default' ? alignment == 'left' && '10px' : alignment == 'left' && '8px',
-    top: '50%',
-    right: alignment == 'right' && padding == 'default' ? '-5.5px' : '-8px',
+    height: '14px',
+    width: ' 14px',
     display: 'flex',
   };
 
@@ -300,14 +248,18 @@ export const Checkbox = function Checkbox({
     padding: '2px',
     border: `1px solid ${borderColor}`,
     backgroundColor: checked ? checkboxColor : uncheckedColor,
-    borderRadius: '4px',
-    minHeight: '16px',
-    minWidth: '16px',
-    borderColor: ['#D7DBDF'].includes(borderColor) ? (checked ? '#3E63DD' : '#D7DBDF') : borderColor,
+    borderRadius: '5px',
+    height: '18px',
+    width: '18px',
+    minHeight: '18px',
+    minWidth: '18px',
+    position: 'relative',
+    borderColor: '#CCD1D5' == borderColor ? (checked ? 'transparent' : 'var(--borders-default)') : borderColor,
   };
   const handleToggleChange = () => {
     const newCheckedState = !checked;
     setChecked(newCheckedState);
+    setValue(newCheckedState);
     setExposedVariable('value', newCheckedState).then(fireEvent('onChange'));
     if (newCheckedState) {
       fireEvent('onCheck');
@@ -317,22 +269,16 @@ export const Checkbox = function Checkbox({
   };
 
   return (
-    <div
-      style={{
-        // height: calculatedHeight == 30 ? (padding == 'default' ? '30px' : '20px') : calculatedHeight,
-        justifyContent: `${loadingState ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start'}`,
-      }}
-    >
-      {renderCheckBox()}
-      {validationError && visibility && (
-        <div
-          className="tj-text-sm"
-          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: '#DB4324' }}
-        >
-          {validationError}
-        </div>
-      )}
-    </div>
+    <>
+      <div
+        className="checkbox-component"
+        style={{
+          justifyContent: `${loadingState ? 'center' : 'flex-start'}`,
+          paddingTop: '3px',
+        }}
+      >
+        {renderCheckBox()}
+      </div>
+    </>
   );
 };

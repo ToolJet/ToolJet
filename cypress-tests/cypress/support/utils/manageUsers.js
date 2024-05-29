@@ -122,7 +122,7 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
-
+  cy.wait(3000)
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
   cy.get(usersSelector.buttonDownloadTemplate).click();
   cy.wait(4000)
@@ -154,43 +154,17 @@ export const inviteUser = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-export const confirmInviteElements = () => {
-  cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
-    "have.text",
-    commonText.invitePageHeader
-  );
-  cy.get(commonSelectors.invitePageSubHeader).verifyVisibleElement(
-    "have.text",
-    commonText.invitePageSubHeader
-  );
-  cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
-    "have.text",
-    commonText.userNameInputLabel
-  );
-  cy.get(commonSelectors.invitedUserName).should("be.visible");
-  cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
-    "have.text",
-    commonText.emailInputLabel
-  );
-  cy.get(commonSelectors.invitedUserEmail).should("be.visible");
+export const confirmInviteElements = (email) => {
 
-  cy.get("body").then(($el) => {
-    if ($el.text().includes(commonText.passwordLabel)) {
-      cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
-        "have.text",
-        commonText.passwordLabel
-      );
-      cy.get(commonSelectors.passwordInputField).should("be.visible");
-      cy.get(commonSelectors.acceptInviteButton)
-        .verifyVisibleElement("have.text", commonText.acceptInviteButton)
-        .should("be.disabled");
-    }
-  });
+  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
+    "have.text", "Sign up");
+  cy.get('[data-cy="workspace-signup-header"]').verifyVisibleElement(
+    "have.text", "Sign up to the workspace - My workspace");
 
-  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
-    "have.text",
-    commonText.acceptInviteButton
-  );
+  cy.verifyLabel("Email")
+  cy.verifyLabel("Create a password")
+  cy.get(commonSelectors.invitedUserEmail).verifyVisibleElement(
+    "have.text", email);
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -320,6 +294,9 @@ export const inviteUserWithUserGroups = (
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
   cy.clearAndType(commonSelectors.passwordInputField, "password");
+  // cy.intercept('GET', '/api/organizations').as('org')
+  cy.get(commonSelectors.signUpButton).click();
+  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
