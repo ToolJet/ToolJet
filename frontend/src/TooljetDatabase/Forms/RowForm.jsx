@@ -406,7 +406,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           Create row
         </h3>
       </div>
-      <div className="card-body tj-app-input">
+      <div className="card-body tj-app-input create-drawer-body">
         {Array.isArray(rowColumns) &&
           rowColumns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;

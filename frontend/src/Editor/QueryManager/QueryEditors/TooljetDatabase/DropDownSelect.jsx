@@ -238,7 +238,7 @@ const DropDownSelect = ({
                 selected?.label
               )
             ) : showPlaceHolder ? (
-              <span style={{ color: '#9e9e9e' }}>
+              <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
                 {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
               </span>
             ) : (

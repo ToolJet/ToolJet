@@ -10762,7 +10762,7 @@ tbody {
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
     transition: none;
-
+    font-weight: 400;
 
     &:hover {
       background: var(--slate1) !important;
@@ -10796,7 +10796,10 @@ tbody {
         -webkit-text-fill-color: var(--slate12) !important;
       }
     }
-
+    &::placeholder {
+      font-size: 12px;
+      line-height: 20px;
+    }
 
   }
 
