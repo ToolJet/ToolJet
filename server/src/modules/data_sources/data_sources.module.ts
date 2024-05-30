@@ -29,6 +29,7 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { Plugin } from 'src/entities/plugin.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       Organization,
     ]),
     CaslModule,
+    TooljetDbModule,
   ],
   providers: [
     DataSourcesService,

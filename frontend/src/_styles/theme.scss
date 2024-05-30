@@ -12,6 +12,7 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import './groups-permissions.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -3322,6 +3323,10 @@ input:focus-visible {
         #4c5b79 80%);
   }
 
+  .app-icon-skeleton {
+    background-color: #3A4251 !important;
+  }
+
   .folder-icon-skeleton::after {
     background-image: linear-gradient(to right,
         #566177 0,
@@ -6242,6 +6247,7 @@ a.step-item-disabled {
 
 .notification-center {
   max-height: 500px;
+  min-width: 420px;
   overflow: auto;
   margin-left: 11px !important;
 
@@ -6975,6 +6981,10 @@ tbody {
     }
   }
 
+  .table-cell-dark{
+    color: #ffffff;
+  }
+
   .table-cell-hover-background {
     background-color: #F8F9FA;
     padding: 0rem;
@@ -6991,6 +7001,7 @@ tbody {
     background-color: #242f3c;
     padding: 0rem;
     max-width: 230px;
+    color: #ffffff;
 
     input.form-control {
       border: none;
@@ -7001,12 +7012,12 @@ tbody {
 
   .table-editable-parent-cell {
     max-width: 230px;
-    background-color: var(--indigo2);
+    background-color: var(--indigo2) !important;
     cursor: pointer;
     padding: 0rem;
 
     .form-control {
-      background-color: var(--indigo2);
+      background-color: var(--indigo2) !important;
       border: none;
       padding: 0;
       border-radius: 0px;
@@ -7937,7 +7948,6 @@ tbody {
   padding-bottom: 24px;
   border-right: 1px solid var(--slate5);
 
-  &[data-name="Workspace constants"],
   &[data-name="Profile settings"] {
     border-right: none;
     border-bottom: 1px solid var(--slate5);
@@ -8396,6 +8406,9 @@ tbody {
   .react-loading-skeleton {
     background-color: #2F3C4C !important;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
+  }
+  .react-loading-skeleton::after {
+    background-image: linear-gradient(90deg, #2F3C4C, #3A4251, #2F3C4C) !important;
   }
 }
 
@@ -9559,8 +9572,14 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--grass3);
+  background: var(--indigo3);
   border-radius: 100px;
+  border: 2px solid var(--indigo9);
+  color: var(--indigo9);
+
+  path {
+    fill: var(--indigo9);
+  }
 }
 
 .sso-icon-wrapper {
@@ -10854,7 +10873,7 @@ tbody {
     width: 100% !important;
     height: 100% !important;
     background: #1c252f !important;
-    border: 0.4px solid white !important;
+    border: 1px solid #374150 !important;
     font-size: 14px !important;
     font-weight: 400;
     color: white;
@@ -10892,7 +10911,7 @@ tbody {
   border-style: solid;
   border-radius: 0px;
   background: #1c252f !important;
-  border: 0.4px solid white !important;
+  border: 1px solid #374150 !important;
   font-size: 14px !important;
   font-weight: 400;
   color: white;
@@ -12847,5 +12866,28 @@ tbody {
 
   &:active {
     background-color: var(--interactive-overlays-fill-pressed) !important;
+  }
+}
+
+.modal-base {
+  .modal-footer {
+    border-top: 1px solid var(--slate5);
+    padding: 1rem;
+
+    .tj-btn-left-icon {
+      svg {
+        width: 20px;
+        height: 20px;
+
+        path {
+          fill: var(--indigo1);
+        }
+      }
+    }
+
+    .tj-large-btn {
+      font-weight: 500;
+      font-size: 14px;
+    }
   }
 }

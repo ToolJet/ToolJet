@@ -1,10 +1,10 @@
 ---
 id: date-range-picker
-title: Date-range picker
+title: Date-range Picker
 ---
-# Date-Range picker
+# Date-Range Picker
 
-The date-range picker widget allows users to select a range of dates.
+The **Date-Range Picker** widget allows users to select a range of dates.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
