@@ -61,7 +61,8 @@
 @import "@radix-ui/colors/goldDark.css";
 @import "@radix-ui/colors/bronzeDark.css";
 
-:root, .light-theme {
+:root,
+.light-theme {
     --base: #FCFCFD;
     --base-black: #18181A;
     --text-black-000: #000000;
@@ -100,7 +101,7 @@
     --icons-default: #6A727C;
     --icons-weak-disabled: #6A727C;
     --icons-disabled-on-white: #6A727C;
-    --icons-on-solid: #6A727C;
+    --icons-on-solid: #FFFFFF;
 
     // borders
     --borders-strong: #ACB2B9;
@@ -120,7 +121,7 @@
 
     //interactive
     --interactive-default: #CCD1D54D;
-    --interactive-hover:#ACB2B959;
+    --interactive-hover: #ACB2B959;
 
 
 
@@ -211,7 +212,7 @@
 
     //interactive
     --interactive-default: #A1A7AE1F;
-    --interactive-hover:#A1A7AE29;
+    --interactive-hover: #A1A7AE29;
 
 
     //surfaces
