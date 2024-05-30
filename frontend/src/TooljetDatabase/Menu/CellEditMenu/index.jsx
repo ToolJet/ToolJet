@@ -34,6 +34,7 @@ export const CellEditMenu = ({
   foreignKeys,
   setReferencedColumnDetails,
   cellHeader,
+  cachedOptions,
   dataType = '',
 }) => {
   // below state is used only for boolean cell
@@ -199,6 +200,7 @@ export const CellEditMenu = ({
               foreignKeys={foreignKeys}
               setReferencedColumnDetails={setReferencedColumnDetails}
               cellColumnName={cellHeader}
+              cachedOptions={cachedOptions}
               columnDataType={dataType}
             />
           )}

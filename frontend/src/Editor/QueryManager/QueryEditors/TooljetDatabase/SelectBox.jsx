@@ -137,6 +137,7 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  cachedOptions = {},
   columnDataType = '',
   loader,
   isLoading = false,
@@ -282,7 +283,7 @@ function DataSourceSelect({
         fetchForeignKeyDetails(1, 0, false, searchValue, foreignKeys, organizationId);
       }
 
-      if (shouldLoadFKDataFirstPage) {
+      if (shouldLoadFKDataFirstPage && isEmpty(cachedOptions)) {
         fetchForeignKeyDetails(
           pageNumber,
           totalRecords,
@@ -291,6 +292,12 @@ function DataSourceSelect({
           foreignKeys,
           organizationId
         );
+      } else if (shouldLoadFKDataFirstPage && !isEmpty(cachedOptions)) {
+        setIsInitialForeignKeyDataLoaded(true);
+        const data = cachedOptions.data;
+        setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+        setPageNumber((prevPageNumber) => prevPageNumber + 1);
+        setTotalRecords(cachedOptions.totalFKRecords);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

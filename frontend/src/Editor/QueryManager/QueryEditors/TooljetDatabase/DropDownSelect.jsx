@@ -46,6 +46,7 @@ const DropDownSelect = ({
   fetchTables,
   onTableClick,
   referencedForeignKeyDetails = [],
+  cachedOptions,
   columnDataType = '',
   loader,
   isLoading = false,
@@ -187,6 +188,7 @@ const DropDownSelect = ({
             actions={actions}
             actionName={actionName}
             referencedForeignKeyDetails={referencedForeignKeyDetails}
+            cachedOptions={cachedOptions}
             columnDataType={columnDataType}
           />
         </Popover>
