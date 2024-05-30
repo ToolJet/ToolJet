@@ -109,28 +109,36 @@ export const Tabs = function Tabs({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setCurrentTab, currentTab]);
 
-  const renderTabContent = (id, tab) => (
-    <div
-      className={`tab-pane active`}
-      style={{
-        visibility: computeTabVisibility(id, tab.id),
-        height: parsedHideTabs ? height : height - 41,
-        position: 'absolute',
-        top: parsedHideTabs ? '0px' : '41px',
-        width: '100%',
-      }}
-    >
-      <SubContainer
-        parent={`${id}-${tab.id}`}
-        {...containerProps}
-        parentRef={parentRef}
-        removeComponent={removeComponent}
-        containerCanvasWidth={width - 4}
-        parentComponent={component}
-        readOnly={tab.id !== currentTab}
-      />
-    </div>
-  );
+  const renderTabContent = (id, tab) => {
+    const navElement = document.querySelector(`#nav-tabs-${id}`);
+    const navHeight = navElement ? navElement.offsetHeight + 4 : 4;
+
+    return (
+      <div
+        className={`tab-pane active`}
+        style={{
+          visibility: computeTabVisibility(id, tab.id),
+          height: parsedHideTabs ? `${height - 4}px` : `${height - navHeight}px`,
+          position: 'absolute',
+          top: parsedHideTabs ? '0px' : `${navHeight}px`,
+          width: `${width - 8}px`,
+          margin: '1px',
+        }}
+        id={`tab-pane-${id}`}
+      >
+        <SubContainer
+          parent={`${id}-${tab.id}`}
+          {...containerProps}
+          parentRef={parentRef}
+          removeComponent={removeComponent}
+          containerCanvasWidth={width - 6}
+          margin={'0 2px'}
+          parentComponent={component}
+          readOnly={tab.id !== currentTab}
+        />
+      </div>
+    );
+  };
 
   function shouldRenderTabContent(tab) {
     if (tabSwitchingOnProgress || parsedRenderOnlyActiveTab) {
@@ -148,7 +156,7 @@ export const Tabs = function Tabs({
         display: parsedWidgetVisibility ? 'flex' : 'none',
         backgroundColor: bgColor,
         boxShadow,
-        borderRadius,
+        borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
       }}
       data-cy={dataCy}
@@ -160,8 +168,9 @@ export const Tabs = function Tabs({
           zIndex: 1,
           display: parsedHideTabs && 'none',
           backgroundColor: darkMode ? '#324156' : '#fff',
-          margin: '-1px',
+          marginBottom: '1px',
         }}
+        id={`nav-tabs-${id}`}
       >
         {parsedTabs.map((tab) => (
           <li

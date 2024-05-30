@@ -117,12 +117,10 @@ export const tabsConfig = {
       },
     },
     borderRadius: {
-      type: 'number',
+      type: 'numberInput',
       displayName: 'Border radius',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 10,
-      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'field',
     },
     visibility: {
       type: 'toggle',
@@ -184,7 +182,7 @@ export const tabsConfig = {
     styles: {
       highlightColor: { value: '#375FCF' },
       visibility: { value: '{{true}}' },
-      borderRadius: { value: '{{10}}' },
+      borderRadius: { value: '{{0}}' },
       disabledState: { value: '{{false}}' },
       tabWidth: { value: 'auto' },
     },
