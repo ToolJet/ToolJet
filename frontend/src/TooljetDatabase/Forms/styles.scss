@@ -16,7 +16,9 @@
   }
 }
 
-.card-body.create-drawer-body{
+.card-body.create-drawer-body,
+.card-body.edit-row-body,
+.card-body.edit-column-body{
   padding: 20px;
 }
 
@@ -710,12 +712,8 @@
   border-color: #E54D2E !important;
 }
 
-.tj-fkr-primaryText,
-.tj-fkr-secondaryText{
+.tj-switch-text,
+.tj-select-text{
   font-size: 12px;
   line-height: 20px;
-}
-
-.card-body.edit-row-body{
-  padding: 20px;
 }
