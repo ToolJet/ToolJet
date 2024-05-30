@@ -414,7 +414,7 @@ const EditRowForm = ({
             ))} */}
         </div>
       </div>
-      <div className="card-body">
+      <div className="card-body edit-row-body">
         <div>
           {selectedRowObj &&
             Array.isArray(editRowColumns) &&

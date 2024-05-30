@@ -148,6 +148,7 @@ function DrawerFooter({
                   onClick={onEdit}
                   fill="#fff"
                   leftIcon="floppydisk"
+                  size="md"
                 >
                   Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
@@ -159,6 +160,7 @@ function DrawerFooter({
                   onClick={() => {
                     onCreate();
                   }}
+                  size="md"
                 >
                   Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
@@ -172,6 +174,7 @@ function DrawerFooter({
                 onClick={() => {
                   onCreate();
                 }}
+                size="md"
               >
                 Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
               </ButtonSolid>
@@ -184,6 +187,7 @@ function DrawerFooter({
                 onClick={onEdit}
                 fill="#fff"
                 leftIcon="floppydisk"
+                size="md"
               >
                 Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
               </ButtonSolid>
@@ -197,6 +201,7 @@ function DrawerFooter({
                   onClick={onEdit}
                   fill="#fff"
                   leftIcon="floppydisk"
+                  size="md"
                 >
                   Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
