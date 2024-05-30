@@ -171,11 +171,7 @@ export const Inspector = ({
       const defaultValue = getDefaultValue(value);
       // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
-      if (
-        component.component.component === 'Table' &&
-        param.name === 'enablePagination' &&
-        !resolveReferences(value, currentState)
-      ) {
+      if (component.component.component === 'Table' && param.name === 'enablePagination' && !resolveReferences(value)) {
         if (allParams?.['clientSidePagination']?.[attr]) {
           allParams['clientSidePagination'][attr] = value;
         }
@@ -209,7 +205,7 @@ export const Inspector = ({
     if (
       component.component.component === 'Table' &&
       param.name === 'contentWrap' &&
-      !resolveReferences(value, currentState) &&
+      !resolveReferences(value) &&
       newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
     ) {
       const updatedColumns = newDefinition.properties.columns.value.map((item) => {
@@ -573,11 +569,11 @@ const resolveConditionalStyle = (definition, condition, currentState) => {
   if (conditionExistsInDefinition) {
     switch (condition) {
       case 'cellSize': {
-        const cellSize = resolveReferences(definition[condition]?.value ?? false, currentState) === 'hugContent';
+        const cellSize = resolveReferences(definition[condition]?.value ?? false) === 'hugContent';
         return cellSize;
       }
       default:
-        return resolveReferences(definition[condition]?.value ?? false, currentState);
+        return resolveReferences(definition[condition]?.value ?? false);
     }
   }
 };

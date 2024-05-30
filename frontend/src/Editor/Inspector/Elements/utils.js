@@ -20,7 +20,7 @@ const getTableDefinitionInitialValue = (
   { component: { component: { definition: { properties } = {} } = {} } = {} },
   currentState
 ) => {
-  const resolveProperty = (propertyName) => resolveReferences(properties?.[propertyName]?.value, currentState);
+  const resolveProperty = (propertyName) => resolveReferences(properties?.[propertyName]?.value);
 
   switch (param) {
     case 'enablePagination':
