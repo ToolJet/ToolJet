@@ -4,7 +4,6 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
-  console.log('value---', value);
   const elem = document.querySelector('.table-tags-col-container');
 
   useEffect(() => {
