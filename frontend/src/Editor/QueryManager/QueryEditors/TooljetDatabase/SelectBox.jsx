@@ -51,6 +51,10 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  customChildren,
+  isForeignKeyInEditCell,
+  closeFKMenu,
+  saveFKValue,
   loader,
   isLoading = false,
 }) {
@@ -219,15 +223,28 @@ function DataSourceSelect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleFKMenuKeyDown = (e) => {
+    if (isForeignKeyInEditCell) {
+      if (e.key === 'Escape') {
+        closeFKMenu();
+      } else if (e.key === 'Enter') {
+        saveFKValue();
+      }
+    }
+    e.stopPropagation();
+  };
+
   return (
-    <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+    <div onKeyDown={handleFKMenuKeyDown} onClick={(e) => e.stopPropagation()}>
       <Select
         onChange={(option) => {
           handleChangeDataSource(option);
         }}
         classNames={{
           menu: () =>
-            foreignKeyAccess
+            isForeignKeyInEditCell
+              ? 'tj-scrollbar tjdb-mainCellEdit-scrollbar'
+              : foreignKeyAccess
               ? 'tj-scrollbar tjdb-dashboard-scrollbar'
               : foreignKeyAccessInRowForm
               ? 'tj-scrollbar tjdb-rowForm-scrollbar'
@@ -395,6 +412,7 @@ function DataSourceSelect({
                     foreignKeys={foreignKeys}
                     cellColumnName={cellColumnName}
                     isLoadingFKDetails={isLoadingFKDetails}
+                    customChildren={customChildren}
                     loader={loader}
                   />
                   {foreignKeyAccess && showDescription && actions && (
@@ -561,6 +579,7 @@ const MenuList = ({
   foreignKeys,
   cellColumnName,
   isLoadingFKDetails = false,
+  customChildren,
   loader,
   ...props
 }) => {
@@ -599,7 +618,8 @@ const MenuList = ({
           {children}
         </div>
       )}
-      {onAdd && !(isLoadingFKDetails && loader) && (
+      {customChildren && customChildren}
+      {!customChildren && onAdd && !(isLoadingFKDetails && loader) && (
         <div
           className={cx('mt-2 border-slate3-top', {
             'tj-foreignKey p-1': foreignKeyAccess || foreignKeyAccessInRowForm,
