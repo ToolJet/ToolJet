@@ -13,6 +13,7 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
+import Skeleton from 'react-loading-skeleton';
 
 function TableSchema({
   columns,
@@ -293,9 +294,17 @@ function TableSchema({
                 emptyError={
                   <div className="dd-select-alert-error m-2 d-flex align-items-center">
                     <Information />
-                    No table selected
+                    No data available
                   </div>
                 }
+                loader={
+                  <div className="mx-2">
+                    <Skeleton height={18} width={176} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
+                    <Skeleton height={18} width={212} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                    <Skeleton height={18} width={176} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
+                  </div>
+                }
+                isLoading={true}
                 value={
                   columnDetails[index].column_default !== null
                     ? { value: columnDetails[index].column_default, label: columnDetails[index].column_default }
@@ -329,8 +338,9 @@ function TableSchema({
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeyDetails}
                 setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
+                scrollEventForColumnValues={true}
                 cellColumnName={columnDetails[index].column_name}
+                columnDataType={columnDetails[index].data_type}
               />
             ) : (
               <ToolTip

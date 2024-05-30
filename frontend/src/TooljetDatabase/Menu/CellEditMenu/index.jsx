@@ -9,6 +9,7 @@ import LeftNav from '../../Icons/LeftNav.svg';
 import RightNav from '../../Icons/RightNav.svg';
 import cx from 'classnames';
 import './styles.scss';
+import Skeleton from 'react-loading-skeleton';
 
 export const CellEditMenu = ({
   darkMode = false,
@@ -28,12 +29,13 @@ export const CellEditMenu = ({
   referencedColumnDetails = [],
   referenceColumnName = '',
   isForeignKey = false,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
   cellHeader,
   cachedOptions,
+  dataType = '',
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -165,12 +167,20 @@ export const CellEditMenu = ({
             <DropDownSelect
               buttonClasses="border border-end-1 foreignKeyAcces-container"
               showPlaceHolder={true}
+              loader={
+                <div className="mx-2">
+                  <Skeleton height={18} width={176} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
+                  <Skeleton height={18} width={212} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                  <Skeleton height={18} width={176} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
+                </div>
+              }
+              isLoading={true}
               options={referencedFKDataList}
               darkMode={darkMode}
               emptyError={
                 <div className="dd-select-alert-error m-2 d-flex align-items-center">
                   <Information />
-                  No values found
+                  No data available
                 </div>
               }
               value={selectedForeignKeyValue}
@@ -185,12 +195,13 @@ export const CellEditMenu = ({
               onAdd={true}
               addBtnLabel={'Open referenced table'}
               isCellEdit={true}
-              scrollEventForColumnValus={scrollEventForColumnValus}
+              scrollEventForColumnValues={scrollEventForColumnValues}
               organizationId={organizationId}
               foreignKeys={foreignKeys}
               setReferencedColumnDetails={setReferencedColumnDetails}
               cellColumnName={cellHeader}
               cachedOptions={cachedOptions}
+              columnDataType={dataType}
             />
           )}
           {/*  Boolean View */}

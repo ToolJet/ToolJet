@@ -1375,12 +1375,13 @@ const Table = ({ collapseSidebar }) => {
                                       }
                                       isForeignKey={isMatchingForeignKeyColumn(cell.column.Header)}
                                       darkMode={darkMode}
-                                      scrollEventForColumnValus={true}
+                                      scrollEventForColumnValues={true}
                                       organizationId={organizationId}
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
                                       cellHeader={cell.column.Header}
                                       cachedOptions={cachedOptions?.[cell.column.Header]}
+                                      dataType={cell.column.dataType}
                                     >
                                       <div
                                         className="input-cell-parent"
@@ -1640,7 +1641,12 @@ const Table = ({ collapseSidebar }) => {
           </div>
         )}
       </div>
-      <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isEditColumnDrawerOpen}
+        onClose={() => setIsEditColumnDrawerOpen(false)}
+        position="right"
+        className="tj-db-drawer"
+      >
         <EditColumnForm
           selectedColumn={selectedColumn}
           setColumns={setColumns}
@@ -1649,6 +1655,7 @@ const Table = ({ collapseSidebar }) => {
           isEditColumn={true}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="EditColumnForm"
         />
       </Drawer>
       <ConfirmDialog

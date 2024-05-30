@@ -33,7 +33,7 @@ const DropDownSelect = ({
   topPlaceHolder = '',
   showPlaceHolderInForeignKeyDrawer = false,
   isCellEdit = false,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -47,6 +47,9 @@ const DropDownSelect = ({
   onTableClick,
   referencedForeignKeyDetails = [],
   cachedOptions,
+  columnDataType = '',
+  loader,
+  isLoading = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -157,6 +160,8 @@ const DropDownSelect = ({
             closePopup={() => setShowMenu(false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
+            loader={loader}
+            isLoading={isLoading}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
             foreignKeyAccess={foreignKeyAccess}
@@ -166,7 +171,7 @@ const DropDownSelect = ({
             showDescription={showDescription}
             foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
             isCellEdit={isCellEdit}
-            scrollEventForColumnValus={scrollEventForColumnValus}
+            scrollEventForColumnValues={scrollEventForColumnValues}
             organizationId={organizationId}
             foreignKeys={foreignKeys}
             setReferencedColumnDetails={setReferencedColumnDetails}
@@ -184,6 +189,7 @@ const DropDownSelect = ({
             actionName={actionName}
             referencedForeignKeyDetails={referencedForeignKeyDetails}
             cachedOptions={cachedOptions}
+            columnDataType={columnDataType}
           />
         </Popover>
       }

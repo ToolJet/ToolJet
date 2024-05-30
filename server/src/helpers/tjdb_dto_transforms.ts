@@ -22,8 +22,7 @@ const transformationsByVersion = {
     dto.schema.columns = transformedColumns;
     return dto;
   },
-  // TODO: replace with the releasing version
-  '2.35.1': (dto: ImportTooljetDatabaseDto) => {
+  '2.42.0': (dto: ImportTooljetDatabaseDto) => {
     const transformedColumns = dto.schema.columns.map((col) => {
       col.constraints_type = {
         ...col.constraints_type,
