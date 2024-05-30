@@ -1595,6 +1595,12 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: false,
         appDefinition: newAppDefinition,
       });
+    } else {
+      // Setting the canvas background to the editor store
+      setCanvasBackground({
+        backgroundFxQuery: globalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: globalSettings?.canvasBackgroundColor,
+      });
     }
 
     if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {
@@ -2334,7 +2340,7 @@ const EditorComponent = (props) => {
                         transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                       }}
                     >
-                      {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && (
+                      {featureAccess?.multiPlayerEdit && (
                         <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
                       )}
                       {isLoading && (
@@ -2361,7 +2367,7 @@ const EditorComponent = (props) => {
                         </div>
                       )}
                       {defaultComponentStateComputed && (
-                        <>
+                        <div>
                           <Container
                             widthOfCanvas={canvasWidth}
                             socket={socket}
@@ -2388,7 +2394,7 @@ const EditorComponent = (props) => {
                             canvasWidth={canvasWidth}
                             onDragging={(isDragging) => setIsDragging(isDragging)}
                           />
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>

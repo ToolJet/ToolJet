@@ -1158,7 +1158,6 @@ export class AuthService {
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0];
-
       const organizationDetails = currentOrganization
         ? currentOrganization
         : await manager.findOneOrFail(Organization, {

@@ -29,7 +29,7 @@ export const checkboxConfig = {
     },
     defaultValue: {
       type: 'toggle',
-      displayName: 'Default Status',
+      displayName: 'Default status',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -51,7 +51,7 @@ export const checkboxConfig = {
     },
     checkboxColor: {
       type: 'color',
-      displayName: 'Checkbox Color',
+      displayName: 'Checkbox color',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#000000',

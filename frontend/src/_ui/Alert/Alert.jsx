@@ -7,8 +7,8 @@ export const Alert = ({
   imgHeight = null,
   imgWidth = null,
   useDarkMode = true,
-  placeSvgTop = false,
   iconCls,
+  placeSvgTop = false,
 }) => {
   const imgStyles = imgHeight && imgWidth ? { height: imgHeight, width: imgWidth } : {};
   const darkMode = useDarkMode ? localStorage.getItem('darkMode') === 'true' : false;

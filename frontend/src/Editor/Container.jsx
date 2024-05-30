@@ -32,6 +32,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import toast from 'react-hot-toast';
 import { getSubpath } from '@/_helpers/routes';
+import posthog from 'posthog-js';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
@@ -295,15 +296,25 @@ export const Container = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
+  const triggerPosthogEvent = (draggingItem) => {
+    if (draggingState) {
+      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component, appId });
+    } else if (!draggingState && draggingItem) {
+      posthog.capture('drop_widget', { widget: draggingItem?.component?.component, appId });
+    }
+  };
+
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
-        //setDraggingItem(monitor.getItem());
+        triggerPosthogEvent(monitor.getItem());
         return { draggingState: true };
       } else {
+        triggerPosthogEvent(monitor.getItem());
         return { draggingState: false };
       }
     } else {
+      triggerPosthogEvent(monitor.getItem());
       return { draggingState: false };
     }
   });
@@ -327,19 +338,6 @@ export const Container = ({
     },
     [setCanvasHeight, currentLayout, mode]
   );
-
-  useEffect(() => {
-    setIsDragging(draggingState);
-    triggerPosthogEvent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draggingState]);
-  const triggerPosthogEvent = () => {
-    if (draggingState) {
-      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component, appId });
-    } else if (!draggingState && draggingItem) {
-      posthog.capture('drop_widget', { widget: draggingItem?.component?.component, appId });
-    }
-  };
 
   const [{ isOver, isOverCurrent }, drop] = useDrop(
     () => ({
