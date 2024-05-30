@@ -763,11 +763,12 @@ const EditorComponent = (props) => {
       app: appData,
     });
 
+    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+    await fetchDataSources(editing_version?.id);
+
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
-      handleLowPriorityWork(async () => {
+      handleLowPriorityWork(() => {
         useResolveStore.getState().actions.updateLastUpdatedRefs(['constants']);
-        await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
-        await fetchDataSources(editing_version?.id);
         commonLowPriorityActions(events, { homePageId });
       });
     });
