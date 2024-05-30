@@ -122,7 +122,7 @@ export function onComponentOptionsChanged(component, options, id) {
 
         const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
 
-        if (typeof existingRef === 'function') return;
+        if (typeof existingRef === 'function') continue;
 
         const shouldUpdateRef = existingRef !== componentData[option[0]];
 
@@ -1845,7 +1845,7 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentMetaData.defaultSize.width;
   const defaultHeight = componentMetaData.defaultSize.height;
 
-  componentData.name = computeComponentName(componentData.name, currentComponents);
+  componentData.name = computeComponentName(componentData.component, currentComponents);
 
   let left = 0;
   let top = 0;
