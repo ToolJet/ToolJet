@@ -10627,19 +10627,22 @@ tbody {
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
-  padding: 24px 32px;
+  padding: 16px 24px;
   gap: 8px;
-  height: 88px;
+  height: 72px;
   border-top: 1px solid var(--slate5);
   background: var(--base);
 }
 
 .drawer-card-title {
-  padding: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--slate5);
-
+  height: 64px;
   h3 {
     margin-bottom: 0px !important;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
   }
 }
 

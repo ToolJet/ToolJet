@@ -221,7 +221,7 @@ const ColumnForm = ({
           Create a new column
         </h3>
       </div>
-      <div className="card-body">
+      <div className="card-body create-drawer-body">
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
             Column name
@@ -362,8 +362,8 @@ const ColumnForm = ({
             </div>
           </ToolTip>
           <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500">Foreign Key relation</p>
-            <p className="fw-400 secondary-text tj-text-xsm mb-2">
+            <p className="m-0 p-0 fw-500 tj-fkr-primaryText">Foreign key relation</p>
+            <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-fkr-secondaryText">
               Adding a foreign key relation will link this column with a column in an existing table.
             </p>
             {foreignKeyDetails?.length > 0 &&
@@ -445,8 +445,8 @@ const ColumnForm = ({
             </label>
           </div>
           <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
-            <p className="fw-400 secondary-text tj-text-xsm mb-2">
+            <p className="m-0 p-0 fw-500 tj-fkr-primaryText">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+            <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-fkr-secondaryText">
               {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
             </p>
           </div>
@@ -467,8 +467,8 @@ const ColumnForm = ({
             </label>
           </div>
           <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
-            <p className="fw-400 secondary-text tj-text-xsm">
+            <p className="m-0 p-0 fw-500 tj-fkr-primaryText">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+            <p className="fw-400 secondary-text tj-text-xsm tj-fkr-secondaryText">
               {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
             </p>
           </div>

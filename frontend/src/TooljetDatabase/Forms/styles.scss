@@ -16,10 +16,14 @@
   }
 }
 
+.card-body.create-drawer-body{
+  padding: 20px;
+}
+
 .form-label,
 .card-sub-title,
 .foreign-key-sub-title{
-  font-size: 14px;
+  font-size: 12px;
   line-height: 20px;
   font-weight: 500;
   margin-bottom: 4px;
@@ -161,6 +165,9 @@
     transition: none;
     width: 100% !important;
     padding: 7px 12px !important;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 400;
 
     &:hover {
       background: #F1F3F5 !important;
@@ -699,4 +706,13 @@
 
 .input-error-border {
   border-color: #E54D2E !important;
+}
+
+.tj-fkr-primaryText,
+.tj-fkr-secondaryText{
+  font-size: 12px;
+  line-height: 20px;
+}
+.tj-fkr-primaryText{
+  color: #11181C;
 }

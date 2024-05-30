@@ -135,7 +135,7 @@ function DrawerFooter({
               &nbsp; Delete
             </ButtonSolid>
           ) : (
-            <ButtonSolid variant="tertiary" data-cy={`cancel-button`} onClick={onClose}>
+            <ButtonSolid variant="tertiary" size="md" data-cy={`cancel-button`} onClick={onClose}>
               Cancel
             </ButtonSolid>
           )}
@@ -208,6 +208,7 @@ function DrawerFooter({
                   onClick={() => {
                     onCreate();
                   }}
+                  size="md"
                 >
                   Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
