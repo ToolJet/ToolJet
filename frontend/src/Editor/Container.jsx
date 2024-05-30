@@ -296,6 +296,14 @@ export const Container = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
+  const triggerPosthogEvent = (draggingItem) => {
+    if (draggingState) {
+      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component, appId });
+    } else if (!draggingState && draggingItem) {
+      posthog.capture('drop_widget', { widget: draggingItem?.component?.component, appId });
+    }
+  };
+
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
@@ -330,14 +338,6 @@ export const Container = ({
     },
     [setCanvasHeight, currentLayout, mode]
   );
-
-  const triggerPosthogEvent = (draggingItem) => {
-    if (draggingState) {
-      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component, appId });
-    } else if (!draggingState && draggingItem) {
-      posthog.capture('drop_widget', { widget: draggingItem?.component?.component, appId });
-    }
-  };
 
   const [{ isOver, isOverCurrent }, drop] = useDrop(
     () => ({
