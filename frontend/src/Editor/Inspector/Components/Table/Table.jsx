@@ -689,14 +689,14 @@ class TableComponent extends React.Component {
                   </AddNewButton>
                 </div>
                 <ProgramaticallyHandleProperties
-                  label="Make all columns editable'"
+                  label="Make all columns editable"
                   currentState={this.state.currentState}
                   darkMode={this.props.darkMode}
                   callbackFunction={(index, property, value) => {
                     this.handleMakeAllColumnsEditable(value);
                   }}
                   property="isAllColumnsEditable"
-                  props={{ isAllColumnsEditable: this.state.isAllColumnsEditable }}
+                  props={{ isAllColumnsEditable: `{{${this.state.isAllColumnsEditable}}}` }}
                   component={this.props.component}
                   paramMeta={{ type: 'toggle', displayName: 'Make all columns editable' }}
                   paramType="properties"
