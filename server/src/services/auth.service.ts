@@ -946,20 +946,22 @@ export class AuthService {
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0];
-      const organizationDetails = currentOrganization
+      const organizationDetails = currentOrganizationId
         ? currentOrganization
-        : await manager.findOneOrFail(Organization, {
-            where: { id: currentOrganizationId },
-            select: ['slug', 'name', 'id'],
-          });
+          ? currentOrganization
+          : await manager.findOneOrFail(Organization, {
+              where: { id: currentOrganizationId },
+              select: ['slug', 'name', 'id'],
+            })
+        : null;
 
       return decamelizeKeys({
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        currentOrganizationSlug: organizationDetails.slug,
-        currentOrganizationName: organizationDetails.name,
+        currentOrganizationSlug: organizationDetails?.slug,
+        currentOrganizationName: organizationDetails?.name,
         currentOrganizationId,
       });
     });
