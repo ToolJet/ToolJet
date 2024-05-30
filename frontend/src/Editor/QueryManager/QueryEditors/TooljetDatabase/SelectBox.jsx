@@ -64,6 +64,7 @@ function CustomMenuList({ ...props }) {
         searchValue={tjdbMenuListProps.searchValue}
         isInitialForeignKeySearchDataLoaded={tjdbMenuListProps.isInitialForeignKeySearchDataLoaded}
         isInitialForeignKeyDataLoaded={tjdbMenuListProps.isInitialForeignKeyDataLoaded}
+        customChildren={tjdbMenuListProps.customChildren}
       />
       {tjdbMenuListProps.foreignKeyAccess && tjdbMenuListProps.showDescription && tjdbMenuListProps.actions && (
         <>
@@ -139,6 +140,10 @@ function DataSourceSelect({
   referencedForeignKeyDetails,
   cachedOptions = {},
   columnDataType = '',
+  customChildren,
+  isForeignKeyInEditCell,
+  closeFKMenu,
+  saveFKValue,
   loader,
   isLoading = false,
 }) {
@@ -293,6 +298,7 @@ function DataSourceSelect({
           organizationId
         );
       } else if (shouldLoadFKDataFirstPage && !isEmpty(cachedOptions)) {
+        setIsLoadingFKDetails(false);
         setIsInitialForeignKeyDataLoaded(true);
         const data = cachedOptions.data;
         setReferencedColumnDetails((prevData) => [...prevData, ...data]);
@@ -322,15 +328,28 @@ function DataSourceSelect({
     return option.label.toString().toLowerCase().includes(inputValue.toString().toLowerCase());
   };
 
+  const handleFKMenuKeyDown = (e) => {
+    if (isForeignKeyInEditCell) {
+      if (e.key === 'Escape') {
+        closeFKMenu();
+      } else if (e.key === 'Enter') {
+        saveFKValue();
+      }
+    }
+    e.stopPropagation();
+  };
+
   return (
-    <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+    <div onKeyDown={handleFKMenuKeyDown} onClick={(e) => e.stopPropagation()}>
       <Select
         onChange={(option) => {
           handleChangeDataSource(option);
         }}
         classNames={{
           menu: () =>
-            foreignKeyAccess
+            isForeignKeyInEditCell
+              ? 'tj-scrollbar tjdb-mainCellEdit-scrollbar'
+              : foreignKeyAccess
               ? 'tj-scrollbar tjdb-dashboard-scrollbar'
               : foreignKeyAccessInRowForm
               ? 'tj-scrollbar tjdb-rowForm-scrollbar'
@@ -367,6 +386,7 @@ function DataSourceSelect({
           searchValue: searchValue,
           isInitialForeignKeySearchDataLoaded: isInitialForeignKeySearchDataLoaded,
           isInitialForeignKeyDataLoaded: isInitialForeignKeyDataLoaded,
+          customChildren: customChildren,
         }}
         components={{
           Option: ({ children, ...props }) => {
@@ -605,6 +625,7 @@ const MenuList = ({
   foreignKeys,
   cellColumnName,
   isLoadingFKDetails = false,
+  customChildren,
   loader,
   searchValue,
   isInitialForeignKeyDataLoaded,
@@ -655,7 +676,8 @@ const MenuList = ({
           {isLoadingFKDetails && loader ? loader : null}
         </div>
       )}
-      {onAdd && !(isLoadingFKDetails && loader) && (
+      {customChildren && customChildren}
+      {!customChildren && onAdd && !(isLoadingFKDetails && loader) && (
         <div
           className={cx('mt-2 border-slate3-top', {
             'tj-foreignKey p-1': foreignKeyAccess || foreignKeyAccessInRowForm,
