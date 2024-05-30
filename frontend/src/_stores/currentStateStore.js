@@ -4,6 +4,8 @@ import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { useEditorStore } from '@/_stores/editorStore';
+import update from 'immutability-helper';
+const { diff } = require('deep-object-diff');
 
 const initialState = {
   queries: {},
@@ -25,31 +27,25 @@ const initialState = {
   constants: {},
 };
 
-function generatePath(obj, targetKey, currentPath = '') {
-  for (const key in obj) {
-    const newPath = currentPath ? currentPath + '.' + key : key;
-
-    if (key === targetKey) {
-      return newPath;
-    }
-
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      const result = generatePath(obj[key], targetKey, newPath);
-      if (result) {
-        return result;
-      }
-    }
-  }
-  return null;
-}
-
 export const useCurrentStateStore = create(
   zustandDevTools(
     (set, get) => ({
       ...initialState,
       actions: {
         setCurrentState: (currentState) => {
-          set({ ...currentState }, false, { type: 'SET_CURRENT_STATE', currentState });
+          const diffing = JSON.parse(JSON.stringify(diff(get(), currentState)));
+
+          let newState = get();
+
+          if (diffing && Object.keys(diffing).length > 0) {
+            Object.keys(diffing).forEach((key) => {
+              newState = update(newState, {
+                [key]: { $set: currentState[key] },
+              });
+            });
+
+            set(newState);
+          }
         },
         setErrors: (error) => {
           set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });

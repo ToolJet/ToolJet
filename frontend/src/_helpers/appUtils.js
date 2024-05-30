@@ -1986,12 +1986,28 @@ function convertMapSet(obj) {
 export const checkExistingQueryName = (newName) =>
   useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
 
-export const runQueries = (queries, _ref, isOnLoad = false) => {
-  queries.forEach((query) => {
-    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-      runQuery(_ref, query.id, query.name, isOnLoad);
+// export const runQueries = (queries, _ref, isOnLoad = false) => {
+//   queries.forEach((query) => {
+//     if (query.options.runOnPageLoad && isQueryRunnable(query)) {
+//       runQuery(_ref, query.id, query.name, isOnLoad);
+//     }
+//   });
+// };
+
+export const runQueries = async (queries, _ref, isOnLoad = false) => {
+  try {
+    for (const query of queries) {
+      if (query.options.runOnPageLoad && isQueryRunnable(query)) {
+        await runQuery(_ref, query.id, query.name, isOnLoad);
+      }
     }
-  });
+  } catch (error) {
+    // If any query fails, reject the promise with the error
+    return Promise.reject(error);
+  }
+
+  // Return a resolved promise if all queries are successful
+  return Promise.resolve();
 };
 
 export const computeQueryState = (queries) => {
