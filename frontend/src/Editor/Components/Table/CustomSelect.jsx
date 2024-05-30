@@ -18,7 +18,7 @@ export const CustomSelect = ({
   className,
   darkMode,
   defaultOptionsList,
-  textColor = '',
+  cellTextColor = '',
   isMulti,
   containerWidth,
   optionsLoadingState = false,
@@ -41,6 +41,7 @@ export const CustomSelect = ({
       document.removeEventListener('mousedown', handleDocumentClick);
     };
   }, []);
+  console.log('cellTextColor---', cellTextColor, cellTextColor);
 
   useEffect(() => {
     // Focus the input search box when the menu list is open and the component is focused
@@ -72,7 +73,7 @@ export const CustomSelect = ({
     menuList: (base) => ({
       ...base,
       backgroundColor: 'var(--surfaces-surface-01) ',
-      color: 'var(--text-primary)',
+      color: cellTextColor ?? 'inherit',
       cursor: 'pointer',
       overflow: 'auto',
     }),
@@ -81,7 +82,7 @@ export const CustomSelect = ({
       padding: '2px 6px',
       background: 'var(--surfaces-surface-03)',
       borderRadius: '6px',
-      color: textColor || 'var(--text-primary)',
+      color: cellTextColor || 'inherit',
       fontSize: '12px',
     }),
     singleValue: (provided) => ({
@@ -89,7 +90,7 @@ export const CustomSelect = ({
       padding: '2px 6px',
       background: 'var(--surfaces-surface-03)',
       borderRadius: '6px',
-      color: textColor || 'var(--text-primary)',
+      color: cellTextColor || 'inherit',
       fontSize: '12px',
     }),
   };
@@ -297,7 +298,7 @@ const getOverlay = (value, containerWidth, darkMode) => {
               padding: '2px 6px',
               background: 'var(--surfaces-surface-03)',
               borderRadius: '6px',
-              color: 'var(--text-primary)',
+              color: 'inherit',
               fontSize: '12px',
             }}
             key={getLabel(option)}

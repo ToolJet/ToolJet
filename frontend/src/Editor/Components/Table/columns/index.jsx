@@ -494,6 +494,7 @@ export default function generateColumnsData({
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
                     isMaxRowHeightAuto={contentWrap && isMaxRowHeightAuto}
+                    cellTextColor={cellTextColor}
                   />
                 )}
                 <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
@@ -617,7 +618,7 @@ export default function generateColumnsData({
             const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp, currentState);
             const isDateSelectionEnabled = resolveReferences(column?.isDateSelectionEnabled, currentState);
             const cellStyles = {
-              color: textColor ?? '',
+              color: textColor ?? 'inherit',
             };
             const validationData = validateDates({
               validationObject: {
@@ -676,6 +677,7 @@ export default function generateColumnsData({
                   unixTimestamp={column.unixTimestamp}
                   cellStyles={cellStyles}
                   darkMode={darkMode}
+                  textColor={textColor}
                 />
                 {isEditable && (
                   <div className={isValid ? '' : 'invalid-feedback d-block  text-truncate'}>{validationError}</div>
@@ -687,9 +689,11 @@ export default function generateColumnsData({
             const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}', currentState);
             column = {
               ...column,
-              linkColor: column?.linkColor ?? '#1B1F24',
+              linkColor: resolveReferences(column?.linkColor, currentState, '', { cellValue, rowData }),
+
               underlineColor: column?.underlineColor ?? '#4368E3',
             };
+
             return (
               <div className="h-100 d-flex align-items-center">
                 <Link
