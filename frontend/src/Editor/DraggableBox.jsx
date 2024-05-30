@@ -14,6 +14,8 @@ import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
 import { findHighestLevelofSelection } from './DragContainer';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useResolveStore } from '@/_stores/resolverStore';
 
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
@@ -143,6 +145,16 @@ const DraggableBox = React.memo(
       [id]
     );
 
+    const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+    const isResolverStoreReady = useResolveStore.getState().storeReady;
+
+    const isCanvasReady = isEditorReady && isResolverStoreReady;
+    /**
+     * !This component does not consume the value returned from the below hook.
+     * Only purpose of the hook is to force one rerender the component
+     * */
+    useEditorStore((state) => state.componentsNeedsUpdateOnNextRender.find((compId) => compId === id));
+
     return (
       <div
         className={
@@ -228,6 +240,7 @@ const DraggableBox = React.memo(
                   onOptionsChanged={onComponentOptionsChanged}
                   isFromSubContainer={isFromSubContainer}
                   childComponents={childComponents}
+                  isCanvasReady={isCanvasReady}
                 />
               </Sentry.ErrorBoundary>
             </div>

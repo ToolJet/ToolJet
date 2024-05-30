@@ -357,8 +357,12 @@ const EditorComponent = (props) => {
 
   useEffect(
     () => {
-      const components = appDefinition?.pages?.[currentPageId]?.components || {};
-      computeComponentState(components);
+      const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+      const isResolverStoreReady = useResolveStore.getState().storeReady;
+      if (isEditorReady && isResolverStoreReady) {
+        const components = appDefinition?.pages?.[currentPageId]?.components || {};
+        computeComponentState(components);
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentPageId]
