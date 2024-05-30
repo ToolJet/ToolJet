@@ -45,7 +45,7 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
   function renderTag(text) {
     return (
       <span className="col-auto badge bg-blue-lt p-2 mx-1 tag">
-        {text}
+        {String(text)}
         {!readOnly && (
           <span className="badge badge-pill bg-red-lt remove-tag-button cursor-pointer" onClick={() => removeTag(text)}>
             x

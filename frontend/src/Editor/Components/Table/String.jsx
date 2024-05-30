@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
-const String = ({
+const StringColumn = ({
   isEditable,
   darkMode,
   handleCellValueChange,
@@ -93,7 +93,7 @@ const String = ({
         e.stopPropagation();
       }}
     >
-      {cellValue && <span>{cellValue}</span>}
+      {cellValue && <span>{String(cellValue)}</span>}
     </div>
   );
 
@@ -110,7 +110,7 @@ const String = ({
             width: `${containerWidth}px`,
           }}
         >
-          {cellValue}
+          {String(cellValue)}
         </span>
       </div>
     );
@@ -155,7 +155,7 @@ const String = ({
                   : '45px',
               }}
             >
-              {cellValue}
+              {String(cellValue)}
             </span>
           </div>
         ) : (
@@ -177,4 +177,4 @@ const String = ({
   );
 };
 
-export default String;
+export default StringColumn;
