@@ -14,6 +14,7 @@ import CustomValueContainer from './CustomValueContainer';
 import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
+import cx from 'classnames';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -229,6 +230,45 @@ export const DropdownV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory, label, inputValue, isValid]);
 
+  const getInputBorderColor = (isFocused) => {
+    if (!isValid) {
+      return 'var(--status-error-strong)';
+    }
+
+    if (isFocused) {
+      if (accentColor !== '#4368E3') {
+        return accentColor;
+      }
+      return 'var(--primary-accent-strong)';
+    }
+
+    if (fieldBorderColor !== '#CCD1D5') {
+      return fieldBorderColor;
+    }
+
+    if (isDropdownDisabled || isDropdownLoading) {
+      return '1px solid var(--borders-disabled-on-white)';
+    }
+
+    return 'var(--borders-default)';
+  };
+
+  const getInputBackgroundColor = () => {
+    if (!['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)) {
+      return fieldBackgroundColor;
+    }
+
+    if (isDropdownDisabled || isDropdownLoading) {
+      if (darkMode) {
+        return 'var(--surfaces-app-bg-default)';
+      } else {
+        return 'var(--surfaces-surface-03)';
+      }
+    }
+
+    return 'var(--surfaces-surface-01)';
+  };
+
   const customStyles = {
     container: (base) => ({
       ...base,
@@ -237,29 +277,13 @@ export const DropdownV2 = ({
     control: (provided, state) => {
       return {
         ...provided,
+        'var(--tblr-input-border-color-darker)': tinycolor(fieldBorderColor).darken(24).toString(),
         minHeight: _height,
         height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
-        borderColor: !isValid
-          ? 'var(--status-error-strong)'
-          : state.isFocused
-          ? accentColor != '#4368E3'
-            ? accentColor
-            : 'var(--primary-accent-strong)'
-          : fieldBorderColor != '#CCD1D5'
-          ? fieldBorderColor
-          : isDropdownDisabled || isDropdownLoading
-          ? '1px solid var(--borders-disabled-on-white)'
-          : 'var(--borders-default)',
-        '--tblr-input-border-color-darker': tinycolor(fieldBorderColor).darken(24).toString(),
-        backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-          ? fieldBackgroundColor
-          : isDropdownDisabled || isDropdownLoading
-          ? darkMode
-            ? 'var(--surfaces-app-bg-default)'
-            : 'var(--surfaces-surface-03)'
-          : 'var(--surfaces-surface-01)',
+        borderColor: getInputBorderColor(state.isFocused),
+        backgroundColor: getInputBackgroundColor(),
         '&:hover': {
           borderColor: 'var(--tblr-input-border-color-darker)',
         },
@@ -362,15 +386,17 @@ export const DropdownV2 = ({
     <>
       <div
         data-cy={`label-${String(component.name).toLowerCase()} `}
-        className={`dropdown-widget  d-flex  ${
-          alignment === 'top' &&
+        className={cx('dropdown-widget', 'd-flex', {
+          [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) ||
             (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
-            : 'align-items-center'
-        }  ${direction === 'right' && alignment === 'side' ? 'flex-row-reverse' : ''}
-    ${direction === 'right' && alignment === 'top' ? 'text-right' : ''}
-    ${visibility || 'invisible'}`}
+            : 'align-items-center']: true,
+          'flex-row-reverse': direction === 'right' && alignment === 'side',
+          'text-right': direction === 'right' && alignment === 'top',
+          invisible: !visibility,
+          visibility: visibility,
+        })}
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
