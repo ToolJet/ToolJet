@@ -1417,7 +1417,7 @@ export function Table({
           </thead>
 
           {!loadingState && (
-            <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
+            <tbody {...getTableBodyProps()}>
               {page.map((row, index) => {
                 prepareRow(row);
                 let rowProps = { ...row.getRowProps() };
@@ -1585,7 +1585,11 @@ export function Table({
                             }
                           )}
                           {...cellProps}
-                          style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
+                          style={{
+                            ...cellProps.style,
+                            backgroundColor: cellBackgroundColor ?? 'inherit',
+                            color: computeFontColor(),
+                          }}
                           onClick={(e) => {
                             if (
                               (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
