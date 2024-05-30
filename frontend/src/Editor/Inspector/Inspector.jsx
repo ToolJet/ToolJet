@@ -52,7 +52,16 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
+const NEW_REVAMPED_COMPONENTS = [
+  'Text',
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'Table',
+  'Button',
+  'ToggleSwitchV2',
+  'Checkbox',
+];
 
 export const Inspector = ({
   componentDefinitionChanged,
@@ -456,7 +465,7 @@ export const Inspector = ({
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
+                componentMeta: componentMeta.name === 'ToggleSwitchLegacy' ? 'ToggleLegacy' : componentMeta.name,
               })}
             </small>
           </span>
