@@ -774,11 +774,12 @@ const EditorComponent = (props) => {
     });
   };
 
-  const commonLowPriorityActions = async (events, { homePageId }) => {
+  const commonLowPriorityActions = (events, { homePageId }) => {
     const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
     const editorRef = getEditorRef();
-    await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+    runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true).then(() => {
+      handleEvent('onPageLoad', currentPageEvents, {}, true);
+    });
   };
 
   const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
