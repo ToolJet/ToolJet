@@ -478,6 +478,12 @@ export default function DragContainer({
           const box = boxes.find((box) => box.id === e.target.id);
           let isDragOnTable = false;
 
+          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works. 
+          Also user dont need to drag an calender from using popup */
+          if (hasParentWithClass(e.inputEvent.target, 'react-datepicker-popper')) {
+            return false;
+          }
+
           /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
           if (box?.component?.component === 'Table') {
             const tableElem = e.target.querySelector('.jet-data-table');
@@ -852,4 +858,17 @@ function getOffset(childElement, grandparentElement) {
   const offsetY = childRect.top - grandparentRect.top;
 
   return { x: offsetX, y: offsetY };
+}
+
+function hasParentWithClass(child, className) {
+  let currentElement = child;
+
+  while (currentElement !== null && currentElement !== document.documentElement) {
+    if (currentElement.classList.contains(className)) {
+      return true;
+    }
+    currentElement = currentElement.parentElement;
+  }
+
+  return false;
 }

@@ -81,12 +81,8 @@ export const RealtimeEditor = (props) => {
     color: '',
   };
 
-  if (featuresLoaded && !multiPlayerEdit) {
-    if (!provider) {
-      return <Spinner />;
-    } else {
-      return <Editor {...props} />;
-    }
+  if ((featuresLoaded && !multiPlayerEdit) || !provider) {
+    return <Editor {...props} />;
   }
 
   return (

@@ -498,6 +498,42 @@
     .cm-line {
         padding: 0 6px 0 6px !important;
     }
+
+
+}
+
+.transformation-container {
+    box-shadow: 0px 4px 8px 0px #3032331A;
+}
+
+.codehinder-popup-badge {
+    background-color: var(--surfaces-surface-02);
+    color: var(--text-default);
+    padding: 6px 8px 6px 8px;
+    gap: 10px;
+    border-radius: 6px 0px 0px 0px;
+}
+
+.resize-modal-portal .resize-modal .modal-content .modal-body .editor-container {
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.resize-modal-portal .resize-modal .resize-handle {
+    border-bottom: none !important;
+}
+
+.cm-content {
+    word-break: break-all !important;
+    max-width: 100% !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-all !important;
+}
+
+
+.cm-content {
+    max-width: 98%;
+    flex-shrink: 1 !important;
 }
 
 .cm-selectionLayer {

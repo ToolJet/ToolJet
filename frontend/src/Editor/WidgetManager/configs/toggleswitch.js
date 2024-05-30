@@ -22,7 +22,7 @@ export const toggleswitchConfig = {
     },
     defaultValue: {
       type: 'toggle',
-      displayName: 'Default Status',
+      displayName: 'Default status',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
