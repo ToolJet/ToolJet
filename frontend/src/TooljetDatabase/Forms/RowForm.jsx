@@ -240,7 +240,7 @@ const RowForm = ({
           return { ...prev, [accessor]: 'Cannot be empty' };
         });
         const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
       }
     });
     if (flag) {
@@ -257,7 +257,7 @@ const RowForm = ({
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
       } else if (error?.code === postgresErrorCode.DataTypeMismatch) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
@@ -272,7 +272,7 @@ const RowForm = ({
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
           }
         });
       }
