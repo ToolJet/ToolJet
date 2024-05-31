@@ -20,8 +20,6 @@ import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '..
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { useEditorStore } from '@/_stores/editorStore';
-import { shallow } from 'zustand/shallow';
 
 const DynamicForm = ({
   schema,
@@ -45,12 +43,6 @@ const DynamicForm = ({
 
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
-  const { isEditorActive } = useEditorStore(
-    (state) => ({
-      isEditorActive: state?.isEditorActive,
-    }),
-    shallow
-  );
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
