@@ -1,7 +1,7 @@
 import React from 'react';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { changeOption } from './utils';
 import { defaults } from 'lodash';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export class Runpy extends React.Component {
   constructor(props) {
@@ -16,20 +16,17 @@ export class Runpy extends React.Component {
 
   render() {
     return (
-      <div className="runps-editor">
+      <div className="runps-editor mb-3">
         <CodeHinter
+          type="multiline"
           initialValue={this.props.options.code}
-          mode="python"
-          theme={this.props.darkMode ? 'monokai' : 'base16-light'}
-          lineNumbers={true}
+          lang="python"
           height={400}
           className="query-hinter"
-          ignoreBraces={true}
           onChange={(value) => changeOption(this, 'code', value)}
-          isMultiLineJs={false}
-          enablePreview={false}
           componentName="Runpy"
           cyLabel={`runpy`}
+          delayOnChange={false}
         />
       </div>
     );

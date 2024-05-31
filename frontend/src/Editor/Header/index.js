@@ -1,11 +1,8 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
 import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
-import { ManageAppUsers } from '../ManageAppUsers';
-import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import cx from 'classnames';
 import config from 'config';
 // eslint-disable-next-line import/no-unresolved
@@ -18,6 +15,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
+import RightTopHeaderButtons from './RightTopHeaderButtons';
+import EnvironmentManager from './EnvironmentManager';
 
 export default function EditorHeader({
   M,
@@ -29,14 +28,12 @@ export default function EditorHeader({
   onNameChanged,
   setAppDefinitionFromVersion,
   onVersionRelease,
-  saveEditingVersion,
-  onVersionDelete,
   slug,
   darkMode,
 }) {
   const currentUser = useCurrentUser();
 
-  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, currentVersionId } = useAppInfo();
+  const { isSaving, appId, appName, isPublic, currentVersionId } = useAppInfo();
   const { setAppPreviewLink } = useAppDataActions();
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
@@ -77,8 +74,6 @@ export default function EditorHeader({
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, currentVersionId, editingVersion]);
-
-  const shouldRenderReleaseButton = !!app?.id;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -148,62 +143,18 @@ export default function EditorHeader({
               </div>
               <div className="navbar-seperator"></div>
 
+              <EnvironmentManager />
+
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
                   setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                  onVersionDelete={onVersionDelete}
                   isPublic={isPublic ?? false}
                   darkMode={darkMode}
                 />
               )}
             </div>
-            <div
-              className="d-flex justify-content-end navbar-right-section"
-              style={{ width: '300px', paddingRight: '12px' }}
-            >
-              <div className=" release-buttons navbar-nav flex-row">
-                <div className="preview-share-wrap navbar-nav flex-row" style={{ gap: '4px' }}>
-                  <div className="nav-item">
-                    {appId && (
-                      <ManageAppUsers
-                        app={app}
-                        appId={appId}
-                        slug={slug}
-                        darkMode={darkMode}
-                        isVersionReleased={isVersionReleased}
-                        pageHandle={pageHandle}
-                        M={M}
-                        isPublic={isPublic ?? false}
-                      />
-                    )}
-                  </div>
-                  <div className="nav-item">
-                    <Link
-                      title="Preview"
-                      to={appVersionPreviewLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      data-cy="preview-link-button"
-                      className="editor-header-icon tj-secondary-btn"
-                    >
-                      <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
-                    </Link>
-                  </div>
-                </div>
-
-                {shouldRenderReleaseButton && (
-                  <div className="nav-item dropdown promote-release-btn">
-                    <ReleaseVersionButton
-                      appId={appId}
-                      appName={appName}
-                      onVersionRelease={onVersionRelease}
-                      saveEditingVersion={saveEditingVersion}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+            <RightTopHeaderButtons onVersionRelease={onVersionRelease} />
           </div>
         </div>
       </header>

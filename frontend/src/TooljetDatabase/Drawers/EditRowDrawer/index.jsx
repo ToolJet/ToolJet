@@ -5,8 +5,17 @@ import EditRowForm from '../../Forms/EditRowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { listAllPrimaryKeyColumns } from '../../constants';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
-const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRowIds, rows }) => {
+const EditRowDrawer = ({
+  isEditRowDrawerOpen,
+  setIsEditRowDrawerOpen,
+  selectedRowIds,
+  rows,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+}) => {
   const {
     organizationId,
     selectedTable,
@@ -18,31 +27,22 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
     pageSize,
     // selectedTableData,
   } = useContext(TooljetDatabaseContext);
-  const [rowIdToBeEdited, setRowIdToBeEdited] = useState(null);
+  const [selectedRowObj, setSelectedRowObj] = useState({});
 
   React.useEffect(() => {
-    const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
-    const primaryKey = columns.find((column) => column?.constraints_type?.is_primary_key);
-    if (primaryKey) {
-      const rowIdToEditList = selectedRows.map((row) => {
-        return row.values[primaryKey?.accessor];
-      });
-      if (rowIdToEditList.length) setRowIdToBeEdited(rowIdToEditList[0]);
-    }
-
-    return () => {
-      setRowIdToBeEdited(null);
-      setIsEditRowDrawerOpen(false);
-    };
+    const selectedRowOriginalValues = Object.keys(selectedRowIds).map((key) => rows[key]?.values);
+    if (selectedRowOriginalValues.length) setSelectedRowObj(selectedRowOriginalValues[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRowIds]);
+  }, []);
 
   return (
     <>
       <ButtonSolid
         variant="tertiary"
         size="sm"
-        onClick={() => setIsEditRowDrawerOpen(!isEditRowDrawerOpen)}
+        onClick={() => {
+          setIsEditRowDrawerOpen(!isEditRowDrawerOpen);
+        }}
         className="gap-0"
         data-cy="edit-row-button-"
         style={{
@@ -74,8 +74,21 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
           onEdit={() => {
             const limit = pageSize;
             const pageRange = `${(pageCount - 1) * pageSize + 1}`;
+
+            const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
+            const sortQuery = new PostgrestQueryBuilder();
+            primaryKeyColumns.forEach((primaryKeyColumnName) => {
+              if (selectedRowObj[primaryKeyColumnName]) {
+                sortQuery.order(primaryKeyColumnName, 'desc');
+              }
+            });
+
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
+              .findOne(
+                organizationId,
+                selectedTable.id,
+                `${sortQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`
+              )
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
@@ -91,7 +104,9 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
             setIsEditRowDrawerOpen(false);
           }}
           onClose={() => setIsEditRowDrawerOpen(false)}
-          rowIdToBeEdited={rowIdToBeEdited}
+          selectedRowObj={selectedRowObj}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
     </>
