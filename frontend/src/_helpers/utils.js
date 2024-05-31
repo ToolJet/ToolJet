@@ -11,6 +11,10 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, erase
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { validateMultilineCode } from './utility';
+import { componentTypes } from '@/Editor/WidgetManager/components';
+
+const reservedKeyword = ['app', 'window'];
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -157,7 +161,7 @@ export function resolveReferences(
   forPreviewBox = false
 ) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+
   object = _.clone(object);
   const objectType = typeof object;
   let error;
@@ -171,7 +175,10 @@ export function resolveReferences(
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          if (reservedKeyword.includes(code)) {
+          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
+          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+
+          if (code.match(keywordRegex)) {
             error = `${code} is a reserved keyword`;
             return [{}, error];
           }
@@ -262,20 +269,20 @@ export function computeComponentName(componentType, currentComponents) {
     (component) => component.component.component === componentType
   );
   let found = false;
-  let componentName = '';
+  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
   let currentNumber = currentComponentsForKind.length + 1;
-
+  let _componentName = '';
   while (!found) {
-    componentName = `${componentType.toLowerCase()}${currentNumber}`;
+    _componentName = `${componentName.toLowerCase()}${currentNumber}`;
     if (
-      Object.values(currentComponents).find((component) => component.component.name === componentName) === undefined
+      Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
       found = true;
     }
     currentNumber = currentNumber + 1;
   }
 
-  return componentName;
+  return _componentName;
 }
 
 export function computeActionName(actions) {
@@ -323,10 +330,11 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
   return str.join('&');
 };
 
-export function resolveWidgetFieldValue(prop, state, _default = [], customResolveObjects = {}) {
+export function resolveWidgetFieldValue(prop, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
   try {
+    const state = getCurrentState();
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
@@ -335,7 +343,7 @@ export function resolveWidgetFieldValue(prop, state, _default = [], customResolv
   return widgetFieldValue;
 }
 
-export function validateWidget({ validationObject, widgetValue, currentState, customResolveObjects }) {
+export function validateWidget({ validationObject, widgetValue, currentState, component, customResolveObjects }) {
   let isValid = true;
   let validationError = null;
 
@@ -346,7 +354,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
   const mandatory = validationObject?.mandatory?.value;
-  const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
+  const validationRegex = resolveWidgetFieldValue(regex, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
   if (!re.test(widgetValue)) {
@@ -356,7 +364,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
+  const resolvedMinLength = resolveWidgetFieldValue(minLength, 0, customResolveObjects);
   if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
     return {
       isValid: false,
@@ -364,7 +372,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, undefined, customResolveObjects);
   if (resolvedMaxLength !== undefined) {
     if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
       return {
@@ -374,7 +382,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
+  const resolvedMinValue = resolveWidgetFieldValue(minValue, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
     if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
@@ -394,17 +402,18 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, false, customResolveObjects);
   if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
-  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, false, customResolveObjects);
 
-  if (resolvedMandatory == true) {
-    if (!widgetValue) {
-      return { isValid: false, validationError: `Field cannot be empty` };
-    }
+  if (resolvedMandatory == true && !widgetValue) {
+    return {
+      isValid: false,
+      validationError: `Field cannot be empty`,
+    };
   }
   return {
     isValid,
@@ -510,15 +519,13 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  mode = '',
-  parameters = {},
-  hasParamSupport = false
-) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
+  const isValidCode = validateMultilineCode(code);
+
+  if (isValidCode.status === 'failed') {
+    return isValidCode;
+  }
+
   const currentState = getCurrentState();
   let result = {},
     error = null;
@@ -669,12 +676,26 @@ export const handleCircularStructureToJSON = () => {
 };
 
 export function hasCircularDependency(obj) {
-  try {
-    JSON.stringify(obj);
-  } catch (e) {
-    return String(e).includes('Converting circular structure to JSON');
+  let seenObjects = new WeakSet();
+
+  function detect(obj) {
+    if (obj && typeof obj === 'object') {
+      if (seenObjects.has(obj)) {
+        // Circular reference found
+        return true;
+      }
+      seenObjects.add(obj);
+
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key) && detect(obj[key])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
-  return false;
+
+  return detect(obj);
 }
 
 export const hightlightMentionedUserInComment = (comment) => {
@@ -1190,6 +1211,11 @@ export const determineJustifyContentValue = (value) => {
   }
 };
 
+export function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 export const USER_DRAWER_MODES = {
   EDIT: 'EDIT',
   CREATE: 'CREATE',
@@ -1271,6 +1297,32 @@ export const setWindowTitle = async (pageDetails, location) => {
     document.title = !(pageDetails?.preview === false)
       ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
       : `${pageTitle}`;
+  }
+};
+// This function is written only to handle diff colors W.R.T button types
+export const computeColor = (styleDefinition, value, meta) => {
+  if (styleDefinition.type?.value == 'primary') return value;
+  else {
+    if (meta?.displayName == 'Background') {
+      value = value == '#4368E3' ? '#FFFFFF' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Text color') {
+      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Icon color') {
+      value = value == '#FFFFFF' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Border color') {
+      value = value == '#4368E3' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Loader color') {
+      value = value == '#FFFFFF' ? '#4368E3' : value;
+      return value;
+    }
   }
 };
 

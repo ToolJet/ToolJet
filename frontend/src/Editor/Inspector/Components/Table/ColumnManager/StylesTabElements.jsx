@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import { Color } from '../../../Elements/Color';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';

@@ -8,7 +8,7 @@
     "method": {
       "label": "Method",
       "key": "method",
-      "className":"col-md-4",
+      "className": "col-md-4",
       "type": "dropdown-component-flip",
       "description": "Single request type",
       "list": [
@@ -21,8 +21,8 @@
           "name": "POST"
         }
       ],
-      "commonFields":{
-        "url":{
+      "commonFields": {
+        "url": {
           "label": "Webhook URL",
           "key": "url",
           "type": "codehinter",
@@ -34,7 +34,7 @@
         }
       }
     },
-    "get":{
+    "get": {
       "parameters": {
         "label": "URL parameters",
         "key": "url_params",
@@ -42,10 +42,11 @@
         "mode": "javascript",
         "placeholder": "{ \"name\": \"bob\" }",
         "description": "Enter options",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
-    "post":{
+    "post": {
       "parameters": {
         "label": "URL parameters",
         "key": "url_params",
@@ -53,7 +54,8 @@
         "mode": "javascript",
         "placeholder": "{ \"name\": \"bob\" }",
         "description": "Enter url parameters",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       },
       "body": {
         "label": "Body",
@@ -62,7 +64,8 @@
         "mode": "javascript",
         "placeholder": "{ \"age\": \"12\" }",
         "description": "Enter body parameters",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     }
   }

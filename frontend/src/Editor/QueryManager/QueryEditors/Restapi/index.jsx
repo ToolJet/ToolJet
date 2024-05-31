@@ -1,13 +1,13 @@
-import 'codemirror/theme/duotone-light.css';
+// import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
 import { isEmpty, defaults } from 'lodash';
 import Tabs from './Tabs';
 import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import CodeHinter from '@/Editor/CodeEditor';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -122,6 +122,15 @@ class Restapi extends React.Component {
         },
         cursor: 'pointer',
       }),
+      singleValue: (provided) => ({
+        ...provided,
+        marginBottom: '3px',
+        color: darkMode ? '#fff' : '#11181C',
+      }),
+      dropdownIndicator: (provided) => ({
+        ...provided,
+        paddingTop: '4px',
+      }),
     };
   };
 
@@ -132,61 +141,56 @@ class Restapi extends React.Component {
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
-      <>
-        <div className={`d-flex`}>
-          {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
-          <div className="flex-grow-1 overflow-hidden">
-            <div className="rest-api-methods-select-element-container">
-              <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
-                <label className="font-weight-medium color-slate12">Method</label>
-                <Select
-                  options={[
-                    { label: 'GET', value: 'get' },
-                    { label: 'POST', value: 'post' },
-                    { label: 'PUT', value: 'put' },
-                    { label: 'PATCH', value: 'patch' },
-                    { label: 'DELETE', value: 'delete' },
-                  ]}
-                  onChange={(value) => {
-                    changeOption(this, 'method', value);
-                  }}
-                  value={currentValue}
-                  defaultValue={{ label: 'GET', value: 'get' }}
-                  placeholder="Method"
-                  width={100}
-                  height={32}
-                  styles={this.customSelectStyles(this.props.darkMode, 91)}
-                  useCustomStyles={true}
-                />
-              </div>
+      <div className={`d-flex`}>
+        {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
+        <div className="flex-grow-1 overflow-hidden">
+          <div className="rest-api-methods-select-element-container">
+            <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
+              <label className="font-weight-medium color-slate12">Method</label>
+              <Select
+                options={[
+                  { label: 'GET', value: 'get' },
+                  { label: 'POST', value: 'post' },
+                  { label: 'PUT', value: 'put' },
+                  { label: 'PATCH', value: 'patch' },
+                  { label: 'DELETE', value: 'delete' },
+                ]}
+                onChange={(value) => {
+                  changeOption(this, 'method', value);
+                }}
+                value={currentValue}
+                defaultValue={{ label: 'GET', value: 'get' }}
+                placeholder="Method"
+                width={100}
+                height={32}
+                styles={this.customSelectStyles(this.props.darkMode, 91)}
+                useCustomStyles={true}
+              />
+            </div>
 
-              <div className={`field w-100 rest-methods-url`}>
-                <div className="font-weight-medium color-slate12">URL</div>
-                <div className="d-flex">
-                  {dataSourceURL && (
-                    <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
-                  )}
-                  <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
-                    <CodeHinter
-                      currentState={this.props.currentState}
-                      initialValue={options.url}
-                      theme={this.props.darkMode ? 'monokai' : 'default'}
-                      onChange={(value) => {
-                        changeOption(this, 'url', value);
-                      }}
-                      placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
-                      componentName={`${queryName}::url`}
-                      mode="javascript"
-                      lineNumbers={false}
-                      height={'32px'}
-                    />
-                  </div>
+            <div className={`field w-100 rest-methods-url`}>
+              <div className="font-weight-medium color-slate12">URL</div>
+              <div className="d-flex">
+                {dataSourceURL && (
+                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+                )}
+                <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
+                  <CodeHinter
+                    type="basic"
+                    currentState={this.props.currentState}
+                    initialValue={options.url}
+                    onChange={(value) => {
+                      changeOption(this, 'url', value);
+                    }}
+                    placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
+                    componentName={`${queryName}::url`}
+                    lang="javascript"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
-
         <div className={`query-pane-restapi-tabs`}>
           <Tabs
             theme={this.props.darkMode ? 'monokai' : 'default'}
@@ -201,7 +205,7 @@ class Restapi extends React.Component {
             setBodyToggle={this.onBodyToggleChanged}
           />
         </div>
-      </>
+      </div>
     );
   }
 }

@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import 'codemirror/theme/base16-light.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/hint/show-hint';
-import 'codemirror/addon/search/match-highlighter';
-import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Tab, ListGroup, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
-const noop = () => {};
 
 const defaultValue = {
   javascript: `// write your code here
@@ -230,7 +224,6 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
                 onChange={(value) => changeOption('transformation', value)}
                 componentName="transformation"
                 cyLabel="transformation-input"
-                callgpt={noop}
                 isCopilotEnabled={false}
               />
             </div>
