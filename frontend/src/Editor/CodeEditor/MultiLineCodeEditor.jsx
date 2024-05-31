@@ -42,6 +42,7 @@ const MultiLineCodeEditor = (props) => {
     showPreview,
     paramLabel = '',
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
+    readOnly = false,
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
@@ -252,6 +253,7 @@ const MultiLineCodeEditor = (props) => {
                 }}
                 className={`codehinter-multi-line-input`}
                 indentWithTab={true}
+                readOnly={readOnly}
               />
             </div>
             {showPreview && (

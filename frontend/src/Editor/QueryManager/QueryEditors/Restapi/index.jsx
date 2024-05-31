@@ -141,7 +141,7 @@ class Restapi extends React.Component {
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
-      <div className={`d-flex`}>
+      <div className={`d-flex flex-column`}>
         {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
         <div className="flex-grow-1 overflow-hidden">
           <div className="rest-api-methods-select-element-container">

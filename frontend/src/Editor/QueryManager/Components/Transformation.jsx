@@ -169,67 +169,66 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
         </div>
       </div>
       <br />
-      <div className="d-flex copilot-codehinter-wrap">
-        <div className="form-label"></div>
+      <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
+        {/* <div className="form-label"></div> */}
         <div className="col flex-grow-1">
-          {enableTransformation && (
-            <div style={{ borderRadius: '6px', marginBottom: '20px', background: darkMode ? '#272822' : '#F8F9FA' }}>
-              <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
-                <Tab.Container
-                  activeKey={lang}
-                  onSelect={(value) => {
-                    setLang(value);
-                    changeOption('transformationLanguage', value);
-                    changeOption('transformation', state[value]);
-                  }}
-                  defaultActiveKey="javascript"
-                >
-                  <Row className="m-0">
-                    <Col className="keys text-center d-flex align-items-center">
-                      <ListGroup
-                        className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
-                        variant="flush"
-                        style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
-                      >
-                        {['JavaScript', 'Python'].map((tab) => (
-                          <ListGroup.Item
-                            key={tab}
-                            eventKey={tab.toLowerCase()}
-                            style={{ minWidth: '74px', textAlign: 'center' }}
+          <div style={{ borderRadius: '6px', marginBottom: '20px', background: darkMode ? '#272822' : '#F8F9FA' }}>
+            <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
+              <Tab.Container
+                activeKey={lang}
+                onSelect={(value) => {
+                  setLang(value);
+                  changeOption('transformationLanguage', value);
+                  changeOption('transformation', state[value]);
+                }}
+                defaultActiveKey="javascript"
+              >
+                <Row className="m-0">
+                  <Col className="keys text-center d-flex align-items-center">
+                    <ListGroup
+                      className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
+                      variant="flush"
+                      style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
+                    >
+                      {['JavaScript', 'Python'].map((tab) => (
+                        <ListGroup.Item
+                          key={tab}
+                          eventKey={tab.toLowerCase()}
+                          style={{ minWidth: '74px', textAlign: 'center' }}
+                          className="rounded"
+                          disabled={!enableTransformation}
+                        >
+                          <span
+                            data-cy={`preview-tab-${tab.toLowerCase()}`}
                             className="rounded"
-                            disabled={!enableTransformation}
+                            style={{ width: '100%' }}
                           >
-                            <span
-                              data-cy={`preview-tab-${tab.toLowerCase()}`}
-                              className="rounded"
-                              style={{ width: '100%' }}
-                            >
-                              {tab}
-                            </span>
-                          </ListGroup.Item>
-                        ))}
-                      </ListGroup>
-                    </Col>
-                  </Row>
-                </Tab.Container>
-              </div>
-              <div className="codehinter-border-bottom mx-3"></div>
-              <CodeHinter
-                type="multiline"
-                initialValue={state[lang] ?? ''}
-                lang={lang}
-                lineNumbers={true}
-                height={400}
-                className="query-hinter"
-                onChange={(value) => changeOption('transformation', value)}
-                componentName={`transformation`}
-                cyLabel={'transformation-input'}
-                callgpt={noop}
-                isCopilotEnabled={false}
-                delayOnChange={false}
-              />
+                            {tab}
+                          </span>
+                        </ListGroup.Item>
+                      ))}
+                    </ListGroup>
+                  </Col>
+                </Row>
+              </Tab.Container>
             </div>
-          )}
+            <div className="codehinter-border-bottom mx-3"></div>
+            <CodeHinter
+              type="multiline"
+              initialValue={state[lang] ?? ''}
+              lang={lang}
+              lineNumbers={true}
+              height={400}
+              className="query-hinter"
+              onChange={(value) => changeOption('transformation', value)}
+              componentName={`transformation`}
+              cyLabel={'transformation-input'}
+              callgpt={noop}
+              isCopilotEnabled={false}
+              delayOnChange={false}
+              readOnly={!enableTransformation}
+            />
+          </div>
         </div>
       </div>
     </div>

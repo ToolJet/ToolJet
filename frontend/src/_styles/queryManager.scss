@@ -1149,15 +1149,17 @@ $border-radius: 4px;
       border: 1px solid var(--slate5);
     }
 
-    .query-preview-list-group{
+    .query-preview-list-group {
       border-radius: 6px;
       background: var(#CCD1D54D, rgba(204, 209, 213, 0.30));
       box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.06) inset;
     }
-    .list-group-item{
+
+    .list-group-item {
       border-radius: 5px;
       min-width: 59px !important;
-      &.active{
+
+      &.active {
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
         color: #000 !important;
       }
@@ -1800,4 +1802,8 @@ $border-radius: 4px;
 
 .preview-header {
   // border-top: 20px solid red;
+}
+
+.read-only-codehinter {
+  opacity: 0.4;
 }
