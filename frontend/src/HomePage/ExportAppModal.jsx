@@ -12,6 +12,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   const [versionId, setVersionId] = useState(undefined);
   const [exportTjDb, setExportTjDb] = useState(true);
   const [currentVersion, setCurrentVersion] = useState(undefined);
+  const [versionSelectLoading, setVersionSelectLoading] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -39,7 +40,9 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
 
   useEffect(() => {
     async function fetchAppTables() {
-      setLoading(true);
+      //Removed Main loader on selecting diff version
+      // setLoading(true);
+      setVersionSelectLoading(true);
       try {
         if (!versionId) return;
         const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
@@ -75,7 +78,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         });
         closeModal();
       }
-      setLoading(false);
+      // setLoading(false);
+      setVersionSelectLoading(false);
     }
     fetchAppTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -209,7 +213,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               Export All
             </ButtonSolid>
             <ButtonSolid
-              className="import-export-footer-btns"
+              className={`import-export-footer-btns ${versionSelectLoading ? 'btn-loading' : ''}`}
               data-cy="export-selected-version-button"
               onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
