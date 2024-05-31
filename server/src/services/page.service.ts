@@ -174,14 +174,18 @@ export class PageService {
         })
       );
 
-      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+      const hasParentIdSuffixed = (component, allComponents = [], componentParentId = undefined) => {
         if (componentParentId) {
           const parentId = component?.parent?.split('-').slice(0, -1).join('-');
 
           const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
           if (parentComponent) {
-            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+            return (
+              parentComponent.type === 'Tabs' ||
+              parentComponent.type === 'Calendar' ||
+              parentComponent.type === 'Kanban'
+            );
           }
         }
 
@@ -191,9 +195,9 @@ export class PageService {
       for (const component of clonedComponents) {
         let parentId = component.parent ? component.parent : null;
 
-        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+        const isParentIdSuffixed = hasParentIdSuffixed(component, pageComponents, parentId);
 
-        if (isParentTabOrCalendar) {
+        if (isParentIdSuffixed) {
           const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
           const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
           const mappedParentId = componentsIdMap[_parentId];

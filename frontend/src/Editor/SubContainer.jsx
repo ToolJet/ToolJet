@@ -80,7 +80,7 @@ export const SubContainer = ({
       setContainerCanvasWidth(canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef, getContainerCanvasWidth(), listmode]);
+  }, [parentRef, getContainerCanvasWidth(), listmode, parentComponent?.definition?.properties?.size?.value]); // Listen for changes to the modal size and update the subcontainer state with the new grid width.
 
   zoomLevel = zoomLevel || 1;
 
