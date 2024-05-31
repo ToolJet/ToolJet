@@ -11,7 +11,7 @@ import {
   isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isArray, isEmpty } from 'lodash';
+import _, { isArray, isEmpty, set } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -1296,10 +1296,6 @@ export function runQuery(
             });
             resolve(data);
             onEvent(_self, 'onDataQueryFailure', queryEvents);
-            if (mode !== 'view') {
-              const err = query.kind == 'tooljetdb' ? data?.error || data : data;
-              toast.error(err?.message ? err?.message : 'Something went wrong');
-            }
             return;
           } else {
             let rawData = data.data;
@@ -1334,6 +1330,7 @@ export function runQuery(
                 });
                 resolve(finalData);
                 onEvent(_self, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
                 return;
               }
             }
