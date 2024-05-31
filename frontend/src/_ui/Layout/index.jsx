@@ -36,7 +36,6 @@ function Layout({
   );
   fetchWhiteLabelDetails();
   const whiteLabelLogo = retrieveWhiteLabelLogo();
-  console.log(whiteLabelLogo, 'logo');
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const canAnyGroupPerformAction = (action, permissions) => {

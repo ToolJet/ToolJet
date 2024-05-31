@@ -60,7 +60,7 @@ import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import {fetchAndSetWindowTitle, pageTitles} from '@white-label/whiteLabelling';
+import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -587,7 +587,7 @@ class ViewerComponent extends React.Component {
           isLoading: false,
         });
       });
-    };
+  };
 
   setAppDefinitionFromVersion = (data) => {
     this.setState({

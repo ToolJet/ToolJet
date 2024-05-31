@@ -2734,9 +2734,6 @@ hr {
   }
 }
 
-
-
-
 .CodeMirror-placeholder {
   color: #9e9e9e !important;
   font-size: 0.7rem !important;
@@ -9922,6 +9919,11 @@ tbody {
   margin-right: 22px;
   margin-left: 5px;
   color: var(--slate12);
+  cursor: pointer;
+}
+
+.workspace-status-badge {
+  padding: 3px !important;
 }
 
 .worskpace-setting-table-gap {
@@ -14641,12 +14643,12 @@ tbody {
   }
 }
 
-.add-datasource-btn-workflows{
-  width:195px;
-  margin-top:8px;
-  position:sticky;
-  bottom:0;
-  font-size:12px;
+.add-datasource-btn-workflows {
+  width: 195px;
+  margin-top: 8px;
+  position: sticky;
+  bottom: 0;
+  font-size: 12px;
 }
 
 .react-flow__panel {
@@ -14691,20 +14693,25 @@ tbody {
 .canvas-container {
   scrollbar-color: transparent;
   scrollbar-width: thin;
+
   &::-webkit-scrollbar {
     background-color: transparent;
     width: 6px;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-track {
     background-color: transparent;
     scrollbar-width: thin;
   }
+
   &::-webkit-scrollbar-thumb {
     background-color: transparent;
   }
-  &:hover{
+
+  &:hover {
     scrollbar-color: #6a727c80;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c80 !important;
     }
@@ -14712,13 +14719,15 @@ tbody {
 }
 
 .jet-listview {
-  &:hover{
+  &:hover {
     scrollbar-color: #6a727c80;
+
     &::-webkit-scrollbar-thumb {
       background-color: #6a727c80 !important;
     }
   }
 }
+
 .git-sync-modal,
 .modal-base {
 

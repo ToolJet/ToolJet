@@ -75,9 +75,18 @@ export function Authorize({ navigate }) {
   const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then((response) => {
-        const { redirect_url, ...restResponse } = response;
+      .then(({ redirect_url, ...restResponse }) => {
         const { organization_id, current_organization_id, email } = restResponse;
+
+        const event = `${redirect_url ? 'signup' : 'signin'}_${
+          router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
+        }`;
+        initPosthog(restResponse);
+        posthog.capture(event, {
+          email,
+          workspace_id: organization_id || current_organization_id,
+        });
+
         if (redirect_url) {
           localStorage.setItem('ph-sso-type', router.query.origin); //for posthog event
           window.location.href = redirect_url;

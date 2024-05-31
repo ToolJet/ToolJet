@@ -376,6 +376,7 @@ export class AuthService {
           userParams,
           existingUser,
           signingUpOrganization,
+          response,
           redirectTo,
           manager
         );
@@ -387,6 +388,7 @@ export class AuthService {
     userParams: { email: string; password: string; firstName: string; lastName: string },
     existingUser: User,
     signingUpOrganization: Organization = null,
+    response?: Response,
     redirectTo?: string,
     manager?: EntityManager
   ) => {
@@ -416,6 +418,16 @@ export class AuthService {
       );
       await this.organizationsService.updateOwner(personalWorkspace.id, user.id, manager);
       await this.organizationUsersService.create(user, personalWorkspace, true, manager);
+
+      if (!existingUser) {
+        void this.licenseService.createCRMUser({
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        });
+      }
+
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUsersService.create(user, signingUpOrganization, true, manager);
@@ -433,7 +445,6 @@ export class AuthService {
             redirectTo
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
-
         await this.auditLoggerService.perform(
           {
             userId: user.id,
@@ -1179,6 +1190,8 @@ export class AuthService {
         currentOrganizationId,
         currentOrganizationSlug: organizationDetails?.slug,
         currentOrganizationName: organizationDetails.name,
+        //for knowing the user is new or old one [posthog telemetry]
+        createdAt: user.createdAt,
         ...(appData && { appData }),
       });
     });

@@ -1,8 +1,8 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { Link, Navigate } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
+import { Link, Navigate } from 'react-router-dom';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';

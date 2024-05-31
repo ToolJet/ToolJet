@@ -16,7 +16,12 @@ import { buildURLWithQuery } from '@/_helpers/utils';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
 import { setCookie } from '@/_helpers/cookie';
-import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
+import {
+  retrieveWhiteLabelText,
+  setFaviconAndTitle,
+  checkWhiteLabelsDefaultState,
+  defaultWhiteLabellingSettings,
+} from '@white-label/whiteLabelling';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -29,7 +34,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
   const { t } = useTranslation();
   const [defaultState, setDefaultState] = useState(false);
 
@@ -43,6 +47,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const redirectTo = searchParams.get('redirectTo');
   const navigate = useNavigate();
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const setRedirectUrlToCookie = () => {
     const params = new URL(window.location.href).searchParams;
@@ -93,7 +98,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
             setIsGettingConfigs(false);
             setConfigs(configs);
             setFaviconAndTitle(null, null, location);
-            setWhiteLabelText(retrieveWhiteLabelText());
           },
           () => {
             setIsGettingConfigs(false);

@@ -5,6 +5,8 @@ import Spinner from '@/_ui/Spinner';
 import cx from 'classnames';
 import { ToolTip } from '@/_components';
 import SSO from './icons/SSO';
+import { authenticationService } from '@/_services';
+import { authHeader } from '@/_helpers';
 
 export default function OIDCSSOLoginButton({
   configId,
@@ -22,9 +24,13 @@ export default function OIDCSSOLoginButton({
     setRedirectUrlToCookie && setRedirectUrlToCookie();
     setSignupOrganizationDetails && setSignupOrganizationDetails();
     setLoading(true);
+
+    const organizationId =
+      authenticationService.getSignupOrganizationId() || authenticationService.getLoginOrganizationId();
     fetch(`${config.apiUrl}/oauth/openid/configs${configId ? `/${configId}` : ''}`, {
       method: 'GET',
       credentials: 'include',
+      headers: authHeader(false, organizationId),
     })
       .then((res) => res.json())
       .then((json) => {

@@ -35,10 +35,10 @@ import { LicenseService } from '@services/license.service';
 import { LdapService } from './ldap.service';
 import { SAMLService } from './saml.service';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
-import { InstanceSSOConfigMap } from '@services/organizations.service';
-import { INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
 const uuid = require('uuid');
+import { InstanceSSOConfigMap } from '@services/organizations.service';
+import { INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class OauthService {

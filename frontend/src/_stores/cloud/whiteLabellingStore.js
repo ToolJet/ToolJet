@@ -32,7 +32,6 @@ export const useWhiteLabellingStore = create(
             whiteLabellingService
               .get(null, organizationId)
               .then((settings) => {
-                console.log(settings, 'here see 2');
                 set({
                   whiteLabelText:
                     settings[whiteLabellingOptions.WHITE_LABEL_TEXT] || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,

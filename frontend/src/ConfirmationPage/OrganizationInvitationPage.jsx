@@ -6,7 +6,7 @@ import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
-import { retrieveWhiteLabelText, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelText, setFaviconAndTitle, retrieveWhiteLabelFavicon } from '@white-label/whiteLabelling';
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -23,11 +23,13 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
     this.source = new URLSearchParams(props?.location?.search).get('source');
   }
+  whiteLabelText = retrieveWhiteLabelText();
+  whiteLabelFavicon = retrieveWhiteLabelFavicon();
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
+    setFaviconAndTitle(this.whiteLabelText, this.whiteLabelFavicon, this.props?.location);
     document.addEventListener('keydown', this.handleEnterKey);
-    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
   }
 
   handleEnterKey = (e) => {
@@ -80,7 +82,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                       Join {organizationName ? organizationName : whiteLabelText}
                     </h2>
 
-                    <div className="invite-sub-header" data-cy="invite-page-sub-header">
+                    <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
                       {`You are invited to ${
                         organizationName
                           ? `a workspace ${organizationName}. Accept the invite to join the workspace.`

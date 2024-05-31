@@ -3,7 +3,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '@/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
-import { Pagination } from '@/_components';
+import { Pagination, ToolTip } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
@@ -160,20 +160,22 @@ const UsersTable = ({
                       {user.status && (
                         <td className="text-muted">
                           <span
-                            className={cx('badge', {
-                              'tj-invited': user.status === 'invited',
+                            className={cx('badge workspace-status-badge', {
+                              'tj-invited': user.status === 'invited' || user.status === 'requested',
                               'tj-archive': user.status === 'archived',
                               'tj-active': user.status === 'active',
                             })}
                             data-cy="status-badge"
                           ></span>
-                          <small
-                            className="workspace-user-status tj-text-sm text-capitalize"
-                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-status`}
-                          >
-                            {user.status}
-                          </small>
-                          {user.status === 'invited' && 'invitation_token' in user ? (
+                          <ToolTip message={user.status_tooltip} show={!!user.status_tooltip}>
+                            <small
+                              className="workspace-user-status tj-text-sm text-capitalize"
+                              data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-status`}
+                            >
+                              {user.status}
+                            </small>
+                          </ToolTip>
+                          {(user.status === 'invited' || user.status === 'requested') && 'invitation_token' in user ? (
                             <div className="workspace-clipboard-wrap">
                               <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                                 <span>

@@ -28,7 +28,6 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   const [isSkipLoading, setSkipLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [trialErrorMessage, setShowTrialErrorMessage] = useState('');
-  const [whiteLabelText, setWhiteLabelText] = useState('');
   const [formData, setFormData] = useState({
     companyName: '',
     role: '',
@@ -37,6 +36,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     requestedTrial: false,
   });
   const source = new URLSearchParams(location?.search).get('source');
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const pageProps = {
     formData,
@@ -49,9 +49,6 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   };
 
   useEffect(() => {
-    retrieveWhiteLabelText().then((labelText) => {
-      setWhiteLabelText(labelText);
-    });
     if (completed) {
       authenticationService
         .onboarding({

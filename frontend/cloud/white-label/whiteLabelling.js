@@ -76,12 +76,14 @@ export const pageTitles = {
 // to set favicon and title from router for individual pages
 export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location) {
   if (!whiteLabelFavicon || !whiteLabelText) {
-    const { actions } = useWhiteLabellingStore.getState();
-    try {
-      await actions.fetchWhiteLabelDetails();
-    } catch (error) {
-      console.error('Unable to update white label settings', error);
-    }
+    const { actions, isWhiteLabelDetailsFetched } = useWhiteLabellingStore.getState();
+    if (!isWhiteLabelDetailsFetched){
+      try {
+        await actions.fetchWhiteLabelDetails();
+      } catch (error) {
+        console.error('Unable to update white label settings', error);
+      }
+  }
     whiteLabelFavicon = await retrieveWhiteLabelFavicon();
     whiteLabelText = await retrieveWhiteLabelText();
   }

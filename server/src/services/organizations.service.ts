@@ -439,6 +439,14 @@ export class OrganizationsService {
       .getMany();
 
     return organizationUsers?.map((orgUser) => {
+      const status =
+        orgUser.user.invitationToken && orgUser.status !== WORKSPACE_USER_STATUS.ARCHIVED
+          ? 'requested'
+          : orgUser.status;
+      const statusTooltipMessages = {
+        requested: 'Requested sign-up & invite to workspace',
+        invited: 'Invited to the workspace',
+      };
       return {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName ?? '',
@@ -447,7 +455,8 @@ export class OrganizationsService {
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
-        status: orgUser.status,
+        status,
+        statusTooltip: statusTooltipMessages[status],
         avatarId: orgUser.user.avatarId,
         groups: orgUser.user.groupPermissions.map((groupPermission) => groupPermission.group),
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
