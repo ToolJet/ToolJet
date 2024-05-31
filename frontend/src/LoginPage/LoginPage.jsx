@@ -2,7 +2,7 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
-import { validateEmail, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { validateEmail } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
@@ -19,6 +19,7 @@ import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import cx from 'classnames';
 import SSOLoginModule from './SSOLoginModule';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -33,11 +34,9 @@ class LoginPageComponent extends React.Component {
     this.paramOrganizationSlug = props?.params?.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
+  whiteLabelText = retrieveWhiteLabelText();
 
   componentDidMount() {
-    retrieveWhiteLabelText().then((labelText) => {
-      this.setState({ whiteLabelText: labelText });
-    });
     /* remove login oranization's id and slug from the cookie */
     this.setRedirectUrlToCookie();
 
@@ -148,8 +147,8 @@ class LoginPageComponent extends React.Component {
     const signUpCTA = workspaceSignUpEnabled ? 'Sign up' : 'Create an account';
     const signupText = workspaceSignUpEnabled
       ? this.props.t('loginSignupPage.newToWorkspace', `New to this workspace?`)
-      : this.props.t('loginSignupPage.newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
-          whiteLabelText: retrieveWhiteLabelText(),
+      : this.props.t('loginSignupPage.newToTooljet', ` New to ${this.whiteLabelText}?`, {
+          whiteLabelText: this.whiteLabelText,
         });
     const signUpUrl = `/signup${this.paramOrganizationSlug ? `/${this.paramOrganizationSlug}` : ''}${
       redirectTo ? `?redirectTo=${redirectTo}` : ''

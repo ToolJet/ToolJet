@@ -87,6 +87,7 @@ module.exports = {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
       '@assets': path.resolve(__dirname, 'assets/'),
+      '@white-label': path.resolve(__dirname, 'cloud/white-label'),
     },
   },
   devtool: environment === 'development' ? 'eval-cheap-source-map' : 'hidden-source-map',

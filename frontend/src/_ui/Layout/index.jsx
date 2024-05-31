@@ -16,9 +16,9 @@ import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import Beta from '../Beta';
 import Settings from '@/_components/Settings';
 import './styles.scss';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { useLicenseState, useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
+import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
 function Layout({
   children,
@@ -35,7 +35,9 @@ function Layout({
     }),
     shallow
   );
-  const [whiteLabelLogo, setWhiteLabelLogo] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_LOGO);
+  fetchWhiteLabelDetails();
+  const whiteLabelLogo = retrieveWhiteLabelLogo();
+  console.log(whiteLabelLogo, 'logo');
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const canAnyGroupPerformAction = (action, permissions) => {
@@ -72,22 +74,6 @@ function Layout({
 
   useEffect(() => {
     useLicenseStore.getState().actions.fetchFeatureAccess();
-    const fetchData = async () => {
-      const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-      let whiteLabelLogo;
-
-      if (!isWhiteLabelDetailsFetched) {
-        // Fetch white labeling details if not loaded yet
-        try {
-          await actions.fetchWhiteLabelDetails();
-        } catch (error) {
-          console.error('Unable to update white label settings', error);
-        }
-      }
-      whiteLabelLogo = useWhiteLabellingStore.getState().whiteLabelLogo;
-      setWhiteLabelLogo(whiteLabelLogo);
-    };
-    fetchData();
   }, []);
 
   const currentUserValue = authenticationService.currentSessionValue;

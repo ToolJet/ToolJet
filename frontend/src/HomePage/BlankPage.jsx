@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import TemplateLibraryModal from './TemplateLibraryModal';
 import { useTranslation } from 'react-i18next';
 import { authenticationService, appsService } from '@/_services';
@@ -9,6 +7,7 @@ import EmptyIllustration from '@assets/images/no-apps.svg';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -26,11 +25,10 @@ export const BlankPage = function BlankPage({
 }) {
   const { t } = useTranslation();
   const [appsLimit, setAppsLimit] = useState(null);
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
+  const whiteLabelText = retrieveWhiteLabelText();
 
   useEffect(() => {
     fetchAppsLimit();
-    retrieveWhiteLabelText().then(setWhiteLabelText);
   }, []);
 
   const staticTemplates = [

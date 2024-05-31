@@ -1,6 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponseWithoutValidation } from '@/_helpers';
-import { defaultWhiteLabellingSettings, whiteLabellingOptions } from '@/_stores/utils';
+import { defaultWhiteLabellingSettings, whiteLabellingOptions } from '@white-label/whiteLabelling';
 
 export const whiteLabellingService = {
   get,

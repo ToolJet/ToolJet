@@ -3,8 +3,7 @@ import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
-import { retrieveWhiteLabelText } from '../_helpers/utils';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 const Slack = ({
   optionchanged,
@@ -16,12 +15,8 @@ const Slack = ({
   isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
+  const whiteLabelText = retrieveWhiteLabelText();
   const { t } = useTranslation();
-
-  useEffect(() => {
-    retrieveWhiteLabelText().then(setWhiteLabelText);
-  }, []);
 
   function authGoogle() {
     const provider = 'slack';

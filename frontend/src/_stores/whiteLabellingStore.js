@@ -1,5 +1,17 @@
-import { create, zustandDevTools, defaultWhiteLabellingSettings, whiteLabellingOptions } from './utils';
+import { create, zustandDevTools } from './utils';
 import { whiteLabellingService } from '@/_services';
+
+const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'assets/images/rocket.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'assets/images/logo.svg',
+};
+
+const whiteLabellingOptions = {
+  WHITE_LABEL_LOGO: 'App Logo',
+  WHITE_LABEL_TEXT: 'Page Title',
+  WHITE_LABEL_FAVICON: 'Favicon',
+};
 
 const initialState = {
   whiteLabelText: defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,
@@ -20,6 +32,7 @@ export const useWhiteLabellingStore = create(
             whiteLabellingService
               .get(null, organizationId)
               .then((settings) => {
+                console.log(settings, 'here see 2');
                 set({
                   whiteLabelText:
                     settings[whiteLabellingOptions.WHITE_LABEL_TEXT] || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,

@@ -12,14 +12,12 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@/_helpers/utils';
+import { buildURLWithQuery } from '@/_helpers/utils';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
 import { setCookie } from '@/_helpers/cookie';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
-
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [verifiedToken, setVerifiedToken] = useState(false);
@@ -32,7 +30,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
   const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
-  const [whiteLabelFavicon, setWhiteLabelFavicon] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON);
   const { t } = useTranslation();
   const [defaultState, setDefaultState] = useState(false);
 
@@ -95,9 +92,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
-            const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
-            setWhiteLabelFavicon(whiteLabelFavicon);
-            setWhiteLabelText(whiteLabelText);
+            setFaviconAndTitle(null, null, location);
+            setWhiteLabelText(retrieveWhiteLabelText());
           },
           () => {
             setIsGettingConfigs(false);
@@ -111,10 +107,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
-  }, [whiteLabelFavicon, whiteLabelText, location]);
 
   useEffect(() => {
     const keyDownHandler = (event) => {

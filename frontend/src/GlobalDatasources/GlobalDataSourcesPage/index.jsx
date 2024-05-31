@@ -21,7 +21,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { canDeleteDataSource } from '@/_helpers';
-import { fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { ToolTip } from '@/_components/ToolTip';
 
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {

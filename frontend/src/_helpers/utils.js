@@ -13,7 +13,6 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { validateMultilineCode } from './utility';
 
 const reservedKeyword = ['app', 'window'];
@@ -37,23 +36,6 @@ export function findProp(obj, prop, defval) {
     }
   }
   return obj;
-}
-
-export async function checkWhiteLabelsDefaultState(organizationId = null) {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  if (!isWhiteLabelDetailsFetched) {
-    try {
-      await actions.fetchWhiteLabelDetails(organizationId);
-    } catch (error) {
-      console.error('Unable to update white label settings', error);
-    }
-  }
-  const { whiteLabelText, whiteLabelFavicon, whiteLabelLogo } = useWhiteLabellingStore.getState();
-  return (
-    (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
-    (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
-    (!whiteLabelFavicon || whiteLabelFavicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
-  );
 }
 
 export function stripTrailingSlash(str) {
@@ -732,118 +714,6 @@ export const hightlightMentionedUserInComment = (comment) => {
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
 
-export const retrieveWhiteLabelText = async (organizationId = null) => {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  if (!isWhiteLabelDetailsFetched) {
-    try {
-      await actions.fetchWhiteLabelDetails(organizationId);
-    } catch (error) {
-      console.error('Unable to update white label settings', error);
-    }
-  }
-
-  const { whiteLabelText } = useWhiteLabellingStore.getState();
-  return whiteLabelText;
-};
-
-export const pageTitles = {
-  INSTANCE_SETTINGS: 'Settings',
-  WORKSPACE_SETTINGS: 'Workspace settings',
-  INTEGRATIONS: 'Marketplace',
-  WORKFLOWS: 'Workflows',
-  DATABASE: 'Database',
-  DATA_SOURCES: 'Data sources',
-  AUDIT_LOGS: 'Audit logs',
-  ACCOUNT_SETTINGS: 'Profile settings',
-  SETTINGS: 'Profile settings',
-  EDITOR: 'Editor',
-  WORKFLOW_EDITOR: 'workflowEditor',
-  VIEWER: 'Viewer',
-  DASHBOARD: 'Dashboard',
-  WORKSPACE_CONSTANTS: 'Workspace constants',
-};
-
-// to set favicon and title from router for individual pages
-export const setFaviconAndTitle = (whiteLabelFavicon, whiteLabelText, location) => {
-  // Set favicon
-  let links = document.querySelectorAll("link[rel='icon']");
-  if (links.length === 0) {
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    link.type = 'image/svg+xml';
-    document.getElementsByTagName('head')[0].appendChild(link);
-    links = [link];
-  }
-  links.forEach((link) => {
-    link.href = `${whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON}`;
-  });
-  // Set title
-  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  const pathToTitle = {
-    'instance-settings': pageTitles.INSTANCE_SETTINGS,
-    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
-    integrations: pageTitles.INTEGRATIONS,
-    workflows: pageTitles.WORKFLOWS,
-    'data-sources': pageTitles.DATA_SOURCES,
-    'audit-logs': pageTitles.AUDIT_LOGS,
-    'account-settings': pageTitles.ACCOUNT_SETTINGS,
-    settings: pageTitles.INSTANCE_SETTINGS,
-    login: '',
-    'forgot-password': '',
-    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
-    setup: '',
-  };
-  const pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path));
-  const pageTitle = pathToTitle[pageTitleKey];
-
-  //For undefined routes
-
-  if (pageTitle === undefined) {
-    document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
-    return;
-  }
-
-  if (pageTitleKey && !isEditorOrViewerGoingToRender) {
-    document.title = pageTitle
-      ? `${decodeEntities(pageTitle)} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
-      : `${decodeEntities(whiteLabelText) || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
-  }
-};
-
-export const fetchAndSetWindowTitle = async (pageDetails) => {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  let whiteLabelText;
-
-  // Only fetch white labeling details if they haven't been fetched yet
-  if (!isWhiteLabelDetailsFetched) {
-    try {
-      await actions.fetchWhiteLabelDetails();
-    } catch (error) {
-      console.error('Unable to update white label settings', error);
-    }
-  }
-  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
-  let pageTitleKey = pageDetails?.page || '';
-  let pageTitle = '';
-  switch (pageTitleKey) {
-    case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
-      break;
-    }
-    case pageTitles.EDITOR:
-    case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
-      break;
-    }
-    default: {
-      pageTitle = pageTitleKey;
-      break;
-    }
-  }
-  document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
-};
-
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   const currentPageId = _ref.currentPageId;
   const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
@@ -1433,49 +1303,6 @@ export const humanizeifDefaultGroupName = (groupName) => {
 
 export const centsToUSD = (amountInCents) => {
   return (amountInCents / 100).toFixed(2);
-};
-
-export const setWindowTitle = async (pageDetails, location) => {
-  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  const pathToTitle = {
-    'instance-settings': pageTitles.INSTANCE_SETTINGS,
-    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
-    integrations: pageTitles.INTEGRATIONS,
-    workflows: pageTitles.WORKFLOWS,
-    database: pageTitles.DATABASE,
-    'data-sources': pageTitles.DATA_SOURCES,
-    'audit-logs': pageTitles.AUDIT_LOGS,
-    'account-settings': pageTitles.ACCOUNT_SETTINGS,
-    settings: pageTitles.SETTINGS,
-    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
-  };
-  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
-  let pageTitleKey = pageDetails?.page || '';
-  let pageTitle = '';
-  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
-    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
-  }
-  switch (pageTitleKey) {
-    case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
-      break;
-    }
-    case pageTitles.EDITOR:
-    case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
-      break;
-    }
-    default: {
-      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
-      break;
-    }
-  }
-  if (pageTitle) {
-    document.title = !(pageDetails?.preview === false)
-      ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
-      : `${decodeEntities(pageTitle)}`;
-  }
 };
 
 //For <>& UI display issues

@@ -6,7 +6,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import posthog from 'posthog-js';
 import _, { debounce } from 'lodash';
-import { retrieveWhiteLabelText, validateName } from '@/_helpers/utils';
+import { validateName } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes';
@@ -15,11 +15,13 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
     this.isUserAdmin = authenticationService.currentSessionValue?.admin;
+    this.whiteLabelText = retrieveWhiteLabelText();
 
     this.state = {
       showModal: false,
@@ -52,9 +54,6 @@ class ManageAppUsersComponent extends React.Component {
   componentDidMount() {
     const appId = this.props.appId;
     this.setState({ appId });
-    retrieveWhiteLabelText().then((labelText) => {
-      this.setState({ whiteLabelText: labelText });
-    });
   }
 
   hideModal = () => {
@@ -174,12 +173,12 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, appId, isSlugVerificationInProgress, newSlug, isSlugUpdated, whiteLabelText } = this.state;
+    const { isLoading, appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
-    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
+    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     const shouldShowShareModal = this.props.isVersionReleased
       ? this.props.multiEnvironmentEnabled

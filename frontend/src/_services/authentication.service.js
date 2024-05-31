@@ -11,7 +11,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
 import { getRedirectTo, getRedirectToWithParams } from '@/_helpers/routes';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -175,10 +175,7 @@ async function getOrganizationConfigs(organizationId) {
     headers: { 'Content-Type': 'application/json' },
   };
   try {
-    const { actions } = useWhiteLabellingStore.getState();
-    if (organizationId) {
-      await actions.fetchWhiteLabelDetails(organizationId);
-    }
+    await fetchWhiteLabelDetails(organizationId);
     const organizationPath = organizationId ? `${organizationId}/` : '';
     const response = await fetch(`${config.apiUrl}/organizations/${organizationPath}public-configs`, requestOptions);
     const configs = await handleResponse(response);

@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { setFaviconAndTitle } from '@/_helpers/utils';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import {
@@ -58,13 +57,13 @@ import { CustomStylesEditor } from '@/CustomStylesEditor';
 import LdapLoginPage from '../LdapLogin';
 import { Settings } from '@/Settings';
 import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { SubscriptionKey } from '@/ManageLicenseKey/SubscriptionKey';
 import InstanceLogin from '@/ManageInstanceSettings/InstanceLogin';
 import { ManageWorkspaceArchivePageComponent } from '@/_ui/ManageWorkspaceArchive/ManageWorspaceArchivePage';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { SuperadminLoginPage } from '@/LoginPage/SuperadminLoginPage';
 import { OpenIdLoginPage } from '@/LoginPage/OpenId';
+import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -159,20 +158,6 @@ class AppComponent extends React.Component {
     initPosthog(currentUser);
   }
 
-  fetchAndSetWhiteLabelDetails = async () => {
-    const { actions } = useWhiteLabellingStore.getState();
-
-    // Fetch white labeling details
-    try {
-      await actions.fetchWhiteLabelDetails();
-    } catch (error) {
-      console.error('Unable to fetch white label settings', error);
-    }
-    const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
-    // Set favicon and title
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, this.props.location);
-  };
-
   componentDidMount() {
     authorizeWorkspace();
     this.fetchMetadata();
@@ -182,7 +167,7 @@ class AppComponent extends React.Component {
       ++this.counter;
       const current_user = authenticationService.currentSessionValue?.current_user;
       if (current_user?.id) {
-        this.fetchAndSetWhiteLabelDetails();
+        setFaviconAndTitle(null, null, this.props.location);;
         this.initTelemetryAndSupport(current_user);
         clearInterval(this.interval);
       } else if (this.counter > 10) {

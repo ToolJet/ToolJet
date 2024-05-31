@@ -2,7 +2,7 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
-import { validateEmail, checkWhiteLabelsDefaultState } from '../_helpers/utils';
+import { validateEmail } from '../_helpers/utils';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
@@ -17,6 +17,7 @@ import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils
 import { isEmpty } from 'lodash';
 import { EmailComponent } from './EmailComponent';
 import SSOLoginModule from '@/LoginPage/SSOLoginModule';
+import { checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);

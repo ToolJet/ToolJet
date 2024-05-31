@@ -46,7 +46,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, isValidUUID, fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
+import { getWorkspaceId, isValidUUID } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -60,7 +60,6 @@ import {
   computeComponentPropertyDiff,
   findAllEntityReferences,
   isParamFromTableColumn,
-  defaultWhiteLabellingSettings,
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import GitSyncModal from './GitSyncModal';
@@ -91,6 +90,7 @@ import {
 } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 setAutoFreeze(false);
 enablePatches();

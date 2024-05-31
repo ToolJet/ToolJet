@@ -29,7 +29,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, fetchAndSetWindowTitle, pageTitles, isValidUUID } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, isValidUUID } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -60,6 +60,7 @@ import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import {fetchAndSetWindowTitle, pageTitles} from '@white-label/whiteLabelling';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
