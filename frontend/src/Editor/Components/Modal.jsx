@@ -46,8 +46,8 @@ export const Modal = function Modal({
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
   const isInitialRender = useRef(true);
-
   const title = properties.title ?? '';
+  const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
@@ -247,6 +247,7 @@ export const Modal = function Modal({
           parentRef,
           id,
           title,
+          titleAlignment,
           hideTitleBar,
           hideCloseButton,
           hideModal,
@@ -284,6 +285,7 @@ const Component = ({ children, ...restProps }) => {
     parentRef,
     id,
     title,
+    titleAlignment,
     hideTitleBar,
     hideCloseButton,
     hideModal,
@@ -306,7 +308,14 @@ const Component = ({ children, ...restProps }) => {
       )}
       {!hideTitleBar && (
         <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
-          <BootstrapModal.Title id="contained-modal-title-vcenter" data-cy={`modal-title`}>
+          <BootstrapModal.Title
+            style={{
+              textAlign: titleAlignment,
+              width: '100%',
+            }}
+            id="contained-modal-title-vcenter"
+            data-cy={`modal-title`}
+          >
             {title}
           </BootstrapModal.Title>
           {!hideCloseButton && (
