@@ -1,8 +1,10 @@
 import React from 'react';
 
-export const Divider = function Divider({ styles, dataCy, height, width }) {
+export const Divider = function Divider({ styles, dataCy, height, width, darkMode }) {
   const { visibility, dividerColor, boxShadow } = styles;
-  const color = dividerColor ?? '#E7E8EA';
+
+  const color =
+    dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
   return (
     <div
       className="row"
@@ -10,7 +12,7 @@ export const Divider = function Divider({ styles, dataCy, height, width }) {
       data-cy={dataCy}
     >
       <div
-        className="col-6 border-top"
+        className="col-6"
         style={{ height: '1px', width, backgroundColor: color, padding: '0rem', marginLeft: '0.5rem', boxShadow }}
       ></div>
     </div>
