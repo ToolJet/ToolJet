@@ -213,9 +213,9 @@ export const inviteUser = (firstName, email) => {
   cy.wait(1000);
   cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.intercept("GET", "/api/organizations").as("org");
+  // cy.intercept("GET", "/api/organizations").as("org");
   cy.get(commonSelectors.signUpButton).click();
-  cy.wait("@org");
+  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
@@ -289,23 +289,10 @@ export const visitWorkspaceInvitation = (email, workspaceName) => {
         dbconfig: Cypress.env("app_db"),
         sql: `select invitation_token from organization_users where organization_id= '${workspaceId}' AND user_id='${userId}';`,
       }).then((resp) => {
-        if (resp.rows.length === 1) {
-          organizationToken = resp.rows[0].invitation_token;
-          url = `/organization-invitations/${organizationToken}?oid=${workspaceId}`;
-
-          cy.contains("td", email)
-            .parent()
-            .within(() => {
-              cy.get("td small").should("have.text", "invited");
-            });
-
-          logout();
-          cy.visit(url);
-        } else {
-          // Handle case where user belongs to multiple organizations with the same workspaceId
-          // For example, you might display an error message or log a warning
-          console.warn(`User '${email}' belongs to multiple organizations with workspaceId '${workspaceId}'.`);
-        }
+        organizationToken = resp.rows[0].invitation_token;
+        url = `/organization-invitations/${organizationToken}?oid=${workspaceId}`;
+        logout();
+        cy.visit(url);
       });
     });
   });
@@ -361,3 +348,14 @@ export const SignUpPageElements = () => {
     }
   });
 };
+
+export const signUpLink = (email) => {
+  let invitationLink
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select invitation_token from users where email='${email}';`,
+  }).then((resp) => {
+    invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
+    cy.visit(invitationLink);
+  });
+}

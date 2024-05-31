@@ -8,11 +8,12 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
+import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 
@@ -160,6 +161,8 @@ const DynamicForm = ({
         return ConditionFilter;
       case 'sorts':
         return CondtionSort;
+      case 'react-component-salesforce':
+        return Salesforce;
       default:
         return <div>Type is invalid</div>;
     }
@@ -190,6 +193,7 @@ const DynamicForm = ({
     className,
     controller,
     encrypted,
+    editorType = 'basic',
     placeholders = {},
   }) => {
     const source = schema?.source?.kind;
@@ -297,6 +301,7 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
+      case 'react-component-salesforce':
         return {
           optionchanged,
           createDataSource,
@@ -318,23 +323,23 @@ const DynamicForm = ({
         };
       case 'codehinter':
         return {
+          type: editorType,
           currentState,
           initialValue: options[key]
             ? typeof options[key] === 'string'
               ? options[key]
               : JSON.stringify(options[key])
             : initialValue,
-          mode,
+          lang: mode,
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
-          theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          ignoreBraces,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          delayOnChange: false,
         };
       case 'react-component-openapi-validator':
         return {
@@ -485,6 +490,7 @@ const DynamicForm = ({
                   'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                   'w-100': isHorizontalLayout && type !== 'codehinter',
                 })}
+                style={{ width: '100%' }}
               >
                 <Element
                   {...getElementProps(obj[key])}
