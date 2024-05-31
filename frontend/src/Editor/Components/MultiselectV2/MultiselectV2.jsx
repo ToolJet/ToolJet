@@ -163,29 +163,37 @@ export const MultiselectV2 = ({
       'selectedOptions',
       selected.map(({ label, value }) => ({ label, value }))
     );
-    setExposedVariable('label', label);
     setExposedVariable('options', selectOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selected), label, selectOptions]);
+  }, [JSON.stringify(selected), selectOptions]);
 
   useEffect(() => {
+    setExposedVariable('label', label);
     setExposedVariable('isVisible', properties.visibility);
     setExposedVariable('isLoading', multiSelectLoadingState);
     setExposedVariable('isDisabled', disabledState);
     setExposedVariable('isMandatory', isMandatory);
+    setExposedVariable('isValid', isValid);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, multiSelectLoadingState, disabledState, isMandatory]);
+  }, [label, properties.visibility, multiSelectLoadingState, disabledState, isMandatory, isValid]);
 
   useEffect(() => {
-    setExposedVariable('setVisibility', async function (value) {
-      setVisibility(value);
-    });
-    setExposedVariable('setLoading', async function (value) {
-      setIsMultiSelectLoading(value);
-    });
-    setExposedVariable('setDisabled', async function (value) {
-      setIsMultiSelectDisabled(value);
-    });
+    const exposedVariables = {
+      clear: async function () {
+        setSelected([]);
+      },
+      setVisibility: async function (value) {
+        setVisibility(value);
+      },
+      setLoading: async function (value) {
+        setIsMultiSelectLoading(value);
+      },
+      setDisable: async function (value) {
+        setIsMultiSelectDisabled(value);
+      },
+    };
+    setExposedVariables(exposedVariables);
   }, []);
 
   useEffect(() => {
@@ -222,12 +230,6 @@ export const MultiselectV2 = ({
         );
         fireEvent('onSelect');
       }
-    });
-
-    // Expose clearSelections
-    setExposedVariable('clear', async function (value) {
-      setSelected([]);
-      fireEvent('onSelect');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, setSelected]);
