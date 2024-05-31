@@ -85,7 +85,7 @@
           "key": "resource_body",
           "type": "codehinter",
           "lineNumbers": true,
-          "placeholder": "{{ {name : “Tooljet”} }}",
+          "placeholder": "{{ {name: “ToolJet”} }}",
           "description": "Enter the resource body",
           "height": "100px"
         }
@@ -105,7 +105,7 @@
           "label": "Resource Body",
           "key": "resource_body",
           "type": "codehinter",
-          "placeholder": "{{ {Id:”0012F3E4R56487900N” , name : “Tooljet”} }}",
+          "placeholder": "{{ {Id:”0012F3E4R56487900N”, name: “ToolJet”} }}",
           "description": "Enter the resource body",
           "height": "100px"
         }
