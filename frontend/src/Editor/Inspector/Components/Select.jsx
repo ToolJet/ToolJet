@@ -197,7 +197,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   useEffect(() => {
     setOptions(constructOptions());
-  }, []);
+  }, [isMultiSelect]);
 
   const _renderOverlay = (item, index) => {
     return (

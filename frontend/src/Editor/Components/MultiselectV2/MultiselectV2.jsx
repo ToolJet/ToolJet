@@ -112,7 +112,11 @@ export const MultiselectV2 = ({
             break;
           }
         }
-        setVisibleElements(selected.slice(0, maxVisibleOptions));
+        if (maxVisibleOptions) {
+          setVisibleElements(selected.slice(0, maxVisibleOptions));
+        } else {
+          setVisibleElements(selected.slice(0, 1));
+        }
         setShowMore(selected.length > maxVisibleOptions);
       }
     };
@@ -153,7 +157,7 @@ export const MultiselectV2 = ({
   };
 
   useEffect(() => {
-    let foundItem = findDefaultItem(advanced ? schema : values, advanced);
+    let foundItem = findDefaultItem(values, advanced);
     setSelected(foundItem);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(values)]);
@@ -395,7 +399,7 @@ export const MultiselectV2 = ({
           visibility: visibility,
         })}
         style={{
-          // position: 'relative',
+          position: 'relative',
           whiteSpace: 'nowrap',
           width: '100%',
         }}
