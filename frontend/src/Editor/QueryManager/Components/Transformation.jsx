@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Tab, ListGroup, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
@@ -7,6 +6,8 @@ import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import CodeHinter from '@/Editor/CodeEditor';
+const noop = () => {};
 
 const defaultValue = {
   javascript: `// write your code here
@@ -214,17 +215,18 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
               </div>
               <div className="codehinter-border-bottom mx-3"></div>
               <CodeHinter
-                initialValue={state[lang]}
-                mode={lang}
-                theme={darkMode ? 'monokai' : 'base16-light'}
-                lineNumbers
-                height="300px"
+                type="multiline"
+                initialValue={state[lang] ?? ''}
+                lang={lang}
+                lineNumbers={true}
+                height={400}
                 className="query-hinter"
-                ignoreBraces
                 onChange={(value) => changeOption('transformation', value)}
-                componentName="transformation"
-                cyLabel="transformation-input"
+                componentName={`transformation`}
+                cyLabel={'transformation-input'}
+                callgpt={noop}
                 isCopilotEnabled={false}
+                delayOnChange={false}
               />
             </div>
           )}
