@@ -4,6 +4,7 @@ import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import update from 'immutability-helper';
 const { diff } = require('deep-object-diff');
 
@@ -84,6 +85,12 @@ export const useCurrentState = () =>
       layout: state.layout,
     };
   }, shallow);
+
+export const useSelectedQueryLoadingState = () =>
+  useCurrentStateStore(
+    ({ queries }) => queries[useQueryPanelStore.getState().selectedQuery?.name]?.isLoading ?? false,
+    shallow
+  );
 
 useCurrentStateStore.subscribe((state) => {
   const isEditorReady = state.isEditorReady;

@@ -9,7 +9,6 @@ import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
 import { cloneDeep, difference } from 'lodash';
 import DropDownSelect from './DropDownSelect';
@@ -20,7 +19,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
-  const currentState = useCurrentState();
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
@@ -525,14 +523,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       </div>
 
       {/* component to render based on the operation */}
-      {ComponentToRender && (
-        <ComponentToRender
-          currentState={currentState}
-          options={options}
-          optionchanged={optionchanged}
-          darkMode={darkMode}
-        />
-      )}
+      {ComponentToRender && <ComponentToRender options={options} optionchanged={optionchanged} darkMode={darkMode} />}
     </TooljetDatabaseContext.Provider>
   );
 };

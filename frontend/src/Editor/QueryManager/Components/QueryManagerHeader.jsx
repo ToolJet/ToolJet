@@ -15,7 +15,7 @@ import {
   useShowCreateQuery,
   useNameInputFocussed,
 } from '@/_stores/queryPanelStore';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useSelectedQueryLoadingState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
@@ -31,8 +31,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   const selectedDataSource = useSelectedDataSource();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
-  const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
-  const { queries } = currentState;
+  const isLoading = useSelectedQueryLoadingState();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -97,7 +96,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   };
 
   const renderRunButton = () => {
-    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <span
         {...(isInDraft && {
@@ -131,7 +129,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
   const renderButtons = () => {
     if (selectedQuery === null || showCreateQuery) return;
-    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <>
         <PreviewButton
@@ -201,7 +198,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
               handleAddParameter={handleAddParameter}
               handleParameterChange={handleParameterChange}
               handleParameterRemove={handleParameterRemove}
-              currentState={currentState}
               darkMode={darkMode}
               containerRef={paramListContainerRef}
             />

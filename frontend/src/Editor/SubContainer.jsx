@@ -15,7 +15,7 @@ import {
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 
 import { useEditorStore } from '@/_stores/editorStore';
@@ -58,7 +58,6 @@ export const SubContainer = ({
 }) => {
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
 
-  const currentState = useCurrentState();
   const { selectedComponents } = useEditorStore(
     (state) => ({
       selectedComponents: state.selectedComponents,
@@ -530,6 +529,7 @@ export const SubContainer = ({
   }
 
   const getContainerProps = (componentId) => {
+    const currentState = getCurrentState();
     return {
       mode,
       snapToGrid,

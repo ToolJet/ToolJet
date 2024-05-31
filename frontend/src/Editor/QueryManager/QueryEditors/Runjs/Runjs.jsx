@@ -1,22 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import ParameterList from '../../Components/ParameterList';
 import CodeHinter from '@/Editor/CodeEditor';
 
 const Runjs = (props) => {
-  const currentState = useCurrentState();
-  const [currStateForCodeHinter, setCurrStateForCodeHinter] = useState(currentState);
   const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here' });
   const [options, setOptions] = useState(initialOptions);
-
-  useEffect(() => {
-    setCurrStateForCodeHinter({
-      ...currentState,
-      parameters: options?.parameters?.reduce((params, param) => ({ ...params, [param.name]: param.defaultValue }), {}),
-    });
-  }, [currentState?.components, options?.parameters]);
 
   useEffect(() => {
     setOptions(props.options);

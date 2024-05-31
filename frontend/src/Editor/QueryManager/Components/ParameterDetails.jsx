@@ -5,7 +5,7 @@ import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import ParameterForm from './ParameterForm';
 
-const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState, otherParams }) => {
+const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams }) => {
   const [showModal, setShowModal] = useState(false);
   const closeMenu = () => setShowModal(false);
 
@@ -66,7 +66,6 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             defaultValue={defaultValue}
             onSubmit={handleSubmit}
             showModal={showModal}
-            currentState={currentState}
           />
         </Popover>
       }

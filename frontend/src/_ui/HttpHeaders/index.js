@@ -3,14 +3,7 @@ import _ from 'lodash';
 import QueryEditor from './QueryEditor';
 import SourceEditor from './SourceEditor';
 
-export default ({
-  getter,
-  options = [['', '']],
-  optionchanged,
-  currentState,
-  isRenderedAsQueryEditor,
-  workspaceConstants,
-}) => {
+export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQueryEditor, workspaceConstants }) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
     optionchanged(getter, newPairs);
@@ -40,7 +33,7 @@ export default ({
   };
 
   return isRenderedAsQueryEditor ? (
-    <QueryEditor {...commonProps} currentState={currentState} />
+    <QueryEditor {...commonProps} />
   ) : (
     <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} />
   );
