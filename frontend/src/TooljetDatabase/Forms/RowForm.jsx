@@ -211,7 +211,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     rowColumns.forEach(({ accessor }) => {
       if (data[accessor] != '') {
         const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', '#FFFFFF', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFFFFF');
         setErrorMap((prev) => {
           return { ...prev, [accessor]: '' };
         });
@@ -229,7 +229,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           return { ...prev, [accessor]: 'Cannot be empty' };
         });
         const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       }
     });
     if (flag) {
@@ -245,7 +245,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       } else if (error?.message.includes('Invalid input syntax for type')) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
@@ -260,7 +260,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', '#FFF8F7');
           }
         });
       }
