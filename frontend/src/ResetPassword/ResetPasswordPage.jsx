@@ -38,6 +38,19 @@ class ResetPasswordComponent extends React.Component {
     this.setState({ [event.target.name]: event.target.value?.trim() });
   };
 
+  checkPasswordLength = (password) => {
+    return password.length >= 5;
+  }
+  checkPasswordSymbol = (password) => {
+    return password.match(/[!@#$%^&*(),.?":{}|<>]/g);
+  }
+  checkPasswordNumber = (password) => {
+    return password.match(/[0-9]/g);
+  }
+  checkPasswordUpperCase = (password) => {
+    return password.match(/[A-Z]/g);
+  }
+
   handleClick = (event) => {
     event.preventDefault();
     const { token } = this.props.params;
@@ -128,10 +141,18 @@ class ResetPasswordComponent extends React.Component {
                             />
                           )}
                         </div>
-                        <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characters
+                        <span style={{ color: this.checkPasswordLength(password) ? 'red' : 'grey' }}>
+                          {this.checkPasswordLength(password) ? 'Password must be at least 5 characters' : ''}
                         </span>
-
+                        <span style={{ color: this.checkPasswordSymbol(password) ? 'red' : 'grey' }}>
+                          {this.checkPasswordSymbol(password) ? 'Password must contain a special character' : ''}
+                        </span>
+                        <span style={{ color: this.checkPasswordNumber(password) ? 'red' : 'grey' }}>
+                          {this.checkPasswordNumber(password) ? 'Password must contain a number' : ''}
+                        </span>
+                        <span style={{ color: this.checkPasswordUpperCase(password) ? 'red' : 'grey' }}>
+                          {this.checkPasswordUpperCase(password) ? 'Password must contain an uppercase letter' : ''}
+                        </span>
                         <span></span>
                       </div>
                     </div>
@@ -191,6 +212,9 @@ class ResetPasswordComponent extends React.Component {
                       <ButtonSolid
                         disabled={
                           password?.length < 5 ||
+                          this.checkPasswordNumber(password) ||
+                          this.checkPasswordSymbol(password) ||
+                          this.checkPasswordUpperCase(password) ||
                           password_confirmation?.length < 5 ||
                           isLoading ||
                           password.length !== password_confirmation.length
