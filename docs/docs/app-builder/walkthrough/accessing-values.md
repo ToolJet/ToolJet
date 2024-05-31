@@ -26,20 +26,6 @@ You can check all the accessible values using the left sidebar's **[Inspector](/
 - **Implementation**: To check the current theme and adjust styles dynamically, use:
 `{{globals.theme.name}}`
 
-## Writing Custom Code
-
-ToolJet supports embedding custom JavaScript directly within the app's interface.
-
-### Example Scenarios
-
-**Dynamic Background Color**:
-   - **Purpose**: Set the background color of a Button component based on the theme.
-   - **Implementation**: In the properties panel, click on **fx** next to the `Background color` setting. Enter `{{globals.theme.name == "light" ? "#375FCF" : "#FFFFFF"}}` to conditionally set the color.
-
-**Conditional Button Enablement**:
-   - **Purpose**: Enable a Button component based on user input.
-   - **Implementation**: Under the Button's `Disable` property, click on **fx** and enter `{{components.form1.data.textinput1.value == "" ? true : false}}` to disable it when the specified text input in the Form component is empty.
-
 ## More on the Left Sidebar
 
 The left sidebar in ToolJet is a hub for navigation and application configuration, featuring several options including Pages, Inspector, Debugger, and Global Settings.
