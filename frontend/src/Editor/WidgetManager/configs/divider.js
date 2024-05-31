@@ -5,7 +5,7 @@ export const dividerConfig = {
   component: 'Divider',
   defaultSize: {
     width: 10,
-    height: 10,
+    height: 2,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
