@@ -1154,6 +1154,20 @@ $border-radius: 4px;
       border-radius: 6px 6px 0px 0px;
       border: 1px solid var(--slate5);
     }
+
+    .query-preview-list-group{
+      border-radius: 6px;
+      background: var(#CCD1D54D, rgba(204, 209, 213, 0.30));
+      box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.06) inset;
+    }
+    .list-group-item{
+      border-radius: 5px;
+      min-width: 59px !important;
+      &.active{
+        box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
+        color: #000 !important;
+      }
+    }
   }
 
   .query-manager-border-color {
