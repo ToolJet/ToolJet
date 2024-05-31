@@ -1,4 +1,4 @@
-import { create, zustandDevTools } from './utils';
+import { create, zustandDevTools } from '../utils';
 import { whiteLabellingService } from '@/_services';
 
 const defaultWhiteLabellingSettings = {

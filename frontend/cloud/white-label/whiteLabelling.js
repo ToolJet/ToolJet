@@ -1,4 +1,4 @@
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { useWhiteLabellingStore } from '@/_stores/cloud/whiteLabellingStore';
 import { decodeEntities } from '@/_helpers/utils';
 
 export const defaultWhiteLabellingSettings = {

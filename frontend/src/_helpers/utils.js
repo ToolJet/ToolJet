@@ -12,7 +12,6 @@ import { getCurrentState } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { validateMultilineCode } from './utility';
 
 const reservedKeyword = ['app', 'window'];

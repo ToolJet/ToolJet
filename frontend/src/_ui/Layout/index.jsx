@@ -12,7 +12,6 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import Beta from '../Beta';
 import Settings from '@/_components/Settings';
 import './styles.scss';
