@@ -4,6 +4,7 @@ export const postgreSqlSelector = {
   addDatasourceLink: "[data-cy='add-datasource-link']",
 
   allDatasourceLabelAndCount: '[data-cy="datasource-list-header"]',
+  commonlyUsedLabelAndCount: '[data-cy="commonlyused-datasource-button"]',
   databaseLabelAndCount: '[data-cy="databases-datasource-button"]',
   apiLabelAndCount: '[data-cy="apis-datasource-button"]',
   cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',

@@ -12,7 +12,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
 import { useEditorStore } from '@/_stores/editorStore';
 
-const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDefinitionFromVersion }) => {
+const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDefinitionFromVersion, isAppLoaded }) => {
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -62,7 +62,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
             darkMode={darkMode}
           />
         )}
-        {showDarkModeToggle && (
+        {showDarkModeToggle && isAppLoaded && (
           <span className="released-version-no-header-dark-mode-icon">
             <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
           </span>

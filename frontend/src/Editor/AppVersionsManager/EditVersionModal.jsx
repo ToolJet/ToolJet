@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { appVersionService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { shallow } from 'zustand/shallow';
+import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 
-export const EditVersion = ({
-  appId,
-  value: editingVersionId,
-  setAppVersions,
-  setShowEditAppVersion,
-  showEditAppVersion,
-  appVersions,
-}) => {
+export const EditVersion = ({ appId, setShowEditAppVersion, showEditAppVersion }) => {
   const [isEditingVersion, setIsEditingVersion] = useState(false);
-  const editingVersion = appVersions?.find((version) => version.id === editingVersionId);
+  const { updateVersionNameAction, selectedVersion: editingVersion } = useEnvironmentsAndVersionsStore(
+    (state) => ({
+      updateVersionNameAction: state.actions.updateVersionNameAction,
+      selectedVersion: state.selectedVersion,
+    }),
+    shallow
+  );
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
   const { t } = useTranslation();
 
@@ -28,21 +28,20 @@ export const EditVersion = ({
     }
 
     setIsEditingVersion(true);
-    appVersionService
-      .save(appId, editingVersionId, { name: versionName })
-      .then(() => {
+    updateVersionNameAction(
+      appId,
+      editingVersion?.id,
+      versionName,
+      () => {
         toast.success('Version name updated');
-        appVersionService.getAll(appId).then((data) => {
-          const versions = data.versions;
-          setAppVersions(versions);
-        });
         setIsEditingVersion(false);
         setShowEditAppVersion(false);
-      })
-      .catch((error) => {
+      },
+      (error) => {
         setIsEditingVersion(false);
         toast.error(error?.error);
-      });
+      }
+    );
   };
 
   return (

@@ -34,7 +34,6 @@ const CommentNotifications = ({ socket, pageId }) => {
 
   async function fetchData(selectedKey) {
     if (appId) {
-      console.log('inside-CommentNotifications', appId);
       const isResolved = selectedKey === 'resolved';
       setLoading(true);
       const { data } = await commentsService.getNotifications(appId, isResolved, appVersionsId, pageId);
