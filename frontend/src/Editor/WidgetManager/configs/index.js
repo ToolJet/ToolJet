@@ -74,7 +74,7 @@ export {
   dropdownConfig, //!Depreciated
   dropdownV2Config,
   multiselectConfig,
-  multiselectV2Config,
+  multiselectV2Config, //!Depreciated
   richtextareaConfig,
   mapConfig,
   qrscannerConfig,

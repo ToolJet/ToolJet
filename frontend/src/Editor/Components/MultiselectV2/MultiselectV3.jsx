@@ -3,177 +3,20 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import _, { isEmpty } from 'lodash';
 import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
-import * as Icons from '@tabler/icons-react';
-import { FormCheck, OverlayTrigger, Popover } from 'react-bootstrap';
-const { ValueContainer, Placeholder, MenuList, Option } = components;
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './multiselectV2.scss';
-import RemoveCircle from '@/_ui/Icon/bulkIcons/RemoveCircle';
+import CustomMenuList from './CustomMenuList';
+import CustomOption from './CustomOption';
+import CustomValueContainer from './CustomValueContainer';
+const { DropdownIndicator } = components;
+import Loader from '@/ToolJetUI/Loader/Loader';
+const tinycolor = require('tinycolor2');
 
 const SHOW_MORE_WIDTH = 40;
 const ICON_WIDTH = 16;
-
-const CustomMenuList = ({ selectProps, ...props }) => {
-  const {
-    onInputChange,
-    inputValue,
-    onMenuInputFocus,
-    showAllOption,
-    isSelectAllSelected,
-    setIsSelectAllSelected,
-    setSelected,
-  } = selectProps;
-
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelected(props.options);
-    } else {
-      setSelected([]);
-    }
-    setIsSelectAllSelected(e.target.checked);
-  };
-  return (
-    <div className="multiselect-custom-menu-list" onClick={(e) => e.stopPropagation()}>
-      <div className="table-select-column-type-search-box-wrapper ">
-        {!inputValue && (
-          <span className="">
-            <SolidIcon name="search" width="14" />
-          </span>
-        )}
-        <input
-          autoCorrect="off"
-          autoComplete="off"
-          spellCheck="false"
-          type="text"
-          value={inputValue}
-          onChange={(e) =>
-            onInputChange(e.currentTarget.value, {
-              action: 'input-change',
-            })
-          }
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            e.target.focus();
-          }}
-          onTouchEnd={(e) => {
-            e.stopPropagation();
-            e.target.focus();
-          }}
-          onFocus={onMenuInputFocus}
-          placeholder="Search..."
-          className="table-select-column-type-search-box"
-        />
-      </div>
-      {showAllOption && (
-        <div className="multiselect-custom-menulist-select-all">
-          <FormCheck checked={isSelectAllSelected} onChange={handleSelectAll} />
-          <span style={{ marginLeft: '4px' }}>Select all</span>
-        </div>
-      )}
-      <MenuList {...props} selectProps={selectProps} />
-    </div>
-  );
-};
-
-const CustomValueContainer = ({ ...props }) => {
-  const selectProps = props.selectProps;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
-  const showNoRemainingOpt = props.getValue().length - selectProps.visibleValues.length;
-  const remainingOptions = props.getValue().slice(-showNoRemainingOpt);
-  const [showOverlay, setShowOverlay] = React.useState(false);
-  // Checking on index as well as label in case if two labels are same
-  const removeOption = (label) => {
-    const _val = props.getValue().filter((opt, i) => opt.label !== label);
-    selectProps.setSelected(_val);
-  };
-  return (
-    <ValueContainer {...props}>
-      <span ref={selectProps.containerRef} className="d-flex w-full align-items-center">
-        {selectProps?.doShowIcon && (
-          <IconElement
-            style={{
-              width: '16px',
-              height: '16px',
-              color: selectProps?.iconColor,
-            }}
-          />
-        )}
-        {!props.hasValue ? (
-          <Placeholder {...props} key="placeholder" {...selectProps} data={selectProps?.visibleValues}>
-            {selectProps.placeholder}
-          </Placeholder>
-        ) : (
-          <span className="d-flex" {...props} id="options">
-            {selectProps?.visibleValues.map((element, index) => (
-              <div className="value-container-selected-option" key={index}>
-                <span>{element.label}</span>
-                <span
-                  className="value-container-selected-option-delete-icon"
-                  onClick={() => removeOption(element.label)}
-                >
-                  <RemoveCircle fill="#C1C8CD" width="20" fill2={'white'} />
-                </span>
-              </div>
-            ))}
-            <OverlayTrigger
-              trigger={'click'}
-              placement={'bottom-start'}
-              onToggle={(showOverlay) => {
-                setShowOverlay(showOverlay);
-              }}
-              show={showOverlay}
-              rootClose={true}
-              overlay={
-                <Popover id="l" className={''}>
-                  <Popover.Body
-                    bsPrefix="list-item-popover-body"
-                    className={`list-item-popover-body value-container-selected-option-popover`}
-                  >
-                    {remainingOptions.map((option, index) => (
-                      <div className="value-container-selected-option" key={option.label}>
-                        {option.label}
-                        <span
-                          className="value-container-selected-option-delete-icon"
-                          onClick={() => {
-                            removeOption(option.label);
-                            setShowOverlay(false);
-                          }}
-                        >
-                          <RemoveCircle fill="#C1C8CD" width="20" fill2={'white'} />
-                        </span>
-                      </div>
-                    ))}
-                  </Popover.Body>
-                </Popover>
-              }
-            >
-              <div>
-                {showNoRemainingOpt !== 0 && (
-                  <div
-                    className="value-container-selected-option"
-                    style={{ paddingRight: '10px' }}
-                  >{`+${showNoRemainingOpt}`}</div>
-                )}
-              </div>
-            </OverlayTrigger>
-          </span>
-        )}
-      </span>
-    </ValueContainer>
-  );
-};
-
-const CustomOption = (props) => {
-  return (
-    <Option {...props}>
-      <div className="d-flex">
-        <FormCheck checked={props.isSelected} />
-        <span style={{ marginLeft: '4px' }}>{props.label}</span>
-      </div>
-    </Option>
-  );
-};
+const SCALING_FACTOR = 0.6;
+const FONT_SIZE = 12;
+const GAP = 4;
+const MARGIN = 26; // including left and right side margin
 
 export const MultiselectV2 = ({
   id,
@@ -190,24 +33,22 @@ export const MultiselectV2 = ({
   dataCy,
   validate,
   width,
-  adjustHeightBasedOnAlignment,
 }) => {
   let {
     label,
     value,
-    values,
-    display_values,
+    options,
     showAllOption,
     disabledState,
     advanced,
     schema,
     placeholder,
-    multiSelectLoadingState,
+    loadingState: multiSelectLoadingState,
+    optionsLoadingState,
   } = properties;
   const {
     selectedTextColor,
-    borderRadius,
-    justifyContent,
+    fieldBorderRadius,
     boxShadow,
     labelColor,
     alignment,
@@ -215,12 +56,13 @@ export const MultiselectV2 = ({
     fieldBorderColor,
     fieldBackgroundColor,
     labelWidth,
-    labelAutoWidth,
+    auto,
     icon,
     iconVisibility,
     errTextColor,
     iconColor,
     padding,
+    accentColor,
   } = styles;
   const [selected, setSelected] = useState([]);
   const currentState = useCurrentState();
@@ -236,7 +78,7 @@ export const MultiselectV2 = ({
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
-  const _height = padding === 'default' ? 32 : height;
+  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -249,50 +91,39 @@ export const MultiselectV2 = ({
   useEffect(() => {
     const updateVisibleElements = () => {
       if (!isEmpty(valueContainerRef.current)) {
+        let totalWidth = 0;
+        let maxVisibleOptions = 0;
         const containerWidth =
           valueContainerRef.current.offsetWidth - (iconVisibility ? ICON_WIDTH + SHOW_MORE_WIDTH : SHOW_MORE_WIDTH);
-        const children = document.getElementById('options')?.children;
-        if (children) {
-          let totalWidth = 0;
-          let maxVisibleOptions = 0;
-
-          for (let i = 0; i < children.length; i++) {
-            totalWidth += children[i].offsetWidth;
-
-            if (totalWidth <= containerWidth) {
-              maxVisibleOptions++;
-            } else {
-              break;
-            }
+        // // Calculate total width of all span elements
+        for (const option of selected) {
+          const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + MARGIN + GAP;
+          totalWidth += valueWidth;
+          // Check if max row height is auto and then if any of the options width exceeds container width, return true
+          if (totalWidth <= containerWidth) {
+            maxVisibleOptions++;
+          } else {
+            break;
           }
-          setVisibleElements(selected.slice(0, maxVisibleOptions));
-          setShowMore(selected.length > maxVisibleOptions);
         }
+        setVisibleElements(selected.slice(0, maxVisibleOptions));
+        setShowMore(selected.length > maxVisibleOptions);
       }
     };
     updateVisibleElements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, width, selected, iconVisibility]);
+  }, [selected, width, iconVisibility]);
 
   const selectOptions = useMemo(() => {
-    let _selectOptions = advanced
-      ? schema
-          .filter((data) => data.visible)
-          .map((value) => ({
-            ...value,
-            isDisabled: value.disable,
-          }))
-      : values
-          .map((value, index) => {
-            // if (true) {
-            return { label: display_values[index], value: value, isDisabled: false };
-            // }
-          })
-          .filter((option) => option);
-
+    const _options = advanced ? schema : options;
+    let _selectOptions = _options
+      .filter((data) => data.visible)
+      .map((value) => ({
+        ...value,
+        isDisabled: value.disable,
+      }));
     return _selectOptions;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(display_values), JSON.stringify(values)]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   function findDefaultItem(value, isAdvanced) {
     if (isAdvanced) {
@@ -301,8 +132,6 @@ export const MultiselectV2 = ({
     }
     return selectOptions?.filter((item) => value?.find((val) => val === item.value));
   }
-
-  // console.log(visibleElements, showMore, width, 'selected');
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
@@ -325,8 +154,8 @@ export const MultiselectV2 = ({
 
   useEffect(() => {
     setExposedVariable(
-      'values',
-      selected.map((item) => item.value)
+      'selectedOptions',
+      selected.map(({ label, value }) => ({ label, value }))
     );
     setExposedVariable('label', label);
     setExposedVariable('options', selectOptions);
@@ -354,7 +183,7 @@ export const MultiselectV2 = ({
 
   useEffect(() => {
     // Expose selectOption
-    setExposedVariable('selectOption', async function (value) {
+    setExposedVariable('selectOptions', async function (value) {
       if (
         selectOptions.some((option) => option.value === value) &&
         !selected.some((option) => option.value === value)
@@ -372,7 +201,7 @@ export const MultiselectV2 = ({
     });
 
     // Expose deselectOption
-    setExposedVariable('deselectOption', async function (value) {
+    setExposedVariable('deselectOptions', async function (value) {
       if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
         const newSelected = [
           ...selected.filter(function (item) {
@@ -381,15 +210,15 @@ export const MultiselectV2 = ({
         ];
         setSelected(newSelected);
         setExposedVariable(
-          'values',
-          newSelected.map((item) => item.value)
+          'selectedOptions',
+          newSelected.map(({ label, value }) => ({ label, value }))
         );
         fireEvent('onSelect');
       }
     });
 
     // Expose clearSelections
-    setExposedVariable('clearSelections', async function (value) {
+    setExposedVariable('clear', async function (value) {
       setSelected([]);
       fireEvent('onSelect');
     });
@@ -427,12 +256,6 @@ export const MultiselectV2 = ({
     }
   }, [selectOptions, selected]);
 
-  useEffect(() => {
-    if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label]);
-
   const customStyles = {
     control: (provided, state) => {
       return {
@@ -440,12 +263,28 @@ export const MultiselectV2 = ({
         minHeight: _height,
         height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
-        borderRadius: Number.parseFloat(borderRadius),
-        borderColor: !isValid ? 'var(--tj-text-input-widget-error)' : fieldBorderColor,
-        backgroundColor: fieldBackgroundColor,
+        borderRadius: Number.parseFloat(fieldBorderRadius),
+        borderColor: !isValid
+          ? 'var(--status-error-strong)'
+          : state.isFocused
+          ? accentColor != '#4368E3'
+            ? accentColor
+            : 'var(--primary-accent-strong)'
+          : fieldBorderColor != '#CCD1D5'
+          ? fieldBorderColor
+          : isMultiSelectDisabled || isMultiSelectLoading
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
+        '--tblr-input-border-color-darker': tinycolor(fieldBorderColor).darken(24).toString(),
+        backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
+          ? fieldBackgroundColor
+          : isMultiSelectDisabled || isMultiSelectLoading
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-app-bg-default)'
+          : 'var(--surfaces-surface-01)',
         '&:hover': {
-          backgroundColor: fieldBackgroundColor,
-          borderColor: '#3E63DD',
+          borderColor: 'var(--tblr-input-border-color-darker)',
         },
       };
     },
@@ -453,7 +292,7 @@ export const MultiselectV2 = ({
     valueContainer: (provided, _state) => ({
       ...provided,
       height: _height,
-      padding: '0 6px',
+      padding: '0 10px',
       display: 'flex',
       gap: '0.13rem',
     }),
@@ -488,6 +327,7 @@ export const MultiselectV2 = ({
     indicatorsContainer: (provided, _state) => ({
       ...provided,
       height: _height,
+      marginRight: '10px',
     }),
     clearIndicator: (provided, _state) => ({
       ...provided,
@@ -497,65 +337,93 @@ export const MultiselectV2 = ({
       ...provided,
       padding: '0px',
     }),
-    option: (provided, state) => ({
+    option: (provided) => ({
       ...provided,
-      backgroundColor: 'white',
-      color: '#11181C',
+      backgroundColor:
+        darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
+          ? 'var(--surfaces-surface-01)'
+          : fieldBackgroundColor,
+      color:
+        selectedTextColor !== '#1B1F24'
+          ? selectedTextColor
+          : isMultiSelectDisabled || isMultiSelectLoading
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
+      padding: '8px 6px 8px 12px',
       '&:hover': {
-        backgroundColor: '#3E63DD',
-        color: 'white',
+        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        borderRadius: '8px',
       },
+      cursor: 'pointer',
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      padding: '4px',
+      // this is needed otherwise :active state doesn't look nice, gap is required
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px !important',
+      overflowY: 'auto',
+      backgroundColor:
+        darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
+          ? 'var(--surfaces-surface-01)'
+          : fieldBackgroundColor,
+    }),
+    menu: (provided) => ({
+      ...provided,
+      marginTop: '5px',
     }),
   };
 
   const labelStyles = {
-    marginRight: label !== '' ? '1rem' : '0.001rem',
-    color: labelColor,
-    alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+    [direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
+    color: labelColor !== '#1B1F24' ? labelColor : 'var(--text-primary)',
+    justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
 
-  if (isMultiSelectLoading) {
-    return (
-      <div className="d-flex align-items-center justify-content-center" style={{ width: '100%', height }}>
-        <center>
-          <div className="spinner-border" role="status"></div>
-        </center>
-      </div>
-    );
-  }
+  const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+
   return (
     <>
       <div
         className="multiselect-widget g-0"
         data-cy={dataCy}
         style={{
-          height,
           display: visibility ? 'flex' : 'none',
           flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
-          padding: padding === 'default' ? '3px 2px' : '',
         }}
         onFocus={() => {
           onComponentClick(this, id, component);
         }}
       >
         <div
-          className="my-auto"
+          className="my-auto text-truncate"
           style={{
             alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
-            width: alignment === 'top' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
-            maxWidth: alignment === 'top' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+            width: alignment === 'top' || auto ? 'auto' : `${_width}%`,
+            // maxWidth: alignment === 'top' || auto ? '100%' : `${labelWidth}%`,
+            maxWidth: alignment === 'side' ? '70%' : '100%',
           }}
         >
           <label
             style={labelStyles}
-            className="font-size-12 font-weight-500 py-0 my-0"
+            className="font-size-12 font-weight-500 py-0 my-0 d-flex"
             data-cy={`multiselect-label-${component.name.toLowerCase()}`}
           >
-            {label}
+            <span
+              style={{
+                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
+                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {label}
+            </span>
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
-        <div className="col px-0 h-100" ref={multiselectRef}>
+        <div className="w-100 px-0 h-100" ref={multiselectRef}>
           <Select
             isDisabled={isMultiSelectDisabled}
             value={selected}
@@ -563,18 +431,19 @@ export const MultiselectV2 = ({
             options={selectOptions}
             styles={customStyles}
             // Only show loading when dynamic options are enabled
-            isLoading={advanced && properties.loadingState}
+            isLoading={isMultiSelectLoading}
             onInputChange={onSearchTextChange}
             onFocus={(event) => {
               onComponentClick(event, component, id);
             }}
             menuIsOpen={dropdownOpen}
-            menuPortalTarget={document.body}
             placeholder={placeholder}
             components={{
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option: CustomOption,
+              LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
+              DropdownIndicator: isMultiSelectLoading ? () => null : DropdownIndicator,
             }}
             isClearable
             isMulti
@@ -596,6 +465,8 @@ export const MultiselectV2 = ({
             setIsSelectAllSelected={setIsSelectAllSelected}
             setSelected={setSelected}
             iconColor={iconColor}
+            optionsLoadingState={optionsLoadingState}
+            darkMode={darkMode}
           />
         </div>
       </div>

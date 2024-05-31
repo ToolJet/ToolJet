@@ -15,27 +15,28 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
+import { getInputBackgroundColor, getInputBorderColor } from './utils';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
 const ICON_WIDTH = 18; // includes flex gap 2px
 
-const CustomDropdownIndicator = (props) => {
+export const CustomDropdownIndicator = (props) => {
   const {
     selectProps: { menuIsOpen },
   } = props;
   return (
     <DropdownIndicator {...props}>
       {menuIsOpen ? (
-        <TriangleDownArrow width={'16'} className="cursor-pointer" fill={'var(--borders-strong)'} />
-      ) : (
         <TriangleUpArrow width={'16'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+      ) : (
+        <TriangleDownArrow width={'16'} className="cursor-pointer" fill={'var(--borders-strong)'} />
       )}
     </DropdownIndicator>
   );
 };
 
-const CustomClearIndicator = (props) => {
+export const CustomClearIndicator = (props) => {
   return (
     <ClearIndicator {...props}>
       <ClearIndicatorIcon width={'16'} fill={'var(--borders-strong)'} className="cursor-pointer" />
@@ -49,6 +50,7 @@ export const DropdownV2 = ({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
   darkMode,
   onComponentClick,
@@ -93,7 +95,6 @@ export const DropdownV2 = ({
   const validationData = validate(currentValue);
   const { isValid, validationError } = validationData;
   const ref = React.useRef(null);
-  const selectref = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
@@ -214,60 +215,26 @@ export const DropdownV2 = ({
     setExposedVariable('isDisabled', disabledState);
     setExposedVariable('isMandatory', isMandatory);
 
-    setExposedVariable('clear', async function () {
-      setCurrentValue(null);
-    });
-    setExposedVariable('setVisibility', async function (value) {
-      setVisibility(value);
-    });
-    setExposedVariable('setLoading', async function (value) {
-      setIsDropdownLoading(value);
-    });
-    setExposedVariable('setDisable', async function (value) {
-      setIsDropdownDisabled(value);
-    });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory, label, inputValue, isValid]);
 
-  const getInputBorderColor = (isFocused) => {
-    if (!isValid) {
-      return 'var(--status-error-strong)';
-    }
-
-    if (isFocused) {
-      if (accentColor !== '#4368E3') {
-        return accentColor;
-      }
-      return 'var(--primary-accent-strong)';
-    }
-
-    if (fieldBorderColor !== '#CCD1D5') {
-      return fieldBorderColor;
-    }
-
-    if (isDropdownDisabled || isDropdownLoading) {
-      return '1px solid var(--borders-disabled-on-white)';
-    }
-
-    return 'var(--borders-default)';
-  };
-
-  const getInputBackgroundColor = () => {
-    if (!['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)) {
-      return fieldBackgroundColor;
-    }
-
-    if (isDropdownDisabled || isDropdownLoading) {
-      if (darkMode) {
-        return 'var(--surfaces-app-bg-default)';
-      } else {
-        return 'var(--surfaces-surface-03)';
-      }
-    }
-
-    return 'var(--surfaces-surface-01)';
-  };
+  useEffect(() => {
+    const exposedVariables = {
+      clear: async function () {
+        setCurrentValue(null);
+      },
+      setVisibility: async function (value) {
+        setVisibility(value);
+      },
+      setLoading: async function (value) {
+        setIsDropdownLoading(value);
+      },
+      setDisable: async function (value) {
+        setIsDropdownDisabled(value);
+      },
+    };
+    setExposedVariables(exposedVariables);
+  }, []);
 
   const customStyles = {
     container: (base) => ({
@@ -282,8 +249,20 @@ export const DropdownV2 = ({
         height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
-        borderColor: getInputBorderColor(state.isFocused),
-        backgroundColor: getInputBackgroundColor(),
+        borderColor: getInputBorderColor({
+          isFocused: state.isFocused,
+          isValid,
+          fieldBorderColor,
+          accentColor,
+          isLoading: isDropdownLoading,
+          isDisabled: isDropdownDisabled,
+        }),
+        backgroundColor: getInputBackgroundColor({
+          fieldBackgroundColor,
+          darkMode,
+          isLoading: isDropdownLoading,
+          isDisabled: isDropdownDisabled,
+        }),
         '&:hover': {
           borderColor: 'var(--tblr-input-border-color-darker)',
         },
@@ -422,7 +401,6 @@ export const DropdownV2 = ({
         />
         <div className="w-100 px-0 h-100" ref={ref}>
           <Select
-            ref={selectref}
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {

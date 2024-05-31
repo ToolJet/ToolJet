@@ -4,12 +4,17 @@ import _, { isEmpty } from 'lodash';
 import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import './multiselectV2.scss';
-import CustomMenuList from './CustomMenuList';
+import CustomMenuList from '../DropdownV2/CustomMenuList';
+// import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import CustomValueContainer from './CustomValueContainer';
 const { DropdownIndicator } = components;
 import Loader from '@/ToolJetUI/Loader/Loader';
+import cx from 'classnames';
+import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
+import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
+import { getInputBackgroundColor, getInputBorderColor } from '../DropdownV2/utils';
 
 const SHOW_MORE_WIDTH = 40;
 const ICON_WIDTH = 16;
@@ -36,7 +41,7 @@ export const MultiselectV2 = ({
 }) => {
   let {
     label,
-    value,
+    values,
     options,
     showAllOption,
     disabledState,
@@ -68,7 +73,8 @@ export const MultiselectV2 = ({
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const multiselectRef = React.useRef(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const labelRef = React.useRef(null);
+  const [multiselectOpen, setMultiselectOpen] = useState(false);
   const validationData = validate(selected);
   const { isValid, validationError } = validationData;
   const valueContainerRef = React.useRef(null);
@@ -147,10 +153,10 @@ export const MultiselectV2 = ({
   };
 
   useEffect(() => {
-    let foundItem = findDefaultItem(advanced ? schema : value, advanced);
+    let foundItem = findDefaultItem(advanced ? schema : values, advanced);
     setSelected(foundItem);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(value)]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(values)]);
 
   useEffect(() => {
     setExposedVariable(
@@ -167,7 +173,10 @@ export const MultiselectV2 = ({
     setExposedVariable('isLoading', multiSelectLoadingState);
     setExposedVariable('isDisabled', disabledState);
     setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility, multiSelectLoadingState, disabledState, isMandatory]);
 
+  useEffect(() => {
     setExposedVariable('setVisibility', async function (value) {
       setVisibility(value);
     });
@@ -177,9 +186,7 @@ export const MultiselectV2 = ({
     setExposedVariable('setDisabled', async function (value) {
       setIsMultiSelectDisabled(value);
     });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, multiSelectLoadingState, disabledState, isMandatory]);
+  }, []);
 
   useEffect(() => {
     // Expose selectOption
@@ -235,17 +242,17 @@ export const MultiselectV2 = ({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
-        if (dropdownOpen) {
+        if (multiselectOpen) {
           fireEvent('onBlur');
         }
-        setDropdownOpen(false);
+        setMultiselectOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [dropdownOpen]);
+  }, [multiselectOpen]);
 
   // Handle Select all logic
   useEffect(() => {
@@ -264,25 +271,20 @@ export const MultiselectV2 = ({
         height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
-        borderColor: !isValid
-          ? 'var(--status-error-strong)'
-          : state.isFocused
-          ? accentColor != '#4368E3'
-            ? accentColor
-            : 'var(--primary-accent-strong)'
-          : fieldBorderColor != '#CCD1D5'
-          ? fieldBorderColor
-          : isMultiSelectDisabled || isMultiSelectLoading
-          ? '1px solid var(--borders-disabled-on-white)'
-          : 'var(--borders-default)',
-        '--tblr-input-border-color-darker': tinycolor(fieldBorderColor).darken(24).toString(),
-        backgroundColor: !['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-          ? fieldBackgroundColor
-          : isMultiSelectDisabled || isMultiSelectLoading
-          ? darkMode
-            ? 'var(--surfaces-app-bg-default)'
-            : 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-01)',
+        borderColor: getInputBorderColor({
+          isFocused: state.isFocused,
+          isValid,
+          fieldBorderColor,
+          accentColor,
+          isLoading: isMultiSelectLoading,
+          isDisabled: isMultiSelectDisabled,
+        }),
+        backgroundColor: getInputBackgroundColor({
+          fieldBackgroundColor,
+          darkMode,
+          isLoading: isMultiSelectLoading,
+          isDisabled: isMultiSelectDisabled,
+        }),
         '&:hover': {
           borderColor: 'var(--tblr-input-border-color-darker)',
         },
@@ -375,54 +377,44 @@ export const MultiselectV2 = ({
     }),
   };
 
-  const labelStyles = {
-    [direction === 'alignRight' ? 'marginLeft' : 'marginRight']: label ? '1rem' : '0.001rem',
-    color: labelColor !== '#1B1F24' ? labelColor : 'var(--text-primary)',
-    justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
-  };
-
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
-
   return (
     <>
       <div
-        className="multiselect-widget g-0"
-        data-cy={dataCy}
+        data-cy={`label-${String(component.name).toLowerCase()} `}
+        className={cx('multiselect-widget', 'd-flex', {
+          [alignment === 'top' &&
+          ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : 'align-items-center']: true,
+          'flex-row-reverse': direction === 'right' && alignment === 'side',
+          'text-right': direction === 'right' && alignment === 'top',
+          invisible: !visibility,
+          visibility: visibility,
+        })}
         style={{
-          display: visibility ? 'flex' : 'none',
-          flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
+          // position: 'relative',
+          whiteSpace: 'nowrap',
+          width: '100%',
         }}
-        onFocus={() => {
-          onComponentClick(this, id, component);
+        onMouseDown={(event) => {
+          onComponentClick(id, component, event);
+          // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
+          // useEditorStore.getState().actions.setHoveredComponent('');
         }}
       >
-        <div
-          className="my-auto text-truncate"
-          style={{
-            alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
-            width: alignment === 'top' || auto ? 'auto' : `${_width}%`,
-            // maxWidth: alignment === 'top' || auto ? '100%' : `${labelWidth}%`,
-            maxWidth: alignment === 'side' ? '70%' : '100%',
-          }}
-        >
-          <label
-            style={labelStyles}
-            className="font-size-12 font-weight-500 py-0 my-0 d-flex"
-            data-cy={`multiselect-label-${component.name.toLowerCase()}`}
-          >
-            <span
-              style={{
-                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
-                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-                whiteSpace: 'nowrap',
-                display: 'block',
-              }}
-            >
-              {label}
-            </span>
-            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-          </label>
-        </div>
+        <Label
+          label={label}
+          width={labelWidth}
+          labelRef={labelRef}
+          darkMode={darkMode}
+          color={labelColor}
+          defaultAlignment={alignment}
+          direction={direction}
+          auto={auto}
+          isMandatory={isMandatory}
+          _width={_width}
+        />
         <div className="w-100 px-0 h-100" ref={multiselectRef}>
           <Select
             isDisabled={isMultiSelectDisabled}
@@ -436,7 +428,7 @@ export const MultiselectV2 = ({
             onFocus={(event) => {
               onComponentClick(event, component, id);
             }}
-            menuIsOpen={dropdownOpen}
+            menuIsOpen={multiselectOpen}
             placeholder={placeholder}
             components={{
               MenuList: CustomMenuList,
@@ -444,6 +436,7 @@ export const MultiselectV2 = ({
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
               DropdownIndicator: isMultiSelectLoading ? () => null : DropdownIndicator,
+              ClearIndicator: CustomClearIndicator,
             }}
             isClearable
             isMulti
@@ -451,7 +444,7 @@ export const MultiselectV2 = ({
             closeMenuOnSelect={false}
             onMenuOpen={() => {
               fireEvent('onFocus');
-              setDropdownOpen(true);
+              setMultiselectOpen(true);
             }}
             // select props
             icon={icon}
@@ -471,11 +464,13 @@ export const MultiselectV2 = ({
         </div>
       </div>
       <div
-        className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
+        className={`${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
         style={{
           color: errTextColor,
-          justifyContent: direction === 'alignRight' ? 'flex-start' : 'flex-end',
-          marginTop: alignment === 'top' ? '1.25rem' : '0.25rem',
+          justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+          fontSize: '11px',
+          fontWeight: '400',
+          lineHeight: '16px',
         }}
       >
         {!isValid && validationError}

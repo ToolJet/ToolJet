@@ -9,6 +9,7 @@ import cx from 'classnames';
 
 const { MenuList } = components;
 
+// This Menulist also used in Multiselect
 const CustomMenuList = ({ selectProps, ...props }) => {
   const {
     onInputChange,
@@ -17,15 +18,26 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     showAllOption,
     isSelectAllSelected,
     optionsLoadingState,
-    handleSelectAll = noop,
     darkMode,
+    setSelected,
+    setIsSelectAllSelected,
   } = selectProps;
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelected(props.options);
+    } else {
+      setSelected([]);
+    }
+    setIsSelectAllSelected(e.target.checked);
+  };
+
   return (
     <div
-      className={cx('dropdown-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
+      className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="dropdown-widget-search-box-wrapper">
+      <div className="dropdown-multiselect-widget-search-box-wrapper">
         {!inputValue && (
           <span className="">
             <SolidIcon name="search01" width="14" />
@@ -52,7 +64,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           }}
           onFocus={onMenuInputFocus}
           placeholder="Search..."
-          className="dropdown-widget-search-box"
+          className="dropdown-multiselect-widget-search-box"
         />
       </div>
       {showAllOption && !optionsLoadingState && (

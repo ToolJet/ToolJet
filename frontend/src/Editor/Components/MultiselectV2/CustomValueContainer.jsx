@@ -40,9 +40,9 @@ const CustomValueContainer = ({ ...props }) => {
             {selectProps?.visibleValues.map((element, index) => (
               <div className="value-container-selected-option" key={index}>
                 <span>{element.label}</span>
-                <span className="value-container-selected-option-delete-icon" onClick={() => removeOption(index)}>
+                {/* <span className="value-container-selected-option-delete-icon" onClick={() => removeOption(index)}>
                   <Cross fill="var(--icons-strong)" width="20" />
-                </span>
+                </span> */}
               </div>
             ))}
             <OverlayTrigger

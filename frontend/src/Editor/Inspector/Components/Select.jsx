@@ -28,13 +28,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   } = restProps;
 
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
-
   const constructOptions = () => {
     const options = resolveReferences(component?.component?.definition?.properties?.options?.value, currentState);
     return options;
   };
+  const _markedAsDefault = resolveReferences(
+    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value,
+    currentState
+  );
 
-  const _markedAsDefault = resolveReferences(component?.component?.definition?.properties?.value?.value, currentState);
   const isDynamicOptionsEnabled = resolveReferences(
     component?.component?.definition?.properties?.advanced?.value,
     currentState
@@ -155,7 +157,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         _markedAsDefault = markedAsDefault.filter((value) => value !== _value);
       }
       setMarkedAsDefault(_markedAsDefault);
-      paramUpdated({ name: 'value' }, 'value', _markedAsDefault, 'properties');
+      paramUpdated({ name: 'values' }, 'value', _markedAsDefault, 'properties');
     } else {
       const _value = isMarkedAsDefault ? options[index]?.value : '';
       setMarkedAsDefault(_value);
