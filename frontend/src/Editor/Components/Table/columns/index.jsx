@@ -562,6 +562,13 @@ export default function generateColumnsData({
                 {cellValue && (
                   <img
                     src={cellValue}
+                    onError={(e) => {
+                      if (!_.get(e, 'target.src', '').includes('/assets/images/image-not-found.svg')) {
+                        e.target.onerror = null;
+                        e.target.src = '/assets/images/image-not-found.svg';
+                        e.target.style = e.target.style + ' border-radius: 0;';
+                      }
+                    }}
                     style={{
                       pointerEvents: 'auto',
                       width: `${column?.width}px`,
