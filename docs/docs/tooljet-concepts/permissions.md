@@ -10,19 +10,6 @@ ToolJet employs a Role-Based Access Control (RBAC) system to manage security and
 ## Groups
 By default, there are two groups: **All Users**, which contains all workspace members, and **Admins**, which grants full access to all ToolJet resources. Custom groups like Support or Engineering can also be created to fine-tune access controls.
 
-<div style={{marginBottom:'15px', height:'397px'}}>
-    <iframe
-        className="screenshot-full"
-        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/a2f9229b-255a-44d5-a25a-35ad72de7125-flo.html"
-        style={{width: '100%', height: '100%', border: '0'}}
-        frameborder="0"
-        allowfullscreen="allowfullscreen"
-        webkitallowfullscreen
-        mozallowfullscreen
-        allowfullscreen>
-    </iframe>
-</div>
-
 
 </div>
 
