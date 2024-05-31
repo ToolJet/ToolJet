@@ -9,7 +9,17 @@ During application development, managing state and user interactions effectively
 
 Setting variables and page variables can be done in two ways - through events or by using **Run JavaScript code** queries. 
 - To set variables through events, add a new event handler and select `Set variable` as the action. Under `Action Options` you can define the Key and Value of the variable. Similarly, for page variables you can use the `Set page variable` action. 
+
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/walkthrough/variables/set-a-variable.png" alt="Set a variable" />
+</div>
+
+
 - To set variable through `Run JavaScript code` query, use the `setVariable(key, value)` function. Use `setPageVariable(key, value)` function for page variables.
+
+<div style={{textAlign: 'center', marginBottom:'15px'}}>
+    <img className="screenshot-full" src="/img/v2-beta/app-builder/walkthrough/variables/set-a-variable-js.png" alt="Set a variable through JS" />
+</div>
 
 ## Example Use-Case for Page Variable:
 **Tracking the number of times a user visits a page:**
