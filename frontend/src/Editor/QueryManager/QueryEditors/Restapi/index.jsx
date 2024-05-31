@@ -181,7 +181,6 @@ class Restapi extends React.Component {
                 >
                   <CodeHinter
                     type="basic"
-                    currentState={this.props.currentState}
                     initialValue={options.url}
                     onChange={(value) => {
                       changeOption(this, 'url', value);

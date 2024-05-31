@@ -19,7 +19,6 @@ import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '..
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
@@ -41,7 +40,6 @@ const DynamicForm = ({
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
-  const currentState = useCurrentState();
 
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
@@ -255,7 +253,7 @@ const DynamicForm = ({
         if (isGDS) {
           isRenderedAsQueryEditor = false;
         } else {
-          isRenderedAsQueryEditor = !isGDS && currentState != null;
+          isRenderedAsQueryEditor = !isGDS;
         }
         return {
           getter: key,
@@ -263,7 +261,6 @@ const DynamicForm = ({
             ? options?.[key] ?? schema?.defaults?.[key]
             : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
-          currentState,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
           encrypted: options?.[key]?.encrypted,
@@ -313,7 +310,6 @@ const DynamicForm = ({
         };
       case 'tooljetdb-operations':
         return {
-          currentState,
           optionchanged,
           createDataSource,
           options,
@@ -324,7 +320,6 @@ const DynamicForm = ({
       case 'codehinter':
         return {
           type: editorType,
-          currentState,
           initialValue: options[key]
             ? typeof options[key] === 'string'
               ? options[key]

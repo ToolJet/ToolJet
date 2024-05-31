@@ -4,6 +4,7 @@ import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 
 const initialState = {
   queries: {},
@@ -88,6 +89,13 @@ export const useCurrentState = () =>
       layout: state.layout,
     };
   }, shallow);
+
+export const useSelectedQueryLoadingState = () =>
+  // Omitting 'actions' here because we don't want to expose it to user
+  useCurrentStateStore(
+    ({ queries }) => queries[useQueryPanelStore.getState().selectedQuery?.name]?.isLoading ?? false,
+    shallow
+  );
 
 useCurrentStateStore.subscribe((state) => {
   const isEditorReady = state.isEditorReady;
