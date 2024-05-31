@@ -94,7 +94,11 @@ export const QueryManagerHeader = forwardRef(
     };
     const tabs = [
       { id: 1, label: 'Setup' },
-      { id: 2, label: 'Transformation', condition: selectedQuery?.kind !== 'runjs' },
+      {
+        id: 2,
+        label: 'Transformation',
+        condition: selectedQuery?.kind !== 'runpy' && selectedQuery?.kind !== 'runjs',
+      },
       { id: 3, label: 'Settings' },
     ];
 

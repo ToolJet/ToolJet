@@ -87,8 +87,7 @@ const Preview = ({ darkMode }) => {
     if (previewPanelRef.current) {
       const componentTop = Math.round(previewPanelRef.current.getBoundingClientRect().top);
       const clientY = e.clientY;
-
-      if ((clientY >= componentTop - 10) & (clientY <= componentTop + 1)) {
+      if ((clientY >= componentTop - 3) & (clientY <= componentTop + 3)) {
         setIsTopOfPreviewPanel(true);
       } else if (isTopOfPreviewPanel) {
         setIsTopOfPreviewPanel(false);

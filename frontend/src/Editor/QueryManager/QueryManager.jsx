@@ -26,6 +26,12 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
   const [activeTab, setActiveTab] = useState(1);
 
   useEffect(() => {
+    if (selectedQuery?.kind == 'runjs' || selectedQuery?.kind == 'runpy') {
+      setActiveTab(1);
+    }
+  }, [selectedQuery?.id]);
+
+  useEffect(() => {
     setOptions(selectedQuery?.options || {});
   }, [selectedQuery?.options]);
 

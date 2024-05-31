@@ -217,7 +217,7 @@ export const QueryManagerBody = ({
             components={allComponents}
             callerQueryId={selectedQueryId}
             apps={apps}
-            popoverPlacement="top"
+            popoverPlacement="auto"
             pages={
               appDefinition?.pages
                 ? Object.entries(appDefinition?.pages).map(([id, page]) => ({

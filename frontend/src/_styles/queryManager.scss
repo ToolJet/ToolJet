@@ -720,17 +720,13 @@ $border-radius: 4px;
     font-size: 12px;
     padding: 0 !important;
     height: 24px;
-    color: var(--slate11);
+    color: var(--text-disabled) !important;
     border-radius: 6px;
     display: flex;
     align-items: center;
 
     span {
       padding: 2px 0px;
-    }
-
-    &:hover {
-      color: #000;
     }
   }
 
@@ -747,7 +743,7 @@ $border-radius: 4px;
 
   .list-group-item.active {
     background-color: transparent !important;
-    color: var(--indigo9) !important;
+    color: var(--text-default) !important;
     z-index: inherit !important;
     border-radius: 0;
     transition-delay: 5ms;
@@ -760,7 +756,6 @@ $border-radius: 4px;
   .list-group-item.active:hover {
     background-color: var(--indigo3) !important;
     border-radius: 6px 6px 0 0;
-    color: var(--indigo9) !important;
   }
 }
 
@@ -1791,4 +1786,8 @@ $border-radius: 4px;
   .CodeMirror-gutters {
     background-color: var(--slate3) !important;
   }
+}
+
+.preview-header {
+  // border-top: 20px solid red;
 }
