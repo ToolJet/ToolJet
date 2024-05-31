@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');

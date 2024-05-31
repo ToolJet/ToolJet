@@ -73,7 +73,7 @@ module.exports = {
         'react-hooks/exhaustive-deps': 'warn',
         // 'max-lines-per-function': ['warn', 50], // Limits the number of lines per function
         'react/jsx-key': ['error', { checkFragmentShorthand: true }], // Ensures key prop is present in JSX arrays
-        'max-lines': ['warn', { max: 150, skipBlankLines: true, skipComments: true }],
+        'max-lines': ['warn', { max: 200, skipBlankLines: true, skipComments: true }],
         '@typescript-eslint/interface-name-prefix': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/explicit-module-boundary-types': 'off',
