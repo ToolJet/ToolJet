@@ -17,9 +17,6 @@ module.exports = {
         'plugin:import/errors',
         'plugin:import/warnings',
         'plugin:prettier/recommended',
-        'plugin:react-perf/all',
-        'plugin:sonarjs/recommended',
-        'plugin:@typescript-eslint/recommended',
       ],
       parser: '@babel/eslint-parser',
       parserOptions: {
@@ -33,7 +30,7 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
       },
-      plugins: ['react', 'prettier', 'jest', 'complexity', 'react-perf', 'sonarjs', '@typescript-eslint'],
+      plugins: ['react', 'prettier', 'jest'],
       rules: {
         'prettier/prettier': [
           'error',
@@ -69,16 +66,77 @@ module.exports = {
           },
         ],
         'react/no-unknown-property': 'off',
-        'react-hooks/rules-of-hooks': 'error',
-        'react-hooks/exhaustive-deps': 'warn',
-        // 'max-lines-per-function': ['warn', 50], // Limits the number of lines per function
-        'react/jsx-key': ['error', { checkFragmentShorthand: true }], // Ensures key prop is present in JSX arrays
-        'max-lines': ['warn', { max: 200, skipBlankLines: true, skipComments: true }],
-        '@typescript-eslint/interface-name-prefix': 'off',
-        '@typescript-eslint/explicit-function-return-type': 'off',
-        '@typescript-eslint/explicit-module-boundary-types': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-unused-vars': ['error', { vars: 'all', args: 'none' }],
+      },
+      settings: {
+        react: {
+          version: 'detect',
+        },
+        'import/resolver': {
+          node: {
+            extensions: ['.js', '.jsx'],
+          },
+          webpack: {
+            config: 'webpack.config.js',
+          },
+        },
+      },
+      globals: {
+        path: true,
+        fetch: true,
+        process: true,
+        module: true,
+        __dirname: true,
+      },
+    },
+    {
+      files: ['**/*.ts', '**/*.tsx'],
+      env: {
+        browser: true,
+        amd: true,
+        es2021: true,
+        node: true,
+        'jest/globals': true,
+      },
+      extends: [
+        'eslint:recommended',
+        'plugin:react/recommended',
+        'plugin:react-hooks/recommended',
+        'plugin:import/errors',
+        'plugin:import/warnings',
+        'plugin:prettier/recommended',
+        'plugin:@typescript-eslint/recommended',
+      ],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        ecmaVersion: 12,
+        sourceType: 'module',
+      },
+      plugins: ['react', 'prettier', 'jest', '@typescript-eslint'],
+      rules: {
+        'prettier/prettier': [
+          'error',
+          {
+            semi: true,
+            trailingComma: 'es5',
+            printWidth: 120,
+            singleQuote: true,
+            arrowParens: 'always',
+            proseWrap: 'preserve',
+          },
+        ],
+        'react/prop-types': 0,
+        'react/display-name': 'off',
+        'no-unused-vars': 'off', // Disable the base no-unused-vars rule (it doesn't handle TS properly)
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+          },
+        ],
         '@typescript-eslint/no-var-requires': 'off',
         '@typescript-eslint/no-empty-function': 0,
         'no-unsafe-optional-chaining': 'off',
@@ -96,7 +154,14 @@ module.exports = {
         react: {
           version: 'detect',
         },
-        'import/resolver': 'webpack',
+        'import/resolver': {
+          node: {
+            extensions: ['.js', '.jsx', '.ts', '.tsx'],
+          },
+          webpack: {
+            config: 'webpack.config.js',
+          },
+        },
       },
       globals: {
         path: true,

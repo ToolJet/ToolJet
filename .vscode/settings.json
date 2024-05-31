@@ -10,6 +10,7 @@
     ],
     "eslint.format.enable": true,
     "editor.formatOnSave": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
     "json.schemas": [
         {
             "fileMatch": [
@@ -24,4 +25,4 @@
             "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
         }
     ]
-}
+}  
