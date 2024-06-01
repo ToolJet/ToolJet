@@ -61,6 +61,7 @@ import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 import { diff } from 'deep-object-diff';
 import { isRowInValid } from '../tableUtils';
 import moment from 'moment';
+import { deepClone } from '@/_helpers/utitlities/utils.helpers';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -248,7 +249,7 @@ export function Table({
     setIsCellValueChanged(true);
 
     const dataUpdates = tableDetails.dataUpdates || [];
-    const clonedTableData = _.cloneDeep(tableData);
+    const clonedTableData = deepClone(tableData);
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -280,7 +281,7 @@ export function Table({
 
   const copyOfTableDetails = useRef(tableDetails);
   useEffect(() => {
-    copyOfTableDetails.current = _.cloneDeep(tableDetails);
+    copyOfTableDetails.current = deepClone(tableDetails);
   }, [JSON.stringify(tableDetails)]);
 
   function handleNewRowCellValueChange(index, key, value, rowData) {
@@ -372,13 +373,13 @@ export function Table({
   }
 
   function handleChangesSaved() {
-    const clonedTableData = _.cloneDeep(tableData);
+    const clonedTableData = deepClone(tableData);
     Object.keys(changeSet).forEach((key) => {
       clonedTableData[key] = {
         ..._.merge(clonedTableData[key], changeSet[key]),
       };
     });
-    updatedDataReference.current = _.cloneDeep(clonedTableData);
+    updatedDataReference.current = deepClone(clonedTableData);
 
     setExposedVariables({
       changeSet: {},

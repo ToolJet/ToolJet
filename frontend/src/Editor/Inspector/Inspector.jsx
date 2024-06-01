@@ -33,6 +33,7 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
+import { deepClone } from '@/_helpers/utitlities/utils.helpers';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -160,7 +161,7 @@ export const Inspector = ({
 
   function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
     let newComponent = JSON.parse(JSON.stringify(component));
-    let newDefinition = _.cloneDeep(newComponent.component.definition);
+    let newDefinition = deepClone(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {

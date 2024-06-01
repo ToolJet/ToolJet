@@ -2,14 +2,14 @@ import React, { useContext } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
-import { cloneDeep } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { deepClone } from '@/_helpers/utitlities/utils.helpers';
 
 export default function JoinSelect({ darkMode }) {
   const { joinOptions, tableInfo, joinTableOptions, joinTableOptionsChange, findTableDetails } =
     useContext(TooljetDatabaseContext);
 
-  const joinSelectOptions = cloneDeep(joinTableOptions['fields']) || [];
+  const joinSelectOptions = deepClone(joinTableOptions['fields']) || [];
   const setJoinSelectOptions = (fields) => {
     joinTableOptionsChange('fields', fields);
   };

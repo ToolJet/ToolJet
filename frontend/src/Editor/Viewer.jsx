@@ -51,6 +51,7 @@ import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import { deepClone } from '@/_helpers/utitlities/utils.helpers';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -813,7 +814,7 @@ class ViewerComponent extends React.Component {
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
     const pages =
-      Object.entries(_.cloneDeep(appDefinition)?.pages)
+      Object.entries(deepClone(appDefinition)?.pages)
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [];
 
