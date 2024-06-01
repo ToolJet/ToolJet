@@ -38,6 +38,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
 import { updateParentNodes } from './utility';
+import { deepClone } from './utitlities/utils.helpers';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1400,7 +1401,7 @@ export function computeComponentState(components = {}) {
       if (!components[key]) return;
 
       const { component } = components[key];
-      const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component === comp.component));
+      const componentMeta = deepClone(componentTypes.find((comp) => component.component === comp.component));
       const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
       const existingValues = currentComponents[existingComponentName];
 
@@ -1619,7 +1620,7 @@ export const cloneComponents = (
     return true;
   });
 
-  let newDefinition = _.cloneDeep(appDefinition);
+  let newDefinition = deepClone(appDefinition);
   let newComponents = [],
     newComponentObj = {},
     addedComponentId = new Set();
@@ -1830,8 +1831,8 @@ export const addNewWidgetToTheEditor = (
   isInSubContainer = false,
   addingDefault = false
 ) => {
-  const componentMetaData = _.cloneDeep(componentMeta);
-  const componentData = _.cloneDeep(componentMetaData);
+  const componentMetaData = deepClone(componentMeta);
+  const componentData = deepClone(componentMetaData);
   const noOfGrid = useGridStore.getState().noOfGrid;
 
   const defaultWidth = componentMetaData.defaultSize.width;
@@ -2034,7 +2035,7 @@ export const buildComponentMetaDefinition = (components = {}) => {
   for (const componentId in components) {
     const currentComponentData = components[componentId];
 
-    const componentMeta = _.cloneDeep(
+    const componentMeta = deepClone(
       componentTypes.find((comp) => currentComponentData.component.component === comp.component)
     );
 

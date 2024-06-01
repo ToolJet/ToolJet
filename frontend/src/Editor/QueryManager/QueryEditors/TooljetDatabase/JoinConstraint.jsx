@@ -9,10 +9,11 @@ import Remove from '@/_ui/Icon/solidIcons/Remove';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import set from 'lodash/set';
-import { cloneDeep, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 import useConfirm from './Confirm';
+import { deepClone } from '@/_helpers/utitlities/utils.helpers';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =
@@ -134,7 +135,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
     const adjacentTableForeignKeyDetails = checkIfAdjacentTableHasForeignKey(isChoosingLHStable, tableId);
     if (isChoosingLHStable) {
       if (adjacentTableForeignKeyDetails.length) {
-        const newData = cloneDeep({ ...data });
+        const newData = deepClone({ ...data });
         const newConditionsList = adjacentTableForeignKeyDetails.map((adjacentTableForeignKey) => {
           const { referenced_column_names = [], column_names = [] } = adjacentTableForeignKey;
           const newCondition = {
@@ -156,7 +157,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         set(newData, 'conditions.conditionsList', newConditionsList);
         onChange(newData);
       } else {
-        const newData = cloneDeep({ ...data });
+        const newData = deepClone({ ...data });
         const { conditionsList = [{}] } = newData?.conditions || {};
         const newConditionsList = conditionsList.map((condition) => {
           const newCondition = { ...condition };
@@ -170,7 +171,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
       }
     } else {
       if (adjacentTableForeignKeyDetails.length) {
-        const newData = cloneDeep({ ...data });
+        const newData = deepClone({ ...data });
         const newConditionsList = adjacentTableForeignKeyDetails.map((adjacentTableForeignKey) => {
           const { referenced_column_names = [], column_names = [] } = adjacentTableForeignKey;
           const newCondition = {
@@ -193,7 +194,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         set(newData, 'table', tableId);
         onChange(newData);
       } else {
-        const newData = cloneDeep({ ...data });
+        const newData = deepClone({ ...data });
         const { conditionsList = [] } = newData?.conditions || {};
         const newConditionsList = conditionsList.map((condition) => {
           const newCondition = { ...condition };
@@ -341,7 +342,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           index={index}
           groupOperator={operator}
           onOperatorChange={(value) => {
-            const newData = cloneDeep(data);
+            const newData = deepClone(data);
             set(newData, 'conditions.operator', value);
             onChange(newData);
           }}
@@ -352,13 +353,13 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               }
               return con;
             });
-            const newData = cloneDeep(data);
+            const newData = deepClone(data);
             set(newData, 'conditions.conditionsList', newConditionsList);
             onChange(newData);
           }}
           onRemove={() => {
             const newConditionsList = conditionsList.filter((_cond, i) => i !== index);
-            const newData = cloneDeep(data);
+            const newData = deepClone(data);
             set(newData, 'conditions.conditionsList', newConditionsList);
             onChange(newData);
           }}

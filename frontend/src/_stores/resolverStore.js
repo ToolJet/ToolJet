@@ -4,6 +4,7 @@ import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
 import { dfs, removeAppSuggestions } from './handleReferenceTransactions';
+import { deepClone } from '@/_helpers/utitlities/utils.helpers';
 
 class ReferencesBiMap {
   constructor() {
@@ -275,7 +276,7 @@ export const useResolveStore = create(
         const entityRefs = findEntityIdsFromRefNames(entityNameReferences);
 
         if (!_.isEmpty(entityRefs)) {
-          let diffObj = _.cloneDeep(obj);
+          let diffObj = deepClone(obj);
 
           for (const [key, value] of Object.entries(entityRefs)) {
             diffObj = dfs(diffObj, key, value);
@@ -291,7 +292,7 @@ export const useResolveStore = create(
         const referencesSubstring = updatedEntityName.type + '.' + updatedEntityName.name;
         const allRefsInHints = [];
         const toDeleteAppHints = [];
-        const lookupHintsMap = new Map(_.cloneDeep([...get().lookupTable.hints]));
+        const lookupHintsMap = new Map(deepClone([...get().lookupTable.hints]));
         const currentSuggestions = get().suggestions.appHints;
 
         lookupHintsMap.forEach((value, key) => {

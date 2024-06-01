@@ -10,6 +10,7 @@ import { getComponentName, debuggerActions } from '@/_helpers/appUtils';
 import { memoizeFunction } from '../../_helpers/editorHelpers';
 import { componentTypes } from '../WidgetManager/components';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import useRenderCount from '@/_hooks/useRenderCount';
 
 const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
@@ -18,7 +19,7 @@ const getComponentMetaData = memoizeFunction((componentType) => {
 });
 
 const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, children }) => {
-  // useRenderCount(`HydrateWithResolveReferences-${id}`);
+  useRenderCount(`HydrateWithResolveReferences-${id}`);
 
   const componentMeta = useMemo(() => getComponentMetaData(component?.component), []);
 
