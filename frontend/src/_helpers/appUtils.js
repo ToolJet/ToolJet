@@ -465,29 +465,29 @@ function logoutAction() {
   return Promise.resolve();
 }
 
-function debounce(func) {
-  const timers = new Map();
+// function debounce(func) {
+//   const timers = new Map();
 
-  return (...args) => {
-    const event = args[1] || {};
-    const eventId = uuidv4();
+//   return (...args) => {
+//     const event = args[1] || {};
+//     const eventId = uuidv4();
 
-    if (event.debounce === undefined) {
-      return func.apply(this, args);
-    }
+//     if (event.debounce === undefined) {
+//       return func.apply(this, args);
+//     }
 
-    clearTimeout(timers.get(eventId));
+//     clearTimeout(timers.get(eventId));
 
-    const timer = setTimeout(() => {
-      func.apply(this, args);
-      timers.delete(eventId);
-    }, Number(event.debounce));
+//     const timer = setTimeout(() => {
+//       func.apply(this, args);
+//       timers.delete(eventId);
+//     }, Number(event.debounce));
 
-    timers.set(eventId, timer);
-  };
-}
+//     timers.set(eventId, timer);
+//   };
+// }
 
-export const executeAction = debounce(executeActionWithDebounce);
+export const executeAction = _.debounce(executeActionWithDebounce);
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
@@ -763,10 +763,9 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    //hack to make sure that the page is loaded before executing the actions
-    setTimeout(async () => {
-      return await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
-    }, 0);
+    return _.debounce(async () => {
+      await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
+    }, 10);
   }
 
   if (eventName === 'onTrigger') {
@@ -1130,7 +1129,7 @@ export function runQuery(
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
-    setTimeout(() => {
+    return _.delay(async () => {
       if (shouldSetPreviewData) {
         setPreviewLoading(true);
         queryPreviewData && setPreviewData('');
@@ -1353,7 +1352,7 @@ export function runQuery(
 
           resolve({ status: 'failed', message: error });
         });
-    }, 100);
+    }, 10);
   });
 }
 

@@ -19,7 +19,7 @@ const getComponentMetaData = memoizeFunction((componentType) => {
 });
 
 const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, children }) => {
-  useRenderCount(`HydrateWithResolveReferences-${id}`);
+  // useRenderCount(`HydrateWithResolveReferences-${id}`);
 
   const componentMeta = useMemo(() => getComponentMetaData(component?.component), []);
 
