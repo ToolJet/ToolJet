@@ -1,0 +1,763 @@
+{
+  "type": "object",
+  "properties": {
+    "tooljet_database": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "table_name": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "object",
+            "properties": {
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "column_name": {
+                      "type": "string"
+                    },
+                    "data_type": {
+                      "type": "string"
+                    },
+                    "column_default": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "character_maximum_length": {
+                      "type": "null"
+                    },
+                    "numeric_precision": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "constraints_type": {
+                      "type": "object",
+                      "properties": {
+                        "is_not_null": {
+                          "type": "boolean"
+                        },
+                        "is_primary_key": {
+                          "type": "boolean"
+                        },
+                        "is_unique": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "keytype": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                   
+                  ]
+                }
+              },
+              "foreign_keys": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "referenced_table_name": {
+                      "type": "string"
+                    },
+                    "constraint_name": {
+                      "type": "string"
+                    },
+                    "column_names": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "referenced_column_names": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "on_update": {
+                      "type": "string"
+                    },
+                    "on_delete": {
+                      "type": "string"
+                    },
+                    "referenced_table_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          
+        ]
+      }
+    },
+    "app": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "definition": {
+            "type": "object",
+            "properties": {
+              "appV2": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "slug": {
+                    "type": "string"
+                  },
+                  "isPublic": {
+                    "type": "boolean"
+                  },
+                  "isMaintenanceOn": {
+                    "type": "boolean"
+                  },
+                  "icon": {
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "currentVersionId": {
+                    "type": "null"
+                  },
+                  "userId": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "editingVersion": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "definition": {
+                        "type": "null"
+                      },
+                      "globalSettings": {
+                        "type": "object",
+                        "properties": {
+                          "hideHeader": {
+                            "type": "boolean"
+                          },
+                          "appInMaintenance": {
+                            "type": "boolean"
+                          },
+                          "canvasMaxWidth": {
+                            "type": "number"
+                          },
+                          "canvasMaxWidthType": {
+                            "type": "string"
+                          },
+                          "canvasMaxHeight": {
+                            "type": "number"
+                          },
+                          "canvasBackgroundColor": {
+                            "type": "string"
+                          },
+                          "backgroundFxQuery": {
+                            "type": "string"
+                          },
+                          "appMode": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "showViewerNavigation": {
+                        "type": "boolean"
+                      },
+                      "homePageId": {
+                        "type": "string"
+                      },
+                      "appId": {
+                        "type": "string"
+                      },
+                      "currentEnvironmentId": {
+                        "type": "string"
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "components": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "pageId": {
+                          "type": "string"
+                        },
+                        "parent": {
+                          "type": [
+                            "null",
+                            "string"
+                          ]
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "columns": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "key": {
+                                        "type": "string"
+                                      },
+                                      "columnType": {
+                                        "type": "string"
+                                      },
+                                      "autogenerated": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                    
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "general": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "styles": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "generalStyles": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "displayPreferences": {
+                          "type": "object",
+                          "properties": {
+                            "showOnDesktop": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "showOnMobile": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "validation": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        },
+                        "layouts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "top": {
+                                "type": "number"
+                              },
+                              "left": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "componentId": {
+                                "type": "string"
+                              },
+                              "updatedAt": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                             
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        
+                      ]
+                    }
+                  },
+                  "pages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "handle": {
+                          "type": "string"
+                        },
+                        "index": {
+                          "type": "number"
+                        },
+                        "disabled": {
+                          "type": "boolean"
+                        },
+                        "hidden": {
+                          "type": "boolean"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        },
+                        "appVersionId": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {}
+                  },
+                  "dataQueries": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "options": {
+                          "type": "object",
+                          "properties": {
+                            "operation": {
+                              "type": "string"
+                            },
+                            "transformationLanguage": {
+                              "type": "string"
+                            },
+                            "enableTransformation": {
+                              "type": "boolean"
+                            },
+                            "organization_id": {
+                              "type": "string"
+                            },
+                            "table_id": {
+                              "type": "string"
+                            },
+                            "join_table": {
+                              "type": "object",
+                              "properties": {
+                                "joins": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "number"
+                                      },
+                                      "conditions": {
+                                        "type": "object",
+                                        "properties": {
+                                          "operator": {
+                                            "type": "string"
+                                          },
+                                          "conditionsList": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "operator": {
+                                                  "type": "string"
+                                                },
+                                                "leftField": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "table": {
+                                                      "type": "string"
+                                                    },
+                                                    "columnName": {
+                                                      "type": "string"
+                                                    },
+                                                    "type": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                },
+                                                "rightField": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "table": {
+                                                      "type": "string"
+                                                    },
+                                                    "columnName": {
+                                                      "type": "string"
+                                                    },
+                                                    "type": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "joinType": {
+                                        "type": "string"
+                                      },
+                                      "table": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                "from": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "fields": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "table": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                     
+                                    ]
+                                  }
+                                },
+                                "conditions": {
+                                  "type": "object",
+                                  "properties": {
+                                    "conditionsList": {
+                                      "type": "array",
+                                      "items": {}
+                                    }
+                                  }
+                                },
+                                "order_by": {
+                                  "type": "array",
+                                  "items": {}
+                                }
+                              }
+                            },
+                            "list_rows": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          }
+                        },
+                        "dataSourceId": {
+                          "type": "string"
+                        },
+                        "appVersionId": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "dataSources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "pluginId": {
+                          "type": "null"
+                        },
+                        "appVersionId": {
+                          "type": "string"
+                        },
+                        "organizationId": {
+                          "type": "null"
+                        },
+                        "scope": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                       
+                      ]
+                    }
+                  },
+                  "appVersions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "definition": {
+                          "type": "null"
+                        },
+                        "globalSettings": {
+                          "type": "object",
+                          "properties": {
+                            "hideHeader": {
+                              "type": "boolean"
+                            },
+                            "appInMaintenance": {
+                              "type": "boolean"
+                            },
+                            "canvasMaxWidth": {
+                              "type": "number"
+                            },
+                            "canvasMaxWidthType": {
+                              "type": "string"
+                            },
+                            "canvasMaxHeight": {
+                              "type": "number"
+                            },
+                            "canvasBackgroundColor": {
+                              "type": "string"
+                            },
+                            "backgroundFxQuery": {
+                              "type": "string"
+                            },
+                            "appMode": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "showViewerNavigation": {
+                          "type": "boolean"
+                        },
+                        "homePageId": {
+                          "type": "string"
+                        },
+                        "appId": {
+                          "type": "string"
+                        },
+                        "currentEnvironmentId": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "appEnvironments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "organizationId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "isDefault": {
+                          "type": "boolean"
+                        },
+                        "priority": {
+                          "type": "number"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "dataSourceOptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "dataSourceId": {
+                          "type": "string"
+                        },
+                        "environmentId": {
+                          "type": "string"
+                        },
+                        "options": {
+                          "type": "null"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        
+                      ]
+                    }
+                  },
+                  "schemaDetails": {
+                    "type": "object",
+                    "properties": {
+                      "multiPages": {
+                        "type": "boolean"
+                      },
+                      "multiEnv": {
+                        "type": "boolean"
+                      },
+                      "globalDataSources": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tooljet_version": {
+      "type": "string"
+    },
+    "organization_id": {
+      "type": "string"
+    }
+  },
+  "required":[
+    "tooljet_version",
+    "organization_id"
+  ]
+}
