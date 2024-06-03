@@ -28,14 +28,13 @@ When entering one or more files and use --- to separate each definition
 Copy paste deployment.yaml to the online editor 
 
 ```
-https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
 ```
-
 
 Copy paste the service.yaml to the online editor
 
 ```
-https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
 ```
 
 <div style={{textAlign: 'center'}}>
