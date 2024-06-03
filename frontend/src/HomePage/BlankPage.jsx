@@ -4,6 +4,7 @@ import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useNavigate } from 'react-router-dom';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -17,6 +18,7 @@ export const BlankPage = function BlankPage({
   canCreateApp,
 }) {
   const { t } = useTranslation();
+  const whiteLabelText = retrieveWhiteLabelText();
   const [deploying, setDeploying] = useState(false);
   const navigate = useNavigate();
 
@@ -56,12 +58,17 @@ export const BlankPage = function BlankPage({
               <div className="row homepage-empty-container">
                 <div className="col-7">
                   <h3 className="empty-welcome-header" data-cy="empty-homepage-welcome-header">
-                    {t('blankPage.welcomeToToolJet', 'Welcome to your new ToolJet workspace')}
+                    {t('blankPage.welcomeToToolJet', 'Welcome to your new ${whiteLabelText} workspace', {
+                      whiteLabelText,
+                    })}
                   </h3>
                   <p className={`empty-title`} data-cy="empty-homepage-description">
                     {t(
                       'blankPage.getStartedCreateNewApp',
-                      'You can get started by creating a new application or by creating an application using a template in ToolJet Library.'
+                      'You can get started by creating a new application or by creating an application using a template in ${whiteLabelText} Library.',
+                      {
+                        whiteLabelText,
+                      }
                     )}
                   </p>
                   <div className="row mt-4">

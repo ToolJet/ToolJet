@@ -9,6 +9,7 @@ import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -64,6 +65,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   render() {
     const { isLoading } = this.state;
     const { name, email, invitedOrganizationName: organizationName } = this.props;
+    const whiteLabelText = retrieveWhiteLabelText();
     return (
       <div className="page" ref={this.formRef}>
         <div>
@@ -74,14 +76,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                 <form action="." method="get" autoComplete="off">
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {organizationName ? organizationName : 'ToolJet'}
+                      Join {organizationName ? organizationName : whiteLabelText}
                     </h2>
 
                     <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         organizationName
                           ? `a workspace ${organizationName}. Accept the invite to join the workspace.`
-                          : 'ToolJet.'
+                          : whiteLabelText
                       }`}
                     </div>
 

@@ -39,6 +39,7 @@ import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { ManageOrgVars } from '@/ManageOrgVars';
+import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -76,6 +77,7 @@ class AppComponent extends React.Component {
   };
 
   componentDidMount() {
+    setFaviconAndTitle(null, null, this.props.location);
     authorizeWorkspace();
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);

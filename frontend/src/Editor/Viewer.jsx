@@ -25,7 +25,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles, isValidUUID } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, isValidUUID } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -51,6 +51,7 @@ import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -480,7 +481,7 @@ class ViewerComponent extends React.Component {
         useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
-        setWindowTitle({
+        fetchAndSetWindowTitle({
           page: pageTitles.VIEWER,
           appName: data.name,
           preview,
@@ -505,7 +506,7 @@ class ViewerComponent extends React.Component {
     await appService
       .fetchAppByVersion(appId, versionId)
       .then((data) => {
-        setWindowTitle({
+        fetchAndSetWindowTitle({
           page: pageTitles.VIEWER,
           appName: data.name,
           preview: true,
