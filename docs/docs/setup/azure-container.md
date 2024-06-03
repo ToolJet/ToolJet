@@ -34,7 +34,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
  
  </div>
  
-  - Make sure to provide the image tag, and then enter `npm run start:prod` in the "Command override" field.
+  - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Command override" field.
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
   **Note: For the minimal setup, ToolJet requires: `TOOLJET_HOST`, `PG_HOST`, `PG_DB`, `PG_USER`, `PG_PASSWORD`, `SECRET_KEY_BASE` & `LOCKBOX_MASTER_KEY` keys in the secret.**
