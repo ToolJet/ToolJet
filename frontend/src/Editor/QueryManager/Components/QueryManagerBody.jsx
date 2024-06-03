@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { cloneDeep, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -19,6 +19,7 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -87,7 +88,7 @@ export const QueryManagerBody = ({
     const updatedOptions = cleanFocusedFields(newOptions);
     setOptions((options) => ({ ...options, ...updatedOptions }));
 
-    updateDataQuery(cloneDeep({ ...options, ...updatedOptions }));
+    updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };
 
   const optionchanged = (option, value) => {

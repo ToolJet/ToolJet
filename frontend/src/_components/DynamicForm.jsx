@@ -16,11 +16,8 @@ import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiC
 import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
-
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
-import { useEditorStore } from '@/_stores/editorStore';
-import { shallow } from 'zustand/shallow';
 
 const DynamicForm = ({
   schema,
@@ -43,12 +40,6 @@ const DynamicForm = ({
 
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
-  const { isEditorActive } = useEditorStore(
-    (state) => ({
-      isEditorActive: state?.isEditorActive,
-    }),
-    shallow
-  );
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {

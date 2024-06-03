@@ -26,6 +26,7 @@ import { diff } from 'deep-object-diff';
 import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appService } from '@/_services';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const EventManager = ({
   sourceId,
@@ -279,7 +280,7 @@ export const EventManager = ({
   }
 
   function handleQueryChange(index, updates) {
-    let newEvents = _.cloneDeep(events);
+    let newEvents = deepClone(events);
     let updatedEvent = newEvents[index];
 
     updatedEvent.event = {
@@ -301,7 +302,7 @@ export const EventManager = ({
   }
 
   function handlerChanged(index, param, value) {
-    let newEvents = _.cloneDeep(events);
+    let newEvents = deepClone(events);
 
     let updatedEvent = newEvents[index];
     updatedEvent.event[param] = value;
@@ -341,7 +342,7 @@ export const EventManager = ({
   }
 
   function removeHandler(index) {
-    const eventsHandler = _.cloneDeep(events);
+    const eventsHandler = deepClone(events);
 
     const eventId = eventsHandler[index].id;
     setEventToDeleteLoaderIndex(index);
@@ -520,7 +521,7 @@ export const EventManager = ({
 
             {event.actionId === 'go-to-app' && (
               <GotoApp
-                event={_.cloneDeep(event)}
+                event={deepClone(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
@@ -823,7 +824,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'switch-page' && (
               <SwitchPage
-                event={_.cloneDeep(event)}
+                event={deepClone(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
@@ -940,7 +941,7 @@ export const EventManager = ({
   }
 
   const reorderEvents = (startIndex, endIndex) => {
-    const result = _.cloneDeep(events);
+    const result = deepClone(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
 

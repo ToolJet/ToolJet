@@ -14,6 +14,7 @@ import {
   removeFunctionObjects,
 } from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 export const Form = function Form(props) {
   const {
     id,
@@ -150,7 +151,7 @@ export const Form = function Form(props) {
       // eslint-disable-next-line no-unused-vars
       Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
     );
-    const formattedChildDataClone = _.cloneDeep(formattedChildData);
+    const formattedChildDataClone = deepClone(formattedChildData);
     const exposedVariables = {
       ...(!advanced && { children: formattedChildDataClone }),
       data: removeFunctionObjects(formattedChildData),

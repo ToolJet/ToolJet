@@ -151,14 +151,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(
-  object,
-  state,
-  defaultValue,
-  customObjects = {},
-  withError = false,
-  forPreviewBox = false
-) {
+export function resolveReferences(object, defaultValue, customObjects = {}, withError = false, forPreviewBox = false) {
   if (object === '{{{}}}') return '';
 
   object = _.clone(object);
@@ -217,10 +210,10 @@ export function resolveReferences(
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], currentState, null, customObjects);
+          object = resolveReferences(dynamicVariables[0], null, customObjects);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, currentState, null, customObjects);
+            const value = resolveReferences(dynamicVariable, null, customObjects);
             if (typeof value !== 'function') {
               object = object.replace(dynamicVariable, value);
             }
@@ -236,7 +229,7 @@ export function resolveReferences(
         const new_array = [];
 
         object.forEach((element, index) => {
-          const resolved_object = resolveReferences(element, currentState);
+          const resolved_object = resolveReferences(element);
           new_array[index] = resolved_object;
         });
 
@@ -244,7 +237,7 @@ export function resolveReferences(
         return new_array;
       } else if (!_.isEmpty(object)) {
         Object.keys(object).forEach((key) => {
-          const resolved_object = resolveReferences(object[key], currentState);
+          const resolved_object = resolveReferences(object[key]);
           object[key] = resolved_object;
         });
         if (withError) return [object, error];
@@ -334,8 +327,7 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   const widgetFieldValue = prop;
 
   try {
-    const state = getCurrentState();
-    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
+    return resolveReferences(widgetFieldValue, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }
@@ -542,7 +534,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
     queryDetails?.options?.parameters?.reduce(
       (paramObj, param) => ({
         ...paramObj,
-        [param.name]: resolveReferences(param.defaultValue, {}, undefined), //default values will not be resolved with currentState
+        [param.name]: resolveReferences(param.defaultValue, undefined), //default values will not be resolved with currentState
       }),
       {}
     ) || {};

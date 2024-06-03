@@ -366,7 +366,7 @@ export const GlobalSettings = ({
                         lineNumbers={false}
                         onChange={(color) => {
                           const options = {
-                            canvasBackgroundColor: resolveReferences(color, realState),
+                            canvasBackgroundColor: resolveReferences(color),
                             backgroundFxQuery: color,
                           };
                           globalSettingsChanged(options);

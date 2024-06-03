@@ -20,10 +20,9 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
-import { cloneDeep } from 'lodash';
-
 import ParameterList from './ParameterList';
 import { decodeEntities } from '@/_helpers/utils';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -143,7 +142,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
   const optionsChanged = (newOptions) => {
     setOptions(newOptions);
-    updateDataQuery(cloneDeep(newOptions));
+    updateDataQuery(deepClone(newOptions));
   };
 
   const handleAddParameter = (newParameter) => {

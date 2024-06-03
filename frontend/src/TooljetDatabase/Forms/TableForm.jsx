@@ -10,6 +10,7 @@ import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
 import { serialDataType } from '../constants';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const TableForm = ({
   selectedTable = {},
@@ -36,7 +37,7 @@ const TableForm = ({
   const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
+  const [columns, setColumns] = useState(deepClone(selectedTableColumns));
   const { organizationId, foreignKeys, setForeignKeys } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 

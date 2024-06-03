@@ -51,8 +51,8 @@ export default function generateColumnsData({
       columnType === 'image'
     ) {
       columnOptions.selectOptions = [];
-      const values = resolveReferences(column.values, currentState, []);
-      const labels = resolveReferences(column.labels, currentState, []);
+      const values = resolveReferences(column.values, []);
+      const labels = resolveReferences(column.labels, []);
 
       if (Array.isArray(labels) && Array.isArray(values)) {
         columnOptions.selectOptions = labels.map((label, index) => {
@@ -62,9 +62,9 @@ export default function generateColumnsData({
     }
     if (columnType === 'select' || columnType === 'newMultiSelect') {
       columnOptions.selectOptions = [];
-      const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
+      const useDynamicOptions = resolveReferences(column?.useDynamicOptions);
       if (useDynamicOptions) {
-        const dynamicOptions = resolveReferences(column?.dynamicOptions || [], currentState);
+        const dynamicOptions = resolveReferences(column?.dynamicOptions || []);
         columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
       } else {
         const options = column?.options ?? [];
@@ -103,7 +103,7 @@ export default function generateColumnsData({
     const width = columnSize || defaultColumn.width;
     return {
       id: column.id,
-      Header: resolveReferences(column.name, currentState) ?? '',
+      Header: resolveReferences(column.name) ?? '',
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
@@ -150,7 +150,7 @@ export default function generateColumnsData({
           case 'string':
           case undefined:
           case 'default': {
-            const cellTextColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const cellTextColor = resolveReferences(column.textColor, '', { cellValue, rowData });
             return (
               <String
                 isEditable={isEditable}
@@ -252,7 +252,7 @@ export default function generateColumnsData({
             // );
           }
           case 'number': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const textColor = resolveReferences(column.textColor, '', { cellValue, rowData });
 
             const cellStyles = {
               color: textColor ?? '',
@@ -303,7 +303,7 @@ export default function generateColumnsData({
 
               const allowedDecimalPlaces = column?.decimalPlaces ?? null;
               const removingExcessDecimalPlaces = (cellValue, allowedDecimalPlaces) => {
-                allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces, currentState);
+                allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces);
                 if (cellValue?.toString()?.includes('.')) {
                   const splittedCellValue = cellValue?.toString()?.split('.');
                   const decimalPlacesUnderLimit = splittedCellValue[1]
@@ -486,8 +486,7 @@ export default function generateColumnsData({
                     isMulti={columnType === 'newMultiSelect' ? true : false}
                     containerWidth={width}
                     optionsLoadingState={
-                      resolveReferences(column?.useDynamicOptions, currentState) &&
-                      resolveReferences(column?.optionsLoadingState, currentState)
+                      resolveReferences(column?.useDynamicOptions) && resolveReferences(column?.optionsLoadingState)
                         ? true
                         : false
                     }
@@ -610,12 +609,12 @@ export default function generateColumnsData({
             );
           }
           case 'datepicker': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
-            const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState);
-            const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled, currentState);
-            const disabledDates = resolveReferences(column?.disabledDates, currentState);
-            const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp, currentState);
-            const isDateSelectionEnabled = resolveReferences(column?.isDateSelectionEnabled, currentState);
+            const textColor = resolveReferences(column.textColor, '', { cellValue, rowData });
+            const isTimeChecked = resolveReferences(column?.isTimeChecked);
+            const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled);
+            const disabledDates = resolveReferences(column?.disabledDates);
+            const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp);
+            const isDateSelectionEnabled = resolveReferences(column?.isDateSelectionEnabled);
             const cellStyles = {
               color: textColor ?? '',
             };
@@ -684,7 +683,7 @@ export default function generateColumnsData({
             );
           }
           case 'link': {
-            const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}', currentState);
+            const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}');
             column = {
               ...column,
               linkColor: column?.linkColor ?? '#1B1F24',

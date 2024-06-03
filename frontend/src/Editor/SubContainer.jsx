@@ -24,6 +24,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { diff } from 'deep-object-diff';
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const SubContainer = ({
   mode,
@@ -240,7 +241,7 @@ export const SubContainer = ({
           return;
         }
 
-        const componentMeta = _.cloneDeep(
+        const componentMeta = deepClone(
           componentTypes.find((component) => component.component === item.component.component)
         );
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -279,14 +280,14 @@ export const SubContainer = ({
               Listview: 'listItem',
             });
             const customResolverVariable = widgetResolvables[parentMeta?.component];
-            const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
+            const defaultChildren = deepClone(parentMeta)['defaultChildren'];
             const parentId = newComponent.id;
 
             defaultChildren.forEach((child) => {
               const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } =
                 child;
 
-              const componentMeta = _.cloneDeep(
+              const componentMeta = deepClone(
                 componentTypes.find((component) => component.component === componentName)
               );
               const componentData = JSON.parse(JSON.stringify(componentMeta));
