@@ -71,7 +71,7 @@ export const MultiselectV2 = ({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
-  const validationData = validate(selected);
+  const validationData = validate(selected.length ? selected.map((option) => option.value) : null);
   const { isValid, validationError } = validationData;
   const valueContainerRef = React.useRef(null);
   const [visibleElements, setVisibleElements] = useState([]);
@@ -83,7 +83,6 @@ export const MultiselectV2 = ({
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
-
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isMultiSelectLoading !== multiSelectLoadingState) setIsMultiSelectLoading(multiSelectLoadingState);
@@ -382,7 +381,6 @@ export const MultiselectV2 = ({
       marginTop: '5px',
     }),
   };
-
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
   return (
     <>
