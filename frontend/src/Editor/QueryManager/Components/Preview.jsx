@@ -87,7 +87,7 @@ const Preview = ({ darkMode }) => {
     if (previewPanelRef.current) {
       const componentTop = Math.round(previewPanelRef.current.getBoundingClientRect().top);
       const clientY = e.clientY;
-      if ((clientY >= componentTop - 3) & (clientY <= componentTop + 3)) {
+      if ((clientY >= componentTop - 12) & (clientY <= componentTop + 1)) {
         setIsTopOfPreviewPanel(true);
       } else if (isTopOfPreviewPanel) {
         setIsTopOfPreviewPanel(false);
@@ -205,8 +205,7 @@ const Preview = ({ darkMode }) => {
                 overflowWrap: 'anywhere',
                 padding: 0,
                 border: '1px solid var(--slate5)',
-                borderBottomLeftRadius: '6px',
-                borderBottomRightRadius: '6px',
+                height: '100%',
               }}
             >
               <Tab.Pane eventKey="json" transition={false}>
