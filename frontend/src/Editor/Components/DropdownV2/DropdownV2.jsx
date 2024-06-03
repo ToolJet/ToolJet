@@ -435,6 +435,10 @@ export const DropdownV2 = ({
               ClearIndicator: CustomClearIndicator,
             }}
             isClearable
+            {...{
+              menuIsOpen: isFocused || undefined,
+              isFocused: isFocused || undefined,
+            }}
             // select props
             icon={icon}
             doShowIcon={iconVisibility}
