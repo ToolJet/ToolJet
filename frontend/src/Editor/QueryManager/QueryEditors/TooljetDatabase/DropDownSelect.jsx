@@ -24,38 +24,34 @@ const DropDownSelect = ({
   showPlaceHolder = false,
   highlightSelected = true,
   buttonClasses = '',
-  foreignKeyAccess = false,
-  showRedirection = false,
+
+  // from ToolJet database dashboard
+  tjdb = {
+    isLoading: false,
+    topPlaceHolder: '',
+    foreignKeyAccessInRowForm: false,
+    foreignKeyAccess: false,
+    showRedirection: false,
+    showColumnInfo: false,
+    showDescription: false,
+    showPlaceHolderInForeignKeyDrawer: false,
+    fetchTables: () => {},
+    closeFKMenu: () => {},
+    saveFKValue: () => {},
+    isCellEdit: false,
+    isForeignKeyInEditCell: false,
+  },
+
   columnInfoForTable,
-  showColumnInfo = false,
-  showDescription = false,
-  foreignKeyAccessInRowForm = false,
-  topPlaceHolder = '',
-  showPlaceHolderInForeignKeyDrawer = false,
-  isCellEdit = false,
-  scrollEventForColumnValus,
   organizationId,
-  foreignKeys,
-  setReferencedColumnDetails,
   shouldShowForeignKeyIcon = false,
-  cellColumnName,
-  tableName,
-  targetTable,
-  actions,
-  actionName,
-  fetchTables,
-  onTableClick,
   referencedForeignKeyDetails = [],
   customChildren,
-  isForeignKeyInEditCell = false,
-  shouldCloseFkMenu,
-  closeFKMenu,
-  saveFKValue,
   loader,
-  isLoading = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
+  const { isForeignKeyInEditCell = false } = tjdb;
   const [showMenu, setShowMenu] = useShowPopover(
     isForeignKeyInEditCell,
     `#${popoverId.current}`,
@@ -69,10 +65,10 @@ const DropDownSelect = ({
   const [pageNumber, setPageNumber] = useState(1);
 
   useEffect(() => {
-    if (shouldCloseFkMenu) {
+    if (tjdb.shouldCloseFkMenu) {
       setShowMenu(false);
     }
-  }, [shouldCloseFkMenu]);
+  }, [tjdb.shouldCloseFkMenu]);
 
   useEffect(() => {
     if (showMenu) {
@@ -148,20 +144,20 @@ const DropDownSelect = ({
           style={{
             width: isForeignKeyInEditCell
               ? '300px'
-              : foreignKeyAccess
+              : tjdb.foreignKeyAccess
               ? '403px'
-              : foreignKeyAccessInRowForm === true
+              : tjdb.foreignKeyAccessInRowForm === true
               ? '494px'
-              : isCellEdit
+              : tjdb.isCellEdit
               ? '266px'
               : '244px',
             maxWidth: isForeignKeyInEditCell
               ? '300px'
-              : foreignKeyAccess
+              : tjdb.foreignKeyAccess
               ? '403px'
-              : foreignKeyAccessInRowForm === true
+              : tjdb.foreignKeyAccessInRowForm === true
               ? '494px'
-              : isCellEdit
+              : tjdb.isCellEdit
               ? '266px'
               : '246px',
             overflow: 'hidden',
@@ -181,37 +177,20 @@ const DropDownSelect = ({
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
             loader={loader}
-            isLoading={isLoading}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
-            foreignKeyAccess={foreignKeyAccess}
-            showRedirection={showRedirection}
+            tjdb={tjdb}
             columnInfoForTable={columnInfoForTable}
-            showColumnInfo={showColumnInfo}
-            showDescription={showDescription}
-            foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-            isCellEdit={isCellEdit}
-            scrollEventForColumnValus={scrollEventForColumnValus}
             organizationId={organizationId}
-            foreignKeys={foreignKeys}
-            setReferencedColumnDetails={setReferencedColumnDetails}
             shouldShowForeignKeyIcon={shouldShowForeignKeyIcon}
-            cellColumnName={cellColumnName}
             isInitialForeignKeyDataLoaded={isInitialForeignKeyDataLoaded}
             setIsInitialForeignKeyDataLoaded={setIsInitialForeignKeyDataLoaded}
             totalRecords={totalRecords}
             setTotalRecords={setTotalRecords}
             pageNumber={pageNumber}
             setPageNumber={setPageNumber}
-            tableName={tableName}
-            targetTable={targetTable}
-            actions={actions}
-            actionName={actionName}
             referencedForeignKeyDetails={referencedForeignKeyDetails}
             customChildren={customChildren}
-            isForeignKeyInEditCell={isForeignKeyInEditCell}
-            closeFKMenu={closeFKMenu}
-            saveFKValue={saveFKValue}
           />
         </Popover>
       }
@@ -241,16 +220,16 @@ const DropDownSelect = ({
                 return;
               }
               setShowMenu((show) => !show);
-              if (onTableClick === true) {
-                fetchTables();
+              if (tjdb.onTableClick === true) {
+                tjdb.fetchTables();
               }
             }}
             className={cx(
               {
                 'justify-content-start': !shouldCenterAlignText,
                 'justify-content-centre': shouldCenterAlignText,
-                'border-1 tdb-dropdown-btn-foreignKeyAccess': foreignKeyAccess || foreignKeyAccessInRowForm,
-                'border-0 tdb-dropdown-btn': !foreignKeyAccess || !foreignKeyAccessInRowForm,
+                'border-1 tdb-dropdown-btn-foreignKeyAccess': tjdb.foreignKeyAccess || tjdb.foreignKeyAccessInRowForm,
+                'border-0 tdb-dropdown-btn': !tjdb.foreignKeyAccess || !tjdb.foreignKeyAccessInRowForm,
               },
               'gap-0',
               'w-100',
@@ -279,7 +258,9 @@ const DropDownSelect = ({
                 )
               ) : showPlaceHolder ? (
                 <span style={{ color: '#9e9e9e' }}>
-                  {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
+                  {tjdb.foreignKeyAccessInRowForm || tjdb.showPlaceHolderInForeignKeyDrawer
+                    ? tjdb.topPlaceHolder
+                    : 'Select...'}
                 </span>
               ) : (
                 ''
