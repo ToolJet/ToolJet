@@ -1,6 +1,6 @@
 const rfdc = require('rfdc')({ proto: false, circles: false });
 
-export const deepClone = (obj: Record<string, unknown>) => {
+export const deepClone = (obj) => {
   try {
     return rfdc(obj);
   } catch (error) {
