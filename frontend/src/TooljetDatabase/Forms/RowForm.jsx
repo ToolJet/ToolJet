@@ -312,7 +312,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                   setReferencedColumnDetails: setReferencedColumnDetails,
                   scrollEventForColumnValues: true,
                   cellColumnName: columnName,
-                  isForeignKeyInEditCell: false,
+                  // isForeignKeyInEditCell: false,
                 }}
                 disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
                 onChange={(value) => {

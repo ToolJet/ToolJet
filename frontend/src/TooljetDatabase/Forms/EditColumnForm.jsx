@@ -561,7 +561,7 @@ const ColumnForm = ({
                       setReferencedColumnDetails: setReferencedColumnDetails,
                       scrollEventForColumnValues: true,
                       cellColumnName: selectedColumn?.Header,
-                      isForeignKeyInEditCell: false,
+                      // isForeignKeyInEditCell: false,
                     }}
                     disabled={
                       selectedColumn?.dataType === 'serial' || selectedColumn.constraints_type.is_primary_key === true

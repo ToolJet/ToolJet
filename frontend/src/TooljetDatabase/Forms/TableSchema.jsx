@@ -321,7 +321,7 @@ function TableSchema({
                   setReferencedColumnDetails: setReferencedColumnDetails,
                   scrollEventForColumnValues: true,
                   cellColumnName: columnDetails[index].column_name,
-                  isForeignKeyInEditCell: false,
+                  // isForeignKeyInEditCell: false,
                 }}
                 disabled={
                   (columnDetails[index].data_type === 'serial' &&

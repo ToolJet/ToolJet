@@ -313,7 +313,7 @@ const ColumnForm = ({
                     setReferencedColumnDetails: setReferencedColumnDetails,
                     scrollEventForColumnValues: true,
                     cellColumnName: columnName,
-                    isForeignKeyInEditCell: false,
+                    // isForeignKeyInEditCell: false,
                   }}
                   disabled={dataType === 'serial'}
                   onChange={(value) => {

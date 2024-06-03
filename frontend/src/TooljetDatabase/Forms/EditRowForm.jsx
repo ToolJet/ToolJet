@@ -295,7 +295,7 @@ const EditRowForm = ({
                   setReferencedColumnDetails: setReferencedColumnDetails,
                   scrollEventForColumnValues: true,
                   cellColumnName: columnName,
-                  isForeignKeyInEditCell: false,
+                  // isForeignKeyInEditCell: false,
                 }}
                 disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
                 onChange={(value) => handleInputChange(index, value.value, columnName)}

@@ -51,8 +51,9 @@ const DropDownSelect = ({
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
+  const { isForeignKeyInEditCell = false } = tjdb;
   const [showMenu, setShowMenu] = useShowPopover(
-    tjdb.isForeignKeyInEditCell,
+    isForeignKeyInEditCell,
     `#${popoverId.current}`,
     `#${popoverBtnId.current}`
   );
@@ -103,7 +104,7 @@ const DropDownSelect = ({
   }, [selected]);
 
   function checkElementPosition() {
-    if (tjdb.isForeignKeyInEditCell) {
+    if (isForeignKeyInEditCell) {
       return 'bottom-start';
     }
     const selectControl = document.getElementById(popoverBtnId.current);
@@ -141,7 +142,7 @@ const DropDownSelect = ({
           id={popoverId.current}
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{
-            width: tjdb.isForeignKeyInEditCell
+            width: isForeignKeyInEditCell
               ? '300px'
               : tjdb.foreignKeyAccess
               ? '403px'
@@ -150,7 +151,7 @@ const DropDownSelect = ({
               : tjdb.isCellEdit
               ? '266px'
               : '244px',
-            maxWidth: tjdb.isForeignKeyInEditCell
+            maxWidth: isForeignKeyInEditCell
               ? '300px'
               : tjdb.foreignKeyAccess
               ? '403px'
@@ -172,7 +173,7 @@ const DropDownSelect = ({
               setSelected(values);
             }}
             selected={selected}
-            closePopup={() => setShowMenu(tjdb.isForeignKeyInEditCell ? true : false)}
+            closePopup={() => setShowMenu(isForeignKeyInEditCell ? true : false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
             loader={loader}
@@ -194,7 +195,7 @@ const DropDownSelect = ({
         </Popover>
       }
     >
-      {tjdb.isForeignKeyInEditCell ? (
+      {isForeignKeyInEditCell ? (
         <div
           className={`col-auto`}
           style={{ position: 'relative', left: '-10px', top: '2px', paddingLeft: '10px', paddingBottom: '4px' }}
