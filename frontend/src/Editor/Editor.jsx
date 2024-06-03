@@ -338,7 +338,9 @@ const EditorComponent = (props) => {
     if (lastUpdatedRef.length > 0) {
       const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
 
-      const directRenders = lastUpdatedRef.map((ref) => ref.includes('rerender') && ref.split(' ')[1]);
+      const directRenders = lastUpdatedRef
+        .map((ref) => ref.includes('rerender') && ref.split(' ')[1])
+        .filter((item) => item !== false);
 
       const toUpdateRefs = lastUpdatedRef.filter((ref) => !ref.includes('rerender'));
 
