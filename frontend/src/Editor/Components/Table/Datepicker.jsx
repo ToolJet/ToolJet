@@ -227,7 +227,7 @@ export const Datepicker = function Datepicker({
           <TjDatepicker
             dateInputRef={dateInputRef}
             readOnly={readOnly}
-            styles={{ color: cellStyles.color ?? 'inherit' }}
+            styles={{ color: cellStyles.color }}
             setIsDateInputFocussed={setIsDateInputFocussed}
             setDateInputValue={setDateInputValue}
           />
