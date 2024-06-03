@@ -693,7 +693,7 @@ $border-radius: 4px;
   }
 
   .list-group-item.active {
-    background-color: transparent !important;
+    background-color: var(--surfaces-surface-01) !important;
     z-index: inherit !important;
     border-bottom: 2px solid var(--indigo9) !important;
     color: var(--text-default) !important;
@@ -748,7 +748,7 @@ $border-radius: 4px;
     transition-delay: 5ms;
 
     span {
-      background: #ffffff;
+      background-color: var(--surfaces-surface-01) !important;
     }
   }
 
@@ -1151,7 +1151,7 @@ $border-radius: 4px;
 
     .query-preview-list-group {
       border-radius: 6px;
-      background: var(#CCD1D54D, rgba(204, 209, 213, 0.30));
+      background: var(--controls-switch-tag);
       box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.06) inset;
     }
 
