@@ -204,7 +204,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
         <Popover.Body>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="font-weight-500 mb-1">
+            <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
               {'Option label'}
             </label>
             <CodeHinter
@@ -219,7 +219,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="font-weight-500 mb-1">
+            <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
               {'Option value'}
             </label>
             <CodeHinter

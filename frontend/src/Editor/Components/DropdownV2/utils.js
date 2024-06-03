@@ -1,13 +1,17 @@
+export const getInputFocusedColor = ({ accentColor }) => {
+  if (accentColor !== '#4368E3') {
+    return accentColor;
+  }
+  return 'var(--primary-accent-strong)';
+};
+
 export const getInputBorderColor = ({ isValid, isFocused, fieldBorderColor, accentColor, isLoading, isDisabled }) => {
   if (!isValid) {
     return 'var(--status-error-strong)';
   }
 
   if (isFocused) {
-    if (accentColor !== '#4368E3') {
-      return accentColor;
-    }
-    return 'var(--primary-accent-strong)';
+    return getInputFocusedColor({ accentColor });
   }
 
   if (fieldBorderColor !== '#CCD1D5') {

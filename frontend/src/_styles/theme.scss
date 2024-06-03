@@ -13080,19 +13080,22 @@ div.ds-svg-container svg {
 
   .multiselect-custom-menulist-select-all {
     display: flex;
-    padding: 8px 12px;
-    padding-top: 4px;
+    padding: 8px 16px;
     background-color: var(--surfaces-surface-01) !important;
+    color: var(--text-primary)
+  }
+  .form-check-input:disabled {
+    background-color: var(--surfaces-surface-03) !important;
   }
 }
 
 .dropdown-multiselect-widget-search-box-wrapper {
   border-bottom: 1px solid var(--borders-weak-disabled);
   display: flex;
-  padding: 12px 8px;
+  padding: 8px 10px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
+  gap: 4px;
   align-self: stretch;
   height: 40px;
   justify-content: center;

@@ -15,7 +15,7 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -28,9 +28,9 @@ export const CustomDropdownIndicator = (props) => {
   return (
     <DropdownIndicator {...props}>
       {menuIsOpen ? (
-        <TriangleUpArrow width={'16'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+        <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
       ) : (
-        <TriangleDownArrow width={'16'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+        <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
       )}
     </DropdownIndicator>
   );
@@ -39,7 +39,7 @@ export const CustomDropdownIndicator = (props) => {
 export const CustomClearIndicator = (props) => {
   return (
     <ClearIndicator {...props}>
-      <ClearIndicatorIcon width={'16'} fill={'var(--borders-strong)'} className="cursor-pointer" />
+      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer" />
     </ClearIndicator>
   );
 };
@@ -244,7 +244,6 @@ export const DropdownV2 = ({
     control: (provided, state) => {
       return {
         ...provided,
-        'var(--tblr-input-border-color-darker)': tinycolor(fieldBorderColor).darken(24).toString(),
         minHeight: _height,
         height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
@@ -264,7 +263,9 @@ export const DropdownV2 = ({
           isDisabled: isDropdownDisabled,
         }),
         '&:hover': {
-          borderColor: 'var(--tblr-input-border-color-darker)',
+          borderColor: state.isFocused
+            ? getInputFocusedColor({ accentColor })
+            : tinycolor(fieldBorderColor).darken(24).toString(),
         },
       };
     },
@@ -307,9 +308,9 @@ export const DropdownV2 = ({
     }),
     clearIndicator: (provided, _state) => ({
       ...provided,
-      padding: '1.33px',
+      padding: '2px',
       '&:hover': {
-        padding: '1.33px',
+        padding: '2px',
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
         borderRadius: '6px',
       },
@@ -359,7 +360,6 @@ export const DropdownV2 = ({
       margin: 0,
     }),
   };
-
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
   return (
     <>
@@ -433,10 +433,6 @@ export const DropdownV2 = ({
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
               DropdownIndicator: isDropdownLoading ? () => null : CustomDropdownIndicator,
               ClearIndicator: CustomClearIndicator,
-            }}
-            {...{
-              menuIsOpen: isFocused || undefined,
-              isFocused: isFocused || undefined,
             }}
             isClearable
             // select props

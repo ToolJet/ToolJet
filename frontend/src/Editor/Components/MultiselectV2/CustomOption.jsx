@@ -8,8 +8,8 @@ const CustomOption = (props) => {
   return (
     <Option {...props}>
       <div className="d-flex">
-        <FormCheck checked={props.isSelected} />
-        <span style={{ marginLeft: '5px' }}>{props.label}</span>
+        <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
+        <span style={{ marginLeft: '5px' }}>{props?.label}</span>
       </div>
     </Option>
   );

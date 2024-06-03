@@ -2,21 +2,20 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import _, { isEmpty } from 'lodash';
 import React, { useState, useEffect, useMemo } from 'react';
-import Select, { components } from 'react-select';
+import Select from 'react-select';
 import './multiselectV2.scss';
 import CustomMenuList from '../DropdownV2/CustomMenuList';
-// import CustomMenuList from './CustomMenuList';
+import { useEditorStore } from '@/_stores/editorStore';
 import CustomOption from './CustomOption';
 import CustomValueContainer from './CustomValueContainer';
-const { DropdownIndicator } = components;
 import Loader from '@/ToolJetUI/Loader/Loader';
 import cx from 'classnames';
 import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
-import { getInputBackgroundColor, getInputBorderColor } from '../DropdownV2/utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from '../DropdownV2/utils';
 
-const SHOW_MORE_WIDTH = 40;
+const SHOW_MORE_CHIP_WIDTH = 40;
 const ICON_WIDTH = 16;
 const SCALING_FACTOR = 0.6;
 const FONT_SIZE = 12;
@@ -29,13 +28,11 @@ export const MultiselectV2 = ({
   height,
   properties,
   styles,
-  exposedVariables,
   setExposedVariable,
   setExposedVariables,
   onComponentClick,
   darkMode,
   fireEvent,
-  dataCy,
   validate,
   width,
 }) => {
@@ -74,7 +71,6 @@ export const MultiselectV2 = ({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
-  const [multiselectOpen, setMultiselectOpen] = useState(false);
   const validationData = validate(selected);
   const { isValid, validationError } = validationData;
   const valueContainerRef = React.useRef(null);
@@ -85,6 +81,7 @@ export const MultiselectV2 = ({
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -100,12 +97,12 @@ export const MultiselectV2 = ({
         let totalWidth = 0;
         let maxVisibleOptions = 0;
         const containerWidth =
-          valueContainerRef.current.offsetWidth - (iconVisibility ? ICON_WIDTH + SHOW_MORE_WIDTH : SHOW_MORE_WIDTH);
+          valueContainerRef.current.offsetWidth -
+          (iconVisibility ? ICON_WIDTH + SHOW_MORE_CHIP_WIDTH : SHOW_MORE_CHIP_WIDTH);
         // // Calculate total width of all span elements
         for (const option of selected) {
           const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + MARGIN + GAP;
           totalWidth += valueWidth;
-          // Check if max row height is auto and then if any of the options width exceeds container width, return true
           if (totalWidth <= containerWidth) {
             maxVisibleOptions++;
           } else {
@@ -244,21 +241,21 @@ export const MultiselectV2 = ({
       fireEvent('onSearchTextChanged');
     }
   };
+  const handleClickOutside = (event) => {
+    if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
+      if (isMultiselectOpen) {
+        fireEvent('onBlur');
+      }
+      setIsMultiselectOpen(false);
+    }
+  };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
-        if (multiselectOpen) {
-          fireEvent('onBlur');
-        }
-        setMultiselectOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside, { capture: true });
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside, { capture: true });
     };
-  }, [multiselectOpen]);
+  }, [isMultiselectOpen]);
 
   // Handle Select all logic
   useEffect(() => {
@@ -292,11 +289,12 @@ export const MultiselectV2 = ({
           isDisabled: isMultiSelectDisabled,
         }),
         '&:hover': {
-          borderColor: 'var(--tblr-input-border-color-darker)',
+          borderColor: state.isFocused
+            ? getInputFocusedColor({ accentColor })
+            : tinycolor(fieldBorderColor).darken(24).toString(),
         },
       };
     },
-
     valueContainer: (provided, _state) => ({
       ...provided,
       height: _height,
@@ -304,7 +302,6 @@ export const MultiselectV2 = ({
       display: 'flex',
       gap: '0.13rem',
     }),
-
     multiValue: (provided, _state) => ({
       ...provided,
       borderRadius: '100px',
@@ -339,24 +336,30 @@ export const MultiselectV2 = ({
     }),
     clearIndicator: (provided, _state) => ({
       ...provided,
-      padding: '0px',
+      padding: '2px',
+      '&:hover': {
+        padding: '2px',
+        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        borderRadius: '6px',
+      },
     }),
     dropdownIndicator: (provided, _state) => ({
       ...provided,
       padding: '0px',
     }),
-    option: (provided) => ({
+    option: (provided, _state) => ({
       ...provided,
       backgroundColor:
         darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
           ? 'var(--surfaces-surface-01)'
           : fieldBackgroundColor,
-      color:
-        selectedTextColor !== '#1B1F24'
-          ? selectedTextColor
-          : isMultiSelectDisabled || isMultiSelectLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+      color: _state.isDisabled
+        ? 'var(_--text-disbled)'
+        : selectedTextColor !== '#1B1F24'
+        ? selectedTextColor
+        : isMultiSelectDisabled || isMultiSelectLoading
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
       padding: '8px 6px 8px 12px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -406,7 +409,7 @@ export const MultiselectV2 = ({
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
-          // useEditorStore.getState().actions.setHoveredComponent('');
+          useEditorStore.getState().actions.setHoveredComponent('');
         }}
       >
         <Label
@@ -431,18 +434,15 @@ export const MultiselectV2 = ({
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
             onInputChange={onSearchTextChange}
-            onFocus={(event) => {
-              onComponentClick(event, component, id);
-            }}
-            menuIsOpen={multiselectOpen}
+            menuIsOpen={isMultiselectOpen}
             placeholder={placeholder}
             components={{
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
-              DropdownIndicator: isMultiSelectLoading ? () => null : DropdownIndicator,
               ClearIndicator: CustomClearIndicator,
+              DropdownIndicator: isMultiSelectLoading ? () => null : CustomDropdownIndicator,
             }}
             isClearable
             isMulti
@@ -450,7 +450,7 @@ export const MultiselectV2 = ({
             closeMenuOnSelect={false}
             onMenuOpen={() => {
               fireEvent('onFocus');
-              setMultiselectOpen(true);
+              setIsMultiselectOpen(true);
             }}
             // select props
             icon={icon}

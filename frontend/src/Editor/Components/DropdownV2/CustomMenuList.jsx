@@ -3,7 +3,6 @@ import { components } from 'react-select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './dropdownV2.scss';
-import { noop } from 'lodash';
 import { FormCheck } from 'react-bootstrap';
 import cx from 'classnames';
 
@@ -63,7 +62,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             e.target.focus();
           }}
           onFocus={onMenuInputFocus}
-          placeholder="Search..."
+          placeholder="Search"
           className="dropdown-multiselect-widget-search-box"
         />
       </div>
