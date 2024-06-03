@@ -11,8 +11,9 @@ This tutorial will show you how to create an employee directory application in m
 **[2. Create a Database Table](#2-create-a-database-table)**  <br/>
 **[3. Fetch Data](#3-fetch-data)** <br/>
 **[4. Bind Data to the Table](#4-bind-data-to-the-table)** <br/>
-**[5. Add New Data](#5-add-new-data)** <br/>
-**[6. Preview, Release and Share](#6-preview-release-and-share)** <br/>
+**[5. Create a Query to Add Data](#5-create-a-query-to-add-data)** <br/>
+**[6. Use Events to Trigger Queries](#6-use-events-to-trigger-queries)** <br/>
+**[7. Preview, Release and Share](#7-preview-release-and-share)** <br/>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -78,7 +79,7 @@ To display employees in the application, we first need to fetch data from the da
 
 ### 4. Bind Data to the Table
 
-Now, we need to bind the data returned by the `getEmployees` query with the Table created in Step 1. 
+Now, we need to bind the data returned by the `getEmployees` query with the Table created in the first step. 
 
 <div class="video-container">
     <iframe width="560" height="315" src="https://www.youtube.com/embed/m_7i_smzh2k?si=_w11gzqJaFjn5PNZ&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -98,12 +99,12 @@ Now the Table component is filled with the data returned by the `getEmployees` q
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### 5. Add New Data
+### 5. Create a Query to Add Data
 
 In the bottom-right corner of the Table component, there is a `+` (Add new row) button that opens a form to add new data to the Table. Follow the steps below to create an `addEmployee` query and execute it when you click the **Save** button on the add new rows form.
 
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/uIRKqda9AUQ?si=jwqoBAOGlgBF7nmf&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/xwGvQfOkHP8?si=pn6gmjpyr4Y0F9Yz&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <br/>
 
@@ -119,6 +120,11 @@ In the bottom-right corner of the Table component, there is a `+` (Add new row) 
 ...
 ```
 Frame all the remaining keys in the same format.
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### 6. Use Events to Trigger Queries
 
 The `addEmployees` query should run when you click on the **Save** button on the `+` (Add new row) form. And the Table component should reload and display updated data each time a new employee is added. Follow the below steps to use events to setup this functionality. 
 
@@ -138,7 +144,7 @@ Now when you click the `+` (Add new row) button, enter the employee data, and cl
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### 6. Preview, Release And Share
+### 7. Preview, Release And Share
 
 The preview, release and share buttons are at the top-right of the App-Builder.
 
