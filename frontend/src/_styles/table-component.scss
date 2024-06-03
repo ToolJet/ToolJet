@@ -72,8 +72,6 @@
   }
 
   .tr {
-    height: 32px;
-
     .th {
       .thead-editable-icon-header-text-wrapper {
         max-width: 100%;
@@ -82,9 +80,7 @@
       }
 
       .header-text {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        line-height: 20px;
       }
     }
 
@@ -1038,7 +1034,7 @@
 }
 
 .table-column-popover#popover-basic-2 {
-  z-index: 9999 !important;
+  z-index: 999 !important;
   min-width: 280px;
   max-height: 85vh !important;
 

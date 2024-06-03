@@ -142,7 +142,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
       </Popover>
     );
   };
-  const _value = `#${value.split('#')[1]}`;
+  const _value = `#${(value || '').split('#')[1]}`;
   const outerStyles = {
     width: '142px',
     height: '32px',
