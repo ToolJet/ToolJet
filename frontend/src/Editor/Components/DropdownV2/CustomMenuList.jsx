@@ -12,7 +12,7 @@ const { MenuList } = components;
 const CustomMenuList = ({ selectProps, ...props }) => {
   const {
     onInputChange,
-    inputValue,
+    searchInputValue,
     onMenuInputFocus,
     showAllOption,
     isSelectAllSelected,
@@ -37,7 +37,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       onClick={(e) => e.stopPropagation()}
     >
       <div className="dropdown-multiselect-widget-search-box-wrapper">
-        {!inputValue && (
+        {!searchInputValue && (
           <span className="">
             <SolidIcon name="search01" width="14" />
           </span>
@@ -47,7 +47,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           autoComplete="off"
           spellCheck="false"
           type="text"
-          value={inputValue}
+          value={searchInputValue}
           onChange={(e) =>
             onInputChange(e.currentTarget.value, {
               action: 'input-change',

@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const getInputFocusedColor = ({ accentColor }) => {
   if (accentColor !== '#4368E3') {
     return accentColor;
@@ -39,4 +41,21 @@ export const getInputBackgroundColor = ({ fieldBackgroundColor, darkMode, isLoad
   }
 
   return 'var(--surfaces-surface-01)';
+};
+
+export const highlightText = (text, highlight) => {
+  const parts = text?.split(new RegExp(`(${highlight})`, 'gi'));
+  return (
+    <span>
+      {parts.map((part, index) =>
+        part?.toLowerCase() === highlight?.toLowerCase() ? (
+          <span key={index} style={{ backgroundColor: '#E3B643' }}>
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
 };

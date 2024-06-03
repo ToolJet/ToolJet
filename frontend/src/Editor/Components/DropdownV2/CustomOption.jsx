@@ -2,6 +2,7 @@ import React from 'react';
 import { components } from 'react-select';
 import CheckMark from '@/_ui/Icon/bulkIcons/CheckMark';
 import './dropdownV2.scss';
+import { highlightText } from './utils';
 
 const CustomOption = (props) => {
   return (
@@ -12,7 +13,9 @@ const CustomOption = (props) => {
             <CheckMark width={'20'} fill={'var(--primary-brand)'} />
           </span>
         )}
-        <span style={{ color: props.isDisabled ? '#889096' : 'unset', wordBreak: 'break-all' }}>{props.label}</span>
+        <span style={{ color: props.isDisabled ? '#889096' : 'unset', wordBreak: 'break-all' }}>
+          {highlightText(props.label, props.selectProps.searchInputValue)}
+        </span>
       </div>
     </components.Option>
   );

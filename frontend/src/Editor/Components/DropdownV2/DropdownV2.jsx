@@ -99,7 +99,7 @@ export const DropdownV2 = ({
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const inputRef = React.useRef(null); // Ref for the input search box
   const labelRef = useRef();
@@ -147,7 +147,7 @@ export const DropdownV2 = ({
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
-      setInputValue(searchText);
+      setSearchInputValue(searchText);
       fireEvent('onSearchTextChanged');
     }
   };
@@ -156,7 +156,7 @@ export const DropdownV2 = ({
     let menu = ref.current.querySelector('.select__menu');
     if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
       setIsFocused(false);
-      setInputValue('');
+      setSearchInputValue('');
     }
   };
 
@@ -208,7 +208,7 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     setExposedVariable('label', label);
-    setExposedVariable('searchText', inputValue);
+    setExposedVariable('searchText', searchInputValue);
     setExposedVariable('isValid', isValid);
     setExposedVariable('isVisible', properties.visibility);
     setExposedVariable('isLoading', dropdownLoadingState);
@@ -216,7 +216,7 @@ export const DropdownV2 = ({
     setExposedVariable('isMandatory', isMandatory);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory, label, inputValue, isValid]);
+  }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory, label, searchInputValue, isValid]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -445,8 +445,8 @@ export const DropdownV2 = ({
             iconColor={iconColor}
             isSearchable={false}
             darkMode={darkMode}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
+            searchInputValue={searchInputValue}
+            setSearchInputValue={setSearchInputValue}
             optionsLoadingState={properties.optionsLoadingState}
             inputRef={inputRef}
           />
