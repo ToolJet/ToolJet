@@ -465,28 +465,6 @@ function logoutAction() {
   return Promise.resolve();
 }
 
-// function debounce(func) {
-//   const timers = new Map();
-
-//   return (...args) => {
-//     const event = args[1] || {};
-//     const eventId = uuidv4();
-
-//     if (event.debounce === undefined) {
-//       return func.apply(this, args);
-//     }
-
-//     clearTimeout(timers.get(eventId));
-
-//     const timer = setTimeout(() => {
-//       func.apply(this, args);
-//       timers.delete(eventId);
-//     }, Number(event.debounce));
-
-//     timers.set(eventId, timer);
-//   };
-// }
-
 export const executeAction = _.debounce(executeActionWithDebounce);
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
