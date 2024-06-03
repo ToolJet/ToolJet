@@ -272,7 +272,7 @@ export const DropdownV2 = ({
     valueContainer: (provided, _state) => ({
       ...provided,
       height: _height,
-      padding: '0 6px',
+      padding: '0 10px',
       justifyContent,
       display: 'flex',
       gap: '0.13rem',

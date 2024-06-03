@@ -19,6 +19,8 @@ const CustomValueContainer = ({ children, ...props }) => {
                 width: '16px',
                 height: '16px',
                 color: selectProps?.iconColor,
+                marginRight: '2px',
+                marginBottom: '2px',
               }}
             />
           </div>

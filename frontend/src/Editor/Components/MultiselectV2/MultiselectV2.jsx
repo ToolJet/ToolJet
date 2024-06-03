@@ -81,6 +81,7 @@ export const MultiselectV2 = ({
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
 
   useEffect(() => {
@@ -91,34 +92,35 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, multiSelectLoadingState, disabledState]);
 
-  useEffect(() => {
-    const updateVisibleElements = () => {
-      if (!isEmpty(valueContainerRef.current)) {
-        let totalWidth = 0;
-        let maxVisibleOptions = 0;
-        const containerWidth =
-          valueContainerRef.current.offsetWidth -
-          (iconVisibility ? ICON_WIDTH + SHOW_MORE_CHIP_WIDTH : SHOW_MORE_CHIP_WIDTH);
-        // // Calculate total width of all span elements
-        for (const option of selected) {
-          const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + MARGIN + GAP;
-          totalWidth += valueWidth;
-          if (totalWidth <= containerWidth) {
-            maxVisibleOptions++;
-          } else {
-            break;
-          }
-        }
-        if (maxVisibleOptions) {
-          setVisibleElements(selected.slice(0, maxVisibleOptions));
-        } else {
-          setVisibleElements(selected.slice(0, 1));
-        }
-        setShowMore(selected.length > maxVisibleOptions);
-      }
-    };
-    updateVisibleElements();
-  }, [selected, width, iconVisibility]);
+  // useEffect(() => {
+  //   const updateVisibleElements = () => {
+  //     if (!isEmpty(valueContainerRef.current)) {
+  //       let totalWidth = 0;
+  //       let maxVisibleOptions = 0;
+  //       const containerWidth =
+  //         valueContainerRef.current.offsetWidth -
+  //         (iconVisibility ? ICON_WIDTH + SHOW_MORE_CHIP_WIDTH : SHOW_MORE_CHIP_WIDTH);
+  //       // // Calculate total width of all span elements
+  //       for (const option of selected) {
+  //         const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + MARGIN + GAP;
+  //         console.log(valueWidth, "valueWidth")
+  //         totalWidth += valueWidth;
+  //         if (totalWidth <= containerWidth) {
+  //           maxVisibleOptions++;
+  //         } else {
+  //           break;
+  //         }
+  //       }
+  //       if (maxVisibleOptions) {
+  //         setVisibleElements(selected.slice(0, maxVisibleOptions));
+  //       } else {
+  //         setVisibleElements(selected.slice(0, 1));
+  //       }
+  //       setShowMore(selected.length > maxVisibleOptions);
+  //     }
+  //   };
+  //   updateVisibleElements();
+  // }, [selected, width, iconVisibility]);
 
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
@@ -132,12 +134,14 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
-  function findDefaultItem(value, isAdvanced) {
+  function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
       const foundItem = schema?.filter((item) => item?.visible && item?.default);
       return foundItem;
     }
-    return selectOptions?.filter((item) => value?.find((val) => val === item.value));
+    if (isDefault) {
+      return selectOptions?.filter((item) => value?.find((val) => val === item.value));
+    } else return selectOptions?.filter((item) => selected?.find((val) => val.value === item.value));
   }
 
   function hasVisibleFalse(value) {
@@ -152,9 +156,14 @@ export const MultiselectV2 = ({
     setSelected(items);
     fireEvent('onSelect');
   };
-
   useEffect(() => {
     let foundItem = findDefaultItem(values, advanced);
+    setSelected(foundItem);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectOptions]);
+
+  useEffect(() => {
+    let foundItem = findDefaultItem(values, advanced, true);
     setSelected(foundItem);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(values)]);
@@ -301,26 +310,14 @@ export const MultiselectV2 = ({
       padding: '0 10px',
       display: 'flex',
       gap: '0.13rem',
+      color:
+        selectedTextColor !== '#1B1F24'
+          ? selectedTextColor
+          : isMultiSelectLoading || isMultiSelectDisabled
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
     }),
-    multiValue: (provided, _state) => ({
-      ...provided,
-      borderRadius: '100px',
-    }),
-    multiValueLabel: (provided, _state) => ({
-      ...provided,
-      color: disabledState ? 'grey' : selectedTextColor ? selectedTextColor : darkMode ? 'white' : 'black',
-    }),
-    multiValueRemove: (provided, _state) => ({
-      ...provided,
-      borderRadius: '100px',
-      backgroundColor: '#C2C8CD',
-      margin: '4px',
-      padding: '2px',
-      '&:hover': {
-        backgroundColor: '#C2C8CD',
-        color: 'unset',
-      },
-    }),
+
     input: (provided, _state) => ({
       ...provided,
       color: darkMode ? 'white' : 'black',
