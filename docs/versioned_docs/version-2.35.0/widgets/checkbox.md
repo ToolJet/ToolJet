@@ -27,7 +27,7 @@ The Checkbox widget consists of a single checkbox input.
 
 To add an event to a Checkbox component, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
 
-| <div style={{ width:"100px"}}> Events </div>     | <div style={{ width:"100px"}}> Description </div> |
+| <div style={{ width:"100px"}}> Event </div>     | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
 | On check | On check event is triggered when checkbox input is checked. |
 | On uncheck | On uncheck event is triggered when checkbox input is unchecked. |
@@ -44,7 +44,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 Following actions of Checkbox component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions   </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| <div style={{ width:"100px"}}> Action  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:---------|
 | setChecked | Changes the status of the checkbox component using component specific action from within any event handler.| Trigger it from the RunJS query: `await components.checkbox1.setChecked(true)` or `await components.checkbox1.setChecked(false)` |
 
