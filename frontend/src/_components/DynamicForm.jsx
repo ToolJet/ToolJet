@@ -339,6 +339,7 @@ const DynamicForm = ({
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          delayOnChange: false,
         };
       case 'react-component-openapi-validator':
         return {

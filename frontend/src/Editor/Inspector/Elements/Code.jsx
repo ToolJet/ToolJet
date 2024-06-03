@@ -58,6 +58,7 @@ export const Code = ({
         className={options?.className}
         componentId={component?.id}
         styleDefinition={component?.component?.definition?.styles ?? {}}
+        component={component?.component?.component}
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
         cyLabel=""
