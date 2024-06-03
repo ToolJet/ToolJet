@@ -128,7 +128,7 @@
                     "type": "string"
                   },
                   "isPublic": {
-                    "type": "boolean"
+                    "type": ["boolean","null"]
                   },
                   "isMaintenanceOn": {
                     "type": "boolean"
@@ -381,10 +381,10 @@
                           "type": "number"
                         },
                         "disabled": {
-                          "type": "boolean"
+                          "type": ["boolean","null"]
                         },
                         "hidden": {
-                          "type": "boolean"
+                          "type":["boolean","null"]
                         },
                         "createdAt": {
                           "type": "string"
