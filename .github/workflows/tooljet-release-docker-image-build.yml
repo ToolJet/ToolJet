@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       job-to-run:
-        description: Enter the job name (tooljet-ce/tooljet-server-ce)
+        description: Enter the job name (tooljet-ce)
         options: ["tooljet-ce"]
         required: true
       image:
@@ -46,13 +46,27 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image
+      - name: Build and Push Docker image for non-LTS tag
+        if: "!contains(github.event.release.tag_name, 'EE-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
           tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:latest
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image for LTS tag
+        if: "contains(github.event.release.tag_name, 'EE-LTS')"
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -101,12 +115,26 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image
+        if: "!contains(github.event.release.tag_name, 'EE-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
           tags: tooljet/tooljet-ce:${{ github.event.inputs.image }},tooljet/tooljet-ce:latest
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        if: "contains(github.event.release.tag_name, 'EE-LTS')"
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tooljet-ce:${{ github.event.inputs.image }},tooljet/tooljet-ce:CE-LTS-latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
