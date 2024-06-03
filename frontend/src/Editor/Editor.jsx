@@ -26,6 +26,7 @@ import {
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
+  getAllChildComponents,
   runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
@@ -1281,17 +1282,9 @@ const EditorComponent = (props) => {
 
       let childComponents = [];
 
-      if (newDefinition.pages[currentPageId].components?.[componentId].component.component === 'Tabs') {
-        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter((key) =>
-          newDefinition.pages[currentPageId].components[key].component.parent?.startsWith(componentId)
-        );
-      } else {
-        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
-          (key) => newDefinition.pages[currentPageId].components[key].component.parent === componentId
-        );
-      }
+      childComponents = getAllChildComponents(newDefinition.pages[currentPageId].components, componentId);
 
-      childComponents.forEach((componentId) => {
+      childComponents.forEach(({ componentId }) => {
         delete newDefinition.pages[currentPageId].components[componentId];
       });
 
@@ -1307,7 +1300,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      const deleteFromMap = [componentId, ...childComponents];
+      const deleteFromMap = [componentId, ...childComponents.map(({ componentId }) => componentId)];
       const deletedComponentNames = deleteFromMap.map((id) => {
         return appDefinition.pages[currentPageId].components[id].component.name;
       });
@@ -1501,6 +1494,12 @@ const EditorComponent = (props) => {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
         appDefinition: newAppDefinition,
+      });
+    } else {
+      // Setting the canvas background to the editor store
+      setCanvasBackground({
+        backgroundFxQuery: globalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: globalSettings?.canvasBackgroundColor,
       });
     }
 
