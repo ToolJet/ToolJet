@@ -1234,6 +1234,33 @@ export const humanizeifDefaultGroupName = (groupName) => {
   }
 };
 
+// This function is written only to handle diff colors W.R.T button types
+export const computeColor = (styleDefinition, value, meta) => {
+  if (styleDefinition.type?.value == 'primary') return value;
+  else {
+    if (meta?.displayName == 'Background') {
+      value = value == '#4368E3' ? '#FFFFFF' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Text color') {
+      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Icon color') {
+      value = value == '#FFFFFF' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Border color') {
+      value = value == '#4368E3' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Loader color') {
+      value = value == '#FFFFFF' ? '#4368E3' : value;
+      return value;
+    }
+  }
+};
+
 //For <>& UI display issues
 export function decodeEntities(encodedString) {
   return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
