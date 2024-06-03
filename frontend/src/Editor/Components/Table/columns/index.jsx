@@ -13,7 +13,7 @@ import { Boolean } from '../Boolean';
 import { CustomSelect } from '../CustomSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Text from '../Text';
-import String from '../String';
+import StringColumn from '../String';
 
 export default function generateColumnsData({
   columnProperties,
@@ -152,7 +152,7 @@ export default function generateColumnsData({
           case 'default': {
             const cellTextColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
             return (
-              <String
+              <StringColumn
                 isEditable={isEditable}
                 darkMode={darkMode}
                 handleCellValueChange={handleCellValueChange}
@@ -401,7 +401,7 @@ export default function generateColumnsData({
                 )}`}
                 style={cellStyles}
               >
-                {cellValue}
+                {String(cellValue)}
               </div>
             );
           }
@@ -597,16 +597,13 @@ export default function generateColumnsData({
                   readOnly={!isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
-                      () => {
-                        fireEvent('OnTableToggleCellChanged', {
-                          column: column,
-                          rowId: cell.row.id,
-                          row: cell.row.original,
-                          tableColumnEvents,
-                        });
-                      }
-                    );
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    fireEvent('OnTableToggleCellChanged', {
+                      column: column,
+                      rowId: cell.row.id,
+                      row: cell.row.original,
+                      tableColumnEvents,
+                    });
                   }}
                 />
               </div>

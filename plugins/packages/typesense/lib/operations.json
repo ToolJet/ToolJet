@@ -47,7 +47,8 @@
         "type": "codehinter",
         "placeholder": "{ \"name\": \"\" }",
         "description": "Enter schema",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "search": {
@@ -68,7 +69,8 @@
         "type": "codehinter",
         "placeholder": "{ \"name\": \"\" }",
         "description": "Enter search parameters",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "index_document": {
@@ -90,7 +92,8 @@
         "mode": "javascript",
         "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
         "description": "Enter document",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "get": {
@@ -147,7 +150,8 @@
         "mode": "javascript",
         "placeholder": "{ doc: { page_count: 225 } }",
         "description": "Enter body",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     },
     "delete": {

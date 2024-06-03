@@ -4,7 +4,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
-import { useCurrentState } from '@/_stores/currentStateStore';
+
 import { useAppInfo } from '@/_stores/appDataStore';
 
 export const FilePicker = ({
@@ -19,7 +19,6 @@ export const FilePicker = ({
   setExposedVariable,
   dataCy,
 }) => {
-  const currentState = useCurrentState();
   //* properties definitions
   const instructionText =
     component.definition.properties.instructionText?.value ?? 'Drag and drop files here or click to select files';
@@ -30,31 +29,25 @@ export const FilePicker = ({
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
   const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
   const minSize = component.definition.properties.minSize?.value ?? 0;
-  const parseContent = resolveWidgetFieldValue(
-    component.definition.properties.parseContent?.value ?? false,
-    currentState
-  );
+  const parseContent = resolveWidgetFieldValue(component.definition.properties.parseContent?.value);
   const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
-  const parsedEnableDropzone =
-    typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
-  const parsedEnablePicker =
-    typeof enablePicker !== 'boolean' ? resolveWidgetFieldValue(enablePicker, currentState) : true;
+  const parsedEnableDropzone = typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone) : true;
+  const parsedEnablePicker = typeof enablePicker !== 'boolean' ? resolveWidgetFieldValue(enablePicker) : true;
 
-  const parsedMaxFileCount =
-    typeof maxFileCount !== 'number' ? resolveWidgetFieldValue(maxFileCount, currentState) : maxFileCount;
+  const parsedMaxFileCount = typeof maxFileCount !== 'number' ? resolveWidgetFieldValue(maxFileCount) : maxFileCount;
   const parsedEnableMultiple =
-    typeof enableMultiple !== 'boolean' ? resolveWidgetFieldValue(enableMultiple, currentState) : enableMultiple;
-  const parsedFileType = resolveWidgetFieldValue(fileType, currentState);
-  const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize, currentState) : minSize;
-  const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize, currentState) : maxSize;
+    typeof enableMultiple !== 'boolean' ? resolveWidgetFieldValue(enableMultiple) : enableMultiple;
+  const parsedFileType = resolveWidgetFieldValue(fileType);
+  const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize) : minSize;
+  const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize) : maxSize;
   //* styles definitions
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
   const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
   const parsedWidgetVisibility =
-    typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
+    typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility) : widgetVisibility;
 
   const { events: allAppEvents } = useAppInfo();
 
