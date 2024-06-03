@@ -304,24 +304,29 @@ function TableSchema({
                     <Skeleton height={18} width={176} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
                   </div>
                 }
-                isLoading={true}
                 value={
                   columnDetails[index].column_default !== null
                     ? { value: columnDetails[index].column_default, label: columnDetails[index].column_default }
                     : defaultValue[index]
                 }
-                // foreignKeyAccessInRowForm={true}
+                tjdb={{
+                  isLoading: true,
+                  topPlaceHolder:
+                    (columnDetails[index].data_type === 'serial' &&
+                      columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                    columnDetails[index].data_type === 'serial'
+                      ? 'Auto-generated'
+                      : 'Null',
+                  foreignKeys: foreignKeyDetails,
+                  setReferencedColumnDetails: setReferencedColumnDetails,
+                  scrollEventForColumnValues: true,
+                  cellColumnName: columnDetails[index].column_name,
+                  isForeignKeyInEditCell: false,
+                }}
                 disabled={
                   (columnDetails[index].data_type === 'serial' &&
                     columnDetails[index]?.constraints_type?.is_primary_key === true) ||
                   columnDetails[index].data_type === 'serial'
-                }
-                topPlaceHolder={
-                  (columnDetails[index].data_type === 'serial' &&
-                    columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                  columnDetails[index].data_type === 'serial'
-                    ? 'Auto-generated'
-                    : 'Null'
                 }
                 onChange={(value) => {
                   setDefaultValue((prevState) => {
@@ -336,10 +341,6 @@ function TableSchema({
                 }}
                 onAdd={true}
                 addBtnLabel={'Open referenced table'}
-                foreignKeys={foreignKeyDetails}
-                setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
-                cellColumnName={columnDetails[index].column_name}
               />
             ) : (
               <ToolTip

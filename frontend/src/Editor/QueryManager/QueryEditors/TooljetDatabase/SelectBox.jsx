@@ -27,38 +27,39 @@ function DataSourceSelect({
   selected,
   emptyError,
   highlightSelected,
-  foreignKeyAccess = false,
-  showRedirection = false,
+  tjdb,
+  // foreignKeyAccess = false,
+  // showRedirection = false,
   columnInfoForTable,
-  showColumnInfo = false,
-  showDescription = false,
-  foreignKeyAccessInRowForm,
-  isCellEdit,
-  scrollEventForColumnValus,
+  // showColumnInfo = false,
+  // showDescription = false,
+  // foreignKeyAccessInRowForm,
+  // isCellEdit,
+  // scrollEventForColumnValus,
   organizationId,
-  foreignKeys,
-  setReferencedColumnDetails,
+  // foreignKeys,
+  // setReferencedColumnDetails,
   shouldShowForeignKeyIcon = false,
-  cellColumnName,
+  // cellColumnName,
   isInitialForeignKeyDataLoaded = false,
   setIsInitialForeignKeyDataLoaded,
   totalRecords,
   setTotalRecords,
   pageNumber,
   setPageNumber,
-  tableName,
-  targetTable,
-  actions,
-  actionName,
+  // tableName,
+  // targetTable,
+  // actions,
+  // actionName,
   referencedForeignKeyDetails,
   customChildren,
-  isForeignKeyInEditCell,
+  // isForeignKeyInEditCell,
   closeFKMenu,
   saveFKValue,
   loader,
-  isLoading = false,
+  // isLoading = false,
 }) {
-  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
+  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(tjdb.isLoading);
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isInitialForeignKeSearchDataLoaded, setIsInitialForeignKeSearchDataLoaded] = useState(false);
@@ -89,21 +90,21 @@ function DataSourceSelect({
         setIsLoadingFKDetails(true);
         const selectQuery = new PostgrestQueryBuilder();
         // Checking that the selected column is available in ForeignKey
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+        const referencedColumns = tjdb.foreignKeys?.find((item) => item.column_names[0] === tjdb.cellColumnName);
         if (!referencedColumns?.referenced_column_names?.length) return;
         selectQuery.select(referencedColumns?.referenced_column_names[0]);
 
         tooljetDatabaseService
           .findOne(
             organizationId,
-            foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
+            tjdb.foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
             `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
           )
           .then(({ headers, data = [], error }) => {
             if (error) {
               toast.error(
                 error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+                  `Failed to fetch table "${tjdb.foreignKeys?.length > 0 && tjdb.foreignKeys[0].referenced_table_name}"`
               );
               setIsLoadingFKDetails(false);
               return;
@@ -112,7 +113,7 @@ function DataSourceSelect({
             const totalFKRecords = headers['content-range'].split('/')[1] || 0;
             if (Array.isArray(data) && data?.length > 0) {
               if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
-              setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+              tjdb.setReferencedColumnDetails((prevData) => [...prevData, ...data]);
               setPageNumber((prevPageNumber) => prevPageNumber + incrementPageBy);
               if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
             }
@@ -133,7 +134,7 @@ function DataSourceSelect({
 
     const handleScrollThrottled = throttle(handleScroll, 500);
 
-    if (scrollEventForColumnValus && !searchValue) {
+    if (tjdb.scrollEventForColumnValues && !searchValue) {
       if (!isInitialForeignKeyDataLoaded) getForeignKeyDetails(1);
       scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
     }
@@ -156,11 +157,11 @@ function DataSourceSelect({
         const selectQuery = new PostgrestQueryBuilder();
         const filterQuery = new PostgrestQueryBuilder();
 
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
+        const referencedColumns = tjdb.foreignKeys?.find((item) => item.column_names[0] === tjdb.cellColumnName);
         if (!referencedColumns?.referenced_column_names?.length) return;
         selectQuery.select(referencedColumns?.referenced_column_names[0]);
 
-        if (scrollEventForColumnValus) {
+        if (tjdb.scrollEventForColumnValues) {
           filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
           // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
         }
@@ -168,12 +169,12 @@ function DataSourceSelect({
         const query = `${selectQuery.url.toString()}&${filterQuery.url.toString()}&limit=${limit}&offset=${offset}`;
 
         tooljetDatabaseService
-          .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
+          .findOne(organizationId, tjdb.foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
           .then(({ _headers, data = [], error }) => {
             if (error) {
               toast.error(
                 error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+                  `Failed to fetch table "${tjdb.foreignKeys?.length > 0 && tjdb.foreignKeys[0].referenced_table_name}"`
               );
               setIsLoadingFKDetails(false);
               return;
@@ -192,7 +193,7 @@ function DataSourceSelect({
       }
     }
     let debouncedHandleSearchInSelectBox;
-    if (scrollEventForColumnValus) {
+    if (tjdb.scrollEventForColumnValues) {
       debouncedHandleSearchInSelectBox = debounce(() => {
         // Making the values to default
         if (searchResults.length) setSearchResults([]);
@@ -210,21 +211,21 @@ function DataSourceSelect({
   useEffect(() => {
     // Making the Infinite scroll pagination API to default state
     return () => {
-      if (scrollEventForColumnValus) {
+      if (tjdb.scrollEventForColumnValues) {
         setIsInitialForeignKeyDataLoaded(false);
         setIsInitialForeignKeSearchDataLoaded(false);
         setTotalRecords(0);
         setPageNumber(1);
         setSearchValue('');
         setSearchResults([]);
-        setReferencedColumnDetails([]);
+        tjdb.setReferencedColumnDetails([]);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFKMenuKeyDown = (e) => {
-    if (isForeignKeyInEditCell) {
+    if (tjdb.isForeignKeyInEditCell) {
       if (e.key === 'Escape') {
         closeFKMenu();
       } else if (e.key === 'Enter') {
@@ -242,13 +243,13 @@ function DataSourceSelect({
         }}
         classNames={{
           menu: () =>
-            isForeignKeyInEditCell
+            tjdb.isForeignKeyInEditCell
               ? 'tj-scrollbar tjdb-mainCellEdit-scrollbar'
-              : foreignKeyAccess
+              : tjdb.foreignKeyAccess
               ? 'tj-scrollbar tjdb-dashboard-scrollbar'
-              : foreignKeyAccessInRowForm
+              : tjdb.foreignKeyAccessInRowForm
               ? 'tj-scrollbar tjdb-rowForm-scrollbar'
-              : isCellEdit
+              : tjdb.isCellEdit
               ? 'tj-scrollbar tjdb-cellEdit-scrollbar'
               : 'tj-scrollbar',
         }}
@@ -266,11 +267,11 @@ function DataSourceSelect({
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: showRedirection || actions ? 'space-between' : 'flex-start',
+                    justifyContent: tjdb.showRedirection || tjdb.actions ? 'space-between' : 'flex-start',
                     alignItems: 'center',
-                    cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
+                    cursor: tjdb.foreignKeyAccess && props.data.isDisabled && 'not-allowed',
                   }}
-                  className={`dd-select-option ${showDescription && 'h-100'}`}
+                  className={`dd-select-option ${tjdb.showDescription && 'h-100'}`}
                 >
                   {isMulti && (
                     <div
@@ -305,13 +306,13 @@ function DataSourceSelect({
                   <span
                     className={cx({
                       'ms-1 ': props?.data?.icon,
-                      'flex-grow-1': !showDescription,
+                      'flex-grow-1': !tjdb.showDescription,
                     })}
                   >
                     {children}
                   </span>
 
-                  {foreignKeyAccess && showRedirection && props.isFocused && (
+                  {tjdb.foreignKeyAccess && tjdb.showRedirection && props.isFocused && (
                     <Maximize
                       width={16}
                       style={{
@@ -362,7 +363,7 @@ function DataSourceSelect({
                     </ToolTip>
                   )}
                 </div>
-                {foreignKeyAccess && props.data.isDisabled && (
+                {tjdb.foreignKeyAccess && props.data.isDisabled && (
                   <div style={{ fontSize: '12px', color: '#889096', cursor: 'not-allowed' }}>
                     Foreign key relation cannot be created for serial type column
                   </div>
@@ -403,19 +404,19 @@ function DataSourceSelect({
                     onAdd={onAdd}
                     addBtnLabel={addBtnLabel}
                     emptyError={emptyError}
-                    foreignKeyAccess={foreignKeyAccess}
+                    foreignKeyAccess={tjdb.foreignKeyAccess}
                     columnInfoForTable={columnInfoForTable}
-                    showColumnInfo={showColumnInfo}
-                    foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                    scrollEventForColumnValus={scrollEventForColumnValus}
+                    showColumnInfo={tjdb.showColumnInfo}
+                    foreignKeyAccessInRowForm={tjdb.foreignKeyAccessInRowForm}
+                    scrollEventForColumnValues={tjdb.scrollEventForColumnValues}
                     scrollContainerRef={scrollContainerRef}
-                    foreignKeys={foreignKeys}
-                    cellColumnName={cellColumnName}
+                    foreignKeys={tjdb.foreignKeys}
+                    cellColumnName={tjdb.cellColumnName}
                     isLoadingFKDetails={isLoadingFKDetails}
                     customChildren={customChildren}
                     loader={loader}
                   />
-                  {foreignKeyAccess && showDescription && actions && (
+                  {tjdb.foreignKeyAccess && tjdb.showDescription && tjdb.actions && (
                     <>
                       <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
                       <div
@@ -431,9 +432,9 @@ function DataSourceSelect({
                         <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
                           {
                             <GenerateActionsDescription
-                              targetTable={targetTable?.value || targetTable?.label || targetTable?.name}
-                              sourceTable={tableName}
-                              actionName={actionName}
+                              targetTable={tjdb.targetTable?.value || tjdb.targetTable?.label || tjdb.targetTable?.name}
+                              sourceTable={tjdb.tableName}
+                              actionName={tjdb.actionName}
                               label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
                             />
                           }
@@ -450,7 +451,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && !scrollEventForColumnValus && { Control: () => '' }),
+          ...(optionsCount < 5 && !tjdb.scrollEventForColumnValues && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
@@ -546,7 +547,7 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={scrollEventForColumnValus && searchValue ? searchResults : options}
+        options={tjdb.scrollEventForColumnValues && searchValue ? searchResults : options}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
@@ -574,7 +575,7 @@ const MenuList = ({
   showColumnInfo,
   options,
   foreignKeyAccessInRowForm,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   scrollContainerRef,
   foreignKeys,
   cellColumnName,
@@ -610,7 +611,7 @@ const MenuList = ({
         emptyError
       ) : (
         <div
-          ref={scrollEventForColumnValus ? scrollContainerRef : innerRef}
+          ref={scrollEventForColumnValues ? scrollContainerRef : innerRef}
           style={menuListStyles}
           id="query-ds-select-menu"
           onClick={(e) => e.stopPropagation()}
@@ -630,7 +631,7 @@ const MenuList = ({
             variant="secondary"
             size="md"
             className="w-100"
-            onClick={scrollEventForColumnValus ? handleNavigateToReferencedTable : onAdd}
+            onClick={scrollEventForColumnValues ? handleNavigateToReferencedTable : onAdd}
           >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}

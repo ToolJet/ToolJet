@@ -58,10 +58,23 @@ function TableDetailsDropdown({
                 </div>
               }
               value={source ? tableList[0] : actions ? onUpdate : targetTable}
-              foreignKeyAccess={true}
+              tjdb={{
+                topPlaceHolder: !source && !actions && 'Select table..',
+                foreignKeyAccess: true,
+                showPlaceHolderInForeignKeyDrawer: true,
+                showRedirection: showRedirection,
+                showDescription: showDescription,
+                tableName: tableName,
+                targetTable: targetTable,
+                actions: actions,
+                actionName: firstColumnName,
+                fetchTables: fetchTables,
+                onTableClick: onTableClick,
+              }}
+              // foreignKeyAccess={true}
               disabled={source || isEditColumn || isCreateColumn ? true : false}
-              topPlaceHolder={!source && !actions && 'Select table..'}
-              showPlaceHolderInForeignKeyDrawer={true}
+              // topPlaceHolder={!source && !actions && 'Select table..'}
+              // showPlaceHolderInForeignKeyDrawer={true}
               onChange={(value) => {
                 if (actions) {
                   setOnUpdate(value);
@@ -73,14 +86,14 @@ function TableDetailsDropdown({
               }}
               onAdd={onAdd}
               addBtnLabel={'Add new table'}
-              showRedirection={showRedirection}
-              showDescription={showDescription}
-              tableName={tableName}
-              targetTable={targetTable}
-              actions={actions}
-              actionName={firstColumnName}
-              fetchTables={fetchTables}
-              onTableClick={onTableClick}
+              // showRedirection={showRedirection}
+              // showDescription={showDescription}
+              // tableName={tableName}
+              // targetTable={targetTable}
+              // actions={actions}
+              // actionName={firstColumnName}
+              // fetchTables={fetchTables}
+              // onTableClick={onTableClick}
             />
           </div>
         </ToolTip>
@@ -121,9 +134,22 @@ function TableDetailsDropdown({
                   ? onDelete
                   : targetColumn
               }
-              foreignKeyAccess={true}
-              topPlaceHolder={!actions && 'Select columns..'}
-              showPlaceHolderInForeignKeyDrawer={true}
+              tjdb={{
+                topPlaceHolder: !actions && 'Select columns..',
+                foreignKeyAccess: true,
+                showPlaceHolderInForeignKeyDrawer: true,
+                showColumnInfo: showColumnInfo,
+                showDescription: showDescription,
+                tableName: tableName,
+                targetTable: targetTable,
+                actions: actions,
+                actionName: secondColumnName,
+                fetchTables: fetchTables,
+                onTableClick: false,
+              }}
+              // foreignKeyAccess={true}
+              // topPlaceHolder={!actions && 'Select columns..'}
+              // showPlaceHolderInForeignKeyDrawer={true}
               onChange={(value) => {
                 if (source) {
                   setSourceColumn(value);
@@ -141,14 +167,14 @@ function TableDetailsDropdown({
                   Only columns of same data type can be added
                 </div>
               }
-              showColumnInfo={showColumnInfo}
-              showDescription={showDescription}
+              // showColumnInfo={showColumnInfo}
+              // showDescription={showDescription}
               disabled={isEditColumn || isCreateColumn}
-              tableName={tableName}
-              targetTable={targetTable}
-              actions={actions}
-              actionName={secondColumnName}
-              onTableClick={false}
+              // tableName={tableName}
+              // targetTable={targetTable}
+              // actions={actions}
+              // actionName={secondColumnName}
+              // onTableClick={false}
             />
           </div>
         </div>

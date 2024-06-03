@@ -326,7 +326,6 @@ export const CellEditMenu = ({
               <Skeleton height={18} width={176} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
             </div>
           }
-          isLoading={true}
           options={referencedFKDataList}
           darkMode={darkMode}
           emptyError={
@@ -336,6 +335,18 @@ export const CellEditMenu = ({
             </div>
           }
           value={selectedForeignKeyValue}
+          tjdb={{
+            isLoading: true,
+            closeFKMenu: closeFKMenu,
+            saveFKValue: saveFKValue,
+            isCellEdit: true,
+            foreignKeys: foreignKeys,
+            setReferencedColumnDetails: setReferencedColumnDetails,
+            scrollEventForColumnValues: scrollEventForColumnValus,
+            cellColumnName: cellHeader,
+            isForeignKeyInEditCell: true,
+            shouldCloseFkMenu: shouldCloseFkMenu,
+          }}
           onChange={(value) => {
             setSelectedForeignKeyValue({
               label: value.value === 'Null' ? null : value.value,
@@ -345,23 +356,14 @@ export const CellEditMenu = ({
             setNullValue(value.value === 'Null' ? true : false);
           }}
           onAdd={true}
-          closeFKMenu={closeFKMenu}
-          saveFKValue={saveFKValue}
           addBtnLabel={'Open referenced table'}
-          isCellEdit={true}
-          scrollEventForColumnValus={scrollEventForColumnValus}
           organizationId={organizationId}
-          foreignKeys={foreignKeys}
-          setReferencedColumnDetails={setReferencedColumnDetails}
-          cellColumnName={cellHeader}
           customChildren={
             <div className={`d-flex flex-column gap-3`} style={{ padding: '10px' }}>
               <SaveChangesSection />
               <SaveChangesFooter isForeignKeyInEditCell={true} />
             </div>
           }
-          isForeignKeyInEditCell={true}
-          shouldCloseFkMenu={shouldCloseFkMenu}
         />
       ) : (
         children

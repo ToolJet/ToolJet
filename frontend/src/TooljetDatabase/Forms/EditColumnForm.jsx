@@ -552,23 +552,26 @@ const ColumnForm = ({
                         />
                       </div>
                     }
-                    isLoading={true}
                     value={foreignKeyDefaultValue}
-                    foreignKeyAccessInRowForm={true}
+                    tjdb={{
+                      isLoading: true,
+                      foreignKeyAccessInRowForm: true,
+                      topPlaceHolder: selectedColumn?.dataType === 'serial' ? 'Auto-generated' : 'Enter a value',
+                      foreignKeys: foreignKeys,
+                      setReferencedColumnDetails: setReferencedColumnDetails,
+                      scrollEventForColumnValues: true,
+                      cellColumnName: selectedColumn?.Header,
+                      isForeignKeyInEditCell: false,
+                    }}
                     disabled={
                       selectedColumn?.dataType === 'serial' || selectedColumn.constraints_type.is_primary_key === true
                     }
-                    topPlaceHolder={selectedColumn?.dataType === 'serial' ? 'Auto-generated' : 'Enter a value'}
                     onChange={(value) => {
                       setForeignKeyDefaultValue(value);
                       setDefaultValue(value?.value);
                     }}
                     onAdd={true}
                     addBtnLabel={'Open referenced table'}
-                    foreignKeys={foreignKeys}
-                    setReferencedColumnDetails={setReferencedColumnDetails}
-                    scrollEventForColumnValus={true}
-                    cellColumnName={selectedColumn?.Header}
                   />
                 )}
               </div>

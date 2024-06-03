@@ -286,18 +286,21 @@ const EditRowForm = ({
                     <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
                   </div>
                 }
-                isLoading={true}
                 value={inputValues[index]?.value !== null && inputValues[index]}
-                foreignKeyAccessInRowForm={true}
+                tjdb={{
+                  isLoading: true,
+                  foreignKeyAccessInRowForm: true,
+                  topPlaceHolder: inputValues[index]?.value !== null && 'Select a value',
+                  foreignKeys: foreignKeys,
+                  setReferencedColumnDetails: setReferencedColumnDetails,
+                  scrollEventForColumnValues: true,
+                  cellColumnName: columnName,
+                  isForeignKeyInEditCell: false,
+                }}
                 disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
-                topPlaceHolder={inputValues[index]?.value !== null && 'Select a value'}
                 onChange={(value) => handleInputChange(index, value.value, columnName)}
                 onAdd={true}
                 addBtnLabel={'Open referenced table'}
-                foreignKeys={foreignKeys}
-                setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
-                cellColumnName={columnName}
               />
             ) : (
               <input

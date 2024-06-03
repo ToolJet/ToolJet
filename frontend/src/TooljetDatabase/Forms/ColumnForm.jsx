@@ -304,21 +304,24 @@ const ColumnForm = ({
                       <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
                     </div>
                   }
-                  isLoading={true}
                   value={foreignKeyDefaultValue}
-                  foreignKeyAccessInRowForm={true}
+                  tjdb={{
+                    isLoading: true,
+                    foreignKeyAccessInRowForm: true,
+                    topPlaceHolder: dataType === 'serial' ? 'Auto-generated' : 'Enter a value',
+                    foreignKeys: foreignKeyDetails,
+                    setReferencedColumnDetails: setReferencedColumnDetails,
+                    scrollEventForColumnValues: true,
+                    cellColumnName: columnName,
+                    isForeignKeyInEditCell: false,
+                  }}
                   disabled={dataType === 'serial'}
-                  topPlaceHolder={dataType === 'serial' ? 'Auto-generated' : 'Enter a value'}
                   onChange={(value) => {
                     setForeignKeyDefaultValue(value);
                     setDefaultValue(value?.value);
                   }}
                   onAdd={true}
                   addBtnLabel={'Open referenced table'}
-                  foreignKeys={foreignKeyDetails}
-                  setReferencedColumnDetails={setReferencedColumnDetails}
-                  scrollEventForColumnValus={true}
-                  cellColumnName={columnName}
                 />
               )}
             </div>
