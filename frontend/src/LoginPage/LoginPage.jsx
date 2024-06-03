@@ -15,7 +15,7 @@ import initPosthog from '../_helpers/initPosthog';
 import { withRouter } from '@/_hoc/withRouter';
 import { redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { useWhiteLabellingStore } from '@/_stores/cloud/whiteLabellingStore';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import SSOLoginModule from './SSOLoginModule';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
