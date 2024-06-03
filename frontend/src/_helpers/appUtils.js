@@ -2086,7 +2086,7 @@ export const buildComponentMetaDefinition = (components = {}) => {
 };
 
 export const buildAppDefinition = (data) => {
-  const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
+  const editingVersion = camelizeKeys(_.omit(data.editing_version, ['definition', 'updated_at', 'created_at', 'name']));
 
   editingVersion['currentVersionId'] = editingVersion.id;
   _.unset(editingVersion, 'id');
