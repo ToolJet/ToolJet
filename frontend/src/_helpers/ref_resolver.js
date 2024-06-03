@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { deepClone } from './utitlities/utils.helpers';
+import { deepClone } from './utilities/utils.helpers';
 
 export default class RefResolver {
   constructor(originalJSON) {
