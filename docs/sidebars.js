@@ -65,7 +65,8 @@ const sidebars = {
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',
-        'setup/v2-migration-guide'
+        'setup/v2-migration-guide',
+        'setup/upgrade-to-lts'
       ]
     },
     {
@@ -73,9 +74,15 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
+        'app-builder/walkthrough/create-ui',
+        'app-builder/walkthrough/create-queries',
+        'app-builder/walkthrough/using-code',
+        'app-builder/walkthrough/accessing-values',
+        'app-builder/walkthrough/variables',
+        'app-builder/importing-exporting-applications',
         {
           'type': 'category',
-          'label': 'App-Builder UI',
+          'label': 'Layout Guide',
           'items': [
            'app-builder/components-library',
            'app-builder/query-panel',
@@ -86,19 +93,6 @@ const sidebars = {
            'app-builder/preview',
            'app-builder/share',
            'app-builder/customstyles',
-           'app-builder/importing-exporting-applications',
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Examples',
-          'items': [
-            'app-builder/examples/create-ui',
-            'app-builder/examples/create-queries',
-            'app-builder/examples/using-code',
-            'app-builder/examples/accessing-values',
-            'app-builder/examples/variables',
-            //'app-builder/examples/sharing-apps',
           ],
         },
         {

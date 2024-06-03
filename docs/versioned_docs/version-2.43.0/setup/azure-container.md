@@ -69,19 +69,17 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
 You can access ToolJet via the application URL provided in the overview tab.
 
-## Upgrading to the Latest Version
+## Upgrading to the Latest LTS Version
 
-The latest version includes architectural changes and, hence, comes with new migrations.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet:EE-LTS-2.50.0.0`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
-#### Prerequisites for Upgrading to the Latest Version:
+#### Prerequisites for Upgrading to the Latest LTS Version:
 
-- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+- It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
-
-- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
 
