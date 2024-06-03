@@ -176,7 +176,7 @@ const WidgetIcon = (props) => {
       return <Timer {...props} />;
     case 'toggleswitch':
       return <Toggleswitch {...props} />;
-    case 'toggleswitchlegacy':
+    case 'toggleswitchv2':
       return <ToggleSwitchV2 {...props} />;
     case 'treeselect':
       return <Treeselect {...props} />;

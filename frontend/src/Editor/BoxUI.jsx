@@ -15,6 +15,9 @@ const shouldAddBoxShadowAndVisibility = [
   'PasswordInput',
   'NumberInput',
   'Text',
+  'Checkbox',
+  'Button',
+  'ToggleSwitchV2',
   'DropdownV2',
   'MultiselectV2',
 ];

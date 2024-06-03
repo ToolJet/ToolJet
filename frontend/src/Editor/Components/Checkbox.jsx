@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
-export const Checkbox = function Checkbox({
+export const Checkbox = ({
   height,
   properties,
   styles,
@@ -14,17 +13,16 @@ export const Checkbox = function Checkbox({
   dataCy,
   component,
   validate,
-  isResizing,
   width,
-}) {
+}) => {
   const defaultValueFromProperties = properties.defaultValue ?? false;
-  const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
-  const [checked, setChecked] = React.useState(defaultValueFromProperties);
+  const [defaultValue, setDefaultValue] = useState(defaultValueFromProperties);
+  const [checked, setChecked] = useState(defaultValueFromProperties);
   const [value, setValue] = React.useState(defaultValueFromProperties);
+  const [userInteracted, setUserInteracted] = useState(false);
 
   const { label } = properties;
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
-  const currentState = useCurrentState();
   const { loadingState, disabledState } = properties;
   const { checkboxColor, boxShadow, alignment, uncheckedColor, borderColor, handleColor } = styles;
 
@@ -33,9 +31,9 @@ export const Checkbox = function Checkbox({
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(checked);
 
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
 
-  function toggleValue(e) {
+  const toggleValue = (e) => {
     const isChecked = e.target.checked;
     setChecked(isChecked);
     setValue(isChecked);
@@ -46,7 +44,9 @@ export const Checkbox = function Checkbox({
     } else {
       fireEvent('onUnCheck');
     }
-  }
+    setUserInteracted(true);
+  };
+
   useEffect(() => {
     const setCheckedAndNotify = async (status) => {
       await setExposedVariable('value', status);
@@ -58,13 +58,14 @@ export const Checkbox = function Checkbox({
       setChecked(status);
       setValue(status);
     };
+
     const exposedVariables = {
       value: defaultValueFromProperties,
       setChecked: setCheckedAndNotify,
       setValue: setCheckedAndNotify,
     };
 
-    setDefaultvalue(defaultValueFromProperties);
+    setDefaultValue(defaultValueFromProperties);
     setChecked(defaultValueFromProperties);
     setValue(defaultValueFromProperties);
     setExposedVariables(exposedVariables);
@@ -73,17 +74,17 @@ export const Checkbox = function Checkbox({
   }, [defaultValueFromProperties]);
 
   useEffect(() => {
-    disable !== disabledState && setDisable(properties.disabledState);
+    if (disable !== disabledState) setDisable(properties.disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.disabledState]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
-    loading !== loadingState && setLoading(loadingState);
+    if (loading !== loadingState) setLoading(loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
@@ -136,7 +137,7 @@ export const Checkbox = function Checkbox({
       setExposedVariable('isDisabled', disable);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
+  }, [disable]);
 
   useEffect(() => {
     setExposedVariable('toggle', async function () {
@@ -144,21 +145,37 @@ export const Checkbox = function Checkbox({
       fireEvent('onChange');
       setChecked(!checked);
       setValue(!checked);
+      setUserInteracted(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checked, value]);
 
+  const handleToggleChange = () => {
+    const newCheckedState = !checked;
+    setChecked(newCheckedState);
+    setValue(newCheckedState);
+    setExposedVariable('value', newCheckedState).then(() => {
+      fireEvent('onChange');
+      if (newCheckedState) {
+        fireEvent('onCheck');
+      } else {
+        fireEvent('onUnCheck');
+      }
+    });
+    setUserInteracted(true);
+  };
+
   const renderCheckBox = () => (
     <>
       <div
-        data-disabled={disabledState}
+        data-disabled={disable}
         className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
         style={{
           display: visibility ? 'flex' : 'none',
           boxShadow,
           alignItems: loading && 'center',
-          gap: '6px ',
-          justifyContent: `${loadingState ? 'center' : alignment == 'left' ? 'space-between' : 'start'}`,
+          gap: '6px',
+          justifyContent: `${loading ? 'center' : alignment === 'left' ? 'space-between' : 'start'}`,
           height,
           whiteSpace: 'nowrap',
         }}
@@ -178,17 +195,15 @@ export const Checkbox = function Checkbox({
                 style={{ display: 'none' }}
                 className="form-check-input"
                 type="checkbox"
-                onClick={(e) => {
-                  toggleValue(e);
-                }}
+                onClick={toggleValue}
                 defaultChecked={defaultValue}
                 checked={checked}
               />
               <div style={checkmarkStyle}>
-                {checked && !isResizing && (
+                {checked && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className=" icon-tabler icon-tabler-check"
+                    className="icon-tabler icon-tabler-check"
                     width={14}
                     height={14}
                     viewBox="0 0 24 24"
@@ -222,11 +237,15 @@ export const Checkbox = function Checkbox({
           </>
         )}
       </div>
-      {validationError && visibility && (
+      {validationError && visibility && !checked && userInteracted && (
         <div
-          className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-          style={{ color: 'var(--status-error-strong)' }}
+          style={{
+            color: 'var(--status-error-strong)',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
         >
           {validationError}
         </div>
@@ -239,7 +258,7 @@ export const Checkbox = function Checkbox({
     right: '1px',
     visibility: checked ? 'visible' : 'hidden',
     height: '14px',
-    width: ' 14px',
+    width: '14px',
     display: 'flex',
   };
 
@@ -255,31 +274,18 @@ export const Checkbox = function Checkbox({
     minHeight: '18px',
     minWidth: '18px',
     position: 'relative',
-    borderColor: '#CCD1D5' == borderColor ? (checked ? 'transparent' : 'var(--borders-default)') : borderColor,
-  };
-  const handleToggleChange = () => {
-    const newCheckedState = !checked;
-    setChecked(newCheckedState);
-    setValue(newCheckedState);
-    setExposedVariable('value', newCheckedState).then(fireEvent('onChange'));
-    if (newCheckedState) {
-      fireEvent('onCheck');
-    } else {
-      fireEvent('onUnCheck');
-    }
+    borderColor: borderColor === '#CCD1D5' ? (checked ? 'transparent' : 'var(--borders-default)') : borderColor,
   };
 
   return (
-    <>
-      <div
-        className="checkbox-component"
-        style={{
-          justifyContent: `${loadingState ? 'center' : 'flex-start'}`,
-          paddingTop: '3px',
-        }}
-      >
-        {renderCheckBox()}
-      </div>
-    </>
+    <div
+      className="checkbox-component"
+      style={{
+        justifyContent: `${loadingState ? 'center' : 'flex-start'}`,
+        paddingTop: '3px',
+      }}
+    >
+      {renderCheckBox()}
+    </div>
   );
 };

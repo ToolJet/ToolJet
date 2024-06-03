@@ -218,6 +218,7 @@ return data.filter(row => row.amount > 1000);
               cyLabel={'transformation-input'}
               callgpt={noop}
               isCopilotEnabled={false}
+              delayOnChange={false}
             />
           </div>
         )}

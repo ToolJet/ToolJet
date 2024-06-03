@@ -10,6 +10,7 @@ import { datepickerConfig } from './datepicker';
 import { checkboxConfig } from './checkbox';
 import { radiobuttonConfig } from './radiobutton';
 import { toggleswitchConfig } from './toggleswitch';
+import { toggleSwitchV2Config } from './toggleswitchv2';
 import { textareaConfig } from './textarea';
 import { daterangepickerConfig } from './daterangepicker';
 import { textConfig } from './text';
@@ -65,7 +66,8 @@ export {
   datepickerConfig,
   checkboxConfig,
   radiobuttonConfig,
-  toggleswitchConfig,
+  toggleswitchConfig, //!Depreciated
+  toggleSwitchV2Config,
   textareaConfig,
   daterangepickerConfig,
   textConfig,
