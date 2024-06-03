@@ -96,13 +96,18 @@ const Table = ({ collapseSidebar }) => {
     return new Promise((resolve, reject) => {
       if (!foreignKey?.referenced_column_names?.length) return resolve();
       const selectQuery = new PostgrestQueryBuilder();
+      const filterQuery = new PostgrestQueryBuilder();
+      const orderQuery = new PostgrestQueryBuilder();
 
+      filterQuery.is(foreignKey?.referenced_column_names[0], 'notNull');
+      orderQuery.order(foreignKey?.referenced_column_names[0], 'nullsfirst');
       selectQuery.select(foreignKey?.referenced_column_names[0]);
+
       tooljetDatabaseService
         .findOne(
           organizationId,
           foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
-          `${selectQuery.url.toString()}&limit=${15}&offset=${0}`
+          `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`
         )
         .then(({ headers, data = [], error }) => {
           if (error) {
