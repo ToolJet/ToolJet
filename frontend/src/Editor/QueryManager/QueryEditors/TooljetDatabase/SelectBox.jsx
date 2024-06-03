@@ -188,6 +188,7 @@ function DataSourceSelect({
 
     const selectQuery = new PostgrestQueryBuilder();
     const filterQuery = new PostgrestQueryBuilder();
+    const orderQuery = new PostgrestQueryBuilder();
     selectQuery.select(referencedColumns?.referenced_column_names[0]);
     let query = `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`;
 
@@ -195,8 +196,12 @@ function DataSourceSelect({
       columnDataType === 'character varying'
         ? filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`)
         : filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
-      query = query + `&${filterQuery.url.toString()}`;
     }
+
+    // Filtering out null values & bringing empty values to top
+    filterQuery.is(referencedColumns?.referenced_column_names[0], 'notNull');
+    orderQuery.order(referencedColumns?.referenced_column_names[0], 'nullsfirst');
+    query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
 
     tooljetDatabaseService
       .findOne(organizationId, referencedColumns?.referenced_table_id, query)
@@ -550,6 +555,7 @@ function DataSourceSelect({
             ...style,
             cursor: 'pointer',
             color: isDisabled ? 'var(--slate8, #c1c8cd)' : 'inherit',
+            minHeight: '33.5px',
             backgroundColor:
               isSelected && highlightSelected
                 ? 'var(--indigo3, #F0F4FF)'

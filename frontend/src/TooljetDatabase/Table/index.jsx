@@ -854,6 +854,7 @@ const Table = ({ collapseSidebar }) => {
         'cell-text',
         'css-18kmycr-Input',
         ' css-18kmycr-Input',
+        'foreignkey-cell',
       ].includes(e.target.classList.value)
     ) {
       const isCellValueDefault =
