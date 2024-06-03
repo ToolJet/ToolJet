@@ -23,172 +23,170 @@ import { Button } from 'react-bootstrap';
 
 import { decodeEntities } from '@/_helpers/utils';
 
-export const QueryManagerHeader = forwardRef(
-  ({ darkMode, options, editorRef, setOptions, setActiveTab, activeTab }, ref) => {
-    const { renameQuery } = useDataQueriesActions();
-    const selectedQuery = useSelectedQuery();
-    const selectedDataSource = useSelectedDataSource();
-    const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
-    const queryName = selectedQuery?.name ?? '';
-    const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
-    const { queries } = currentState;
-    const { isVersionReleased } = useAppVersionStore(
-      (state) => ({
-        isVersionReleased: state.isVersionReleased,
-        editingVersionId: state.editingVersion?.id,
-      }),
-      shallow
+export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setActiveTab, activeTab }, ref) => {
+  const { renameQuery } = useDataQueriesActions();
+  const selectedQuery = useSelectedQuery();
+  const selectedDataSource = useSelectedDataSource();
+  const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
+  const queryName = selectedQuery?.name ?? '';
+  const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
+  const { queries } = currentState;
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersionId: state.editingVersion?.id,
+    }),
+    shallow
+  );
+
+  useEffect(() => {
+    if (selectedQuery?.name) {
+      setShowCreateQuery(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedQuery?.name]);
+
+  const isInDraft = selectedQuery?.status === 'draft';
+
+  const executeQueryNameUpdation = (newName) => {
+    const { name } = selectedQuery;
+    if (name === newName || !newName) {
+      return false;
+    }
+
+    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
+    if (isNewQueryNameAlreadyExists) {
+      toast.error('Query name already exists');
+      return false;
+    }
+
+    if (newName) {
+      renameQuery(selectedQuery?.id, newName, editorRef);
+      return true;
+    }
+  };
+
+  const buttonLoadingState = (loading, disabled = false) => {
+    return cx(
+      `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
+      { 'theme-dark ': darkMode },
+      { disabled: disabled || !selectedDataSource }
     );
+  };
 
-    useEffect(() => {
-      if (selectedQuery?.name) {
-        setShowCreateQuery(false);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedQuery?.name]);
-
-    const isInDraft = selectedQuery?.status === 'draft';
-
-    const executeQueryNameUpdation = (newName) => {
-      const { name } = selectedQuery;
-      if (name === newName || !newName) {
-        return false;
-      }
-
-      const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
-      if (isNewQueryNameAlreadyExists) {
-        toast.error('Query name already exists');
-        return false;
-      }
-
-      if (newName) {
-        renameQuery(selectedQuery?.id, newName, editorRef);
-        return true;
-      }
+  const previewButtonOnClick = () => {
+    const _options = { ...options };
+    const query = {
+      data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+      pluginId: selectedDataSource.pluginId,
+      options: _options,
+      kind: selectedDataSource.kind,
+      name: queryName,
     };
+    previewQuery(editorRef, query, false, undefined)
+      .then(() => {
+        ref.current.scrollIntoView();
+      })
+      .catch(({ error, data }) => {
+        console.log(error, data);
+      });
+  };
+  const tabs = [
+    { id: 1, label: 'Setup' },
+    {
+      id: 2,
+      label: 'Transformation',
+      condition: selectedQuery?.kind !== 'runpy' && selectedQuery?.kind !== 'runjs',
+    },
+    { id: 3, label: 'Settings' },
+  ];
 
-    const buttonLoadingState = (loading, disabled = false) => {
-      return cx(
-        `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
-        { 'theme-dark ': darkMode },
-        { disabled: disabled || !selectedDataSource }
-      );
-    };
-
-    const previewButtonOnClick = () => {
-      const _options = { ...options };
-      const query = {
-        data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
-        pluginId: selectedDataSource.pluginId,
-        options: _options,
-        kind: selectedDataSource.kind,
-        name: queryName,
-      };
-      previewQuery(editorRef, query, false, undefined)
-        .then(() => {
-          ref.current.scrollIntoView();
-        })
-        .catch(({ error, data }) => {
-          console.log(error, data);
-        });
-    };
-    const tabs = [
-      { id: 1, label: 'Setup' },
-      {
-        id: 2,
-        label: 'Transformation',
-        condition: selectedQuery?.kind !== 'runpy' && selectedQuery?.kind !== 'runjs',
-      },
-      { id: 3, label: 'Settings' },
-    ];
-
-    const renderRunButton = () => {
-      const { isLoading } = queries[selectedQuery?.name] ?? false;
-      return (
-        <span
+  const renderRunButton = () => {
+    const { isLoading } = queries[selectedQuery?.name] ?? false;
+    return (
+      <span
+        {...(isInDraft && {
+          'data-tooltip-id': 'query-header-btn-run',
+          'data-tooltip-content': 'Connect a data source to run',
+        })}
+      >
+        <button
+          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
+          className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)}`}
+          data-cy="query-run-button"
+          disabled={isInDraft}
           {...(isInDraft && {
             'data-tooltip-id': 'query-header-btn-run',
-            'data-tooltip-content': 'Connect a data source to run',
+            'data-tooltip-content': 'Publish the query to run',
           })}
         >
-          <button
-            onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-            className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)}`}
-            data-cy="query-run-button"
-            disabled={isInDraft}
-            {...(isInDraft && {
-              'data-tooltip-id': 'query-header-btn-run',
-              'data-tooltip-content': 'Publish the query to run',
+          <span
+            className={cx({
+              invisible: isLoading,
             })}
           >
-            <span
-              className={cx({
-                invisible: isLoading,
-              })}
-            >
-              <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
-            </span>
-            <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
-          </button>
-          {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
-        </span>
-      );
-    };
-
-    const renderButtons = () => {
-      if (selectedQuery === null || showCreateQuery) return;
-      const { isLoading } = queries[selectedQuery?.name] ?? false;
-      return (
-        <>
-          {renderRunButton()}
-          <PreviewButton
-            onClick={previewButtonOnClick}
-            buttonLoadingState={buttonLoadingState}
-            isRunButtonLoading={isLoading}
-          />
-        </>
-      );
-    };
-
-    return (
-      <div className="row header" style={{ padding: '8px 16px' }}>
-        <div className="col font-weight-500 p-0">
-          {selectedQuery && (
-            <NameInput
-              onInput={executeQueryNameUpdation}
-              value={queryName}
-              darkMode={darkMode}
-              isDiabled={isVersionReleased}
-            />
-          )}
-          {selectedQuery && (
-            <div className="d-flex" style={{ marginBottom: '-15px', gap: '3px' }}>
-              {tabs.map(
-                (tab) =>
-                  (tab.condition === undefined || tab.condition) && (
-                    <p
-                      key={tab.id}
-                      className="m-0 d-flex align-items-center h-100"
-                      onClick={() => setActiveTab(tab.id)}
-                      style={{
-                        borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
-                        cursor: 'pointer',
-                        padding: '0px 8px 6px 8px',
-                        color: activeTab === tab.id ? 'var(--text-default)' : 'var(--text-placeholder)',
-                      }}
-                    >
-                      {tab.label}
-                    </p>
-                  )
-              )}
-            </div>
-          )}
-        </div>
-        <div className="query-header-buttons">{renderButtons()}</div>
-      </div>
+            <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
+          </span>
+          <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
+        </button>
+        {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+      </span>
     );
-  }
-);
+  };
+
+  const renderButtons = () => {
+    if (selectedQuery === null || showCreateQuery) return;
+    const { isLoading } = queries[selectedQuery?.name] ?? false;
+    return (
+      <>
+        {renderRunButton()}
+        <PreviewButton
+          onClick={previewButtonOnClick}
+          buttonLoadingState={buttonLoadingState}
+          isRunButtonLoading={isLoading}
+        />
+      </>
+    );
+  };
+
+  return (
+    <div className="row header" style={{ padding: '8px 16px' }}>
+      <div className="col font-weight-500 p-0">
+        {selectedQuery && (
+          <NameInput
+            onInput={executeQueryNameUpdation}
+            value={queryName}
+            darkMode={darkMode}
+            isDiabled={isVersionReleased}
+          />
+        )}
+        {selectedQuery && (
+          <div className="d-flex" style={{ marginBottom: '-15px', gap: '3px' }}>
+            {tabs.map(
+              (tab) =>
+                (tab.condition === undefined || tab.condition) && (
+                  <p
+                    key={tab.id}
+                    className="m-0 d-flex align-items-center h-100"
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
+                      cursor: 'pointer',
+                      padding: '0px 8px 6px 8px',
+                      color: activeTab === tab.id ? 'var(--text-default)' : 'var(--text-placeholder)',
+                    }}
+                  >
+                    {tab.label}
+                  </p>
+                )
+            )}
+          </div>
+        )}
+      </div>
+      <div className="query-header-buttons">{renderButtons()}</div>
+    </div>
+  );
+});
 
 const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
   const previewLoading = usePreviewLoading();
