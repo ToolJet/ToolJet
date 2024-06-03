@@ -1783,6 +1783,7 @@ $border-radius: 4px;
 .query-manager-input-elem {
   input {
     background-color: var(--base) !important;
+    padding-right: 12px !important;
   }
 }
 
@@ -1806,4 +1807,8 @@ $border-radius: 4px;
 
 .read-only-codehinter {
   opacity: 0.4;
+}
+
+.copilot-codehinter-wrap {
+  margin-left: 32px !important;
 }

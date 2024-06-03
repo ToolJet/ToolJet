@@ -154,7 +154,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
                 container={document.getElementsByClassName('query-details')[0]}
               >
                 <span
-                  style={{ textDecoration: 'underline 2px dashed', textDecorationColor: 'var(--slate8)' }}
+                  style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
                   className="ps-1 text-default"
                 >
                   {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
@@ -227,6 +227,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
               isCopilotEnabled={false}
               delayOnChange={false}
               readOnly={!enableTransformation}
+              editable={enableTransformation}
             />
           </div>
         </div>
