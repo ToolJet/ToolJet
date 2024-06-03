@@ -47,7 +47,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for non-LTS tag
-        if: "!contains(github.event.release.tag_name, 'EE-LTS')"
+        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -60,7 +60,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, 'EE-LTS')"
+        if: "contains(github.event.release.tag_name, 'CE-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -115,7 +115,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image
-        if: "!contains(github.event.release.tag_name, 'EE-LTS')"
+        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -128,7 +128,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image
-        if: "contains(github.event.release.tag_name, 'EE-LTS')"
+        if: "contains(github.event.release.tag_name, 'CE-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
