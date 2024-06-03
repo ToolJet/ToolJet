@@ -14,11 +14,13 @@ import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
     this.isUserAdmin = authenticationService.currentSessionValue?.admin;
+    this.whiteLabelText = retrieveWhiteLabelText();
 
     this.state = {
       showModal: false,
@@ -175,7 +177,7 @@ class ManageAppUsersComponent extends React.Component {
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
-    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
+    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
     const shouldWeDisableShareModal = !this.props.isVersionReleased;
 
     return (

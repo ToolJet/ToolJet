@@ -46,13 +46,8 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import {
-  getWorkspaceId,
-  isValidUUID,
-  setWindowTitle,
-  defaultWhiteLabellingSettings,
-  pageTitles,
-} from '@/_helpers/utils';
+import { getWorkspaceId, isValidUUID } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -608,7 +603,7 @@ const EditorComponent = (props) => {
     app.name = newName;
     updateState({ appName: newName, app: app });
     updateState({ appName: newName });
-    setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -747,7 +742,7 @@ const EditorComponent = (props) => {
     } = appData;
     useResolveStore.getState().actions.updateJSHints();
     const startingPageHandle = props.params.pageHandle;
-    setWindowTitle({ page: pageTitles.EDITOR, appName });
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
     current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
     await fetchOrgEnvironmentConstants();

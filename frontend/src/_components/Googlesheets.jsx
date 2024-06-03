@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
 
 const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const whiteLabelText = retrieveWhiteLabelText();
   const { t } = useTranslation();
 
   function authGoogle() {
@@ -53,7 +55,8 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
             <p data-cy="google-sheet-connection-form-description">
               {t(
                 'googleSheets.enableReadAndWrite',
-                'If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access'
+                'If you want your ${whiteLabelText} apps to modify your Google sheets, make sure to select read and write access',
+                { whiteLabelText }
               )}
             </p>
             <div>
@@ -64,7 +67,8 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
                 text={t('googleSheets.readOnly', 'Read only')}
                 helpText={t(
                   'googleSheets.readDataFromSheets',
-                  'Your ToolJet apps can only read data from Google sheets'
+                  'Your ${whiteLabelText} apps can only read data from Google sheets',
+                  { whiteLabelText }
                 )}
               />
               <Radio
@@ -74,7 +78,8 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
                 text={t('googleSheets.readWrite', 'Read and write')}
                 helpText={t(
                   'googleSheets.readModifySheets',
-                  'Your ToolJet apps can read data from sheets, modify sheets, and more.'
+                  'Your ${whiteLabelText} apps can read data from sheets, modify sheets, and more.',
+                  { whiteLabelText }
                 )}
               />
             </div>

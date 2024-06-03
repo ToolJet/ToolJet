@@ -6,6 +6,7 @@ import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -39,6 +40,7 @@ export const GlobalDatasources = (props) => {
     selectedDataSource
       ? updateSidebarNAV(selectedDataSource.name)
       : !activeDatasourceList && updateSidebarNAV('Commonly used');
+    fetchAndSetWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
