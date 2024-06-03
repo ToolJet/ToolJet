@@ -11,8 +11,9 @@ This tutorial will show you how to create an employee directory application in m
 **[2. Create a Database Table](#2-create-a-database-table)**  <br/>
 **[3. Fetch Data](#3-fetch-data)** <br/>
 **[4. Bind Data to the Table](#4-bind-data-to-the-table)** <br/>
-**[5. Add New Data](#5-add-new-data)** <br/>
-**[6. Preview, Release and Share](#6-preview-release-and-share)** <br/>
+**[5. Create a Query to Add Data](#5-create-a-query-to-add-data)** <br/>
+**[6. Use Events to Trigger Queries](#6-use-events-to-trigger-queries)** <br/>
+**[7. Preview, Release and Share](#7-preview-release-and-share)** <br/>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -123,7 +124,7 @@ Frame all the remaining keys in the same format.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### 5. Use Events to Trigger Queries
+### 6. Use Events to Trigger Queries
 
 The `addEmployees` query should run when you click on the **Save** button on the `+` (Add new row) form. And the Table component should reload and display updated data each time a new employee is added. Follow the below steps to use events to setup this functionality. 
 
@@ -143,7 +144,7 @@ Now when you click the `+` (Add new row) button, enter the employee data, and cl
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### 6. Preview, Release And Share
+### 7. Preview, Release And Share
 
 The preview, release and share buttons are at the top-right of the App-Builder.
 
