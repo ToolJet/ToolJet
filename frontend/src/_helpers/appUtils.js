@@ -38,7 +38,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
 import { updateParentNodes } from './utility';
-import { deepClone } from './utitlities/utils.helpers';
+import { deepClone } from './utilities/utils.helpers';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
