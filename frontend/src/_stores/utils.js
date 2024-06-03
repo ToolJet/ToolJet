@@ -4,7 +4,7 @@ import { devtools } from 'zustand/middleware';
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });

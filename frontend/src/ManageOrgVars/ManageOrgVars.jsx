@@ -10,7 +10,7 @@ import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { Alert } from '@/_ui/Alert/Alert';
 import { Button } from '@/_ui/LeftSidebar';
 import { useNavigate, useParams } from 'react-router-dom';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 function useWorkspaceRouting() {
   const navigate = useNavigate();

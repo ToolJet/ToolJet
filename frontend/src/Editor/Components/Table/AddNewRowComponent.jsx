@@ -5,7 +5,7 @@ import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,

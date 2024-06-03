@@ -3,7 +3,7 @@ import { SubContainer } from '../SubContainer';
 import { Pagination } from '@/_components/Pagination';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import _ from 'lodash';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const Listview = function Listview({
   id,

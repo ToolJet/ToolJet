@@ -33,7 +33,7 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {

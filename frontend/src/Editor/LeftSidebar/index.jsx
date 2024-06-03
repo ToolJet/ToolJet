@@ -20,7 +20,7 @@ import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
 import cx from 'classnames';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();

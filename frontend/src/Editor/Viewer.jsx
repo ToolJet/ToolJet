@@ -51,7 +51,7 @@ import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 class ViewerComponent extends React.Component {
   constructor(props) {

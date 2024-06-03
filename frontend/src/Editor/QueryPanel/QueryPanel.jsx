@@ -10,7 +10,7 @@ import Maximize from '@/_ui/Icon/solidIcons/Maximize';
 import { isEmpty, isEqual } from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import cx from 'classnames';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const QueryPanel = ({
   dataQueriesChanged,

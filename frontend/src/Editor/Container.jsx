@@ -32,7 +32,7 @@ import './editor.theme.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getSubpath } from '@/_helpers/routes';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 

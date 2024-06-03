@@ -26,7 +26,7 @@ import { diff } from 'deep-object-diff';
 import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appService } from '@/_services';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const EventManager = ({
   sourceId,

@@ -22,7 +22,7 @@ import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 import ParameterList from './ParameterList';
 import { decodeEntities } from '@/_helpers/utils';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
   const { renameQuery } = useDataQueriesActions();

@@ -1,5 +1,5 @@
 import HttpClient from '@/_helpers/http-client';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import _ from 'lodash';
 
 const tooljetAdapter = new HttpClient();

@@ -14,7 +14,7 @@ import {
   removeFunctionObjects,
 } from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 export const Form = function Form(props) {
   const {
     id,

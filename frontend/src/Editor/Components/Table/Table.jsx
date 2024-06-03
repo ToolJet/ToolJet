@@ -61,7 +61,7 @@ import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 import { diff } from 'deep-object-diff';
 import { isRowInValid } from '../tableUtils';
 import moment from 'moment';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {

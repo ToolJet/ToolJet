@@ -10,7 +10,7 @@ import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
 import { serialDataType } from '../constants';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const TableForm = ({
   selectedTable = {},

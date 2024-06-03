@@ -5,7 +5,7 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 import { isEqual } from 'lodash';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 var tinycolor = require('tinycolor2');
 
 export const Chart = function Chart({

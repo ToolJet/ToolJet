@@ -19,7 +19,7 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const QueryManagerBody = ({
   darkMode,

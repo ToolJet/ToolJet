@@ -4,7 +4,7 @@ import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
 import { dfs, removeAppSuggestions } from './handleReferenceTransactions';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 class ReferencesBiMap {
   constructor() {

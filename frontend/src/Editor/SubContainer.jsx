@@ -24,7 +24,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { diff } from 'deep-object-diff';
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const SubContainer = ({
   mode,

@@ -13,7 +13,7 @@ import { isEmpty } from 'lodash';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 import useConfirm from './Confirm';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =

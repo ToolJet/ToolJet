@@ -3,7 +3,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export default function JoinSelect({ darkMode }) {
   const { joinOptions, tableInfo, joinTableOptions, joinTableOptionsChange, findTableDetails } =

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { copilotService } from '@/_services/copilot.service';
 import { toast } from 'react-hot-toast';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export async function getRecommendation(currentContext, query, lang = 'javascript') {
   const words = query.split(' ');

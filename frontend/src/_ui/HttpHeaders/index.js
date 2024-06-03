@@ -2,7 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 import QueryEditor from './QueryEditor';
 import SourceEditor from './SourceEditor';
-import { deepClone } from '@/_helpers/utitlities/utils.helpers';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQueryEditor, workspaceConstants }) => {
   function addNewKeyValuePair(options) {
