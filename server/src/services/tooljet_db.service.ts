@@ -840,8 +840,7 @@ export class TooljetDbService {
         const isCharacterVarying = () => data_type === 'character varying';
 
         if (isSerial()) return { data_type: 'serial', column_default: undefined };
-        if (isCharacterVarying() && !isEmpty(column_default))
-          return { data_type, column_default: this.addQuotesIfString(column_default) };
+        if (isCharacterVarying()) return { data_type, column_default: this.addQuotesIfString(column_default) };
 
         return { data_type, column_default };
       };
