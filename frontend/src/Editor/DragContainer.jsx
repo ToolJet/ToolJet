@@ -1,5 +1,6 @@
 // import '@/Editor/wdyr';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
