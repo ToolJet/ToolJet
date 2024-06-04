@@ -230,7 +230,10 @@ export default function tjdbDropdownStyles(
       top: '50%',
       transform: 'translateY(-50%)',
       zIndex: '1',
-      color: '#808080',
+      color: '#7E868C',
+      fontSize: '12px',
+      lineHeight: '20px',
+      fontWeight: '400',
     }),
   };
 }

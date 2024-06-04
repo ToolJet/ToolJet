@@ -459,7 +459,7 @@ const ColumnForm = ({
           </h3>
         </div>
 
-        <div className="card-body">
+        <div className="card-body edit-column-body">
           <div className="edit-warning-info mb-3">
             <div className="edit-warning-icon">
               <WarningInfo />
@@ -492,7 +492,7 @@ const ColumnForm = ({
               Data type
             </div>
             <ToolTip message={'Data type cannot be modified'} placement="top" tooltipClassName="tootip-table">
-              <div>
+              <div className="tj-select-text">
                 <Select
                   isDisabled={true}
                   defaultValue={selectedColumn?.dataType === 'serial' ? serialDataType : disabledDataType}
@@ -633,8 +633,8 @@ const ColumnForm = ({
               </div>
             </ToolTip>
             <div className="col d-flex flex-column">
-              <p className="m-0 p-0 fw-500">Foreign Key relation</p>
-              <p className="fw-400 secondary-text tj-text-xsm mb-2">
+              <p className="m-0 p-0 fw-500 tj-switch-text">Foreign key relation</p>
+              <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
                 Adding a foreign key relation will link this column with a column in an existing table.
               </p>
               {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(selectedColumn?.Header) && isForeignKey && (
@@ -742,8 +742,8 @@ const ColumnForm = ({
                 </label>
               </div>
               <div className="col d-flex flex-column">
-                <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
-                <p className="fw-400 secondary-text tj-text-xsm mb-2">
+                <p className="m-0 p-0 fw-500 tj-switch-text">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+                <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
                   {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
                 </p>
               </div>
@@ -791,12 +791,12 @@ const ColumnForm = ({
                   </label>
                 </div>
                 <div className="col d-flex flex-column">
-                  <p className="m-0 p-0 fw-500">
+                  <p className="m-0 p-0 fw-500 tj-switch-text">
                     {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
                       ? 'UNIQUE'
                       : 'NOT UNIQUE'}
                   </p>
-                  <p className="fw-400 secondary-text tj-text-xsm">
+                  <p className="fw-400 secondary-text tj-text-xsm tj-switch-text">
                     {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
                       ? 'Unique value constraint is added'
                       : 'Unique value constraint is not added'}

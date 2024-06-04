@@ -263,43 +263,44 @@ const DropDownSelect = ({
           >
             <div className={`text-truncate`}>
               {renderSelected && renderSelected(selected)}
-
-              {!renderSelected && isValidInput(selected) ? (
-                Array.isArray(selected) ? (
-                  !isOverflown && (
-                    <MultiSelectValueBadge
-                      options={options}
-                      selected={selected}
-                      setSelected={setSelected}
-                      onChange={onChange}
-                    />
+              <>
+                {!renderSelected && isValidInput(selected) ? (
+                  Array.isArray(selected) ? (
+                    !isOverflown && (
+                      <MultiSelectValueBadge
+                        options={options}
+                        selected={selected}
+                        setSelected={setSelected}
+                        onChange={onChange}
+                      />
+                    )
+                  ) : (
+                    selected?.label
                   )
-                ) : (
-                  selected?.label
-                )
-              ) : showPlaceHolder ? (
-                <span style={{ color: '#9e9e9e' }}>
-                  {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
-                </span>
-              ) : (
-                ''
-              )}
-              {!renderSelected && isOverflown && !Array.isArray(selected) && (
-                <Badge className="me-1 dd-select-value-badge" bg="secondary">
-                  {selected?.length} selected
-                  <span
-                    role="button"
-                    onClick={(e) => {
-                      setSelected([]);
-                      onChange && onChange([]);
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    <Remove fill="var(--slate12)" width="12px" />
+                ) : showPlaceHolder ? (
+                  <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
+                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
                   </span>
-                </Badge>
-              )}
+                ) : (
+                  ''
+                )}
+                {!renderSelected && isOverflown && !Array.isArray(selected) && (
+                  <Badge className="me-1 dd-select-value-badge" bg="secondary">
+                    {selected?.length} selected
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        setSelected([]);
+                        onChange && onChange([]);
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <Remove fill="var(--slate12)" width="12px" />
+                    </span>
+                  </Badge>
+                )}
+              </>
             </div>
             <div className="dd-select-control-chevron">
               <CheveronDown width="15" height="15" />
