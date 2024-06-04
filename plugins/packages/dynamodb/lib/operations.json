@@ -96,7 +96,7 @@
     "delete_item": {
       "table": {
         "label": "Table",
-        "key": "get_item",
+        "key": "table",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter table",
