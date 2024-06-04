@@ -128,7 +128,7 @@ const Table = ({ collapseSidebar }) => {
               };
             });
             resolve({
-              key: foreignKey.referenced_column_names[0],
+              key: foreignKey.column_names[0],
               value: {
                 data: [...dataToCache],
                 totalFKRecords,
