@@ -46,6 +46,12 @@ const DropDownSelect = ({
   fetchTables,
   onTableClick,
   referencedForeignKeyDetails = [],
+  isCreateRow = false,
+  isEditRow = false,
+  isCreateColumn = false,
+  isEditColumn = false,
+  isEditTable = false,
+  isCreateTable = false,
   customChildren,
   isForeignKeyInEditCell = false,
   shouldCloseFkMenu,
@@ -208,6 +214,12 @@ const DropDownSelect = ({
             actions={actions}
             actionName={actionName}
             referencedForeignKeyDetails={referencedForeignKeyDetails}
+            isCreateRow={isCreateRow}
+            isEditRow={isEditRow}
+            isEditColumn={isEditColumn}
+            isCreateColumn={isCreateColumn}
+            isEditTable={isEditTable}
+            isCreateTable={isCreateTable}
             customChildren={customChildren}
             isForeignKeyInEditCell={isForeignKeyInEditCell}
             closeFKMenu={closeFKMenu}
@@ -225,9 +237,7 @@ const DropDownSelect = ({
             setShowMenu(true);
           }}
         >
-          <span style={{ display: 'inline-block', width: '100%', color: darkMode ? '#fff' : '' }}>
-            {selected.label}
-          </span>
+          <span style={{ display: 'inline-block', color: darkMode ? '#fff' : '' }}>{selected.label}</span>
         </div>
       ) : (
         <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>

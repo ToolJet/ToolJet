@@ -315,6 +315,7 @@ const EditRowForm = ({
                 setReferencedColumnDetails={setReferencedColumnDetails}
                 scrollEventForColumnValus={true}
                 cellColumnName={columnName}
+                isEditRow={true}
               />
             ) : (
               <input
@@ -330,7 +331,6 @@ const EditRowForm = ({
                 }`}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
                 autoComplete="off"
-                ref={(el) => (inputRefs.current[columnName] = el)}
                 // onFocus={onFocused}
               />
             )}

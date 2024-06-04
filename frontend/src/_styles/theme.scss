@@ -13128,6 +13128,14 @@ tbody {
   }
 }
 
+.tjdb-cell-tooltip {
+  max-width: 420px !important;
+
+  .tooltip-inner {
+    max-width: 100% !important;
+  }
+}
+
 div.ds-svg-container svg {
   padding: 2px;
 }
