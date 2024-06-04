@@ -4,36 +4,44 @@
   }
 }
 
-.card-body-wrapper{
+.card-body-wrapper {
   width: 640px;
   padding: 20px;
 }
 
-.card-body{
-  padding: 0;
-  .list-group-item{
-    padding: 0 !important;
+.drawer-card-wrapper {
+
+  .card-body {
+
+    padding: 0;
+
+    .list-group-item {
+      padding: 0 !important;
+    }
   }
+
 }
 
 .card-body.create-drawer-body,
 .card-body.edit-row-body,
-.card-body.edit-column-body{
+.card-body.edit-column-body {
   padding: 20px;
 }
 
 .form-label,
 .card-sub-title,
-.foreign-key-sub-title{
+.foreign-key-sub-title {
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
   margin-bottom: 4px;
 }
-.card-sub-title-light{
+
+.card-sub-title-light {
   color: #000000 !important;
 }
-.card-title{
+
+.card-title {
   font-size: 18px;
   line-height: 28px;
   font-weight: 500;
@@ -41,11 +49,11 @@
 
 .form-label-light,
 .card-title-light,
-.foreign-key-sub-title-light{
+.foreign-key-sub-title-light {
   color: #11181C !important;
 }
 
-.add-text{
+.add-text {
   font-size: 12px;
   line-height: 20px;
   font-weight: 500;
@@ -117,11 +125,12 @@
 
 .tj-app-input,
 .edit-row-container {
-  input{
+  input {
     font-size: 12px;
     line-height: 20px;
     font-weight: 500;
   }
+
   input.primary-idKey-light {
     gap: 16px !important;
     background: #f4f6fa !important;
@@ -711,11 +720,11 @@
   }
 }
 
-.add-relation-text-dark{
+.add-relation-text-dark {
   color: #545B64;
 }
 
-.add-relation-text-enabled{
+.add-relation-text-enabled {
   color: #3E63DD !important;
 }
 
@@ -724,7 +733,7 @@
 }
 
 .tj-switch-text,
-.tj-select-text{
+.tj-select-text {
   font-size: 12px;
   line-height: 20px;
 }
