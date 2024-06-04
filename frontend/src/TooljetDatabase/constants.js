@@ -36,6 +36,14 @@ export const serialDataType = [
   },
 ];
 
+export const postgresErrorCode = {
+  UniqueViolation: '23505',
+  CheckViolation: '23514',
+  NotNullViolation: '23502',
+  ForeignKeyViolation: '23503',
+  DataTypeMismatch: '22P02',
+};
+
 export const operators = [
   { value: 'eq', label: 'equals' },
   { value: 'gt', label: 'greater than' },

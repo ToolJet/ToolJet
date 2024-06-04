@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import OrgConstantVariablesPreviewBox from '@/_components/OrgConstantsVariablesResolver';
 import SolidIcon from '../Icon/SolidIcons';
-import Button from '@/_ui/Button';
 import { toast } from 'react-hot-toast';
 
 const Input = ({ helpText, ...props }) => {

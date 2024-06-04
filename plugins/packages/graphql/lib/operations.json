@@ -10,21 +10,24 @@
       "key": "query",
       "type": "codehinter",
       "description": "Enter query",
-      "height": "150px"
+      "height": "150px",
+      "editorType": "extendedSingleLine"
     },
     "variables": {
       "label": "Variables",
       "key": "variables",
       "type": "codehinter",
       "description": "Enter Variables",
-      "height": "150px"
+      "height": "150px",
+      "editorType": "extendedSingleLine"
     },
     "headers": {
       "label": "Headers",
       "key": "headers",
       "type": "react-component-headers",
       "description": "key-value pair headers for graphql api",
-      "height": "150px"
+      "height": "150px",
+      "editorType": "extendedSingleLine"
     }
   },
   "required": [
