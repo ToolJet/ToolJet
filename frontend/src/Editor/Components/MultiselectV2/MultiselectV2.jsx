@@ -283,7 +283,7 @@ export const MultiselectV2 = ({
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
         borderColor: getInputBorderColor({
-          isFocused: state.isFocused,
+          isFocused: state.isFocused || isMultiselectOpen,
           isValid,
           fieldBorderColor,
           accentColor,
@@ -297,9 +297,10 @@ export const MultiselectV2 = ({
           isDisabled: isMultiSelectDisabled,
         }),
         '&:hover': {
-          borderColor: state.isFocused
-            ? getInputFocusedColor({ accentColor })
-            : tinycolor(fieldBorderColor).darken(24).toString(),
+          borderColor:
+            state.isFocused || isMultiselectOpen
+              ? getInputFocusedColor({ accentColor })
+              : tinycolor(fieldBorderColor).darken(24).toString(),
         },
       };
     },
@@ -405,6 +406,9 @@ export const MultiselectV2 = ({
           onComponentClick(id, component, event);
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
+        }}
+        onClick={() => {
+          setIsMultiselectOpen(!isMultiselectOpen);
         }}
       >
         <Label
