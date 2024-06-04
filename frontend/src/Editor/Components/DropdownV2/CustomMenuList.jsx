@@ -30,18 +30,15 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     }
     setIsSelectAllSelected(e.target.checked);
   };
-
   return (
     <div
       className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="dropdown-multiselect-widget-search-box-wrapper">
-        {!searchInputValue && (
-          <span className="">
-            <SolidIcon name="search01" width="14" />
-          </span>
-        )}
+        <span>
+          <SolidIcon name="search01" width="14" />
+        </span>
         <input
           autoCorrect="off"
           autoComplete="off"

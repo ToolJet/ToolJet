@@ -80,6 +80,7 @@ export const MultiselectV2 = ({
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
+  const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
@@ -245,6 +246,7 @@ export const MultiselectV2 = ({
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
+      setSearchInputValue(searchText);
       setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
@@ -255,6 +257,7 @@ export const MultiselectV2 = ({
         fireEvent('onBlur');
       }
       setIsMultiselectOpen(false);
+      setSearchInputValue('');
     }
   };
 
@@ -464,6 +467,7 @@ export const MultiselectV2 = ({
             setSelected={setSelected}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState}
+            searchInputValue={searchInputValue}
             darkMode={darkMode}
           />
         </div>
