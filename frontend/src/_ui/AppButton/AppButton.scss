@@ -22,7 +22,15 @@
     }
 
     &:disabled {
-        color: var(--slate8) !important;
+        background: var(--slate6) !important;
+        color: var(--slate9) !important;
+        cursor: auto !important;
+
+        svg {
+            path {
+                fill: var(--slate9) !important;
+            }
+        }
     }
 }
 
@@ -213,7 +221,7 @@
     color: var(--slate12);
     border: none;
     background: transparent;
-    
+
     &:hover {
         background: var(--slate4, #ECEEF0) !important;
         color: var(--slate11);
