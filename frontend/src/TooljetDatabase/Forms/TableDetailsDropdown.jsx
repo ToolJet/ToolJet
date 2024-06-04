@@ -122,7 +122,7 @@ function TableDetailsDropdown({
                   : targetColumn
               }
               foreignKeyAccess={true}
-              topPlaceHolder={!actions && 'Select columns..'}
+              topPlaceHolder={!actions && 'Select column..'}
               showPlaceHolderInForeignKeyDrawer={true}
               onChange={(value) => {
                 if (source) {

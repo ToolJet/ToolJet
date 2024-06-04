@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/_components';
 import { Tooltip } from 'react-tooltip';
 import { getColumnDataType, dataTypes } from '../constants';
 import { TooljetDatabaseContext } from '../index';
+import cx from 'classnames';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -48,6 +49,8 @@ function ForeignKeyRelation({
   const existingReferencedColumnName = foreignKeyDetails[selectedForeignkeyIndex]?.referenced_column_names[0];
   const currentReferencedTableName = targetTable?.value;
   const currentReferencedColumnName = targetColumn?.value;
+  const disabledFillColor = darkMode ? '#545B64' : '#E4E7EB';
+  const enabledFillColor = '#3E63DD';
 
   const onCloseForeignKeyDrawer = () => {
     setIsForeignKeyDraweOpen(false);
@@ -327,7 +330,9 @@ function ForeignKeyRelation({
     <>
       <div className="foreignkey-relation-container">
         <div className="foreign-key-heading">
-          <span>Foreign key relation</span>
+          <span className={cx('foreign-key-sub-title', { 'foreign-key-sub-title-light': !darkMode })}>
+            Foreign key relation
+          </span>
           <p className="tj-text-xsm">
             A foreign key relation helps to link rows from existing tables with rows in this table based on a common
             column.
@@ -372,11 +377,11 @@ function ForeignKeyRelation({
           >
             <AddRectangle
               width="15"
-              fill={disableAddRelationButton ? 'var(--slate8)' : '#3E63DD'}
+              fill={disableAddRelationButton ? disabledFillColor : enabledFillColor}
               opacity="1"
-              secondaryFill="#ffffff"
+              secondaryFill="#FFFFFF"
             />
-            &nbsp;&nbsp; Add relation
+            <span className="add-text">Add relation</span>
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>

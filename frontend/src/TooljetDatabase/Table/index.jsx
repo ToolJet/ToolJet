@@ -1338,6 +1338,7 @@ const Table = ({ collapseSidebar }) => {
                                 cell.column.dataType !== 'boolean' &&
                                 cell.value !== ''
                               }
+                              tooltipClassName="tooltip-table-dashboard"
                             >
                               <div
                                 className={`${
@@ -1393,6 +1394,13 @@ const Table = ({ collapseSidebar }) => {
                                         className="input-cell-parent"
                                         onClick={() => {
                                           if (shouldOpenCellEditMenu(index)) setEditPopover(true);
+                                          if (cellVal === null) {
+                                            setCellVal('');
+                                            setNullValue(false);
+                                            setTimeout(() => {
+                                              document.getElementById('edit-input-blur').focus();
+                                            }, 0);
+                                          }
                                         }}
                                       >
                                         {cellVal === null ? (

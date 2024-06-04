@@ -7,7 +7,7 @@
     justify-content: center;
     align-items: center;
     padding: 10px 20px;
-    gap: 8px;
+    gap: 6px;
     border-radius: 6px;
     font-weight: 600;
     text-decoration: none;
@@ -22,7 +22,6 @@
     }
 
     &:disabled {
-        background: var(--slate3) !important;
         color: var(--slate8) !important;
     }
 }
@@ -44,7 +43,7 @@
 .tj-small-btn {
     height: 28px;
     border-radius: 6px;
-    padding: 4px 16px 4px 16px;
+    padding: 4px 0px;
     font-size: 12px;
 }
 
@@ -191,6 +190,7 @@
     color: var(--indigo9);
     border: none;
     background: transparent;
+    box-shadow: none !important;
 
     &:hover {
         color: var(--indigo10);
@@ -205,12 +205,7 @@
         color: var(--indigo10);
         background: var(--base);
         border: none;
-        box-shadow: 0px 0px 0px 4px var(--indigo6);
         outline: none;
-    }
-
-    &:focus {
-        box-shadow: 0px 0px 0px 4px var(--indigo6);
     }
 }
 

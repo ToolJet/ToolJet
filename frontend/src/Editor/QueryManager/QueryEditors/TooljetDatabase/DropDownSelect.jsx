@@ -48,6 +48,12 @@ const DropDownSelect = ({
   referencedForeignKeyDetails = [],
   cachedOptions,
   columnDataType = '',
+  isCreateRow = false,
+  isEditRow = false,
+  isCreateColumn = false,
+  isEditColumn = false,
+  isEditTable = false,
+  isCreateTable = false,
   customChildren,
   isForeignKeyInEditCell = false,
   shouldCloseFkMenu,
@@ -212,6 +218,12 @@ const DropDownSelect = ({
             referencedForeignKeyDetails={referencedForeignKeyDetails}
             cachedOptions={cachedOptions}
             columnDataType={columnDataType}
+            isCreateRow={isCreateRow}
+            isEditRow={isEditRow}
+            isEditColumn={isEditColumn}
+            isCreateColumn={isCreateColumn}
+            isEditTable={isEditTable}
+            isCreateTable={isCreateTable}
             customChildren={customChildren}
             isForeignKeyInEditCell={isForeignKeyInEditCell}
             closeFKMenu={closeFKMenu}
@@ -223,14 +235,30 @@ const DropDownSelect = ({
       {isForeignKeyInEditCell ? (
         <div
           className={`col-auto`}
-          style={{ position: 'relative', left: '-10px', top: '2px', paddingLeft: '10px', paddingBottom: '4px' }}
+          style={{
+            position: 'relative',
+            left: '-10px',
+            top: selected.label === null ? '0px' : '2px',
+            paddingLeft: '10px',
+            paddingBottom: '4px',
+          }}
           id={popoverBtnId.current}
           onClick={() => {
             setShowMenu(true);
           }}
         >
-          <span style={{ display: 'inline-block', width: '100%', color: darkMode ? '#fff' : '' }}>
-            {selected.label}
+          <span
+            className={cx({
+              'd-flex align-items-center justify-content-center': selected.label === null,
+            })}
+            style={{
+              display: 'inline-block',
+              color: darkMode ? '#fff' : '',
+              width: selected.label === null && '40px',
+              background: selected.label === null && 'var(--slate3)',
+            }}
+          >
+            {selected.label === null ? 'Null' : selected.label}
           </span>
         </div>
       ) : (
@@ -267,43 +295,44 @@ const DropDownSelect = ({
           >
             <div className={`text-truncate`}>
               {renderSelected && renderSelected(selected)}
-
-              {!renderSelected && isValidInput(selected) ? (
-                Array.isArray(selected) ? (
-                  !isOverflown && (
-                    <MultiSelectValueBadge
-                      options={options}
-                      selected={selected}
-                      setSelected={setSelected}
-                      onChange={onChange}
-                    />
+              <>
+                {!renderSelected && isValidInput(selected) ? (
+                  Array.isArray(selected) ? (
+                    !isOverflown && (
+                      <MultiSelectValueBadge
+                        options={options}
+                        selected={selected}
+                        setSelected={setSelected}
+                        onChange={onChange}
+                      />
+                    )
+                  ) : (
+                    selected?.label
                   )
-                ) : (
-                  selected?.label
-                )
-              ) : showPlaceHolder ? (
-                <span style={{ color: '#9e9e9e' }}>
-                  {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
-                </span>
-              ) : (
-                ''
-              )}
-              {!renderSelected && isOverflown && !Array.isArray(selected) && (
-                <Badge className="me-1 dd-select-value-badge" bg="secondary">
-                  {selected?.length} selected
-                  <span
-                    role="button"
-                    onClick={(e) => {
-                      setSelected([]);
-                      onChange && onChange([]);
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    <Remove fill="var(--slate12)" width="12px" />
+                ) : showPlaceHolder ? (
+                  <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
+                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
                   </span>
-                </Badge>
-              )}
+                ) : (
+                  ''
+                )}
+                {!renderSelected && isOverflown && !Array.isArray(selected) && (
+                  <Badge className="me-1 dd-select-value-badge" bg="secondary">
+                    {selected?.length} selected
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        setSelected([]);
+                        onChange && onChange([]);
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <Remove fill="var(--slate12)" width="12px" />
+                    </span>
+                  </Badge>
+                )}
+              </>
             </div>
             <div className="dd-select-control-chevron">
               <CheveronDown width="15" height="15" />

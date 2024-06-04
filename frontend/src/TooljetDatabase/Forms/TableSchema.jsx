@@ -125,7 +125,7 @@ function TableSchema({
   }
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1] === null ? 'Null' : key[1],
       value: key[1] === null ? 'Null' : key[1],
@@ -182,6 +182,10 @@ function TableSchema({
                       }`}</span>
                     </div>
                   </div>
+                ) : columnDetails[index]?.data_type === 'boolean' ? (
+                  'Foreign key relation cannot be created for boolean type column'
+                ) : columnDetails[index]?.data_type === 'serial' ? (
+                  'Foreign key relation cannot be created for serial type column'
                 ) : (
                   'No foreign key relation'
                 )
@@ -341,6 +345,8 @@ function TableSchema({
                 scrollEventForColumnValues={true}
                 cellColumnName={columnDetails[index].column_name}
                 columnDataType={columnDetails[index].data_type}
+                isEditTable={isEditMode}
+                isCreateTable={!isEditMode}
               />
             ) : (
               <ToolTip
@@ -390,7 +396,7 @@ function TableSchema({
             <ToolTip
               message={
                 columnDetails[index]?.data_type === 'boolean'
-                  ? 'Boolean data type cannot be a primary key'
+                  ? 'Boolean type column cannot be a primary key'
                   : 'There must be atleast one Primary key'
               }
               placement="top"

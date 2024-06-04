@@ -1,3 +1,4 @@
+import { useEditorStore } from '@/_stores/editorStore';
 import React from 'react';
 
 export const ConfigHandle = function ConfigHandle({
@@ -13,13 +14,18 @@ export const ConfigHandle = function ConfigHandle({
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
   isVersionReleased,
+  showHandle,
 }) {
+  const shouldShowHandle = useEditorStore((state) => state.hoveredComponent === id) || showHandle;
+
   return (
     <div
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
-        top: position === 'top' ? '-22px' : widgetTop + widgetHeight - 10,
+        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
+        visibility: shouldShowHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
+        left: '-1px',
       }}
     >
       <span
@@ -36,6 +42,7 @@ export const ConfigHandle = function ConfigHandle({
           }}
           role="button"
           data-cy={`${component.name.toLowerCase()}-config-handle`}
+          className="text-truncate"
         >
           <img
             style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}

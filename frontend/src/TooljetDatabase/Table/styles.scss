@@ -159,13 +159,50 @@
 
     .foreignkey-cell {
       .cell-text {
-        // width: 80%;
+        width: 80%;
       }
     }
   }
 
   .tjdb-selected-cell {
     border: 1.5px solid var(--Indigo-09, #3E63DD) !important;
+
+    .tjdb-td-wrapper {
+      div {
+        padding-bottom: 0px !important;
+
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 85%;
+          color: var(--slate11) !important;
+          cursor: default;
+          border-radius: 6px;
+          height: 20px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  .tjdb-column-select-border {
+    .tjdb-td-wrapper {
+      div {
+        padding-bottom: 0px !important;
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 85%;
+          color: var(--slate11) !important;
+          cursor: default;
+          border-radius: 6px;
+          height: 20px;
+          font-size: 12px;
+        }
+      }
+    }
   }
 
   .card-table tr td:last-child {
@@ -458,5 +495,13 @@
       }
     }
 
+  }
+}
+
+.tooltip-table-dashboard {
+  max-width: 500px !important;
+
+  .tooltip-inner {
+    max-width: 100% !important;
   }
 }

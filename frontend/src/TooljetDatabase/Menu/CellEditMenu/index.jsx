@@ -49,6 +49,10 @@ export const CellEditMenu = ({
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
       setCellValue(defaultColumnValue);
+      setSelectedForeignKeyValue({
+        label: defaultColumnValue,
+        value: defaultColumnValue,
+      });
     } else {
       setCellValue(previousCellValue);
     }
@@ -242,7 +246,7 @@ export const CellEditMenu = ({
             onClick={isForeignKeyInEditCell ? closeFKMenu : closePopover}
             variant="tertiary"
             size="sm"
-            className="fs-12"
+            className="fs-12 p-2"
           >
             Cancel
           </ButtonSolid>
@@ -251,7 +255,7 @@ export const CellEditMenu = ({
             disabled={cellValue == previousCellValue ? true : false}
             variant="primary"
             size="sm"
-            className="fs-12"
+            className="fs-12 p-2"
           >
             Save
           </ButtonSolid>
@@ -334,7 +338,7 @@ export const CellEditMenu = ({
           emptyError={
             <div className="dd-select-alert-error m-2 d-flex align-items-center">
               <Information />
-              No data available
+              No data found
             </div>
           }
           value={selectedForeignKeyValue}

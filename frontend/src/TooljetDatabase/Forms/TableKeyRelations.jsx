@@ -69,7 +69,7 @@ function SourceKeyRelation({
             icon: columns?.dataTypeDetails?.icon ?? columns?.dataTypeDetails[0]?.icon,
             value: columns?.column_name,
             dataType: columns?.data_type,
-            isDisabled: columns?.data_type === 'serial' ? true : false,
+            isDisabled: columns?.data_type === 'serial' || columns?.data_type === 'boolean' ? true : false,
           },
         ]
       : Object.values(columns).map((item) => {
@@ -79,7 +79,7 @@ function SourceKeyRelation({
             icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails?.[0]?.icon,
             value: item?.column_name,
             dataType: item?.data_type,
-            isDisabled: item?.data_type === 'serial' ? true : false,
+            isDisabled: item?.data_type === 'serial' || item?.data_type === 'boolean' ? true : false,
           };
         });
 
@@ -245,7 +245,7 @@ function SourceKeyRelation({
             <Source width={18} height={18} />
             <p className="mb-0 source-title">SOURCE</p>
           </div>
-          <span className="source-description">The current table on which foreign Key constraint is being added</span>
+          <span className="source-description">The current table on which foreign key constraint is being added</span>
         </div>
         <TableDetailsDropdown
           firstColumnName={'Table'}
@@ -265,7 +265,7 @@ function SourceKeyRelation({
           onTableClick={false}
         />
       </div>
-      <div className="target mt-4">
+      <div className="target-section mt-4">
         <div>
           <div className="d-flex align-items-center mb-1">
             <Target width={18} height={18} />

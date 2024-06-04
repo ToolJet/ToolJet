@@ -3,18 +3,26 @@ import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
-import { renderDatatypeIcon } from '../constants';
+import { postgresErrorCode, renderDatatypeIcon } from '../constants';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
+import cx from 'classnames';
 
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 
-const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColumnDetails, initiator, fnCaller }) => {
+const RowForm = ({
+  onCreate,
+  onClose,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+  initiator,
+  shouldResetRowForm,
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
   const inputRefs = useRef({});
@@ -182,13 +190,16 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   const defaultDataValues = () => {
     return rowColumns.reduce((result, column) => {
       const { dataType, column_default } = column;
-      if (dataType !== 'serial') {
-        if (column.dataType === 'boolean') {
-          result[column.accessor] = column_default ? column_default : false;
-        } else {
-          result[column.accessor] = column_default ? column_default : '';
-        }
+      if (dataType === 'serial') {
+        return result;
       }
+
+      if (column.dataType === 'boolean') {
+        result[column.accessor] = column_default ? column_default : false;
+        return result;
+      }
+
+      result[column.accessor] = column_default ? column_default : '';
       return result;
     }, {});
   };
@@ -200,18 +211,18 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
   }, []);
 
   useEffect(() => {
-    if (fnCaller) {
+    if (shouldResetRowForm) {
       setActiveTab(defaultActiveTab());
       setInputValues(inputValuesDefaultValues());
       setData(defaultDataValues());
     }
-  }, [fnCaller]);
+  }, [shouldResetRowForm]);
 
   useEffect(() => {
     rowColumns.forEach(({ accessor }) => {
       if (data[accessor] != '') {
         const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', '#FFFFFF', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFFFFF');
         setErrorMap((prev) => {
           return { ...prev, [accessor]: '' };
         });
@@ -219,7 +230,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     });
   }, [data]);
 
-  const handleSubmit = async (bypass) => {
+  const handleSubmit = async (shouldKeepDrawerOpen) => {
     setFetching(true);
     let flag = 0;
     rowColumns.forEach(({ accessor, dataType }) => {
@@ -229,7 +240,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           return { ...prev, [accessor]: 'Cannot be empty' };
         });
         const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       }
     });
     if (flag) {
@@ -239,13 +250,14 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
     const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
     setFetching(false);
     if (error) {
-      if (error?.message.includes('Unique constraint violated')) {
+      // TODO: Need all of this logic on the backend should ideally just get list of columns with error messages to map over
+      if (error?.code === postgresErrorCode.UniqueViolation) {
         const columnName = error?.message.split('.')?.[1];
         setErrorMap((prev) => {
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       } else if (error?.message.includes('Invalid input syntax for type')) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
@@ -260,7 +272,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', '#FFF8F7');
           }
         });
       }
@@ -269,7 +281,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
       return;
     }
     toast.success(`Row created successfully`);
-    onCreate && onCreate(bypass);
+    onCreate && onCreate(shouldKeepDrawerOpen);
   };
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
@@ -318,6 +330,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 scrollEventForColumnValues={true}
                 cellColumnName={columnName}
                 columnDataType={dataType}
+                isCreateRow={true}
               />
             ) : (
               <input
@@ -335,16 +348,16 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
                 placeholder={
                   isSerialDataTypeColumn ? 'Auto-generated' : inputValues[index]?.value !== null && 'Enter a value'
                 }
-                className={`
-                  ${
-                    isSerialDataTypeColumn && !darkMode
-                      ? 'primary-idKey-light'
-                      : isSerialDataTypeColumn && darkMode
-                      ? 'primary-idKey-dark'
-                      : !darkMode
-                      ? 'form-control'
-                      : 'form-control dark-form-row'
-                  }  ${errorMap[columnName] ? 'input-error-border' : ''}`}
+                className={cx(
+                  isSerialDataTypeColumn && !darkMode
+                    ? 'primary-idKey-light'
+                    : isSerialDataTypeColumn && darkMode
+                    ? 'primary-idKey-dark'
+                    : !darkMode
+                    ? 'form-control'
+                    : 'form-control dark-form-row',
+                  errorMap[columnName] ? 'input-error-border' : ''
+                )}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
                 autoComplete="off"
                 ref={(el) => (inputRefs.current[columnName] = el)}
@@ -392,7 +405,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
 
   let matchingObject = {};
   rowColumns.forEach((obj) => {
-    const { dataType = '', accessor, column_default } = obj;
+    const { dataType = '', accessor, _column_default } = obj;
     const keyName = accessor;
 
     if (data[keyName] !== undefined && dataType !== 'character varying' && dataType !== 'serial') {
@@ -407,7 +420,7 @@ const RowForm = ({ onCreate, onClose, referencedColumnDetails, setReferencedColu
           Create row
         </h3>
       </div>
-      <div className="card-body tj-app-input">
+      <div className="card-body tj-app-input create-drawer-body">
         {Array.isArray(rowColumns) &&
           rowColumns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;
