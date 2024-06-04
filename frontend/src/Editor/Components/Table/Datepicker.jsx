@@ -222,7 +222,7 @@ export const Datepicker = function Datepicker({
           handleDateChange(date);
         }}
         value={isDateInputFocussed ? dateInputValue : computeDateString(date)}
-        dateFormat={dateDisplayFormat}
+        dateFormat={!isDateSelectionEnabled && isTimeChecked ? 'HH:mm' : dateDisplayFormat}
         customInput={
           <TjDatepicker
             dateInputRef={dateInputRef}
