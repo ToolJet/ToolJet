@@ -89,6 +89,84 @@ const Table = ({ collapseSidebar }) => {
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
+  const [cachedOptions, setCahedOptions] = useState({});
+
+  const fetchFkDataForColumn = (foreignKey, currentIndex) => {
+    // responsible to fetch the fk column details for all available fk's and cache them
+    return new Promise((resolve, reject) => {
+      if (!foreignKey?.referenced_column_names?.length) return resolve();
+      const selectQuery = new PostgrestQueryBuilder();
+      const filterQuery = new PostgrestQueryBuilder();
+      const orderQuery = new PostgrestQueryBuilder();
+
+      filterQuery.is(foreignKey?.referenced_column_names[0], 'notNull');
+      orderQuery.order(foreignKey?.referenced_column_names[0], 'nullsfirst');
+      selectQuery.select(foreignKey?.referenced_column_names[0]);
+
+      tooljetDatabaseService
+        .findOne(
+          organizationId,
+          foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
+          `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`
+        )
+        .then(({ headers, data = [], error }) => {
+          if (error) {
+            toast.error(
+              error?.message ??
+                `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[currentIndex].referenced_table_name}"`
+            );
+            return reject(error);
+          }
+          const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+
+          if (Array.isArray(data) && data.length > 0) {
+            const dataToCache = data.map((item) => {
+              const [key, _value] = Object.entries(item);
+              return {
+                label: key[1] === null ? 'Null' : key[1],
+                value: key[1] === null ? 'Null' : key[1],
+              };
+            });
+            resolve({
+              key: foreignKey.column_names[0],
+              value: {
+                data: [...dataToCache],
+                totalFKRecords,
+              },
+            });
+          } else {
+            resolve();
+          }
+        });
+    });
+  };
+
+  const fetchAllFkData = async () => {
+    const dataToCache = {};
+
+    const results = await Promise.allSettled(
+      foreignKeys.map((foreignKey, currentIndex) => fetchFkDataForColumn(foreignKey, currentIndex))
+    );
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value && result.value.value) {
+        dataToCache[result.value.key] = result.value.value;
+      } else if (result.status === 'rejected') {
+        const foreignKey = foreignKeys[index];
+        console.error(`Error fetching data for column ${foreignKey?.referenced_column_names[0]}:`, result.reason);
+      }
+    });
+
+    return dataToCache;
+  };
+
+  useEffect(() => {
+    // This use effect runs whenever fk's are changed the result we get from fetchALlFkData we cache it in state so that we can persist it.
+    fetchAllFkData().then((dataToCache) => {
+      setCahedOptions(dataToCache);
+    });
+  }, [foreignKeys]);
+
   const prevSelectedTableRef = useRef({});
   const tooljetDbTableRef = useRef(null);
   const duration = 300;
@@ -781,6 +859,7 @@ const Table = ({ collapseSidebar }) => {
         'cell-text',
         'css-18kmycr-Input',
         ' css-18kmycr-Input',
+        'foreignkey-cell',
       ].includes(e.target.classList.value)
     ) {
       const isCellValueDefault =
@@ -1303,11 +1382,13 @@ const Table = ({ collapseSidebar }) => {
                                       }
                                       isForeignKey={isMatchingForeignKeyColumn(cell.column.Header)}
                                       darkMode={darkMode}
-                                      scrollEventForColumnValus={true}
+                                      scrollEventForColumnValues={true}
                                       organizationId={organizationId}
                                       foreignKeys={foreignKeys}
                                       setReferencedColumnDetails={setReferencedColumnDetails}
                                       cellHeader={cell.column.Header}
+                                      cachedOptions={cachedOptions?.[cell.column.Header]}
+                                      dataType={cell.column.dataType}
                                     >
                                       <div
                                         className="input-cell-parent"

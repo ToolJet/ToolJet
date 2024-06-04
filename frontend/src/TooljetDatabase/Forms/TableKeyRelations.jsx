@@ -251,7 +251,7 @@ function SourceKeyRelation({
           firstColumnName={'Table'}
           secondColumnName={'Column'}
           tableList={sourceTable}
-          tableColumns={sourceColumns}
+          tableColumns={sourceColumns.filter((column) => !isEmpty(column.value.trim()))}
           source={true}
           isEditColumn={isEditColumn}
           isCreateColumn={isCreateColumn}
@@ -265,7 +265,7 @@ function SourceKeyRelation({
           onTableClick={false}
         />
       </div>
-      <div className="target mt-4">
+      <div className="target-section mt-4">
         <div>
           <div className="d-flex align-items-center mb-1">
             <Target width={18} height={18} />

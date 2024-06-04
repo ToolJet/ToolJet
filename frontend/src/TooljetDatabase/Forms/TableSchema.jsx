@@ -125,7 +125,7 @@ function TableSchema({
   }
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1] === null ? 'Null' : key[1],
       value: key[1] === null ? 'Null' : key[1],
@@ -342,8 +342,9 @@ function TableSchema({
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeyDetails}
                 setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
+                scrollEventForColumnValues={true}
                 cellColumnName={columnDetails[index].column_name}
+                columnDataType={columnDetails[index].data_type}
                 isEditTable={isEditMode}
                 isCreateTable={!isEditMode}
               />

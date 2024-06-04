@@ -327,8 +327,9 @@ const RowForm = ({
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeys}
                 setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
+                scrollEventForColumnValues={true}
                 cellColumnName={columnName}
+                columnDataType={dataType}
                 isCreateRow={true}
               />
             ) : (
@@ -404,7 +405,7 @@ const RowForm = ({
 
   let matchingObject = {};
   rowColumns.forEach((obj) => {
-    const { dataType = '', accessor, column_default } = obj;
+    const { dataType = '', accessor, _column_default } = obj;
     const keyName = accessor;
 
     if (data[keyName] !== undefined && dataType !== 'character varying' && dataType !== 'serial') {

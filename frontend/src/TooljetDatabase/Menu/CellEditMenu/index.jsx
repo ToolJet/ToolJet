@@ -30,11 +30,13 @@ export const CellEditMenu = ({
   referencedColumnDetails = [],
   referenceColumnName = '',
   isForeignKey = false,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
   cellHeader,
+  cachedOptions,
+  dataType = '',
 }) => {
   // below state is used only for boolean cell
   const [selectedValue, setSelectedValue] = useState(cellValue);
@@ -47,6 +49,10 @@ export const CellEditMenu = ({
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
       setCellValue(defaultColumnValue);
+      setSelectedForeignKeyValue({
+        label: defaultColumnValue,
+        value: defaultColumnValue,
+      });
     } else {
       setCellValue(previousCellValue);
     }
@@ -349,7 +355,7 @@ export const CellEditMenu = ({
           saveFKValue={saveFKValue}
           addBtnLabel={'Open referenced table'}
           isCellEdit={true}
-          scrollEventForColumnValus={scrollEventForColumnValus}
+          scrollEventForColumnValues={scrollEventForColumnValues}
           organizationId={organizationId}
           foreignKeys={foreignKeys}
           setReferencedColumnDetails={setReferencedColumnDetails}
@@ -362,6 +368,8 @@ export const CellEditMenu = ({
           }
           isForeignKeyInEditCell={true}
           shouldCloseFkMenu={shouldCloseFkMenu}
+          cachedOptions={cachedOptions}
+          columnDataType={dataType}
         />
       ) : (
         children

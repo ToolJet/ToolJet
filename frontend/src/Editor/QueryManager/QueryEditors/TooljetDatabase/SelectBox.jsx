@@ -14,6 +14,93 @@ import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import ArrowRight from '@/TooljetDatabase/Icons/ArrowRight.svg';
 
+function CustomMenuList({ ...props }) {
+  const { selectProps } = props;
+  const { tjdbMenuListProps } = selectProps;
+
+  const selectedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isSelected) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const focusedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isFocused) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const handleScrollThrottled = throttle(tjdbMenuListProps.handleInfiniteScroll, 500);
+  return (
+    <React.Fragment>
+      <MenuList
+        {...props}
+        onAdd={tjdbMenuListProps.onAdd}
+        addBtnLabel={tjdbMenuListProps.addBtnLabel}
+        emptyError={tjdbMenuListProps.emptyError}
+        foreignKeyAccess={tjdbMenuListProps.foreignKeyAccess}
+        columnInfoForTable={tjdbMenuListProps.columnInfoForTable}
+        showColumnInfo={tjdbMenuListProps.showColumnInfo}
+        foreignKeyAccessInRowForm={tjdbMenuListProps.foreignKeyAccessInRowForm}
+        scrollEventForColumnValues={tjdbMenuListProps.scrollEventForColumnValues}
+        scrollContainerRef={tjdbMenuListProps.scrollContainerRef}
+        foreignKeys={tjdbMenuListProps.foreignKeys}
+        cellColumnName={tjdbMenuListProps.cellColumnName}
+        isLoadingFKDetails={tjdbMenuListProps.isLoadingFKDetails}
+        handleScrollThrottled={handleScrollThrottled}
+        loader={tjdbMenuListProps.loader}
+        searchValue={tjdbMenuListProps.searchValue}
+        isInitialForeignKeySearchDataLoaded={tjdbMenuListProps.isInitialForeignKeySearchDataLoaded}
+        isInitialForeignKeyDataLoaded={tjdbMenuListProps.isInitialForeignKeyDataLoaded}
+        customChildren={tjdbMenuListProps.customChildren}
+      />
+      {tjdbMenuListProps.foreignKeyAccess && tjdbMenuListProps.showDescription && tjdbMenuListProps.actions && (
+        <>
+          <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+          <div
+            style={{
+              height: 'fit-content',
+              padding: '8px 12px',
+            }}
+          >
+            <div className="tj-header-h8 tj-text">
+              {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+            </div>
+            <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+              {
+                <GenerateActionsDescription
+                  targetTable={
+                    tjdbMenuListProps.targetTable?.value ||
+                    tjdbMenuListProps.targetTable?.label ||
+                    tjdbMenuListProps.targetTable?.name
+                  }
+                  sourceTable={tjdbMenuListProps.tableName}
+                  actionName={tjdbMenuListProps.actionName}
+                  label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                />
+              }
+            </span>
+          </div>
+        </>
+      )}
+    </React.Fragment>
+  );
+}
+
+const customComponents = { MenuList: CustomMenuList };
+
 function DataSourceSelect({
   darkMode,
   isDisabled,
@@ -34,7 +121,7 @@ function DataSourceSelect({
   showDescription = false,
   foreignKeyAccessInRowForm,
   isCellEdit,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -51,6 +138,8 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  cachedOptions = {},
+  columnDataType = '',
   isCreateRow,
   isEditRow,
   isEditColumn,
@@ -67,7 +156,9 @@ function DataSourceSelect({
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [isInitialForeignKeSearchDataLoaded, setIsInitialForeignKeSearchDataLoaded] = useState(false);
+  const [searchPageNumber, setSearchPageNumber] = useState(1);
+  const [totalSearchRecords, setTotalSearchRecords] = useState(0);
+  const [isInitialForeignKeySearchDataLoaded, setIsInitialForeignKeySearchDataLoaded] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
@@ -83,151 +174,170 @@ function DataSourceSelect({
     }
   });
 
-  useEffect(() => {
-    function getForeignKeyDetails(incrementPageBy) {
-      if (isEmpty(searchValue)) {
-        const limit = 15;
-        const offset = (pageNumber - 1) * limit;
+  function setDefaultStateForSearch(makeSearchValueToDefault = false) {
+    setIsInitialForeignKeySearchDataLoaded(false);
+    setTotalSearchRecords(0);
+    setSearchPageNumber(1);
+    makeSearchValueToDefault && setSearchValue('');
+    setSearchResults([]);
+  }
 
-        if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
+  function fetchForeignKeyDetails(page, totalRecords, isFirstPageLoaded, searchValue, foreignKeys, organizationId) {
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
+    if (isFirstPageLoaded && offset >= totalRecords) return;
+    if (foreignKeys.length < 1) return;
+    setIsLoadingFKDetails(true);
+    const referencedColumns = foreignKeys.find((item) => item.column_names[0] === cellColumnName);
+    if (!referencedColumns?.referenced_column_names?.length) return;
+
+    const selectQuery = new PostgrestQueryBuilder();
+    const filterQuery = new PostgrestQueryBuilder();
+    const orderQuery = new PostgrestQueryBuilder();
+    selectQuery.select(referencedColumns?.referenced_column_names[0]);
+    let query = `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`;
+
+    if (!isEmpty(searchValue)) {
+      columnDataType === 'character varying'
+        ? filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`)
+        : filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
+    }
+
+    // Filtering out null values & bringing empty values to top
+    filterQuery.is(referencedColumns?.referenced_column_names[0], 'notNull');
+    orderQuery.order(referencedColumns?.referenced_column_names[0], 'nullsfirst');
+    query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
+
+    tooljetDatabaseService
+      .findOne(organizationId, referencedColumns?.referenced_table_id, query)
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          setIsLoadingFKDetails(false);
+          toast.error(
+            error?.message ??
+              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+          );
           return;
         }
-        setIsLoadingFKDetails(true);
-        const selectQuery = new PostgrestQueryBuilder();
-        // Checking that the selected column is available in ForeignKey
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-        if (!referencedColumns?.referenced_column_names?.length) return;
-        selectQuery.select(referencedColumns?.referenced_column_names[0]);
 
-        tooljetDatabaseService
-          .findOne(
-            organizationId,
-            foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
-            `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
+        const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+        if (Array.isArray(data) && data.length > 0) {
+          if (isEmpty(searchValue)) {
+            if (page === 1) setIsInitialForeignKeyDataLoaded(true);
+            setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+            setPageNumber((prevPageNumber) => prevPageNumber + 1);
+            if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
+          }
+
+          if (!isEmpty(searchValue)) {
+            if (page === 1) setIsInitialForeignKeySearchDataLoaded(true);
+            const currentSearchResultList = data.map((item) => ({
+              value: item[referencedColumns?.referenced_column_names[0]],
+              label: item[referencedColumns?.referenced_column_names[0]],
+            }));
+            setSearchResults((prevSearchData) => [...prevSearchData, ...currentSearchResultList]);
+            setSearchPageNumber((prevPageNumber) => prevPageNumber + 1);
+            if (totalFKRecords !== totalSearchRecords) setTotalSearchRecords(totalFKRecords);
+          }
+        }
+        setIsLoadingFKDetails(false);
+      });
+  }
+
+  function handleInfiniteScroll() {
+    const target = scrollContainerRef?.current;
+    let scrollTop = target?.scrollTop;
+    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+
+    if (scrollPercentage > 90 && !isLoadingFKDetails) {
+      isEmpty(searchValue)
+        ? fetchForeignKeyDetails(
+            pageNumber,
+            totalRecords,
+            isInitialForeignKeyDataLoaded,
+            searchValue,
+            foreignKeys,
+            organizationId
           )
-          .then(({ headers, data = [], error }) => {
-            if (error) {
-              toast.error(
-                error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-              );
-              setIsLoadingFKDetails(false);
-              return;
-            }
-
-            const totalFKRecords = headers['content-range'].split('/')[1] || 0;
-            if (Array.isArray(data) && data?.length > 0) {
-              if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
-              setReferencedColumnDetails((prevData) => [...prevData, ...data]);
-              setPageNumber((prevPageNumber) => prevPageNumber + incrementPageBy);
-              if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
-            }
-            setIsLoadingFKDetails(false);
-          });
-      }
+        : fetchForeignKeyDetails(
+            searchPageNumber,
+            totalSearchRecords,
+            isInitialForeignKeySearchDataLoaded,
+            searchValue,
+            foreignKeys,
+            organizationId
+          );
     }
+  }
 
-    function handleScroll() {
-      const target = scrollContainerRef?.current;
-      let scrollTop = target?.scrollTop;
-      const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedHandleChange = useCallback(
+    debounce((value) => {
+      setSearchValue(value);
+    }, 500),
+    []
+  );
 
-      if (scrollPercentage > 90 && !isLoadingFKDetails) {
-        if (isEmpty(searchValue)) getForeignKeyDetails(1);
-      }
-    }
-
-    const handleScrollThrottled = throttle(handleScroll, 500);
-
-    if (scrollEventForColumnValus && !searchValue) {
-      if (!isInitialForeignKeyDataLoaded) getForeignKeyDetails(1);
-      scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
-    }
-
-    return () => {
-      scrollContainerRef?.current?.removeEventListener('scroll', handleScrollThrottled);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue, pageNumber, totalRecords]);
+  const handleChange = (value) => {
+    debouncedHandleChange(value);
+  };
 
   useEffect(() => {
-    function handleSearchInSelectBox() {
-      if (!isEmpty(searchValue)) {
-        const limit = 100;
-        // Only first page will be loaded - for Search
-        const offset = (1 - 1) * limit;
+    return () => {
+      debouncedHandleChange.cancel();
+    };
+  }, [debouncedHandleChange]);
 
-        if (isInitialForeignKeSearchDataLoaded) return;
-        setIsLoadingFKDetails(true);
-        const selectQuery = new PostgrestQueryBuilder();
-        const filterQuery = new PostgrestQueryBuilder();
+  useEffect(() => {
+    const shouldLoadFKDataFirstPage = isEmpty(searchValue) && !isInitialForeignKeyDataLoaded;
+    const shouldLoadFKSearchDataFirstPage = !isEmpty(searchValue);
 
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-        if (!referencedColumns?.referenced_column_names?.length) return;
-        selectQuery.select(referencedColumns?.referenced_column_names[0]);
+    if (scrollEventForColumnValues) {
+      if (shouldLoadFKSearchDataFirstPage) {
+        setDefaultStateForSearch();
+        fetchForeignKeyDetails(1, 0, false, searchValue, foreignKeys, organizationId);
+      }
 
-        if (scrollEventForColumnValus) {
-          filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
-          // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
-        }
-
-        const query = `${selectQuery.url.toString()}&${filterQuery.url.toString()}&limit=${limit}&offset=${offset}`;
-
-        tooljetDatabaseService
-          .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
-          .then(({ _headers, data = [], error }) => {
-            if (error) {
-              toast.error(
-                error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-              );
-              setIsLoadingFKDetails(false);
-              return;
-            }
-
-            if (Array.isArray(data) && data?.length > 0) {
-              setIsInitialForeignKeSearchDataLoaded(true);
-              const currentSearchResultList = data.map((item) => ({
-                value: item[referencedColumns?.referenced_column_names[0]],
-                label: item[referencedColumns?.referenced_column_names[0]],
-              }));
-              setSearchResults([...currentSearchResultList]);
-            }
-            setIsLoadingFKDetails(false);
-          });
+      if (shouldLoadFKDataFirstPage && isEmpty(cachedOptions)) {
+        fetchForeignKeyDetails(
+          pageNumber,
+          totalRecords,
+          isInitialForeignKeyDataLoaded,
+          searchValue,
+          foreignKeys,
+          organizationId
+        );
+      } else if (shouldLoadFKDataFirstPage && !isEmpty(cachedOptions)) {
+        setIsLoadingFKDetails(false);
+        setIsInitialForeignKeyDataLoaded(true);
+        const data = cachedOptions.data;
+        setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+        setPageNumber((prevPageNumber) => prevPageNumber + 1);
+        setTotalRecords(cachedOptions.totalFKRecords);
       }
     }
-    let debouncedHandleSearchInSelectBox;
-    if (scrollEventForColumnValus) {
-      debouncedHandleSearchInSelectBox = debounce(() => {
-        // Making the values to default
-        if (searchResults.length) setSearchResults([]);
-        setIsInitialForeignKeSearchDataLoaded(false);
-        if (!isLoadingFKDetails) handleSearchInSelectBox(1, true);
-      }, 500);
-
-      debouncedHandleSearchInSelectBox();
-    }
-
-    return debouncedHandleSearchInSelectBox?.cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
   useEffect(() => {
-    // Making the Infinite scroll pagination API to default state
     return () => {
-      if (scrollEventForColumnValus) {
+      if (scrollEventForColumnValues) {
         setIsInitialForeignKeyDataLoaded(false);
-        setIsInitialForeignKeSearchDataLoaded(false);
         setTotalRecords(0);
         setPageNumber(1);
-        setSearchValue('');
-        setSearchResults([]);
         setReferencedColumnDetails([]);
+
+        setDefaultStateForSearch(true);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const customFilterOption = (option, inputValue) => {
+    if (!option.label) return null;
+    return option.label.toString().toLowerCase().includes(inputValue.toString().toLowerCase());
+  };
 
   const handleFKMenuKeyDown = (e) => {
     if (isForeignKeyInEditCell) {
@@ -270,8 +380,32 @@ function DataSourceSelect({
         menuIsOpen
         autoFocus
         hideSelectedOptions={false}
+        tjdbMenuListProps={{
+          handleInfiniteScroll: handleInfiniteScroll,
+          onAdd: onAdd,
+          addBtnLabel: addBtnLabel,
+          emptyError: emptyError,
+          foreignKeyAccess: foreignKeyAccess,
+          columnInfoForTable: columnInfoForTable,
+          showColumnInfo: showColumnInfo,
+          foreignKeyAccessInRowForm: foreignKeyAccessInRowForm,
+          scrollEventForColumnValues: scrollEventForColumnValues,
+          scrollContainerRef: scrollContainerRef,
+          foreignKeys: foreignKeys,
+          cellColumnName: cellColumnName,
+          isLoadingFKDetails: isLoadingFKDetails,
+          showDescription: showDescription,
+          actions: actions,
+          targetTable: targetTable,
+          tableName: tableName,
+          actionName: actionName,
+          loader: loader,
+          searchValue: searchValue,
+          isInitialForeignKeySearchDataLoaded: isInitialForeignKeySearchDataLoaded,
+          isInitialForeignKeyDataLoaded: isInitialForeignKeyDataLoaded,
+          customChildren: customChildren,
+        }}
         components={{
-          // ...(isMulti && {
           Option: ({ children, ...props }) => {
             return (
               <components.Option {...props}>
@@ -381,7 +515,7 @@ function DataSourceSelect({
                     {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
                       <ToolTip
                         message={referencedForeignKeyDetails?.map(
-                          (item, index) =>
+                          (item, _index) =>
                             item?.referenced_table_id === props?.data?.value && (
                               <div key={item?.referenced_table_id}>
                                 <span>Foreign key relation</span>
@@ -406,97 +540,18 @@ function DataSourceSelect({
               </components.Option>
             );
           },
-          // }),
-          MenuList: useCallback(
-            (props) => {
-              const selectedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isSelected) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-              const focusedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isFocused) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-
-              return (
-                <React.Fragment>
-                  <MenuList
-                    {...props}
-                    onAdd={onAdd}
-                    addBtnLabel={addBtnLabel}
-                    emptyError={emptyError}
-                    foreignKeyAccess={foreignKeyAccess}
-                    columnInfoForTable={columnInfoForTable}
-                    showColumnInfo={showColumnInfo}
-                    foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                    scrollEventForColumnValus={scrollEventForColumnValus}
-                    scrollContainerRef={scrollContainerRef}
-                    foreignKeys={foreignKeys}
-                    cellColumnName={cellColumnName}
-                    isLoadingFKDetails={isLoadingFKDetails}
-                    customChildren={customChildren}
-                    loader={loader}
-                  />
-                  {foreignKeyAccess && showDescription && actions && (
-                    <>
-                      <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
-                      <div
-                        style={{
-                          // minHeight: '140px',
-                          height: 'fit-content',
-                          padding: '8px 12px',
-                        }}
-                      >
-                        <div className="tj-header-h8 tj-text">
-                          {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                        </div>
-                        <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
-                          {
-                            <GenerateActionsDescription
-                              targetTable={targetTable?.value || targetTable?.label || targetTable?.name}
-                              sourceTable={tableName}
-                              actionName={actionName}
-                              label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                            />
-                          }
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </React.Fragment>
-              );
-            },
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            [onAdd, addBtnLabel, emptyError, isLoadingFKDetails]
-          ),
+          ...customComponents,
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && !scrollEventForColumnValus && { Control: () => '' }),
+          ...(optionsCount < 5 && !scrollEventForColumnValues && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
             ...style,
-            // width: '240px',
             background: 'var(--base)',
             color: 'var(--slate9)',
             borderWidth: '0',
-            // borderBottom: '1px solid var(--slate7)',
-            // marginBottom: '1px',
             boxShadow: 'none',
             borderRadius: '4px 4px 0 0',
             borderBottom: '1px solid var(--slate-05, #E6E8EB)',
@@ -530,8 +585,6 @@ function DataSourceSelect({
             ...style,
             fontSize: '100%',
             color: 'var(--slate-11, #687076)',
-            // font-size: 12px;
-            // font-style: normal;
             fontWeight: 500,
             lineHeight: '20px',
             textTransform: 'uppercase',
@@ -540,6 +593,7 @@ function DataSourceSelect({
             ...style,
             cursor: isDisabled ? 'not-allowed' : 'pointer',
             color: isDisabled ? 'var(--slate8, #c1c8cd)' : 'inherit',
+            minHeight: '33.5px',
             backgroundColor:
               isSelected && highlightSelected
                 ? 'var(--indigo3, #F0F4FF)'
@@ -582,16 +636,16 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={scrollEventForColumnValus && searchValue ? searchResults : modifiedOptions}
+        options={scrollEventForColumnValues && searchValue ? searchResults : modifiedOptions}
+        filterOption={scrollEventForColumnValues ? null : customFilterOption}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
         maxMenuHeight={400}
         minMenuHeight={300}
         value={selected}
-        inputValue={searchValue}
         onInputChange={(value) => {
-          setSearchValue(value);
+          handleChange(value);
         }}
       />
     </div>
@@ -610,13 +664,16 @@ const MenuList = ({
   showColumnInfo,
   options,
   foreignKeyAccessInRowForm,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   scrollContainerRef,
   foreignKeys,
   cellColumnName,
   isLoadingFKDetails = false,
   customChildren,
   loader,
+  searchValue,
+  isInitialForeignKeyDataLoaded,
+  isInitialForeignKeySearchDataLoaded,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -635,23 +692,32 @@ const MenuList = ({
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 225 - 48;
+    if (scrollEventForColumnValues) menuListStyles.minHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
+  const isInitialDataLoaded = isEmpty(searchValue)
+    ? isInitialForeignKeyDataLoaded
+    : isInitialForeignKeySearchDataLoaded;
+
   return (
     <>
       {!isEmpty(options) && showColumnInfo && columnInfoForTable}
-      {isLoadingFKDetails && loader ? (
+      {isLoadingFKDetails && loader && !isInitialDataLoaded ? (
         loader
       ) : isEmpty(options) && emptyError && !isLoadingFKDetails ? (
         emptyError
       ) : (
         <div
-          ref={scrollEventForColumnValus ? scrollContainerRef : innerRef}
+          ref={scrollEventForColumnValues ? scrollContainerRef : innerRef}
           style={menuListStyles}
           id="query-ds-select-menu"
           onClick={(e) => e.stopPropagation()}
+          onScroll={
+            scrollEventForColumnValues && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
+          }
         >
           {children}
+          {isLoadingFKDetails && loader ? loader : null}
         </div>
       )}
       {customChildren && customChildren}
@@ -666,7 +732,7 @@ const MenuList = ({
             variant="secondary"
             size="md"
             className="w-100"
-            onClick={scrollEventForColumnValus ? handleNavigateToReferencedTable : onAdd}
+            onClick={scrollEventForColumnValues ? handleNavigateToReferencedTable : onAdd}
           >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}

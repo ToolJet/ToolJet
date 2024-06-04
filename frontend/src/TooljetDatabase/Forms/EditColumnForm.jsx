@@ -573,8 +573,9 @@ const ColumnForm = ({
                     addBtnLabel={'Open referenced table'}
                     foreignKeys={foreignKeys}
                     setReferencedColumnDetails={setReferencedColumnDetails}
-                    scrollEventForColumnValus={true}
+                    scrollEventForColumnValues={true}
                     cellColumnName={selectedColumn?.Header}
+                    columnDataType={dataType}
                     isEditColumn={true}
                   />
                 )}
