@@ -234,6 +234,12 @@ function DataSourceSelect({
     e.stopPropagation();
   };
 
+  const modifiedOptions = [...options].sort((a, b) => {
+    if (a.isDisabled && !b.isDisabled) return -1;
+    if (!a.isDisabled && b.isDisabled) return 1;
+    return 0;
+  });
+
   return (
     <div onKeyDown={handleFKMenuKeyDown} onClick={(e) => e.stopPropagation()}>
       <Select
@@ -263,110 +269,112 @@ function DataSourceSelect({
           Option: ({ children, ...props }) => {
             return (
               <components.Option {...props}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: showRedirection || actions ? 'space-between' : 'flex-start',
-                    alignItems: 'center',
-                    cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
-                  }}
-                  className={`dd-select-option ${showDescription && 'h-100'}`}
+                <ToolTip
+                  message={`Foreign key relation cannot be created for ${props?.data?.dataType} type column`}
+                  placement="top"
+                  tooltipClassName="tootip-table"
+                  show={(foreignKeyAccess && props.data.dataType === 'serial') || props.data.dataType === 'boolean'}
                 >
-                  {isMulti && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        // width: '20px',
-                      }}
-                    >
-                      <Form.Check // prettier-ignore
-                        type={'checkbox'}
-                        id={props.value}
-                        className="me-1"
-                        checked={props.isSelected}
-                        // label={`default ${type}`}
-                      />
-                    </div>
-                  )}
-                  {props?.data?.icon &&
-                    (isValidElement(props.data.icon) ? (
-                      props.data.icon
-                    ) : (
-                      <SolidIcon
-                        name={props.data.icon}
-                        style={{ height: 16, width: 16 }}
-                        width={20}
-                        height={17}
-                        viewBox=""
-                      />
-                    ))}
-
-                  <span
-                    className={cx({
-                      'ms-1 ': props?.data?.icon,
-                      'flex-grow-1': !showDescription,
-                    })}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: showRedirection || actions ? 'space-between' : 'flex-start',
+                      alignItems: 'center',
+                      cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
+                    }}
+                    className={`dd-select-option ${showDescription && 'h-100'}`}
                   >
-                    {children}
-                  </span>
-
-                  {foreignKeyAccess && showRedirection && props.isFocused && (
-                    <Maximize
-                      width={16}
-                      style={{
-                        ...(props.isSelected &&
-                          highlightSelected && {
-                            marginRight: '10px',
-                            marginTop: '3px',
-                          }),
-                      }}
-                      onClick={() => {
-                        const data = { id: props.data.id, table_name: props.data.value };
-                        localStorage.setItem('tableDetails', JSON.stringify(data));
-                        window.open(getPrivateRoute('database'), '_blank');
-                      }}
-                    />
-                  )}
-                  {props.isSelected && highlightSelected && (
-                    <SolidIcon
-                      fill="var(--indigo9)"
-                      name="tick"
-                      style={{ height: 16, width: 16, marginTop: '-4px' }}
-                      viewBox="0 0 20 20"
-                      className="mx-1"
-                    />
-                  )}
-
-                  {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
-                    <ToolTip
-                      message={referencedForeignKeyDetails?.map(
-                        (item, index) =>
-                          item?.referenced_table_id === props?.data?.value && (
-                            <div key={item?.referenced_table_id}>
-                              <span>Foreign key relation</span>
-                              <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                                <span>{item?.column_names[0]}</span>
-                                <ArrowRight />
-                                <span>{`${item?.referenced_table_name}.${item?.referenced_column_names[0]}`}</span>
-                              </div>
-                            </div>
-                          )
-                      )}
-                      placement="top"
-                      tooltipClassName="tjdb-table-tooltip"
-                    >
-                      <div>
-                        <SolidIcon name="foreignkey" height={'14'} width={'24'} />
+                    {isMulti && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          // width: '20px',
+                        }}
+                      >
+                        <Form.Check // prettier-ignore
+                          type={'checkbox'}
+                          id={props.value}
+                          className="me-1"
+                          checked={props.isSelected}
+                          // label={`default ${type}`}
+                        />
                       </div>
-                    </ToolTip>
-                  )}
-                </div>
-                {foreignKeyAccess && props.data.isDisabled && (
-                  <div style={{ fontSize: '12px', color: '#889096', cursor: 'not-allowed' }}>
-                    Foreign key relation cannot be created for serial type column
+                    )}
+                    {props?.data?.icon &&
+                      (isValidElement(props.data.icon) ? (
+                        props.data.icon
+                      ) : (
+                        <SolidIcon
+                          name={props.data.icon}
+                          style={{ height: 16, width: 16 }}
+                          width={20}
+                          height={17}
+                          viewBox=""
+                        />
+                      ))}
+
+                    <span
+                      className={cx({
+                        'ms-1 ': props?.data?.icon,
+                        'flex-grow-1': !showDescription,
+                      })}
+                    >
+                      {children}
+                    </span>
+
+                    {foreignKeyAccess && showRedirection && props.isFocused && (
+                      <Maximize
+                        width={16}
+                        style={{
+                          ...(props.isSelected &&
+                            highlightSelected && {
+                              marginRight: '10px',
+                              marginTop: '3px',
+                            }),
+                        }}
+                        onClick={() => {
+                          const data = { id: props.data.id, table_name: props.data.value };
+                          localStorage.setItem('tableDetails', JSON.stringify(data));
+                          window.open(getPrivateRoute('database'), '_blank');
+                        }}
+                      />
+                    )}
+                    {props.isSelected && highlightSelected && (
+                      <SolidIcon
+                        fill="var(--indigo9)"
+                        name="tick"
+                        style={{ height: 16, width: 16, marginTop: '-4px' }}
+                        viewBox="0 0 20 20"
+                        className="mx-1"
+                      />
+                    )}
+
+                    {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
+                      <ToolTip
+                        message={referencedForeignKeyDetails?.map(
+                          (item, index) =>
+                            item?.referenced_table_id === props?.data?.value && (
+                              <div key={item?.referenced_table_id}>
+                                <span>Foreign key relation</span>
+                                <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                                  <span>{item?.column_names[0]}</span>
+                                  <ArrowRight />
+                                  <span>{`${item?.referenced_table_name}.${item?.referenced_column_names[0]}`}</span>
+                                </div>
+                              </div>
+                            )
+                        )}
+                        placement="top"
+                        tooltipClassName="tjdb-table-tooltip"
+                      >
+                        <div>
+                          <SolidIcon name="foreignkey" height={'14'} width={'24'} />
+                        </div>
+                      </ToolTip>
+                    )}
                   </div>
-                )}
+                </ToolTip>
               </components.Option>
             );
           },
@@ -502,7 +510,7 @@ function DataSourceSelect({
           }),
           option: (style, { data: { isNested }, isFocused, isDisabled, isSelected }) => ({
             ...style,
-            cursor: 'pointer',
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
             color: isDisabled ? 'var(--slate8, #c1c8cd)' : 'inherit',
             backgroundColor:
               isSelected && highlightSelected
@@ -510,7 +518,7 @@ function DataSourceSelect({
                 : isFocused && !isNested
                 ? 'var(--slate4)'
                 : isDisabled
-                ? 'var(--slate3, #f1f3f5)'
+                ? 'transparent'
                 : isDisabled && isFocused
                 ? 'var(--slate3, #f1f3f5)'
                 : 'transparent',
@@ -546,7 +554,7 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={scrollEventForColumnValus && searchValue ? searchResults : options}
+        options={scrollEventForColumnValus && searchValue ? searchResults : modifiedOptions}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
