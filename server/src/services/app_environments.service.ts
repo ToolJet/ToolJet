@@ -42,7 +42,10 @@ export class AppEnvironmentService {
         where: { id: editingVersionId },
       });
       const environments: ExtendedEnvironment[] = await this.getAll(organizationId, manager, editorVersion.appId);
-      const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
       let editorEnvironment: AppEnvironment;
       if (!isMultiEnvironmentEnabled) {
         editorEnvironment = environments.find((env) => env.priority === 1);
@@ -116,7 +119,10 @@ export class AppEnvironmentService {
 
   async processActions(organizationId: string, action: string, actionParameters: AppEnvironmentActionParametersDto) {
     const { editorEnvironmentId, deletedVersionId, editorVersionId, appId } = actionParameters;
-    const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       switch (action) {

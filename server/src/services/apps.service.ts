@@ -1430,7 +1430,10 @@ export class AppsService {
         })
         .getOne();
 
-      const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
       /* 
         Allow version release only if the environment is on 
         production with a valid license or 
@@ -1493,7 +1496,7 @@ export class AppsService {
           });
         }
 
-        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId))) {
           throw new BadRequestException('You do not have permissions to perform this action');
         }
 
