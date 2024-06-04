@@ -330,7 +330,9 @@ function ForeignKeyRelation({
     <>
       <div className="foreignkey-relation-container">
         <div className="foreign-key-heading">
-          <span>Foreign key relation</span>
+          <span className={cx('foreign-key-sub-title', { 'foreign-key-sub-title-light': !darkMode })}>
+            Foreign key relation
+          </span>
           <p className="tj-text-xsm">
             A foreign key relation helps to link rows from existing tables with rows in this table based on a common
             column.
@@ -379,15 +381,7 @@ function ForeignKeyRelation({
               opacity="1"
               secondaryFill="#FFFFFF"
             />
-            &nbsp;&nbsp;{' '}
-            <span
-              className={cx({
-                'add-relation-text-dark': darkMode,
-                'add-relation-text-enabled': !disableAddRelationButton,
-              })}
-            >
-              Add relation
-            </span>
+            <span className="add-text">Add relation</span>
             {disableAddRelationButton && <Tooltip id="add-relation-tooltip" place="bottom" className="tooltip" />}
           </ButtonSolid>
         </div>
