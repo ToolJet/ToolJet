@@ -632,14 +632,11 @@ export class AuthService {
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
     try {
       await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken, user.firstName);
-      //This is not a promise so catch won't work.
-      // .catch((err) => console.error('Error while sending password reset mail', err));
+      
     } catch (err) {
       console.error('Error while sending password reset mail', err);
     }
-    // await this.emailService
-    //   .sendPasswordResetEmail(email,forgotPasswordToken,user.firstName)
-    //   .catch((err) => console.error('Error while sending password reset mail', err));
+    
   }
 
   async resetPassword(token: string, password: string) {
