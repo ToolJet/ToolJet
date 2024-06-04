@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty } from 'lodash';
+import { camelCase, isEmpty, noop } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
@@ -313,10 +313,11 @@ const DynamicEditorBridge = (props) => {
     fieldMeta,
     darkMode,
     className,
-    onFxPress,
+    onFxPress = noop,
     cyLabel = '',
     onChange,
     styleDefinition,
+    component,
     onVisibilityChange,
     isEventManagerParam = false,
   } = props;
@@ -329,7 +330,6 @@ const DynamicEditorBridge = (props) => {
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
-
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
@@ -382,6 +382,7 @@ const DynamicEditorBridge = (props) => {
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 styleDefinition={styleDefinition}
+                component={component}
                 onVisibilityChange={onVisibilityChange}
               />
             )}
