@@ -238,7 +238,6 @@ function DrawerFooter({
                   onClick={() => {
                     onCreate();
                   }}
-                  size="md"
                 >
                   Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
