@@ -42,7 +42,7 @@
             .ds-delete-btn {
                 visibility: visible;
 
-                .disabled-button{
+                .disabled-button {
                     background-color: #FFFF;
                     width: 19px;
                     height: 19px;
@@ -62,8 +62,8 @@
             border: none;
             background: none;
         }
-        
-        .tooltip-sampl-db{
+
+        .tooltip-sampl-db {
             width: 10px;
         }
     }
@@ -141,6 +141,7 @@
 
 .datasource-inner-sidebar-wrap {
     height: 100%;
+
     .datasources-search {
         width: 240px;
         margin: 0 auto;
@@ -178,6 +179,7 @@
 .datasource-list-container {
     overflow-y: auto;
     max-height: calc(100vh - 64px);
+
     .datasource-list {
         width: 976px;
         margin: 0 auto;
@@ -226,6 +228,12 @@
 .datasource-card {
     height: 30px;
     height: 122px !important;
+
+    .card-body {
+        padding: 1rem;
+        flex: 1 1 auto;
+    }
+
     button {
         display: none;
         padding: 5px 10px;
