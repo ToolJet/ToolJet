@@ -54,7 +54,7 @@ function TableDetailsDropdown({
               emptyError={
                 <div className="dd-select-alert-error m-2 d-flex align-items-center">
                   <Information />
-                  No table selected
+                  No data found
                 </div>
               }
               value={source ? tableList[0] : actions ? onUpdate : targetTable}
