@@ -460,7 +460,12 @@ export const Inspector = ({
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name === 'ToggleSwitchLegacy' ? 'ToggleLegacy' : componentMeta.name,
+                componentMeta:
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
+                    ? 'Toggle (Legacy)'
+                    : componentMeta.displayName === 'Toggle Switch'
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
