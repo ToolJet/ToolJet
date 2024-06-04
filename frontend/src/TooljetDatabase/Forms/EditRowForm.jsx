@@ -28,11 +28,11 @@ const EditRowForm = ({
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const inputRefs = useRef({});
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
   const [inputValues, setInputValues] = useState([]);
-  const inputRefs = useRef({});
   const [errorMap, setErrorMap] = useState({});
 
   useEffect(() => {
@@ -178,6 +178,15 @@ const EditRowForm = ({
     }
   };
 
+  const handleDisabledInputClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
+    handleTabClick(index, tabData, defaultValue, nullValue, columnName, dataType, currentValue);
+    if (inputRefs.current[columnName]) {
+      setTimeout(() => {
+        inputRefs.current[columnName].focus();
+      }, 0);
+    }
+  };
+
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
     newInputValues[index] = {
@@ -266,7 +275,7 @@ const EditRowForm = ({
     onEdit && onEdit();
   };
 
-  const renderElement = (columnName, dataType, index, shouldInputBeDisabled = false) => {
+  const renderElement = (columnName, dataType, index, isNullable, column_default, shouldInputBeDisabled = false) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -313,6 +322,7 @@ const EditRowForm = ({
                 //defaultValue={currentValue}
                 value={inputValues[index]?.value !== null && inputValues[index]?.value}
                 type="text"
+                ref={(input) => (inputRefs.current[columnName] = input)}
                 disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
                 onChange={(e) => handleInputChange(index, e.target.value, columnName)}
                 placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
@@ -321,8 +331,32 @@ const EditRowForm = ({
                 }`}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
                 autoComplete="off"
-                ref={(el) => (inputRefs.current[columnName] = el)}
                 // onFocus={onFocused}
+              />
+            )}
+            {(inputValues[index]?.disabled || shouldInputBeDisabled) && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    currentValue[columnName]
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 1,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
               />
             )}
             {inputValues[index]?.value === null ? (
@@ -424,7 +458,7 @@ const EditRowForm = ({
             ))} */}
         </div>
       </div>
-      <div className="card-body">
+      <div className="card-body edit-row-body">
         <div>
           {selectedRowObj &&
             Array.isArray(editRowColumns) &&
@@ -589,7 +623,7 @@ const EditRowForm = ({
                     tooltipClassName="tootip-table"
                     show={isSerialDataTypeColumn || constraints_type?.is_primary_key}
                   >
-                    {renderElement(accessor, dataType, index, shouldInputBeDisabled)}
+                    {renderElement(accessor, dataType, index, isNullable, column_default, shouldInputBeDisabled)}
                   </ToolTip>
                 </div>
               );

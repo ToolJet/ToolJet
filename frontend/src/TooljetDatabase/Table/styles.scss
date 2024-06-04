@@ -175,6 +175,19 @@
 
   .tjdb-selected-cell {
     border: 1.5px solid var(--Indigo-09, #3E63DD) !important;
+
+    .tjdb-td-wrapper {
+      div {
+        padding-bottom: 0px !important;
+
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 85%;
+        }
+      }
+    }
   }
 
   .card-table tr td:last-child {

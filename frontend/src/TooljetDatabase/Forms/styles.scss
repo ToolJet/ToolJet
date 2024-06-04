@@ -4,6 +4,53 @@
   }
 }
 
+.card-body-wrapper{
+  width: 640px;
+  padding: 20px;
+}
+
+.card-body{
+  padding: 0;
+  .list-group-item{
+    padding: 0 !important;
+  }
+}
+
+.card-body.create-drawer-body,
+.card-body.edit-row-body,
+.card-body.edit-column-body{
+  padding: 20px;
+}
+
+.form-label,
+.card-sub-title,
+.foreign-key-sub-title{
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.card-sub-title-light{
+  color: #000000 !important;
+}
+.card-title{
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+}
+
+.form-label-light,
+.card-title-light,
+.foreign-key-sub-title-light{
+  color: #11181C !important;
+}
+
+.add-text{
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
 .edit-row-dropdown {
   height: 36px !important;
 
@@ -70,6 +117,11 @@
 
 .tj-app-input,
 .edit-row-container {
+  input{
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 500;
+  }
   input.primary-idKey-light {
     gap: 16px !important;
     background: #f4f6fa !important;
@@ -254,7 +306,9 @@
 .create-column-drawer {
   .card-header {
     border: none !important;
-    padding: 12px 16px 0px 16px !important;
+    padding: 0;
+    margin-top: 24px !important;
+    margin-bottom: 12px !important;
   }
 }
 
@@ -288,7 +342,7 @@
 
   .table-schema {
     background-color: var(--slate3) !important;
-    padding: 8px !important;
+    padding: 8px 0 !important;
     margin-bottom: 6px !important;
     border: 1px solid transparent !important;
 
@@ -471,10 +525,10 @@
   }
 
   .empty-foreignkey-container {
-    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='black' stroke-width='1' stroke-dasharray='6%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    border: 1px dashed #d7dbdf;
     height: 40px;
     width: 270px !important;
-    border-radius: 6px !important;
+    border-radius: 100px !important;
     margin-top: 10px !important;
   }
 }
@@ -667,4 +721,10 @@
 
 .input-error-border {
   border-color: #E54D2E !important;
+}
+
+.tj-switch-text,
+.tj-select-text{
+  font-size: 12px;
+  line-height: 20px;
 }

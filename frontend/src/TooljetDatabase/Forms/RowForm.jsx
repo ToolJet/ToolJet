@@ -222,7 +222,7 @@ const RowForm = ({
     rowColumns.forEach(({ accessor }) => {
       if (data[accessor] != '') {
         const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFFFFF');
         setErrorMap((prev) => {
           return { ...prev, [accessor]: '' };
         });
@@ -240,7 +240,7 @@ const RowForm = ({
           return { ...prev, [accessor]: 'Cannot be empty' };
         });
         const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       }
     });
     if (flag) {
@@ -257,8 +257,8 @@ const RowForm = ({
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
-      } else if (error?.code === postgresErrorCode.DataTypeMismatch) {
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
+      } else if (error?.message.includes('Invalid input syntax for type')) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
         const mainErrorMessageSplit = errorMessageSplit?.[0]?.split('type ');
@@ -272,7 +272,7 @@ const RowForm = ({
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', '#FFF8F7');
           }
         });
       }
@@ -419,7 +419,7 @@ const RowForm = ({
           Create row
         </h3>
       </div>
-      <div className="card-body tj-app-input">
+      <div className="card-body tj-app-input create-drawer-body">
         {Array.isArray(rowColumns) &&
           rowColumns?.map(({ Header, accessor, dataType, constraints_type, column_default }, index) => {
             const isPrimaryKey = constraints_type.is_primary_key;

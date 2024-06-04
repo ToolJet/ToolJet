@@ -240,7 +240,7 @@ export const CellEditMenu = ({
             onClick={isForeignKeyInEditCell ? closeFKMenu : closePopover}
             variant="tertiary"
             size="sm"
-            className="fs-12"
+            className="fs-12 p-2"
           >
             Cancel
           </ButtonSolid>
@@ -249,7 +249,7 @@ export const CellEditMenu = ({
             disabled={cellValue == previousCellValue ? true : false}
             variant="primary"
             size="sm"
-            className="fs-12"
+            className="fs-12 p-2"
           >
             Save
           </ButtonSolid>
