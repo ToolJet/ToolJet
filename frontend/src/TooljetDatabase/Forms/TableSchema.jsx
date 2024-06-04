@@ -344,6 +344,8 @@ function TableSchema({
                 setReferencedColumnDetails={setReferencedColumnDetails}
                 scrollEventForColumnValus={true}
                 cellColumnName={columnDetails[index].column_name}
+                isEditTable={isEditMode}
+                isCreateTable={!isEditMode}
               />
             ) : (
               <ToolTip

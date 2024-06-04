@@ -680,6 +680,7 @@
 .foreignKeyAcces-container-drawer {
   border-radius: 5px;
   height: 100% !important;
+  max-width: 494px;
 
   button {
     height: 35px !important;
@@ -700,6 +701,8 @@
 
     .text-truncate {
       font-size: 14px !important;
+      width: 85%;
+      text-align: left;
     }
 
     .dd-select-control-chevron {

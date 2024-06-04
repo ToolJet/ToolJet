@@ -324,6 +324,7 @@ const ColumnForm = ({
                   setReferencedColumnDetails={setReferencedColumnDetails}
                   scrollEventForColumnValus={true}
                   cellColumnName={columnName}
+                  isCreateColumn={true}
                 />
               )}
             </div>
