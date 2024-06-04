@@ -290,7 +290,7 @@ export const multiselectV2Config = {
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
       optionsLoadingState: { value: '{{false}}' },
-      placeholder: { value: 'Select an option' },
+      placeholder: { value: 'Select the options' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
