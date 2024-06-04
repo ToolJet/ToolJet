@@ -158,18 +158,9 @@
     border: 2px solid transparent;
 
     .foreignkey-cell {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 100% !important;
-
       .cell-text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         width: 80%;
       }
-
     }
   }
 
@@ -185,6 +176,30 @@
           overflow: hidden;
           text-overflow: ellipsis;
           width: 85%;
+          color: var(--slate11) !important;
+          cursor: default;
+          border-radius: 6px;
+          height: 20px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  .tjdb-column-select-border {
+    .tjdb-td-wrapper {
+      div {
+        padding-bottom: 0px !important;
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 85%;
+          color: var(--slate11) !important;
+          cursor: default;
+          border-radius: 6px;
+          height: 20px;
+          font-size: 12px;
         }
       }
     }

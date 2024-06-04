@@ -11,9 +11,9 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
-import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
-import { Link } from 'react-router-dom';
-import { getPrivateRoute } from '@/_helpers/routes';
+// import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
+// import { Link } from 'react-router-dom';
+// import { getPrivateRoute } from '@/_helpers/routes';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Skeleton from 'react-loading-skeleton';
@@ -104,7 +104,7 @@ const EditRowForm = ({
   }, [rowData]);
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1] === null ? 'Null' : key[1],
       value: key[1] === null ? 'Null' : key[1],
@@ -313,8 +313,9 @@ const EditRowForm = ({
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeys}
                 setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
+                scrollEventForColumnValues={true}
                 cellColumnName={columnName}
+                columnDataType={dataType}
                 isEditRow={true}
               />
             ) : (
@@ -429,7 +430,7 @@ const EditRowForm = ({
     ([key, value]) => currentValue[key] == value
   );
 
-  const handleNavigateToReferencedtable = (id, name) => {
+  const _handleNavigateToReferencedtable = (id, name) => {
     const data = { id: id, table_name: name };
     localStorage.setItem('tableDetails', JSON.stringify(data));
   };

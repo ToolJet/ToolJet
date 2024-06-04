@@ -33,7 +33,7 @@ const DropDownSelect = ({
   topPlaceHolder = '',
   showPlaceHolderInForeignKeyDrawer = false,
   isCellEdit = false,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -46,6 +46,8 @@ const DropDownSelect = ({
   fetchTables,
   onTableClick,
   referencedForeignKeyDetails = [],
+  cachedOptions,
+  columnDataType = '',
   isCreateRow = false,
   isEditRow = false,
   isCreateColumn = false,
@@ -197,7 +199,7 @@ const DropDownSelect = ({
             showDescription={showDescription}
             foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
             isCellEdit={isCellEdit}
-            scrollEventForColumnValus={scrollEventForColumnValus}
+            scrollEventForColumnValues={scrollEventForColumnValues}
             organizationId={organizationId}
             foreignKeys={foreignKeys}
             setReferencedColumnDetails={setReferencedColumnDetails}
@@ -214,6 +216,8 @@ const DropDownSelect = ({
             actions={actions}
             actionName={actionName}
             referencedForeignKeyDetails={referencedForeignKeyDetails}
+            cachedOptions={cachedOptions}
+            columnDataType={columnDataType}
             isCreateRow={isCreateRow}
             isEditRow={isEditRow}
             isEditColumn={isEditColumn}
@@ -231,13 +235,31 @@ const DropDownSelect = ({
       {isForeignKeyInEditCell ? (
         <div
           className={`col-auto`}
-          style={{ position: 'relative', left: '-10px', top: '2px', paddingLeft: '10px', paddingBottom: '4px' }}
+          style={{
+            position: 'relative',
+            left: '-10px',
+            top: selected.label === null ? '0px' : '2px',
+            paddingLeft: '10px',
+            paddingBottom: '4px',
+          }}
           id={popoverBtnId.current}
           onClick={() => {
             setShowMenu(true);
           }}
         >
-          <span style={{ display: 'inline-block', color: darkMode ? '#fff' : '' }}>{selected.label}</span>
+          <span
+            className={cx({
+              'd-flex align-items-center justify-content-center': selected.label === null,
+            })}
+            style={{
+              display: 'inline-block',
+              color: darkMode ? '#fff' : '',
+              width: selected.label === null && '40px',
+              background: selected.label === null && 'var(--slate3)',
+            }}
+          >
+            {selected.label === null ? 'Null' : selected.label}
+          </span>
         </div>
       ) : (
         <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
