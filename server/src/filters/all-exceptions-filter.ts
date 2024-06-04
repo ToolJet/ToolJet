@@ -37,6 +37,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       let errorResponse: ErrorResponse;
       const message = exception?.response?.message || exception.message;
+      const code = exception?.code;
 
       if (exception instanceof HttpException) {
         errorResponse = { status: exception.getStatus(), message };
@@ -53,6 +54,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
         message: errorResponse.message,
+        code: code,
       });
     } catch (error) {
       this.logger.error('Error while processing uncaught exception', error.stack);

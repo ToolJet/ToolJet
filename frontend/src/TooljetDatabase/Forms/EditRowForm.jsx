@@ -4,7 +4,7 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import _ from 'lodash';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, postgresErrorCode } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
@@ -94,8 +94,8 @@ const EditRowForm = ({
   useEffect(() => {
     editRowColumns.forEach(({ accessor }) => {
       if (rowData[accessor] != '') {
-        const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+        const inputElement = inputRefs.current[accessor];
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF', 'important');
         setErrorMap((prev) => {
           return { ...prev, [accessor]: '' };
         });
@@ -196,20 +196,27 @@ const EditRowForm = ({
   const handleSubmit = async () => {
     setFetching(true);
     let flag = 0;
-    editRowColumns.forEach(({ accessor, dataType }) => {
-      if (['double precision', 'bigint', 'integer'].includes(dataType) && rowData[accessor] === '') {
-        flag = 1;
-        setErrorMap((prev) => {
-          return { ...prev, [accessor]: 'Cannot be empty' };
-        });
-        const inputElement = inputRefs.current?.[accessor];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
-      }
-    });
-    if (flag) {
+
+    const { hasEmptyValue, newErrorMap } = editRowColumns.reduce(
+      (acc, { accessor, dataType }) => {
+        if (['double precision', 'bigint', 'integer'].includes(dataType) && rowData[accessor] === '') {
+          acc.hasEmptyValue = true;
+          acc.newErrorMap[accessor] = 'Cannot be empty';
+
+          const inputElement = inputRefs.current?.[accessor];
+          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+        }
+        return acc;
+      },
+      { hasEmptyValue: false, newErrorMap: {} }
+    );
+
+    if (hasEmptyValue) {
+      setErrorMap((prev) => ({ ...prev, ...newErrorMap }));
       setFetching(false);
       return;
     }
+
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
@@ -223,15 +230,16 @@ const EditRowForm = ({
 
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
+    // TODO: Need all of this logic on the backend should ideally just get list of columns with error messages to map over
     if (error) {
-      if (error?.message.includes('Unique constraint violated')) {
+      if (error?.code === postgresErrorCode.UniqueViolation) {
         const columnName = error?.message.split('.')?.[1];
         setErrorMap((prev) => {
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
-      } else if (error?.message.includes('Invalid input syntax for type')) {
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+      } else if (error?.code === postgresErrorCode.DataTypeMismatch) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
         const mainErrorMessageSplit = errorMessageSplit?.[0]?.split('type ');
@@ -245,7 +253,7 @@ const EditRowForm = ({
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
           }
         });
       }
@@ -313,6 +321,7 @@ const EditRowForm = ({
                 }`}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
                 autoComplete="off"
+                ref={(el) => (inputRefs.current[columnName] = el)}
                 // onFocus={onFocused}
               />
             )}
