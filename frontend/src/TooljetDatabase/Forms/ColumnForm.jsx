@@ -299,7 +299,7 @@ const ColumnForm = ({
                   emptyError={
                     <div className="dd-select-alert-error m-2 d-flex align-items-center">
                       <Information />
-                      No data available
+                      No data found
                     </div>
                   }
                   loader={
