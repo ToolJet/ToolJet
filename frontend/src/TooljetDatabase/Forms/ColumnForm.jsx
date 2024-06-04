@@ -45,7 +45,6 @@ const ColumnForm = ({
   const [onUpdate, setOnUpdate] = useState([]);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
-
   //  this is for DropDownDetails component which is react select
   const [foreignKeyDefaultValue, setForeignKeyDefaultValue] = useState({
     value: '',
@@ -131,6 +130,12 @@ const ColumnForm = ({
   useEffect(() => {
     toast.dismiss();
   }, []);
+
+  useEffect(() => {
+    if (dataType?.value === 'boolean') {
+      setIsUniqueConstraint(false);
+    }
+  }, [dataType]);
 
   const handleTypeChange = (value) => {
     if (value.value === 'serial') {
@@ -451,6 +456,29 @@ const ColumnForm = ({
             </p>
           </div>
         </div>
+        {dataType?.value !== 'boolean' && (
+          <div className="row mb-3">
+            <div className="col-1">
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isUniqueConstraint}
+                  onChange={(e) => {
+                    setIsUniqueConstraint(e.target.checked);
+                  }}
+                  disabled={dataType?.value === 'serial'}
+                />
+              </label>
+            </div>
+            <div className="col d-flex flex-column">
+              <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+              <p className="fw-400 secondary-text tj-text-xsm">
+                {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="row mb-3">
           <div className="col-1">
@@ -483,6 +511,7 @@ const ColumnForm = ({
           isEmpty(dataType) ||
           (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
         }
+        showToolTipForFkOnReadDocsSection={true}
         initiator={initiator}
       />
       <ConfirmDialog

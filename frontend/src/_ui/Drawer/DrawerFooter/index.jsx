@@ -8,6 +8,7 @@ import { triggerKeyboardShortcut } from '@/_helpers/utils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
+import { Spinner } from 'react-bootstrap';
 
 function DrawerFooter({
   fetching,
@@ -23,6 +24,8 @@ function DrawerFooter({
   isCreateColumn,
   isForeignKeyForColumnDrawer,
   editForeignKeyInCreateTable,
+  isBulkUploadDrawerOpen = false,
+  isBulkUploading = false,
   showToolTipForFkOnReadDocsSection = false,
   foreignKeyDetails = [],
   initiator,
@@ -44,7 +47,7 @@ function DrawerFooter({
     };
 
     const formType = initiator;
-    if (formType.startsWith('Create')) {
+    if (formType.startsWith('Create') || formType.startsWith('Upload')) {
       addEnterCallback(onCreate);
     } else if (formType.startsWith('Edit')) {
       addEnterCallback(onEdit);
@@ -139,7 +142,29 @@ function DrawerFooter({
               Cancel
             </ButtonSolid>
           )}
-          {isForeignKeyForColumnDrawer && !createForeignKeyInEdit ? (
+          {isBulkUploadDrawerOpen ? (
+            isBulkUploading === true ? (
+              <ButtonSolid
+                data-cy={`upload-data-button`}
+                onClick={onCreate}
+                loading={isBulkUploading}
+                style={{ cursor: 'not-allowed', pointerEvents: 'none' }}
+              >
+                <Spinner />
+              </ButtonSolid>
+            ) : (
+              <ButtonSolid
+                disabled={shouldDisableCreateBtn}
+                data-cy={`upload-data-button`}
+                onClick={onCreate}
+                fill="#fff"
+                leftIcon="floppydisk"
+                loading={isBulkUploading}
+              >
+                Upload data
+              </ButtonSolid>
+            )
+          ) : isForeignKeyForColumnDrawer && !createForeignKeyInEdit ? (
             <>
               {isEditColumn && (
                 <ButtonSolid

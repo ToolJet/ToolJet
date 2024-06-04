@@ -2,7 +2,7 @@ import React from 'react';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
   const protobufDefintion = JSON.parse(selectedDataSource?.options?.protobuf?.value);
@@ -211,15 +211,13 @@ function ControlledTabs({
               <div className="tab-content-wrapper">
                 <div>
                   <CodeHinter
+                    type="multiline"
                     initialValue={messageJSON || '{\n\n}'}
-                    mode="javascript"
-                    theme={darkMode ? 'monokai' : 'base16-light'}
+                    lang="javascript"
                     height={'300px'}
                     className="query-hinter"
-                    ignoreBraces={false}
                     onChange={(value) => onJsonBodyChange(value)}
                     componentName={`${componentName}/message`}
-                    enablePreview={false}
                   />
                 </div>
               </div>
@@ -251,9 +249,8 @@ const TabContent = ({
               <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
               <div className="field col-4 overflow-hidden">
                 <CodeHinter
+                  type="basic"
                   initialValue={option[0]}
-                  theme={theme}
-                  height={'32px'}
                   placeholder="Key"
                   onChange={(value) => onChange('key', index, value)}
                   componentName={`${componentName}/${tabType}::key::${index}`}
@@ -261,9 +258,8 @@ const TabContent = ({
               </div>
               <div className="field col overflow-hidden">
                 <CodeHinter
+                  type="basic"
                   initialValue={option[1]}
-                  theme={theme}
-                  height={'32px'}
                   placeholder="Value"
                   onChange={(value) => onChange('value', index, value)}
                   componentName={`${componentName}/${tabType}::value::${index}`}
