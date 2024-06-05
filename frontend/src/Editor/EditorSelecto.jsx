@@ -118,8 +118,8 @@ const EditorSelecto = ({ selectionRef, canvasContainerRef, setSelectedComponent,
             return true;
           }
           // if clicked on a component, select it and return false to prevent drag
-          if (target.closest('.react-draggable')) {
-            const closest = target.closest('.react-draggable');
+          if (target.closest('.moveable-box')) {
+            const closest = target.closest('.moveable-box');
             const id = closest.getAttribute('widgetid');
             const component = appDefinition.pages[currentPageId].components[id].component;
             const isMultiSelect = e.inputEvent.shiftKey;
