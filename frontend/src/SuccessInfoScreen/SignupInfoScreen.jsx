@@ -4,7 +4,7 @@ import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 
-export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup, name, darkMode }) {
+export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup, name, darkMode, organizationId }) {
   const [resendBtn, setResetBtn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [buttonText, setButtonText] = useState('Resend verification mail in 30s');
@@ -30,7 +30,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
 
     e.preventDefault();
     authenticationService
-      .resendInvite(email)
+      .resendInvite(email, organizationId)
       .then(() => {
         setIsLoading(false);
         setResetBtn(true);

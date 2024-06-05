@@ -51,6 +51,7 @@ import { AppAuthenticationDto, AppSignupDto } from '@dto/app-authentication.dto'
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+import { ResendInviteDto } from '@dto/resend-invite.dto';
 
 @Injectable()
 export class AuthService {
@@ -241,13 +242,32 @@ export class AuthService {
     });
   }
 
-  async resendEmail(email: string) {
+  async resendEmail(body: ResendInviteDto) {
+    const { email, organizationId } = body;
     if (!email) {
       throw new BadRequestException();
     }
     const existingUser = await this.usersService.findByEmail(email);
+
+    if (existingUser?.status === USER_STATUS.ARCHIVED) {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
+
     if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
-      throw new NotAcceptableException('Email already exists');
+      if (organizationId) {
+        /* Workspace signup invitation email */
+        const organizationUser = existingUser.organizationUsers.find(
+          (organizationUser) => organizationUser.organizationId === organizationId
+        );
+        if (organizationUser.status === WORKSPACE_USER_STATUS.ACTIVE) {
+          throw new NotAcceptableException('User already exists in the workspace.');
+        }
+        if (organizationUser.status === WORKSPACE_USER_STATUS.ARCHIVED) {
+          throw new NotAcceptableException('User has been archived, please contact the administrator');
+        }
+      } else {
+        throw new NotAcceptableException('Email already exists');
+      }
     }
 
     if (existingUser?.invitationToken) {

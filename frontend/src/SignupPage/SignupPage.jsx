@@ -347,6 +347,7 @@ class SignupPageComponent extends React.Component {
                     name={this.state.name}
                     backtoSignup={this.backtoSignup}
                     darkMode={this.darkMode}
+                    organizationId={this.inviteOrganizationId}
                   />
                 </div>
               )}

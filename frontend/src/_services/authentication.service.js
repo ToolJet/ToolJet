@@ -185,11 +185,11 @@ function activateAccountWithToken(email, password, organizationToken) {
   return fetch(`${config.apiUrl}/activate-account-with-token`, requestOptions).then(handleResponse);
 }
 
-function resendInvite(email) {
+function resendInvite(email, organizationId) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, organizationId }),
   };
 
   return fetch(`${config.apiUrl}/resend-invite`, requestOptions)
