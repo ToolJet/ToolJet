@@ -644,9 +644,15 @@ export const Container = ({
       if (id === 'resizingComponentId') {
         return;
       }
+      console.trace('id, param, value,---', id, param, value);
       if (Object.keys(value)?.length > 0) {
-        setBoxes((boxes) =>
-          update(boxes, {
+        setBoxes((boxes) => {
+          // Ensure boxes[id] exists
+          if (!boxes[id]) {
+            console.error(`Box with id ${id} does not exist`);
+            return boxes;
+          }
+          return update(boxes, {
             [id]: {
               $merge: {
                 component: {
@@ -661,8 +667,9 @@ export const Container = ({
                 },
               },
             },
-          })
-        );
+          });
+        });
+
         if (!_.isEmpty(opts)) {
           paramUpdatesOptsRef.current = opts;
         }
