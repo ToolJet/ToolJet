@@ -11,12 +11,16 @@
 
 .drawer-card-wrapper {
 
+  .tj-base-btn {
+    padding: 10px;
+  }
+
   .card-body {
 
     padding: 0;
 
     .list-group-item {
-      padding: 0 !important;
+      padding: 0;
     }
   }
 
@@ -351,7 +355,7 @@
 
   .table-schema {
     background-color: var(--slate3) !important;
-    padding: 8px 0 !important;
+    padding: 8px 5px !important;
     margin-bottom: 6px !important;
     border: 1px solid transparent !important;
 
@@ -364,6 +368,10 @@
       align-items: center;
       justify-content: start;
       gap: 6px;
+
+      input.form-control {
+        margin-bottom: 0px;
+      }
 
       .foreign-key-relation {
         width: 20px !important;
