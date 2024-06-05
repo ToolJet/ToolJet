@@ -20,7 +20,6 @@ import {
   retrieveWhiteLabelText,
   setFaviconAndTitle,
   checkWhiteLabelsDefaultState,
-  defaultWhiteLabellingSettings,
 } from '@white-label/whiteLabelling';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
@@ -257,7 +256,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
                           <div className="org-password-hide-img" onClick={handleOnCheck} data-cy="show-password-icon">
                             {showPassword ? (
-                              <EyeHide
+                              <EyeShow
                                 fill={
                                   darkMode
                                     ? password?.length
@@ -269,7 +268,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                                 }
                               />
                             ) : (
-                              <EyeShow
+                              <EyeHide
                                 fill={
                                   darkMode
                                     ? password?.length

@@ -296,7 +296,7 @@ class LoginPageComponent extends React.Component {
                                   data-cy="show-password-icon"
                                 >
                                   {this.state?.showPassword ? (
-                                    <EyeHide
+                                    <EyeShow
                                       fill={
                                         this.darkMode
                                           ? this.state?.password?.length
@@ -308,7 +308,7 @@ class LoginPageComponent extends React.Component {
                                       }
                                     />
                                   ) : (
-                                    <EyeShow
+                                    <EyeHide
                                       fill={
                                         this.darkMode
                                           ? this.state?.password?.length

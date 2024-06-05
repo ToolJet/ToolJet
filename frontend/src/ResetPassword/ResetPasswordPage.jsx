@@ -136,7 +136,7 @@ class ResetPasswordComponent extends React.Component {
                           data-cy="password-visiblity-action-button"
                         >
                           {showPassword ? (
-                            <EyeHide
+                            <EyeShow
                               fill={
                                 this.darkMode
                                   ? this.state?.password?.length
@@ -148,7 +148,7 @@ class ResetPasswordComponent extends React.Component {
                               }
                             />
                           ) : (
-                            <EyeShow
+                            <EyeHide
                               fill={
                                 this.darkMode
                                   ? this.state?.password?.length
@@ -192,7 +192,7 @@ class ResetPasswordComponent extends React.Component {
                           data-cy="password-visiblity-action-button"
                         >
                           {showConfirmPassword ? (
-                            <EyeHide
+                            <EyeShow
                               fill={
                                 this.darkMode
                                   ? this.state?.password_confirmation?.length
@@ -204,7 +204,7 @@ class ResetPasswordComponent extends React.Component {
                               }
                             />
                           ) : (
-                            <EyeShow
+                            <EyeHide
                               fill={
                                 this.darkMode
                                   ? this.state?.password_confirmation?.length

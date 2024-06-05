@@ -6,7 +6,7 @@ import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
-import { retrieveWhiteLabelText, setFaviconAndTitle, retrieveWhiteLabelFavicon } from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelText, setFaviconAndTitle, retrieveWhiteLabelFavicon, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -29,6 +29,9 @@ class OrganizationInvitationPageComponent extends React.Component {
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
     setFaviconAndTitle(this.whiteLabelText, this.whiteLabelFavicon, this.props?.location);
+    checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
+      setDefaultState(res);
+    });
     document.addEventListener('keydown', this.handleEnterKey);
   }
 

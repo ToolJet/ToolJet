@@ -126,7 +126,7 @@ const SuperadminLoginPageComponent = ({ t }) => {
 
                     <div className="login-password-hide-img" onClick={handleOnCheck} data-cy="show-password-icon">
                       {showPassword ? (
-                        <EyeHide
+                        <EyeShow
                           fill={
                             darkMode
                               ? formData.password.length
@@ -138,7 +138,7 @@ const SuperadminLoginPageComponent = ({ t }) => {
                           }
                         />
                       ) : (
-                        <EyeShow
+                        <EyeHide
                           fill={
                             darkMode
                               ? formData.password.length

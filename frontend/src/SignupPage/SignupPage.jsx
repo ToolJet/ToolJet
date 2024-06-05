@@ -44,7 +44,9 @@ class SignupPageComponent extends React.Component {
     if (errorMessage) {
       toast.error(errorMessage);
     }
-    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
+    checkWhiteLabelsDefaultState().then((res) => {
+      setDefaultState(res);
+    });
   }
 
   backtoSignup = (email, name) => {
@@ -262,7 +264,7 @@ class SignupPageComponent extends React.Component {
                                       data-cy="show-password-icon"
                                     >
                                       {this.state.showPassword ? (
-                                        <EyeHide
+                                        <EyeShow
                                           fill={
                                             this.darkMode
                                               ? this.state?.password?.length
@@ -274,7 +276,7 @@ class SignupPageComponent extends React.Component {
                                           }
                                         />
                                       ) : (
-                                        <EyeShow
+                                        <EyeHide
                                           fill={
                                             this.darkMode
                                               ? this.state?.password?.length

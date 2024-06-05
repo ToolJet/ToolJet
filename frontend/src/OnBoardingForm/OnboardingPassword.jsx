@@ -26,11 +26,11 @@ function OnboardingPassword({ setFormData, formData, fieldType }) {
 
       <div className="onboarding-password-hide-img" onClick={handleOnCheck} data-cy="password-visibility-toggle">
         {showPassword ? (
-          <EyeHide
+          <EyeShow
             fill={darkMode ? (password?.length ? '#D1D5DB' : '#656565') : password?.length ? '#384151' : '#D1D5DB'}
           />
         ) : (
-          <EyeShow
+          <EyeHide
             fill={darkMode ? (password?.length ? '#D1D5DB' : '#656565') : password?.length ? '#384151' : '#D1D5DB'}
           />
         )}

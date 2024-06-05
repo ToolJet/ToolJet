@@ -150,7 +150,7 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
                     />
                     <div className="signup-password-hide-img" onClick={handleOnCheck} data-cy="show-password-icon">
                       {showPassword ? (
-                        <EyeHide
+                        <EyeShow
                           fill={
                             darkMode
                               ? password?.length
@@ -162,7 +162,7 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
                           }
                         />
                       ) : (
-                        <EyeShow
+                        <EyeHide
                           fill={
                             darkMode
                               ? password?.length
