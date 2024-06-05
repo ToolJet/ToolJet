@@ -123,6 +123,7 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
 
   //For undefined routes
   if (pageTitle === undefined) {
+    document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
     return;
   }
 
@@ -160,5 +161,5 @@ export async function fetchAndSetWindowTitle(pageDetails) {
       break;
     }
   }
-  document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
+  document.title = !(pageDetails?.preview === false) ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${pageTitle}`;
 }
