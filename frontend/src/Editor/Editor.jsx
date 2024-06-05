@@ -282,13 +282,18 @@ const EditorComponent = (props) => {
 
   const lastKeyPressTimestamp = useDebouncedArrowKeyPress(500); // 500 milliseconds delay
 
+  const debounceAutoSave = debounce(() => {
+    handleLowPriorityWork(() => {
+      autoSave();
+    });
+  }, 300);
+
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
 
     if (didAppDefinitionChanged) {
       prevAppDefinition.current = appDefinition;
     }
-
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
@@ -296,7 +301,7 @@ const EditorComponent = (props) => {
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      handleLowPriorityWork(() => autoSave());
+      debounceAutoSave();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
