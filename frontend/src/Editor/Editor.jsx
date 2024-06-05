@@ -1481,6 +1481,7 @@ const EditorComponent = (props) => {
     );
 
     const manager = useResolveStore.getState().referenceMapper;
+    console.log('--arpit:: entityReferencesInComponentDefinitions', manager);
 
     if (Array.isArray(entittyReferencesInGlobalSettings) && entittyReferencesInGlobalSettings?.length > 0) {
       let newGlobalSettings = JSON.parse(JSON.stringify(globalSettings));
@@ -1714,10 +1715,10 @@ const EditorComponent = (props) => {
       return;
     }
 
-    clearAllQueuedTasks();
+    await clearAllQueuedTasks();
+    useResolveStore.getState().actions.resetStore();
     useEditorStore.getState().actions.setPageProgress(true);
     useCurrentStateStore.getState().actions.setEditorReady(false);
-    useResolveStore.getState().actions.resetStore();
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
