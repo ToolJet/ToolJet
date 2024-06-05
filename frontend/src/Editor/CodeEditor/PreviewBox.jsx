@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { computeCoercion, getCurrentNodeType, resolveReferences } from './utils';
+import { computeCoercion, getCurrentNodeType, hasDeepChildren, resolveReferences } from './utils';
 import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
@@ -341,6 +341,8 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
   if (showJSONTree) {
     const darkMode = localStorage.getItem('darkMode') === 'true';
 
+    const hasDeepChild = hasDeepChildren(prettyPrintedJson);
+
     return (
       <div className="preview-json">
         <JsonViewer
@@ -351,7 +353,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           enableClipboard={false}
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}
-          groupArraysAfterLength={500}
+          groupArraysAfterLength={hasDeepChild ? 10 : 100}
         />
       </div>
     );

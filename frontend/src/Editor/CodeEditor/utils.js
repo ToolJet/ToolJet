@@ -407,3 +407,19 @@ export const validateComponentProperty = (resolvedValue, validation) => {
 
   return validate(resolvedValue, schema, defaultValue, true);
 };
+
+export function hasDeepChildren(obj, currentDepth = 1, maxDepth = 3) {
+  if (currentDepth > maxDepth) {
+    return true;
+  }
+
+  for (const key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      if (hasDeepChildren(obj[key], currentDepth + 1, maxDepth)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
