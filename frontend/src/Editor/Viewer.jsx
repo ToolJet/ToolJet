@@ -323,12 +323,14 @@ class ViewerComponent extends React.Component {
           queryState[query.name] = {
             ...exposedVariables,
             ...this.props.currentState.queries[query.name],
+            id: query.id,
           };
         } else {
           const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
           queryState[query.name] = {
             ...dataSourceTypeDetail.exposedVariables,
             ...this.props.currentState.queries[query.name],
+            id: query.id,
           };
         }
       });
@@ -736,7 +738,7 @@ class ViewerComponent extends React.Component {
 
     if (currentPageComponents && !_.isEmpty(currentPageComponents)) {
       const referenceManager = useResolveStore.getState().referenceMapper;
-
+      const currentDataQueries = useDataQueriesStore.getState().dataQueries;
       const newComponents = Object.keys(currentPageComponents).map((componentId) => {
         const component = currentPageComponents[componentId];
 
@@ -747,9 +749,18 @@ class ViewerComponent extends React.Component {
           };
         }
       });
+      const newDataQueries = currentDataQueries.map((dq) => {
+        if (!referenceManager.get(dq.id)) {
+          return {
+            id: dq.id,
+            name: dq.name,
+          };
+        }
+      });
 
       try {
         useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+        useResolveStore.getState().actions.addEntitiesToMap(newDataQueries);
       } catch (error) {
         console.error(error);
       }
@@ -1042,6 +1053,18 @@ const withStore = (Component) => (props) => {
 
     flushComponentsToRender(updatedComponentIds);
   }
+
+  React.useEffect(() => {
+    const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
+    const currentComponents = Object.keys(currentComponentsDef);
+
+    setTimeout(() => {
+      if (currentComponents.length > 0) {
+        batchUpdateComponents(currentComponents);
+      }
+    }, 400);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPageId]);
 
   React.useEffect(() => {
     if (lastUpdatedRef.length > 0) {
