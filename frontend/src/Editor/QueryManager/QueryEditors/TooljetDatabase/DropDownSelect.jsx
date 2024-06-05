@@ -61,6 +61,8 @@ const DropDownSelect = ({
   saveFKValue,
   loader,
   isLoading = false,
+  columnDefaultValue = '',
+  setColumnDefaultValue = () => {},
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -228,6 +230,8 @@ const DropDownSelect = ({
             isForeignKeyInEditCell={isForeignKeyInEditCell}
             closeFKMenu={closeFKMenu}
             saveFKValue={saveFKValue}
+            columnDefaultValue={columnDefaultValue}
+            setColumnDefaultValue={setColumnDefaultValue}
           />
         </Popover>
       }

@@ -42,8 +42,8 @@ export const CellEditMenu = ({
   const [selectedValue, setSelectedValue] = useState(cellValue);
   const [shouldCloseFkMenu, setShouldCloseFKMenu] = useState(0);
   const [selectedForeignKeyValue, setSelectedForeignKeyValue] = useState({
-    value: previousCellValue === 'Null' ? null : previousCellValue,
-    label: previousCellValue === 'Null' ? null : previousCellValue,
+    value: previousCellValue === 'Null' ? null : previousCellValue?.toString(),
+    label: previousCellValue === 'Null' ? null : previousCellValue?.toString(),
   });
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
@@ -55,6 +55,13 @@ export const CellEditMenu = ({
       });
     } else {
       setCellValue(previousCellValue);
+      setSelectedForeignKeyValue({
+        label: previousCellValue?.toString(),
+        value: previousCellValue?.toString(),
+      });
+    }
+    if (previousCellValue !== defaultColumnValue) {
+      setDefaultValue(false);
     }
     setDefaultValue(defaultBooleanValue);
     setNullValue(false);
@@ -147,8 +154,8 @@ export const CellEditMenu = ({
   const referencedFKDataList = referencedColumnDetails.map((item) => {
     const [key, _value] = Object.entries(item);
     return {
-      label: key[1] === null ? 'Null' : key[1],
-      value: key[1] === null ? 'Null' : key[1],
+      label: key[1] === null ? 'Null' : key[1]?.toString(),
+      value: key[1] === null ? 'Null' : key[1]?.toString(),
     };
   });
 
@@ -376,6 +383,8 @@ export const CellEditMenu = ({
           shouldCloseFkMenu={shouldCloseFkMenu}
           cachedOptions={cachedOptions}
           columnDataType={dataType}
+          columnDefaultValue={defaultValue}
+          setColumnDefaultValue={setDefaultValue}
         />
       ) : (
         children

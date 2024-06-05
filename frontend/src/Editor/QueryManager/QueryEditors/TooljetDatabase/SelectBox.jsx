@@ -152,6 +152,8 @@ function DataSourceSelect({
   saveFKValue,
   loader,
   isLoading = false,
+  columnDefaultValue,
+  setColumnDefaultValue,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
@@ -162,6 +164,12 @@ function DataSourceSelect({
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
+    if (source.value !== columnDefaultValue) {
+      setColumnDefaultValue(false);
+    } else {
+      setColumnDefaultValue(true);
+    }
+
     onSelect && onSelect(source);
     closePopup && !isMulti && closePopup();
   };

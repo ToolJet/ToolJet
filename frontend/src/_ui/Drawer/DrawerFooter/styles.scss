@@ -8,7 +8,12 @@
 .action-btns {
 	align-items: center !important;
 	gap: 10px !important;
+
+	.tj-base-btn {
+		padding: 20px !important;
+	}
 }
+
 .tjdb-cell-menu-shortcuts-text {
 	font-size: 12px;
 	color: #7E868C;
@@ -18,7 +23,7 @@
 	display: flex;
 	justify-content: center;
 	width: 16px;
-	height:16px;
+	height: 16px;
 	margin-right: 6px !important;
 	border-radius: 4px;
 	border: 1px solid #D7DBDF;
@@ -32,7 +37,7 @@
 	justify-content: center;
 	align-items: center;
 	width: 26px;
-	height:16px;
+	height: 16px;
 	border-radius: 4px;
 	border: 1px solid #D7DBDF;
 	padding: 4px;
