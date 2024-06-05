@@ -194,7 +194,10 @@ export const CellEditMenu = ({
                     className="form-check-input"
                     type="checkbox"
                     checked={nullValue}
-                    onChange={() => handleNullChange(!nullValue)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleNullChange(!nullValue);
+                    }}
                   />
                 </label>
               </div>
@@ -211,7 +214,10 @@ export const CellEditMenu = ({
                     className="form-check-input"
                     type="checkbox"
                     checked={defaultValue}
-                    onChange={() => handleDefaultChange(columnDetails?.column_default, !defaultValue)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleDefaultChange(columnDetails?.column_default, !defaultValue);
+                    }}
                   />
                 </label>
               </div>
