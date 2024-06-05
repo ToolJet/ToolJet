@@ -9,10 +9,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main') && github.run_number || github.ref }}
-  cancel-in-progress: true
-
 env:
   FORCE_COLOR: true
   NODE_OPTIONS: "--max-old-space-size=4096"
@@ -25,14 +21,11 @@ env:
   PG_PASS: postgres
   PG_DB: tooljet_test
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
     runs-on: ubuntu-latest
     if: |
-      contains(github.event.pull_request.labels.*.name, 'run-ci') ||
-      github.ref == 'refs/heads/main' ||
-      github.ref == 'refs/heads/develop'
+      ${{ github.event.action == 'labeled' && github.event.label.name == 'run-ci' }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -55,15 +48,31 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
 
       - run: npm run build
 
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            path/to/build/output
+            path/to/other/artifacts
+
   lint:
     runs-on: ubuntu-latest
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'run-ci') ||
-      github.ref == 'refs/heads/main' ||
-      github.ref == 'refs/heads/develop'
+    needs: build
+
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
@@ -85,6 +94,22 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
+
+      - name: Restore build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./
 
       - run: npm run build:plugins
       - run: npm --prefix frontend ci && npm --prefix server ci && npm --prefix plugins ci
@@ -92,8 +117,9 @@ jobs:
 
   unit-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:18.18.2-buster
+    container: node:18.18.2-bullseye
     services:
       postgres:
         image: postgres
@@ -119,7 +145,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql
+      - run: apt update && apt install -y postgresql-client
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
@@ -130,8 +156,9 @@ jobs:
 
   e2e-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:18.18.2-buster
+    container: node:18.18.2-bullseye
     services:
       postgres:
         image: postgres
@@ -157,7 +184,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql
+      - run: apt update && apt install -y postgresql-client
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
