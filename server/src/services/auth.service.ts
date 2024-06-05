@@ -243,7 +243,7 @@ export class AuthService {
   }
 
   async resendEmail(body: ResendInviteDto) {
-    const { email, organizationId } = body;
+    const { email, organizationId, redirectTo } = body;
     if (!email) {
       throw new BadRequestException();
     }
@@ -253,20 +253,58 @@ export class AuthService {
       throw new NotAcceptableException('User has been archived, please contact the administrator');
     }
 
-    if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
-      if (organizationId) {
-        /* Workspace signup invitation email */
-        const organizationUser = existingUser.organizationUsers.find(
-          (organizationUser) => organizationUser.organizationId === organizationId
-        );
-        if (organizationUser.status === WORKSPACE_USER_STATUS.ACTIVE) {
-          throw new NotAcceptableException('User already exists in the workspace.');
-        }
-        if (organizationUser.status === WORKSPACE_USER_STATUS.ARCHIVED) {
-          throw new NotAcceptableException('User has been archived, please contact the administrator');
-        }
+    if (!organizationId && existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
+      throw new NotAcceptableException('Email already exists');
+    }
+
+    let organizationUser: OrganizationUser;
+    if (organizationId) {
+      /* Workspace signup invitation email */
+      organizationUser = existingUser.organizationUsers.find(
+        (organizationUser) => organizationUser.organizationId === organizationId
+      );
+      if (organizationUser.status === WORKSPACE_USER_STATUS.ACTIVE) {
+        throw new NotAcceptableException('User already exists in the workspace.');
+      }
+      if (organizationUser.status === WORKSPACE_USER_STATUS.ARCHIVED) {
+        throw new NotAcceptableException('User has been archived, please contact the administrator');
+      }
+    }
+
+    if (organizationUser) {
+      const invitedOrganization = await this.organizationsRepository.findOne({
+        where: { id: organizationUser.organizationId },
+        select: ['name', 'id'],
+      });
+      if (existingUser.invitationToken) {
+        /* Not activated. */
+        this.emailService
+          .sendWelcomeEmail(
+            existingUser.email,
+            existingUser.firstName,
+            existingUser.invitationToken,
+            organizationUser.invitationToken,
+            organizationUser.organizationId,
+            invitedOrganization.name,
+            null,
+            redirectTo
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+        return;
       } else {
-        throw new NotAcceptableException('Email already exists');
+        /* Already activated */
+        this.emailService
+          .sendOrganizationUserWelcomeEmail(
+            existingUser.email,
+            existingUser.firstName,
+            null,
+            organizationUser.invitationToken,
+            invitedOrganization.name,
+            organizationUser.organizationId,
+            redirectTo
+          )
+          .catch((err) => console.error(err));
+        return;
       }
     }
 

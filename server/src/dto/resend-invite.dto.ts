@@ -10,5 +10,9 @@ export class ResendInviteDto {
 
   @IsOptional()
   @IsString()
-  organizationId: string;
+  organizationId?: string;
+
+  @IsString()
+  @IsOptional()
+  redirectTo?: string;
 }
