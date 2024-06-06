@@ -28,6 +28,7 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     authentication_status: null,
     noWorkspaceAttachedInTheSession,
     isCurrentOrganizationArchived,
+    isOrgSwitchingFailed: null,
   });
   const redirectPath = redirectTo || getCookie('redirectPath');
   const path = getRedirectURL(redirectPath);

@@ -35,6 +35,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
   WORKSPACE_STATUS,
+  WORKSPACE_USER_SOURCE,
 } from 'src/helpers/user_lifecycle';
 import {
   dbTransactionWrap,
@@ -63,6 +64,7 @@ const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 import { OrganizationLicenseService } from './organization_license.service';
+import { ResendInviteDto } from '@dto/resend-invite.dto';
 
 @Injectable()
 export class AuthService {
@@ -302,7 +304,8 @@ export class AuthService {
     });
   }
 
-  async resendEmail(email: string) {
+  async resendEmail(body: ResendInviteDto) {
+    const { email, organizationId, redirectTo } = body;
     if (!email) {
       throw new BadRequestException();
     }
@@ -311,8 +314,60 @@ export class AuthService {
     if (existingUser?.status === USER_STATUS.ARCHIVED) {
       throw new NotAcceptableException('User has been archived, please contact the administrator');
     }
-    if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
+
+    if (!organizationId && existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
+    }
+
+    let organizationUser: OrganizationUser;
+    if (organizationId) {
+      /* Workspace signup invitation email */
+      organizationUser = existingUser.organizationUsers.find(
+        (organizationUser) => organizationUser.organizationId === organizationId
+      );
+      if (organizationUser.status === WORKSPACE_USER_STATUS.ACTIVE) {
+        throw new NotAcceptableException('User already exists in the workspace.');
+      }
+      if (organizationUser.status === WORKSPACE_USER_STATUS.ARCHIVED) {
+        throw new NotAcceptableException('User has been archived, please contact the administrator');
+      }
+    }
+
+    if (organizationUser) {
+      const invitedOrganization = await this.organizationsRepository.findOne({
+        where: { id: organizationUser.organizationId },
+        select: ['name', 'id'],
+      });
+      if (existingUser.invitationToken) {
+        /* Not activated. */
+        this.emailService
+          .sendWelcomeEmail(
+            existingUser.email,
+            existingUser.firstName,
+            existingUser.invitationToken,
+            organizationUser.invitationToken,
+            organizationUser.organizationId,
+            invitedOrganization.name,
+            null,
+            redirectTo
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+        return;
+      } else {
+        /* Already activated */
+        this.emailService
+          .sendOrganizationUserWelcomeEmail(
+            existingUser.email,
+            existingUser.firstName,
+            null,
+            organizationUser.invitationToken,
+            invitedOrganization.name,
+            organizationUser.organizationId,
+            redirectTo
+          )
+          .catch((err) => console.error(err));
+        return;
+      }
     }
 
     if (existingUser?.invitationToken) {
@@ -376,7 +431,6 @@ export class AuthService {
           userParams,
           existingUser,
           signingUpOrganization,
-          response,
           redirectTo,
           manager
         );
@@ -388,15 +442,23 @@ export class AuthService {
     userParams: { email: string; password: string; firstName: string; lastName: string },
     existingUser: User,
     signingUpOrganization: Organization = null,
-    response?: Response,
     redirectTo?: string,
     manager?: EntityManager
   ) => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
       /* Create personal workspace */
-      const { name, slug } = generateNextNameAndSlug('My workspace');
-      const personalWorkspace = await this.organizationsService.create(name, slug, null, manager);
+      const isPersonalWorkspaceEnabled =
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
+
+      let personalWorkspace: Organization;
+      if (isPersonalWorkspaceEnabled) {
+        const { name, slug } = generateNextNameAndSlug('My workspace');
+        personalWorkspace = await this.organizationsService.create(name, slug, null, manager);
+      }
+
+      const organizationId = personalWorkspace ? personalWorkspace.id : signingUpOrganization.id;
+      const organizationGroups = personalWorkspace ? ['all_users', 'admin'] : ['all_users'];
       /* Create the user or attach user groups to the user */
       const lifeCycleParms = signingUpOrganization
         ? getUserStatusAndSource(lifecycleEvents.USER_WORKSPACE_SIGN_UP)
@@ -409,15 +471,18 @@ export class AuthService {
           ...(lastName && { lastName }),
           ...lifeCycleParms,
         },
-        personalWorkspace.id,
-        ['all_users', 'admin'],
+        organizationId,
+        organizationGroups,
         existingUser,
         true,
         null,
-        manager
+        manager,
+        !isPersonalWorkspaceEnabled
       );
-      await this.organizationsService.updateOwner(personalWorkspace.id, user.id, manager);
-      await this.organizationUsersService.create(user, personalWorkspace, true, manager);
+      if (personalWorkspace) {
+        await this.organizationsService.updateOwner(personalWorkspace.id, user.id, manager);
+        await this.organizationUsersService.create(user, personalWorkspace, true, manager);
+      }
 
       if (!existingUser) {
         void this.licenseService.createCRMUser({
@@ -430,9 +495,18 @@ export class AuthService {
 
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
-        const organizationUser = await this.organizationUsersService.create(user, signingUpOrganization, true, manager);
-        await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, user.id, false, manager);
+        const organizationUser = await this.organizationUsersService.create(
+          user,
+          signingUpOrganization,
+          true,
+          manager,
+          WORKSPACE_USER_SOURCE.SIGNUP
+        );
+        if (signingUpOrganization.id !== organizationId)
+          /* To avoid creating the groups again. */
+          await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, user.id, false, manager);
 
+        await this.usersService.validateLicense(manager, signingUpOrganization.id);
         this.emailService
           .sendWelcomeEmail(
             user.email,
@@ -458,13 +532,14 @@ export class AuthService {
         );
         return {};
       } else {
+        await this.usersService.validateLicense(manager, personalWorkspace?.id);
         this.emailService
           .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
           .catch((err) => console.error('Error while sending welcome mail', err));
         await this.auditLoggerService.perform(
           {
             userId: user.id,
-            organizationId: personalWorkspace.id,
+            organizationId: personalWorkspace?.id,
             resourceId: user.id,
             resourceType: ResourceTypes.USER,
             resourceName: user.email,
@@ -590,6 +665,7 @@ export class AuthService {
             Response: Add the user to the workspace and send the organization and account invite again (eg: /invitations/<>/workspaces/<>).
           */
           organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
+          await this.usersService.validateLicense(manager, signingUpOrganization.id);
         }
         this.emailService
           .sendWelcomeEmail(
@@ -619,6 +695,7 @@ export class AuthService {
         } else {
           /* Create new organizations_user entry and send an invite */
           organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
+          await this.usersService.validateLicense(manager, signingUpOrganization.id);
         }
         return this.sendOrgInvite(
           { email: existingUser.email, firstName: existingUser.firstName },
@@ -631,9 +708,9 @@ export class AuthService {
       }
       case hasWorkspaceInviteButUserWantsInstanceSignup: {
         const firstTimeSignup = ![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(existingUser.source as SOURCE);
+        let defaultOrganizationId = existingUser.defaultOrganizationId;
         if (firstTimeSignup) {
           /* Invite user doing instance signup. So reset name fields and set password */
-          let defaultOrganizationId = existingUser.defaultOrganizationId;
           const isPersonalWorkspaceAllowed =
             (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
             'true';
@@ -669,6 +746,7 @@ export class AuthService {
             manager
           );
         }
+        await this.usersService.validateLicense(manager, defaultOrganizationId);
         this.emailService
           .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
           .catch((err) => console.error('Error while sending welcome mail', err));
@@ -687,7 +765,13 @@ export class AuthService {
 
   async addUserToTheWorkspace(existingUser: User, signingUpOrganization: Organization, manager: EntityManager) {
     await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, existingUser.id, false, manager);
-    return this.organizationUsersService.create(existingUser, signingUpOrganization, true, manager);
+    return this.organizationUsersService.create(
+      existingUser,
+      signingUpOrganization,
+      true,
+      manager,
+      WORKSPACE_USER_SOURCE.SIGNUP
+    );
   }
 
   async activateAccountWithToken(activateAccountWithToken: ActivateAccountWithTokenDto, response: any) {
@@ -742,6 +826,7 @@ export class AuthService {
         CASE: user redirected to signup to activate his account with password. 
         Till now user doesn't have an organization.
       */
+      await this.usersService.validateLicense(manager, invitedUser['invitedOrganizationId']);
       return this.processOrganizationSignup(
         response,
         signupUser,
@@ -1026,6 +1111,8 @@ export class AuthService {
         manager
       );
 
+      /* On cloud the license workspace oriented */
+      if (organizationUser) await this.usersService.validateLicense(manager, organizationUser.organizationId);
       void this.licenseService.updateCRM({
         email: user.email,
         firstName: user.firstName,
@@ -1082,7 +1169,17 @@ export class AuthService {
         });
         await this.organizationUsersService.activateOrganization(organizationUser, manager);
       }
-      return this.generateLoginResultPayload(response, user, organization, null, null, loggedInUser, manager);
+      const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
+      await this.usersService.validateLicense(manager, organizationUser.organizationId);
+      return this.generateLoginResultPayload(
+        response,
+        user,
+        organization,
+        null,
+        isWorkspaceSignup,
+        loggedInUser,
+        manager
+      );
     });
   }
 
@@ -1169,12 +1266,14 @@ export class AuthService {
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0];
-      const organizationDetails = currentOrganization
+      const organizationDetails = currentOrganizationId
         ? currentOrganization
-        : await manager.findOneOrFail(Organization, {
-            where: { id: currentOrganizationId },
-            select: ['slug', 'name', 'id'],
-          });
+          ? currentOrganization
+          : await manager.findOneOrFail(Organization, {
+              where: { id: currentOrganizationId },
+              select: ['slug', 'name', 'id'],
+            })
+        : null;
 
       const activeWorkspacesCount = await this.organizationUsersService.getActiveWorkspacesCount(user.id);
       const noWorkspaceAttachedInTheSession = activeWorkspacesCount === 0;
@@ -1189,7 +1288,7 @@ export class AuthService {
         isAllWorkspacesArchived,
         currentOrganizationId,
         currentOrganizationSlug: organizationDetails?.slug,
-        currentOrganizationName: organizationDetails.name,
+        currentOrganizationName: organizationDetails?.name,
         //for knowing the user is new or old one [posthog telemetry]
         createdAt: user.createdAt,
         ...(appData && { appData }),
@@ -1287,6 +1386,7 @@ export class AuthService {
       lastName,
       status: invitedUserStatus,
       organizationStatus,
+      organizationUserSource,
       invitedOrganizationId,
       source,
     } = invitedUser;
@@ -1323,6 +1423,18 @@ export class AuthService {
       throw new NotAcceptableException(errorResponse);
     }
 
+    const isWorkspaceSignup =
+      organizationStatus === WORKSPACE_USER_STATUS.INVITED &&
+      !!organizationToken &&
+      invitedUserStatus === USER_STATUS.ACTIVE &&
+      organizationUserSource === WORKSPACE_USER_SOURCE.SIGNUP;
+    if (isWorkspaceSignup) {
+      /* Active user & Organization invite */
+      const responseObj = {
+        organizationUserSource,
+      };
+      return decamelizeKeys(responseObj);
+    }
     /* Send back the organization invite url if the user has old workspace + account invitation URL */
     const doesUserHaveWorkspaceAndAccountInvite =
       organizationAndAccountInvite &&

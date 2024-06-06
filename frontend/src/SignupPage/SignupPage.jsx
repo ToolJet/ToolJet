@@ -83,9 +83,14 @@ class SignupPageComponent extends React.Component {
         .activateAccountWithToken(email, password, organizationToken)
         .then((response) => onInvitedUserSignUpSuccess(response, this.props.navigate))
         .catch((errorObj) => {
-          if (errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string') {
-            toast.error(errorObj?.error[0]);
+          let errorMessage;
+          const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
+          if (isThereAnyErrorsArray) {
+            errorMessage = errorObj?.error?.[0];
+          } else if (typeof errorObj?.error?.error === 'string') {
+            errorMessage = errorObj?.error?.error;
           }
+          errorMessage && toast.error(errorMessage);
           const emailError = errorObj?.error?.inputError;
           this.setState({ isLoading: false, emailError });
         });
@@ -357,6 +362,8 @@ class SignupPageComponent extends React.Component {
                     name={this.state.name}
                     backtoSignup={this.backtoSignup}
                     darkMode={this.darkMode}
+                    organizationId={this.inviteOrganizationId}
+                    redirectTo={this.redirectTo}
                   />
                 </div>
               )}

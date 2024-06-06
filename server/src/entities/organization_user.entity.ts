@@ -24,6 +24,9 @@ export class OrganizationUser extends BaseEntity {
   @Column({ type: 'enum', enumName: 'status', enum: ['invited', 'active', 'archived'] })
   status: string;
 
+  @Column({ type: 'enum', enumName: 'source', enum: ['signup', 'invite'] })
+  source: string;
+
   @Column({ name: 'organization_id' })
   organizationId: string;
 

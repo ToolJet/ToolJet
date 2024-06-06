@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
@@ -256,6 +256,7 @@ export class UsersService {
         organizationId: organization.id,
         organization: organization,
         status: 'active',
+        source: 'invite',
         role: null,
         invitationToken: null,
         createdAt: null,
@@ -387,6 +388,37 @@ export class UsersService {
       await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
       return user;
     }, manager);
+  }
+
+  async updateUserType(body: any, organiaztionId: string) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const { userType, userId, firstName, lastName } = body;
+      if (!userType || !userId) {
+        throw new BadRequestException();
+      }
+      const updatingUser = await manager.findOneOrFail(User, {
+        where: {
+          id: userId,
+        },
+        select: ['id', 'status', 'userType'],
+      });
+      const archivedUserToSuperAdminCheck =
+        userType &&
+        userType !== updatingUser.userType &&
+        userType === USER_TYPE.INSTANCE &&
+        updatingUser.status === USER_STATUS.ARCHIVED;
+      if (archivedUserToSuperAdminCheck) {
+        /* Restrict users from updating archived user to super-admin*/
+        throw new ForbiddenException('Cannot update the type of an archived \n user.');
+      }
+      if (userType === USER_TYPE.WORKSPACE) {
+        const instanceUsers = await this.findSuperAdmins();
+        if (instanceUsers.length === 1 && instanceUsers[0].id === userId) {
+          throw new Error('At least one super admin is required');
+        }
+      }
+      await this.updateUser(userId, { userType, firstName, lastName }, manager, organiaztionId);
+    });
   }
 
   async updateUser(userId: string, updatableParams: Partial<User>, manager?: EntityManager, organizationId?: string) {

@@ -10,7 +10,7 @@ import { OrganizationUsersService } from '@services/organization_users.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
-import { getUserErrorMessages, USER_STATUS } from 'src/helpers/user_lifecycle';
+import { getUserErrorMessages, USER_STATUS, WORKSPACE_USER_SOURCE } from 'src/helpers/user_lifecycle';
 
 /* 
 This guard will check all possible cases to reject an invalid invitation session request
@@ -106,11 +106,12 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
   }
 
   async onInvalidSession(invitedUser: any) {
-    const { invitationToken, status } = invitedUser;
+    const { invitationToken, status, organizationUserSource } = invitedUser;
     if (invitationToken && [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(status as USER_STATUS)) {
       /* User doesn't have a valid session & User didn't activate account yet */
       return invitedUser;
     } else {
+      if (organizationUserSource === WORKSPACE_USER_SOURCE.SIGNUP) return invitedUser;
       /* User doesn't have a session. Next?: login again and accept invite */
       const organization = await this.organizationService.fetchOrganization(invitedUser.invitedOrganizationId);
       const errorResponse = {

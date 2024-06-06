@@ -936,6 +936,7 @@ export class OrganizationsService {
         // Setting up default organization
         await this.updateOwner(defaultOrganization.id, user.id, manager);
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
+        await this.organizationUserService.validateLicense(manager);
         await this.usersService.attachUserGroup(
           ['all_users', 'admin'],
           defaultOrganization.id,
