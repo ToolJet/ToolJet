@@ -56,6 +56,7 @@ const UsersFilter = ({ filterList }) => {
           </div>
           <div className="users-filter-dropdown" data-cy="users-filter-input">
             <Select
+              hasSearch={false}
               options={userStatusOptions}
               value={options.status}
               onChange={(value) => {
