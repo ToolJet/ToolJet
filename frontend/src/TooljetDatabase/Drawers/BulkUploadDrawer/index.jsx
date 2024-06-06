@@ -87,7 +87,7 @@ function BulkUploadDrawer({
               Bulk upload data
             </h3>
           </div>
-          <div className="card-body">
+          <div className="card-body tjdb-bulkupload-drawer">
             <div className="manage-users-drawer-content-bulk">
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">

@@ -74,12 +74,20 @@ export const CellEditMenu = ({
         label: null,
         value: null,
       });
+      setDefaultValue(false);
     } else {
       if (previousCellValue === null) {
         setCellValue('');
         setSelectedForeignKeyValue({
           label: '',
           value: '',
+        });
+      } else if (previousCellValue === columnDetails?.column_default) {
+        setDefaultValue(true);
+        setCellValue(previousCellValue);
+        setSelectedForeignKeyValue({
+          label: previousCellValue,
+          value: previousCellValue,
         });
       } else {
         setCellValue(previousCellValue);
@@ -90,7 +98,6 @@ export const CellEditMenu = ({
       }
     }
     setNullValue(nullVal);
-    setDefaultValue(false);
   };
 
   const handleSelectedState = (value) => {
