@@ -218,7 +218,6 @@ export class OrganizationUsersService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
 
-      await this.usersService.updateUser(organizationUser.userId, { status: USER_STATUS.ACTIVE }, manager);
       await this.usersService.validateLicense(manager, organizationId);
       await this.validateLicense(manager);
     }, manager);

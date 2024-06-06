@@ -60,6 +60,9 @@ export const useWhiteLabellingStore = create(
               });
           });
         },
+        resetWhiteLabellingStoreBackToInitialState: () => {
+          set({ ...initialState });
+        },
       },
     }),
     { name: 'White Labeling Store' }

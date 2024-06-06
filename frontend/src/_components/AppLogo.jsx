@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
-import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
 
 export default function AppLogo({ isLoadingFromHeader, className, darkMode = false, viewer = false, organizationId }) {
   const url = retrieveWhiteLabelLogo(organizationId);
-
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
 
   return (

@@ -4,6 +4,7 @@ import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { getPathname, getRedirectURL } from '@/_helpers/routes';
 import { authenticationService } from '@/_services';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useWhiteLabellingStore } from '@/_stores/cloud/whiteLabellingStore';
 
 export const AuthRoute = ({ children }) => {
   const { isLoading, session, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
@@ -47,6 +48,7 @@ export const AuthRoute = ({ children }) => {
   }, [isInvalidSession, isGettingConfigs]);
 
   const initialize = () => {
+    const pathname = location.pathname;
     const isSuperAdminLogin = location.pathname.startsWith('/login/super-admin');
     const shouldGetConfigs = !isSuperAdminLogin;
     authenticationService.deleteAllAuthCookies();
@@ -54,6 +56,15 @@ export const AuthRoute = ({ children }) => {
       fetchOrganizationDetails();
     } else {
       setGettingConfig(false);
+    }
+    verifyWhiteLabeling(pathname);
+  };
+
+  const verifyWhiteLabeling = (pathname) => {
+    const signupRegex = /^\/signup\/[^\/]+$/;
+    const loginRegex = /^\/login\/[^\/]+$/;
+    if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
+      useWhiteLabellingStore.getState().actions.resetWhiteLabellingStoreBackToInitialState();
     }
   };
 
