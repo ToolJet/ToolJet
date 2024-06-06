@@ -192,6 +192,7 @@ const EditorInput = ({
         class: 'cm-completionInfo-top cm-custom-completion-info',
       };
     },
+    maxRenderedOptions: 10,
   });
 
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
