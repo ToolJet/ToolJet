@@ -52,6 +52,7 @@ const sidebars = {
         'setup/system-requirements',
         'setup/digitalocean',
         'setup/docker',
+        'setup/aws-installer',
         'setup/ec2',
         'setup/ecs',
         'setup/openshift',
