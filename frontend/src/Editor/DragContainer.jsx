@@ -254,6 +254,7 @@ export default function DragContainer({
       id,
       propertiesDefinition,
       stylesDefinition,
+      ...box,
     };
   });
 
