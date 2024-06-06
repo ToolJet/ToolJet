@@ -45,7 +45,7 @@ class SignupPageComponent extends React.Component {
       toast.error(errorMessage);
     }
     checkWhiteLabelsDefaultState().then((res) => {
-      this.setState({defaultState: res});
+      this.setState({ defaultState: res });
     });
   }
 

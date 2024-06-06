@@ -20,7 +20,7 @@ class ForgotPasswordComponent extends React.Component {
       isLoading: false,
       email: '',
       responseShow: false,
-      emailError: ''
+      emailError: '',
     };
   }
   darkMode = localStorage.getItem('darkMode') === 'true';

@@ -32,7 +32,11 @@ export const useWhiteLabellingStore = create(
           return new Promise((resolve, reject) => {
             const headers = authHeader();
             const workspaceId = headers['tj-workspace-id'];
-            set({ loadingWhiteLabelDetails: true, activeOrganizationId: organizationId || workspaceId, isWhiteLabelDetailsFetched: false });
+            set({
+              loadingWhiteLabelDetails: true,
+              activeOrganizationId: organizationId || workspaceId,
+              isWhiteLabelDetailsFetched: false,
+            });
             whiteLabellingService
               .get(null, organizationId)
               .then((settings) => {

@@ -15,7 +15,7 @@ export const whiteLabellingOptions = {
 
 export async function fetchWhiteLabelDetails(organizationId = null) {
   const { isWhiteLabelDetailsFetched, actions, activeOrganizationId } = useWhiteLabellingStore.getState();
-  
+
   // Only fetch white labeling details if they haven't been fetched yet or the activeOrganizationId has not been set
   if (!isWhiteLabelDetailsFetched || !activeOrganizationId) {
     try {
@@ -71,10 +71,10 @@ export const pageTitles = {
 // to set favicon and title from router for individual pages
 export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location) {
   if (!whiteLabelFavicon || !whiteLabelText) {
-        await fetchWhiteLabelDetails();
+    await fetchWhiteLabelDetails();
   }
-    whiteLabelFavicon = await retrieveWhiteLabelFavicon();
-    whiteLabelText = await retrieveWhiteLabelText();
+  whiteLabelFavicon = await retrieveWhiteLabelFavicon();
+  whiteLabelText = await retrieveWhiteLabelText();
   // Set favicon
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
@@ -89,7 +89,7 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
   });
   // Set title
   const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  if (isEditorOrViewerGoingToRender){
+  if (isEditorOrViewerGoingToRender) {
     return;
   }
   const pathToTitle = {
@@ -122,7 +122,6 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
 }
 
 export async function fetchAndSetWindowTitle(pageDetails) {
-
   await fetchWhiteLabelDetails();
   const whiteLabelText = retrieveWhiteLabelText();
   let pageTitleKey = pageDetails?.page || '';
@@ -143,5 +142,7 @@ export async function fetchAndSetWindowTitle(pageDetails) {
       break;
     }
   }
-  document.title = !(pageDetails?.preview === false) ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${pageTitle}`;
+  document.title = !(pageDetails?.preview === false)
+    ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
+    : `${pageTitle}`;
 }

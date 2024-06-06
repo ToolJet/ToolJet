@@ -6,7 +6,6 @@ import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whi
 export default function AppLogo({ isLoadingFromHeader, className, darkMode = false, viewer = false, organizationId }) {
   const url = retrieveWhiteLabelLogo(organizationId);
 
-
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
 
   return (

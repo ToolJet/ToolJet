@@ -167,7 +167,7 @@ class AppComponent extends React.Component {
       ++this.counter;
       const current_user = authenticationService.currentSessionValue?.current_user;
       if (current_user?.id) {
-        setFaviconAndTitle(null, null, this.props.location);;
+        setFaviconAndTitle(null, null, this.props.location);
         this.initTelemetryAndSupport(current_user);
         clearInterval(this.interval);
       } else if (this.counter > 10) {

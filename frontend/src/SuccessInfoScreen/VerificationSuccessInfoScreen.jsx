@@ -16,11 +16,7 @@ import { buildURLWithQuery } from '@/_helpers/utils';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
 import { setCookie } from '@/_helpers/cookie';
-import {
-  retrieveWhiteLabelText,
-  setFaviconAndTitle,
-  checkWhiteLabelsDefaultState,
-} from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
