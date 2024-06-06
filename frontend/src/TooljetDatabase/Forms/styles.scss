@@ -546,6 +546,17 @@
       background: none !important;
       color: var(--slate9) !important;
       cursor: auto !important;
+      svg{
+        path:first-child{
+          fill: var(--slate7) !important;
+        }
+        path:nth-child(2){
+          fill: var(--base) !important;
+        }
+      }
+    }
+    &:disabled:hover {
+      background: var(--slate3) !important;
     }
   }
 }
