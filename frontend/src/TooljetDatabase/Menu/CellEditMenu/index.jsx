@@ -383,7 +383,7 @@ export const CellEditMenu = ({
           shouldCloseFkMenu={shouldCloseFkMenu}
           cachedOptions={cachedOptions}
           columnDataType={dataType}
-          columnDefaultValue={defaultValue}
+          columnDefaultValue={columnDetails?.column_default}
           setColumnDefaultValue={setDefaultValue}
         />
       ) : (
