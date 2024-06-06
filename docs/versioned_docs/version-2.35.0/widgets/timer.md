@@ -4,7 +4,7 @@ title: Timer
 ---
 # Timer
 
-Timer widget lets users to count timer both upward and downward
+The **Timer** widget lets users to count timer both upward and downward
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

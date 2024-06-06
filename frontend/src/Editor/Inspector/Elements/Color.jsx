@@ -3,7 +3,15 @@ import { ToolTip } from './Components/ToolTip';
 
 const SketchPicker = lazy(() => import('react-color').then((module) => ({ default: module.SketchPicker })));
 
-export const Color = ({ param, definition, onChange, paramType, componentMeta, cyLabel }) => {
+export const Color = ({
+  param,
+  definition,
+  onChange,
+  paramType,
+  componentMeta,
+  cyLabel,
+  shouldFlexDirectionBeRow = false,
+}) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -39,8 +47,10 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta, c
   };
 
   return (
-    <div className="field mb-3">
-      <ToolTip label={displayName} meta={paramMeta} />
+    <div
+      className={`field ${shouldFlexDirectionBeRow && 'd-flex custom-gap-12 align-items-center align-self-stretch'}`}
+    >
+      <ToolTip label={displayName} meta={paramMeta} labelClass={shouldFlexDirectionBeRow && 'flex-fill'} />
 
       {showPicker && (
         <div>
@@ -71,7 +81,7 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta, c
             boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
           }}
         ></div>
-        <div style={{ height: '20px' }} className="col">
+        <div style={{ height: '20px', flex: '1 1 0' }} className="col">
           {definition.value}
         </div>
       </div>

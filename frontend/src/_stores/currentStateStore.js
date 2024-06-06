@@ -2,7 +2,8 @@ import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
-import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const initialState = {
   queries: {},
@@ -21,6 +22,7 @@ const initialState = {
   },
   succededQuery: {},
   isEditorReady: false,
+  constants: {},
 };
 
 function generatePath(obj, targetKey, currentPath = '') {
@@ -53,6 +55,16 @@ export const useCurrentStateStore = create(
           set({ errors: { ...get().errors, ...error } }, false, { type: 'SET_ERRORS', error });
         },
         setEditorReady: (isEditorReady) => set({ isEditorReady }),
+        initializeCurrentStateOnVersionSwitch: () => {
+          const newInitialState = {
+            ...initialState,
+            constants: get().constants,
+          };
+          set({ ...newInitialState }, false, {
+            type: 'INITIALIZE_CURRENT_STATE_ON_VERSION_SWITCH',
+            newInitialState,
+          });
+        },
       },
     }),
     { name: 'Current State' }
@@ -82,8 +94,10 @@ useCurrentStateStore.subscribe((state) => {
 
   if (!isEditorReady) return;
 
-  const isStoreIntialized = useResolveStore.getState().storeReady;
+  // TODO: Change the logic of updating canvas background
+  updateCanvasBackground(useEditorStore.getState().canvasBackground);
 
+  const isStoreIntialized = useResolveStore.getState().storeReady;
   if (!isStoreIntialized) {
     const isPageSwitched = useResolveStore.getState().isPageSwitched;
 

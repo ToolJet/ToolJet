@@ -274,7 +274,7 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "Applicant tracking system"
+            "Admin Panel (ToolJet Database)"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",

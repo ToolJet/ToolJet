@@ -5,6 +5,8 @@ import Integer from './Icons/Integer.svg';
 import CharacterVar from './Icons/Text.svg';
 import Boolean from './Icons/Toggle.svg';
 import Serial from './Icons/Serial.svg';
+import ArrowRight from './Icons/ArrowRight.svg';
+import RightFlex from './Icons/Right-flex.svg';
 
 export const dataTypes = [
   {
@@ -17,10 +19,21 @@ export const dataTypes = [
   { name: 'Integers up to 8 bytes', label: 'bigint', icon: <BigInt width="16" height="16" />, value: 'bigint' },
   { name: 'Decimal numbers', label: 'float', icon: <Float width="16" height="16" />, value: 'double precision' },
   { name: 'Boolean True/False', label: 'boolean', icon: <Boolean width="16" height="16" />, value: 'boolean' },
+  {
+    name: 'Auto-incrementing integers',
+    label: 'serial',
+    icon: <Serial width="16" height="16" />,
+    value: 'serial',
+  },
 ];
 
-export const primaryKeydataTypes = [
-  { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
+export const serialDataType = [
+  {
+    name: 'Auto-incrementing integers',
+    label: 'serial',
+    icon: <Serial width="16" height="16" />,
+    value: 'serial',
+  },
 ];
 
 export const operators = [
@@ -47,14 +60,83 @@ export const formatOptionLabel = ({ label, icon }) => {
   );
 };
 
-export const isSerialDataType = (columnDetails) => {
-  const { dataType = '', column_default = '' } = columnDetails;
-  const serialDatatypeDefaultValuePattern = 'nextval(';
+export const checkDefaultValue = (inputString) => {
+  // const regex = /^nextval\(.+::regclass\)$/;
+  const regex = /^nextval\(/;
+  return regex.test(inputString);
+};
 
-  if (dataType === 'integer' && column_default) {
-    if (column_default.includes(serialDatatypeDefaultValuePattern)) return true;
+export const getColumnDataType = (columnDetails) => {
+  const { data_type = '', column_default = '' } = columnDetails;
+  const result = checkDefaultValue(column_default);
+
+  if (data_type === 'integer' && result) {
+    if (result) return 'serial';
   }
-  return false;
+  return data_type;
+};
+
+export const ChangesComponent = ({
+  currentPrimaryKeyIcons,
+  newPrimaryKeyIcons,
+  foreignKeyChanges,
+  existingReferencedTableName,
+  existingReferencedColumnName,
+  currentReferencedTableName,
+  currentReferencedColumnName,
+}) => {
+  return (
+    <div className="new-changes-container">
+      <div className="changes-title">
+        <span>{foreignKeyChanges && foreignKeyChanges.length > 0 ? 'Current relation' : 'Current primary key'}</span>
+        <ArrowRight />
+        <span>{foreignKeyChanges && foreignKeyChanges.length > 0 ? 'New relation' : 'New primary key'}</span>
+      </div>
+      <div className="key-changes-container">
+        <div className="primarykeyDetails-container">
+          {foreignKeyChanges && foreignKeyChanges.length > 0 ? (
+            <>
+              <span className="currentPrimaryKey-columnName">{existingReferencedTableName}</span>
+              <div className="currentKey-details align-item-center">
+                <RightFlex width={16} height={16} />
+                <span className="currentPrimaryKey-columnName">{existingReferencedColumnName}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              {Object.entries(currentPrimaryKeyIcons)?.map(([index, item]) => (
+                <div className="currentKey-details" key={index}>
+                  {renderDatatypeIcon(item.icon)}
+                  <span className="currentPrimaryKey-columnName">{item.columnName}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+        <div className="newkeyDetails-container">
+          {foreignKeyChanges && foreignKeyChanges.length > 0 ? (
+            <>
+              <span className="currentPrimaryKey-columnName">{currentReferencedTableName}</span>
+              <div className="currentKey-details align-item-center">
+                <RightFlex width={16} height={16} />
+                <span className="currentPrimaryKey-columnName">{currentReferencedColumnName}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              {Object.entries(newPrimaryKeyIcons)?.map(([index, item]) => (
+                <div className="newKey-details" key={index}>
+                  {renderDatatypeIcon(item.icon)}
+                  <span className="newPrimaryKey-columnName">{item.columnName}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+        <div></div>
+      </div>
+    </div>
+  );
 };
 
 export default function tjdbDropdownStyles(
@@ -119,7 +201,7 @@ export default function tjdbDropdownStyles(
       height: '36px !important',
       minHeight: '36px',
     }),
-    menuList: (provided, state) => ({
+    menuList: (provided, _state) => ({
       ...provided,
       padding: '8px',
       color: darkMode ? '#fff' : '#232e3c',
@@ -128,6 +210,7 @@ export default function tjdbDropdownStyles(
       ...base,
       width: dropdownContainerWidth,
       background: darkMode ? 'rgb(31,40,55)' : 'white',
+      zIndex: 10,
     }),
     singleValue: (provided) => ({
       ...provided,
@@ -143,3 +226,30 @@ export default function tjdbDropdownStyles(
     }),
   };
 }
+
+export const renderDatatypeIcon = (type) => {
+  switch (type) {
+    case 'integer':
+      return <Integer width="18" height="18" className="tjdb-column-header-name" />;
+    case 'bigint':
+      return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
+    case 'character varying':
+      return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
+    case 'boolean':
+      return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
+    case 'double precision':
+      return <Float width="18" height="18" className="tjdb-column-header-name" />;
+    case 'serial':
+      return <Serial width="18" height="14" className="tjdb-column-header-name" />;
+    default:
+      return type;
+  }
+};
+
+export const listAllPrimaryKeyColumns = (columns) => {
+  const primarykeyColumns = [];
+  columns.forEach((column) => {
+    if ((column?.constraints_type?.is_primary_key ?? false) && column.accessor) primarykeyColumns.push(column.accessor);
+  });
+  return primarykeyColumns;
+};

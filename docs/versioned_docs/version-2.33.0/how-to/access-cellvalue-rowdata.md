@@ -4,13 +4,13 @@ title: Dynamically Change Cell Colors in Table
 ---
 <div style={{paddingBottom:'24px'}}>
 
-This guide shows how to change the text color and background color of certain cells in a Table component based on specific conditions.
+This guide shows how to change the text color and background color of certain cells in a **Table** component based on specific conditions.
 
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## 1. Start by Creating a New Application and Setting up the Data Source
+## Create a New Application and Set up the Data Source
 - Create a new app and add a **[Table](/docs/widgets/table)** component to the canvas.
 - Open the Query Panel at the bottom and click on the `+ Add` button.
 - Select REST API as your data source - your query will be named as restapi1 by default.
@@ -24,9 +24,9 @@ https://fakestoreapi.com/products
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## 2. Display Data on the Table
+## Display Data on the Table
 
-- Hide the Query Panel and click on the Table component to open its properties panel on the right.
+- Hide the Query Panel and click on the **Table** component to open its properties panel on the right.
 - Under Table Data, enter the below code:
 ```
 {{queries.restapi1.data}}
@@ -39,9 +39,9 @@ https://fakestoreapi.com/products
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## 3. Change Text Color Based on Cell Value
+## Change Text Color Based on Cell Value
 
-- Select the Table component and go to Columns.
+- Select the **Table** component and go to Columns.
 - For the `category` column, paste the below code under Text Color to dynamically change the text color based on the value of the cell:
 
 ```
@@ -60,7 +60,7 @@ Now, if the cell value is `electronics`, the text color will be red; otherwise, 
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## 4. Change Text Color Using Row Data
+## Change Text Color Using Row Data
 
 - Under Cell Background Color for the `symbol` column, paste the below code: 
 
@@ -68,7 +68,7 @@ Now, if the cell value is `electronics`, the text color will be red; otherwise, 
 {{rowData.price < 100? 'yellow': 'white'}}
 ```
 
-The rowData identifier can be utilized to reference values from any column within the Table component. 
+The `rowData` identifier can be utilized to reference values from any column within the **Table** component. 
 
 Now if the value in the price column is lesser than 100, the cell background color will be yellow or else it will be white.
 

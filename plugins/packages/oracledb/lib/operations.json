@@ -28,7 +28,7 @@
         "description": "Enter query",
         "placeholder": "SELECT * FROM customers",
         "height": "150px",
-        "editorType": "extendedSingleLine"
+        "editorType": "multiline"
       }
     },
     "gui": {

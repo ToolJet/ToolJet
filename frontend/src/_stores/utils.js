@@ -264,7 +264,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
 
           if (doesActionsExist || doesColumnsExist) {
             const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value) || [];
-            const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
+            // const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
 
             metaDiff.definition = {
               ...metaDiff.definition,
@@ -274,7 +274,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
                   value: actions,
                 },
                 columns: {
-                  value: columns,
+                  value: component.component?.definition?.properties?.columns?.value,
                 },
               },
             };
@@ -402,7 +402,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
       if (_type === 'Array') {
         map.set(newPath, { type: _type });
 
-        if (path.startsWith('queries') && key === 'data' && value.length > 2000) {
+        if (path.startsWith('queries') && key === 'data' && value.length > 30000) {
           // do nothing
         } else {
           buildMap(value, newPath);
@@ -445,7 +445,7 @@ export function findAllEntityReferences(node, allRefs) {
         typeof value === 'string' &&
         value.includes('{{') &&
         value.includes('}}') &&
-        (value.startsWith('{{components') || value.startsWith('queries'))
+        (value.startsWith('{{components') || value.startsWith('{{queries'))
       ) {
         const referenceExists = value;
 

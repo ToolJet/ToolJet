@@ -11,6 +11,7 @@ import {
   checkboxConfig,
   radiobuttonConfig,
   toggleswitchConfig,
+  toggleSwitchV2Config,
   textareaConfig,
   daterangepickerConfig,
   textConfig,
@@ -50,6 +51,7 @@ import {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  kanbanBoardConfig,
 } from './configs';
 
 export const widgets = [
@@ -65,6 +67,7 @@ export const widgets = [
   checkboxConfig,
   radiobuttonConfig,
   toggleswitchConfig,
+  toggleSwitchV2Config,
   textareaConfig,
   daterangepickerConfig,
   textConfig,
@@ -104,4 +107,5 @@ export const widgets = [
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  kanbanBoardConfig,
 ];

@@ -87,6 +87,28 @@ Example: If you add a builder seat halfway through your monthly billing cycle, y
 
 - You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
 
+## Invoice History
+
+### A) Business Plan
+
+You can find your past invoices in the subscriptions overview card. Here's how to get there:
+
+- Click on the gear icon (⚙️) on the bottom left of the dashboard and select **Settings**.
+- From the settings page, click on the **Subscriptions** tab.
+- On the **Subscriptions** page, you'll see a subscription overview card summarizing your current plan.
+- Click on the **View Invoices** button to access your invoice history.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/licensing/invoice-history.gif" alt="Invoice History" />
+
+</div>
+
+### B) Enterprise Plan
+
+- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
+
+
 ## Frequently Asked Questions (FAQs)
 
 ### 1) How can I upgrade or renew my subscription?

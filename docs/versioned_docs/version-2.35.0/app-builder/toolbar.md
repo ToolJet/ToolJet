@@ -75,7 +75,7 @@ Versioning is also helpful when working with **[multiple environments](/docs/rel
 ### Gitsync
 The `Gitsync` icon next to the versions dropdown allows you to sync your application with your GitHub repository.
 
-Read more about Gitsync **[here](/docs/gitsync.md)**. 
+Read more about Gitsync **[here](/docs/gitsync)**. 
 ### Undo or Redo
 
 You can Undo or Redo any action performed on the canvas using the Undo and Redo buttons. 

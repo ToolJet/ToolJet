@@ -6,14 +6,16 @@ import JSON5 from 'json5';
 import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
-
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
+import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { validateMultilineCode } from './utility';
+import { componentTypes } from '@/Editor/WidgetManager/components';
 
-const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+const reservedKeyword = ['app', 'window'];
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -173,7 +175,10 @@ export function resolveReferences(
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          if (reservedKeyword.includes(code)) {
+          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
+          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+
+          if (code.match(keywordRegex)) {
             error = `${code} is a reserved keyword`;
             return [{}, error];
           }
@@ -264,20 +269,20 @@ export function computeComponentName(componentType, currentComponents) {
     (component) => component.component.component === componentType
   );
   let found = false;
-  let componentName = '';
+  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
   let currentNumber = currentComponentsForKind.length + 1;
-
+  let _componentName = '';
   while (!found) {
-    componentName = `${componentType.toLowerCase()}${currentNumber}`;
+    _componentName = `${componentName.toLowerCase()}${currentNumber}`;
     if (
-      Object.values(currentComponents).find((component) => component.component.name === componentName) === undefined
+      Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
       found = true;
     }
     currentNumber = currentNumber + 1;
   }
 
-  return componentName;
+  return _componentName;
 }
 
 export function computeActionName(actions) {
@@ -338,7 +343,7 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   return widgetFieldValue;
 }
 
-export function validateWidget({ validationObject, widgetValue, currentState, customResolveObjects }) {
+export function validateWidget({ validationObject, widgetValue, currentState, component, customResolveObjects }) {
   let isValid = true;
   let validationError = null;
 
@@ -404,10 +409,102 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMandatory = resolveWidgetFieldValue(mandatory, false, customResolveObjects);
 
-  if (resolvedMandatory == true) {
-    if (!widgetValue) {
-      return { isValid: false, validationError: `Field cannot be empty` };
+  if (resolvedMandatory == true && !widgetValue) {
+    return {
+      isValid: false,
+      validationError: `Field cannot be empty`,
+    };
+  }
+  return {
+    isValid,
+    validationError,
+  };
+}
+
+export function validateDates({ validationObject, widgetValue, currentState, customResolveObjects }) {
+  let isValid = true;
+  let validationError = null;
+  const validationDateFormat = validationObject?.dateFormat?.value || 'MM/DD/YYYY';
+  const validationTimeFormat = validationObject?.timeFormat?.value || 'HH:mm';
+  const customRule = validationObject?.customRule?.value;
+  const parsedDateFormat = validationObject?.parseDateFormat?.value;
+  const isTwentyFourHrFormatEnabled = validationObject?.isTwentyFourHrFormatEnabled?.value ?? false;
+  const isDateSelectionEnabled = validationObject?.isDateSelectionEnabled?.value ?? true;
+  const _widgetDateValue = moment(widgetValue, parsedDateFormat);
+  const _widgetTimeValue = moment(
+    widgetValue,
+    getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled, isDateSelectionEnabled)
+  ).format(validationTimeFormat);
+
+  const resolvedMinDate = resolveWidgetFieldValue(
+    validationObject?.minDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxDate = resolveWidgetFieldValue(
+    validationObject?.maxDate?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMinTime = resolveWidgetFieldValue(
+    validationObject?.minTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+  const resolvedMaxTime = resolveWidgetFieldValue(
+    validationObject?.maxTime?.value,
+    currentState,
+    undefined,
+    customResolveObjects
+  );
+
+  // Minimum date validation
+  if (resolvedMinDate !== undefined && moment(resolvedMinDate).isValid()) {
+    if (!moment(resolvedMinDate, validationDateFormat).isBefore(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum date is ${resolvedMinDate}`,
+      };
     }
+  }
+
+  // Maximum date validation
+  if (resolvedMaxDate !== undefined && moment(resolvedMaxDate).isValid()) {
+    if (!moment(resolvedMaxDate, validationDateFormat).isAfter(moment(_widgetDateValue, validationDateFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum date is ${resolvedMaxDate}`,
+      };
+    }
+  }
+
+  // Minimum time validation
+  if (resolvedMinTime !== undefined && moment(resolvedMinTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMinTime, validationTimeFormat).isBefore(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Minimum time is ${resolvedMinTime}`,
+      };
+    }
+  }
+
+  // Maximum time validation
+  if (resolvedMaxTime !== undefined && moment(resolvedMaxTime, validationTimeFormat, true).isValid()) {
+    if (!moment(resolvedMaxTime, validationTimeFormat).isAfter(moment(_widgetTimeValue, validationTimeFormat))) {
+      return {
+        isValid: false,
+        validationError: `Maximum time is ${resolvedMaxTime}`,
+      };
+    }
+  }
+
+  //Custom rule validation
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+    return { isValid: false, validationError: resolvedCustomRule };
   }
   return {
     isValid,
@@ -423,17 +520,10 @@ export function validateEmail(email) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  if ([...reservedKeyword, 'this'].some((keyword) => code.includes(keyword))) {
-    const message = `Code contains ${reservedKeyword.join(' or ')} or this keywords`;
-    const description = 'Cannot resolve code with reserved keywords in it. Please remove them and try again.';
+  const isValidCode = validateMultilineCode(code);
 
-    return {
-      status: 'failed',
-      data: {
-        message,
-        description,
-      },
-    };
+  if (isValidCode.status === 'failed') {
+    return isValidCode;
   }
 
   const currentState = getCurrentState();
@@ -1088,12 +1178,6 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
   return true;
 };
 
-export function eraseRedirectUrl() {
-  const redirectPath = getCookie('redirectPath');
-  redirectPath && eraseCookie('redirectPath');
-  return redirectPath;
-}
-
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
@@ -1210,6 +1294,39 @@ export const setWindowTitle = async (pageDetails, location) => {
     }
   }
   if (pageTitle) {
-    document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
+    document.title = !(pageDetails?.preview === false)
+      ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
+      : `${pageTitle}`;
   }
 };
+// This function is written only to handle diff colors W.R.T button types
+export const computeColor = (styleDefinition, value, meta) => {
+  if (styleDefinition.type?.value == 'primary') return value;
+  else {
+    if (meta?.displayName == 'Background') {
+      value = value == '#4368E3' ? '#FFFFFF' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Text color') {
+      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Icon color') {
+      value = value == '#FFFFFF' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Border color') {
+      value = value == '#4368E3' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Loader color') {
+      value = value == '#FFFFFF' ? '#4368E3' : value;
+      return value;
+    }
+  }
+};
+
+//For <>& UI display issues
+export function decodeEntities(encodedString) {
+  return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
+}

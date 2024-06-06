@@ -13,6 +13,7 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
+import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 
@@ -160,6 +161,8 @@ const DynamicForm = ({
         return ConditionFilter;
       case 'sorts':
         return CondtionSort;
+      case 'react-component-salesforce':
+        return Salesforce;
       default:
         return <div>Type is invalid</div>;
     }
@@ -192,6 +195,7 @@ const DynamicForm = ({
     encrypted,
     editorType = 'basic',
     placeholders = {},
+    disabled = false,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -298,6 +302,7 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
+      case 'react-component-salesforce':
         return {
           optionchanged,
           createDataSource,
@@ -335,6 +340,8 @@ const DynamicForm = ({
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          disabled,
+          delayOnChange: false,
         };
       case 'react-component-openapi-validator':
         return {
@@ -485,6 +492,7 @@ const DynamicForm = ({
                   'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                   'w-100': isHorizontalLayout && type !== 'codehinter',
                 })}
+                style={{ width: '100%' }}
               >
                 <Element
                   {...getElementProps(obj[key])}

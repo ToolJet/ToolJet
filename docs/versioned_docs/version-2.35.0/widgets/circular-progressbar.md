@@ -1,10 +1,10 @@
 ---
 id: circular-progress-bar
-title: Circular Progress Bar
+title: Circular Progressbar
 ---
-# Circular Progress Bar
+# Circular Progressbar
 
-Circular progress bar widget can be used to show progress in a progress circle.
+Circular Progressbar widget can be used to show progress in a progress circle.
 
 <div style={{textAlign: 'center'}}>
 

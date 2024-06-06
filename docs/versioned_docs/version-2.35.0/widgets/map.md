@@ -3,7 +3,7 @@ id: map
 title: Map
 ---
 
-The map component enables users to display a map on the app. It can be used to display or choose a single location or multiple locations on the map. The map component can be used to display the location of a business, a store, or a restaurant. It can also be used to display the location of a user on the map. It allows users to interact with the map interface and pick specific points of interest.
+The **Map** component enables users to display a map on the app. It can be used to display or choose a single location or multiple locations on the map. The Map component can be used to display the location of a business, a store, or a restaurant. It can also be used to display the location of a user on the map. It allows users to interact with the map interface and pick specific points of interest.
 
 :::tip Using Self-hosted 
 If you are utilizing the self-hosted version of ToolJet, it is necessary to configure the Google Maps API key as an environment variable. Please refer to the [environment variable setup documentation](/docs/setup/env-vars/#google-maps-configuration--optional-).
@@ -21,7 +21,7 @@ If you are utilizing the self-hosted version of ToolJet, it is necessary to conf
 
 | <div style={{ width:"100px"}}> Properties   </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:------------------ |
-| Initial location | default location when the app is loaded initially. | An object containing the **latitude** and **langitude** as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
+| Initial location | default location when the app is loaded initially. | An object containing the **latitude** and **longitude** as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
 | Default markers | Number of markers that should be shown on the map | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
 | Polygon points | Create a polygon on the map using the given coordinates. | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
 | Add new markers | On clicking the map, a new marker will be added to the map. | By default, it's set to `On`. Toggle `off` to disable adding new markers on the map. Click `Fx` to set `{{true}}` or `{{false}}` programmatically. |
@@ -50,11 +50,11 @@ For detailed information about all the available **Actions**, please refer to th
 
 ## Component Specific Actions (CSA)
 
-Following actions of map component can be controlled using the component specific actions(CSA):
+Following actions of Map component can be controlled using the component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:---------- |:---------- |:------- |
-| setLocation | Set the marker's location on map using latitude and longitude values as parameteres via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
+| setLocation | Set the marker's location on map using latitude and longitude values as parameters via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
 
 </div>
 
@@ -67,9 +67,9 @@ Exposed variables can be used to get data from the component.
 | <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
 | center | This variable will hold the latitude, longitude and the google map url value. |
-| center.`lat` | This variable holds the latitude value of the marker on the map component. | Access the value dynamically using JS: `{{components.map1.center.lat}}`|
+| center.`lat` | This variable holds the latitude value of the marker on the Map component. | Access the value dynamically using JS: `{{components.map1.center.lat}}`|
 | center.`lng` | This variable gets updated with RGB color code whenever a user selects a color from the color picker. | Access the value dynamically using JS: `{{components.map1.center.lng}}`|
-| center.`googleMapUrl` | This variable holds the URL of the location where the center marker is placed on the map component. | Access the value dynamically using JS: `{{components.map1.center.googleMapUrl}}`|
+| center.`googleMapUrl` | This variable holds the URL of the location where the center marker is placed on the Map component. | Access the value dynamically using JS: `{{components.map1.center.googleMapUrl}}`|
 | markers | The markers variable will hold the value only if `add new markers` is enabled from the map properties. Each marker is an object and will have `lat` and `lng` keys. | Access the values dynamically using `{{components.map1.markers[1].lat}}` |
 | selectedMarker | Object with the marker selected by the user |
 | bounds | It constructs a rectangle from the points at its south-west and north-east corners |

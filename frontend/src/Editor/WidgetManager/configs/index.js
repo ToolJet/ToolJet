@@ -10,6 +10,7 @@ import { datepickerConfig } from './datepicker';
 import { checkboxConfig } from './checkbox';
 import { radiobuttonConfig } from './radiobutton';
 import { toggleswitchConfig } from './toggleswitch';
+import { toggleSwitchV2Config } from './toggleswitchv2';
 import { textareaConfig } from './textarea';
 import { daterangepickerConfig } from './daterangepicker';
 import { textConfig } from './text';
@@ -49,6 +50,7 @@ import { treeSelectConfig } from './treeSelect';
 import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
+import { kanbanBoardConfig } from './kanbanBoard';
 
 export {
   buttonConfig,
@@ -62,7 +64,8 @@ export {
   datepickerConfig,
   checkboxConfig,
   radiobuttonConfig,
-  toggleswitchConfig,
+  toggleswitchConfig, //!Depreciated
+  toggleSwitchV2Config,
   textareaConfig,
   daterangepickerConfig,
   textConfig,
@@ -97,6 +100,7 @@ export {
   pdfConfig,
   stepsConfig,
   kanbanConfig,
+  kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
   linkConfig,

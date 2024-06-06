@@ -33,15 +33,18 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   const location = useLocation();
   const params = useParams();
+  const searchParams = new URLSearchParams(location?.search);
 
-  const organizationId = new URLSearchParams(location?.search).get('oid');
-  const source = new URLSearchParams(location?.search).get('source');
+  const organizationId = searchParams.get('oid');
+  const organizationToken = searchParams.get('organizationToken') || params?.organizationToken;
+  const source = searchParams.get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const redirectTo = searchParams.get('redirectTo');
 
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(params?.token, params?.organizationToken)
+      .verifyToken(params?.token, organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = buildURLWithQuery(data.redirect_url, {
@@ -53,7 +56,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
-          if (params?.organizationToken) {
+          if (organizationToken) {
             setShowJoinWorkspace(true);
             return;
           }
@@ -112,14 +115,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         companySize: '',
         role: '',
         token: params?.token,
-        organizationToken: params?.organizationToken ?? '',
-        source: source,
+        organizationToken,
+        source,
         password: password,
       })
       .then((user) => {
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        redirectToDashboard(user);
+        redirectToDashboard(user, redirectTo);
       })
       .catch((res) => {
         setIsLoading(false);
@@ -137,6 +140,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
+    if (showJoinWorkspace && !showOnboarding) {
+      e.preventDefault();
+      userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
+        ? (setShowOnboarding(true), setShowJoinWorkspace(false))
+        : setUpAccount(e);
+      return;
+    }
+
     userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
       ? setShowOnboarding(true)
       : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
@@ -147,6 +158,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
+      {isGettingConfigs && (
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <div className="loader-wrapper">
+              <ShowLoading />
+            </div>
+          </div>
+        </div>
+      )}
+
       {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
@@ -154,7 +175,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
-                  <ShowLoading />
+                  <div className="loader-wrapper">
+                    <ShowLoading />
+                  </div>
                 ) : (
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
@@ -168,40 +191,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           : 'ToolJet.'
                       }`}
                     </div>
-                    {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
-                      <div className="d-flex flex-column align-items-center separator-bottom">
-                        {configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                              configs={configs?.google?.configs}
-                              configId={configs?.google?.config_id}
-                            />
-                          </div>
-                        )}
-                        {configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton
-                              text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                              configs={configs?.git?.configs}
-                            />
-                          </div>
-                        )}
-                        <div className="separator-onboarding " style={{ width: '100%' }}>
-                          <div className="mt-2 separator" data-cy="onboarding-separator">
-                            <h2>
-                              <span>{t('confirmationPage.or', 'OR')}</span>
-                            </h2>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     <div className="org-page-inputs-wrapper">
                       <label className="tj-text-input-label" data-cy="name-input-label">
                         {t('verificationSuccessPage.name', 'Name')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-name">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-name">
                         {userDetails?.name}
                       </p>
                     </div>
@@ -210,12 +205,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <label className="tj-text-input-label" data-cy="email-input-label">
                         {t('verificationSuccessPage.workEmail', 'Email')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-email">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-email">
                         {userDetails?.email}
                       </p>
                     </div>
 
-                    {userDetails?.onboarding_details?.password && (
+                    {userDetails?.onboarding_details?.password && source !== 'sso' && (
                       <div className="mb-3">
                         <label className="form-label" data-cy="password-label">
                           {t('verificationSuccessPage.password', 'Password')}
@@ -276,7 +271,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         }}
                         disabled={
                           isLoading ||
-                          (userDetails?.onboarding_details?.password &&
+                          (source !== 'sso' &&
+                            userDetails?.onboarding_details?.password &&
                             (password?.length < 5 || password?.trim()?.length === 0 || !password))
                         }
                         data-cy="accept-invite-button"
@@ -288,7 +284,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         ) : (
                           <>
                             <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" />
+                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
                           </>
                         )}
                       </ButtonSolid>
@@ -367,7 +363,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         <OnBoardingForm
           userDetails={userDetails}
           token={params?.token}
-          organizationToken={params?.organizationToken ?? ''}
+          organizationToken={organizationToken}
           password={password}
           darkMode={darkMode}
         />

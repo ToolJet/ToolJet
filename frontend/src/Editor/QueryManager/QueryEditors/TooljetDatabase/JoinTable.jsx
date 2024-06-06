@@ -429,8 +429,8 @@ const RenderFilterSection = ({ darkMode }) => {
             darkMode={darkMode}
           />
         </Col>
-        <Col sm="4" className="p-0 d-flex">
-          <div className="flex-grow-1">
+        <Col className="p-0 d-flex">
+          <div className="col-10">
             {operator === 'IS' ? (
               <DropDownSelect
                 buttonClasses="border border-end-0"
@@ -467,7 +467,7 @@ const RenderFilterSection = ({ darkMode }) => {
             }}
             size="sm"
             variant="ghostBlack"
-            className="px-1 rounded-0 border rounded-end"
+            className="px-1 rounded-0 border rounded-end col-2"
             onClick={() => removeFilterConditionEntry(index)}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />

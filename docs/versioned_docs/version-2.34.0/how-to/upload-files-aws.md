@@ -114,7 +114,7 @@ Edit the **properties** of the table, add a Event handler for running the `downl
 
 Create a new query, select the **Upload object** operation. Enter the following values in their respective fields:
 - **Bucket**: `{{components.dropdown1.value}}`
-- **Key**:  {{ components.textinput1.value + '/' +components.filepicker1.file[0].name}}`
+- **Key**:  `{{ components.textinput1.value + '/' +components.filepicker1.file[0].name}}`
 - **Content type**: `{{components.filepicker1.file[0].type}}`
 - **Upload data**: `{{components.filepicker1.file[0].base64Data}}`
 - **Encoding**: `base64`

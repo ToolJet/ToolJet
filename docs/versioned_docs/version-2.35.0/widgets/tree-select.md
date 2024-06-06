@@ -5,7 +5,7 @@ title: Tree Select
 
 # Tree Select
 
-Tree Select widget is a group checkboxes in a TreeView which can be expanded or collapsed.
+The **Tree Select** widget is a group checkboxes in a TreeView which can be expanded or collapsed.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -116,9 +116,9 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div>|
 |:----------- |:----------- |:-------|
-| checked | This variable holds the value of all the checked items on the tree select component. | Access the value dynamically using JS: `{{components.treeselect1.checked[1]}}`|
-| expanded | This variable holds the value of expanded items on the tree select component.|  Access the value dynamically using JS: `{{components.treeselect1.expanded[0]}}`|
-| checkedPathArray | This variable holds the path of the checked items in differet arrays. | Access the value dynamically using JS: `{{components.treeselect1.checkedPathArray[1][1]}}`|
+| checked | This variable holds the value of all the checked items on the Tree Select component. | Access the value dynamically using JS: `{{components.treeselect1.checked[1]}}`|
+| expanded | This variable holds the value of expanded items on the Tree Select component.|  Access the value dynamically using JS: `{{components.treeselect1.expanded[0]}}`|
+| checkedPathArray | This variable holds the path of the checked items in different arrays. | Access the value dynamically using JS: `{{components.treeselect1.checkedPathArray[1][1]}}`|
 | checkedPathStrings | This variable holds the path of the checked items in strings separated by a dash(-).| Access the value dynamically using JS: `{{components.treeselect1.checkedPathStrings[2]}}`|
 
 </div>

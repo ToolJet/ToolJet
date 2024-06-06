@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, MoreThan, Repository } from 'typeorm';
+import { EntityManager, Like, MoreThan, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -27,9 +27,12 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
 import { Component } from 'src/entities/component.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { VersionReleaseDto } from '@dto/version-release.dto';
+
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
+import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 
 const uuid = require('uuid');
 
@@ -155,6 +158,7 @@ export class AppsService {
           canvasMaxHeight: 2400,
           canvasBackgroundColor: '#edeff5',
           backgroundFxQuery: '',
+          appMode: 'auto',
         };
         await manager.save(appVersion);
 
@@ -238,6 +242,12 @@ export class AppsService {
     }
 
     return await viewableAppsQb.getMany();
+  }
+
+  async findAll(organizationId: string, searchParam): Promise<App[]> {
+    return await this.appsRepository.find({
+      where: { organizationId, ...(searchParam.name && { name: Like(`${searchParam.name} %`) }) },
+    });
   }
 
   async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
@@ -639,6 +649,7 @@ export class AppsService {
           newLayout.width = layout.width;
           newLayout.height = layout.height;
           newLayout.componentId = layout.componentId;
+          newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
           newLayout.component = newComponent;
 
@@ -740,7 +751,7 @@ export class AppsService {
         .where('data_query.appVersionId = :appVersionId', { appVersionId: versionFrom?.id })
         .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
         .getMany();
-      const dataSources = versionFrom?.dataSources; //Local data sources
+      const dataSources = versionFrom?.dataSources.filter((ds) => ds.scope == DataSourceScopes.LOCAL); //Local data sources
       const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
 
       const dataSourceMapping = {};
@@ -1116,5 +1127,26 @@ export class AppsService {
         return { table_id };
       });
     });
+  }
+
+  async releaseVersion(appId: string, versionReleaseDto: VersionReleaseDto, manager?: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { versionToBeReleased } = versionReleaseDto;
+      //check if the app version is eligible for release
+      const currentEnvironment: AppEnvironment = await manager
+        .createQueryBuilder(AppEnvironment, 'app_environments')
+        .select(['app_environments.id', 'app_environments.isDefault'])
+        .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
+        .where('app_versions.id = :versionToBeReleased', {
+          versionToBeReleased,
+        })
+        .getOne();
+
+      if (!currentEnvironment?.isDefault) {
+        throw new BadRequestException('You can only release when the version is promoted to production');
+      }
+
+      return await manager.update(App, appId, { currentVersionId: versionToBeReleased });
+    }, manager);
   }
 }

@@ -1,9 +1,9 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty } from 'lodash';
+import { camelCase, isEmpty, noop } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
@@ -18,22 +18,34 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
+import { EditorContext } from '../Context/EditorContextWrapper';
 
-const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...restProps }) => {
+const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
-
   const [isFocused, setIsFocused] = useState(false);
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
-
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
   //! Re render the component when the componentName changes as the initialValue is not updated
 
+  const { variablesExposedForPreview } = useContext(EditorContext);
+
+  const customVariables = variablesExposedForPreview?.[componentId] ?? {};
+
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
+
+    const [valid, _error] = !isEmpty(validation)
+      ? resolveReferences(initialValue, validation, customVariables)
+      : [true, null];
+
+    if (!valid) {
+      setErrorStateActive(true);
+    }
+
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentName, initialValue]);
@@ -58,6 +70,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
 
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   return (
     <div
       ref={wrapperRef}
@@ -74,10 +87,11 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, ...r
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
         componentId={restProps?.componentId ?? null}
-        // fxActive={fxActive}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
+        isPortalOpen={restProps?.portalProps?.isOpen}
+        customVariables={customVariables}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
@@ -111,17 +125,18 @@ const EditorInput = ({
   onBlurUpdate,
   placeholder = '',
   error,
-  cyLabel,
+  cyLabel = '',
   componentName,
   usePortalEditor = true,
   renderPreview,
   portalProps,
-  ignoreValidation,
   lang,
   isFocused,
   componentId,
   type,
-  className,
+  delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
+  paramLabel = '',
+  disabled = false,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -129,13 +144,32 @@ const EditorInput = ({
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
 
     let queryInput = context.state.doc.toString();
+    const originalQueryInput = queryInput;
 
     if (totalReferences > 0) {
-      const currentWord = queryInput.split('{{').pop().split('}}')[0];
+      const currentCursor = context.state.selection.main.head;
+      const currentCursorPos = context.pos;
+
+      let currentWord = queryInput.substring(currentCursor, currentCursorPos);
+
+      if (currentWord?.length === 0) {
+        const lastBracesFromPos = queryInput.lastIndexOf('{{', currentCursorPos);
+        currentWord = queryInput.substring(lastBracesFromPos, currentCursorPos);
+        //remove curly braces from the current word as will append it later
+        currentWord = currentWord.replace(/{{|}}/g, '');
+      }
+
+      if (currentWord.includes(' ')) {
+        currentWord = currentWord.split(' ').pop();
+      }
+
+      // remove \n from the current word if it is present
+      currentWord = currentWord.replace(/\n/g, '');
+
       queryInput = '{{' + currentWord + '}}';
     }
 
-    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences);
+    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
 
     return {
       from: word.from,
@@ -150,10 +184,15 @@ const EditorInput = ({
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
     compareCompletions: (a, b) => {
-      return a.label < b.label ? -1 : 1;
+      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
     },
     aboveCursor: false,
     defaultKeymap: true,
+    positionInfo: () => {
+      return {
+        class: 'cm-completionInfo-top cm-custom-completion-info',
+      };
+    },
   });
 
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
@@ -164,15 +203,13 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setFirstTimeFocus(false);
-    if (ignoreValidation) {
+    if (!delayOnChange) {
+      setFirstTimeFocus(false);
       return onBlurUpdate(currentValue);
     }
     setTimeout(() => {
-      if (!error || currentValue == '') {
-        const _value = currentValue;
-        onBlurUpdate(_value);
-      }
+      setFirstTimeFocus(false);
+      onBlurUpdate(currentValue);
     }, 0);
   };
 
@@ -188,6 +225,7 @@ const EditorInput = ({
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
     'widget-code-editor': componentId,
+    'disabled-pointerevents': disabled,
   });
 
   const currentEditorHeightRef = useRef(null);
@@ -200,12 +238,13 @@ const EditorInput = ({
   };
 
   const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
+  cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div
       ref={currentEditorHeightRef}
-      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`}
-      cyLabel={cyLabel}
+      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
+      data-cy={`${cyLabel}-input-field`}
     >
       {usePortalEditor && (
         <CodeHinter.PopupIcon
@@ -250,11 +289,12 @@ const EditorInput = ({
               completionKeymap: true,
               searchKeymap: false,
             }}
-            onFocus={() => handleFocus()}
+            onMouseDown={() => handleFocus()}
             onBlur={() => handleOnBlur()}
             className={customClassNames}
             theme={theme}
             indentWithTab={true}
+            readOnly={disabled}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>
@@ -267,16 +307,19 @@ export const DynamicEditorBridge = (props) => {
     initialValue,
     type,
     fxActive,
-    paramType,
+    paramType = 'code',
     paramLabel,
     paramName,
     fieldMeta,
     darkMode,
     className,
-    onFxPress,
+    onFxPress = noop,
     cyLabel = '',
     onChange,
     styleDefinition,
+    component,
+    onVisibilityChange,
+    isEventManagerParam = false,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -286,6 +329,7 @@ export const DynamicEditorBridge = (props) => {
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
+  const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
@@ -301,12 +345,13 @@ export const DynamicEditorBridge = (props) => {
           </div>
         )}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
-          <div
-            style={{ marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center justify-content-end "
-          >
+          <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
-              <div className="col-auto pt-0 fx-common fx-button-container">
+              <div
+                className={`col-auto pt-0 fx-common fx-button-container ${
+                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
+                }`}
+              >
                 <FxButton
                   active={codeShow}
                   onPress={() => {
@@ -337,6 +382,8 @@ export const DynamicEditorBridge = (props) => {
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 styleDefinition={styleDefinition}
+                component={component}
+                onVisibilityChange={onVisibilityChange}
               />
             )}
           </div>

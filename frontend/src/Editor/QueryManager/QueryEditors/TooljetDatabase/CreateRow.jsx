@@ -51,7 +51,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
           Columns
         </label>
 
-        <div className="field-container flex-grow-1">
+        <div className="field-container flex-grow-1 col">
           {Object.entries(columnOptions).map(([key, value]) => (
             <RenderColumnOptions
               key={key}
@@ -98,7 +98,7 @@ const RenderColumnOptions = ({
   darkMode,
   removeColumnOptionsPair,
 }) => {
-  const filteredColumns = columns.filter(({ isPrimaryKey }) => !isPrimaryKey);
+  const filteredColumns = columns.filter(({ column_default }) => !column_default?.startsWith('nextval('));
   const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
   let displayColumns = filteredColumns.map(({ accessor }) => ({
     value: accessor,

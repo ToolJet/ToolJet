@@ -1,6 +1,6 @@
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { SignUpPageElements } from "Support/utils/manageSSO";
+import { SignUpPageElements } from "Support/utils/onboarding";
 import { fake } from "Fixtures/fake";
 import {
   verifyConfirmEmailPage,
@@ -49,7 +49,9 @@ describe("User signup", () => {
     verifyOnboardingQuestions(data.fullName, data.workspaceName);
   });
   it("Verify invalid invitation link", () => {
+    cy.log(invitationLink)
     cy.visit(invitationLink);
+    cy.pause()
     verifyInvalidInvitationLink();
     cy.get(commonSelectors.backtoSignUpButton).click();
     cy.get(commonSelectors.SignUpSectionHeader).should("be.visible");

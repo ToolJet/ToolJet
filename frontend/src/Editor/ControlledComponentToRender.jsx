@@ -18,7 +18,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
   if (componentId) {
     const componentToRender = listToRender.find((item) => item === componentId);
 
-    if (componentToRender) {
+    const parentReRendered = listToRender.find((item) => item === prevProps?.parentId);
+
+    if (componentToRender || parentReRendered) {
       needToRender = true;
     }
   }
@@ -31,6 +33,8 @@ export const shouldUpdate = (prevProps, nextProps) => {
     deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition) &&
     prevProps?.width === nextProps?.width &&
     prevProps?.height === nextProps?.height &&
+    prevProps?.darkMode === nextProps?.darkMode &&
+    prevProps?.childComponents === nextProps?.childComponents &&
     !needToRender
   );
 };

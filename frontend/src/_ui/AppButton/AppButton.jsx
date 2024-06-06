@@ -86,6 +86,7 @@ export const ButtonSolid = function ButtonSolid(props) {
     dangerSecondary: 'tj-secondary-danger-btn',
     dangerTertiary: 'tj-tertiary-danger-btn',
     dangerGhost: 'tj-ghost-danger-btn',
+    zBlack: 'tj-zBlack-btn',
   };
 
   const { variant = 'primary', className, ...restProps } = props;

@@ -4,7 +4,7 @@ import _, { isEmpty } from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
-import { hasCircularDependency } from '@/_helpers/utils';
+import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 
 export const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
@@ -97,7 +97,7 @@ export const createJavaScriptSuggestions = () => {
   return allMethods;
 };
 
-const resolveWorkspaceVariables = (query, state) => {
+const resolveWorkspaceVariables = (query) => {
   let resolvedStr = query;
   let error = null;
   let valid = false;
@@ -126,7 +126,7 @@ const resolveWorkspaceVariables = (query, state) => {
   return [valid, error, resolvedStr];
 };
 
-function resolveCode(code, customObjects = {}, withError = true, reservedKeyword, isJsCode) {
+function resolveCode(code, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
 
@@ -181,14 +181,15 @@ function getDynamicVariables(text) {
   const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
   return matchedParams;
 }
-const resolveMultiDynamicReferences = (code, lookupTable) => {
+const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
   let resolvedValue = code;
 
   const isComponentValue = code.includes('components.') || false;
 
-  const allDynamicVariables = getDynamicVariables(code);
+  const allDynamicVariables = getDynamicVariables(code) || [];
+  let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
 
-  if (allDynamicVariables) {
+  if (!isJSCodeResolver) {
     allDynamicVariables.forEach((variable) => {
       const variableToResolve = variable.replace(/{{|}}/g, '').trim();
 
@@ -205,21 +206,33 @@ const resolveMultiDynamicReferences = (code, lookupTable) => {
         resolvedValue = resolvedValue.replace(variable, resolvedCode);
       }
     });
+  } else {
+    const variableToResolve = code.replace(/{{|}}/g, '').trim();
+
+    const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+
+    resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
   }
 
   return resolvedValue;
 };
 
 const queryHasStringOtherThanVariable = (query) => {
-  if (query.startsWith('{{') && query.endsWith('}}')) {
-    return false;
+  const startsWithDoubleCurly = query.startsWith('{{');
+  const endsWithDoubleCurly = query.endsWith('}}');
+
+  if (startsWithDoubleCurly && endsWithDoubleCurly) {
+    // Extract the content within the curly braces
+    const content = query.slice(2, -2).trim();
+    // Check if there is a space within the content
+    return content.includes(' ');
   }
 
-  return true;
+  return false;
 };
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
-  if (!query || typeof query !== 'string') return [false, null, null];
+  if (query !== '' && (!query || typeof query !== 'string')) return [false, null, null];
   let resolvedValue = query;
   let error = null;
 
@@ -237,11 +250,24 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     return [valid, errors, newValue, resolvedValue];
   }
 
-  const hasMultiDynamicVariables = queryHasStringOtherThanVariable(query) || getDynamicVariables(query)?.length > 1;
+  const queryHasJSCode = queryHasStringOtherThanVariable(query);
+  let useJSResolvers = queryHasJSCode || getDynamicVariables(query)?.length > 1;
+
+  if (!queryHasJSCode && getDynamicVariables(query)?.length === 1 && !query.startsWith('{{') && query.includes('{{')) {
+    useJSResolvers = true;
+  }
+
+  const customWidgetResolvers = ['listItem'];
+  const isCustomResolvers = customWidgetResolvers.some((resolver) => query.includes(resolver));
 
   const { lookupTable } = useResolveStore.getState();
-  if (hasMultiDynamicVariables) {
-    resolvedValue = resolveMultiDynamicReferences(query, lookupTable);
+
+  if (useJSResolvers) {
+    resolvedValue = resolveMultiDynamicReferences(query, lookupTable, queryHasJSCode);
+  } else if (isCustomResolvers && !_.isEmpty(customResolvers)) {
+    const currentState = useCurrentStateStore.getState();
+    const resolvedCode = olderResolverMethod(query, currentState, '', customResolvers);
+    resolvedValue = resolvedCode;
   } else {
     let value = query?.replace(/{{|}}/g, '').trim();
 
@@ -272,7 +298,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   }
 
   if (!validationSchema || isEmpty(validationSchema)) {
-    return [true, error, resolvedValue];
+    return [true, error, resolvedValue, resolvedValue];
   }
 
   if (error) {
@@ -285,6 +311,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
 
   if (validationSchema) {
     const [valid, errors, newValue] = validateComponentProperty(resolvedValue, validationSchema);
+
     return [valid, errors, newValue, resolvedValue];
   }
 };
@@ -352,6 +379,7 @@ export const FxParamTypeMapping = Object.freeze({
   icon: 'Icon',
   visibility: 'Visibility',
   numberInput: 'NumberInput',
+  tableRowHeightInput: 'TableRowHeightInput',
 });
 
 export function computeCoercion(oldValue, newValue) {

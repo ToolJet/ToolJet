@@ -121,6 +121,7 @@ export default function Chart({
       b: padding,
       t: padding,
     },
+    ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
     barmode: barmode,
     hoverlabel: { namelength: -1 },
   };

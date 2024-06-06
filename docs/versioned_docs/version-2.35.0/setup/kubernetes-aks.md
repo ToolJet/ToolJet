@@ -27,7 +27,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
 :::
 
-3. Create k8s service and reserve a static IP and inorder expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
+3. Create k8s service and reserve a static IP and expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
    ```bash
     curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/service.yaml
    ```
@@ -64,8 +64,8 @@ If this is a new installation of the application, you may start directly with th
 
 - It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

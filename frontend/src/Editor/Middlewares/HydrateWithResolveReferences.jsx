@@ -18,6 +18,7 @@ const getComponentMetaData = memoizeFunction((componentType) => {
 });
 
 const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, children }) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const componentMeta = useMemo(() => getComponentMetaData(component?.component), []);
 
   const currentState = useCurrentState();
@@ -75,6 +76,7 @@ const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, 
           page: currentPage,
           type: 'component',
           kind: 'component',
+          componentId: id,
           strace: 'page_level',
           data: { message: `${error.message}`, status: true },
           resolvedProperties: resolvedProperties,

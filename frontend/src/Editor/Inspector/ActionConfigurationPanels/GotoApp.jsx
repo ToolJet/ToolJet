@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import CodeHinter from '@/Editor/CodeEditor';
 
 export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMode }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [appOptions, setAppOptions] = useState([]);
+
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
@@ -37,6 +40,17 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMod
     }
   });
 
+  useEffect(() => {
+    getAllApps()
+      .then((apps) => {
+        setAppOptions(apps);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const styles = {
     ...defaultStyles(darkMode),
     menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
@@ -49,12 +63,14 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMod
     <div className="p-1 go-to-app">
       <label className="form-label mt-1">App</label>
       <Select
-        options={getAllApps()}
+        options={appOptions}
         search={true}
         value={event.slug}
         onChange={(value) => {
           handlerChanged(eventIndex, 'slug', value);
         }}
+        isDisabled={isLoading}
+        isLoading={isLoading}
         placeholder={t('globals.select', 'Select') + '...'}
         styles={styles}
         useMenuPortal={false}

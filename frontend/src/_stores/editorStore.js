@@ -21,7 +21,7 @@ const initialState = {
   showComments: false,
   hoveredComponent: '',
   selectionInProgress: false,
-  selectedComponents: EMPTY_ARRAY,
+  selectedComponents: [],
   isEditorActive: false,
   selectedComponent: null,
   canUndo: false,
@@ -38,6 +38,10 @@ const initialState = {
   currentPageId: null,
   currentSessionId: uuid(),
   componentsNeedsUpdateOnNextRender: [],
+  appMode: 'auto',
+  editorCanvasWidth: 1092,
+  canvasBackground: {},
+  pageSwitchInProgress: false,
 };
 
 export const useEditorStore = create(
@@ -50,6 +54,8 @@ export const useEditorStore = create(
           type: ACTIONS.SET_HOVERED_COMPONENT,
           showComments,
         }),
+      setCanvasWidth: (editorCanvasWidth) => set({ editorCanvasWidth }),
+      setPageProgress: (bool) => set({ pageSwitchInProgress: bool }),
       toggleComments: () =>
         set({ showComments: !get().showComments }, false, {
           type: ACTIONS.TOGGLE_COMMENTS,
@@ -101,7 +107,13 @@ export const useEditorStore = create(
           selectedComponents: newSelectedComponents,
         });
       },
+      //TODO: Refactor multiple component selection with a single function
+      selectMultipleComponents: (selectedComponents) => {
+        set({ selectedComponents: selectedComponents });
+      },
       setCurrentPageId: (currentPageId) => set({ currentPageId }),
+      setAppMode: (appMode) => set({ appMode }),
+      setCanvasBackground: (canvasBackground) => set({ canvasBackground }),
     },
   }),
   { name: STORE_NAME }

@@ -25,6 +25,7 @@ import CodeHinter from '../CodeEditor';
 import { diff } from 'deep-object-diff';
 import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { appService } from '@/_services';
 
 export const EventManager = ({
   sourceId,
@@ -50,7 +51,6 @@ export const EventManager = ({
 
   const {
     appId,
-    apps,
     events: allAppEvents,
     eventsUpdatedLoader,
     eventsCreatedLoader,
@@ -59,7 +59,6 @@ export const EventManager = ({
     setEventToDeleteLoaderIndex,
   } = useAppDataStore((state) => ({
     appId: state.appId,
-    apps: state.apps,
     events: state.events,
     eventsUpdatedLoader: state.eventsUpdatedLoader,
     eventsCreatedLoader: state.eventsCreatedLoader,
@@ -70,7 +69,7 @@ export const EventManager = ({
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
 
-  const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
+  const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler, updateState } =
     useAppDataActions();
 
   const currentEvents = allAppEvents?.filter((event) => {
@@ -234,7 +233,23 @@ export const EventManager = ({
     return defaultParams;
   }
 
-  function getAllApps() {
+  const fetchApps = async (page) => {
+    const { apps } = await appService.getAll(page);
+
+    updateState({
+      apps: apps.map((app) => ({
+        id: app.id,
+        name: app.name,
+        slug: app.slug,
+        current_version_id: app.current_version_id,
+      })),
+    });
+
+    return apps;
+  };
+
+  async function getAllApps() {
+    const apps = await fetchApps(0);
     let appsOptionsList = [];
     apps
       .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
@@ -505,7 +520,7 @@ export const EventManager = ({
 
             {event.actionId === 'go-to-app' && (
               <GotoApp
-                event={event}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
@@ -808,7 +823,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'switch-page' && (
               <SwitchPage
-                event={event}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
@@ -883,20 +898,22 @@ export const EventManager = ({
                       ) : (
                         <div
                           className={`${
-                            param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
-                          } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            param?.type ? '' : 'fx-container-eventmanager-code'
+                          } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                           data-cy="action-options-text-input-field"
                         >
                           <CodeHinter
-                            type="basic"
+                            type="fxEditor"
                             initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
                               onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
                             paramType={param?.type}
+                            paramLabel={' '}
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
                             component={component}
+                            isEventManagerParam={true}
                           />
                         </div>
                       )}

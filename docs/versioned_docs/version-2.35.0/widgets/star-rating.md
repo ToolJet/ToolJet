@@ -4,7 +4,7 @@ title: Star Rating
 ---
 # Star Rating
 
-Star rating widget can be used to display as well as input ratings. The widget supports half stars, and the number of stars can be set too.
+The **Star Rating** widget can be used to display as well as input ratings. The widget supports half stars, and the number of stars can be set too.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

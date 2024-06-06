@@ -4,7 +4,7 @@ title: Spinner
 ---
 # Spinner
 
-Spinner widget can be used to provide a visual indication that an action is in progress by awaiting a change.
+The **Spinner** widget can be used to provide a visual indication that an action is in progress by awaiting a change.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

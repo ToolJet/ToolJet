@@ -1,5 +1,4 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
@@ -54,6 +53,17 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
+const NEW_REVAMPED_COMPONENTS = [
+  'Text',
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'Table',
+  'Button',
+  'ToggleSwitchV2',
+  'Checkbox',
+];
+
 export const Inspector = ({
   componentDefinitionChanged,
   allComponents,
@@ -84,7 +94,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+  const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -105,7 +115,7 @@ export const Inspector = ({
     scopes: 'editor',
   });
 
-  const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
+  const componentMeta = JSON.parse(JSON.stringify(allComponents?.[selectedComponentId]?.component));
 
   const isMounted = useMounted();
 
@@ -205,6 +215,22 @@ export const Inspector = ({
     } else {
       allParams[param.name] = value;
     }
+
+    if (
+      component.component.component === 'Table' &&
+      param.name === 'contentWrap' &&
+      !resolveReferences(value, currentState) &&
+      newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
+    ) {
+      const updatedColumns = newDefinition.properties.columns.value.map((item) => {
+        return item.columnType === 'image' ? { ...item, height: '' } : item; // Create a new object for image columns
+      });
+
+      // Update the columns value with the updated columns
+      newDefinition.properties.columns.value = updatedColumns;
+      isParamFromTableColumn = true;
+    }
+
     newDefinition[paramType] = allParams;
     newComponent.component.definition = newDefinition;
     componentDefinitionChanged(newComponent, {
@@ -305,13 +331,9 @@ export const Inspector = ({
         paramUpdated={paramUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
-        // eventUpdated={eventUpdated}
-        // eventOptionUpdated={eventOptionUpdated}
         components={allComponents}
         currentState={currentState}
         darkMode={darkMode}
-        // eventsChanged={eventsChanged}
-        // apps={apps} !check
         pages={pages}
         allComponents={allComponents}
       />
@@ -319,15 +341,7 @@ export const Inspector = ({
   );
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
-      <div
-        className={
-          component.component.component !== 'TextInput' &&
-          component.component.component !== 'PasswordInput' &&
-          component.component.component !== 'NumberInput' &&
-          component.component.component !== 'Text' &&
-          'p-3'
-        }
-      >
+      <div className={!isRevampedComponent && 'p-3'}>
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
           component={component}
@@ -337,7 +351,7 @@ export const Inspector = ({
           allComponents={allComponents}
         />
       </div>
-      {!shouldAddBoxShadow.includes(component.component.component) && buildGeneralStyle()}
+      {!isRevampedComponent && buildGeneralStyle()}
     </div>
   );
 
@@ -442,17 +456,17 @@ export const Inspector = ({
         </div>
       </div>
       <span className="widget-documentation-link">
-        <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
+        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
           <span>
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
+                componentMeta:
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
+                    ? 'Toggle (Legacy)'
+                    : componentMeta.displayName === 'Toggle Switch'
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -463,6 +477,11 @@ export const Inspector = ({
       </span>
     </div>
   );
+};
+const getDocsLink = (componentMeta) => {
+  return componentMeta.component == 'ToggleSwitchV2'
+    ? `https://docs.tooljet.io/docs/widgets/toggle-switch`
+    : `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.component ?? '')}`;
 };
 
 const widgetsWithStyleConditions = {
@@ -475,18 +494,22 @@ const widgetsWithStyleConditions = {
       },
     ],
   },
+  Table: {
+    conditions: [
+      {
+        definition: 'styles',
+        property: 'contentWrap',
+        conditionStyles: ['maxRowHeight', 'autoHeight'],
+        type: 'toggle',
+      },
+    ],
+  },
 };
-const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
-  if (
-    component.component.component === 'TextInput' ||
-    component.component.component === 'PasswordInput' ||
-    component.component.component === 'NumberInput' ||
-    component.component.component === 'Text'
-  ) {
+  if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
     // Iterate over the properties in componentMeta.styles
     for (const key in componentMeta.styles) {
       const property = componentMeta.styles[key];
@@ -503,12 +526,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   }
 
   return Object.keys(
-    component.component.component === 'TextInput' ||
-      component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput' ||
-      component.component.component === 'Text'
-      ? groupedProperties
-      : componentMeta.styles
+    NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles
   ).map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
@@ -532,12 +550,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 
     const items = [];
 
-    if (
-      component.component.component === 'TextInput' ||
-      component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput' ||
-      component.component.component === 'Text'
-    ) {
+    if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
       items.push({
         title: `${style}`,
         children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
@@ -573,7 +586,14 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 const resolveConditionalStyle = (definition, condition, currentState) => {
   const conditionExistsInDefinition = definition[condition] ?? false;
   if (conditionExistsInDefinition) {
-    return resolveReferences(definition[condition]?.value ?? false, currentState);
+    switch (condition) {
+      case 'cellSize': {
+        const cellSize = resolveReferences(definition[condition]?.value ?? false, currentState) === 'hugContent';
+        return cellSize;
+      }
+      default:
+        return resolveReferences(definition[condition]?.value ?? false, currentState);
+    }
   }
 };
 

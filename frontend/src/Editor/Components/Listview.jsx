@@ -14,7 +14,6 @@ export const Listview = function Listview({
   properties,
   styles,
   fireEvent,
-  setExposedVariable,
   setExposedVariables,
   darkMode,
   dataCy,
@@ -120,9 +119,9 @@ export const Listview = function Listview({
 
   useEffect(() => {
     const data = filterComponents(childComponents, childrenData);
-    setChildrenData(data);
+    if (!_.isEqual(data, childrenData)) setChildrenData(data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childComponents]);
+  }, [childComponents, childrenData]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageChanged = (page) => {
@@ -155,7 +154,6 @@ export const Listview = function Listview({
             key={index}
             data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
-              event.preventDefault();
               onRecordClicked(index);
               onRowClicked(index);
             }}

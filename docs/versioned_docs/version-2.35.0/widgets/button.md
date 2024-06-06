@@ -4,7 +4,7 @@ title: Button
 ---
 # Button
 
-Button component can be used to trigger an action. It can be used to submit a form, navigate to another page, or trigger a query.
+**Button** component can be used to trigger an action. It can be used to submit a form, navigate to another page, or trigger a query.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -13,7 +13,7 @@ Button component can be used to trigger an action. It can be used to submit a fo
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------- |
 | Button text | Used to set the label of the button. | Any **String** value: `Send Message`, `Delete`, or `{{queries.xyz.data.action}}` |
-| Loading state | The loading state is used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to ``{{true}}`` or ``{{false}}``  |
+| Loading state | The loading state is used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to `{{true}}` or `{{false}}`  |
 
 </div>
 
@@ -38,7 +38,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 ## Component Specific Actions (CSA)
 
-Following actions of button component can be controlled using the component specific actions(CSA):
+Following actions of Button component can be controlled using the component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :----------- | :----------- | :--------|

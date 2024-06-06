@@ -7,9 +7,10 @@ import { keymap } from '@codemirror/view';
 import { completionKeymap } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
+import { sass, sassCompletionSource } from '@codemirror/lang-sass';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { generateHints } from './autocompleteExtensionConfig';
+import { findNearestSubstring, generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
@@ -21,6 +22,7 @@ const langSupport = Object.freeze({
   python: python(),
   sql: sql(),
   jsx: javascript({ jsx: true }),
+  css: sass(),
 });
 
 const MultiLineCodeEditor = (props) => {
@@ -32,13 +34,14 @@ const MultiLineCodeEditor = (props) => {
     className,
     onChange,
     componentName,
-    cyLabel,
     lineNumbers,
     placeholder,
     hideSuggestion,
     suggestions: hints,
     portalProps,
     showPreview,
+    paramLabel = '',
+    delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
@@ -60,10 +63,13 @@ const MultiLineCodeEditor = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleOnBlur = React.useCallback(() => {
-    onChange(currentValue);
+  const handleOnBlur = () => {
+    if (!delayOnChange) return onChange(currentValue);
+    setTimeout(() => {
+      onChange(currentValue);
+    }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
+  };
 
   useEffect(() => {
     setCurrentValue(initialValue);
@@ -88,28 +94,13 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
-    const lastTypedWord = context.state.doc.text.map((element) => element.trim()).join(' ')[context.pos - 1];
+    const currentCursor = context.pos;
 
-    const lastWordRegex = /([.\w]+)$/;
+    const currentString = context.state.doc.text;
 
-    let lastWord = lastTypedWord ? lastWordRegex.exec(context.state.doc.text) : '';
-
-    if (lastWord === null) {
-      lastWord = [''];
-    }
-
-    const lasttWord = context.state.doc.text
-      .map((element) => element.trim())
-      .join(' ')
-      .split(' ')
-      .filter((element) => {
-        if (element === '' || element === ' ') {
-          return false;
-        }
-        return true;
-      });
-
-    const currentWord = lasttWord[lasttWord.length - 1];
+    const inputStr = currentString.join(' ');
+    const currentCurosorPos = currentCursor;
+    const nearestSubstring = findNearestSubstring(inputStr, currentCurosorPos).replace(/{{|}}/g, '');
 
     let JSLangHints = [];
     if (lang === 'javascript') {
@@ -123,7 +114,7 @@ const MultiLineCodeEditor = (props) => {
         .flat();
 
       JSLangHints = JSLangHints.filter((cm) => {
-        let lastWordAfterDot = currentWord.split('.');
+        let lastWordAfterDot = nearestSubstring.split('.');
 
         lastWordAfterDot = lastWordAfterDot[lastWordAfterDot.length - 1];
 
@@ -134,40 +125,60 @@ const MultiLineCodeEditor = (props) => {
     const appHints = hints['appHints'];
 
     let autoSuggestionList = appHints.filter((suggestion) => {
-      const find = lastWord[0] || lastWord[1] || '';
-
-      return suggestion.hint.includes(find);
+      return suggestion.hint.includes(nearestSubstring);
     });
 
-    const suggestions = generateHints([...JSLangHints, ...autoSuggestionList, ...suggestionList]).map((hint) => {
+    const suggestions = generateHints(
+      [...JSLangHints, ...autoSuggestionList, ...suggestionList],
+      null,
+      nearestSubstring
+    ).map((hint) => {
+      if (hint.label.startsWith('client') || hint.label.startsWith('server')) return;
+
       delete hint['apply'];
 
       hint.apply = (view, completion, from, to) => {
-        const doc = view.state.doc;
+        /**
+         * This function applies an auto-completion logic to a text editing view based on user interaction.
+         * It uses a pre-defined completion object and modifies the document's content accordingly.
+         *
+         * Parameters:
+         * - view: The editor view where the changes will be applied.
+         * - completion: An object containing details about the completion to be applied. Includes properties like 'label' (the text to insert) and 'type' (e.g., 'js_methods').
+         * - from: The initial position (index) in the document where the completion starts.
+         * - to: The position (index) in the document where the completion ends.
+         *
+         * Logic:
+         * - The function calculates the start index for the change by subtracting the length of the word to be replaced (finalQuery) from the 'from' index.
+         * - It configures the completion details such as where to insert the text and the exact text to insert.
+         * - If the completion type is 'js_methods', it adjusts the insertion point to the 'to' index and sets the cursor position after the inserted text.
+         * - Finally, it dispatches these configurations to the editor view to apply the changes.
+         *
+         * The dispatch configuration (dispacthConfig) includes changes and, optionally, the cursor selection position if the type is 'js_methods'.
+         */
 
-        const start = doc.lineAt(from).text.slice(0, from - 1);
-
-        const word = start.split(' ').pop();
-
-        const index = start.lastIndexOf(word);
-
-        const changesStartIndexFromDocLine = doc.lineAt(from).from;
-
-        const changeIndex = changesStartIndexFromDocLine > 0 ? changesStartIndexFromDocLine + index : index;
+        const wordToReplace = nearestSubstring;
+        const fromIndex = from - wordToReplace.length;
 
         const pickedCompletionConfig = {
-          from: changeIndex,
+          from: fromIndex === 1 ? 0 : fromIndex,
           to: to,
           insert: completion.label,
         };
 
+        const dispacthConfig = {
+          changes: pickedCompletionConfig,
+        };
+
         if (completion.type === 'js_methods') {
           pickedCompletionConfig.from = to;
+
+          dispacthConfig.selection = {
+            anchor: pickedCompletionConfig.to + completion.label.length - 1,
+          };
         }
 
-        view.dispatch({
-          changes: pickedCompletionConfig,
-        });
+        view.dispatch(dispacthConfig);
       };
       return hint;
     });
@@ -183,10 +194,11 @@ const MultiLineCodeEditor = (props) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [hints]);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   return (
     <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
-      <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`} cyLabel={cyLabel}>
+      <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
@@ -207,7 +219,7 @@ const MultiLineCodeEditor = (props) => {
           callgpt={null}
         >
           <ErrorBoundary>
-            <div className="codehinter-container w-100 ">
+            <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
                 value={currentValue}
                 placeholder={placeholder}
@@ -226,6 +238,9 @@ const MultiLineCodeEditor = (props) => {
                   }),
                   sql().language.data.of({
                     autocomplete: overRideFunction,
+                  }),
+                  sass().language.data.of({
+                    autocomplete: sassCompletionSource,
                   }),
                   keymap.of([...customKeyMaps]),
                 ]}

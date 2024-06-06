@@ -8,16 +8,28 @@ import { ToolTip } from '@/_components';
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
+import { dataTypes, getColumnDataType } from '../constants';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, columns, selectedTable, setSelectedTable, selectedTableData } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    columns,
+    selectedTable,
+    setSelectedTable,
+    selectedTableData,
+    setPageCount,
+    handleRefetchQuery,
+    pageSize,
+    setColumns,
+    setForeignKeys,
+  } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
   const [focused, setFocused] = useState(false);
   const [isAddNewColumnDrawerOpen, setIsAddNewColumnDrawerOpen] = useState(false);
+  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -83,6 +95,58 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHovered]);
 
+  const filterObjectsByDataType = (dataTypes, col) => {
+    const filteredDataTypes = dataTypes.filter((dataType) => {
+      return col.some((obj) => obj.dataType === dataType.value);
+    });
+
+    return filteredDataTypes;
+  };
+
+  const isEditTable = (tableName) => {
+    tooljetDatabaseService.viewTable(organizationId, tableName).then(({ data = [], error }) => {
+      if (error) {
+        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+        return;
+      }
+
+      const { foreign_keys = [] } = data?.result || {};
+      if (data?.result?.columns?.length > 0) {
+        setColumns(
+          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
+            Header: column_name,
+            accessor: column_name,
+            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+            ...rest,
+          }))
+        );
+      }
+      if (foreign_keys.length > 0) {
+        setForeignKeys([...foreign_keys]);
+      } else {
+        setForeignKeys([]);
+      }
+    });
+    handleRefetchQuery({}, {}, 1, pageSize);
+    setPageCount(1);
+    setIsEditTableDrawerOpen(false);
+  };
+
+  const selectedColumnDetails = columns.map((item, index) => {
+    const matchedDataTypes = filterObjectsByDataType(dataTypes, [item]); // Get all matched data type objects
+    return {
+      [index]: {
+        column_name: item.Header,
+        data_type: item.dataType,
+        constraints_type: item.constraints_type,
+        dataTypeDetails: matchedDataTypes.length > 0 ? matchedDataTypes : null, // Add matched data types or null if no match found
+        column_default: item.column_default,
+      },
+    };
+  });
+
+  const selectedTableDetails = Object.assign({}, ...selectedColumnDetails);
+
   return (
     <div
       onMouseEnter={() => setIsHovered(true)}
@@ -129,12 +193,14 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isOpen={isEditTableDrawerOpen}
         onClose={() => setIsEditTableDrawerOpen(false)}
         position="right"
+        drawerStyle={{ width: '640px' }}
       >
         <EditTableForm
           selectedColumns={formColumns}
           selectedTable={selectedTable}
+          selectedTableData={selectedTableDetails}
           updateSelectedTable={updateSelectedTable}
-          onEdit={() => setIsEditTableDrawerOpen(false)}
+          onEdit={isEditTable}
           onClose={() => setIsEditTableDrawerOpen(false)}
         />
       </Drawer>
@@ -142,6 +208,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isCreateColumnDrawerOpen={isAddNewColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsAddNewColumnDrawerOpen}
         rows={selectedTableData}
+        referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
       />
     </div>
   );

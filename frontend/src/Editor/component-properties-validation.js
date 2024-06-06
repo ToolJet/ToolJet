@@ -129,6 +129,19 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
         ? any()
         : generateSchemaFromValidationDefinition(validationDefinition);
 
+      const reservedKeyword = ['app', 'window']; // Case-sensitive reserved keywords
+      const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')})\\b`, 'i');
+      const hasReservedkeyword = keywordRegex.test(value);
+
+      if (hasReservedkeyword) {
+        allErrors.push({
+          property: propertyDefinitions[propertyName]?.displayName,
+          message: 'Code contains reserved keywords',
+        });
+
+        return [propertyName, defaultValue];
+      }
+
       const [_valid, errors, newValue] = propertyName ? validate(value, schema, defaultValue) : [true, []];
 
       if (!_.isUndefined(propertyName)) {

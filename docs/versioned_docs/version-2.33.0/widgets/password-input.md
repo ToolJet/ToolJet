@@ -48,7 +48,7 @@ Check the **component specific actions** available for this component **[here](/
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
+|:---------- | :---------- | :------------ |
 | value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.value}}`). |
 | label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.label}}`). |
 | isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.passwordinput1.isValid}}`). |

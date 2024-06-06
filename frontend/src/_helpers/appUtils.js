@@ -24,7 +24,6 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
-import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
@@ -38,6 +37,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
+import { updateParentNodes } from './utility';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -68,14 +68,31 @@ export function setCurrentStateAsync(_ref, changes) {
 }
 
 const debouncedChange = _.debounce(() => {
+  const newComponentsState = {};
+  for (const [key, value] of Object.entries(getCurrentState().components)) {
+    if (duplicateCurrentState[key]) {
+      newComponentsState[key] = { ...value, ...duplicateCurrentState[key] };
+    } else {
+      newComponentsState[key] = value;
+    }
+  }
+  duplicateCurrentState = { ...newComponentsState };
   useCurrentStateStore.getState().actions.setCurrentState({
-    components: duplicateCurrentState,
+    components: newComponentsState,
   });
 }, 100);
 
-export function onComponentOptionsChanged(component, options) {
-  const componentName = component.name;
-  const { isEditorReady } = getCurrentState();
+export function onComponentOptionsChanged(component, options, id) {
+  let componentName = component.name;
+  const { isEditorReady, page } = getCurrentState();
+
+  if (id) {
+    const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
+    const _componentName = _component?.component?.name || componentName;
+    if (_componentName !== componentName) {
+      componentName = _componentName;
+    }
+  }
 
   if (isEditorReady) {
     if (duplicateCurrentState !== null) {
@@ -86,8 +103,43 @@ export function onComponentOptionsChanged(component, options) {
     let componentData = components[componentName];
     componentData = componentData || {};
 
+    const shouldUpdateResolvedRefsOfHints = [];
+
     for (const option of options) {
       componentData[option[0]] = option[1];
+
+      const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
+
+      let path = null;
+      if (isListviewOrKanbaComponent) {
+        path = `components.${componentName}`;
+      } else {
+        path = `components.${componentName}.${option[0]}`;
+      }
+
+      if (!isListviewOrKanbaComponent && !_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
+        const lookUpTable = useResolveStore.getState().lookupTable;
+
+        const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
+
+        if (typeof existingRef === 'function') continue;
+
+        const shouldUpdateRef = existingRef !== componentData[option[0]];
+
+        if (shouldUpdateRef) {
+          shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
+        }
+      }
+
+      if (isListviewOrKanbaComponent) {
+        useResolveStore.getState().actions.updateLastUpdatedRefs([`rerender ${id}`]);
+      }
+    }
+
+    if (shouldUpdateResolvedRefsOfHints.length > 0) {
+      handleLowPriorityWork(() => {
+        useResolveStore.getState().actions.updateResolvedRefsOfHints(shouldUpdateResolvedRefsOfHints);
+      });
     }
 
     useCurrentStateStore.getState().actions.setCurrentState({
@@ -109,22 +161,43 @@ export function onComponentOptionsChanged(component, options) {
   return Promise.resolve();
 }
 
-export function onComponentOptionChanged(component, option_name, value) {
-  const componentName = component.name;
+export function onComponentOptionChanged(component, option_name, value, id) {
+  let componentName = component.name;
+
+  if (id) {
+    //? component passed as argument contains previous state of the component data, component name is not updated
+    const _component = useEditorStore.getState().appDefinition.pages[getCurrentState().page.id].components[id];
+    const _componentName = _component?.component?.name || componentName;
+    if (_componentName !== componentName) {
+      componentName = _componentName;
+    }
+  }
+
   const { isEditorReady, components: currentComponents } = getCurrentState();
+
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
   let componentData = components[componentName] || {};
   componentData[option_name] = value;
 
-  const path = option_name ? `components.${componentName}.${option_name}` : null;
+  const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
+
+  let path = null;
+  if (isListviewOrKanbaComponent) {
+    path = `components.${componentName}`;
+  } else {
+    path = option_name ? `components.${componentName}.${option_name}` : null;
+  }
 
   if (isEditorReady) {
+    if (duplicateCurrentState !== null) {
+      duplicateCurrentState = null;
+    }
     // Always update the current state if editor is ready
     useCurrentStateStore.getState().actions.setCurrentState({
       components: { ...components, [componentName]: componentData },
     });
 
-    if (!_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
+    if (!isListviewOrKanbaComponent && !_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
       const lookUpTable = useResolveStore.getState().lookupTable;
 
       const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
@@ -135,11 +208,17 @@ export function onComponentOptionChanged(component, option_name, value) {
 
       if (shouldUpdateRef) {
         handleLowPriorityWork(() => {
-          useResolveStore
-            .getState()
-            .actions.updateResolvedRefsOfHints([{ hint: path, newRef: componentData[option_name] }]);
+          const toUpdateHints = updateParentNodes(path, componentData[option_name], option_name);
+
+          toUpdateHints.push({ hint: path, newRef: componentData[option_name] });
+
+          useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateHints);
         });
       }
+    }
+
+    if (isListviewOrKanbaComponent) {
+      useResolveStore.getState().actions.updateLastUpdatedRefs([`rerender ${id}`]);
     }
   } else {
     // Update the duplicate state if editor is not ready
@@ -194,15 +273,15 @@ const evaluatePythonCode = async (options) => {
           run: () => actions.runQuery(key),
 
           getData: () => {
-            return getCurrentState().queries[key].data;
+            return currentState.queries[key].data;
           },
 
           getRawData: () => {
-            return getCurrentState().queries[key].rawData;
+            return currentState.queries[key].rawData;
           },
 
           getloadingState: () => {
-            return getCurrentState().queries[key].isLoading;
+            return currentState.queries[key].isLoading;
           },
         };
       }
@@ -335,7 +414,16 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
   );
 
   _ref.updateQueryConfirmationList(filtertedQueryConfirmation, 'check');
-  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
+  isConfirm &&
+    runQuery(
+      _ref,
+      queryConfirmationData.queryId,
+      queryConfirmationData.queryName,
+      true,
+      mode,
+      undefined,
+      queryConfirmationData.shouldSetPreviewData
+    );
 }
 
 export async function copyToClipboard(text) {
@@ -522,7 +610,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex);
+        setTablePageIndex(event.table, event.pageIndex, _ref);
         break;
       }
 
@@ -905,8 +993,6 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', parameters);
-    } else if (query.kind === 'tooljetdb') {
-      queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit', queryState);
     } else {
@@ -939,12 +1025,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
           setPreviewData(finalData);
         }
         let queryStatusCode = data?.status ?? null;
-        const queryStatus =
-          query.kind === 'tooljetdb'
-            ? data.statusText
-            : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
+        const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
 
         switch (true) {
           // Note: Need to move away from statusText -> statusCode
@@ -1009,10 +1090,6 @@ export function runQuery(
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
-  if (shouldSetPreviewData) {
-    setPreviewLoading(true);
-    queryPreviewData && setPreviewData('');
-  }
 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
@@ -1042,6 +1119,7 @@ export function runQuery(
     const queryConfirmation = {
       queryId,
       queryName,
+      shouldSetPreviewData,
     };
     if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
       queryConfirmationList.push(queryConfirmation);
@@ -1059,6 +1137,10 @@ export function runQuery(
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
     setTimeout(() => {
+      if (shouldSetPreviewData) {
+        setPreviewLoading(true);
+        queryPreviewData && setPreviewData('');
+      }
       if (!isOnLoad) {
         useCurrentStateStore.getState().actions.setCurrentState({
           queries: {
@@ -1086,8 +1168,6 @@ export function runQuery(
         queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode, queryState);
-      } else if (query.kind === 'tooljetdb') {
-        queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
       }
@@ -1100,12 +1180,7 @@ export function runQuery(
           }
 
           let queryStatusCode = data?.status ?? null;
-          const promiseStatus =
-            query.kind === 'tooljetdb'
-              ? data.statusText
-              : query.kind === 'runpy'
-              ? data?.data?.status ?? 'ok'
-              : data.status;
+          const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
           // Note: Need to move away from statusText -> statusCode
           if (
             promiseStatus === 'failed' ||
@@ -1288,7 +1363,7 @@ export function runQuery(
   });
 }
 
-export function setTablePageIndex(tableId, index) {
+export function setTablePageIndex(tableId, index, _ref) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
@@ -1454,6 +1529,7 @@ export const debuggerActions = {
           generalProps.message = value.data.message;
           generalProps.property = key.split('- ')[1];
           error.resolvedProperties = value.resolvedProperties;
+          error.componentId = value.componentId;
           break;
         case 'navToDisablePage':
           generalProps.message = value.data.message;
@@ -1603,7 +1679,7 @@ export const cloneComponents = (
   });
 };
 
-const getAllChildComponents = (allComponents, parentId) => {
+export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {
@@ -1611,7 +1687,8 @@ const getAllChildComponents = (allComponents, parentId) => {
 
     const isParentTabORCalendar =
       allComponents[parentId]?.component?.component === 'Tabs' ||
-      allComponents[parentId]?.component?.component === 'Calendar';
+      allComponents[parentId]?.component?.component === 'Calendar' ||
+      allComponents[parentId]?.component?.component === 'Kanban';
 
     if (componentParentId && isParentTabORCalendar) {
       const childComponent = allComponents[componentId];
@@ -1807,11 +1884,10 @@ export const addNewWidgetToTheEditor = (
   const gridWidth = subContainerWidth / noOfGrid;
   left = Math.round(left / gridWidth);
   console.log('Top calc', { top, initialClientOffset, delta, zoomLevel, offsetFromTopOfWindow, subContainerWidth });
-  // left = (left * 100) / subContainerWidth;
 
   if (currentLayout === 'mobile') {
-    componentData.definition.others.showOnDesktop.value = false;
-    componentData.definition.others.showOnMobile.value = true;
+    componentData.definition.others.showOnDesktop.value = `{{false}}`;
+    componentData.definition.others.showOnMobile.value = `{{true}}`;
   }
 
   const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
@@ -2095,3 +2171,8 @@ function extractVersion(versionStr) {
 
   return { major, minor };
 }
+
+// Select multiple components using Selecto via drag
+export const setMultipleComponentsSelected = (components) => {
+  useEditorStore.getState().actions.selectMultipleComponents(components);
+};

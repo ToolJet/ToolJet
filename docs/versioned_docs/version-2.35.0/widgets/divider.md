@@ -4,7 +4,7 @@ title: Divider
 ---
 # Divider
 
-Divider widget is used to add separator between components. 
+**Divider** widget is used to add separator between components. 
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

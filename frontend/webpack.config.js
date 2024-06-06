@@ -9,7 +9,6 @@ const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -39,7 +38,6 @@ const plugins = [
     'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
     'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
   }),
-  new BundleAnalyzerPlugin(),
 ];
 
 if (process.env.APM_VENDOR === 'sentry') {

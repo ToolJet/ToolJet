@@ -98,8 +98,22 @@ export const useResolveStore = create(
 
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(partialRefState);
 
-        const lookupHintsMap = new Map([...get().lookupTable.hints]);
-        const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
+        const _hintsMap = get().lookupTable.hints;
+        const resolvedRefsMap = get().lookupTable.resolvedRefs;
+
+        let lookupHintsMap, lookupResolvedRefs;
+
+        if (_hintsMap.size > 0) {
+          lookupHintsMap = new Map([..._hintsMap]);
+        } else {
+          lookupHintsMap = new Map();
+        }
+
+        if (resolvedRefsMap.size > 0) {
+          lookupResolvedRefs = new Map([...resolvedRefsMap]);
+        } else {
+          lookupResolvedRefs = new Map();
+        }
 
         const newUpdatedrefs = [];
 
@@ -184,7 +198,12 @@ export const useResolveStore = create(
         const updatedList = [];
 
         resolvedRefs.forEach((ref) => {
-          if (!ref.hint || !ref.newRef || !hintsMap.has(ref.hint)) return;
+          if (
+            !ref.hint ||
+            (typeof ref.newRef === 'string' && ref.newRef !== '' && !ref.newRef) ||
+            !hintsMap.has(ref.hint)
+          )
+            return;
 
           const refId = hintsMap.get(ref.hint);
           const currentRef = lookupResolvedRefs.get(refId);
@@ -212,10 +231,12 @@ export const useResolveStore = create(
       },
 
       addEntitiesToMap: (entities) => {
+        if (!Array.isArray(entities) || entities.length === 0) return;
+
         const { referenceMapper } = get();
 
         entities.forEach((entity) => {
-          if (!referenceMapper.has(entity.id)) {
+          if (entity?.id && !referenceMapper.has(entity.id)) {
             referenceMapper.set(entity.id, entity.name);
           }
         });

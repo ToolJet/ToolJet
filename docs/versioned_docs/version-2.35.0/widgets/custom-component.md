@@ -5,7 +5,7 @@ title: Custom Component
 
 # Custom Component
 
-Custom Component can be used to do create your own React component when the needed functionality isn't available in other components.
+**Custom Component** can be used to do create your own React component when the needed functionality isn't available in other components.
 
 <div style={{textAlign: 'center'}}>
 
@@ -19,7 +19,7 @@ Custom Component can be used to do create your own React component when the need
 
 ### Data
 
-The data needs to be an objects which needs to be passed as `data` props to the custom component
+The data needs to be an objects which needs to be passed as `data` props to the **Custom Component**
 
 **Example:**
 

@@ -1,0 +1,19 @@
+{
+  "name": "Admin Panel (ToolJet Database)",
+  "description": "Effortlessly manage your databases with our intuitive TJDB admin panel, designed for optimal control and efficiency.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "admin-panel-tooljet-db",
+  "category": "developer-utilities"
+}

@@ -59,9 +59,11 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 ## Component Specific Actions (CSA)
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:-------- |:----------- |
-| clearFiles() | You can clear the selected files on the filepicker component via a component-specific action within any event handler. |Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()` |
+
+
+| Actions | Description | How To Access |
+|:--------|:-----------:|:------------:|
+| <div style={{ width:"100px"}}> clearFiles() </div> | You can clear the selected files on the filepicker component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()` |
 
 </div>
 

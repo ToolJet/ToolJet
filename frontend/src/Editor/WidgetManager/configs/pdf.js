@@ -24,7 +24,7 @@ export const pdfConfig = {
     },
     showDownloadOption: {
       type: 'toggle',
-      displayName: 'Show the download',
+      displayName: 'Show download button',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
   },

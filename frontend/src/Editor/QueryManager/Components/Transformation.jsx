@@ -179,7 +179,7 @@ return data.filter(row => row.amount > 1000);
 
         {enableTransformation && (
           <div
-            className="rounded-3 transformation-container"
+            className="transformation-container"
             style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
           >
             <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
@@ -218,6 +218,7 @@ return data.filter(row => row.amount > 1000);
               cyLabel={'transformation-input'}
               callgpt={noop}
               isCopilotEnabled={false}
+              delayOnChange={false}
             />
           </div>
         )}

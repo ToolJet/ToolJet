@@ -10,6 +10,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from 'classnames';
+import EnvironmentManager from '@/Editor/Header/EnvironmentManager';
 
 const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHeader, darkMode }) => {
   const { editingVersion } = useAppVersionStore((state) => ({
@@ -23,6 +24,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
       <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
         <span className="preview-settings-text">Preview settings</span>
         <span>
+          <EnvironmentManager />
           {editingVersion && (
             <AppVersionsManager
               appId={appId}
@@ -32,6 +34,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
               onVersionDelete={noop}
               isEditable={false}
               isViewer
+              darkMode={darkMode}
             />
           )}
         </span>
@@ -88,6 +91,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
           {previewNavbar && (
             <Offcanvas.Body>
               <span>
+                <EnvironmentManager />
                 {editingVersion && (
                   <AppVersionsManager
                     appId={appId}
@@ -98,12 +102,13 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
                     onVersionDelete={noop}
                     isEditable={false}
                     isViewer
+                    darkMode={darkMode}
                   />
                 )}
               </span>
               <div className="d-flex p-2 align-items-center">
                 <span style={{ marginRight: '24px' }}>layout</span>
-                <HeaderActions showToggleLayoutBtn showFullWidth />
+                <HeaderActions showToggleLayoutBtn showFullWidth darkMode={darkMode} />
               </div>
             </Offcanvas.Body>
           )}

@@ -3,7 +3,7 @@ id: icon
 title: Icon 
 ---
 
-An Icon widget can be used to add icons(sourced from icon library). It supports events like on hover and on click.
+An **Icon** widget can be used to add icons(sourced from icon library). It supports events like on hover and on click.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -19,7 +19,7 @@ An Icon widget can be used to add icons(sourced from icon library). It supports 
 
 ## Events
 
-To add an event, click on the icon widget's configuration handle to open the widget properties on the components drawer on the right. Go to the **Events** section and click on **+ Add handler**.
+To add an event, click on the Icon widget's configuration handle to open the widget properties on the components drawer on the right. Go to the **Events** section and click on **+ Add handler**.
 
 The Icon widget supports the following events:
 
@@ -44,8 +44,8 @@ Following actions of the component can be controlled using the component specifi
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| setVisibility | You can toggle the visibility of the icon component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.icon1.setVisibility(false)` |
-| click | You can trigger the click action on icon component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.icon1.click()` |
+| setVisibility | You can toggle the visibility of the Icon component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.icon1.setVisibility(false)` |
+| click | You can trigger the click action on Icon component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.icon1.click()` |
 
 </div>
 
@@ -82,7 +82,7 @@ There are currently no exposed variables for the component.
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:------------- |
-| Icon color |  You can change the color of the icon widget by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Icon color |  You can change the color of the Icon widget by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Visibility | This is to control the visibility of the widget. | If `{{false}}` the widget will not visible after the app is deployed. | It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
 | Box shadow | This property adds a shadow to the widget. | You can use different values for box shadow property like offsets, blur, spread, and the color code. |
 

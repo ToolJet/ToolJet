@@ -43,7 +43,7 @@ export const dividerConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
-      dividerColor: { value: '#fff' },
+      dividerColor: { value: '#3e525b' },
     },
   },
 };

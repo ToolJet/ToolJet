@@ -152,7 +152,7 @@ export default function DragContainer({
       const boxes = document.querySelectorAll('.jet-container');
       var timer;
       boxes.forEach((box) => {
-        box.addEventListener('scroll', function handleClick(event) {
+        box.addEventListener('scroll', function handleClick() {
           if (timer) {
             clearTimeout(timer);
           }
@@ -345,7 +345,11 @@ export default function DragContainer({
             transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
             transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
 
-            e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+            const roundedTransformY = Math.round(transformY / 10) * 10;
+            transformY = transformY % 10 === 5 ? roundedTransformY - 10 : roundedTransformY;
+            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
+              Math.round(transformY / 10) * 10
+            }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }
@@ -463,6 +467,12 @@ export default function DragContainer({
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxes.find((box) => box.id === e.target.id);
           let isDragOnTable = false;
+
+          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works. 
+          Also user dont need to drag an calender from using popup */
+          if (hasParentWithClass(e.inputEvent.target, 'react-datepicker-popper')) {
+            return false;
+          }
 
           /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
           if (box?.component?.component === 'Table') {
@@ -694,8 +704,8 @@ export default function DragContainer({
             const parentHeight = parentElm?.clientHeight;
 
             const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
+            const _gridWidth = useGridStore.getState().subContainerWidths[parentId] || gridWidth;
 
-            // Adding the new updates to the macro task queue to unblock UI
             onDrag(
               events.map((ev) => {
                 let posX = ev.lastEvent.translate[0];
@@ -712,6 +722,9 @@ export default function DragContainer({
                 if (posBottom < 0) {
                   posY = ev.lastEvent.translate[1] + posBottom;
                 }
+                ev.target.style.transform = `translate(${Math.round(posX / _gridWidth) * _gridWidth}px, ${
+                  Math.round(posY / 10) * 10
+                }px)`;
                 return {
                   id: ev.target.id,
                   x: posX,
@@ -835,4 +848,17 @@ function getOffset(childElement, grandparentElement) {
   const offsetY = childRect.top - grandparentRect.top;
 
   return { x: offsetX, y: offsetY };
+}
+
+function hasParentWithClass(child, className) {
+  let currentElement = child;
+
+  while (currentElement !== null && currentElement !== document.documentElement) {
+    if (currentElement.classList.contains(className)) {
+      return true;
+    }
+    currentElement = currentElement.parentElement;
+  }
+
+  return false;
 }

@@ -35,16 +35,13 @@ export const usePostgrestQueryBuilder = ({
 
   const updateSelectedTableData = async () => {
     setLoadingState(true);
-    const sortQuery = isEmpty(postgrestQueryBuilder.current.sortQuery.url.toString())
-      ? 'order=id.desc'
-      : postgrestQueryBuilder.current.sortQuery.url.toString();
 
-    const query =
-      postgrestQueryBuilder.current.filterQuery.url.toString() +
-      '&' +
-      sortQuery +
-      '&' +
-      postgrestQueryBuilder.current.paginationQuery.url.toString();
+    let query = '';
+    query = query + postgrestQueryBuilder.current.filterQuery.url.toString();
+    if (!isEmpty(postgrestQueryBuilder.current.sortQuery.url.toString())) {
+      query = query + '&' + postgrestQueryBuilder.current.sortQuery.url.toString();
+    }
+    query = query + '&' + postgrestQueryBuilder.current.paginationQuery.url.toString();
 
     const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable.id, query);
 

@@ -78,3 +78,16 @@
   pointer-events: auto;
   z-index: 999;
 }
+
+.drawer-container.in.open {
+  .foreignKeyDrawerRight {
+    z-index: 1002;
+  }
+
+  .foreignKeyBackdrop {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1001;
+  }
+}

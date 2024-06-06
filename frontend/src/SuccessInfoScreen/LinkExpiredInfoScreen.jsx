@@ -1,9 +1,8 @@
 import React from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
-import { useNavigate } from 'react-router-dom';
+import { getSubpath } from '@/_helpers/routes';
 
 export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = true }) {
-  const navigate = useNavigate();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
@@ -30,7 +29,9 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = tru
           <ButtonSolid
             variant="secondary"
             className="link-expired-info-btn"
-            onClick={() => navigate('/signup')}
+            onClick={() => {
+              window.location = `${getSubpath() ? getSubpath() : ''}/signup`;
+            }}
             data-cy="back-to-signup-button"
           >
             Back to signup

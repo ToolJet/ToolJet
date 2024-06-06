@@ -122,6 +122,15 @@ class Restapi extends React.Component {
         },
         cursor: 'pointer',
       }),
+      singleValue: (provided) => ({
+        ...provided,
+        marginBottom: '3px',
+        color: darkMode ? '#fff' : '#11181C',
+      }),
+      dropdownIndicator: (provided) => ({
+        ...provided,
+        paddingTop: '4px',
+      }),
     };
   };
 

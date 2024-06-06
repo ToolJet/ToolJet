@@ -66,21 +66,19 @@ export const Form = function Form(props) {
   const mounted = useMounted();
 
   useEffect(() => {
-    const exposedVariables = {
-      resetForm: async function () {
-        resetComponent();
-      },
-      submitForm: async function () {
-        if (isValid) {
-          onEvent('onSubmit', formEvents).then(() => resetComponent());
-        } else {
-          fireEvent('onInvalid');
-        }
-      },
-    };
-    setExposedVariables(exposedVariables);
+    setExposedVariable('resetForm', async function () {
+      resetComponent();
+    });
+    setExposedVariable('submitForm', async function () {
+      if (isValid) {
+        onEvent('onSubmit', formEvents).then(() => resetComponent());
+      } else {
+        fireEvent('onInvalid');
+      }
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid, formEvents]);
+  }, []);
 
   const extractData = (data) => {
     const result = {};
@@ -260,6 +258,7 @@ export const Form = function Form(props) {
                 }}
                 currentPageId={props.currentPageId}
                 {...props}
+                {...containerProps}
               />
               <SubCustomDragLayer
                 containerCanvasWidth={width}
@@ -275,9 +274,15 @@ export const Form = function Form(props) {
                 <div
                   //check to avoid labels for these widgets as label is already present for them
                   className={
-                    !['Checkbox', 'StarRating', 'Multiselect', 'DropDown', 'RadioButton', 'ToggleSwitch'].includes(
-                      uiComponents?.[index + 1]?.component
-                    )
+                    ![
+                      'Checkbox',
+                      'StarRating',
+                      'Multiselect',
+                      'DropDown',
+                      'RadioButton',
+                      'ToggleSwitch',
+                      'ToggleSwitchV2',
+                    ].includes(uiComponents?.[index + 1]?.component)
                       ? `json-form-wrapper`
                       : `json-form-wrapper  form-label-restricted`
                   }

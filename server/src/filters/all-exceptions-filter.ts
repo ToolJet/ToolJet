@@ -1,5 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
+import { TooljetDatabaseError } from 'src/modules/tooljet_db/tooljet-db.types';
 import { QueryFailedError } from 'typeorm';
 
 interface ErrorResponse {
@@ -20,16 +21,27 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   catch(exception: any, host: ArgumentsHost) {
     try {
-      this.logger.error(exception);
       const ctx = host.switchToHttp();
       const response = ctx.getResponse();
       const request = ctx.getRequest();
+
+      this.logger.error(
+        {
+          method: request.method,
+          url: request.url,
+          headers: request.headers,
+          exception,
+        },
+        exception.stack
+      );
 
       let errorResponse: ErrorResponse;
       const message = exception?.response?.message || exception.message;
 
       if (exception instanceof HttpException) {
         errorResponse = { status: exception.getStatus(), message };
+      } else if (exception instanceof TooljetDatabaseError) {
+        errorResponse = { status: HttpStatus.CONFLICT, message: exception.toString() };
       } else if (exception instanceof QueryFailedError) {
         errorResponse = this.handleQueryExceptions(exception);
       } else {
@@ -43,7 +55,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message: errorResponse.message,
       });
     } catch (error) {
-      this.logger.error('Error while processing uncaught exception', error);
+      this.logger.error('Error while processing uncaught exception', error.stack);
     }
   }
 

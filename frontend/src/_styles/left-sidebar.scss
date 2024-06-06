@@ -79,6 +79,8 @@
     max-width: 350px;
   }
 
+ 
+
   .queryData {
     &.close {
       max-height: 0;
@@ -155,6 +157,22 @@
     right: 5px;
     transform: translate(50%, -50%);
     transform-origin: 100% 0%;
+  }
+}
+
+.global-settings-panel {
+  .app-mode-switch {
+    .ToggleGroup {
+     width : 100%;
+    }
+    .ToggleGroupItem {
+      font-size: 12px;
+    }
+    .ToggleGroupItem[data-state='on'] {
+      .toggle-item {
+        font-size: 12px;
+      }
+    }
   }
 }
 

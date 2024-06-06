@@ -29,7 +29,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
 
   const colorPickerStyle = {
     position: 'absolute',
-    bottom: '260px',
+    top: '-220px',
   };
 
   useEffect(() => {

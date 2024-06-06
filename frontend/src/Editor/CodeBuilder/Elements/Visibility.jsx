@@ -1,7 +1,7 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const Visibility = ({ onVisibilityChange, styleDefinition, ...restProps }) => {
+export const Visibility = ({ onVisibilityChange, styleDefinition }) => {
   const iconVisibility = styleDefinition?.iconVisibility?.value || false;
 
   return (

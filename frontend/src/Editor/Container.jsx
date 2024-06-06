@@ -1,12 +1,12 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo, lazy, Suspense, useContext } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes, EditorConstants } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveWidgetFieldValue, getWorkspaceId } from '@/_helpers/utils';
 import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
@@ -21,9 +21,15 @@ import _, { cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import { compact, correctBounds } from './gridUtils';
 import toast from 'react-hot-toast';
-import { isOnlyLayoutUpdate, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import GhostWidget from './GhostWidget';
 import { useDraggedSubContainer, useGridStore } from '@/_stores/gridStore';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useSampleDataSource } from '@/_stores/dataSourcesStore';
+import './editor.theme.scss';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import BulkIcon from '@/_ui/Icon/BulkIcons';
+import { getSubpath } from '@/_helpers/routes';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
@@ -48,8 +54,12 @@ export const Container = ({
 }) => {
   const currentPageId = useEditorStore.getState().currentPageId;
   const appDefinition = useEditorStore.getState().appDefinition;
+  const [canvasWidth, setCanvasWidth] = useState(widthOfCanvas);
   // Dont update first time to skip
   // redundant save on app definition load
+  const { createDataQuery } = useDataQueriesActions();
+  const { setPreviewData } = useQueryPanelActions();
+  const sampleDataSource = useSampleDataSource();
   const firstUpdate = useRef(true);
 
   const noOfGrids = 43;
@@ -72,9 +82,11 @@ export const Container = ({
     shallow
   );
 
-  const canvasWidth = widthOfCanvas
-    ? widthOfCanvas
-    : document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
+  useEffect(() => {
+    const _canvasWidth = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect()?.width;
+    setCanvasWidth(_canvasWidth);
+  }, [currentLayout, widthOfCanvas]);
+
   const gridWidth = canvasWidth / noOfGrids;
 
   const { appId } = useAppInfo();
@@ -82,7 +94,6 @@ export const Container = ({
   const { appVersionsId, isVersionReleased } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
-      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
     }),
     shallow
@@ -360,12 +371,14 @@ export const Container = ({
           componentTypes.find((component) => component.component === item.component.component)
         );
 
+        const currentActiveLayout = useEditorStore.getState().currentLayout;
+
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
           boxes,
           canvasBoundingRect,
-          item.currentLayout,
+          currentActiveLayout,
           snapToGrid,
           zoomLevel
         );
@@ -426,7 +439,7 @@ export const Container = ({
               {},
               { ...boxes, ...childrenBoxes },
               {},
-              item.currentLayout,
+              currentActiveLayout,
               snapToGrid,
               zoomLevel,
               true,
@@ -440,7 +453,7 @@ export const Container = ({
               },
 
               layouts: {
-                [currentLayout]: {
+                [currentActiveLayout]: {
                   ...layout,
                   width: incrementWidth ? width * incrementWidth : width,
                   height: height,
@@ -479,6 +492,7 @@ export const Container = ({
     const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y, gw }) => {
       const _canvasWidth = gw ? gw * noOfGrids : canvasWidth;
       let newWidth = Math.round((width * noOfGrids) / _canvasWidth);
+      y = Math.round(y / 10) * 10;
       gw = gw ? gw : gridWidth;
       const parent = boxes[id]?.component?.parent;
       if (y < 0) {
@@ -546,6 +560,7 @@ export const Container = ({
         _width = 1;
       }
       let _left = Math.round(x / (parent ? useGridStore.getState().subContainerWidths[parent] : gridWidth));
+      y = Math.round(y / 10) * 10;
       if (_width + _left > noOfGrids) {
         _left = _left - (_width + _left - noOfGrids);
         if (_left < 0) {
@@ -577,7 +592,7 @@ export const Container = ({
       componentData.parent = parent ? parent : null;
 
       return {
-        ...copyOfBoxes,
+        ...boxesObj,
         [id]: {
           ...copyOfBoxes[id],
           component: componentData,
@@ -600,6 +615,12 @@ export const Container = ({
     };
 
     const diffState = diff(boxes, newBoxes);
+
+    // Added to avoid sending layout data to BE without layout key
+    // resulting in App could not save error
+    for (const diffComponent in diffState) {
+      if (!('layouts' in diffState[diffComponent])) return;
+    }
 
     setBoxes((prev) => {
       const updatedComponentsAsperDiff = Object.keys(diffState).reduce((acc, key) => {
@@ -756,30 +777,47 @@ export const Container = ({
     return componentWithChildren;
   }, [components]);
 
-  const getContainerProps = React.useCallback(
-    (componentId) => {
-      return {
-        mode,
-        snapToGrid,
-        onComponentClick,
-        onEvent,
-        appDefinition,
-        appDefinitionChanged,
-        appLoading,
-        zoomLevel,
-        setSelectedComponent,
-        removeComponent,
-        currentLayout,
-        selectedComponents,
-        darkMode,
-        currentPageId,
-        childComponents: childComponents[componentId],
-        parentGridWidth: gridWidth,
-        draggedSubContainer,
-      };
-    },
-    [childComponents, selectedComponents, draggedSubContainer]
-  );
+  const getContainerProps = React.useCallback(() => {
+    return {
+      mode,
+      snapToGrid,
+      onComponentClick,
+      onEvent,
+      appDefinition,
+      appDefinitionChanged,
+      appLoading,
+      zoomLevel,
+      setSelectedComponent,
+      removeComponent,
+      currentLayout,
+      selectedComponents,
+      darkMode,
+      currentPageId,
+      childComponents,
+      parentGridWidth: gridWidth,
+      draggedSubContainer,
+    };
+  }, [childComponents, selectedComponents, draggedSubContainer, darkMode, currentLayout, currentPageId, gridWidth]);
+
+  const openAddUserWorkspaceSetting = () => {
+    const workspaceId = getWorkspaceId();
+    const subPath = getSubpath();
+    const path = subPath
+      ? `${subPath}/${workspaceId}/workspace-settings?adduser=true`
+      : `/${workspaceId}/workspace-settings?adduser=true`;
+    window.open(path, '_blank');
+  };
+
+  const handleConnectSampleDB = () => {
+    const source = sampleDataSource;
+    const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
+    createDataQuery(source, true, { query });
+    setPreviewData(null);
+  };
+
+  const queryBoxText = sampleDataSource
+    ? 'Connect to your data source or use our sample data source to start playing around!'
+    : 'Connect to a data source to be able to create a query';
 
   return (
     <ContainerWrapper
@@ -842,6 +880,9 @@ export const Container = ({
                   gridWidth={gridWidth}
                   currentLayout={currentLayout}
                   mode={mode}
+                  propertiesDefinition={box?.component?.definition?.properties}
+                  stylesDefinition={box?.component?.definition?.styles}
+                  componentType={box?.component?.component}
                 >
                   <DraggableBox
                     className={showComments && 'pointer-events-none'}
@@ -896,20 +937,58 @@ export const Container = ({
       </div>
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
-          <div className="mx-auto w-50 p-5 bg-light no-components-box">
-            <center className="text-muted" data-cy={`empty-editor-text`}>
-              You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
-              our&nbsp;
-              <a
-                className="color-indigo9 "
-                href="https://docs.tooljet.com/docs/#quickstart-guide"
-                target="_blank"
-                rel="noreferrer"
-              >
-                guide
-              </a>{' '}
-              on adding components.
-            </center>
+          <div className="row empty-box-cont">
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
+              </div>
+              <div className={`title-text`} data-cy="empty-editor-text">
+                Drag and drop a component
+              </div>
+              <div className="title-desc">
+                Choose a component from the right side panel or use our pre-built templates to get started quickly!
+              </div>
+            </div>
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <SolidIcon name="datasource" fill="#3E63DD" width="25" />
+              </div>
+              <div className={`title-text`}>Create a Query</div>
+              <div className="title-desc">{queryBoxText}</div>
+              {!!sampleDataSource && (
+                <div className="box-link">
+                  <div className="child">
+                    <a className="link-but" onClick={handleConnectSampleDB}>
+                      Connect to sample data source{' '}
+                    </a>
+                  </div>
+
+                  <div>
+                    <BulkIcon name="arrowright" fill="#3E63DD" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="col-md-4 dotted-cont">
+              <div className="box-icon">
+                <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
+              </div>
+              <div className={`title-text `}>Share your application!</div>
+              <div className="title-desc">
+                Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
+              </div>
+              <div className="box-link">
+                <div className="child">
+                  <a className="link-but" onClick={openAddUserWorkspaceSetting}>
+                    Invite collaborators{' '}
+                  </a>
+                </div>
+                <div>
+                  <BulkIcon name="arrowright" fill="#3E63DD" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -917,7 +996,18 @@ export const Container = ({
   );
 };
 
-const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResizing, mode }) => {
+const WidgetWrapper = ({
+  children,
+  widget,
+  id,
+  gridWidth,
+  currentLayout,
+  isResizing,
+  mode,
+  propertiesDefinition,
+  stylesDefinition,
+  componentType,
+}) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
@@ -938,15 +1028,37 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
   // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
   const width = gridWidth * layoutData.width;
 
+  const calculateMoveableBoxHeight = () => {
+    // Early return for non input components
+    if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
+      return layoutData?.height;
+    }
+    const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+
+    const resolvedLabel = label?.value?.length ?? 0;
+    const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
+    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
+
+    let newHeight = layoutData?.height;
+    if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
+      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
+        newHeight += 20;
+      }
+    }
+
+    return newHeight;
+  };
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+
+  const { label = { value: null } } = propertiesDefinition ?? {};
+
   const styles = {
     width: width + 'px',
-    height: layoutData.height + 'px',
+    height: calculateMoveableBoxHeight() + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
-
   return (
     <>
       <div
@@ -962,6 +1074,7 @@ const WidgetWrapper = ({ children, widget, id, gridWidth, currentLayout, isResiz
         widgetid={id}
         style={{
           transform: `translate(332px, -134px)`,
+          zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
           ...styles,
         }}
       >

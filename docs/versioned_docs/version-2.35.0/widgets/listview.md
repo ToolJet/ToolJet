@@ -2,13 +2,13 @@
 id: listview
 title: List View
 ---
-# List view
+# List View
 
-List View component allows to create a list of repeatable rows of data. Just like the Container component, you can nest other components inside of it and control how many times they repeat.
+The **List View** component allows to create a list of repeatable rows of data. Just like the Container component, you can nest other components inside of it and control how many times they repeat.
 
 
 :::caution Restricted components
-Certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the list view component using drag-and-drop functionality.
+Certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the List View component using drag-and-drop functionality.
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -47,11 +47,11 @@ Similarly, for an Image component inside List View, you can use the below code t
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:---|:---|:---|
-| List data | The data that you want to display in the list view component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
-| Mode | The layout of the list view component. You can choose between `List` and `Grid` mode. | `list` or `grid` |
+| List data | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
+| Mode | The layout of the List View component. You can choose between `List` and `Grid` mode. | `list` or `grid` |
 | Show bottom border | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`. | `true` or `false` |
-| Columns | The number of columns in the list view component. This option is only available when the **Mode** is set to `Grid`. | Any numerical value |
-| Row height | The height of each row in the list view component. | Any number between 1 and 100 |
+| Columns | The number of columns in the List View component. This option is only available when the **Mode** is set to `Grid`. | Any numerical value |
+| Row height | The height of each row in the List View component. | Any number between 1 and 100 |
 | Enable pagination | Whether to enable pagination. If enabled, you can set the number of rows per page. | `true` or `false` |
 | Rows per page | The number of rows per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
 
@@ -61,7 +61,7 @@ Similarly, for an Image component inside List View, you can use the below code t
 
 ## Events
 
-To attach an event handler to the list view component, follow these steps:
+To attach an event handler to the List View component, follow these steps:
 1. Click on the component handle to open its properties on the right sidebar.
 2. Navigate to the **Events** section.
 3. Click on the **+Add handler** button.
@@ -72,9 +72,9 @@ There are two events that you can use with the List View component:
 
 ### Row clicked
 
-The **Row clicked** event is triggered when any row inside the list view is clicked. Similar to other events in ToolJet, you can define multiple actions for this event.
+The **Row clicked** event is triggered when any row inside the List View is clicked. Similar to other events in ToolJet, you can define multiple actions for this event.
 
-When a row is clicked in the list view component, certain related data is made available through the **selectedRowId** and **selectedRow** variables. For the list view component's available exposed variables, refer to the **[here](#exposed-variables)** section.
+When a row is clicked in the List View component, certain related data is made available through the **selectedRowId** and **selectedRow** variables. For the List View component's available exposed variables, refer to the **[here](#exposed-variables)** section.
 
 :::warning
 The Row clicked event is being deprecated, so it is recommended to use the **Record Clicked** event instead.
@@ -84,7 +84,7 @@ The Row clicked event is being deprecated, so it is recommended to use the **Rec
 
 The **Record clicked** event is similar to the row click event, as it is triggered whenever an interaction is made with a record in the component.
 
-When a record is clicked in the list view component, relevant data is exposed through the **selectedRecordId** and **selectedRecord** variables. For the list view component's available exposed variables, refer to the **[here](#exposed-variables)** section.
+When a record is clicked in the List View component, relevant data is exposed through the **selectedRecordId** and **selectedRecord** variables. For the List View component's available exposed variables, refer to the **[here](#exposed-variables)** section.
 
 :::info
 To get detailed information about all the **Actions**, please consult the [Action Reference](/docs/category/actions-reference) documentation.
@@ -106,7 +106,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 |  <div style={{ width:"100px"}}> Variables </div>   |  <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:-------- |
-| data | This variable stores the data loaded into the list view component. | Retrieve the data of each record in the list view using `{{components.listview1.data["0"].text1.text}}` |
+| data | This variable stores the data loaded into the List View component. | Retrieve the data of each record in the list view using `{{components.listview1.data["0"].text1.text}}` |
 | selectedRowId (deprecated) | This variable holds the ID of the clicked row in the list view. The row ID starts from `0`. | Access the selectedRowId using `{{components.listview1.selectedRowId}}` |
 | selectedRow (deprecated) | This variable contains the data of the components within the selected row. | Access the data using `{{components.listview1.selectedRow.text1}}` |
 | selectedRecordId | This variable holds the ID of the clicked record in the list view. The record ID starts from `0`. | Access the selectedRecordId using `{{components.listview1.selectedRecordId}}` |
@@ -159,7 +159,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 ## Example: Displaying Data in the List View
 
-- Let's start by creating a new app and then dragging the List view component onto the canvas.
+- Let's start by creating a new app and then dragging the List View component onto the canvas.
 
     <div style={{textAlign: 'center'}}>
 
@@ -176,7 +176,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
     </div>
 
 
-- Now lets edit the `List data` property of the list view component for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the component using the data.
+- Now lets edit the `List data` property of the List View component for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the component using the data.
 
     <div style={{textAlign: 'center'}}>
 
@@ -185,7 +185,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
     </div>
 
 
-- Finally, we will need to nest components into the first row of list view component and the component will automatically create the subsequent instances. The subsequent rows will appear the same way you'll display the data in the first row.
+- Finally, we will need to nest components into the first row of List View component and the component will automatically create the subsequent instances. The subsequent rows will appear the same way you'll display the data in the first row.
 
     <div style={{textAlign: 'center'}}>
 
@@ -206,7 +206,7 @@ Use `{{listItem.key}}` to display data on the nested components. Example: For di
 
 ## Controlling Child Components
 
-All the child components of the list view component are exposed through the `children` variable. This variable is an array of objects, where each object represents a record in the listview and contains the data of the child components.
+All the child components of the List View component are exposed through the `children` variable. This variable is an array of objects, where each object represents a record in the listview and contains the data of the child components.
 
 The components inside the list view can be controlled using the javascipt queries. For example, if you want to disable the `button1` component in the first record, you can use the following expression:
 

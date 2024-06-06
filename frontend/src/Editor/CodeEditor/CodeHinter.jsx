@@ -24,7 +24,7 @@ const CODE_EDITOR_TYPE = {
   extendedSingleLine: SingleLineCodeEditor,
 };
 
-const CodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps }) => {
+const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, ...restProps }) => {
   const { suggestions } = useResolveStore(
     (state) => ({
       suggestions: state.suggestions,
@@ -82,6 +82,7 @@ const CodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps 
           forceUpdate,
         }}
         componentName={componentName}
+        disabled={disabled}
         {...restProps}
       />
     </Suspense>
@@ -107,7 +108,7 @@ const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => 
         overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
       >
         <img
-          style={{ zIndex: 100000 }}
+          style={{ zIndex: 10000 }}
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
           width={size}
@@ -144,6 +145,7 @@ CodeHinter.DepericatedAlert = DepericatedAlertForWorkspaceVariable;
 
 CodeHinter.propTypes = {
   type: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
 };
 
 export default CodeHinter;

@@ -4,6 +4,7 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import CodeHinter from '@/Editor/CodeEditor';
+import InfoIcon from '@assets/images/icons/info.svg';
 
 export default ({
   options = [],
@@ -23,6 +24,12 @@ export default ({
 
   return (
     <div className="tab-content-wrapper">
+      {options.length === 0 && (
+        <div className="empty-key-value">
+          <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
+          <span>There are no key value pairs added</span>
+        </div>
+      )}
       {!bodyToggle &&
         options.map((option, index) => {
           return (
@@ -76,7 +83,7 @@ export default ({
           />
         </div>
       ) : (
-        <div className="d-flex mb-2" style={{ maxHeight: '32px' }}>
+        <div className="d-flex mb-2" style={{ maxHeight: '32px', marginLeft: '5px' }}>
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(paramType)}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp;{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}

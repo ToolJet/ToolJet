@@ -4,7 +4,7 @@ title: Text Input
 ---
 # Text Input
 
-The Text Input component allows users to enter a single line of text. It can be used as a standalone component or in Form fields. In this document, we'll go through all the configuration options for the **Text Input** component. 
+The **Text Input** component allows users to enter a single line of text. It can be used as a standalone component or in Form fields. In this document, we'll go through all the configuration options for the **Text Input** component. 
 
 ## Properties
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
@@ -18,7 +18,7 @@ The Text Input component allows users to enter a single line of text. It can be 
 | Event            | Description  | 
 |:-----------------|:---------------------------------------------|
 | **On change**    | Triggers whenever the user types something in the text input.                                 |
-| **On enter pressed** | Triggers whenever the user presses the enter key on the keyboard after entering text in the text input component. |
+| **On enter pressed** | Triggers whenever the user presses the enter key on the keyboard after entering text in the Text Input component. |
 | **On focus**     | Triggers whenever the user clicks inside the text input field.                                |
 | **On blur**      | Triggers whenever the user clicks outside the text input field.                               |
 
@@ -46,15 +46,15 @@ Check the **component specific actions** available for this component **[here](/
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`). |
-| label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.textinput1.label}}`). |
-| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`). |
-| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`). |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`). |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`). |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`). |
+| Variable | Description | How To Access |
+|:--------:|:-----------:|:------------:|
+| <div style={{ width:"100px"}}> value </div> | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`).|
+| <div style={{ width:"100px"}}> label </div> | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.textinput1.label}}`).|
+| <div style={{ width:"100px"}}> isValid </div> | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`).|
+| <div style={{ width:"100px"}}> isMandatory </div> | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`).|
+| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`).|
+| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`).|
+| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`).|
 
 ## Validation
 

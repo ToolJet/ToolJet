@@ -4,7 +4,7 @@ title: Dropdown
 ---
 # Dropdown
 
-The Dropdown component can be used to collect user input from a list of options.
+The **Dropdown** component can be used to collect user input from a list of options.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -52,7 +52,7 @@ Each object in the array should include the following key-value pairs:
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:-------- |:----------- |:-------- |
-| selectOption | You can set an option on the dropdown component via a component-specific action within any event handler.| The option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.setOption(1)` |
+| selectOption | You can set an option on the Dropdown component via a component-specific action within any event handler.| The option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.setOption(1)` |
 
 </div>
 
@@ -76,7 +76,7 @@ Each object in the array should include the following key-value pairs:
 
 ### Custom Validation
 
-Add a validation for the options in dropdown widget using the ternary operator.
+Add a validation for the options in Dropdown widget using the ternary operator.
 
 </div>
 

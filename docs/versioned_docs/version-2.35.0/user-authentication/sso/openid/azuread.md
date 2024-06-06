@@ -9,7 +9,7 @@ title: AzureAD
 To construct a Well Known URL refer this link :: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc
 :::
 
-- Open your organisation page and select `app registration`
+- Open your organization page and select `app registration`
   <div style={{textAlign: 'center'}}>
 
   <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/azuread/azure-app-reg.png" alt="Azure AD: SSO" />
@@ -23,7 +23,7 @@ To construct a Well Known URL refer this link :: https://docs.microsoft.com/en-u
 
   </div>
 
-- Open your organisation page and select App registration.
+- Open your organization page and select App registration.
 
 - Enter name, select supported account type and enter the redirect URL which can be copied from `Manage SSO -> Open Id -> Redirect URL, click on register`.
   <div style={{textAlign: 'center'}}>

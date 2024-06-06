@@ -8,6 +8,8 @@ import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Multiselect } from '@/Editor/Components/Multiselect';
 import { Modal } from '@/Editor/Components/Modal';
 import { ToggleSwitch } from '@/Editor/Components/Toggle';
+import { ToggleSwitchV2 } from '@/Editor/Components/ToggleV2';
+
 import { RadioButton } from '@/Editor/Components/RadioButton';
 import { StarRating } from '@/Editor/Components/StarRating';
 import { Divider } from '@/Editor/Components/Divider';
@@ -33,6 +35,9 @@ import { Steps } from '@/Editor/Components/Steps';
 import { Link } from '@/Editor/Components/Link';
 import { Form } from '@/Editor/Components/Form/Form';
 import { isPDFSupported } from '@/_helpers/appUtils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { useEditorStore } from '@/_stores/editorStore';
+import './requestIdleCallbackPolyfill';
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -79,6 +84,9 @@ export const AllComponents = {
   Checkbox,
   Multiselect,
   Modal,
+  Chart,
+  MapComponent,
+  QrScanner,
   ToggleSwitch,
   RadioButton,
   StarRating,
@@ -104,6 +112,8 @@ export const AllComponents = {
   Steps,
   Link,
   Form,
+  BoundedBox,
+  ToggleSwitchV2,
 };
 
 export const getComponentToRender = (componentName) => {
@@ -203,13 +213,45 @@ export function findComponentsWithReferences(components, changedCurrentState) {
   return componentIdsWithReferences;
 }
 
+//* TaskManager to track and manage scheduled tasks
+//Todo: Move this to a separate file
+class TaskManager {
+  constructor() {
+    this.tasks = new Set();
+  }
+
+  addTask(taskId) {
+    this.tasks.add(taskId);
+  }
+
+  cancelTask(taskId) {
+    window.cancelIdleCallback(taskId);
+    this.tasks.delete(taskId);
+  }
+
+  clearAllTasks() {
+    for (let taskId of this.tasks) {
+      window.cancelIdleCallback(taskId);
+    }
+    this.tasks.clear();
+  }
+}
+
+const taskManager = new TaskManager();
+
 export function handleLowPriorityWork(callback, timeout = null, immediate = false) {
   if (immediate) {
     callback();
+  } else {
+    const options = timeout ? { timeout } : {};
+    const taskId = window.requestIdleCallback(callback, options);
+    taskManager.addTask(taskId);
   }
+}
 
-  const options = timeout ? { timeout } : {};
-  window.requestIdleCallback(callback, options);
+// Clear all tasks on a page switch or similar action
+export function clearAllQueuedTasks() {
+  taskManager.clearAllTasks();
 }
 
 export function generatePath(obj, targetKey, currentPath = '') {
@@ -229,3 +271,45 @@ export function generatePath(obj, targetKey, currentPath = '') {
   }
   return null;
 }
+
+/**
+ * Update the canvas background with the given parameters
+ * @param {Object} params The parameters to update the canvas background with
+ * @param {string} params.canvasBackgroundColor The new background color
+ * @param {string} params.backgroundFxQuery The new background color formula
+ * @param {boolean} [isUpdate=false] Whether to update the background color without
+ *  re-calculating it from the given formula.
+ */
+export const updateCanvasBackground = ({ canvasBackgroundColor, backgroundFxQuery }, isUpdate = false) => {
+  const { setCanvasBackground } = useEditorStore.getState().actions;
+
+  /**
+   * If the background color should be updated, update it with the given parameters
+   */
+  if (isUpdate) {
+    return setCanvasBackground({
+      backgroundFxQuery,
+      canvasBackgroundColor,
+    });
+  }
+
+  /**
+   * If the background color formula is not empty, calculate the new background color
+   * and update it if it has changed
+   */
+  if (backgroundFxQuery !== '') {
+    const computedBackgroundColor = resolveWidgetFieldValue(
+      useEditorStore.getState().canvasBackground?.backgroundFxQuery
+    );
+
+    /**
+     * If the computed background color is different from the current one, update it
+     */
+    if (computedBackgroundColor !== canvasBackgroundColor) {
+      setCanvasBackground({
+        ...useEditorStore.getState().canvasBackground,
+        canvasBackgroundColor: computedBackgroundColor,
+      });
+    }
+  }
+};
