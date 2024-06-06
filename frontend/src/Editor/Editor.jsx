@@ -2121,7 +2121,7 @@ const EditorComponent = (props) => {
                     height: computeCanvasContainerHeight(),
                     background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
                   }}
-                  onMouseUp={handleCanvasContainerMouseClick}
+                  onClick={handleCanvasContainerMouseClick}
                   ref={canvasContainerRef}
                   onScroll={() => {
                     selectionRef.current?.checkScroll();
