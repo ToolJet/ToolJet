@@ -716,7 +716,6 @@ const MenuList = ({
         emptyError
       ) : (
         <div
-          ref={scrollEventForColumnValues ? scrollContainerRef : innerRef}
           style={menuListStyles}
           id="query-ds-select-menu"
           onClick={(e) => e.stopPropagation()}
@@ -724,7 +723,7 @@ const MenuList = ({
             scrollEventForColumnValues && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
           }
         >
-          {children}
+          <div ref={scrollEventForColumnValues ? scrollContainerRef : innerRef}>{children}</div>
           {isLoadingFKDetails && loader ? loader : null}
         </div>
       )}
