@@ -1054,7 +1054,6 @@ const WidgetWrapper = ({
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
-
   return (
     <>
       <div
@@ -1070,6 +1069,7 @@ const WidgetWrapper = ({
         widgetid={id}
         style={{
           transform: `translate(332px, -134px)`,
+          zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
           ...styles,
         }}
       >
