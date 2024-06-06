@@ -14,25 +14,20 @@ export const whiteLabellingOptions = {
 };
 
 export async function fetchWhiteLabelDetails(organizationId = null) {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  if (!isWhiteLabelDetailsFetched) {
-    try {
-      await actions.fetchWhiteLabelDetails(organizationId);
-    } catch (error) {
-      console.error('Unable to update white label settings', error);
-    }
-}
-}
-
-export async function checkWhiteLabelsDefaultState(organizationId = null) {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  if (!isWhiteLabelDetailsFetched) {
+  const { isWhiteLabelDetailsFetched, actions, activeOrganizationId } = useWhiteLabellingStore.getState();
+  
+  // Only fetch white labeling details if they haven't been fetched yet or the activeOrganizationId has not been set
+  if (!isWhiteLabelDetailsFetched || !activeOrganizationId) {
     try {
       await actions.fetchWhiteLabelDetails(organizationId);
     } catch (error) {
       console.error('Unable to update white label settings', error);
     }
   }
+}
+
+export async function checkWhiteLabelsDefaultState(organizationId = null) {
+  await fetchWhiteLabelDetails(organizationId);
   const { whiteLabelText, whiteLabelFavicon, whiteLabelLogo } = useWhiteLabellingStore.getState();
   return (
     (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
@@ -76,17 +71,10 @@ export const pageTitles = {
 // to set favicon and title from router for individual pages
 export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location) {
   if (!whiteLabelFavicon || !whiteLabelText) {
-    const { actions, isWhiteLabelDetailsFetched } = useWhiteLabellingStore.getState();
-    if (!isWhiteLabelDetailsFetched){
-      try {
-        await actions.fetchWhiteLabelDetails();
-      } catch (error) {
-        console.error('Unable to update white label settings', error);
-      }
+        await fetchWhiteLabelDetails();
   }
     whiteLabelFavicon = await retrieveWhiteLabelFavicon();
     whiteLabelText = await retrieveWhiteLabelText();
-  }
   // Set favicon
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
@@ -123,7 +111,6 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
 
   //For undefined routes
   if (pageTitle === undefined) {
-    document.title = `${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
     return;
   }
 
@@ -135,14 +122,9 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
 }
 
 export async function fetchAndSetWindowTitle(pageDetails) {
-  const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-  let whiteLabelText;
 
-  // Only fetch white labeling details if they haven't been fetched yet
-  if (!isWhiteLabelDetailsFetched) {
-    await actions.fetchWhiteLabelDetails();
-  }
-  whiteLabelText = useWhiteLabellingStore.getState().whiteLabelText;
+  await fetchWhiteLabelDetails();
+  const whiteLabelText = retrieveWhiteLabelText();
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
   switch (pageTitleKey) {

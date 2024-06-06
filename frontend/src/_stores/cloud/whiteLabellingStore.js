@@ -1,5 +1,6 @@
 import { create, zustandDevTools } from '../utils';
 import { whiteLabellingService } from '@/_services';
+import { authHeader } from '@/_helpers';
 
 const defaultWhiteLabellingSettings = {
   WHITE_LABEL_LOGO: 'assets/images/rocket.svg',
@@ -14,6 +15,7 @@ const whiteLabellingOptions = {
 };
 
 const initialState = {
+  activeOrganizationId: null,
   whiteLabelText: defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,
   whiteLabelLogo: defaultWhiteLabellingSettings.WHITE_LABEL_LOGO,
   whiteLabelFavicon: defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON,
@@ -28,7 +30,9 @@ export const useWhiteLabellingStore = create(
       actions: {
         fetchWhiteLabelDetails: (organizationId) => {
           return new Promise((resolve, reject) => {
-            set({ loadingWhiteLabelDetails: true });
+            const headers = authHeader();
+            const workspaceId = headers['tj-workspace-id'];
+            set({ loadingWhiteLabelDetails: true, activeOrganizationId: organizationId || workspaceId, isWhiteLabelDetailsFetched: false });
             whiteLabellingService
               .get(null, organizationId)
               .then((settings) => {
@@ -47,7 +51,7 @@ export const useWhiteLabellingStore = create(
               })
               .catch((error) => {
                 console.error('Error in fetchWhiteLabelDetails:', error);
-                set({ loadingWhiteLabelDetails: false });
+                set({ loadingWhiteLabelDetails: false, activeOrganizationId: null, isWhiteLabelDetailsFetched: false });
                 reject(error);
               });
           });
