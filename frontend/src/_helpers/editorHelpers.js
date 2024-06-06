@@ -146,7 +146,10 @@ function findReferenceInComponent(node, changedCurrentState) {
     if (typeof node === 'object') {
       for (let key in node) {
         const value = node[key];
-        if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
+        if (
+          typeof value === 'string' &&
+          ((value.includes('{{') && value.includes('}}')) || value.includes('%%client'))
+        ) {
           // Check if the referenced entity is in the state
           if (changedCurrentState.some((state) => value.includes(state))) {
             return true;

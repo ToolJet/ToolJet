@@ -19,7 +19,7 @@ export const Link = ({ cellValue, linkTarget, underline, underlineColor, linkCol
         }}
         rel="noreferrer"
       >
-        {displayText ? displayText : cellValue}
+        {displayText ? displayText : String(cellValue)}
       </a>
     </div>
   );
