@@ -757,7 +757,7 @@ const EditorComponent = (props) => {
       user_id: userId,
       events,
     } = appData;
-    useResolveStore.getState().actions.updateJSHints();
+
     const startingPageHandle = props.params.pageHandle;
     setWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
@@ -794,6 +794,7 @@ const EditorComponent = (props) => {
   };
 
   const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
+    useResolveStore.getState().actions.updateJSHints();
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
