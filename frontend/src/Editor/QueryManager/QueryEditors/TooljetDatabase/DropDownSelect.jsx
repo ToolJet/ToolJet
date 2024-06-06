@@ -242,7 +242,7 @@ const DropDownSelect = ({
           style={{
             position: 'relative',
             left: '-10px',
-            top: selected.label === null ? '0px' : '2px',
+            top: selected.label === null || selected.label === undefined ? '0px' : '2px',
             paddingLeft: '10px',
             paddingBottom: '4px',
           }}
@@ -253,16 +253,16 @@ const DropDownSelect = ({
         >
           <span
             className={cx({
-              'd-flex align-items-center justify-content-center': selected.label === null,
+              'd-flex align-items-center justify-content-center':
+                selected.label === null || selected.label === undefined,
             })}
             style={{
-              display: 'inline-block',
               color: darkMode ? '#fff' : '',
-              width: selected.label === null && '40px',
-              background: selected.label === null && 'var(--slate3)',
+              width: (selected.label === null || selected.label === undefined) && '40px',
+              background: (selected.label === null || selected.label === undefined) && 'var(--slate3)',
             }}
           >
-            {selected.label === null ? 'Null' : selected.label}
+            {selected.label === null || selected.label === undefined ? 'Null' : selected.label}
           </span>
         </div>
       ) : (
