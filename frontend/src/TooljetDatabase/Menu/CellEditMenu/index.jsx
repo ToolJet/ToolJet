@@ -326,7 +326,7 @@ export const CellEditMenu = ({
           buttonClasses="border border-end-1 foreignKeyAcces-container"
           showPlaceHolder={true}
           loader={
-            <div className="mx-2">
+            <div className="tjdb-cellmenu-loader mx-2">
               <Skeleton height={18} width={176} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
               <Skeleton height={18} width={212} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
               <Skeleton height={18} width={176} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
@@ -336,9 +336,11 @@ export const CellEditMenu = ({
           options={referencedFKDataList}
           darkMode={darkMode}
           emptyError={
-            <div className="dd-select-alert-error m-2 d-flex align-items-center">
-              <Information />
-              No data found
+            <div className="tjdb-cellmenu-error">
+              <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                <Information />
+                No data found
+              </div>
             </div>
           }
           value={selectedForeignKeyValue}
