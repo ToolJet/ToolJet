@@ -225,6 +225,7 @@ export class AuthService {
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
+        currentOrganizationName: organization.name,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
@@ -917,23 +918,28 @@ export class AuthService {
   }
 
   async generateSessionPayload(user: User, currentOrganization: Organization) {
-    const currentOrganizationId = currentOrganization?.id
-      ? currentOrganization?.id
-      : user?.organizationIds?.includes(user?.defaultOrganizationId)
-      ? user.defaultOrganizationId
-      : user?.organizationIds?.[0];
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const currentOrganizationId = currentOrganization?.id
+        ? currentOrganization?.id
+        : user?.organizationIds?.includes(user?.defaultOrganizationId)
+        ? user.defaultOrganizationId
+        : user?.organizationIds?.[0];
+      const organizationDetails = currentOrganization
+        ? currentOrganization
+        : await manager.findOneOrFail(Organization, {
+            where: { id: currentOrganizationId },
+            select: ['slug', 'name', 'id'],
+          });
 
-    const activeWorkspacesCount = await this.organizationUsersService.getActiveWorkspacesCount(user.id);
-    const noWorkspaceAttachedInTheSession = activeWorkspacesCount === 0;
-
-    return decamelizeKeys({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      noWorkspaceAttachedInTheSession,
-      currentOrganizationId,
-      currentOrganizationSlug: currentOrganization?.slug,
+      return decamelizeKeys({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        currentOrganizationSlug: organizationDetails.slug,
+        currentOrganizationName: organizationDetails.name,
+        currentOrganizationId,
+      });
     });
   }
 

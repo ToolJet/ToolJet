@@ -18,6 +18,7 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import CodeHinter from '@/Editor/CodeEditor';
 
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 
@@ -170,6 +171,7 @@ class TableComponent extends React.Component {
         id="popover-basic-2"
         className={`${this.props.darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
+          width: '280px',
           maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
           overflowY: 'auto',
           zIndex: '9999',

@@ -1,5 +1,5 @@
 import { create, zustandDevTools } from './utils';
-
+import { shallow } from 'zustand/shallow';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 const initialState = {

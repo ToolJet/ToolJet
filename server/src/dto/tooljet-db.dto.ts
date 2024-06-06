@@ -16,6 +16,8 @@ import {
   ValidationOptions,
   ValidateNested,
   IsBoolean,
+  IsObject,
+  IsIn,
 } from 'class-validator';
 import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
 
@@ -91,23 +93,24 @@ export class SQLInjectionValidator implements ValidatorConstraintInterface {
 @ValidatorConstraint({ name: 'reservedkeyword', async: false })
 class ReservedKeywordConstraint implements ValidatorConstraintInterface {
   validate(value: string) {
-    return !/^(ABORT|ABS|ABSOLUTE|ACCESS|ACTION|ADA|ADD|ADMIN|AFTER|AGGREGATE|ALL|ALLOCATE|ALTER|ANALYSE|ANALYZE|AND|ANY|ARE|ARRAY|AS|ASC|ASENSITIVE|ASSERTION|ASSIGNMENT|ASYMMETRIC|AT|ATOMIC|ATTRIBUTE|ATTRIBUTES|AUTHORIZATION|AVG|BACKWARD|BEFORE|BEGIN|BERNOULLI|BETWEEN|BIGINT|BINARY|BIT|BITVAR|BIT_LENGTH|BLOB|BOOLEAN|BOTH|BREADTH|BY|C|CACHE|CALL|CALLED|CARDINALITY|CASCADE|CASCADED|CASE|CAST|CATALOG|CATALOG_NAME|CEIL|CEILING|CHAIN|CHAR|CHARACTER|CHARACTERISTICS|characters|CHARACTER_LENGTH|CHARACTER_SET_CATALOG|CHARACTER_SET_NAME|CHARACTER_SET_SCHEMA|CHAR_LENGTH|CHECK|CHECKED|CHECKPOINT|CLASS|CLASS_ORIGIN|CLOB|CLOSE|CLUSTER|COALESCE|COBOL|COLLATE|COLLATION|COLLATION_CATALOG|COLLATION_NAME|COLLATION_SCHEMA|COLLECT|COLUMN|COLUMN_NAME|COMMAND_FUNCTION|COMMAND_FUNCTION_CODE|COMMENT|COMMIT|COMMITTED|COMPLETION|CONDITION|CONDITION_NUMBER|CONNECT|CONNECTION|CONNECTION_NAME|CONSTRAINT|CONSTRAINTS|CONSTRAINT_CATALOG|CONSTRAINT_NAME|CONSTRAINT_SCHEMA|CONSTRUCTOR|CONTAINS|CONTINUE|CONVERSION|CONVERT|COPY|CORR|CORRESPONDING|COUNT|COVAR_POP|COVAR_SAMP|CREATE|CREATEDB|CREATEROLE|CREATEUSER|CROSS|CSV|CUBE|CUME_DIST|CURRENT|CURRENT_DATE|CURRENT_DEFAULT_TRANSFORM_GROUP|CURRENT_PATH|CURRENT_ROLE|CURRENT_TIME|CURRENT_TIMESTAMP|CURRENT_TRANSFORM_GROUP_FOR_TYPE|CURRENT_USER|CURSOR|CURSOR_NAME|CYCLE|DATA|DATABASE|DATE|DATETIME_INTERVAL_CODE|DATETIME_INTERVAL_PRECISION|DAY|DEALLOCATE|DEC|DECIMAL|DECLARE|DEFAULT|DEFAULTS|DEFERRABLE|DEFERRED|DEFINED|DEFINER|DELETE|DELIMITER|DELIMITERS|DENSE_RANK|DEPTH|DEREF|DERIVED) *$/i.test(
+    return !/^(ABORT|ABS|ABSOLUTE|ACCESS|ACTION|ADA|ADD|ADMIN|AFTER|AGGREGATE|ALL|ALLOCATE|ALTER|ANALYSE|ANALYZE|AND|ANY|ARE|ARRAY|AS|ASC|ASENSITIVE|ASSERTION|ASSIGNMENT|ASYMMETRIC|AT|ATOMIC|ATTRIBUTE|ATTRIBUTES|AUTHORIZATION|AVG|BACKWARD|BEFORE|BEGIN|BERNOULLI|BETWEEN|BIGINT|BINARY|BIT|BITVAR|BIT_LENGTH|BLOB|BOOLEAN|BOTH|BREADTH|BY|C|CACHE|CALL|CALLED|CARDINALITY|CASCADE|CASCADED|CASE|CAST|CATALOG|CATALOG_NAME|CEIL|CEILING|CHAIN|CHAR|CHARACTER|CHARACTERISTICS|characters|CHARACTER_LENGTH|CHARACTER_SET_CATALOG|CHARACTER_SET_NAME|CHARACTER_SET_SCHEMA|CHAR_LENGTH|CHECK|CHECKED|CHECKPOINT|CLASS|CLASS_ORIGIN|CLOB|CLOSE|CLUSTER|COALESCE|COBOL|COLLATE|COLLATION|COLLATION_CATALOG|COLLATION_NAME|COLLATION_SCHEMA|COLLECT|COLUMN|COLUMN_NAME|COMMAND_FUNCTION|COMMAND_FUNCTION_CODE|COMMENT|COMMIT|COMMITTED|COMPLETION|CONDITION|CONDITION_NUMBER|CONNECT|CONNECTION|CONNECTION_NAME|CONSTRAINT|CONSTRAINTS|CONSTRAINT_CATALOG|CONSTRAINT_NAME|CONSTRAINT_SCHEMA|CONSTRUCTOR|CONTAINS|CONTINUE|CONVERSION|CONVERT|COPY|CORR|CORRESPONDING|COUNT|COVAR_POP|COVAR_SAMP|CREATE|CREATEDB|CREATEROLE|CREATEUSER|CROSS|CSV|CUBE|CUME_DIST|CURRENT|CURRENT_DATE|CURRENT_DEFAULT_TRANSFORM_GROUP|CURRENT_PATH|CURRENT_ROLE|CURRENT_TIME|CURRENT_TIMESTAMP|CURRENT_TRANSFORM_GROUP_FOR_TYPE|CURRENT_USER|CURSOR|CURSOR_NAME|CYCLE|DATA|DATABASE|DATE|DATETIME_INTERVAL_CODE|DATETIME_INTERVAL_PRECISION|DAY|DEALLOCATE|DEC|DECIMAL|DECLARE|DEFAULT|DEFAULTS|DEFERRABLE|DEFERRED|DEFINED|DEFINER|DELETE|DELIMITER|DELIMITERS|DENSE_RANK|DEPTH|DEREF|DERIVED|FROM) *$/i.test(
       value
     ) as boolean;
   }
 }
 
 export class ConstraintTypeDto {
-  @IsOptional()
   @IsBoolean()
   @Validate(SQLInjectionValidator)
   is_not_null: boolean;
 
-  @IsString()
-  @Transform(({ value }) => sanitizeInput(value))
-  @IsOptional()
+  @IsBoolean()
   @Validate(SQLInjectionValidator)
   is_primary_key: Array<string>;
+
+  @IsBoolean()
+  @Validate(SQLInjectionValidator)
+  is_unique: boolean;
 }
 
 export class CreatePostgrestTableDto {
@@ -126,6 +129,46 @@ export class CreatePostgrestTableDto {
   @ValidateNested({ each: true })
   @Type(() => PostgrestTableColumnDto)
   columns: PostgrestTableColumnDto[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
+}
+
+export class PostgrestForeignKeyDto {
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 column' })
+  column_names: Array<string>;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(31, { message: 'Referenced table name must be less than 32 characters' })
+  @MinLength(1, { message: 'Referenced table name must be at least 1 character' })
+  @Matches(/^[a-zA-Z0-9_]*$/, {
+    message: 'Table name can only contain letters, numbers and underscores',
+  })
+  @Validate(SQLInjectionValidator)
+  referenced_table_name: string;
+
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 referenced column' })
+  referenced_column_names: Array<string>;
+
+  @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-remove operation has invalid input',
+  })
+  @IsOptional()
+  on_delete: string;
+
+  @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-delete operation has invalid input',
+  })
+  @IsOptional()
+  on_update: string;
 }
 
 export class PostgrestTableColumnDto {
@@ -165,7 +208,21 @@ export class PostgrestTableColumnDto {
   constraints_type: ConstraintTypeDto;
 }
 
-export class RenamePostgrestTableDto {
+export class EditTableColumnsDto {
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => PostgrestTableColumnDto)
+  old_column: PostgrestTableColumnDto;
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => PostgrestTableColumnDto)
+  new_column: PostgrestTableColumnDto;
+}
+
+export class EditTableDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(1, { message: 'Table name must be at least 1 character' })
@@ -175,6 +232,7 @@ export class RenamePostgrestTableDto {
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   table_name: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
@@ -184,6 +242,12 @@ export class RenamePostgrestTableDto {
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;
+
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Table must have at least 1 column' })
+  @ValidateNested({ each: true })
+  @Type(() => EditTableColumnsDto)
+  columns: EditTableColumnsDto[];
 }
 
 export class EditColumnTableDto {
@@ -235,4 +299,17 @@ export class EditColumnTableDto {
 
   @IsOptional()
   constraints_type: ConstraintTypeDto;
+}
+
+export class AddColumnDto {
+  @ValidateNested()
+  @Type(() => PostgrestTableColumnDto)
+  @IsNotEmpty()
+  column: PostgrestTableColumnDto;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
 }

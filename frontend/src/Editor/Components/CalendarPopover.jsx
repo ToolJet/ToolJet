@@ -24,7 +24,12 @@ export const CalendarEventPopover = function ({
   const calendarElement = document.getElementById(calendarWidgetId);
 
   const handleClickOutside = (event) => {
-    if (parentRef.current && !parentRef.current.contains(event.target) && !event.target.closest('.editor-sidebar')) {
+    if (
+      parentRef.current &&
+      !parentRef.current.contains(event.target) &&
+      !event.target.closest('.editor-sidebar') &&
+      !isMoveableControlClicked(event)
+    ) {
       popoverClosed();
     }
   };
@@ -112,3 +117,14 @@ export const CalendarEventPopover = function ({
     </div>
   );
 };
+
+function isMoveableControlClicked(event) {
+  // Get the element that was clicked on
+  const clickedElement = event.target;
+
+  // Check if the clicked element or any of its parents have the class 'moveable-control-box'
+  return (
+    clickedElement.classList.contains('moveable-control-box') ||
+    clickedElement.closest('.moveable-control-box') !== null
+  );
+}

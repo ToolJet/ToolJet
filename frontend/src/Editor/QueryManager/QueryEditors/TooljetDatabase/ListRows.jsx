@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
@@ -7,6 +6,7 @@ import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
@@ -88,7 +88,7 @@ export const ListRows = React.memo(({ darkMode }) => {
             <label className="form-label" data-cy="label-column-filter">
               Filter
             </label>
-            <div className="field-container flex-grow-1">
+            <div className="field-container col">
               {Object.values(listRowsOptions?.where_filters || {}).map((filter) => (
                 <RenderFilterFields
                   key={filter.id}
@@ -162,10 +162,9 @@ export const ListRows = React.memo(({ darkMode }) => {
             </label>
             <div className="field flex-grow-1">
               <CodeHinter
+                type="basic"
                 initialValue={listRowsOptions?.limit ?? ''}
                 className="codehinter-plugins"
-                theme={darkMode ? 'monokai' : 'default'}
-                height={'32px'}
                 placeholder="Enter limit"
                 onChange={(newValue) => limitOptionChanged(newValue)}
               />
@@ -178,10 +177,9 @@ export const ListRows = React.memo(({ darkMode }) => {
             </label>
             <div className="field flex-grow-1">
               <CodeHinter
+                type="basic"
                 initialValue={listRowsOptions?.offset ?? ''}
                 className="codehinter-plugins"
-                theme={darkMode ? 'monokai' : 'default'}
-                height={'32px'}
                 placeholder="Enter offset"
                 onChange={(newValue) => offsetOptionChanged(newValue)}
               />
@@ -299,8 +297,8 @@ const RenderFilterFields = ({
 
   return (
     <div className="mt-1 row-container">
-      <div className="d-flex fields-container">
-        <div className="field col">
+      <div className="d-flex fields-container ">
+        <div className="field col-4">
           <Select
             useMenuPortal={true}
             placeholder="Select column"
@@ -312,7 +310,7 @@ const RenderFilterFields = ({
             width={'auto'}
           />
         </div>
-        <div className="field col mx-1">
+        <div className="field col-4 mx-1">
           <Select
             useMenuPortal={true}
             placeholder="Select operation"
@@ -334,10 +332,9 @@ const RenderFilterFields = ({
             />
           ) : (
             <CodeHinter
+              type="basic"
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
-              theme={darkMode ? 'monokai' : 'default'}
-              height={'32px'}
               placeholder="key"
               onChange={(newValue) => handleValueChange(newValue)}
             />

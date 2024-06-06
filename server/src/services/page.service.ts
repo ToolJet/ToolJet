@@ -33,7 +33,6 @@ export class PageService {
         return { ...page, components };
       })
     );
-
     return pagesWithComponents;
   }
 
@@ -49,6 +48,7 @@ export class PageService {
       newPage.handle = page.handle;
       newPage.index = page.index;
       newPage.appVersionId = appVersionId;
+      newPage.autoComputeLayout = true;
 
       return await manager.save(Page, newPage);
     }, appVersionId);
@@ -81,6 +81,7 @@ export class PageService {
       newPage.handle = pageHandle;
       newPage.index = pageToClone.index + 1;
       newPage.appVersionId = appVersionId;
+      newPage.autoComputeLayout = true;
 
       const clonedpage = await this.pageRepository.save(newPage);
 

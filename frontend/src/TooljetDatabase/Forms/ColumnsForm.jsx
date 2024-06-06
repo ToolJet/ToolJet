@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-//import Select from '@/_ui/Select';
-import Select, { components } from 'react-select';
-import AddColumnIcon from '../Icons/AddColumnIcon.svg';
-import DeleteIcon from '../Icons/DeleteIcon.svg';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, primaryKeydataTypes } from '../constants';
-import Tick from '../Icons/Tick.svg';
-import Serial from '../Icons/Serial.svg';
+import ColumnName from '../Icons/ColumnName.svg';
+import TableSchema from './TableSchema';
+import ForeignKeyRelation from './ForeignKeyRelation';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import _, { isEmpty } from 'lodash';
 
-const ColumnsForm = ({ columns, setColumns }) => {
+const ColumnsForm = ({
+  columns,
+  setColumns,
+  isEditMode,
+  editColumns,
+  tableName,
+  setForeignKeyDetails,
+  isRequiredFieldsExistForCreateTableOperation,
+  foreignKeyDetails,
+  organizationId,
+  existingForeignKeyDetails,
+  setCreateForeignKeyInEdit,
+  createForeignKeyInEdit = false,
+  selectedTable,
+  setForeignKeys,
+}) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
+  const [hoveredColumn, setHoveredColumn] = useState(null);
+  const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
 
   const handleDelete = (index) => {
     const newColumns = { ...columns };
@@ -17,70 +33,43 @@ const ColumnsForm = ({ columns, setColumns }) => {
     setColumns(newColumns);
   };
 
+  const onMouseHover = (char = []) => {
+    const isNameAvailable = Object.values(columns).some((obj) => {
+      return Object.values(obj).some((value) => {
+        return char.includes(value);
+      });
+    });
+
+    const index = Object.values(columns).findIndex((obj) => {
+      return Object.values(obj).some((value) => {
+        return char.includes(value);
+      });
+    });
+
+    if (isNameAvailable === true) {
+      setHoveredColumn(index);
+      setTimeout(() => {
+        setHoveredColumn(null);
+      }, 3000);
+    } else {
+      setHoveredColumn(null);
+    }
+  };
+  // const handleDeleteEditColumn = (index) => {
+  //   const newColumns = { ...editColumns };
+  //   delete newColumns[index];
+  //   setColumns(newColumns);
+  // };
+
+  // const isNameAvailable = Object.values(columns).some((obj) => Object.values(obj).includes(char));
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { Option } = components;
-
-  const darkDisabledBackground = '#1f2936';
-  const lightDisabledBackground = '#f4f6fa';
-  const lightFocussedBackground = '#fff';
-  const darkFocussedBackground = 'transparent';
-  const lightBackground = '#fff';
-  const darkBackground = 'transparent';
-
-  const darkBorderHover = '#dadcde';
-  const lightBorderHover = '#dadcde';
-
-  const darkDisabledBorder = '#3a3f42';
-  const lightDisabledBorder = '#dadcde';
-  const lightFocussedBorder = '#90B5E2 !important';
-  const darkFocussedBorder = '#90b5e2 !important';
-  const lightBorder = '#dadcde';
-  const darkBorder = '#dadcde';
-  const dropdownContainerWidth = '360px';
-
-  const CustomSelectOption = (props) => (
-    <Option {...props}>
-      <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
-        <div className="d-flex align-items-center justify-content-start">
-          <div>{props.data.icon}</div>
-          <span className="dataType-dropdown-label">{props.data.label}</span>
-          <span className="dataType-dropdown-value">{props.data.name}</span>
-        </div>
-        <div>
-          {columns[columnSelection.index].data_type === props.data.value ? (
-            <div>
-              <Tick width="16" height="16" />
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </Option>
-  );
-
-  const customStyles = tjdbDropdownStyles(
-    darkMode,
-    darkDisabledBackground,
-    lightDisabledBackground,
-    lightFocussedBackground,
-    darkFocussedBackground,
-    lightBackground,
-    darkBackground,
-    darkBorderHover,
-    lightBorderHover,
-    darkDisabledBorder,
-    lightDisabledBorder,
-    lightFocussedBorder,
-    darkFocussedBorder,
-    lightBorder,
-    darkBorder,
-    dropdownContainerWidth
-  );
 
   return (
-    <div className="">
+    <div className="create-column-drawer">
       <div className="card-header">
         <h3 className="card-title" data-cy="add-columns-header">
-          Add columns
+          Table schema
         </h3>
       </div>
       <div className="card-body">
@@ -89,169 +78,81 @@ const ColumnsForm = ({ columns, setColumns }) => {
             'text-white': darkMode,
           })}
         >
-          <div className="row align-items-center">
-            <div className="col-3 m-0 pe-0">
-              <span data-cy="name-input-field-label">Name</span>
+          <div className="row">
+            <div className="m-0 d-flex align-items-center  column-name-description">
+              <ColumnName />
+              <span style={{ marginLeft: '6px' }} data-cy="name-input-field-label">
+                Column name
+              </span>
             </div>
-            <div className="col-3 m-0 pe-0">
+            <div className="m-0 dataType-description">
               <span data-cy="type-input-field-label">Type</span>
             </div>
-            <div className="col-3 m-0 pe-0">
-              <span data-cy="default-input-field-label">Default</span>
+            <div className="m-0 defaultValue-description">
+              <span data-cy="default-input-field-label">Default value</span>
+            </div>
+            <div className="m-0 primaryKey-description">
+              <span data-cy="default-input-field-label">Primary</span>
             </div>
           </div>
         </div>
-        {Object.keys(columns).map((index) => (
-          <div
-            key={index}
-            className={cx('list-group-item mb-1', {
-              'bg-gray': !darkMode,
-            })}
+
+        <TableSchema
+          columns={columns}
+          editColumns={editColumns}
+          setColumns={setColumns}
+          darkMode={darkMode}
+          columnSelection={columnSelection}
+          setColumnSelection={setColumnSelection}
+          handleDelete={handleDelete}
+          isEditMode={isEditMode}
+          isActiveForeignKey={
+            !isEmpty(foreignKeyDetails?.column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_table_name) &&
+            !isEmpty(foreignKeyDetails?.on_delete) &&
+            !isEmpty(foreignKeyDetails?.on_update)
+          }
+          indexHover={hoveredColumn}
+          foreignKeyDetails={foreignKeyDetails}
+          existingForeignKeyDetails={existingForeignKeyDetails} // foreignKeys from context state
+        />
+
+        <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            style={{ fontSize: '14px' }}
+            onClick={() => {
+              setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
+                setColumnSelection({ index: 0, value: '' });
+            }}
+            data-cy="add-more-columns-button"
           >
-            <div className="row align-items-center">
-              {/* <div className="col-1">
-                  <DragIcon />
-                </div> */}
-              <div className="col-3 m-0 pe-0 ps-1" data-cy="column-name-input-field">
-                <input
-                  onChange={(e) => {
-                    e.persist();
-                    const prevColumns = { ...columns };
-                    prevColumns[index].column_name = e.target.value;
-                    setColumns(prevColumns);
-                  }}
-                  value={columns[index].column_name}
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter name"
-                  data-cy={`name-input-field-${columns[index].column_name}`}
-                  disabled={columns[index]?.constraints_type?.is_primary_key === true}
-                />
-              </div>
-              <div className="col-3 pe-0 ps-1" data-cy="type-dropdown-field">
-                <Select
-                  width="120px"
-                  height="36px"
-                  isDisabled={columns[index]?.constraints_type?.is_primary_key === true}
-                  //useMenuPortal={false}
-                  options={columns[index]?.constraints_type?.is_primary_key === true ? primaryKeydataTypes : dataTypes}
-                  onChange={(value) => {
-                    setColumnSelection((prevState) => ({
-                      ...prevState,
-                      index: index,
-                      value: value.value,
-                    }));
-                    const prevColumns = { ...columns };
-                    prevColumns[index].data_type = value ? value.value : null;
-                    setColumns(prevColumns);
-                  }}
-                  components={{
-                    Option: CustomSelectOption,
-                    IndicatorSeparator: () => null,
-                  }}
-                  styles={customStyles}
-                  formatOptionLabel={formatOptionLabel}
-                  placeholder={
-                    columns[index]?.constraints_type?.is_primary_key === true ? (
-                      <div>
-                        <span style={{ marginRight: '5px' }}>
-                          <Serial width="16" />
-                        </span>
-                        <span>{columns[0].data_type}</span>
-                      </div>
-                    ) : (
-                      'Select...'
-                    )
-                  }
-                  onMenuOpen={() => {
-                    setColumnSelection((prevState) => ({
-                      ...prevState,
-                      index: index,
-                      value: columns[index]?.data_type,
-                    }));
-                  }}
-                  onMenuClose={() => {
-                    setColumnSelection({ index: 0, value: '' });
-                  }}
-                />
-              </div>
-              <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">
-                <input
-                  onChange={(e) => {
-                    e.persist();
-                    const prevColumns = { ...columns };
-                    prevColumns[index].column_default = e.target.value;
-                    setColumns(prevColumns);
-                  }}
-                  value={columns[index].column_default}
-                  type="text"
-                  className="form-control"
-                  data-cy="default-input-field"
-                  placeholder="NULL"
-                  disabled={
-                    columns[index]?.constraints_type?.is_primary_key === true || columns[index].data_type === 'serial'
-                  }
-                />
-              </div>
-              {columns[index]?.constraints_type?.is_primary_key === true && (
-                <div className="col-3">
-                  <div
-                    className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}
-                    data-cy="primary-key-text"
-                  >
-                    Primary Key
-                  </div>
-                </div>
-              )}
-              {columns[index]?.constraints_type?.is_primary_key !== true && (
-                <div className="col-3 d-flex">
-                  <label className={`form-switch`}>
-                    <input
-                      className="form-check-input"
-                      data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}-checkbox`}
-                      type="checkbox"
-                      checked={columns[index]?.constraints_type?.is_not_null ?? false}
-                      onChange={(e) => {
-                        const prevColumns = { ...columns };
-                        const columnConstraints = prevColumns[index]?.constraints_type ?? {};
-                        columnConstraints.is_not_null = e.target.checked;
-                        prevColumns[index].constraints_type = { ...columnConstraints };
-                        setColumns(prevColumns);
-                      }}
-                    />
-                  </label>
-                  <span
-                    data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
-                      .toLowerCase()
-                      .replace(/\s+/g, '-')}-text`}
-                  >
-                    {columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}
-                  </span>
-                </div>
-              )}
-              <div
-                className="col-1 cursor-pointer d-flex"
-                data-cy="column-delete-icon"
-                onClick={() => handleDelete(index)}
-              >
-                {columns[index]?.constraints_type?.is_primary_key !== true && <DeleteIcon width="16" height="16" />}
-              </div>
-            </div>
-          </div>
-        ))}
-        <div
-          onClick={() => {
-            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
-              setColumnSelection({ index: 0, value: '' });
-          }}
-          className="mt-2 btn border-0 card-footer add-more-columns-btn"
-          data-cy="add-more-columns-button"
-        >
-          <AddColumnIcon />
-          &nbsp;&nbsp; Add more columns
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp; Add more columns
+          </ButtonSolid>
         </div>
+
+        <ForeignKeyRelation
+          onMouseHoverFunction={onMouseHover}
+          setHoveredColumn={setHoveredColumn}
+          tableName={tableName}
+          columns={columns}
+          setColumns={setColumns}
+          isEditMode={isEditMode}
+          setForeignKeyDetails={setForeignKeyDetails}
+          isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
+          foreignKeyDetails={foreignKeyDetails}
+          organizationId={organizationId}
+          existingForeignKeyDetails={existingForeignKeyDetails}
+          setForeignKeys={setForeignKeys}
+          setCreateForeignKeyInEdit={setCreateForeignKeyInEdit}
+          createForeignKeyInEdit={createForeignKeyInEdit}
+          selectedTable={selectedTable}
+          setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}
+          isForeignKeyDraweOpen={isForeignKeyDraweOpen}
+        />
       </div>
     </div>
   );
