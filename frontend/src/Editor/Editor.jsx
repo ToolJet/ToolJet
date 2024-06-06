@@ -283,10 +283,8 @@ const EditorComponent = (props) => {
   const lastKeyPressTimestamp = useDebouncedArrowKeyPress(500); // 500 milliseconds delay
 
   const debounceAutoSave = debounce(() => {
-    handleLowPriorityWork(() => {
-      autoSave();
-    });
-  }, 300);
+    autoSave();
+  }, 100);
 
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
