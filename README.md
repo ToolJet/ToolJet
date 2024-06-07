@@ -59,7 +59,7 @@ Want to give ToolJet a quick spin on your local machine? You can run the followi
 
 
 ```bash
-docker run -d \
+docker run \
   --name tooljet \
   --restart unless-stopped \
   -p 80:80 \
