@@ -223,6 +223,7 @@ export const Modal = function Modal({
             event.stopPropagation();
             setShowModal(true);
             setExposedVariable('show', true);
+            fireEvent('onOpen');
           }}
           data-cy={`${dataCy}-launch-button`}
         >
