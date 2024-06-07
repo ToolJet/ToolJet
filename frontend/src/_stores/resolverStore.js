@@ -71,7 +71,7 @@ export const useResolveStore = create(
         set(() => ({ ...state, storeReady: true }));
       },
       resetStore: () => {
-        set(() => initialState);
+        set(() => ({ ...initialState, referenceMapper: new ReferencesBiMap() }));
       },
       pageSwitched: (bool) => set(() => ({ isPageSwitched: bool })),
       updateAppSuggestions: (refState) => {
