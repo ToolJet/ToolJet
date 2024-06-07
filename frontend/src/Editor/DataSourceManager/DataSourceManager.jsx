@@ -1022,7 +1022,7 @@ class DataSourceManagerComponent extends React.Component {
                       </div>
                     )}
 
-                    <div className="col">
+                    <div className={!isSampleDb ? `col` : 'col read-doc-button'}>
                       <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                       <a
                         className="color-primary tj-docs-link tj-text-sm"
