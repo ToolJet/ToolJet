@@ -529,7 +529,6 @@ export class OauthService {
         }
       }
 
-      await this.usersService.validateLicense(manager, organization.id);
       return await this.authService.generateLoginResultPayload(
         response,
         userDetails,
@@ -551,7 +550,10 @@ export class OauthService {
   ) => {
     const { groups: ssoGroups, profilePhoto, email } = userResponse;
     /* Sync LDAP / SAML groups before signup to the workspace */
-    if (ssoGroups?.length) await this.usersService.attachUserGroup(ssoGroups, organizationId, userId, true, manager);
+    if (ssoGroups?.length) {
+      await this.usersService.attachUserGroup(ssoGroups, organizationId, userId, true, manager);
+      await this.usersService.validateLicense(manager, organizationId);
+    }
 
     /* Create avatar if profilePhoto available */
     if (profilePhoto) {
