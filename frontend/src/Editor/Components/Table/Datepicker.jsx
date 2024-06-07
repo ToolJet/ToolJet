@@ -206,7 +206,7 @@ export const Datepicker = function Datepicker({
         selected={date}
         onChange={(date) => handleDateChange(date)}
         value={computeDateString(date)}
-        dateFormat={dateDisplayFormat}
+        dateFormat={!isDateSelectionEnabled && isTimeChecked ? 'HH:mm' : dateDisplayFormat}
         customInput={
           <TjDatepicker dateInputRef={dateInputRef} readOnly={readOnly} styles={{ color: cellStyles.color }} />
         }

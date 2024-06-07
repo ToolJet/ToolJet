@@ -136,6 +136,7 @@ const EditorInput = ({
   type,
   delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   paramLabel = '',
+  disabled = false,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -192,6 +193,7 @@ const EditorInput = ({
         class: 'cm-completionInfo-top cm-custom-completion-info',
       };
     },
+    maxRenderedOptions: 10,
   });
 
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
@@ -224,6 +226,7 @@ const EditorInput = ({
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
     'widget-code-editor': componentId,
+    'disabled-pointerevents': disabled,
   });
 
   const currentEditorHeightRef = useRef(null);
@@ -241,7 +244,7 @@ const EditorInput = ({
   return (
     <div
       ref={currentEditorHeightRef}
-      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`}
+      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
       data-cy={`${cyLabel}-input-field`}
     >
       {usePortalEditor && (
@@ -292,6 +295,7 @@ const EditorInput = ({
             className={customClassNames}
             theme={theme}
             indentWithTab={true}
+            readOnly={disabled}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>

@@ -303,6 +303,19 @@ const EditorComponent = (props) => {
         const components = appDefinition?.pages?.[currentPageId]?.components || {};
         computeComponentState(components);
       }
+
+      const isPageSwitched = useResolveStore.getState().isPageSwitched;
+
+      if (isPageSwitched) {
+        const currentStateObj = useCurrentStateStore.getState();
+
+        useResolveStore.getState().actions.addAppSuggestions({
+          queries: currentStateObj.queries,
+          components: currentStateObj.components,
+          page: currentStateObj.page,
+        });
+        useResolveStore.getState().actions.pageSwitched(false);
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentPageId]
@@ -688,7 +701,7 @@ const EditorComponent = (props) => {
       user_id: userId,
       events,
     } = appData;
-    useResolveStore.getState().actions.updateJSHints();
+
     const startingPageHandle = props.params.pageHandle;
     setWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
@@ -712,7 +725,7 @@ const EditorComponent = (props) => {
 
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
       handleLowPriorityWork(() => {
-        useResolveStore.getState().actions.updateLastUpdatedRefs(['constants']);
+        useResolveStore.getState().actions.updateLastUpdatedRefs(['constants', 'client']);
         commonLowPriorityActions(events, { homePageId });
       });
     });
@@ -727,6 +740,7 @@ const EditorComponent = (props) => {
   };
 
   const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
+    useResolveStore.getState().actions.updateJSHints();
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -1386,6 +1400,7 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setEditorReady(true);
 
     const currentComponents = appJson?.pages?.[pageId]?.components;
+    const currentDataQueries = useDataQueriesStore.getState().dataQueries;
 
     const referenceManager = useResolveStore.getState().referenceMapper;
 
@@ -1399,8 +1414,17 @@ const EditorComponent = (props) => {
         };
       }
     });
+    const newDataQueries = currentDataQueries.map((dq) => {
+      if (!referenceManager.get(dq.id)) {
+        return {
+          id: dq.id,
+          name: dq.name,
+        };
+      }
+    });
 
-    useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+    useResolveStore.getState().actions.addEntitiesToMap([...newComponents, ...newDataQueries]);
+    // useResolveStore.getState().actions.addEntitiesToMap(newDataQueries);
   };
 
   const updateEntityReferences = (appJson, pageId) => {
@@ -1621,11 +1645,11 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${newHandle}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    // props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${newHandle}`, {
+    //   state: {
+    //     isSwitchingPage: true,
+    //   },
+    // });
 
     const page = {
       id: newPageId,
@@ -1660,14 +1684,15 @@ const EditorComponent = (props) => {
       return;
     }
 
-    clearAllQueuedTasks();
+    await clearAllQueuedTasks();
+    useResolveStore.getState().actions.resetStore();
     useEditorStore.getState().actions.setPageProgress(true);
     useCurrentStateStore.getState().actions.setEditorReady(false);
-    useResolveStore.getState().actions.resetStore();
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
-    const pageHandle = getCurrentState().pageHandle;
+
+    const pageHandle = useCurrentStateStore.getState().page?.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
@@ -1676,6 +1701,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
     navigateToPage(queryParams, handle);
 
     const page = {
@@ -1696,9 +1722,6 @@ const EditorComponent = (props) => {
 
     await onEditorLoad(appDefinition, pageId, true);
     updateEntityReferences(appDefinition, pageId);
-    handleLowPriorityWork(() => {
-      useResolveStore.getState().actions.updateJSHints();
-    });
 
     setCurrentPageId(pageId);
 
@@ -1707,9 +1730,14 @@ const EditorComponent = (props) => {
       .events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
-    handleLowPriorityWork(() => {
-      useEditorStore.getState().actions.setPageProgress(false);
-    }, 100);
+    handleLowPriorityWork(
+      () => {
+        useEditorStore.getState().actions.setPageProgress(false);
+        useResolveStore.getState().actions.updateJSHints();
+      },
+      null,
+      true
+    );
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {

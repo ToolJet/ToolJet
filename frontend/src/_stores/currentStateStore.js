@@ -108,7 +108,7 @@ useCurrentStateStore.subscribe((state) => {
       () => {
         useResolveStore.getState().actions.updateAppSuggestions({
           queries: state.queries,
-          components: state.components,
+          components: !isPageSwitched ? state.components : {},
           globals: state.globals,
           page: state.page,
           variables: state.variables,
@@ -116,7 +116,6 @@ useCurrentStateStore.subscribe((state) => {
           server: state.server,
           constants: state.constants,
         });
-        useResolveStore.getState().actions.pageSwitched(false);
       },
       null,
       isPageSwitched
