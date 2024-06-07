@@ -391,8 +391,6 @@ async function batchUpdateComponents(componentIds) {
     });
 
     useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender(batch);
-    // Delay to allow UI to process
-    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   // Flush only updated components
