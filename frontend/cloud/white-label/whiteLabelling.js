@@ -102,6 +102,7 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
     settings: pageTitles.INSTANCE_SETTINGS,
     login: '',
+    signup: '',
     'forgot-password': '',
     'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
     setup: '',

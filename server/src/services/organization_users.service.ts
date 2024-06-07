@@ -160,12 +160,11 @@ export class OrganizationUsersService {
 
   async updateOrgUser(organizationUserId: string, updateUserDto: UpdateUserDto) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
-    return await this.usersService.update(
-      organizationUser.userId,
-      updateUserDto,
-      null,
-      organizationUser.organizationId
-    );
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      await this.usersService.update(organizationUser.userId, updateUserDto, manager, organizationUser.organizationId);
+      await this.usersService.validateLicense(manager, organizationUser.organizationId);
+      return;
+    });
   }
 
   async archive(id: string, organizationId: string, user?: User): Promise<void> {

@@ -5,6 +5,7 @@ import { getPathname, getRedirectURL } from '@/_helpers/routes';
 import { authenticationService } from '@/_services';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useWhiteLabellingStore } from '@/_stores/cloud/whiteLabellingStore';
+import { setFaviconAndTitle } from '../../cloud/white-label/whiteLabelling';
 
 export const AuthRoute = ({ children }) => {
   const { isLoading, session, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
@@ -66,6 +67,8 @@ export const AuthRoute = ({ children }) => {
     if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
       useWhiteLabellingStore.getState().actions.resetWhiteLabellingStoreBackToInitialState();
     }
+    const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
   };
 
   const fetchOrganizationDetails = () => {

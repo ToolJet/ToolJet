@@ -41,9 +41,6 @@ class LoginPageComponent extends React.Component {
     /* remove login oranization's id and slug from the cookie */
     this.setRedirectUrlToCookie();
 
-    const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, this.props.location);
-
     this.props.location?.state?.errorMessage &&
       toast.error(this.props.location.state.errorMessage, {
         id: 'toast-login-auth-error',

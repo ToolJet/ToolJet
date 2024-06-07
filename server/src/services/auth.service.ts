@@ -1183,6 +1183,15 @@ export class AuthService {
     });
   }
 
+  async getInviteeDetails(token: string) {
+    const organizationUser: OrganizationUser = await this.organizationUsersRepository.findOneOrFail({
+      where: { invitationToken: token },
+      select: ['id', 'user'],
+      relations: ['user'],
+    });
+    return { email: organizationUser.user.email };
+  }
+
   async verifyInviteToken(token: string, organizationToken?: string) {
     const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
     let organizationUser: OrganizationUser;

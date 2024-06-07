@@ -207,6 +207,11 @@ export class AppController {
     return await this.authService.verifyInviteToken(token, organizationToken);
   }
 
+  @Get('invitee-details')
+  async getInviteeDetails(@Query('token') token) {
+    return await this.authService.getInviteeDetails(token);
+  }
+
   @UseGuards(FirstUserSignupDisableGuard)
   @Get('verify-organization-token')
   async verifyOrganizationToken(@Query('token') token) {
