@@ -203,6 +203,18 @@ export class DataQueriesService {
           } else {
             sourceOptions['headers'].push(customXFFHeader);
           }
+          // Extract cookies from the client request
+          const cookies = RequestContext?.currentContext?.req?.headers?.cookie || '';
+          if (cookies) {
+            const cookieArray = cookies.split('; ');
+            //Filter out tooljet sensitive tokens
+            const filteredCookies = cookieArray.filter((cookie) => !cookie.startsWith('tj_auth_token='));
+            const filteredCookiesString = filteredCookies.join('; ');
+            if (filteredCookiesString) {
+              const cookieHeader = ['Cookie', filteredCookiesString];
+              sourceOptions['headers'].push(cookieHeader);
+            }
+          }
         }
 
         queryStatus.setStart();
