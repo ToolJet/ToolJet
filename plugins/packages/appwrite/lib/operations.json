@@ -122,6 +122,22 @@
             "name": ">="
           },
           {
+            "value": "is",
+            "name": "Is"
+          },
+          {
+            "value": "startsWith",
+            "name": "Starts With"
+          },
+          {
+            "value": "endsWith",
+            "name": "Ends With"
+          },
+          {
+            "value": "search",
+            "name": "Search"
+          },
+          {
             "value": "",
             "name": "None"
           }
