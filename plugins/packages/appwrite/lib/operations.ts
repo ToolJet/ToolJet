@@ -1,5 +1,6 @@
 import { Databases, Query } from 'node-appwrite';
 import { ParsedObject, AwModelDocument, AwModelDocumentList, AwQueryTypes } from './types';
+import { isEmpty } from 'lodash';
 
 function parseValue(value: ParsedObject) {
   try {
@@ -81,7 +82,7 @@ export async function queryCollection(
   }
 
   const queries = [Query.limit(!limitProvided ? Number(limit) : 25)];
-  if (queryString !== '') {
+  if (!isEmpty(queryString)) {
     queries.push(queryString);
   }
 
