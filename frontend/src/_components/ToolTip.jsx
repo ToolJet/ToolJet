@@ -12,7 +12,6 @@ export function ToolTip({
   delay = { show: 50, hide: 100 },
   show = true,
   tooltipClassName = '',
-  style = {},
   ...rest
 }) {
   if (!show) {

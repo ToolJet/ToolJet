@@ -168,6 +168,7 @@ import TooljetIcon from './TooljetIcon.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
 import Search01 from './Search01.jsx';
+import Unpin01 from './Unpin01.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -357,6 +358,8 @@ const Icon = (props) => {
       return <PageAdd {...props} />;
     case 'pin':
       return <Pin {...props} />;
+    case 'unpin01':
+      return <Unpin01 {...props} />;
     case 'unpin':
       return <Unpin {...props} />;
     case 'play':

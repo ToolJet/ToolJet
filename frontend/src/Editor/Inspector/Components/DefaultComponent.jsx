@@ -13,6 +13,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'TextInput',
   'NumberInput',
   'PasswordInput',
+  'Button',
   'ToggleSwitchV2',
   'Checkbox',
   'DropdownV2',
@@ -24,6 +25,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   NumberInput: 'Data',
   ToggleSwitchV2: 'Data',
   Checkbox: 'Data',
+  Button: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -107,6 +109,7 @@ export const baseComponentProperties = (
       'ToggleSwitchV2',
       'Checkbox',
       'DropdownV2',
+      'Button',
     ],
     Layout: [],
   };

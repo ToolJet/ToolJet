@@ -26,6 +26,7 @@ export class Runpy extends React.Component {
           onChange={(value) => changeOption(this, 'code', value)}
           componentName="Runpy"
           cyLabel={`runpy`}
+          delayOnChange={false}
         />
       </div>
     );

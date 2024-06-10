@@ -62,6 +62,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'ToggleSwitchV2',
   'Checkbox',
   'DropdownV2',
+  'Button',
 ];
 
 export const Inspector = ({

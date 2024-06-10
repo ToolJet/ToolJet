@@ -28,14 +28,29 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
   function filterComponents(value) {
     if (value !== '') {
-      const fuse = new Fuse(componentTypes, { keys: ['displayName'], shouldSort: true, threshold: 0.4 });
+      const fuse = new Fuse(componentTypes, {
+        keys: ['displayName'],
+        shouldSort: true,
+        threshold: 0.4,
+      });
       const results = fuse.search(value);
+
+      // Find the indices of ToggleSwitchLegacy and ToggleSwitch
+      const legacyIndex = componentTypes.findIndex((component) => component?.name === 'ToggleSwitchLegacy');
+      const toggleIndex = componentTypes.findIndex((component) => component?.name === 'ToggleSwitch');
+
+      // Swap the indices (if both are found)
+      if (legacyIndex !== -1 && toggleIndex !== -1) {
+        [componentTypes[legacyIndex], componentTypes[toggleIndex]] = [
+          componentTypes[toggleIndex],
+          componentTypes[legacyIndex],
+        ];
+      }
       setFilteredComponents(results.map((result) => result.item));
     } else {
       setFilteredComponents(componentTypes);
     }
   }
-
   function renderComponentCard(component, index) {
     return <DraggableBox key={index} index={index} component={component} zoomLevel={zoomLevel} />;
   }
@@ -104,6 +119,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     ];
     const integrationItems = ['Map'];
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
+    const legacyItems = ['ToggleSwitchLegacy'];
 
     filteredComponents.forEach((f) => {
       if (searchQuery) allWidgets.push(f);

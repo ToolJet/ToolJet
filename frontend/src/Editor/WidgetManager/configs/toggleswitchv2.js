@@ -1,8 +1,8 @@
-export const checkboxConfig = {
-  name: 'Checkbox',
-  displayName: 'Checkbox',
-  description: 'Single checkbox toggle',
-  component: 'Checkbox',
+export const toggleSwitchV2Config = {
+  name: 'ToggleSwitch',
+  displayName: 'Toggle Switch',
+  description: 'User-controlled on-off switch',
+  component: 'ToggleSwitchV2',
   defaultSize: {
     width: 6,
     height: 30,
@@ -11,6 +11,16 @@ export const checkboxConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
+
+  validation: {
+    mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+    },
+  },
+
   properties: {
     label: {
       type: 'code',
@@ -19,6 +29,7 @@ export const checkboxConfig = {
         schema: { type: 'string' },
       },
     },
+
     defaultValue: {
       type: 'switch',
       displayName: 'Default state',
@@ -55,23 +66,13 @@ export const checkboxConfig = {
       placeholder: 'Enter tooltip text',
     },
   },
-  validation: {
-    mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
-    customRule: {
-      type: 'code',
-      displayName: 'Custom validation',
-      placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
-    },
-  },
   events: {
     onChange: { displayName: 'On change' },
-    onCheck: { displayName: 'On check (Deprecated)' },
-    onUnCheck: { displayName: 'On uncheck (Deprecated)' },
   },
   styles: {
     textColor: {
       type: 'color',
-      displayName: 'Text color',
+      displayName: 'Text Color',
       validation: {
         schema: { type: 'string' },
       },
@@ -85,7 +86,7 @@ export const checkboxConfig = {
       },
       accordian: 'switch',
     },
-    checkboxColor: {
+    toggleSwitchColor: {
       type: 'color',
       displayName: 'Checked color',
       validation: {
@@ -109,13 +110,6 @@ export const checkboxConfig = {
       },
       accordian: 'switch',
     },
-    boxShadow: {
-      type: 'boxShadow',
-      displayName: 'Box shadow',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-      accordian: 'switch',
-    },
-
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -125,6 +119,12 @@ export const checkboxConfig = {
         { displayName: 'Right', value: 'right' },
       ],
       accordian: 'label',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box Shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'switch',
     },
   },
   exposedVariables: {
@@ -160,16 +160,15 @@ export const checkboxConfig = {
       displayName: 'Set loading',
       params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
-    {
-      handle: 'setChecked',
-      displayName: 'Set checked (Deprecated)',
-      params: [{ handle: 'status', displayName: 'status' }],
-    },
   ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
+    },
+    validation: {
+      mandatory: { value: '{{false}}' },
+      customRule: { value: null },
     },
     properties: {
       label: { value: 'Label' },
@@ -181,18 +180,13 @@ export const checkboxConfig = {
     },
     events: [],
     styles: {
-      disabledState: { value: '{{false}}' },
       textColor: { value: '#1B1F24' },
-      checkboxColor: { value: '#4368E3' },
+      toggleSwitchColor: { value: '#4368E3' }, //keeping same key for backward comopatibility
       uncheckedColor: { value: '#E4E7EB' },
-      borderColor: { value: '#CCD1D5' },
+      borderColor: { value: '#E4E7EB' },
       handleColor: { value: '#FFFFFF' },
       alignment: { value: 'right' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
-    },
-    validation: {
-      mandatory: { value: '{{false}}' },
-      customRule: { value: null },
     },
   },
 };
