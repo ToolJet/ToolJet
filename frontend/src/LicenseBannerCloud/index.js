@@ -292,9 +292,13 @@ export function LicenseBannerCloud({
     </div>
   );
 
+  const upgradeText =
+    type === 'users'
+      ? 'Upgrade your ToolJet subscription to add more users'
+      : `Contact your super admin to ${buttonText.toLowerCase()} your ToolJet subscription.`;
   const commonMessage =
     isEndUser || isWorkspaceAdmin
-      ? `Contact your super admin to ${buttonText.toLowerCase()} your ToolJet subscription.`
+      ? upgradeText
       : ` ${
           buttonText.charAt(0).toUpperCase() + buttonText.slice(1)
         } your subscription to continue accessing ToolJet's premium features`;
