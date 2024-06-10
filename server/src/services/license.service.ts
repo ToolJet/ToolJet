@@ -264,12 +264,6 @@ export class LicenseService {
         database: {
           table: '',
         },
-        domains: [
-          {
-            ...(subpath ? { subpath } : {}),
-            hostname,
-          },
-        ],
         features: {
           oidc: true,
           auditLogs: true,
