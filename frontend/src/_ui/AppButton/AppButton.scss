@@ -7,7 +7,7 @@
     justify-content: center;
     align-items: center;
     padding: 10px 20px;
-    gap: 6px;
+    gap: 8px;
     border-radius: 6px;
     font-weight: 600;
     text-decoration: none;
@@ -51,7 +51,7 @@
 .tj-small-btn {
     height: 28px;
     border-radius: 6px;
-    padding: 4px 0px;
+    padding: 4px 16px 4px 16px;
     font-size: 12px;
 }
 
@@ -214,6 +214,11 @@
         background: var(--base);
         border: none;
         outline: none;
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+    }
+
+    &:focus {
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
     }
 }
 
