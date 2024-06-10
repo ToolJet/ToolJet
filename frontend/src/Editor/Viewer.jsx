@@ -60,7 +60,7 @@ import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { useEnvironmentsAndVersionsStore } from '../_stores/environmentsAndVersionsStore';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -86,21 +86,6 @@ class ViewerComponent extends React.Component {
       organizationId: null,
     };
   }
-
-  setFavicon = (whiteLabelFavicon) => {
-    // Set favicon
-    let links = document.querySelectorAll("link[rel='icon']");
-    if (links.length === 0) {
-      const link = document.createElement('link');
-      link.rel = 'icon';
-      link.type = 'image/svg+xml';
-      document.getElementsByTagName('head')[0].appendChild(link);
-      links = [link];
-    }
-    links.forEach((link) => {
-      link.href = whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
-    });
-  };
 
   getViewerRef() {
     return {
@@ -543,11 +528,14 @@ class ViewerComponent extends React.Component {
         this.setStateForApp(data, true);
         this.setState({ appId: data.id });
         this.setStateForContainer(data);
-        fetchAndSetWindowTitle({
-          page: pageTitles.VIEWER,
-          appName: data.name,
-          preview,
-        });
+        fetchAndSetWindowTitle(
+          {
+            page: pageTitles.VIEWER,
+            appName: data.name,
+            preview,
+          },
+          data.organizationId
+        );
       })
       .catch((error) => {
         this.setState({
@@ -570,19 +558,17 @@ class ViewerComponent extends React.Component {
     await appService
       .fetchAppByVersion(appId, versionId)
       .then((data) => {
-        fetchAndSetWindowTitle({
-          page: pageTitles.VIEWER,
-          appName: data.name,
-          preview: true,
-        });
         this.setStateForApp(data);
         this.setStateForContainer(data, versionId);
         const preview = !!queryString.parse(this.props?.location?.search)?.version;
-        fetchAndSetWindowTitle({
-          page: pageTitles.VIEWER,
-          appName: data.name,
-          preview,
-        });
+        fetchAndSetWindowTitle(
+          {
+            page: pageTitles.VIEWER,
+            appName: data.name,
+            preview,
+          },
+          data.organizationId
+        );
       })
       .catch(() => {
         this.setState({

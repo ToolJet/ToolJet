@@ -122,33 +122,6 @@ class ForgotPasswordComponent extends React.Component {
                           </>
                         )}
                       </ButtonSolid>
-                      <div className="separator-onboarding ">
-                        <div className="mt-2 separator" data-cy="onboarding-separator">
-                          <h2>
-                            <span>OR</span>
-                          </h2>
-                        </div>
-                      </div>
-                      <Alert
-                        svg="tj-info"
-                        cls="reset-password-info-banner justify-content-center"
-                        useDarkMode={false}
-                        imgHeight={'25px'}
-                        imgWidth={'25px'}
-                      >
-                        <div
-                          className="d-flex align-items-center"
-                          style={{
-                            height: '100%',
-                            fontSize: '12px',
-                            color: '#3E63DD',
-                            fontWeight: '500',
-                          }}
-                          data-cy="reset-password-info-banner"
-                        >
-                          {'Contact super admin to reset your password'}
-                        </div>
-                      </Alert>
                     </div>
                   </>
                 ) : (

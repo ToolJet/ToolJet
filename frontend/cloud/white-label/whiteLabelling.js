@@ -16,8 +16,8 @@ export const whiteLabellingOptions = {
 export async function fetchWhiteLabelDetails(organizationId = null) {
   const { isWhiteLabelDetailsFetched, actions, activeOrganizationId } = useWhiteLabellingStore.getState();
 
-  // Only fetch white labeling details if they haven't been fetched yet or the activeOrganizationId has not been set
-  if (!isWhiteLabelDetailsFetched || !activeOrganizationId) {
+  // Only fetch white labeling details if they haven't been fetched yet or the activeOrganizationId has not been set or is not equal to the current organizationId
+  if (!isWhiteLabelDetailsFetched || !activeOrganizationId || activeOrganizationId != organizationId) {
     try {
       await actions.fetchWhiteLabelDetails(organizationId);
     } catch (error) {
@@ -70,8 +70,10 @@ export const pageTitles = {
 
 // to set favicon and title from router for individual pages
 export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location) {
-  if (!whiteLabelFavicon || !whiteLabelText) {
-    await fetchWhiteLabelDetails();
+  const params = new URLSearchParams(location.search);
+  const organizationId = params.get('oid');
+  if (!whiteLabelFavicon || !whiteLabelText || organizationId) {
+    await fetchWhiteLabelDetails(organizationId);
   }
   whiteLabelFavicon = await retrieveWhiteLabelFavicon();
   whiteLabelText = await retrieveWhiteLabelText();
@@ -102,8 +104,13 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
     settings: pageTitles.INSTANCE_SETTINGS,
     login: '',
+    signUp: '',
+    error: '',
     signup: '',
+    'organization-invitations': '',
+    invitation: '',
     'forgot-password': '',
+    'reset-password': '',
     'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
     setup: '',
   };
@@ -122,8 +129,8 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
   }
 }
 
-export async function fetchAndSetWindowTitle(pageDetails) {
-  await fetchWhiteLabelDetails();
+export async function fetchAndSetWindowTitle(pageDetails, organizationId = null) {
+  await fetchWhiteLabelDetails(organizationId);
   const whiteLabelText = retrieveWhiteLabelText();
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
