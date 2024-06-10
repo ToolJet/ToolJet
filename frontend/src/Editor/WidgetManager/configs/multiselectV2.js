@@ -47,6 +47,7 @@ export const multiselectV2Config = {
       displayName: 'Label',
       validation: {
         schema: { type: 'string' },
+        defaultValue: 'Label',
       },
       accordian: 'Data',
     },
@@ -54,9 +55,8 @@ export const multiselectV2Config = {
       type: 'code',
       displayName: 'Placeholder',
       validation: {
-        validation: {
-          schema: { type: 'string' },
-        },
+        schema: { type: 'string' },
+        defaultValue: 'Select the options',
       },
       accordian: 'Data',
     },
@@ -137,7 +137,7 @@ export const multiselectV2Config = {
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: '' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
     },

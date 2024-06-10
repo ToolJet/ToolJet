@@ -23,6 +23,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
   } = selectProps;
 
   const handleSelectAll = (e) => {
+    e.target.checked && props?.fireEvent();
     if (e.target.checked) {
       setSelected(props.options);
     } else {

@@ -119,8 +119,6 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     ];
     const integrationItems = ['Map'];
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
-    const legacyItems = ['ToggleSwitchLegacy'];
-
     filteredComponents.forEach((f) => {
       if (searchQuery) allWidgets.push(f);
       if (commonItems.includes(f.name)) commonSection.items.push(f);

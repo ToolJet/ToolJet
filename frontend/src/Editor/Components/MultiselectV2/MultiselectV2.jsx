@@ -152,9 +152,11 @@ export const MultiselectV2 = ({
     }
     return false;
   }
-  const onChangeHandler = (items) => {
+  const onChangeHandler = (items, action) => {
     setSelected(items);
-    fireEvent('onSelect');
+    if (action.action === 'select-option') {
+      fireEvent('onSelect');
+    }
   };
   useEffect(() => {
     let foundItem = findDefaultItem(values, advanced);
@@ -238,7 +240,7 @@ export const MultiselectV2 = ({
           'selectedOptions',
           newSelected.map(({ label, value }) => ({ label, value }))
         );
-        fireEvent('onSelect');
+        // fireEvent('onSelect');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -350,9 +352,10 @@ export const MultiselectV2 = ({
     option: (provided, _state) => ({
       ...provided,
       backgroundColor:
-        darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-          ? 'var(--surfaces-surface-01)'
-          : fieldBackgroundColor,
+        // darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
+        //   ?
+        'var(--surfaces-surface-01)',
+      // : fieldBackgroundColor,
       color: _state.isDisabled
         ? 'var(_--text-disbled)'
         : selectedTextColor !== '#1B1F24'
@@ -376,9 +379,10 @@ export const MultiselectV2 = ({
       gap: '4px !important',
       overflowY: 'auto',
       backgroundColor:
-        darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-          ? 'var(--surfaces-surface-01)'
-          : fieldBackgroundColor,
+        // darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
+        // ?
+        'var(--surfaces-surface-01)',
+      // : fieldBackgroundColor,
     }),
     menu: (provided) => ({
       ...provided,
@@ -439,7 +443,7 @@ export const MultiselectV2 = ({
             menuIsOpen={isMultiselectOpen}
             placeholder={placeholder}
             components={{
-              MenuList: CustomMenuList,
+              MenuList: (props) => <CustomMenuList {...props} fireEvent={() => fireEvent('onSelect')} />,
               ValueContainer: CustomValueContainer,
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
