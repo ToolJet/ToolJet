@@ -20,8 +20,8 @@ function get(key, organizationId) {
   }
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const url = key
-    ? `${config.apiUrl}/white-labelling/${workspaceId || organizationId}?key=${encodeURIComponent(key)}`
-    : `${config.apiUrl}/white-labelling/${workspaceId || organizationId}`;
+    ? `${config.apiUrl}/white-labelling/${organizationId || workspaceId}?key=${encodeURIComponent(key)}`
+    : `${config.apiUrl}/white-labelling/${organizationId || workspaceId}`;
   return fetch(url, requestOptions).then(handleResponseWithoutValidation);
 }
 

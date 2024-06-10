@@ -44,7 +44,7 @@ class SignupPageComponent extends React.Component {
     if (errorMessage) {
       toast.error(errorMessage);
     }
-    checkWhiteLabelsDefaultState().then((res) => {
+    checkWhiteLabelsDefaultState(this.inviteOrganizationId).then((res) => {
       this.setState({ defaultState: res });
     });
   }

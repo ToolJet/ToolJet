@@ -27,15 +27,17 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
     this.organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
     this.source = new URLSearchParams(props?.location?.search).get('source');
+    this.whiteLabelText = retrieveWhiteLabelText();
+    this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
   }
-  whiteLabelText = retrieveWhiteLabelText();
-  whiteLabelFavicon = retrieveWhiteLabelFavicon();
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
     setFaviconAndTitle(this.whiteLabelText, this.whiteLabelFavicon, this.props?.location);
     checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
       this.setState({ defaultState: res });
+      this.whiteLabelText = retrieveWhiteLabelText();
+      this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
     });
     document.addEventListener('keydown', this.handleEnterKey);
   }
@@ -76,7 +78,6 @@ class OrganizationInvitationPageComponent extends React.Component {
   render() {
     const { isLoading, defaultState } = this.state;
     const { name, email, invitedOrganizationName: organizationName } = this.props;
-    const whiteLabelText = retrieveWhiteLabelText();
     return (
       <div className="page" ref={this.formRef}>
         <div>
@@ -87,14 +88,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                 <form action="." method="get" autoComplete="off">
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {organizationName ? organizationName : whiteLabelText}
+                      Join {organizationName ? organizationName : this.whiteLabelText}
                     </h2>
 
                     <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
                       {`You are invited to ${
                         organizationName
                           ? `a workspace ${organizationName}. Accept the invite to join the workspace.`
-                          : whiteLabelText
+                          : this.whiteLabelText
                       }`}
                     </div>
 
