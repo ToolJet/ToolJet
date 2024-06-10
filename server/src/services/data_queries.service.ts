@@ -166,6 +166,7 @@ export class DataQueriesService {
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
+    const forwardRestCookies = process.env.FORWARD_RESTAPI_COOKIES === 'true';
 
     try {
       const dataSource: DataSource = dataQuery?.dataSource;
@@ -210,16 +211,18 @@ export class DataQueriesService {
           } else {
             sourceOptions['headers'].push(customXFFHeader);
           }
-          // Extract cookies from the client request
-          const cookies = RequestContext?.currentContext?.req?.headers?.cookie || '';
-          if (cookies) {
-            const cookieArray = cookies.split('; ');
-            //Filter out tooljet sensitive tokens
-            const filteredCookies = cookieArray.filter((cookie) => !cookie.startsWith('tj_auth_token='));
-            const filteredCookiesString = filteredCookies.join('; ');
-            if (filteredCookiesString) {
-              const cookieHeader = ['Cookie', filteredCookiesString];
-              sourceOptions['headers'].push(cookieHeader);
+          if (forwardRestCookies) {
+            // Extract cookies from the client request
+            const cookies = RequestContext?.currentContext?.req?.headers?.cookie || '';
+            if (cookies) {
+              const cookieArray = cookies.split('; ');
+              //Filter out tooljet sensitive tokens
+              const filteredCookies = cookieArray.filter((cookie) => !cookie.startsWith('tj_auth_token='));
+              const filteredCookiesString = filteredCookies.join('; ');
+              if (filteredCookiesString) {
+                const cookieHeader = ['Cookie', filteredCookiesString];
+                sourceOptions['headers'].push(cookieHeader);
+              }
             }
           }
         }
@@ -345,8 +348,8 @@ export class DataQueriesService {
       }
       queryStatus.setSuccess();
 
-      //TODO: support workflow execute().
-      if (dataQuery.kind === 'restapi' && result.responseHeaders && response) {
+      //TODO: support workflow execute method().
+      if (forwardRestCookies && dataQuery.kind === 'restapi' && result.responseHeaders && response) {
         this.setCookiesBackToCleint(response, result.responseHeaders);
       }
       return result;
