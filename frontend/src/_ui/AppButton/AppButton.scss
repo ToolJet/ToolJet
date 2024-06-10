@@ -198,7 +198,6 @@
     color: var(--indigo9);
     border: none;
     background: transparent;
-    box-shadow: none !important;
 
     &:hover {
         color: var(--indigo10);
@@ -219,6 +218,10 @@
 
     &:focus {
         box-shadow: 0px 0px 0px 4px var(--indigo6);
+    }
+
+    &:focus:not(:focus-visible) {
+        box-shadow: none;
     }
 }
 
