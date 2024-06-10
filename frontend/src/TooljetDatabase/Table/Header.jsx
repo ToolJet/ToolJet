@@ -81,7 +81,7 @@ const Header = ({
   }, [uploadResult]);
 
   const handleBulkUpload = async (event) => {
-    event.preventDefault();
+    event?.preventDefault();
     setErrors({ client: [], server: [] });
     setIsBulkUploading(true);
 

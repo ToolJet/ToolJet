@@ -24,6 +24,7 @@ import { ConfirmDialog } from '@/_components';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import Skeleton from 'react-loading-skeleton';
 
 const ColumnForm = ({
   onClose,
@@ -33,6 +34,7 @@ const ColumnForm = ({
   isEditColumn = true,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  initiator,
 }) => {
   const nullValue = selectedColumn?.constraints_type?.is_not_null ?? false;
   const uniqueConstraintValue = selectedColumn?.constraints_type?.is_unique ?? false;
@@ -104,6 +106,12 @@ const ColumnForm = ({
       })
     );
   }, []);
+
+  useEffect(() => {
+    if (dataType?.value === 'boolean') {
+      setIsUniqueConstraint(false);
+    }
+  }, [dataType]);
 
   useEffect(() => {
     setForeignKeyDetails(
@@ -451,7 +459,7 @@ const ColumnForm = ({
           </h3>
         </div>
 
-        <div className="card-body">
+        <div className="card-body edit-column-body">
           <div className="edit-warning-info mb-3">
             <div className="edit-warning-icon">
               <WarningInfo />
@@ -484,7 +492,7 @@ const ColumnForm = ({
               Data type
             </div>
             <ToolTip message={'Data type cannot be modified'} placement="top" tooltipClassName="tootip-table">
-              <div>
+              <div className="tj-select-text">
                 <Select
                   isDisabled={true}
                   defaultValue={selectedColumn?.dataType === 'serial' ? serialDataType : disabledDataType}
@@ -530,9 +538,27 @@ const ColumnForm = ({
                     emptyError={
                       <div className="dd-select-alert-error m-2 d-flex align-items-center">
                         <Information />
-                        No table selected
+                        No data found
                       </div>
                     }
+                    loader={
+                      <div className="mx-2">
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '15px 50px 7px 7px' }}
+                        />
+                        <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '7px 50px 15px 7px' }}
+                        />
+                      </div>
+                    }
+                    isLoading={true}
                     value={foreignKeyDefaultValue}
                     foreignKeyAccessInRowForm={true}
                     disabled={
@@ -547,8 +573,10 @@ const ColumnForm = ({
                     addBtnLabel={'Open referenced table'}
                     foreignKeys={foreignKeys}
                     setReferencedColumnDetails={setReferencedColumnDetails}
-                    scrollEventForColumnValus={true}
+                    scrollEventForColumnValues={true}
                     cellColumnName={selectedColumn?.Header}
+                    columnDataType={dataType}
+                    isEditColumn={true}
                   />
                 )}
               </div>
@@ -571,11 +599,13 @@ const ColumnForm = ({
               message={
                 dataType === 'serial'
                   ? 'Foreign key relation cannot be created for serial type column'
+                  : dataType === 'boolean'
+                  ? 'Foreign key relation cannot be created for boolean type column'
                   : 'Fill in column details to create a foreign key relation'
               }
               placement="top"
               tooltipClassName="tootip-table"
-              show={dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName)}
+              show={dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName) || dataType === 'boolean'}
             >
               <div className="col-1">
                 <label className={`form-switch`}>
@@ -594,15 +624,19 @@ const ColumnForm = ({
                       }
                     }}
                     disabled={
-                      dataType?.value === 'serial' || dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName)
+                      dataType?.value === 'serial' ||
+                      dataType === 'serial' ||
+                      isEmpty(dataType) ||
+                      isEmpty(columnName) ||
+                      dataType === 'boolean'
                     }
                   />
                 </label>
               </div>
             </ToolTip>
             <div className="col d-flex flex-column">
-              <p className="m-0 p-0 fw-500">Foreign Key relation</p>
-              <p className="fw-400 secondary-text tj-text-xsm mb-2">
+              <p className="m-0 p-0 fw-500 tj-switch-text">Foreign key relation</p>
+              <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
                 Adding a foreign key relation will link this column with a column in an existing table.
               </p>
               {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(selectedColumn?.Header) && isForeignKey && (
@@ -637,6 +671,7 @@ const ColumnForm = ({
             onClose={() => {
               onCloseForeignKeyDrawer();
             }}
+            className="tj-db-drawer"
           >
             <ForeignKeyTableForm
               tableName={selectedTable.table_name}
@@ -668,6 +703,7 @@ const ColumnForm = ({
               isForeignKeyDraweOpen={isForeignKeyDraweOpen}
               onDeletePopup={() => setOnDeletePopup(true)}
               selectedForeignkeyIndex={selectedForeignkeyIndex}
+              initiator="ForeignKeyTableForm"
             />
           </Drawer>
 
@@ -708,65 +744,69 @@ const ColumnForm = ({
                 </label>
               </div>
               <div className="col d-flex flex-column">
-                <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
-                <p className="fw-400 secondary-text tj-text-xsm mb-2">
+                <p className="m-0 p-0 fw-500 tj-switch-text">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+                <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
                   {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
                 </p>
               </div>
             </div>
           </ToolTip>
-          <ToolTip
-            message={
-              selectedColumn.constraints_type.is_primary_key === true
-                ? 'Primary key values must be unique'
-                : selectedColumn.dataType === 'serial' &&
+          {dataType !== 'boolean' && (
+            <ToolTip
+              message={
+                selectedColumn.constraints_type.is_primary_key === true
+                  ? 'Primary key values must be unique'
+                  : selectedColumn.dataType === 'serial' &&
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type value must be unique'
+                  : null
+              }
+              placement="top"
+              tooltipClassName="tooltip-table-edit-column"
+              style={toolTipPlacementStyle}
+              show={
+                selectedColumn.constraints_type?.is_primary_key === true ||
+                (selectedColumn.dataType === 'serial' &&
                   (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type value must be unique'
-                : null
-            }
-            placement="top"
-            tooltipClassName="tooltip-table-edit-column"
-            style={toolTipPlacementStyle}
-            show={
-              selectedColumn.constraints_type?.is_primary_key === true ||
-              (selectedColumn.dataType === 'serial' &&
-                (selectedColumn.constraints_type.is_primary_key !== true ||
-                  selectedColumn.constraints_type.is_primary_key === true))
-            }
-          >
-            <div className="row mb-1">
-              <div className="col-1">
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={
-                      !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key
-                        ? true
-                        : isUniqueConstraint
-                    }
-                    onChange={(e) => {
-                      setIsUniqueConstraint(e.target.checked);
-                    }}
-                    disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
-                  />
-                </label>
+                    selectedColumn.constraints_type.is_primary_key === true))
+              }
+            >
+              <div className="row mb-1">
+                <div className="col-1">
+                  <label className={`form-switch`}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={
+                        !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key
+                          ? true
+                          : isUniqueConstraint
+                      }
+                      onChange={(e) => {
+                        setIsUniqueConstraint(e.target.checked);
+                      }}
+                      disabled={
+                        selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key
+                      }
+                    />
+                  </label>
+                </div>
+                <div className="col d-flex flex-column">
+                  <p className="m-0 p-0 fw-500 tj-switch-text">
+                    {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
+                      ? 'UNIQUE'
+                      : 'NOT UNIQUE'}
+                  </p>
+                  <p className="fw-400 secondary-text tj-text-xsm tj-switch-text">
+                    {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
+                      ? 'Unique value constraint is added'
+                      : 'Unique value constraint is not added'}
+                  </p>
+                </div>
               </div>
-              <div className="col d-flex flex-column">
-                <p className="m-0 p-0 fw-500">
-                  {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
-                    ? 'UNIQUE'
-                    : 'NOT UNIQUE'}
-                </p>
-                <p className="fw-400 secondary-text tj-text-xsm">
-                  {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
-                    ? 'Unique value constraint is added'
-                    : 'Unique value constraint is not added'}
-                </p>
-              </div>
-            </div>
-          </ToolTip>
+            </ToolTip>
+          )}
         </div>
         <DrawerFooter
           isEditMode={true}
@@ -781,6 +821,7 @@ const ColumnForm = ({
           }}
           shouldDisableCreateBtn={columnName === ''}
           showToolTipForFkOnReadDocsSection={true}
+          initiator={initiator}
         />
       </div>
       <ConfirmDialog

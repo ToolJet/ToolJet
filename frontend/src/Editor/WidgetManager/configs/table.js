@@ -295,6 +295,16 @@ export const tableConfig = {
       },
       accordian: 'Data',
     },
+    columnHeaderWrap: {
+      type: 'switch',
+      displayName: 'Column header',
+      validation: { schema: { type: 'string' } },
+      accordian: 'Data',
+      options: [
+        { displayName: 'Fixed', value: 'fixed' },
+        { displayName: 'Wrap', value: 'wrap' },
+      ],
+    },
     tableType: {
       type: 'select',
       displayName: 'Row style',
@@ -501,7 +511,7 @@ export const tableConfig = {
       serverSidePagination: { value: '{{false}}' },
       enableNextButton: { value: '{{true}}' },
       enablePrevButton: { value: '{{true}}' },
-      totalRecords: { value: 10 },
+      totalRecords: { value: '{{10}}' },
       enablePagination: { value: '{{true}}' },
       serverSideSort: { value: '{{false}}' },
       serverSideFilter: { value: '{{false}}' },
@@ -636,6 +646,7 @@ export const tableConfig = {
     events: [],
     styles: {
       textColor: { value: '#000' },
+      columnHeaderWrap: { value: 'fixed' },
       actionButtonRadius: { value: '0' },
       cellSize: { value: 'regular' },
       borderRadius: { value: '8' },
