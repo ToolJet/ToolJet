@@ -11,7 +11,7 @@ export class AddGroupPermissionsTable1714015513342 implements MigrationInterface
 
     //Remove data source level permissions in CE
     await queryRunner.query(`
-    CREATE TABLE IF NOT EXISTS group_permissions (
+    CREATE TABLE IF NOT EXISTS permission_groups (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         organization_id UUID,
         name VARCHAR NOT NULL,
@@ -32,7 +32,7 @@ export class AddGroupPermissionsTable1714015513342 implements MigrationInterface
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE IF EXISTS group_permissions`);
+    await queryRunner.query(`DROP TABLE IF EXISTS permission_groups`);
     await queryRunner.query(`DROP TYPE IF EXISTS group_permissions_type;`);
   }
 }

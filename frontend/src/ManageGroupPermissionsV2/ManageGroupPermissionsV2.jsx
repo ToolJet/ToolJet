@@ -1,5 +1,5 @@
 import React from 'react';
-import { groupPermissionService } from '@/_services';
+import { groupPermissionV2Service } from '@/_services';
 import { Tooltip } from 'react-tooltip';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -14,6 +14,8 @@ import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import ModalBase from '@/_ui/Modal';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ManageGroupPermissionResourcesV2 } from '@/ManageGroupPermissionResourcesV2';
+import './groupPermissions.theme.scss';
+import { SearchBox } from '@/_components/SearchBox';
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -21,6 +23,7 @@ class ManageGroupPermissionsComponent extends React.Component {
     this.state = {
       isLoading: true,
       groups: [],
+      defaultGroups: [],
       creatingGroup: false,
       showNewGroupForm: false,
       newGroupName: null,
@@ -31,11 +34,14 @@ class ManageGroupPermissionsComponent extends React.Component {
       groupToBeUpdated: null,
       isSaveBtnDisabled: false,
       selectedGroupPermissionId: null,
-      selectedGroup: 'All users',
+      selectedGroup: 'Admin',
       isDuplicatingGroup: false,
+      selectedGroupObject: null,
       groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
       showDuplicateGroupModal: false,
       groupToDuplicate: '',
+      showGroupSearchBar: false,
+      filteredGroup: [],
     };
   }
 
@@ -44,45 +50,45 @@ class ManageGroupPermissionsComponent extends React.Component {
   }
 
   findCurrentGroupDetails = (data) => {
-    let currentUpdatedGroup = data.group_permissions.find((item) => {
-      return item.group == this.state.newGroupName;
+    let currentUpdatedGroup = data.find((item) => {
+      return item.name == this.state.newGroupName;
     });
-    this.setState({ selectedGroup: currentUpdatedGroup.group });
+    this.setState({ selectedGroup: currentUpdatedGroup.name });
     return currentUpdatedGroup.id;
   };
 
-  duplicateGroup = () => {
-    const { groupDuplicateOption, groupToDuplicate } = this.state;
-    this.setState({ isDuplicatingGroup: true, creatingGroup: true });
-    groupPermissionService
-      .duplicate(groupToDuplicate, groupDuplicateOption)
-      .then((data) => {
-        this.setState({
-          newGroupName: data?.group,
-        });
-        this.fetchGroups('current', () => {
-          this.setState({
-            newGroupName: '',
-            creatingGroup: false,
-            selectedGroupPermissionId: data?.id,
-            selectedGroup: data?.group,
-            isDuplicatingGroup: false,
-            showDuplicateGroupModal: false,
-            groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
-          });
-        });
+  // duplicateGroup = () => {
+  //   const { groupDuplicateOption, groupToDuplicate } = this.state;
+  //   this.setState({ isDuplicatingGroup: true, creatingGroup: true });
+  //   groupPermissionService
+  //     .duplicate(groupToDuplicate, groupDuplicateOption)
+  //     .then((data) => {
+  //       this.setState({
+  //         newGroupName: data?.group,
+  //       });
+  //       this.fetchGroups('current', () => {
+  //         this.setState({
+  //           newGroupName: '',
+  //           creatingGroup: false,
+  //           selectedGroupPermissionId: data?.id,
+  //           selectedGroup: data?.group,
+  //           isDuplicatingGroup: false,
+  //           showDuplicateGroupModal: false,
+  //           groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+  //         });
+  //       });
 
-        toast.success('Group duplicated successfully!');
-      })
-      .catch((err) => {
-        this.setState({
-          isDuplicatingGroup: false,
-          groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
-        });
-        console.error('Error occured in duplicating: ', err);
-        toast.error('Could not duplicate group.\nPlease try again!');
-      });
-  };
+  //       toast.success('Group duplicated successfully!');
+  //     })
+  //     .catch((err) => {
+  //       this.setState({
+  //         isDuplicatingGroup: false,
+  //         groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+  //       });
+  //       console.error('Error occured in duplicating: ', err);
+  //       toast.error('Could not duplicate group.\nPlease try again!');
+  //     });
+  // };
 
   toggleShowDuplicateModal = () => {
     this.setState((prevState) => ({
@@ -102,7 +108,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       this.showDuplicateDiologBox(id);
     };
 
-    const isDefaultGroup = groupName == 'all_users' || groupName == 'admin';
+    const isDefaultGroup = groupName == 'end-user' || groupName == 'admin' || groupName == 'builder';
 
     return (
       <div
@@ -157,25 +163,47 @@ class ManageGroupPermissionsComponent extends React.Component {
       </div>
     );
   };
+  sortDefaultGroup = (list) => {
+    const priority = {
+      admin: 1,
+      builder: 2,
+      'end-user': 3,
+    };
+    list.sort((a, b) => {
+      const priorityA = priority[a.name] || 4; // default to 4 if not found
+      const priorityB = priority[b.name] || 4; // default to 4 if not found
+      return priorityA - priorityB;
+    });
+    return list;
+  };
 
   fetchGroups = (type = 'admin', callback = () => {}) => {
     this.setState({
       isLoading: true,
     });
 
-    groupPermissionService
+    groupPermissionV2Service
       .getGroups()
       .then((data) => {
+        const groupPermissions = data.groupPermissions;
+        const defaultGroups = this.sortDefaultGroup(groupPermissions.filter((group) => group.type === 'default'));
+        console.log('logging group');
+
+        const currentGroupId =
+          type == 'admin'
+            ? defaultGroups[0].id
+            : type == 'current'
+            ? this.findCurrentGroupDetails(groupPermissions)
+            : groupPermissions.at(-1).id;
+        console.log(groupPermissions.find((group) => group.id === currentGroupId));
         this.setState(
           {
-            groups: data.group_permissions,
+            groups: groupPermissions.filter((group) => group.type === 'custom'),
+            defaultGroups: defaultGroups,
+            filteredGroup: groupPermissions.filter((group) => group.type === 'custom'),
             isLoading: false,
-            selectedGroupPermissionId:
-              type == 'admin'
-                ? data.group_permissions[0].id
-                : type == 'current'
-                ? this.findCurrentGroupDetails(data)
-                : data.group_permissions.at(-1).id,
+            selectedGroupPermissionId: currentGroupId,
+            selectedGroupObject: groupPermissions.find((group) => group.id === currentGroupId),
           },
           callback
         );
@@ -188,12 +216,24 @@ class ManageGroupPermissionsComponent extends React.Component {
       });
   };
 
+  handleGroupSearch = (e) => {
+    const { groups } = this.state;
+    let filteredGroup = groups;
+    const value = e?.target?.value;
+    if (value) {
+      filteredGroup = groups.filter((group) => group.name.toLowerCase().includes(value.toLowerCase()));
+    }
+    this.setState({
+      filteredGroup,
+    });
+  };
+
   changeNewGroupName = (value) => {
     this.setState({
       newGroupName: value,
       isSaveBtnDisabled: false,
     });
-    if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.group === value) || !value) {
+    if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.name === value) || !value) {
       this.setState({
         isSaveBtnDisabled: true,
       });
@@ -202,12 +242,12 @@ class ManageGroupPermissionsComponent extends React.Component {
 
   humanizeifDefaultGroupName = (groupName) => {
     switch (groupName) {
-      case 'all_users':
-        return 'All users';
-
+      case 'end-user':
+        return 'End users';
       case 'admin':
         return 'Admin';
-
+      case 'builder':
+        return 'Builders';
       default:
         return groupName;
     }
@@ -215,7 +255,7 @@ class ManageGroupPermissionsComponent extends React.Component {
 
   createGroup = () => {
     this.setState({ creatingGroup: true });
-    groupPermissionService
+    groupPermissionV2Service
       .create(this.state.newGroupName)
       .then(() => {
         this.setState({
@@ -247,7 +287,7 @@ class ManageGroupPermissionsComponent extends React.Component {
     this.setState({
       showGroupNameUpdateForm: true,
       groupToBeUpdated: groupPermission,
-      newGroupName: groupPermission.group,
+      newGroupName: groupPermission.name,
       isSaveBtnDisabled: true,
     });
   };
@@ -262,7 +302,7 @@ class ManageGroupPermissionsComponent extends React.Component {
 
   executeGroupDeletion = () => {
     this.setState({ isDeletingGroup: true });
-    groupPermissionService
+    groupPermissionV2Service
       .del(this.state.groupToBeDeleted)
       .then(() => {
         toast.success('Group deleted successfully');
@@ -277,13 +317,20 @@ class ManageGroupPermissionsComponent extends React.Component {
       });
   };
 
+  handleGroupSearchClose = () => {
+    this.setState((prevState) => ({
+      showGroupSearchBar: false,
+      filteredGroup: prevState.groups,
+    }));
+  };
+
   showDuplicateDiologBox = (id) => {
     this.setState({ groupToDuplicate: id, showDuplicateGroupModal: true, isDuplicatingGroup: false });
   };
 
   executeGroupUpdation = () => {
     this.setState({ isUpdatingGroupName: true, selectedGroup: this.state.newGroupName });
-    groupPermissionService
+    groupPermissionV2Service
       .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
       .then(() => {
         toast.success('Group name updated successfully');
@@ -315,6 +362,9 @@ class ManageGroupPermissionsComponent extends React.Component {
       showDuplicateGroupModal,
       isDuplicatingGroup,
       groupDuplicateOption,
+      defaultGroups,
+      filteredGroup,
+      showGroupSearchBar,
     } = this.state;
 
     const { addPermission, addApps, addUsers } = groupDuplicateOption;
@@ -525,41 +575,126 @@ class ManageGroupPermissionsComponent extends React.Component {
             {!showNewGroupForm && !showGroupNameUpdateForm && (
               <div className="org-users-page-card-wrap">
                 <div className="org-users-page-sidebar">
-                  <div className="mb-2 d-flex align-items-center">
-                    <SolidIcon name="usergear" />
-                    <span className="ml-1">USER ROLE</span>
+                  <div className="default-group-list-container">
+                    <div className="mb-2 d-flex align-items-center">
+                      <SolidIcon name="usergear" />
+                      <span className="ml-1 group-title">USER ROLE</span>
+                    </div>
+                    {defaultGroups.map((permissionGroup) => {
+                      return (
+                        <FolderList
+                          key={permissionGroup.id}
+                          listId={permissionGroup.id}
+                          overlayFunctionParam={{
+                            id: permissionGroup.id,
+                            groupName: permissionGroup.name,
+                          }}
+                          selectedItem={
+                            this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.name)
+                          }
+                          onClick={() => {
+                            this.setState({
+                              selectedGroupPermissionId: permissionGroup.id,
+                              selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
+                              selectedGroupObject: permissionGroup,
+                            });
+                          }}
+                          toolTipText={this.humanizeifDefaultGroupName(permissionGroup.name)}
+                          overLayComponent={this.renderPopoverContent}
+                          className="groups-folder-list"
+                          dataCy={this.humanizeifDefaultGroupName(permissionGroup.name)
+                            .toLowerCase()
+                            .replace(/\s+/g, '-')}
+                        >
+                          <span>
+                            <OverflowTooltip>{this.humanizeifDefaultGroupName(permissionGroup.name)}</OverflowTooltip>
+                          </span>
+                        </FolderList>
+                      );
+                    })}
                   </div>
-                  {groups.map((permissionGroup) => {
-                    return (
-                      <FolderList
-                        key={permissionGroup.id}
-                        listId={permissionGroup.id}
-                        overlayFunctionParam={{
-                          id: permissionGroup.id,
-                          groupName: permissionGroup.group,
-                        }}
-                        selectedItem={
-                          this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
-                        }
-                        onClick={() => {
-                          this.setState({
-                            selectedGroupPermissionId: permissionGroup.id,
-                            selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
-                          });
-                        }}
-                        toolTipText={this.humanizeifDefaultGroupName(permissionGroup.group)}
-                        overLayComponent={this.renderPopoverContent}
-                        className="groups-folder-list"
-                        dataCy={this.humanizeifDefaultGroupName(permissionGroup.group)
-                          .toLowerCase()
-                          .replace(/\s+/g, '-')}
-                      >
-                        <span>
-                          <OverflowTooltip>{this.humanizeifDefaultGroupName(permissionGroup.group)}</OverflowTooltip>
-                        </span>
-                      </FolderList>
-                    );
-                  })}
+                  <div>
+                    {!showGroupSearchBar ? (
+                      <div className="mb-2 d-flex align-items-center">
+                        <SolidIcon name="usergroup" />
+                        <span className="ml-1 group-title">CUSTOM GROUPS</span>
+                        <div className="create-group-cont">
+                          <ButtonSolid
+                            onClick={(e) => {
+                              e.preventDefault();
+                              this.setState({ showGroupSearchBar: true });
+                            }}
+                            size="xsm"
+                            rightIcon="search"
+                            iconWidth="15"
+                            className="create-group-custom"
+                          />
+                          <ButtonSolid
+                            onClick={(e) => {
+                              e.preventDefault();
+                              this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
+                            }}
+                            size="sm"
+                            rightIcon="plus"
+                            iconWidth="20"
+                            className="create-group-custom"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="searchbox-custom">
+                        <SearchBox
+                          dataCy={`query-manager`}
+                          width="70px !important"
+                          callBack={this.handleGroupSearch}
+                          placeholder={'Search'}
+                          customClass="tj-common-search-input-group"
+                          onClearCallback={this.handleGroupSearchClose}
+                          autoFocus={true}
+                        />
+                      </div>
+                    )}
+
+                    {groups.length ? (
+                      filteredGroup.map((permissionGroup) => {
+                        return (
+                          <FolderList
+                            key={permissionGroup.id}
+                            listId={permissionGroup.id}
+                            overlayFunctionParam={{
+                              id: permissionGroup.id,
+                              groupName: permissionGroup.name,
+                            }}
+                            selectedItem={
+                              this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.name)
+                            }
+                            onClick={() => {
+                              this.setState({
+                                selectedGroupPermissionId: permissionGroup.id,
+                                selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
+                                selectedGroupObject: permissionGroup,
+                              });
+                            }}
+                            toolTipText={this.humanizeifDefaultGroupName(permissionGroup.name)}
+                            overLayComponent={this.renderPopoverContent}
+                            className="groups-folder-list"
+                            dataCy={this.humanizeifDefaultGroupName(permissionGroup.name)
+                              .toLowerCase()
+                              .replace(/\s+/g, '-')}
+                          >
+                            <span>
+                              <OverflowTooltip>{this.humanizeifDefaultGroupName(permissionGroup.name)}</OverflowTooltip>
+                            </span>
+                          </FolderList>
+                        );
+                      })
+                    ) : (
+                      <div className="empty-custom-group-info">
+                        <SolidIcon name="information" width="18px" />
+                        <span className="tj-text-xxsm text-center info-label">No custom groups added</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="org-users-page-card-body">
@@ -570,8 +705,15 @@ class ManageGroupPermissionsComponent extends React.Component {
                       groupPermissionId={this.state.selectedGroupPermissionId}
                       darkMode={this.props.darkMode}
                       selectedGroup={this.state.selectedGroup}
+                      selectedGroupObject={this.state.selectedGroupObject}
                       updateGroupName={this.updateGroupName}
                       deleteGroup={this.deleteGroup}
+                      roleOptions={defaultGroups.map((group) => {
+                        return {
+                          name: this.humanizeifDefaultGroupName(group.name),
+                          value: group.name,
+                        };
+                      })}
                     />
                   )}
                 </div>

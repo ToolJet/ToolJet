@@ -42,6 +42,7 @@ import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
+import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -281,7 +282,8 @@ export class AuthService {
           ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
         },
         organization.id,
-        ['all_users', 'admin'],
+        USER_ROLE.ADMIN,
+        [],
         existingUser,
         true,
         null,
@@ -358,8 +360,8 @@ export class AuthService {
           phoneNumber,
         },
         organization.id,
-        //TODO: Need to add to only admin
-        ['all_users', 'admin'],
+        USER_ROLE.ADMIN,
+        [],
         null,
         false,
         null,

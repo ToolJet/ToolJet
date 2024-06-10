@@ -19,8 +19,8 @@ import { GranularPermissionsService } from './granular_permissions.service';
 import {
   getAllUserGroupsQuery,
   getUserDetailQuery,
+  getUserInGroupQuery,
   validateAddGroupUserOperation,
-  validateDeleteGroupUserOperation,
   validateUpdateGroupOperation,
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
@@ -76,26 +76,35 @@ export class GroupPermissionsServiceV2 {
 
   async updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto, manager?: EntityManager) {
     //License level validation at controller level
-
     const group = await this.getGroup(id);
     if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
 
     validateUpdateGroupOperation(group, updateGroupPermissionDto);
-    const getEndUsersList = await this.groupPermissionsUtilityService.getRoleUsersList(
-      USER_ROLE.END_USER,
-      group.organizationId,
-      group.id
-    );
+
+    const keys = Object.keys(updateGroupPermissionDto);
+    const validatePermissionsUpdate = !(keys.length === 1 && keys.includes('name'));
     const editPermissionsPresent = Object.values(updateGroupPermissionDto).some(
       (value) => typeof value === 'boolean' && value === true
     );
+    console.log('running till here');
 
-    if (getEndUsersList.length && editPermissionsPresent) {
-      throw new MethodNotAllowedException({
-        message: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
-        data: getEndUsersList,
-      });
+    if (validatePermissionsUpdate) {
+      const getEndUsersList = await this.groupPermissionsUtilityService.getRoleUsersList(
+        USER_ROLE.END_USER,
+        group.organizationId,
+        group.id
+      );
+
+      if (getEndUsersList.length && editPermissionsPresent) {
+        throw new MethodNotAllowedException({
+          message: {
+            error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+            data: getEndUsersList?.map((user) => user.email),
+          },
+        });
+      }
     }
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await catchDbException(async () => {
         await manager.update(GroupPermissions, id, updateGroupPermissionDto);
@@ -121,43 +130,58 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async getAllGroupUsers(groupId: string, manager?: EntityManager): Promise<GroupUsers[]> {
+  async getAllGroupUsers(groupId: string, searchInput?: string, manager?: EntityManager): Promise<GroupUsers[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.find(GroupUsers, {
-        where: {
-          groupId,
-        },
-        relations: ['user'],
+      return await getUserInGroupQuery(groupId, manager, searchInput).getMany();
+    }, manager);
+  }
+
+  async getGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOne(GroupUsers, id, {
+        relations: ['group'],
       });
     }, manager);
   }
 
-  async getAllUserGroups(userId: string, organizationId: string): Promise<GroupUsers[]> {
+  async getAllUserGroups(userId: string, organizationId: string): Promise<GroupPermissions[]> {
     return await getAllUserGroupsQuery(userId, organizationId).getMany();
   }
 
   async deleteGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
-    const group = await this.getGroup(id);
-    validateDeleteGroupUserOperation(group);
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.delete(GroupUsers, id);
     }, manager);
   }
 
-  async addGroupUser(addGroupUserDto: AddGroupUserDto, organizationId: string) {
-    const { userId, groupId } = addGroupUserDto;
-    const user = await getUserDetailQuery(userId, organizationId).getOne();
+  async addGroupUsers(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager) {
+    const { userIds, groupId } = addGroupUserDto;
     const group = await this.getGroup(groupId);
-    validateAddGroupUserOperation(group, user);
+    validateAddGroupUserOperation(group);
 
-    const role = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId);
-    const editPermissionsPresent = Object.values(group).some((value) => typeof value === 'boolean' && value === true);
-    //NEED TO CHECK FOR EDITOR LEVEL PERMISSION IN GRANULAR PERMISSIONS
+    return await Promise.all(
+      userIds.map(async (userId) => {
+        return await dbTransactionWrap(async (manager: EntityManager) => {
+          const user = await getUserDetailQuery(userId, organizationId, manager).getOne();
+          if (!user) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
 
-    if (editPermissionsPresent && role.name == USER_ROLE.END_USER) {
-      throw new MethodNotAllowedException(ERROR_HANDLER.GROUP_USERS_EDITABLE_GROUP_ADDITION(user));
-    }
+          const role = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId, manager);
+          const editPermissionsPresent = Object.values(group).some(
+            (value) => typeof value === 'boolean' && value === true
+          );
+          //NEED TO CHECK FOR EDITOR LEVEL PERMISSION IN GRANULAR PERMISSIONS
+          if (editPermissionsPresent && role.name == USER_ROLE.END_USER) {
+            throw new MethodNotAllowedException({
+              message: {
+                error: ERROR_HANDLER.GROUP_USERS_EDITABLE_GROUP_ADDITION(user.email),
+                title: 'Can not add end user to this group',
+              },
+            });
+          }
 
-    return await this.createGroupUser(user, group);
+          return await this.createGroupUser(user, group, manager);
+        }, manager);
+      })
+    );
   }
 }

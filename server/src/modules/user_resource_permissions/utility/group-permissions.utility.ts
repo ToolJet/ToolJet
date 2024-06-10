@@ -1,4 +1,4 @@
-import { EntityManager, SelectQueryBuilder, createQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, SelectQueryBuilder, createQueryBuilder } from 'typeorm';
 import { USER_ROLE, GROUP_PERMISSIONS_TYPE } from '../constants/group-permissions.constant';
 import { User } from 'src/entities/user.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
@@ -15,16 +15,7 @@ export function getRoleUsersListQuery(
 ): SelectQueryBuilder<User> {
   const query = manager
     .createQueryBuilder(User, 'user')
-    .select([
-      'users.id',
-      'users.firstName',
-      'users.lastName',
-      'users.email',
-      'user.userGroup.groupId',
-      'user.userGroup.group.name',
-      'user.userGroup.group.type',
-    ])
-    .innerJoin('user.userGroups', 'userGroups')
+    .innerJoinAndSelect('user.userGroups', 'userGroups')
     .innerJoin('userGroups.group', 'group', 'group.organizationId = :organizationId', { organizationId })
     .andWhere('group.type = :type', { type: GROUP_PERMISSIONS_TYPE.DEFAULT })
     .andWhere('group.name = :name', { name: role });
@@ -35,22 +26,36 @@ export function getRoleUsersListQuery(
         query
           .subQuery()
           .select('user.id')
-          .from('User', 'user')
+          .from(User, 'user')
           .innerJoin('user.userGroups', 'subUserGroup')
           .where('subUserGroup.groupId = :groupId', { groupId: groupPermissionId })
           .getQuery()
     );
   }
+  query.select([
+    'user.id',
+    'user.firstName',
+    'user.lastName',
+    'user.email',
+    'userGroups.groupId',
+    'group.name',
+    'group.type',
+  ]);
 
   return query;
 }
 
-export function getUserDetailQuery(userId: string, organizationId: string): SelectQueryBuilder<User> {
-  const query = createQueryBuilder(User, 'user')
+export function getUserDetailQuery(
+  userId: string,
+  organizationId: string,
+  manager: EntityManager
+): SelectQueryBuilder<User> {
+  const query = manager
+    .createQueryBuilder(User, 'user')
     .innerJoin('user.organizationUsers', 'organizationUsers', 'organizationUsers.organizationId = :organizationId', {
       organizationId,
     })
-    .where('user.id = = :userId', {
+    .where('user.id = :userId', {
       userId,
     });
 
@@ -78,10 +83,16 @@ export function validateUpdateGroupOperation(
   const { name } = group;
   const { name: newName } = updateGroupPermissionDto;
 
-  if (newName && (newName in USER_ROLE || group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)) {
+  if (
+    newName &&
+    (Object.values(USER_ROLE).includes(newName as USER_ROLE) || group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
+  ) {
     throw new MethodNotAllowedException(ERROR_HANDLER.DEFAULT_GROUP_NAME_UPDATE);
   }
-  if (name in [USER_ROLE.ADMIN, USER_ROLE.END_USER]) {
+
+  if ([USER_ROLE.ADMIN, USER_ROLE.END_USER].includes(name as USER_ROLE)) {
+    console.log('this is running');
+
     throw new MethodNotAllowedException(ERROR_HANDLER.NON_EDITABLE_GROUP_UPDATE);
   }
 }
@@ -93,20 +104,21 @@ export function validateDeleteGroupUserOperation(group: GroupPermissions) {
     throw new MethodNotAllowedException(ERROR_HANDLER.DELETING_DEFAULT_GROUP_USER);
 }
 
-export function validateAddGroupUserOperation(group: GroupPermissions, user: User) {
-  if (!user) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
+export function validateAddGroupUserOperation(group: GroupPermissions) {
   if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
   if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
     throw new MethodNotAllowedException(ERROR_HANDLER.ADD_GROUP_USER_DEFAULT_GROUP);
 }
 
-export function getAllUserGroupsQuery(userId: string, organizationId: string): SelectQueryBuilder<GroupUsers> {
-  const query = createQueryBuilder(GroupUsers, 'userGroups')
-    .innerJoin('userGroups.group', 'group', 'group.organizationId = :organizationId', { organizationId })
-    .where('userGroups.userId = :userId', {
+export function getAllUserGroupsQuery(userId: string, organizationId: string): SelectQueryBuilder<GroupPermissions> {
+  const query = createQueryBuilder(GroupPermissions, 'groups')
+    .innerJoinAndSelect('groups.groupUsers', 'groupUsers', 'groups.organizationId = :organizationId', {
+      organizationId,
+    })
+    .where('groupUsers.userId = :userId', {
       userId,
     })
-    .andWhere('group.type = :type', {
+    .andWhere('groups.type = :type', {
       type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
     });
   return query;
@@ -114,4 +126,61 @@ export function getAllUserGroupsQuery(userId: string, organizationId: string): S
 
 export function validateCreateGroupOperation(createGroupPermissionDto: CreateGroupPermissionDto) {
   if (createGroupPermissionDto.name in USER_ROLE) throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_NAME);
+}
+
+export function addableUsersToGroupQuery(
+  groupId: string,
+  organizationId: string,
+  manager: EntityManager,
+  searchInput?: string
+): SelectQueryBuilder<User> {
+  const query = manager
+    .createQueryBuilder(User, 'users')
+    .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.organizationId = :organizationId', {
+      organizationId: organizationId,
+    })
+    .where((qb) => {
+      const subQuery = qb
+        .subQuery()
+        .select('groupUsers.userId')
+        .from(GroupUsers, 'groupUsers')
+        .innerJoin('groupUsers.group', 'group')
+        .where('(group.name = :admin OR group.id = :groupId)', { admin: USER_ROLE.ADMIN, groupId })
+        .andWhere('group.organizationId = :organizationId', { organizationId })
+        .getQuery();
+
+      return 'users.id NOT IN ' + subQuery;
+    })
+    .andWhere(addableUserGetOrConditions(searchInput));
+
+  return query;
+}
+
+const addableUserGetOrConditions = (searchInput) => {
+  return new Brackets((qb) => {
+    if (searchInput) {
+      qb.orWhere('lower(users.email) like :email', {
+        email: `%${searchInput.toLowerCase()}%`,
+      });
+      qb.orWhere('lower(users.firstName) like :firstName', {
+        firstName: `%${searchInput.toLowerCase()}%`,
+      });
+      qb.orWhere('lower(users.lastName) like :lastName', {
+        lastName: `%${searchInput.toLowerCase()}%`,
+      });
+    }
+  });
+};
+
+export function getUserInGroupQuery(
+  groupId: string,
+  manager: EntityManager,
+  searchInput: string
+): SelectQueryBuilder<GroupUsers> {
+  const query = manager
+    .createQueryBuilder(GroupUsers, 'groupUsers')
+    .innerJoinAndSelect('groupUsers.user', 'users', 'groupUsers.groupId = :groupId', { groupId })
+    .select(['groupUsers.id', 'groupUsers.groupId', 'users.id', 'users.firstName', 'users.lastName', 'users.email'])
+    .andWhere(addableUserGetOrConditions(searchInput));
+  return query;
 }

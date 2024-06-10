@@ -127,6 +127,7 @@ class ManageOrgUsersComponent extends React.Component {
       });
   };
 
+  //Need to work on that
   inviteBulkUsers = (event) => {
     event.preventDefault();
     if (this.handleFileValidation()) {
@@ -170,7 +171,7 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
-  manageUser = (currentOrgUserId, selectedGroups, groupsToAdd, groupsToRemove) => {
+  manageUser = (currentOrgUserId, selectedGroups, role, groupsToAdd, groupsToRemove) => {
     const isEditing = this.state.userDrawerMode === USER_DRAWER_MODES.EDIT;
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
@@ -193,11 +194,13 @@ class ManageOrgUsersComponent extends React.Component {
         last_name: this.state.fields.lastName,
         email: this.state.fields.email,
         groups: selectedGroups,
+        role: role,
       };
 
       const updateUserBody = {
         addGroups: groupsToAdd,
         removeGroups: groupsToRemove,
+        role: role,
       };
       service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
         .then(() => {
@@ -212,7 +215,7 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error);
+          toast.error(error.error);
           this.setState({ creatingUser: false });
         });
     } else {

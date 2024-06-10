@@ -4,12 +4,14 @@ import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { UsersService } from 'src/services/users.service';
+import { AbilityService } from '@services/permissions-ability.service';
+import { APP_RESOURCE_ACTIONS, TOOLJET_RESOURCE } from 'src/constants/global.constant';
 
 type Actions =
   | 'authorizeOauthForSource' //Deprecated
-  | 'cloneApp' //
-  | 'importApp' //
-  | 'createApp' //
+  | APP_RESOURCE_ACTIONS.CLONE //
+  | APP_RESOURCE_ACTIONS.IMPORT //
+  | APP_RESOURCE_ACTIONS.CREATE //
   | 'createDataSource' //
   | 'createQuery' //
   | 'createUsers' //
@@ -29,8 +31,9 @@ type Actions =
   | 'updateQuery'
   | 'updateVersions'
   | 'updateIcon'
-  | 'viewApp'
-  | 'editApp';
+  | APP_RESOURCE_ACTIONS.VIEW
+  | APP_RESOURCE_ACTIONS.EDIT
+  | APP_RESOURCE_ACTIONS.EXPORT;
 
 type Subjects = InferSubjects<typeof AppVersion | typeof User | typeof App> | 'all';
 
@@ -38,68 +41,80 @@ export type AppsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class AppsAbilityFactory {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService, private abilityService: AbilityService) {}
 
   async appsActions(user: User, id?: string) {
-    const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppsAbility>);
-    const canUpdateApp = await this.usersService.userCan(user, 'update', 'App', id);
+    const { can, build } = new AbilityBuilder<Ability<[Actions | APP_RESOURCE_ACTIONS, Subjects]>>(
+      Ability as AbilityClass<AppsAbility>
+    );
 
-    if (await this.usersService.userCan(user, 'create', 'User')) {
-      can('createUsers', App, { organizationId: user.organizationId });
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      organizationId: user.organizationId,
+      ...(id && { resources: [{ resource: TOOLJET_RESOURCE.APP, resourceId: id }] }),
+    });
+    const userAppPermissions = userPermission?.App;
+    const appUpdateAllowed =
+      (userAppPermissions && userAppPermissions.isAllEditable) || userAppPermissions.editableAppsId.includes(id);
+    const appViewAllowed =
+      userAppPermissions &&
+      (appUpdateAllowed || userAppPermissions.isAllViewable || userAppPermissions.viewableAppsId.includes(id));
+
+    //For app users.
+    if (userPermission.appCreate) {
+      can('createUsers', App);
     }
 
-    if (canUpdateApp) {
-      can('editApp', App, { organizationId: user.organizationId });
+    if (appUpdateAllowed) {
+      can(APP_RESOURCE_ACTIONS.EDIT, App);
     }
 
-    if (await this.usersService.userCan(user, 'create', 'App')) {
-      can('createApp', App);
-      can('importApp', App);
-      if (canUpdateApp) {
-        can('cloneApp', App, { organizationId: user.organizationId });
+    if (userPermission.appCreate) {
+      can(APP_RESOURCE_ACTIONS.CREATE, App);
+      can(APP_RESOURCE_ACTIONS.IMPORT, App);
+      if (appUpdateAllowed) {
+        can(APP_RESOURCE_ACTIONS.EXPORT, App);
+        can(APP_RESOURCE_ACTIONS.CLONE, App);
       }
     }
 
-    if (await this.usersService.userCan(user, 'read', 'App', id)) {
-      can('viewApp', App, { organizationId: user.organizationId });
+    if (appViewAllowed) {
+      can(APP_RESOURCE_ACTIONS.VIEW, App);
 
       //Delete this actions
-      can('fetchUsers', App, { organizationId: user.organizationId });
-      can('fetchVersions', App, { organizationId: user.organizationId });
+      can('fetchUsers', App);
+      can('fetchVersions', App);
 
-      can('runQuery', App, { organizationId: user.organizationId });
-      can('getQueries', App, { organizationId: user.organizationId });
-      can('previewQuery', App, { organizationId: user.organizationId });
+      can('runQuery', App);
+      can('getQueries', App);
+      can('previewQuery', App);
 
-      // policies for datasources
-      can('getDataSources', App, { organizationId: user.organizationId });
-      can('authorizeOauthForSource', App, {
-        organizationId: user.organizationId,
-      });
+      // policies for data sources
+      can('getDataSources', App);
+      can('authorizeOauthForSource', App);
     }
 
-    if (canUpdateApp) {
-      can('updateParams', App, { organizationId: user.organizationId });
-      can('createVersions', App, { organizationId: user.organizationId });
-      can('deleteVersions', App, { organizationId: user.organizationId });
-      can('updateVersions', App, { organizationId: user.organizationId });
-      can('updateIcon', App, { organizationId: user.organizationId });
+    if (appUpdateAllowed) {
+      can('updateParams', App);
+      can('createVersions', App);
+      can('deleteVersions', App);
+      can('updateVersions', App);
+      can('updateIcon', App);
 
-      can('updateQuery', App, { organizationId: user.organizationId });
-      can('createQuery', App, { organizationId: user.organizationId });
-      can('deleteQuery', App, { organizationId: user.organizationId });
+      can('updateQuery', App);
+      can('createQuery', App);
+      can('deleteQuery', App);
 
-      //Why this is at app level factory
-      can('updateDataSource', App, { organizationId: user.organizationId });
-      can('createDataSource', App, { organizationId: user.organizationId });
-      can('deleteDataSource', App, { organizationId: user.organizationId });
+      //TODO: Need to remove this after depreciating local data source
+      can('updateDataSource', App);
+      can('createDataSource', App);
+      can('deleteDataSource', App);
     }
 
-    if (await this.usersService.userCan(user, 'delete', 'App', id)) {
-      can('deleteApp', App, { organizationId: user.organizationId });
+    if (userPermission.appDelete) {
+      can('deleteApp', App);
     }
 
-    can('viewApp', App, { isPublic: true });
+    can(APP_RESOURCE_ACTIONS.VIEW, App, { isPublic: true });
     can('runQuery', App, { isPublic: true });
 
     return build({

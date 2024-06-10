@@ -7,12 +7,12 @@ import { GranularPermissionQuerySearchParam } from '../interface/granular-permis
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 
 export function validateGranularPermissionCreateOperation(group: GroupPermissions) {
-  if (group.name != USER_ROLE.ADMIN)
+  if (group.name === USER_ROLE.ADMIN)
     throw new BadRequestException(ERROR_HANDLER.ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS);
 }
 
 export function validateGranularPermissionUpdateOperation(group: GroupPermissions) {
-  if (group.name != USER_ROLE.ADMIN)
+  if (group.name === USER_ROLE.ADMIN)
     throw new BadRequestException(ERROR_HANDLER.ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS);
 }
 
@@ -22,12 +22,13 @@ export function getAllGranularPermissionQuery(
 ): SelectQueryBuilder<GranularPermissions> {
   const query = manager
     .createQueryBuilder(GranularPermissions, 'granularPermissions')
-    .innerJoin(
-      'apps_group_permissions',
+    .innerJoinAndSelect(
+      'granularPermissions.appsGroupPermissions',
       'appsGroupPermissions',
-      'appsGroupPermission.granular_permission_id = granularPermissions.id'
+      'appsGroupPermissions.granularPermissionId = granularPermissions.id'
     )
-    .select(['granularPermissions', 'appsGroupPermissions']);
+    .leftJoinAndSelect('appsGroupPermissions.groupApps', 'groupApps')
+    .leftJoinAndSelect('groupApps.app', 'app');
   const { name, type, groupId } = searchParam;
   if (groupId) {
     query.where('granularPermissions.groupId = :groupId', {
@@ -56,12 +57,11 @@ export function getGranularPermissionQuery(
   const query = manager
     .createQueryBuilder(GranularPermissions, 'granularPermissions')
     .innerJoinAndSelect('granularPermissions.group', 'groupPermissions')
-    .innerJoin(
-      'apps_group_permissions',
+    .innerJoinAndSelect(
+      'granularPermissions.appsGroupPermissions',
       'appsGroupPermissions',
-      'appsGroupPermission.granular_permission_id = granularPermissions.id'
+      'appsGroupPermissions.granularPermissionId = granularPermissions.id'
     )
-    .select(['granularPermissions', 'appsGroupPermissions'])
     .where('granularPermissions.id = :id', {
       id,
     });

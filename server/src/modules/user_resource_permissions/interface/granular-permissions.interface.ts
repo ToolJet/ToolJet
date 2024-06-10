@@ -45,6 +45,7 @@ export interface CreateAppsPermissionsObject {
   canEdit?: boolean;
   canView?: boolean;
   hideFromDashboard?: boolean;
+  resourcesToAdd?: GranularPermissionAddResourceItems;
 }
 
 export type CreateResourcePermissionObject = CreateAppsPermissionsObject;

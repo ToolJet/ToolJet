@@ -8,6 +8,7 @@ import { GroupPermissionsUtilityService } from './services/group-permissions.uti
 @Module({
   controllers: [GroupPermissionsControllerV2],
   imports: [],
+  exports: [UserRoleService, GroupPermissionsServiceV2, GroupPermissionsUtilityService],
   providers: [GroupPermissionsServiceV2, GranularPermissionsService, UserRoleService, GroupPermissionsUtilityService],
 })
 export class UserResourcePermissionsModule {}

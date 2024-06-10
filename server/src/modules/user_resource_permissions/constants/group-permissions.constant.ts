@@ -4,7 +4,7 @@ import { CreateDefaultGroupObject } from '../interface/group-permissions.interfa
 // enum table -  group_permission_type
 export enum GROUP_PERMISSIONS_TYPE {
   DEFAULT = 'default',
-  CUSTOM_GROUP = 'custom_group',
+  CUSTOM_GROUP = 'custom',
 }
 
 export enum USER_ROLE {
@@ -83,6 +83,9 @@ export const ERROR_HANDLER = {
   ADD_GROUP_USER_NON_EXISTING_USER: 'User is not present in this organization',
   DEFAULT_GROUP_ADD_USER_ROLE_EXIST: (role: USER_ROLE) => {
     return `User is already ${role}`;
+  },
+  USER_IS_OWNER_OF_APPS: (userEmail) => {
+    return `The user- ${userEmail} cannot be an end-user because they are the owner of the following application(s)- `;
   },
   ADD_GROUP_USER_DEFAULT_GROUP: 'Adding user to default group is not allowed',
   DELETING_DEFAULT_GROUP_USER: 'Deleting default user from default group is not allowed',

@@ -14,7 +14,7 @@ import { GroupUsers } from './group_users.entity';
 import { GROUP_PERMISSIONS_TYPE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { GranularPermissions } from './granular_permissions.entity';
 
-@Entity({ name: 'group_permissions' })
+@Entity({ name: 'permission_groups' })
 export class GroupPermissions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

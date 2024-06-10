@@ -1,6 +1,6 @@
 import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { Transform } from 'class-transformer';
-import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsEnum, IsArray } from 'class-validator';
 
 export class CreateGroupPermissionDto {
   @IsString()
@@ -51,9 +51,10 @@ export class EditUserRoleDto {
 }
 
 export class AddGroupUserDto {
-  @IsString()
   @IsNotEmpty()
-  userId: string;
+  @IsArray()
+  @IsString({ each: true })
+  userIds: string[];
 
   @IsString()
   @IsNotEmpty()

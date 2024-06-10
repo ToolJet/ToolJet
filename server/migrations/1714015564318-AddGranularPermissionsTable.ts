@@ -19,7 +19,7 @@ export class AddGranularPermissionsTable1714015564318 implements MigrationInterf
         is_all BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT fk_group_id FOREIGN KEY (group_id) REFERENCES group_permissions(id) ON DELETE CASCADE,
+        CONSTRAINT fk_group_id FOREIGN KEY (group_id) REFERENCES permission_groups(id) ON DELETE CASCADE,
         CONSTRAINT ${DATA_BASE_CONSTRAINTS.GRANULAR_PERMISSIONS_NAME_UNIQUE.dbConstraint} UNIQUE (name, group_id)
     );  
        `

@@ -28,9 +28,11 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   imports: [
+    UserResourcePermissionsModule,
     TypeOrmModule.forFeature([
       App,
       File,

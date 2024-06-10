@@ -32,6 +32,7 @@ import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@dto/event-handler.dto';
+import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller({
   path: 'apps',
@@ -52,7 +53,7 @@ export class AppsControllerV2 {
   @Get(':id')
   async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-    if (!ability.can('viewApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -60,7 +61,7 @@ export class AppsControllerV2 {
       );
     }
 
-    if (accessType === 'edit' && !ability.can('editApp', app)) {
+    if (accessType === 'edit' && !ability.can(APP_RESOURCE_ACTIONS.EDIT, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -111,7 +112,7 @@ export class AppsControllerV2 {
     if (user) {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-      if (!ability.can('viewApp', app)) {
+      if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
         throw new ForbiddenException(
           JSON.stringify({
             organizationId: app.organizationId,
@@ -423,7 +424,7 @@ export class AppsControllerV2 {
 
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('viewApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 

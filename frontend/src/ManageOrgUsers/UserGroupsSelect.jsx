@@ -3,6 +3,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select, { components } from 'react-select';
+import SolidIcon from '@/_ui/Icon/solidIcons/index';
 
 export function UserGroupsSelect(props) {
   const navigate = useNavigate();
@@ -30,12 +31,24 @@ export function UserGroupsSelect(props) {
     );
   };
 
-  const InputOption = ({ getStyles, Icon, isDisabled, isFocused, isSelected, children, innerProps, ...rest }) => {
+  const formatGroupLabel = (data) => {
+    const type = data.label;
+    return (
+      <div className="mb-2 d-flex align-items-center">
+        <SolidIcon name={type === 'default' ? 'usergear' : 'usergroup'} />
+        <span className="ml-1 group-title">{type === 'default' ? 'USER ROLE' : 'CUSTOM GROUP'}</span>
+        {type === 'default' && <span style={{ color: 'red' }}>*</span>}
+      </div>
+    );
+  };
+
+  const InputOption = ({ getStyles, Icon, isDisabled, isFocused, isSelected, children, data, innerProps, ...rest }) => {
     const [isActive, setIsActive] = useState(false);
     const onMouseDown = () => setIsActive(true);
     const onMouseUp = () => setIsActive(false);
     const onMouseLeave = () => setIsActive(false);
-
+    console.log(data);
+    console.log('logginf value');
     const style = {
       alignItems: 'center',
       backgroundColor: 'transparent',
@@ -50,7 +63,6 @@ export function UserGroupsSelect(props) {
       onMouseLeave,
       style,
     };
-
     return (
       <components.Option
         {...rest}
@@ -63,7 +75,7 @@ export function UserGroupsSelect(props) {
       >
         <input
           style={{ width: '1.2rem', height: '1.2rem', borderRadius: '6px !important' }}
-          type="checkbox"
+          type={data.groupType === 'default' ? 'radio' : 'checkbox'}
           className="form-check-input"
           checked={isSelected}
           data-cy="group-check-input"
@@ -155,6 +167,7 @@ export function UserGroupsSelect(props) {
       closeMenuOnSelect={false}
       hideSelectedOptions={false}
       className={darkMode && 'theme-dark dark-theme'}
+      formatGroupLabel={formatGroupLabel}
       components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
       {...props}
       styles={selectStyles}

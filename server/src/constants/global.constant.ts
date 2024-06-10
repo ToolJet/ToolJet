@@ -18,13 +18,14 @@ export enum APP_RESOURCE_ACTIONS {
   DELETE = 'delete',
   READ = 'read',
   CLONE = 'clone',
+  EXPORT = 'export',
   IMPORT = 'import',
   VIEW = 'view',
   EDIT = 'edit',
   VERSIONS_CREATE = 'createVersions',
   VERSION_UPDATE = 'deleteVersions',
   VERSION_DELETE = 'updateVersions',
-  VERSION_READ = 'readßVersions',
+  VERSION_READ = 'readVersions',
 }
 export enum GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS {}
 export enum LOCAL_DATA_SOURCE_RESOURCE_ACTIONS {

@@ -23,6 +23,7 @@ import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
 import { Response } from 'express';
+import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 
 @Injectable()
 export class OauthService {
@@ -82,12 +83,12 @@ export class OauthService {
       const { name, slug } = generateNextNameAndSlug('My workspace');
       defaultOrganization = await this.organizationService.create(name, slug, null, manager);
     }
-
-    const groups = ['all_users'];
     user = await this.usersService.create(
       { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
       organization.id,
-      groups,
+      //Adding user as END-USER on workspace signup
+      USER_ROLE.END_USER,
+      [],
       user,
       true,
       defaultOrganization?.id,
@@ -224,7 +225,7 @@ export class OauthService {
           const { name, slug } = generateNextNameAndSlug('My workspace');
           defaultOrganization = await this.organizationService.create(name, slug, null, manager);
 
-          const groups = ['all_users', 'admin'];
+  
           userDetails = await this.usersService.create(
             {
               firstName: userResponse.firstName,
@@ -233,7 +234,8 @@ export class OauthService {
               ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
             },
             defaultOrganization.id,
-            groups,
+            USER_ROLE.ADMIN,
+            [],
             null,
             true,
             null,

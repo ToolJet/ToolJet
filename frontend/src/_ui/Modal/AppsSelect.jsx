@@ -9,6 +9,9 @@ export function AppsSelect(props) {
   const workspaceId = getWorkspaceId();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  console.log('Props prinitng');
+  console.log(props.options);
+
   //Will be used when workspace routing settings have been merged
   const Menu = (props) => {
     return (
@@ -152,8 +155,8 @@ export function AppsSelect(props) {
 
   return (
     <Select
+      isDisabled={props.disabled}
       isMulti
-      menuIsOpen={true}
       width={'100%'}
       isClearable={false}
       hasSearch={true}

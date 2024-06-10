@@ -29,6 +29,28 @@
             width: 135px;
         }
     }
+
+    .permission-body{
+        max-height: 370px;
+        min-height: 370px;
+        overflow-y: auto;
+        border-bottom: 1px solid var(--slate5);
+
+    }
+
+    .side-button-cont{
+        display: flex;
+        justify-content: end;
+        padding-top: 13px;
+        border: 1px !important;
+         width: 100%;
+         height: 20px;
+
+         .add-icon{
+            width: 135px;
+            height: 30px;
+         }
+    }
 }
 
 .permission-type {
@@ -53,5 +75,16 @@
             display: flex;
             flex-direction: column;
         }
+    }
+}
+
+
+.delete-icon-cont {
+    margin-left: 200px;
+
+    .icon-class{
+        border: none !important;
+        background-color: none !important;
+
     }
 }

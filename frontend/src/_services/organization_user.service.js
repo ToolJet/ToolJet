@@ -11,6 +11,7 @@ export const organizationUserService = {
 };
 
 function create(id, body) {
+  console.log(body);
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users`, requestOptions).then(handleResponse);
 }
@@ -41,6 +42,7 @@ function unarchive(id) {
 }
 
 function updateOrgUser(id, body) {
+  console.log(body);
   const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users/${id}`, requestOptions).then(handleResponse);
 }

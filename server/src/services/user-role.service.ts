@@ -21,6 +21,7 @@ import { CreateResourcePermissionObject } from '@module/user_resource_permission
 import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { AddUserRoleObject } from '@module/user_resource_permissions/interface/group-permissions.interface';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
+import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class UserRoleService {
@@ -30,8 +31,7 @@ export class UserRoleService {
     private groupPermissionsUtilityService: GroupPermissionsUtilityService
   ) {}
 
-  async createDefaultGroups(user: User, manager?: EntityManager): Promise<void> {
-    const { organizationId } = user;
+  async createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void> {
     const defaultGroups: GroupPermissions[] = [];
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group
@@ -49,18 +49,15 @@ export class UserRoleService {
         const groupGranularPermissions: Record<ResourceType, CreateResourcePermissionObject> =
           DEFAULT_RESOURCE_PERMISSIONS[group.name];
         for (const resource of Object.keys(groupGranularPermissions)) {
-          const granularPermissions = await this.granularPermissionsService.create(
+          const createResourcePermissionObj: CreateResourcePermissionObject = groupGranularPermissions[resource];
+          await this.granularPermissionsService.create(
             {
               name: DEFAULT_GRANULAR_PERMISSIONS_NAME[resource],
               groupId: group.id,
-              type: ResourceType[resource],
+              type: resource as ResourceType,
+              isAll: true,
+              createAppsPermissionsObject: {},
             },
-            manager
-          );
-          const createResourcePermissionObj: CreateResourcePermissionObject = groupGranularPermissions[resource];
-
-          await this.granularPermissionsService.createResourceGroupPermission(
-            granularPermissions,
             createResourcePermissionObj,
             manager
           );
@@ -83,28 +80,52 @@ export class UserRoleService {
     manager?: EntityManager
   ): Promise<void> {
     const { newRole, userId } = editRoleDto;
+    console.log('Edit role update');
     const userRole = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId);
     if (!userRole) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
     const userGroup = userRole.groupUsers[0];
-
     if (userRole.name == newRole)
       throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
 
     if (userRole.name == USER_ROLE.ADMIN) {
       const groupUsers = await this.groupPermissionsService.getAllGroupUsers(userRole.id);
+      console.log(groupUsers);
+
       if (groupUsers.length < 2) throw new BadRequestException(ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED);
+    }
+    if (newRole == USER_ROLE.END_USER) {
+      const userCreatedApps = await manager.find(App, {
+        where: {
+          userId: userId,
+        },
+      });
+      if (userCreatedApps.length > 0) {
+        const user = await manager.findOne(User, userGroup.userId);
+        throw new BadRequestException({
+          message: {
+            error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),
+            data: userCreatedApps.map((app) => app.name),
+            title: 'Can not change user role',
+          },
+        });
+      }
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       await this.groupPermissionsService.deleteGroupUser(userGroup.id, manager);
       if (newRole == USER_ROLE.END_USER) {
         const userGroups = await this.groupPermissionsService.getAllUserGroups(userId, organizationId);
+        console.log(userGroups);
+
         for (const customUserGroup of userGroups) {
           const editPermissionsPresent = Object.values(customUserGroup).some(
             (value) => typeof value === 'boolean' && value === true
           );
+          const groupUsers = customUserGroup.groupUsers;
+          console.log(groupUsers);
+
           //NEED TO CHECK FOR ALL GRANULAR PERMISSIONS AS WELL FOR THAT GROUP
-          if (editPermissionsPresent) await this.groupPermissionsService.deleteGroupUser(customUserGroup.id, manager);
+          if (editPermissionsPresent) await this.groupPermissionsService.deleteGroupUser(groupUsers[0].id, manager);
         }
       }
       await this.addUserRole({ role: newRole, userId }, organizationId, manager);
@@ -114,7 +135,10 @@ export class UserRoleService {
   async addUserRole(addUserRoleObject: AddUserRoleObject, organizationId: string, manager?: EntityManager) {
     const { role, userId } = addUserRoleObject;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const roleGroup = await this.getRoleGroup(role, organizationId);
+      const roleGroup = await this.getRoleGroup(role, organizationId, manager);
+      console.log('role group is');
+      console.log(roleGroup);
+
       const newUserRole = manager.create(GroupUsers, { groupId: roleGroup.id, userId });
       await manager.save(newUserRole);
     }, manager);

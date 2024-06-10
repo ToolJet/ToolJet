@@ -37,11 +37,13 @@ import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    UserResourcePermissionsModule,
     TypeOrmModule.forFeature([
       User,
       File,

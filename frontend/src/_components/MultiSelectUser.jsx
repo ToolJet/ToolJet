@@ -40,7 +40,7 @@ function MultiSelectUser({
         <div>
           <input
             type="checkbox"
-            // eslint-disable-next-line no-unused-vars
+            checked={selectedValues.some((item) => item.value === option.value)}
             onClick={(e) => {
               onSelect([...selectedValues, option]);
             }}
@@ -76,7 +76,7 @@ function MultiSelectUser({
         closeOnSelect={false}
         search={true}
         multiple
-        value={{ name: '' }}
+        value={selectedValues}
         onChange={(id, value) => onSelect([...selectedValues, ...value])}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}

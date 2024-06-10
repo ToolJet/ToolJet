@@ -13,11 +13,13 @@ import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
 import { FilesService } from '@services/files.service';
+import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   //Depreciated
   controllers: [GroupPermissionsController],
   imports: [
+    UserResourcePermissionsModule,
     TypeOrmModule.forFeature([
       GroupPermission,
       UserGroupPermission,

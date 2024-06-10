@@ -6,10 +6,10 @@ export enum ResourceType {
   DATA_SOURCE = 'data_source',
 }
 
-export enum DEFAULT_GRANULAR_PERMISSIONS_NAME {
-  APP = 'Apps',
-  DATA_SOURCE = 'Data sources',
-}
+export const DEFAULT_GRANULAR_PERMISSIONS_NAME = {
+  [ResourceType.APP]: 'Apps',
+  [ResourceType.DATA_SOURCE]: 'Data sources',
+};
 
 export const DEFAULT_RESOURCE_PERMISSIONS = {
   [USER_ROLE.ADMIN]: {

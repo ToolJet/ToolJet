@@ -31,6 +31,7 @@ import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
 import { AppCloneDto } from '@dto/app-clone.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller('apps')
 export class AppsController {
@@ -47,7 +48,7 @@ export class AppsController {
     const name = appCreateDto.name;
     const icon = appCreateDto.icon;
 
-    if (!ability.can('createApp', App)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.CREATE, App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -76,7 +77,7 @@ export class AppsController {
     const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
 
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-    if (!ability.can('viewApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -84,7 +85,7 @@ export class AppsController {
       );
     }
 
-    if (accessType === 'edit' && !ability.can('editApp', app)) {
+    if (accessType === 'edit' && !ability.can(APP_RESOURCE_ACTIONS.EDIT, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -125,7 +126,7 @@ export class AppsController {
   @Get(':id')
   async show(@User() user, @AppDecorator() app: App) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-    if (!ability.can('viewApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -166,7 +167,7 @@ export class AppsController {
     if (user) {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-      if (!ability.can('viewApp', app)) {
+      if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
         throw new ForbiddenException(
           JSON.stringify({
             organizationId: app.organizationId,
@@ -174,7 +175,7 @@ export class AppsController {
         );
       }
 
-      editPermission = ability.can('editApp', app);
+      editPermission = ability.can(APP_RESOURCE_ACTIONS.EDIT, app);
     }
 
     if (!app.currentVersionId) {
@@ -199,7 +200,7 @@ export class AppsController {
     if (user) {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-      if (!ability.can('viewApp', app)) {
+      if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
         throw new ForbiddenException(
           JSON.stringify({
             organizationId: app.organizationId,
@@ -247,7 +248,7 @@ export class AppsController {
   async clone(@User() user, @AppDecorator() app: App, @Body() appCloneDto: AppCloneDto) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('cloneApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.CLONE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const appName = appCloneDto.name;
@@ -455,7 +456,7 @@ export class AppsController {
   async tables(@User() user, @AppDecorator() app: App) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('cloneApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.CLONE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 

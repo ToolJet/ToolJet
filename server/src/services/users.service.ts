@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
+import { EntityManager, getRepository, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -11,6 +11,11 @@ import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
+import { UserRoleService } from './user-role.service';
+import { validateDeleteGroupUserOperation } from '@module/user_resource_permissions/utility/group-permissions.utility';
+import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -22,7 +27,11 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(App)
-    private appsRepository: Repository<App>
+    private appsRepository: Repository<App>,
+
+    private groupPermissionsService: GroupPermissionsServiceV2,
+    private userRoleService: UserRoleService,
+    private groupPermissionsUtilityService: GroupPermissionsUtilityService
   ) {}
 
   async getCount(): Promise<number> {
@@ -77,7 +86,7 @@ export class UsersService {
   async create(
     userParams: Partial<User>,
     organizationId: string,
-    //TODO: This should be a single role parameter
+    role: USER_ROLE,
     groups?: string[],
     existingUser?: User,
     isInvite?: boolean,
@@ -106,39 +115,31 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      //TODO: This should be a single role parameter
+      await this.userRoleService.addUserRole({ role, userId: user.id }, defaultOrganizationId || organizationId);
       await this.attachUserGroup(groups, organizationId, user.id, manager);
     }, manager);
 
     return user;
   }
 
-  // Modify this function  - Why this function is present here
-  async attachUserGroup(groups, organizationId, userId, manager?: EntityManager) {
+  async attachUserGroup(
+    groups: string[],
+    organizationId: string,
+    userId: string,
+    manager?: EntityManager
+  ): Promise<void> {
+    if (!groups) return;
     await dbTransactionWrap(async (manager: EntityManager) => {
-      for (const group of groups) {
-        // Need to update this as well
-        const orgGroupPermission = await manager.findOne(GroupPermission, {
-          where: {
-            organizationId: organizationId,
-            group: group,
-          },
-        });
-
-        if (!orgGroupPermission) {
-          throw new BadRequestException(`${group} group does not exist for current organization`);
-        }
-        const userGroupPermission = manager.create(UserGroupPermission, {
-          groupPermissionId: orgGroupPermission.id,
-          userId: userId,
-        });
-        await manager.save(userGroupPermission);
-      }
+      await Promise.all(
+        groups.map(async (groupId) => {
+          await this.groupPermissionsService.addGroupUsers({ userIds: [userId], groupId }, organizationId, manager);
+        })
+      );
     }, manager);
   }
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
-    const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups, source } = params;
+    const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups, source, role } = params;
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
@@ -156,10 +157,10 @@ export class UsersService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
       const user = await manager.findOne(User, { where: { id: userId } });
-      //TODO: Why we have this here......Remove if not needed
+
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
-      //TODO: Why we have this here......Remove if not needed
-      await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
+      if (role) await this.userRoleService.editDefaultGroupUserRole({ userId, newRole: role }, organizationId, manager);
+      await this.attachUserGroup(addGroups, organizationId, userId, manager);
       return user;
     }, manager);
   }
@@ -174,73 +175,55 @@ export class UsersService {
   }
 
   //TODO: Remove this function if not needed
-  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
-    const orgId = organizationId || user.defaultOrganizationId;
-    if (addGroups) {
-      const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId);
+  // async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
+  //   const orgId = organizationId || user.defaultOrganizationId;
+  //   if (addGroups) {
+  //     const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId);
 
-      for (const group of addGroups) {
-        const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
+  //     for (const group of addGroups) {
+  //       const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
 
-        if (!orgGroupPermission) {
-          throw new BadRequestException(`${group} group does not exist for current organization`);
-        }
-        await dbTransactionWrap(async (manager: EntityManager) => {
-          const userGroupPermission = manager.create(UserGroupPermission, {
-            groupPermissionId: orgGroupPermission.id,
-            userId: user.id,
-          });
-          await manager.save(userGroupPermission);
-        }, manager);
-      }
-    }
-  }
+  //       if (!orgGroupPermission) {
+  //         throw new BadRequestException(`${group} group does not exist for current organization`);
+  //       }
+  //       await dbTransactionWrap(async (manager: EntityManager) => {
+  //         const userGroupPermission = manager.create(UserGroupPermission, {
+  //           groupPermissionId: orgGroupPermission.id,
+  //           userId: user.id,
+  //         });
+  //         await manager.save(userGroupPermission);
+  //       }, manager);
+  //     }
+  //   }
+  // }
 
-  //TODO: Remove this function if not needed
   async removeUserGroupPermissionsIfExists(
     manager: EntityManager,
     user: User,
     removeGroups: string[],
     organizationId?: string
-  ) {
+  ): Promise<void> {
     const orgId = organizationId || user.defaultOrganizationId;
-    if (removeGroups) {
-      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups, orgId);
-      if (removeGroups.includes('all_users')) {
-        throw new BadRequestException('Cannot remove user from default group.');
-      }
-      await dbTransactionWrap(async (manager: EntityManager) => {
-        const groupPermissions = await manager.find(GroupPermission, {
-          group: In(removeGroups),
-          organizationId: orgId,
-        });
-        const groupIdsToMaybeRemove = groupPermissions.map((permission) => permission.id);
-
-        await manager.delete(UserGroupPermission, {
-          groupPermissionId: In(groupIdsToMaybeRemove),
-          userId: user.id,
-        });
-      }, manager);
-    }
+    if (!removeGroups) return;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const groupPermissions = await this.groupPermissionsService.getAllUserGroups(user.id, orgId);
+      const groupsToRemove = groupPermissions.filter((permission) => removeGroups.includes(permission.id));
+      await Promise.all(
+        groupsToRemove.map(async (group) => {
+          validateDeleteGroupUserOperation(group);
+          const groupUser = group.groupUsers[0];
+          this.groupPermissionsService.deleteGroupUser(groupUser.id, manager);
+        })
+      );
+    }, manager);
   }
 
   //TODO: Remove this function if not needed
-  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin'], organizationId: string) {
-    const removingAdmin = removeGroups.includes('admin');
-    if (!removingAdmin) return;
+  async throwErrorIfUserIsLastActiveAdmin(user: User, organizationId: string) {
+    const result = await this.groupPermissionsUtilityService.getRoleUsersList(USER_ROLE.ADMIN, organizationId);
+    const isAdmin = result.find((userItem) => userItem.id === user.id);
 
-    const result = await createQueryBuilder(User, 'users')
-      .innerJoin('users.groupPermissions', 'group_permissions')
-      .innerJoin('users.organizationUsers', 'organization_users')
-      .where('organization_users.user_id != :userId', { userId: user.id })
-      .andWhere('organization_users.status = :status', { status: WORKSPACE_USER_STATUS.ACTIVE })
-      .andWhere('group_permissions.group = :group', { group: 'admin' })
-      .andWhere('group_permissions.organization_id = :organizationId', {
-        organizationId,
-      })
-      .getCount();
-
-    if (result == 0) throw new BadRequestException('Atleast one active admin is required.');
+    if (isAdmin && result.length <= 2) throw new BadRequestException('Atleast one active admin is required');
   }
 
   //TODO: Remove this function if not needed

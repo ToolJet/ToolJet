@@ -48,6 +48,7 @@ import { ImportExportResourcesModule } from './modules/import_export_resources/i
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { PermissionsModule } from '@module/permissions/permissions.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -134,6 +135,7 @@ const imports = [
   //Need to add new module
   GroupPermissionsModule,
   UserResourcePermissionsModule,
+  PermissionsModule,
   FilesModule,
   PluginsModule,
   EventsModule,

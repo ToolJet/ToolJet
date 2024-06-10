@@ -29,23 +29,38 @@ function InviteUsersForm({
   const [activeTab, setActiveTab] = useState(1);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [existingGroups, setExistingGroups] = useState([]);
+  const customGroups = groups.filter((group) => group.groupType === 'custom');
+  const roleGroups = groups.filter((group) => group.groupType === 'default');
+  const groupedOptions = [
+    {
+      label: 'default',
+      options: roleGroups,
+    },
+    {
+      label: 'custom',
+      options: customGroups,
+    },
+  ];
 
   const hiddenFileInput = useRef(null);
 
   useEffect(() => {
     if (currentEditingUser && groups.length) {
-      const { first_name, last_name, email, groups: addedToGroups } = currentEditingUser;
+      const { first_name, last_name, email, groups: addedToCustomGroups, role_group } = currentEditingUser;
+      const addedToGroups = [...addedToCustomGroups, ...role_group];
       setUserValues({
         fullName: `${first_name}${last_name && ` ${last_name}`}`,
         email: email,
       });
       const preSelectedGroups = groups
-        .filter((group) => addedToGroups.includes(group.value))
+        .filter((group) => addedToGroups.map((group) => group.name).includes(group.value))
         .map((filteredGroup) => ({
           ...filteredGroup,
           label: filteredGroup.name,
         }));
-      setExistingGroups(groups.filter((group) => addedToGroups.includes(group.value)).map((g) => g.value));
+      setExistingGroups(
+        groups.filter((group) => addedToCustomGroups.map((gp) => gp.name).includes(group.value)).map((g) => g.id)
+      );
       onChangeHandler(preSelectedGroups);
     }
   }, [currentEditingUser, groups]);
@@ -65,28 +80,38 @@ function InviteUsersForm({
   };
 
   const onChangeHandler = (items) => {
-    setSelectedGroups(items);
+    let finalGroup = items;
+    const roleGroups = items.filter((group) => group.groupType === 'default');
+    const currentRole = selectedGroups.find((group) => group.groupType === 'default');
+    if (roleGroups.length == 2) {
+      finalGroup = items.filter((group) => group.value !== currentRole.value);
+    }
+    setSelectedGroups(finalGroup);
   };
 
   const handleCreateUser = (e) => {
     e.preventDefault();
-    const selectedGroupsIds = selectedGroups.map((group) => group.value);
-    manageUser(currentEditingUser?.id, selectedGroupsIds);
+    const role = selectedGroups.find((group) => group.groupType === 'default').value;
+    const selectedGroupsIds = selectedGroups.filter((group) => group.groupType !== 'default').map((group) => group.id);
+    manageUser(currentEditingUser?.id, selectedGroupsIds, role);
   };
 
   const handleEditUser = (e) => {
     e.preventDefault();
-    const selectedGroupsIds = selectedGroups.map((group) => group.value);
-    const newGroupsToAdd = selectedGroupsIds.filter((selectedGroupId) => !existingGroups.includes(selectedGroupId));
-    const groupsToRemove = existingGroups.filter((existingGroup) => !selectedGroupsIds.includes(existingGroup));
-    manageUser(currentEditingUser.id, selectedGroupsIds, newGroupsToAdd, groupsToRemove);
+    const { newGroupsToAdd, groupsToRemove, selectedGroupsIds, role } = getEditedGroups();
+    manageUser(currentEditingUser.id, selectedGroupsIds, role, newGroupsToAdd, groupsToRemove);
   };
 
   const getEditedGroups = () => {
-    const selectedGroupsIds = selectedGroups.map((group) => group.value);
+    let role = null;
+    if (currentEditingUser)
+      role = selectedGroups.find(
+        (group) => group.groupType === 'default' && !currentEditingUser.role_group.includes(group.value)
+      )?.value;
+    const selectedGroupsIds = selectedGroups.filter((group) => group.groupType !== 'default').map((group) => group.id);
     const newGroupsToAdd = selectedGroupsIds.filter((selectedGroupId) => !existingGroups.includes(selectedGroupId));
     const groupsToRemove = existingGroups.filter((existingGroup) => !selectedGroupsIds.includes(existingGroup));
-    return { newGroupsToAdd, groupsToRemove };
+    return { newGroupsToAdd, groupsToRemove, selectedGroupsIds, role };
   };
 
   const isEdited = () => {
@@ -100,6 +125,8 @@ function InviteUsersForm({
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
+  const containRoleGroup =
+    selectedGroups.filter((item) => ['admin', 'end-user', 'builder'].includes(item.value)).length > 0;
 
   return (
     <div>
@@ -216,7 +243,7 @@ function InviteUsersForm({
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
-                    <UserGroupsSelect value={selectedGroups} onChange={onChangeHandler} options={groups} />
+                    <UserGroupsSelect value={selectedGroups} onChange={onChangeHandler} options={groupedOptions} />
                   </div>
                 </form>
               </div>
@@ -274,7 +301,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers || creatingUser || !isEdited()}
+              disabled={uploadingUsers || creatingUser || !isEdited() || !containRoleGroup}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

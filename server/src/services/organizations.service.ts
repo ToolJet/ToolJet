@@ -33,6 +33,11 @@ import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
+import { UserRoleService } from './user-role.service';
+import {
+  GROUP_PERMISSIONS_TYPE,
+  USER_ROLE,
+} from '@module/user_resource_permissions/constants/group-permissions.constant';
 
 const MAX_ROW_COUNT = 500;
 
@@ -80,7 +85,8 @@ export class OrganizationsService {
     private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private userRoleService: UserRoleService
   ) {}
 
   async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
@@ -111,8 +117,11 @@ export class OrganizationsService {
         manager
       );
 
+      await this.userRoleService.createDefaultGroups(organization.id, manager);
+
       if (user) {
         await this.organizationUserService.create(user, organization, false, manager);
+        await this.userRoleService.addUserRole({ role: USER_ROLE.ADMIN, userId: user.id }, organization.id, manager);
 
         for (const groupPermission of createdGroupPermissions) {
           //Change as per new group permissions
@@ -255,9 +264,9 @@ export class OrganizationsService {
     const query = createQueryBuilder(OrganizationUser, 'organization_user')
       .innerJoinAndSelect('organization_user.user', 'user')
       .innerJoinAndSelect(
-        'user.groupPermissions',
+        'user.userPermissions',
         'group_permissions',
-        'group_permissions.organization_id = :organizationId',
+        'group_permissions.organizationId = :organizationId',
         {
           organizationId: organizationId,
         }
@@ -280,6 +289,8 @@ export class OrganizationsService {
 
     return organizationUsers?.map((orgUser) => {
       //Change as per new group permissions
+      const role = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT);
+      const groups = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP);
       return {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName ?? '',
@@ -290,7 +301,8 @@ export class OrganizationsService {
         role: orgUser.role,
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
-        groups: orgUser.user.groupPermissions.map((groupPermission) => groupPermission.group),
+        groups: groups.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+        roleGroup: role.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
         ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
           ? { accountSetupToken: orgUser.user.invitationToken }
@@ -586,7 +598,8 @@ export class OrganizationsService {
       ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
     //TODO: Need to add single role as option and same need to be changed on frontend
-    const groups = inviteNewUserDto.groups ?? [];
+    const groups = inviteNewUserDto?.groups;
+    const role = inviteNewUserDto.role;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
@@ -624,7 +637,8 @@ export class OrganizationsService {
         userParams,
         currentUser.organizationId,
         //TODO: Need to add it as single group
-        ['all_users', ...groups],
+        role,
+        groups,
         user,
         true,
         defaultOrganization?.id,
@@ -634,7 +648,7 @@ export class OrganizationsService {
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+        await this.usersService.attachUserGroup(['admin'], defaultOrganization.id, user.id, manager);
       }
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({

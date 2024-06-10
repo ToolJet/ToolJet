@@ -5,6 +5,7 @@ import {
   ResourceGroupActions,
   GranularPermissionAddResourceItems,
   GranularPermissionDeleteResourceItems,
+  CreateAppsPermissionsObject,
 } from '@module/user_resource_permissions/interface/granular-permissions.interface';
 
 export class CreateGranularPermissionDto {
@@ -17,14 +18,20 @@ export class CreateGranularPermissionDto {
   @IsNotEmpty()
   groupId: string;
 
+  @IsBoolean()
+  @IsNotEmpty()
+  isAll: boolean;
+
   @IsEnum(ResourceType)
   @IsNotEmpty()
   type: ResourceType;
+
+  @IsOptional()
+  createAppsPermissionsObject: CreateAppsPermissionsObject;
 }
 
 export class UpdateGranularPermissionDto {
   @IsString()
-  @Transform(({ value }) => value.trim())
   @IsOptional()
   name: string;
 

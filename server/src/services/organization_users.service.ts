@@ -72,7 +72,7 @@ export class OrganizationUsersService {
       relations: ['user'],
     });
 
-    await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId);
+    await this.usersService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
     await this.organizationUsersRepository.update(id, {
       status: WORKSPACE_USER_STATUS.ARCHIVED,
       invitationToken: null,
