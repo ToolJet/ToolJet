@@ -23,6 +23,7 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { RequestContext } from 'src/models/request-context.model';
 import { IUpdatingReferencesOptions } from '@dto/data-query.dto';
 import { DataQueryStatus } from 'src/models/data_query_status.model';
+import { CookieOptions, Response } from 'express';
 
 @Injectable()
 export class DataQueriesService {
@@ -156,7 +157,13 @@ export class DataQueriesService {
     }
   };
 
-  async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
+  async runQuery(
+    user: User,
+    dataQuery: any,
+    queryOptions: object,
+    environmentId?: string,
+    response?: Response
+  ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
 
@@ -337,6 +344,11 @@ export class DataQueriesService {
         }
       }
       queryStatus.setSuccess();
+
+      //TODO: support workflow execute().
+      if (dataQuery.kind === 'restapi' && result.responseHeaders && response) {
+        this.setCookiesBackToCleint(response, result.responseHeaders);
+      }
       return result;
     } catch (queryError) {
       queryStatus.setFailure({
@@ -360,6 +372,47 @@ export class DataQueriesService {
       }
     }
   }
+
+  setCookiesBackToCleint = (response: Response, responseHeaders: any) => {
+    /* forward set-cookie headers */
+    const setCookieHeaders = responseHeaders['set-cookie'];
+    if (setCookieHeaders) {
+      setCookieHeaders.forEach((cookie) => {
+        const cookieParts = cookie.split(';');
+        const cookieNameValue = cookieParts[0].split('=');
+        const cookieOptions: CookieOptions = {};
+
+        const keyMap: { [key: string]: keyof CookieOptions } = {
+          'max-age': 'maxAge',
+          expires: 'expires',
+          httponly: 'httpOnly',
+          secure: 'secure',
+          domain: 'domain',
+          path: 'path',
+          encode: 'encode',
+          samesite: 'sameSite',
+          signed: 'signed',
+        };
+
+        cookieParts.slice(1).forEach((part) => {
+          const [key, value] = part.trim().split('=');
+          const normalizedKey = key.toLowerCase();
+
+          if (key.toLowerCase() === 'expires') {
+            const expiresTimestamp = new Date(value).getTime() - Date.now();
+            cookieOptions.maxAge = expiresTimestamp;
+          } else {
+            if (keyMap[normalizedKey]) {
+              const optionKey = keyMap[normalizedKey];
+              cookieOptions[optionKey as any] = value || true;
+            }
+          }
+        });
+
+        response.cookie(cookieNameValue[0], cookieNameValue[1], cookieOptions);
+      });
+    }
+  };
 
   checkIfContentTypeIsURLenc(headers: [] = []) {
     const objectHeaders = Object.fromEntries(headers);
