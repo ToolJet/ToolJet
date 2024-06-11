@@ -1063,8 +1063,6 @@ export class AppsService {
       };
     }
 
-    console.log({ pageSettings });
-
     if (body?.pageSettings) {
       editableParams['pageSettings'] = {
         ...mergeDeep(pageSettings, body.pageSettings),
