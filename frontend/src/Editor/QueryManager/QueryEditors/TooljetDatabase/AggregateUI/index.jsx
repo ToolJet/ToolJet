@@ -34,6 +34,12 @@ export const AggregateUi = () => {
     handleOptionsChange('aggregates', updatedAggregates);
   };
 
+  const handleDeleteAggregate = (aggregateKey) => {
+    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    delete currentAggregates[aggregateKey];
+    handleOptionsChange('aggregates', currentAggregates);
+  };
+
   const columnAccessorsOptions = useMemo(() => {
     return columns.map((column) => {
       return {
@@ -78,6 +84,7 @@ export const AggregateUi = () => {
                 <div
                   style={{ width: '32px', minWidth: '32px' }}
                   className="d-flex justify-content-center align-items-center"
+                  onClick={() => handleDeleteAggregate(aggregateKey)}
                 >
                   <SolidIcon name="trash" width="16" fill="var(--slate9)" />
                 </div>
