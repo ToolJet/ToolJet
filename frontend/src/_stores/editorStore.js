@@ -42,6 +42,7 @@ const initialState = {
   editorCanvasWidth: 1092,
   canvasBackground: {},
   pageSwitchInProgress: false,
+  pageSettingSelected: false,
 };
 
 export const useEditorStore = create(

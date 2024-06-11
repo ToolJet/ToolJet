@@ -28,6 +28,7 @@ import {
   buildComponentMetaDefinition,
   getAllChildComponents,
   runQueries,
+  computePageSettings,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
@@ -95,6 +96,7 @@ import {
 } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
+import PageSettings from './Inspector/PageSettings/PageSettings';
 
 setAutoFreeze(false);
 enablePatches();
@@ -293,6 +295,7 @@ const EditorComponent = (props) => {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
       computeComponentState(components);
+      computePageSettings();
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
@@ -730,6 +733,32 @@ const EditorComponent = (props) => {
     });
   };
 
+  const pageSettingsChanged = (pageSettingsOptions, type) => {
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    if (!newAppDefinition.pageSettings) {
+      newAppDefinition.pageSettings = {};
+    }
+
+    if (!newAppDefinition.pageSettings[type]) {
+      newAppDefinition.pageSettings[type] = {};
+    }
+
+    for (const [key, value] of Object.entries(pageSettingsOptions)) {
+      if (value?.[1]?.a == undefined) newAppDefinition.pageSettings[type][key] = value;
+      else {
+        const hexCode = `${value?.[0]}${decimalToHex(value?.[1]?.a)}`;
+        newAppDefinition.pageSettingsp[type][key] = hexCode;
+      }
+    }
+    updateEditorState({
+      isUpdatingEditorStateInProcess: true,
+    });
+    appDefinitionChanged(newAppDefinition, {
+      pageSettings: true,
+    });
+  };
+
   /* Only for the first load of an app. Should not use for any other cases */
   const runForInitialLoad = async () => {
     const appId = props?.id || props?.params?.slug;
@@ -927,7 +956,7 @@ const EditorComponent = (props) => {
           draft.homePageId = newDefinition.homePageId;
         }
 
-        if (opts?.generalAppDefinitionChanged || opts?.globalSettings || isEmpty(opts)) {
+        if (opts?.generalAppDefinitionChanged || opts?.globalSettings || opts?.pageSettings || isEmpty(opts)) {
           Object.assign(draft, newDefinition);
         }
       });
@@ -1624,7 +1653,7 @@ const EditorComponent = (props) => {
     appDefinitionChanged(copyOfAppDefinition, { pageDefinitionChanged: true });
   };
 
-  const addNewPage = ({ name, handle }) => {
+  const addNewPage = ({ name, icon = 'IconHome2', handle }) => {
     // check for unique page handles
     const pageExists = Object.values(appDefinition.pages).some((page) => page.name === name);
 
@@ -1652,6 +1681,7 @@ const EditorComponent = (props) => {
     copyOfAppDefinition.pages[newPageId] = {
       id: newPageId,
       name,
+      icon,
       handle: newHandle,
       components: {},
       index: Object.keys(copyOfAppDefinition.pages).length + 1,
@@ -1875,6 +1905,20 @@ const EditorComponent = (props) => {
     });
   };
 
+  const updatePageIcon = (pageId, iconName) => {
+    updateEditorState({
+      isUpdatingEditorStateInProcess: true,
+    });
+
+    const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    newAppDefinition.pages[pageId].icon = iconName;
+    switchPage(pageId);
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
   const clonePage = (pageId) => {
     setIsSaving(true);
     appVersionService
@@ -2084,6 +2128,7 @@ const EditorComponent = (props) => {
                 clonePage={clonePage}
                 hidePage={hidePage}
                 unHidePage={unHidePage}
+                updatePageIcon={updatePageIcon}
                 disableEnablePage={disableEnablePage}
                 updateHomePage={updateHomePage}
                 updatePageHandle={updatePageHandle}
@@ -2247,6 +2292,9 @@ const EditorComponent = (props) => {
                       darkMode={props.darkMode}
                       disabled={appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile'}
                     />
+                  }
+                  pageSettingTab={
+                    <PageSettings settings={getCurrentState().pageSettings} pageSettingsChanged={pageSettingsChanged} />
                   }
                   allComponents={appDefinition.pages[currentPageId]?.components}
                 />

@@ -163,6 +163,14 @@ const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
         operation: 'update',
       }),
     },
+    {
+      updateTypes: ['pageSettings'],
+      processingFunction: () => ({
+        updateDiff: appDiff,
+        type: 'page_settings',
+        operation: 'update',
+      }),
+    },
   ];
 
   const options = _.keys(opts);

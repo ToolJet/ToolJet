@@ -12,6 +12,7 @@ const initialState = {
     theme: { name: 'light' },
     urlparams: null,
   },
+  pageSettings: {},
   errors: {},
   variables: {},
   client: {},

@@ -3,10 +3,11 @@ import React from 'react';
 import { shallow } from 'zustand/shallow';
 import { isEmpty } from 'lodash';
 
-const RightSidebarTabManager = ({ inspectorTab, widgetManagerTab, allComponents }) => {
-  const { selectedComponents } = useEditorStore(
+const RightSidebarTabManager = ({ inspectorTab, pageSettingTab, widgetManagerTab, allComponents }) => {
+  const { selectedComponents, pageSettingSelected } = useEditorStore(
     (state) => ({
       selectedComponents: state?.selectedComponents,
+      pageSettingSelected: state?.pageSettingSelected,
     }),
     shallow
   );
@@ -18,6 +19,10 @@ const RightSidebarTabManager = ({ inspectorTab, widgetManagerTab, allComponents 
     selectedComponents.length === 1 &&
     !isEmpty(allComponents) &&
     !isEmpty(allComponents[selectedComponents[0]?.id]);
+
+  if (pageSettingSelected && !showInspectorTab) {
+    return <>{pageSettingTab}</>;
+  }
 
   return <>{showInspectorTab ? inspectorTab : widgetManagerTab}</>;
 };

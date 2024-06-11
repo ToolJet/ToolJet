@@ -23,6 +23,8 @@ function FolderList({
   overLayComponent,
   darkMode,
   toolTipText,
+  customStyles,
+  CustomIcon,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -49,6 +51,8 @@ function FolderList({
     setIsHoveredInside(false);
   };
 
+  const computedStyles = customStyles(selectedItem, isHovered);
+
   return (
     <>
       {!isLoading ? (
@@ -59,7 +63,10 @@ function FolderList({
             'tj-list-item-disabled': disabled,
             'tj-list-item-option-opened': showGroupOptions,
           })}
-          style={backgroundColor && { backgroundColor }}
+          style={{
+            ...(backgroundColor && { backgroundColor }),
+            ...((isHovered || selectedItem) && { ...computedStyles.pill }),
+          }}
           onClick={isHoveredInside ? menuToggle : onClick}
           data-cy={`${dataCy}-list-item`}
           onMouseEnter={handleMouseEnter}
@@ -70,6 +77,16 @@ function FolderList({
           {LeftIcon && (
             <div className="tj-list-item-icon">
               <SolidIcon name={LeftIcon} />
+            </div>
+          )}
+
+          {CustomIcon && (
+            <div className="custom-icon">
+              <CustomIcon
+                fill={`${darkMode ? '#fff' : computedStyles.icon.color}`}
+                color={`${darkMode ? '#fff' : computedStyles.icon.color}`}
+                style={{ width: '16px', height: '16px' }}
+              />
             </div>
           )}
 

@@ -316,3 +316,14 @@ export const isValidDomain = (email: string, restrictedDomain: string): boolean 
   }
   return true;
 };
+
+export const mergeDeep = (target, source) => {
+  for (const key in source) {
+    if (source[key] instanceof Object && key in target) {
+      Object.assign(source[key], mergeDeep(target[key], source[key]));
+    }
+  }
+
+  Object.assign(target || {}, source);
+  return target;
+};
