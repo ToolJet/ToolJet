@@ -231,20 +231,21 @@ export const PasswordInput = function PasswordInput({
 
   const currentPageId = useEditorStore.getState().currentPageId;
   const components = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-  const parentComponentTypes = {};
-  Object.keys(components).forEach((key) => {
-    const { component } = components[key];
-    parentComponentTypes[key] = component.component;
-  });
 
   const isChildOfForm = Object.keys(components).some((key) => {
     if (key == id) {
       const { parent } = components[key].component;
-      if (parentComponentTypes[parent] == 'Form') return false;
+      if (parent) {
+        const parentComponentTypes = {};
+        Object.keys(components).forEach((key) => {
+          const { component } = components[key];
+          parentComponentTypes[key] = component.component;
+        });
+        if (parentComponentTypes[parent] == 'Form') return true;
+      }
     }
-    return true;
+    return false;
   });
-
   const renderInput = () => (
     <>
       <div
@@ -399,7 +400,7 @@ export const PasswordInput = function PasswordInput({
     </>
   );
   const renderContainer = (children) => {
-    return isChildOfForm ? <form autoComplete="off">{children}</form> : <div>{children}</div>;
+    return !isChildOfForm ? <form autoComplete="off">{children}</form> : <div>{children}</div>;
   };
 
   return renderContainer(renderInput());
