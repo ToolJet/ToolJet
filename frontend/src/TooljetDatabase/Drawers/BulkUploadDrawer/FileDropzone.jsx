@@ -12,7 +12,6 @@ export function FileDropzone({
   errors,
   handleFileChange,
   onButtonClick,
-  onDrop,
   setProgress,
   progress,
 }) {
@@ -24,7 +23,7 @@ export function FileDropzone({
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
     onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length > 0) {
+      if (acceptedFiles.length === 1) {
         const file = acceptedFiles[0];
         setFileData(file); // Set the file data
         handleFileChange(file);
