@@ -351,11 +351,7 @@ export const MultiselectV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor:
-        // darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-        //   ?
-        'var(--surfaces-surface-01)',
-      // : fieldBackgroundColor,
+      backgroundColor: 'var(--surfaces-surface-01)',
       color: _state.isDisabled
         ? 'var(_--text-disbled)'
         : selectedTextColor !== '#1B1F24'
@@ -378,11 +374,7 @@ export const MultiselectV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor:
-        // darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-        // ?
-        'var(--surfaces-surface-01)',
-      // : fieldBackgroundColor,
+      backgroundColor: 'var(--surfaces-surface-01)',
     }),
     menu: (provided) => ({
       ...provided,

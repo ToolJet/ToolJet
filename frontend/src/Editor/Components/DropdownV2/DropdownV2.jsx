@@ -321,10 +321,7 @@ export const DropdownV2 = ({
     }),
     option: (provided) => ({
       ...provided,
-      backgroundColor:
-        darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-          ? 'var(--surfaces-surface-01)'
-          : fieldBackgroundColor,
+      backgroundColor: 'var(--surfaces-surface-01)',
       color:
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
@@ -348,10 +345,7 @@ export const DropdownV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor:
-        darkMode && ['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)
-          ? 'var(--surfaces-surface-01)'
-          : fieldBackgroundColor,
+      backgroundColor: 'var(--surfaces-surface-01)',
     }),
     menu: (provided) => ({
       ...provided,
