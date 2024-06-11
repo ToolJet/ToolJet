@@ -23,11 +23,16 @@ export enum APP_RESOURCE_ACTIONS {
   VIEW = 'view',
   EDIT = 'edit',
   VERSIONS_CREATE = 'createVersions',
-  VERSION_UPDATE = 'deleteVersions',
-  VERSION_DELETE = 'updateVersions',
+  VERSION_UPDATE = 'updateVersions',
+  VERSION_DELETE = 'deleteVersions',
   VERSION_READ = 'readVersions',
 }
-export enum GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS {}
+export enum GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS {
+  CREATE = 'create',
+  DELETE = 'delete',
+  READ = 'read',
+  UPDATE = 'update',
+}
 export enum LOCAL_DATA_SOURCE_RESOURCE_ACTIONS {
   CREATE = 'create',
   DELETE = 'delete',
@@ -57,9 +62,35 @@ export enum USER_RESOURCE_ACTIONS {
   DELETE = 'delete',
   READ = 'read',
 }
-export enum ORGANIZATION_RESOURCE_ACTIONS {}
+export enum ORGANIZATION_RESOURCE_ACTIONS {
+  USER_INVITE = 'inviteUsers',
+  USER_ARCHIVE = 'archiveUser',
+  EDIT_ROLE = 'changeRole',
+  ACCESS_PERMISSIONS = 'accessGroupPermission',
+  UPDATE = 'update',
+  VIEW_ALL_USERS = 'viewAllUsers',
+  UPDATE_USERS = 'updateUser',
+}
 export enum FOLDER_RESOURCE_ACTION {
   CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+}
+export enum COMMENT_RESOURCE_ACTION {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  READ = 'read',
+}
+export enum THREAD_RESOURCE_ACTION {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  READ = 'read',
+}
+
+export enum PLUGIN_RESOURCE_ACTION {
+  INSTALL = 'install',
   UPDATE = 'update',
   DELETE = 'delete',
 }

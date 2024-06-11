@@ -55,7 +55,7 @@
         "type": "codehinter",
         "description": "Enter text",
         "height": "150px",
-        "mode": "text"
+        "editorType": "extendedSingleLine"
       },
       "html": {
         "label": "Body as HTML",
@@ -63,7 +63,7 @@
         "type": "codehinter",
         "description": "Enter html",
         "height": "150px",
-        "mode": "handlebars",
+        "editorType": "extendedSingleLine",
         "lineNumbers": true
       }
     }

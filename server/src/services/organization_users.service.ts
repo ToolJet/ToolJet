@@ -1,17 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { ConfigService } from '@nestjs/config';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
+
+/* TYPES */
+type InvitedUserType = Partial<User> & {
+  invitedOrganizationId?: string;
+  organizationStatus?: string;
+};
 
 @Injectable()
 export class OrganizationUsersService {
@@ -44,16 +49,54 @@ export class OrganizationUsersService {
     }, manager);
   }
 
-  async changeRole(id: string, role: string) {
-    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
-    if (organizationUser.role == 'admin') {
-      const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
+  async getOrganizationUser(organizationId: string, manager?: EntityManager) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOne(OrganizationUser, { where: { organizationId } });
+    }, manager);
+  }
 
-      if (lastActiveAdmin) {
-        throw new BadRequestException('Atleast one active admin is required.');
-      }
+  async findByWorkspaceInviteToken(invitationToken: string): Promise<InvitedUserType> {
+    const organizationUser = await getRepository(OrganizationUser)
+      .createQueryBuilder('organizationUser')
+      .select([
+        'organizationUser.organizationId',
+        'organizationUser.invitationToken',
+        'organizationUser.status',
+        'user.id',
+        'user.email',
+        'user.invitationToken',
+        'user.status',
+        'user.firstName',
+        'user.lastName',
+        'user.source',
+      ])
+      .innerJoin('organizationUser.user', 'user')
+      .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
+      .getOne();
+
+    const user: InvitedUserType = organizationUser?.user;
+    /* Invalid organization token */
+    if (!user) {
+      const errorResponse = {
+        message: {
+          error: 'Invalid invitation token. Please ensure that you have a valid invite url',
+          isInvalidInvitationUrl: true,
+        },
+      };
+      throw new BadRequestException(errorResponse);
     }
-    return await this.organizationUsersRepository.update(id, { role });
+    user.invitedOrganizationId = organizationUser.organizationId;
+    user.organizationStatus = organizationUser.status;
+    return user;
+  }
+
+  async getActiveWorkspacesCount(userId: string) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      },
+    });
   }
 
   async updateOrgUser(organizationUserId: string, updateUserDto) {
@@ -98,13 +141,30 @@ export class OrganizationUsersService {
       await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
     }, manager);
 
+    if (organizationUser.user.invitationToken) {
+      /* User is not activated in instance level. Send setup/welcome email */
+      this.emailService
+        .sendWelcomeEmail(
+          organizationUser.user.email,
+          organizationUser.user.firstName,
+          organizationUser.user.invitationToken,
+          invitationToken,
+          organizationUser.organizationId,
+          organizationUser.organization.name,
+          user.firstName
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+      return;
+    }
+
     this.emailService
       .sendOrganizationUserWelcomeEmail(
         organizationUser.user.email,
         organizationUser.user.firstName,
         user.firstName,
-        `${invitationToken}?oid=${organizationUser.organizationId}`,
-        organizationUser.organization.name
+        invitationToken,
+        organizationUser.organization.name,
+        organizationUser.organizationId
       )
       .catch((err) => console.error('Error while sending welcome mail', err));
 
@@ -120,18 +180,30 @@ export class OrganizationUsersService {
     }, manager);
   }
 
-  async lastActiveAdmin(organizationId: string): Promise<boolean> {
-    const adminsCount = await this.activeAdminCount(organizationId);
-
-    return adminsCount <= 1;
+  async personalWorkspaceCount(userId: string): Promise<number> {
+    const personalWorkspacesCount = await this.personalWorkspaces(userId);
+    return personalWorkspacesCount?.length;
   }
 
-  //Need to change this - //Depreciated
-  async activeAdminCount(organizationId: string) {
-    return await createQueryBuilder(GroupPermission, 'group_permissions')
-      .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
-      .where('group_permissions.group = :admin', { admin: 'admin' })
-      .andWhere('group_permissions.organization = :organizationId', { organizationId })
-      .getCount();
+  async personalWorkspaces(userId: string): Promise<OrganizationUser[]> {
+    const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
+      select: ['organizationId', 'invitationToken'],
+      where: { userId },
+    });
+    const personalWorkspaceArray: OrganizationUser[] = [];
+    for (const workspace of personalWorkspaces) {
+      const { organizationId } = workspace;
+      const workspaceOwner = await this.organizationUsersRepository.find({
+        where: { organizationId },
+        order: { createdAt: 'ASC' },
+        take: 1,
+      });
+      if (workspaceOwner[0]?.userId === userId) {
+        /* First user of the workspace = created by the user */
+        personalWorkspaceArray.push(workspace);
+      }
+    }
+
+    return personalWorkspaceArray;
   }
 }

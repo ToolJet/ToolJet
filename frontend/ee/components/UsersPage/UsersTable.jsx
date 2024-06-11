@@ -7,7 +7,7 @@ import { Pagination } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
-import { humanizeifDefaultGroupName } from '@/_helpers/utils';
+import { humanizeifDefaultGroupName, decodeEntities } from '@/_helpers/utils';
 
 const UsersTable = ({
   isLoading,
@@ -95,7 +95,7 @@ const UsersTable = ({
                           className="mx-3 tj-text tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
-                          {user.name}
+                          {decodeEntities(user.name)}
                         </span>
                       </td>
                       <td className="text-muted">
@@ -106,8 +106,8 @@ const UsersTable = ({
                           {user.email}
                         </a>
                       </td>
-                      <GroupChipTD groups={user.role_group.map(group => group.name)} />
-                      <GroupChipTD groups={user.groups.map(group => group.name)} />
+                      <GroupChipTD groups={user.role_group.map((group) => group.name)} />
+                      <GroupChipTD groups={user.groups.map((group) => group.name)} />
                       {user.status && (
                         <td className="text-muted">
                           <span
@@ -237,33 +237,29 @@ const GroupChipTD = ({ groups = [] }) => {
       className={cx('text-muted groups-name-cell', { 'groups-hover': orderedArray.length > 2 })}
     >
       <div className="groups-name-container tj-text-sm font-weight-500">
-        {orderedArray.length === 0 ? (
-  renderGroupChip('-', null)
-) : (
-  orderedArray.slice(0, 2).map((group, index) => {
-    if (orderedArray.length <= 2) {
-      return renderGroupChip(group, index);
-    }
+        {orderedArray.length === 0
+          ? renderGroupChip('-', null)
+          : orderedArray.slice(0, 2).map((group, index) => {
+              if (orderedArray.length <= 2) {
+                return renderGroupChip(group, index);
+              }
 
-    if (orderedArray.length > 2 && index === 1) {
-      return (
-        <React.Fragment key={index}>
-          {renderGroupChip(group, index)}
-          <span className="group-chip">
-            +{orderedArray.length - 2} more
-          </span>
-          {showAllGroups && (
-            <div className="all-groups-list">
-              {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
-            </div>
-          )}
-        </React.Fragment>
-      );
-    }
+              if (orderedArray.length > 2 && index === 1) {
+                return (
+                  <React.Fragment key={index}>
+                    {renderGroupChip(group, index)}
+                    <span className="group-chip">+{orderedArray.length - 2} more</span>
+                    {showAllGroups && (
+                      <div className="all-groups-list">
+                        {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              }
 
-    return renderGroupChip(group, index);
-  })
-)}
+              return renderGroupChip(group, index);
+            })}
       </div>
     </td>
   );

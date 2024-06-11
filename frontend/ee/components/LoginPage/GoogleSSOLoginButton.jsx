@@ -12,6 +12,7 @@ export default function GoogleSSOLoginButton(props) {
   };
   const googleLogin = (e) => {
     e.preventDefault();
+    props.setSignupOrganizationDetails && props.setSignupOrganizationDetails();
     props.setRedirectUrlToCookie && props.setRedirectUrlToCookie();
     const { client_id } = props.configs;
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {
@@ -30,7 +31,7 @@ export default function GoogleSSOLoginButton(props) {
       <div onClick={googleLogin} className="sso-button border-0 rounded-2">
         <img src="assets/images/onboardingassets/SSO/Google.svg" data-cy="google-sso-icon" />
         <span className="px-1 sso-info-text" data-cy="google-sso-text">
-          {props.text || 'Sign in with Google'}
+          {`${props.buttonText} Google`}
         </span>
       </div>
     </div>

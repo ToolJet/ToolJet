@@ -100,7 +100,7 @@ export class AppsController {
     };
     /* If the request comes from preview which needs version id */
     if (versionName || versionId) {
-      if (!ability.can('fetchVersions', app)) {
+      if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_READ, app)) {
         throw new ForbiddenException(
           JSON.stringify({
             organizationId: app.organizationId,
@@ -231,7 +231,7 @@ export class AppsController {
   async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('updateParams', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -330,7 +330,7 @@ export class AppsController {
   async fetchVersions(@User() user, @AppDecorator() app: App) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('fetchVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_READ, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -347,7 +347,7 @@ export class AppsController {
   async createVersion(@User() user, @AppDecorator() app: App, @Body() versionCreateDto: VersionCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('createVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSIONS_CREATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -373,7 +373,7 @@ export class AppsController {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('fetchVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_READ, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -401,7 +401,7 @@ export class AppsController {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -421,7 +421,7 @@ export class AppsController {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!version || !ability.can('deleteVersions', app)) {
+    if (!version || !ability.can(APP_RESOURCE_ACTIONS.VERSION_DELETE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -440,7 +440,7 @@ export class AppsController {
   async updateIcon(@User() user, @AppDecorator() app: App, @Body('icon') icon) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('updateIcon', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 

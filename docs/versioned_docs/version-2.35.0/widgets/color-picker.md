@@ -42,7 +42,7 @@ To add an event to a color-picker component, click on the widget handle to open 
 
 ## Component Specific Actions (CSA)
 
-Following actions of Color Picker component can be controlled using the component specific actions(CSA):
+The following actions of the component can be controlled using component specific actions(CSA):
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:----------- |

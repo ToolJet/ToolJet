@@ -62,7 +62,7 @@ export class User extends BaseEntity {
     type: 'enum',
     enumName: 'source',
     name: 'source',
-    enum: ['signup', 'invite', 'google', 'git'],
+    enum: ['signup', 'invite', 'google', 'git', 'workspace_signup'],
     default: 'invite',
   })
   source: string;
@@ -149,6 +149,7 @@ export class User extends BaseEntity {
   apps: App[];
 
   organizationId: string;
+  invitedOrganizationId: string;
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;

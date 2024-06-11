@@ -7,10 +7,11 @@ import { getFolderQuery, viewableAppsQuery } from 'src/helpers/queries';
 import { createQueryBuilder, Repository, UpdateResult } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
-import { UsersService } from './users.service';
 import { catchDbException } from 'src/helpers/utils.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { AppBase } from 'src/entities/app_base.entity';
+import { FoldersAbilityFactory } from '@module/casl/abilities/folders-ability.factory';
+import { FOLDER_RESOURCE_ACTION } from 'src/constants/global.constant';
 
 @Injectable()
 export class FoldersService {
@@ -19,9 +20,8 @@ export class FoldersService {
     private foldersRepository: Repository<Folder>,
     @InjectRepository(FolderApp)
     private folderAppsRepository: Repository<FolderApp>,
-    @InjectRepository(App)
-    private appsRepository: Repository<App>,
-    private usersService: UsersService
+
+    private folderAbilityService: FoldersAbilityFactory
   ) {}
 
   async create(user: User, folderName): Promise<Folder> {
@@ -49,7 +49,9 @@ export class FoldersService {
 
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
-    if (await this.usersService.userCan(user, 'create', 'Folder')) {
+    const folderAbility = await this.folderAbilityService.folderActions(user);
+
+    if (folderAbility.can(FOLDER_RESOURCE_ACTION.CREATE, Folder)) {
       return await getFolderQuery(true, allViewableAppIds, user.organizationId).distinct().getMany();
     }
 

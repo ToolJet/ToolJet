@@ -115,7 +115,7 @@ const Text = ({
         }}
         ref={nonEditableCellValueRef}
       >
-        {cellValue}
+        {String(cellValue)}
       </span>
     </div>
   );

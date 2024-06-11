@@ -160,10 +160,17 @@ import Uppercase from './Uppercase.jsx';
 import Lowercase from './Lowercase.jsx';
 import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
+import PrimaryKey from './PrimaryKey.jsx';
+import ForeignKey from './ForeignKey.jsx';
+import InformationCircle from './InformationCircle.jsx';
+import Open from './Open.jsx';
+import TooljetIcon from './TooljetIcon.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
 import UserGear from './UserGear.jsx';
 import GranularAccess from './GranularAccess.jsx';
+import ShiftButtonIcon from './ShiftButtonIcon.jsx';
+import Unpin01 from './Unpin01.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -279,6 +286,8 @@ const Icon = (props) => {
       return <FolderDownload {...props} />;
     case 'folderupload':
       return <FolderUpload {...props} />;
+    case 'foreignkey':
+      return <ForeignKey {...props} />;
     case 'fullouterjoin':
       return <FullOuterJoin {...props} />;
     case 'globe':
@@ -297,6 +306,8 @@ const Icon = (props) => {
       return <InnerJoinIcon {...props} />;
     case 'inrectangle':
       return <InRectangle {...props} />;
+    case 'informationcircle':
+      return <InformationCircle {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
     case 'italic':
@@ -343,12 +354,16 @@ const Icon = (props) => {
       return <NotificationUnread {...props} />;
     case 'options':
       return <Options {...props} />;
+    case 'open':
+      return <Open {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
       return <PageAdd {...props} />;
     case 'pin':
       return <Pin {...props} />;
+    case 'unpin01':
+      return <Unpin01 {...props} />;
     case 'unpin':
       return <Unpin {...props} />;
     case 'play':
@@ -359,6 +374,8 @@ const Icon = (props) => {
       return <Plus01 {...props} />;
     case 'plusrectangle':
       return <PlusRectangle {...props} />;
+    case 'primarykey':
+      return <PrimaryKey {...props} />;
     case 'reload':
       return <Reload {...props} />;
     case 'reloaderror':
@@ -391,6 +408,8 @@ const Icon = (props) => {
       return <Server {...props} />;
     case 'settings':
       return <Settings {...props} />;
+    case 'shiftbutton':
+      return <ShiftButtonIcon {...props} />;
     case 'comments':
       return <Comments {...props} />;
     case 'share':
@@ -415,6 +434,8 @@ const Icon = (props) => {
       return <Table {...props} />;
     case 'tick':
       return <Tick {...props} />;
+    case 'tooljet':
+      return <TooljetIcon {...props} />;
     case 'trash':
       return <Trash {...props} />;
     case 'uparrow':

@@ -15,22 +15,22 @@ type Actions =
   | 'createDataSource' //
   | 'createQuery' //
   | 'createUsers' //
-  | 'createVersions' //
-  | 'deleteVersions' //
+  | APP_RESOURCE_ACTIONS.VERSIONS_CREATE //
+  | APP_RESOURCE_ACTIONS.VERSION_DELETE //
   | 'deleteApp' //
   | 'deleteDataSource' //
   | 'deleteQuery' //
   | 'fetchUsers' //
-  | 'fetchVersions' //
+  | APP_RESOURCE_ACTIONS.VERSION_READ //
   | 'getDataSources'
   | 'getQueries'
   | 'previewQuery'
   | 'runQuery'
   | 'updateDataSource'
-  | 'updateParams'
+  | APP_RESOURCE_ACTIONS.UPDATE
   | 'updateQuery'
-  | 'updateVersions'
-  | 'updateIcon'
+  | APP_RESOURCE_ACTIONS.VERSION_UPDATE
+  | APP_RESOURCE_ACTIONS.UPDATE
   | APP_RESOURCE_ACTIONS.VIEW
   | APP_RESOURCE_ACTIONS.EDIT
   | APP_RESOURCE_ACTIONS.EXPORT;
@@ -82,7 +82,7 @@ export class AppsAbilityFactory {
 
       //Delete this actions
       can('fetchUsers', App);
-      can('fetchVersions', App);
+      can(APP_RESOURCE_ACTIONS.VERSION_READ, App);
 
       can('runQuery', App);
       can('getQueries', App);
@@ -94,11 +94,11 @@ export class AppsAbilityFactory {
     }
 
     if (appUpdateAllowed) {
-      can('updateParams', App);
-      can('createVersions', App);
-      can('deleteVersions', App);
-      can('updateVersions', App);
-      can('updateIcon', App);
+      can(APP_RESOURCE_ACTIONS.UPDATE, App);
+      can(APP_RESOURCE_ACTIONS.VERSIONS_CREATE, App);
+      can(APP_RESOURCE_ACTIONS.VERSION_DELETE, App);
+      can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, App);
+      can(APP_RESOURCE_ACTIONS.UPDATE, App);
 
       can('updateQuery', App);
       can('createQuery', App);

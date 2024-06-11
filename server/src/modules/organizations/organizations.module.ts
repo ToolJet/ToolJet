@@ -54,6 +54,7 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
       Credential,
       Plugin,
       Metadata,
+      DataSource,
     ]),
     CaslModule,
     MetaModule,
@@ -88,6 +89,6 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
     SessionService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
-  exports: [OrganizationsService],
+  exports: [OrganizationsService, OrganizationUsersService],
 })
 export class OrganizationsModule {}

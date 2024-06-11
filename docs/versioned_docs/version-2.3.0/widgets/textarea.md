@@ -67,7 +67,9 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 
 ## Component specific actions (CSA)
 
-Following actions of color picker component can be controlled using the component specific actions(CSA):
+Following actions of the component can be controlled using the component specific actions(CSA):
+
+
 
 | Actions     | Description |
 | ----------- | ----------- |

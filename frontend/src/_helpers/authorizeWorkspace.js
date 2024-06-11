@@ -7,7 +7,6 @@ import {
   getRedirectToWithParams,
   redirectToErrorPage,
 } from './routes';
-import toast from 'react-hot-toast';
 import { ERROR_TYPES } from './constants';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
@@ -29,29 +28,49 @@ export const authorizeWorkspace = () => {
     /* CASE-1 */
     authenticationService
       .validateSession(appId, workspaceIdOrSlug)
-      .then(({ current_organization_id, current_organization_slug }) => {
-        if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-          /*CASE-2*/
-          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
-        } else {
-          updateCurrentSession({
-            current_organization_id,
-          });
+      .then(
+        ({
+          current_organization_id,
+          current_organization_slug,
+          no_workspace_attached_in_the_session: noWorkspaceAttachedInTheSession,
+        }) => {
+          if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
+            updateCurrentSession({
+              noWorkspaceAttachedInTheSession,
+              authentication_status: true,
+            });
+            if (noWorkspaceAttachedInTheSession) {
+              /*
+                User just signed up after the invite flow and doesn't have any active workspace.
+                - From useSessionManagement hook we will be redirecting the user to an error page.
+              */
+              return;
+            }
+            /*CASE-2*/
+            authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
+          } else {
+            updateCurrentSession({
+              current_organization_id,
+            });
+          }
         }
-      })
+      )
       .catch((error) => {
         if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
           if (appId) {
             /* If the user is trying to load the app viewer and the app id / slug not found */
             redirectToErrorPage(ERROR_TYPES.INVALID);
           } else if (error?.data?.statusCode == 422) {
+            if (isThisWorkspaceLoginPage()) {
+              return redirectToErrorPage(ERROR_TYPES.INVALID);
+            }
             redirectToErrorPage(ERROR_TYPES.UNKNOWN);
           } else {
             const subpath = getSubpath();
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
         }
-        if (!isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
+        if (!isApplicationsPath) {
           /* CASE-3 */
           updateCurrentSession({
             authentication_status: false,
@@ -85,16 +104,6 @@ const isThisExistedRoute = () => {
   return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
 };
 
-const fetchOrganizations = (current_organization_id, callback) => {
-  organizationService.getOrganizations().then((response) => {
-    const current_organization = response.organizations?.find((org) => org.id === current_organization_id);
-    callback({
-      organizations: response.organizations,
-      current_organization,
-    });
-  });
-};
-
 const isThisWorkspaceLoginPage = (justLoginPage = false) => {
   const subpath = getSubpath();
   const pathname = location.pathname.replace(subpath, '');
@@ -102,7 +111,7 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
   return (justLoginPage && pathnames[0] === 'login') || (pathnames.length === 2 && pathnames[0] === 'login');
 };
 
-const updateCurrentSession = (newSession) => {
+export const updateCurrentSession = (newSession) => {
   const currentSession = authenticationService.currentSessionValue;
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };
@@ -114,7 +123,7 @@ const updateCurrentSession = (newSession) => {
     CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
     CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
 */
-export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
+export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callback = null) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -125,17 +134,15 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
     .authorize()
     .then((data) => {
       /* CASE-1 */
-      const { current_organization_id } = data;
-      fetchOrganizations(current_organization_id, ({ organizations, current_organization }) => {
-        const { name: current_organization_name } = current_organization;
-        /* add the user details like permission and user previlliage details to the subject */
-        updateCurrentSession({
-          ...data,
-          current_organization_name,
-          organizations,
-          load_app: true,
-        });
+      const { current_organization_name } = data;
+      /* add the user details like permission and user previlliage details to the subject */
+      updateCurrentSession({
+        ...data,
+        current_organization_name,
+        load_app: true,
+        noWorkspaceAttachedInTheSession: false,
       });
+      if (callback) callback();
     })
     .catch((error) => {
       if (error && error?.data?.statusCode === 401) {
@@ -148,7 +155,7 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
         /* get current session's workspace id */
         authenticationService
           .validateSession()
-          .then(({ current_organization_id }) => {
+          .then(({ current_organization_id, ...restSessionData }) => {
             /* change current organization id to valid one [current logged in organization] */
             updateCurrentSession({
               current_organization_id,
@@ -160,20 +167,23 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
                 authorizeUserAndHandleErrors(unauthorized_organization_id);
               })
               .catch(() => {
-                /* CASE-3 */
-                fetchOrganizations(current_organization_id, ({ current_organization }) => {
-                  const { name: current_organization_name, slug: current_organization_slug } = current_organization;
-                  updateCurrentSession({
-                    current_organization_name,
-                    current_organization_slug,
-                    load_app: true,
-                  });
-
-                  if (!isThisWorkspaceLoginPage())
-                    return (window.location = `${
-                      subpath ?? ''
-                    }/login/${unauthorized_organization_slug}?redirectTo=${getRedirectToWithParams()}`);
+                const { current_organization_name, current_organization_slug } = restSessionData;
+                updateCurrentSession({
+                  current_organization_name,
+                  current_organization_slug,
+                  load_app: true,
                 });
+
+                if (!isThisWorkspaceLoginPage())
+                  return (window.location = `${
+                    subpath ?? ''
+                  }/login/${unauthorized_organization_slug}?redirectTo=${getRedirectToWithParams()}`);
+                const statusCode = error?.data.statusCode;
+                if (statusCode === 401) {
+                  updateCurrentSession({
+                    isOrgSwitchingFailed: true,
+                  });
+                }
               });
           })
           /* CASE-3 */

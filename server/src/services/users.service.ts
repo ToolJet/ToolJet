@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, getRepository, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -16,6 +16,7 @@ import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { UserRoleService } from './user-role.service';
 import { validateDeleteGroupUserOperation } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
+import { Organization } from 'src/entities/organization.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -31,15 +32,24 @@ export class UsersService {
 
     private groupPermissionsService: GroupPermissionsServiceV2,
     private userRoleService: UserRoleService,
-    private groupPermissionsUtilityService: GroupPermissionsUtilityService
+    private groupPermissionsUtilityService: GroupPermissionsUtilityService,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>
   ) {}
 
   async getCount(): Promise<number> {
     return this.usersRepository.count();
   }
 
-  async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
+  async getAppOrganizationDetails(app: App): Promise<Organization> {
+    return this.organizationsRepository.findOneOrFail({
+      select: ['id', 'slug'],
+      where: { id: app.organizationId },
+    });
+  }
+
+  async findOne(where = {}): Promise<User> {
+    return this.usersRepository.findOne({ where });
   }
 
   async findByEmail(
@@ -245,150 +255,8 @@ export class UsersService {
 
   //Moving to ability servoce
   //////////---------------------------------------------------------------
-  async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
-    //get all permissions -> Resource
-    switch (entityName) {
-      case 'App':
-        return await this.canUserPerformActionOnApp(user, action, resourceId);
-      case 'User':
-      case 'Plugin':
-      case 'GlobalDataSource':
-        return await this.hasGroup(user, 'admin');
-
-      case 'Thread':
-      case 'Comment':
-        return await this.canUserPerformActionOnApp(user, 'update', resourceId);
-
-      case 'Folder':
-        return await this.canUserPerformActionOnFolder(user, action);
-
-      //TODO: Is this organization constant variable is deprecated
-      case 'OrgEnvironmentVariable':
-        return await this.canUserPerformActionOnEnvironmentVariable(user, action);
-
-      case 'OrganizationConstant':
-        return await this.canUserPerformActionOnOrgEnvironmentConstants(user, action);
-
-      default:
-        return false;
-    }
-  }
-
-  async canUserPerformActionOnApp(user: User, action: string, appId?: string): Promise<boolean> {
-    let permissionGrant: boolean;
-
-    switch (action) {
-      case 'create':
-        permissionGrant = this.canAnyGroupPerformAction('appCreate', await this.groupPermissions(user));
-        break;
-      case 'read':
-      case 'update':
-        permissionGrant =
-          this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, appId)) ||
-          (await this.isUserOwnerOfApp(user, appId));
-        break;
-      case 'delete':
-        permissionGrant =
-          this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
-          this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
-          (await this.isUserOwnerOfApp(user, appId));
-        break;
-      default:
-        permissionGrant = false;
-        break;
-    }
-
-    return permissionGrant;
-  }
-
-  async canUserPerformActionOnFolder(user: User, action: string): Promise<boolean> {
-    let permissionGrant: boolean;
-
-    switch (action) {
-      case 'create':
-        permissionGrant = this.canAnyGroupPerformAction('folderCreate', await this.groupPermissions(user));
-        break;
-      case 'update':
-        permissionGrant = this.canAnyGroupPerformAction('folderUpdate', await this.groupPermissions(user));
-        break;
-      case 'delete':
-        permissionGrant = this.canAnyGroupPerformAction('folderDelete', await this.groupPermissions(user));
-        break;
-      default:
-        permissionGrant = false;
-        break;
-    }
-
-    return permissionGrant;
-  }
-
-  async canUserPerformActionOnEnvironmentVariable(user: User, action: string): Promise<boolean> {
-    let permissionGrant: boolean;
-
-    switch (action) {
-      case 'create':
-        permissionGrant = this.canAnyGroupPerformAction(
-          'orgEnvironmentVariableCreate',
-          await this.groupPermissions(user)
-        );
-        break;
-      case 'update':
-        permissionGrant = this.canAnyGroupPerformAction(
-          'orgEnvironmentVariableUpdate',
-          await this.groupPermissions(user)
-        );
-        break;
-      case 'delete':
-        permissionGrant = this.canAnyGroupPerformAction(
-          'orgEnvironmentVariableDelete',
-          await this.groupPermissions(user)
-        );
-        break;
-      default:
-        permissionGrant = false;
-        break;
-    }
-
-    return permissionGrant;
-  }
-
-  async canUserPerformActionOnOrgEnvironmentConstants(user: User, action: string): Promise<boolean> {
-    let permissionGrant: boolean;
-
-    switch (action) {
-      case 'create':
-      case 'update':
-        permissionGrant = this.canAnyGroupPerformAction(
-          'orgEnvironmentConstantCreate',
-          await this.groupPermissions(user)
-        );
-        break;
-
-      case 'delete':
-        permissionGrant = this.canAnyGroupPerformAction(
-          'orgEnvironmentConstantDelete',
-          await this.groupPermissions(user)
-        );
-        break;
-      default:
-        permissionGrant = false;
-        break;
-    }
-
-    return permissionGrant;
-  }
 
   //----------_Till Here ------------------------------------------
-
-  async isUserOwnerOfApp(user: User, appId: string): Promise<boolean> {
-    const app: App = await this.appsRepository.findOne({
-      where: {
-        id: appId,
-        userId: user.id,
-      },
-    });
-    return !!app && app.organizationId === user.organizationId;
-  }
 
   async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
     let app: App;
@@ -423,11 +291,6 @@ export class UsersService {
     });
   }
 
-  //---------This neeed to shift to ability service
-  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
-    return permissions.some((p) => p[action]);
-  }
-
   /// Need to move to ability service with new logic
   async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -436,13 +299,6 @@ export class UsersService {
 
       return await manager.findByIds(GroupPermission, groupIds);
     }, manager);
-  }
-
-  // Remove and move to ability  service
-  async groupPermissionsForOrganization(organizationId: string) {
-    const groupPermissionRepository = getRepository(GroupPermission);
-
-    return await groupPermissionRepository.find({ organizationId });
   }
 
   //Move to group permissions

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';
@@ -10,6 +10,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilitie
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { AbilityService } from '@services/permissions-ability.service';
 // import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
+import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
 @Controller('app-environments')
 export class AppEnvironmentsController {
@@ -19,6 +20,29 @@ export class AppEnvironmentsController {
     private globalDataSourcesAbilityFactory: GlobalDataSourceAbilityFactory,
     private orgEnvironmentVariablesAbilityFactory: OrgEnvironmentVariablesAbilityFactory
   ) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('init')
+  async init(@User() user, @Query('editing_version_id') editingVersionId: string) {
+    /* 
+     init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
+     Should not use for any other purpose. 
+    */
+    return await this.appEnvironmentServices.init(editingVersionId, user.organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/post-action/:action')
+  async environmentActions(
+    @Param('action') action: string,
+    @Body() appEnvironmentActionParametersDto: AppEnvironmentActionParametersDto
+  ) {
+    /* 
+     init is a method in the AppEnvironmentService class that is used to initialize the app environment mananger. 
+     Should not use for any other purpose. 
+    */
+    return await this.appEnvironmentServices.processActions(action, appEnvironmentActionParametersDto);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -42,10 +66,14 @@ export class AppEnvironmentsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('versions')
-  async getVersions(@User() user, @Query('app_id') appId: string) {
+  @Get(':id/versions')
+  async getVersionsByEnvironment(@User() user, @Param('id') environmentId: string, @Query('app_id') appId: string) {
     // const abilities = await this.service.getResourcePermission(user,{organizationId:user.organizationId,resources:[{resource:TOOLJET_RESOURCE.APP}]})
-    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);
+    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(
+      user?.organizationId,
+      appId,
+      environmentId
+    );
     return { appVersions };
   }
 }

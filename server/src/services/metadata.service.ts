@@ -9,6 +9,10 @@ import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import {
+  GROUP_PERMISSIONS_TYPE,
+  USER_ROLE,
+} from '@module/user_resource_permissions/constants/group-permissions.constant';
 
 @Injectable()
 export class MetadataService {
@@ -135,14 +139,19 @@ export class MetadataService {
     return { latestVersion: latestVersion || installedVersion };
   }
 
-  //Fetch  as per new permissions
   async fetchTotalEditorCount(manager: EntityManager) {
     const userIdsWithEditPermissions = (
       await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions')
-        .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-        .where('app_group_permissions.read = true AND app_group_permissions.update = true')
+        .innerJoin('users.userPermissions', 'userPermissions', 'userPermissions.type = :type', {
+          type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+        })
+        .where('userPermissions.name = :role', {
+          role: USER_ROLE.BUILDER,
+        })
+        .orWhere('userPermissions.name = :role', {
+          role: USER_ROLE.ADMIN,
+        })
         .select('users.id')
         .distinct()
         .getMany()
@@ -163,9 +172,12 @@ export class MetadataService {
   async fetchTotalViewerCount(manager: EntityManager) {
     return await manager
       .createQueryBuilder(User, 'users')
-      .innerJoin('users.groupPermissions', 'group_permissions')
-      .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-      .where('app_group_permissions.read = true AND app_group_permissions.update = false')
+      .innerJoin('users.userPermissions', 'userPermissions', 'userPermissions.type = :type', {
+        type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+      })
+      .where('userPermissions.name = :role', {
+        role: USER_ROLE.END_USER,
+      })
       .select('users.id')
       .distinct()
       .getCount();
