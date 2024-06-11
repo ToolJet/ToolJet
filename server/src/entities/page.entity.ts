@@ -34,9 +34,6 @@ export class Page {
   @Column()
   icon: string;
 
-  @Column()
-  icon: string;
-
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
