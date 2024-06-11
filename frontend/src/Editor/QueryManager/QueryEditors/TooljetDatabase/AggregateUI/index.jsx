@@ -1,10 +1,37 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import { NoCondition } from './NoConditionUI';
 import './style.scss'; // Ensure the path is correct based on your project structure
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
+import { SelectBox } from './Select';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { v4 as uuidv4 } from 'uuid';
 
-export const AggregateUi = ({ listRowsOptions }) => {
+export const AggregateUi = () => {
+  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
+    useContext(TooljetDatabaseContext);
+
+  const addNewAggregateOption = () => {
+    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const uniqueId = uuidv4();
+    const newAggregate = { aggregateFx: '', column: '' };
+    const updatedAggregates = {
+      ...currentAggregates,
+      [uniqueId]: newAggregate,
+    };
+    handleOptionsChange('aggregates', updatedAggregates);
+  };
+  const columnAccessorsOptions = useMemo(() => {
+    return columns.map((column) => {
+      return {
+        label: column.accessor,
+        value: column.accessor,
+      };
+    });
+  }, [columns]);
+
+  console.log('abc::', listRowsOptions, columns, columnAccessorsOptions);
   return (
     <div className="d-flex mb-2">
       <label className="form-label" data-cy="label-column-filter">
@@ -12,11 +39,43 @@ export const AggregateUi = ({ listRowsOptions }) => {
       </label>
       <div className="field-container col ">
         {isEmpty(listRowsOptions?.aggregates || {}) && <NoCondition />}
+        {listRowsOptions?.aggregates &&
+          !isEmpty(listRowsOptions?.aggregates) &&
+          Object.entries(listRowsOptions.aggregates).map(([aggregateKey, aggregateDetails]) => {
+            return (
+              <div key={aggregateKey} className="d-flex flex-row">
+                <SelectBox
+                  width="25%"
+                  height="32"
+                  value={aggregateDetails.aggregateFx}
+                  options={[
+                    { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
+                    { label: 'Count', value: 'count', description: 'Count number of not null values in this column' },
+                  ]}
+                />
+                <div style={{ flex: '1' }}>
+                  <SelectBox
+                    height="32"
+                    width="100%"
+                    value={aggregateDetails.column}
+                    options={columnAccessorsOptions}
+                  />
+                </div>
+                <div
+                  style={{ width: '32px', minWidth: '32px' }}
+                  className="d-flex justify-content-center align-items-center"
+                >
+                  <SolidIcon name="trash" width="16" fill="var(--slate9)" />
+                </div>
+              </div>
+            );
+          })}
+
         <ButtonSolid
           variant="ghostBlue"
           size="sm"
           onClick={() => {
-            // addNewFilterConditionPair();
+            addNewAggregateOption();
           }}
           className={isEmpty(listRowsOptions?.aggregates || {}) ? '' : 'mt-2'}
         >
