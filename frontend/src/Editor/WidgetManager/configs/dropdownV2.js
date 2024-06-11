@@ -21,6 +21,7 @@ export const dropdownV2Config = {
       displayName: 'Label',
       validation: {
         schema: { type: 'string' },
+        defaultValue: 'Select',
       },
       accordian: 'Data',
     },
@@ -28,9 +29,8 @@ export const dropdownV2Config = {
       type: 'code',
       displayName: 'Placeholder',
       validation: {
-        validation: {
-          schema: { type: 'string' },
-        },
+        schema: { type: 'string' },
+        defaultValue: 'Select an option',
       },
       accordian: 'Data',
     },
@@ -103,7 +103,10 @@ export const dropdownV2Config = {
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
-      validation: { schema: { type: 'string' } },
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
     },
