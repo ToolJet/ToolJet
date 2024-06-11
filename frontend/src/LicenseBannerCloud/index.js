@@ -292,10 +292,10 @@ export function LicenseBannerCloud({
     </div>
   );
 
-  const upgradeText =
-    type === 'users'
-      ? 'Upgrade your ToolJet subscription to add more users'
-      : `Contact your super admin to ${buttonText.toLowerCase()} your ToolJet subscription.`;
+  const usersTypes = ['users', 'end users', 'builders'];
+  const upgradeText = usersTypes.includes(type)
+    ? 'Upgrade your ToolJet subscription to add more users'
+    : `Contact your super admin to ${buttonText.toLowerCase()} your ToolJet subscription.`;
   const commonMessage =
     isEndUser || isWorkspaceAdmin
       ? upgradeText
