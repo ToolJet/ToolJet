@@ -315,9 +315,10 @@ export class EmailService {
   }
 
   sendSubscriptionStartInfoToToolJet(paymentObj) {
-    return this.sendEmail(this.FROM_EMAIL, this.FROM_EMAIL, {
-      bodyHeader: 'Subscription started',
-      bodyContent: `<div>${JSON.stringify(paymentObj)}</div>`,
+    return this.sendEmail(this.FROM_EMAIL, 'Subscription started', {
+      bodyContent: `<div><div>${JSON.stringify(paymentObj)}</div><a href='https://dashboard.stripe.com/subscriptions/${
+        paymentObj?.subscription
+      }'>Subscription Link</a></div>`,
       footerText: '',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
