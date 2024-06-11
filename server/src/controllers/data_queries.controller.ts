@@ -288,7 +288,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQuery, resolvedOptions, environmentId, response);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, resolvedOptions, response, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
@@ -345,7 +345,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQueryEntity, options, environmentId, response);
+      result = await this.dataQueriesService.runQuery(user, dataQueryEntity, options, response, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

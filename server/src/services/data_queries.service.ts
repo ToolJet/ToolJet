@@ -161,8 +161,8 @@ export class DataQueriesService {
     user: User,
     dataQuery: any,
     queryOptions: object,
-    environmentId?: string,
-    response?: Response
+    response: Response,
+    environmentId?: string
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
@@ -349,7 +349,7 @@ export class DataQueriesService {
       queryStatus.setSuccess();
 
       //TODO: support workflow execute method().
-      if (forwardRestCookies && dataQuery.kind === 'restapi' && result.responseHeaders && response) {
+      if (forwardRestCookies && dataQuery.kind === 'restapi' && result.responseHeaders) {
         this.setCookiesBackToCleint(response, result.responseHeaders);
       }
       return result;
