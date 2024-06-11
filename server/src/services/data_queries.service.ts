@@ -24,6 +24,7 @@ import { RequestContext } from 'src/models/request-context.model';
 import { IUpdatingReferencesOptions } from '@dto/data-query.dto';
 import { DataQueryStatus } from 'src/models/data_query_status.model';
 import { CookieOptions, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DataQueriesService {
@@ -37,7 +38,8 @@ export class DataQueriesService {
     private dataQueriesRepository: Repository<DataQuery>,
     private auditLoggerService: AuditLoggerService,
     @InjectRepository(OrgEnvironmentVariable)
-    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
+    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>,
+    private configService: ConfigService
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
@@ -166,7 +168,7 @@ export class DataQueriesService {
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
-    const forwardRestCookies = process.env.FORWARD_RESTAPI_COOKIES === 'true';
+    const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
 
     try {
       const dataSource: DataSource = dataQuery?.dataSource;
