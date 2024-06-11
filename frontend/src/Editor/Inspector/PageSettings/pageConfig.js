@@ -56,10 +56,11 @@ export const pageConfig = {
   },
   definition: {
     properties: {
-      collapsable: { value: true },
-      style: { value: 'texticon' },
+      collapsable: true,
+      style: 'texticon',
       disableMenu: {
-        value: '{{false}}',
+        value: false,
+        fx: '',
       },
     },
     styles: {
