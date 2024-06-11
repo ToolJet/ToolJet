@@ -5,7 +5,16 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 
-export const SelectBox = ({ options, handleChange, width, height, value = '' }) => {
+export const SelectBox = ({
+  options,
+  handleChange,
+  width,
+  height,
+  value = '',
+  placeholder = '',
+  isMulti = false,
+  disabled = false,
+}) => {
   const validOptionStructure = options.map(({ description = '', ...rest }) => {
     return rest;
   });
@@ -19,6 +28,9 @@ export const SelectBox = ({ options, handleChange, width, height, value = '' }) 
       closeMenuOnSelect={true}
       width={width}
       search={true}
+      placeholder={placeholder}
+      isMulti={isMulti}
+      isDisabled={disabled}
     />
   );
 };
