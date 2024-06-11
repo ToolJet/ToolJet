@@ -72,6 +72,7 @@ export const AggregateUi = () => {
                     width="100%"
                     value={aggregateDetails.column}
                     options={columnAccessorsOptions}
+                    handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
                   />
                 </div>
                 <div
