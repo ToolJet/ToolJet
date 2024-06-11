@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { NoCondition } from './NoConditionUI';
 import './style.scss'; // Ensure the path is correct based on your project structure
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -8,10 +8,12 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { ToolTip } from '@/_components/ToolTip';
-
-export const AggregateUi = () => {
+import { Confirm } from '@/Editor/Viewer/Confirm';
+export const AggregateUi = ({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, selectedTableId } =
     useContext(TooljetDatabaseContext);
+
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const addNewAggregateOption = () => {
     const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
@@ -37,7 +39,34 @@ export const AggregateUi = () => {
 
   const handleDeleteAggregate = (aggregateKey) => {
     const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const numberOfAggregates = Object.keys(currentAggregates).length;
+    if (numberOfAggregates > 1) {
+      delete currentAggregates[aggregateKey];
+      return handleOptionsChange('aggregates', currentAggregates);
+    } else {
+      const currentGroupBy = { ...(listRowsOptions?.groupBy || {}) };
+      const isValidGroupByPresent = Object.entries(currentGroupBy).some(([tableId, selectedColumn]) => {
+        if (tableId && selectedColumn.length >= 1) {
+          return true;
+        }
+        return false;
+      });
+      if (isValidGroupByPresent) {
+        setShowDeleteConfirmation(true);
+      } else {
+        delete currentAggregates[aggregateKey];
+        return handleOptionsChange('aggregates', currentAggregates);
+      }
+    }
+  };
+
+  const executeAggregateDeletion = async (aggregateKey) => {
+    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
     delete currentAggregates[aggregateKey];
+    const currentGroupBy = { ...(listRowsOptions?.groupBy || {}) };
+    delete currentGroupBy?.[selectedTableId];
+
+    handleOptionsChange('groupBy', currentGroupBy);
     handleOptionsChange('aggregates', currentAggregates);
   };
 
@@ -112,6 +141,16 @@ export const AggregateUi = () => {
                   >
                     <SolidIcon name="trash" width="16" fill="var(--slate9)" />
                   </div>
+                  <Confirm
+                    show={showDeleteConfirmation}
+                    message={
+                      'Deleting the aggregate function will alo delete the  group by conditions. Are you sure, you want to continue?'
+                    }
+                    // confirmButtonLoading={isDeletingQueryInProcess}
+                    onConfirm={() => executeAggregateDeletion(aggregateKey)}
+                    onCancel={() => setShowDeleteConfirmation(false)}
+                    darkMode={darkMode}
+                  />
                 </div>
               );
             })}
