@@ -1,11 +1,18 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
+import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
-const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
+const CreateRowDrawer = ({
+  isCreateRowDrawerOpen,
+  setIsCreateRowDrawerOpen,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+}) => {
   const {
     organizationId,
     selectedTable,
@@ -14,18 +21,32 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
     pageSize,
     setSortFilters,
     setQueryFilters,
+    columns,
   } = useContext(TooljetDatabaseContext);
+  const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
 
   return (
     <>
-      <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isCreateRowDrawerOpen}
+        onClose={() => setIsCreateRowDrawerOpen(false)}
+        position="right"
+        className="tj-db-drawer"
+      >
         <CreateRowForm
-          onCreate={() => {
+          onCreate={(shouldKeepDrawerOpen) => {
             const limit = pageSize;
             setSortFilters({});
             setQueryFilters({});
+
+            const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
+            const sortQuery = new PostgrestQueryBuilder();
+            primaryKeyColumns.map((primaryKeyColumnName) => {
+              sortQuery.order(primaryKeyColumnName, 'desc');
+            });
+
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}`)
+              .findOne(organizationId, selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
@@ -41,9 +62,14 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
 
             const tableElement = document.querySelector('.tj-db-table');
             if (tableElement) tableElement.scrollTop = 0;
-            setIsCreateRowDrawerOpen(false);
+            if (!shouldKeepDrawerOpen) setIsCreateRowDrawerOpen(false);
+            setShouldResetRowForm((prev) => prev + 1);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="CreateRowForm"
+          shouldResetRowForm={shouldResetRowForm}
         />
       </Drawer>
     </>

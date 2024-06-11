@@ -17,4 +17,5 @@ export const TypeMapping = {
   icon: 'Icon',
   visibility: 'Visibility',
   numberInput: 'NumberInput',
+  tableRowHeightInput: 'TableRowHeightInput',
 };

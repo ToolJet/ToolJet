@@ -142,8 +142,8 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('fetch_oauth2_base_url')
   async getAuthUrl(@Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
-    const { provider } = getDataSourceOauthUrlDto;
-    return await this.dataSourcesService.getAuthUrl(provider);
+    const { provider, source_options = {}, plugin_id = null } = getDataSourceOauthUrlDto;
+    return await this.dataSourcesService.getAuthUrl(provider, source_options, plugin_id);
   }
 
   @UseGuards(JwtAuthGuard)

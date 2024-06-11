@@ -275,3 +275,11 @@ export const releaseApp = () => {
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
   cy.wait(1000);
 };
+
+export const verifyTooltipDisabled = (selector, message) => {
+  cy.get(selector)
+    .trigger("mouseover", { force: true })
+    .then(() => {
+      cy.get(".tooltip-inner").last().should("have.text", message);
+    });
+};

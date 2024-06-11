@@ -4,15 +4,15 @@
 
 .drawer {
   background: var(--base);
-  width: 534px;
+  width: 540px;
   height: 100%;
-  overflow: auto;
   position: fixed;
   border: 1px solid var(--slate5);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   transition: transform var(--transition-speed) ease;
   z-index: 1000;
   background: var(--base);
+  overflow-y: auto;
 
   &.left {
     top: 0;
@@ -45,6 +45,10 @@
   }
 }
 
+::-webkit-scrollbar{
+  display: none;
+}
+
 .drawer-container.in.open {
 
   .left,
@@ -62,7 +66,6 @@
   visibility: hidden;
   opacity: 0;
   background: rgba(0, 0, 0, 0.5);
-  transition: opacity var(--transition-speed) ease, visibility var(--transition-speed) ease;
   width: 100%;
   height: 100%;
   top: 0;
@@ -70,6 +73,7 @@
   position: fixed;
   pointer-events: none;
   z-index: 0;
+
 }
 
 .drawer-container.in.open .backdrop {
@@ -77,4 +81,23 @@
   opacity: 1;
   pointer-events: auto;
   z-index: 999;
+}
+
+.drawer-container.in.open {
+  .foreignKeyDrawerRight {
+    z-index: 1002;
+  }
+
+  .foreignKeyBackdrop {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1001;
+  }
+}
+.tj-db-drawer{
+  .backdrop{
+    transition: opacity 0.3s ease;
+
+  }
 }

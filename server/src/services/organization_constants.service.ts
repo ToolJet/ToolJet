@@ -35,7 +35,7 @@ export class OrganizationConstantsService {
 
               return {
                 environmentName: env.name,
-                value: value && value.value.length > 0 ? value.value : '',
+                value: value && value.value.length > 0 ? await this.decryptSecret(organizationId, value.value) : '',
                 id: value.environmentId,
               };
             })
@@ -64,10 +64,11 @@ export class OrganizationConstantsService {
       const result = await query.getMany();
 
       const constantsWithValues = result.map(async (constant) => {
+        const decryptedValue = await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value);
         return {
           id: constant.id,
           name: constant.constantName,
-          value: constant.orgEnvironmentConstantValues[0].value,
+          value: decryptedValue,
         };
       });
 
@@ -102,8 +103,9 @@ export class OrganizationConstantsService {
 
       await Promise.all(
         environmentToUpdate.map(async (environment) => {
+          const encryptedValue = await this.encryptSecret(organizationId, organizationConstant.value);
           await this.appEnvironmentService.updateOrgEnvironmentConstant(
-            organizationConstant.value,
+            encryptedValue,
             (
               await environment
             ).id,
@@ -144,9 +146,10 @@ export class OrganizationConstantsService {
       await manager.save(constantToUpdate);
 
       const environmentToUpdate = await this.appEnvironmentService.get(organizationId, environment_id, false, manager);
+      const encryptedValue = await this.encryptSecret(organizationId, value);
 
       await this.appEnvironmentService.updateOrgEnvironmentConstant(
-        value,
+        encryptedValue,
         environmentToUpdate.id,
         constantToUpdate.id,
         manager

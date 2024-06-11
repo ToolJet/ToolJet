@@ -1,12 +1,11 @@
 import React from 'react';
-function Label({ label, width, labelRef, darkMode, color, defaultAlignment, direction, auto, isMandatory, _width }) {
+function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width }) {
   return (
     <>
       {label && (width > 0 || auto) && (
         <label
           ref={labelRef}
           style={{
-            color: darkMode && color === '#11181C' ? '#fff' : color,
             width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${_width}%` : '100%',
             maxWidth: defaultAlignment === 'side' ? '70%' : '100%',
             display: 'flex',
@@ -19,6 +18,7 @@ function Label({ label, width, labelRef, darkMode, color, defaultAlignment, dire
           <p
             style={{
               position: 'relative',
+              color: color !== '#1B1F24' ? color : 'var(--text-primary)',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -37,7 +37,7 @@ function Label({ label, width, labelRef, darkMode, color, defaultAlignment, dire
             {isMandatory && (
               <span
                 style={{
-                  color: '#DB4324',
+                  color: 'var(--status-error-strong)',
                   position: 'absolute',
                   right: direction == 'right' ? '0px' : '4px',
                   top: '0px',

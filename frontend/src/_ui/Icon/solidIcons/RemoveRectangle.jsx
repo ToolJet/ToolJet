@@ -1,6 +1,6 @@
 import React from 'react';
 
-const RemoveRectangle = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
+const RemoveRectangle = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24' }) => (
   <svg
     width={width}
     height={width}

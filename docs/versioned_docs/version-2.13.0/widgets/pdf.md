@@ -5,11 +5,26 @@ title: PDF
 
 # PDF
 
-PDF widget can be used to embed the PDF file either by URL or as a Base64 encoded.
+The PDF component can be used to embed PDF files either by URL or through Base64 code.
+
+## Compatibility
+
+The PDF component is compatible with the following browser versions: <br/>
+
+| Browser | Version |
+|:--------|:--------------------|
+| Chrome  | 92 or later         |
+| Edge    | 92 or later         |
+| Safari  | 15.4 or later       |
+| Firefox | 90 or later         |
+
+
+If the PDF component is integrated into your application, it will only render in supported browsers.
 
 :::info
 Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string
 :::
+
 
 ## Properties
 

@@ -1,12 +1,16 @@
-import React from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import { resolveReferences } from '../../_helpers/utils';
 import { Alert } from '../../_ui/Alert';
 import useHeight from '@/_hooks/use-height-transition';
+import React from 'react';
 
 export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceConstants, value, isFocused }) => {
   const getResolveValueType = (currentValue) => {
     if (!currentValue) return null;
+
+    if (currentValue.includes('constants')) {
+      return 'Workspace Constant';
+    }
 
     if (currentValue.includes('client')) {
       return 'client workspace variable';
@@ -16,13 +20,8 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
       return 'server workspace variable';
     }
 
-    if (currentValue.includes('constants')) {
-      return 'Workspace Constant';
-    }
-
     return null;
   };
-
   const shouldResolve =
     typeof value === 'string' &&
     ((value.includes('%%') && (value.includes('client.') || value.includes('server.'))) ||
@@ -42,8 +41,28 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
   );
 };
 
+const verifyConstant = (value, definedConstants) => {
+  const constantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
+  if (typeof value !== 'string') {
+    return [];
+  }
+  const matches = value.match(constantRegex);
+  if (!matches) {
+    return [];
+  }
+  const resolvedMatches = matches.map((match) => {
+    const cleanedMatch = match.replace(/{{constants\./, '').replace(/}}/, '');
+    return Object.keys(definedConstants).includes(cleanedMatch) ? null : cleanedMatch;
+  });
+  const invalidConstants = resolvedMatches?.filter((item) => item != null);
+  if (invalidConstants?.length) {
+    return invalidConstants;
+  }
+};
+
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   const [preview, error] = resolveReferences(value, state, null, {}, true, true);
+
   const previewType = typeof preview;
 
   let resolvedValue = preview;

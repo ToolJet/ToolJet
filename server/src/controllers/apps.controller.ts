@@ -240,6 +240,7 @@ export class AppsController {
     return response;
   }
 
+  // Deprecated - moved to import - export - controller
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
@@ -333,6 +334,9 @@ export class AppsController {
     }
 
     const result = await this.appsService.fetchVersions(user, app.id);
+    if (result?.length) {
+      result[0]['isCurrentEditingVersion'] = true;
+    }
     return { versions: result };
   }
 

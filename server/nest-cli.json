@@ -3,7 +3,8 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "assets": [
-      { "include": "assets/**/*", "outDir": "./dist/src", "watchAssets": true }
+      { "include": "assets/**/*", "outDir": "./dist/src", "watchAssets": true },
+      { "include": "mails/**/*","outDir": "./dist/src/", "watchAssets": true }
     ],
     "watchAssets": true
   }

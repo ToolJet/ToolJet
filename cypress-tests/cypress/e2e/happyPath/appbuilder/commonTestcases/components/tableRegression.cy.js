@@ -241,7 +241,7 @@ describe("Table", () => {
     openAccordion("Action buttons");
     cy.get('[data-cy="no-items-banner-action-button"]').should(
       "have.text",
-      "There are no action buttons"
+      "No action buttons"
     );
     cy.get('[data-cy="button-add-new-action-button"]')
       .should("have.text", "New action button")

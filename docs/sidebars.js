@@ -75,6 +75,34 @@ const sidebars = {
         'app-builder/overview',
         {
           'type': 'category',
+          'label': 'App-Builder UI',
+          'items': [
+           'app-builder/components-library',
+           'app-builder/query-panel',
+           'tutorial/pages',
+           'app-builder/topbar',
+           'app-builder/left-sidebar',
+           'app-builder/canvas',
+           'app-builder/preview',
+           'app-builder/share',
+           'app-builder/customstyles',
+           'app-builder/importing-exporting-applications',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Examples',
+          'items': [
+            'app-builder/examples/create-ui',
+            'app-builder/examples/create-queries',
+            'app-builder/examples/using-code',
+            'app-builder/examples/accessing-values',
+            'app-builder/examples/variables',
+            //'app-builder/examples/sharing-apps',
+          ],
+        },
+        {
+          'type': 'category',
           'label': 'Components Catalog',
           'items': [
             'widgets/overview',
@@ -86,7 +114,14 @@ const sidebars = {
                 'widgets/button',
                 'widgets/button-group',
                 'widgets/calendar',
-                'widgets/chart',
+                {
+                  'type': 'category',
+                  'label': 'Chart',
+                  'items': [
+                    'widgets/chart/chart-properties',
+                    'widgets/chart/chart-examples'
+                  ]
+                },
                 'widgets/checkbox',
                 'widgets/circular-progress-bar',
                 'widgets/code-editor',
@@ -121,7 +156,15 @@ const sidebars = {
                 'widgets/statistics',
                 'widgets/steps',
                 'widgets/svg-image',
-                'widgets/table',
+                {
+                  'type': 'category',
+                  'label': 'Table',
+                  'items': [
+                    'widgets/table/table-properties',
+                    'widgets/table/table-columns',
+                    'widgets/table/table-csa-and-variables',
+                  ]
+                },
                 'widgets/tabs',
                 'widgets/tags',
                 'widgets/text-input',
@@ -169,16 +212,6 @@ const sidebars = {
             },
           ],
         },
-        'app-builder/components-library',
-        'app-builder/query-panel',
-        'tutorial/pages',
-        'app-builder/topbar',
-        'app-builder/left-sidebar',
-        'app-builder/canvas',
-        'app-builder/preview',
-        'app-builder/share',
-        'app-builder/customstyles',
-        'app-builder/importing-exporting-applications',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -219,6 +252,7 @@ const sidebars = {
       'label': 'Data Sources',
       'items': [
         'data-sources/overview',
+        'data-sources/sample-data-sources',
         {
           'type': 'category',
           'label': 'Datasources library',
@@ -235,6 +269,7 @@ const sidebars = {
             'data-sources/clickhouse',
             'data-sources/cosmosdb',
             'data-sources/couchdb',
+            'data-sources/databricks',
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
@@ -273,7 +308,15 @@ const sidebars = {
         'tutorial/transformations',
       ],
     },
-    'tooljet-database',
+    {
+      'type': 'category',
+      'label': 'ToolJet Database',
+      'items': [
+        'tooljet-db/tooljet-database',
+        'tooljet-db/database-editor',
+        'tooljet-db/querying-tooljet-db',
+      ]
+    },
     {
       'type': 'category',
       'label': 'Org Management',
@@ -285,26 +328,16 @@ const sidebars = {
           "items": [
             "org-management/workspaces/workspace_overview",
             "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace-variables-migration",
             "org-management/workspaces/workspace_constants"
           ]
         },
         {
           'type': 'category',
           'label': 'User Authentication',
-          'link': {
-            'type': 'generated-index',
-            'title': 'User Authentication',
-            'description': 'Guides for setting up User Authentication and managing Single Sign-On',
-            'keywords': [
-              'SSO',
-              'authentication',
-            ],
-          },
-          'collapsed': true,
           'items': [
             'user-authentication/user-lifecycle',
-            'user-authentication/general-settings',
-            'user-authentication/password-login',
+            'user-authentication/workspace-login',
             {
               'type': 'category',
               'label': 'SSO',
@@ -343,7 +376,14 @@ const sidebars = {
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
-        'org-management/licensing',
+        {
+          "type": "category",
+          "label": "Licensing",
+          "items": [
+            "org-management/licensing/tooljet-cloud",
+            "org-management/licensing/self-hosted"
+          ]
+        }
       ],
     },
     {
@@ -362,6 +402,7 @@ const sidebars = {
         'workflows/overview',
         'workflows/nodes',
         'workflows/workflow-triggers',
+        'workflows/results',
         'workflows/permissions',
         'workflows/logs',
       ],
@@ -376,12 +417,16 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
+            'marketplace/plugins/marketplace-plugin-redshift',
             'marketplace/plugins/marketplace-plugin-textract',
-            'marketplace/plugins/aws-lambda-plugin',
+            'marketplace/plugins/marketplace-plugin-aws-lambda',
+            'marketplace/plugins/marketplace-plugin-engagespot',
             'marketplace/plugins/marketplace-plugin-github',
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
+            'marketplace/plugins/marketplace-plugin-supabase',
+            'marketplace/plugins/marketplace-plugin-pocketbase',
           ],
         },
       ],
@@ -421,6 +466,7 @@ const sidebars = {
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
             'contributing-guide/setup/windows',
+            'contributing-guide/setup/system-requirements-for-contributing',
           ],
         },
         {

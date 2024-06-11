@@ -1,0 +1,85 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Engagespot datasource",
+  "description": "A schema defining Engagespot datasource",
+  "type": "api",
+  "source": {
+    "name": "Engagespot",
+    "kind": "engagespot",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey":{
+        "type": "string"
+      },
+      "apiSecret":{
+        "type": "string",
+        "encrypted": true
+      },
+      "signingKey":{
+        "type":"string"
+      },
+      "endpoint": {
+        "type": "string"
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "apiKey":{
+      "value": ""
+    },
+    "apiSecret":{
+      "value": ""
+    },
+    "signingKey":{
+      "value":""
+    },
+    "endpoint": {
+      "value": "https://api.engagespot.com/v3"
+    },
+    "endpoint_enabled": {
+      "value": false
+    }
+  },
+  "properties": {
+    "apiKey": {
+      "label": "Api Key",
+      "key": "apiKey",
+      "type": "text",
+      "description": "The unique identifier of your engagespot app (X-ENGAGESPOT-API-KEY)"
+    },
+    "apiSecret": {
+      "label": "Api Secret",
+      "key": "apiSecret",
+      "type": "password",
+      "description": "Engagespot Api secret key (X-ENGAGESPOT-API-SECRET)"
+    },
+    "signingKey": {
+      "label": "Signing Key",
+      "key": "signingKey",
+      "type": "text",
+      "description": "The secret signing key that you'll use to sign your user's authentication tokens in engagespot"
+    },
+    "endpoint_enabled": {
+      "label": "Custom Endpoint",
+      "key": "endpoint_enabled",
+      "type": "toggle",
+      "description": "Toggle for endpoint_enabled"
+    },
+    "endpoint": {
+      "key": "endpoint",
+      "type": "text",
+      "description": "Enter custom endpoint",
+      "controller": "endpoint_enabled"
+    } 
+  },
+  "required": [
+    "Api Key",
+    "Api Secret"
+  ]
+}

@@ -5,6 +5,7 @@ import { TooljetDatabaseContext } from '../../index';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { FileDropzone } from './FileDropzone';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 
 function BulkUploadDrawer({
   isBulkUploadDrawerOpen,
@@ -16,6 +17,7 @@ function BulkUploadDrawer({
   errors,
 }) {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { columns, selectedTable } = useContext(TooljetDatabaseContext);
   const hiddenFileInput = useRef(null);
 
@@ -77,6 +79,7 @@ function BulkUploadDrawer({
         onClose={() => setIsBulkUploadDrawerOpen(false)}
         position="right"
         drawerStyle={{ 'overflow-y': 'hidden' }}
+        className="tj-db-drawer"
       >
         <div className="drawer-card-wrapper">
           <div className="drawer-card-title ">
@@ -84,7 +87,7 @@ function BulkUploadDrawer({
               Bulk upload data
             </h3>
           </div>
-          <div className="card-body">
+          <div className="card-body tjdb-bulkupload-drawer">
             <div className="manage-users-drawer-content-bulk">
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
@@ -117,27 +120,23 @@ function BulkUploadDrawer({
                 handleFileChange={handleBulkUploadFileChange}
                 onButtonClick={handleBulkUpload}
                 onDrop={onDrop}
+                progress={progress}
+                setProgress={setProgress}
               />
             </div>
           </div>
         </div>
-        <div className="position-sticky bottom-0 right-0 w-100  mt-auto">
-          <div className="d-flex justify-content-end drawer-footer-btn-wrap">
-            <ButtonSolid variant="tertiary" data-cy={`cancel-button`} onClick={() => setIsBulkUploadDrawerOpen(false)}>
-              Cancel
-            </ButtonSolid>
-            <ButtonSolid
-              disabled={!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0}
-              data-cy={`upload-data-button`}
-              onClick={handleBulkUpload}
-              fill="#fff"
-              leftIcon="floppydisk"
-              loading={isBulkUploading}
-            >
-              Upload data
-            </ButtonSolid>
-          </div>
-        </div>
+        <DrawerFooter
+          onClose={() => setIsBulkUploadDrawerOpen(false)}
+          onCreate={handleBulkUpload}
+          initiator={'UploadDataForm'}
+          shouldDisableCreateBtn={
+            !isBulkUploading &&
+            (!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0 || progress <= 99)
+          }
+          isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
+          isBulkUploading={isBulkUploading}
+        />
       </Drawer>
     </>
   );

@@ -21,37 +21,33 @@ export const AddNewDataPopOver = ({
       }}
     >
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
-        <div className="row cursor-pointer">
+        <div
+          className="row cursor-pointer"
+          data-cy="add-new-row-option"
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleAddNewDataMenu(false);
+            handleOnClickCreateNewRow(true);
+          }}
+        >
           <div className="col-auto">
             <SolidIcon name="row" width="14" fill={'#889096'} />
           </div>
-          <div
-            className="col text-truncate tj-text-xsm font-weight-500"
-            data-cy="add-new-row-option"
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleAddNewDataMenu(false);
-              handleOnClickCreateNewRow(true);
-            }}
-          >
-            Add new row
-          </div>
+          <div className="col text-truncate tj-text-xsm font-weight-500">Add new row</div>
         </div>
-        <div className="row mt-3 cursor-pointer">
+        <div
+          className="row mt-3 cursor-pointer"
+          data-cy="bulk-upload-data-option"
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleAddNewDataMenu(false);
+            handleOnClickBulkUpdateData(true);
+          }}
+        >
           <div className="col-auto">
             <SolidIcon name="fileupload" width="14" fill={'#889096'} />
           </div>
-          <div
-            className="col text-truncate tj-text-xsm font-weight-500"
-            data-cy="bulk-upload-data-option"
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleAddNewDataMenu(false);
-              handleOnClickBulkUpdateData(true);
-            }}
-          >
-            Bulk upload data
-          </div>
+          <div className="col text-truncate tj-text-xsm font-weight-500">Bulk upload data</div>
         </div>
       </Popover.Body>
     </Popover>

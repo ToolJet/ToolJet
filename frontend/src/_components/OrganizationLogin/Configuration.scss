@@ -133,7 +133,7 @@
   
   .dropdown-menu {
     border-radius: 0.25rem;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--slate6);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 270px !important;
   }
@@ -188,5 +188,9 @@
     .form-control {
       color: white !important
     }
+  }
+  .dropdown-item {
+    background: unset;
+    color: var(--slate12);
   }
 }

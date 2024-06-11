@@ -34,6 +34,10 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.allDataSources()
     );
+    cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
+      "have.text",
+      postgreSqlText.commonlyUsed
+    );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
       postgreSqlText.allDatabase()
@@ -120,11 +124,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterHost,
       Cypress.env("sqlserver_host")
     );
-    fillDataSourceTextField(
-      "Instance",
-      "Enter the name of the database instance",
-      Cypress.env("sqlserver_instance")
-    );
+    // fillDataSourceTextField(
+    //   "Instance",
+    //   "Enter the name of the database instance",
+    //   Cypress.env("sqlserver_instance")
+    // );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,

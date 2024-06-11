@@ -1,12 +1,8 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
 import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
-import { ManageAppUsers } from '../ManageAppUsers';
-import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import cx from 'classnames';
 import config from 'config';
 // eslint-disable-next-line import/no-unresolved
@@ -16,10 +12,11 @@ import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { redirectToDashboard } from '@/_helpers/routes';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
+import RightTopHeaderButtons from './RightTopHeaderButtons';
+import EnvironmentManager from './EnvironmentManager';
 
 export default function EditorHeader({
   M,
@@ -31,15 +28,12 @@ export default function EditorHeader({
   onNameChanged,
   setAppDefinitionFromVersion,
   onVersionRelease,
-  saveEditingVersion,
-  onVersionDelete,
   slug,
   darkMode,
-  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
 
-  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, currentVersionId } = useAppInfo();
+  const { isSaving, appId, appName, isPublic, currentVersionId } = useAppInfo();
   const { setAppPreviewLink } = useAppDataActions();
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
@@ -82,7 +76,7 @@ export default function EditorHeader({
   }, [slug, currentVersionId, editingVersion]);
 
   return (
-    <div className="header" style={{ width: '100%' }}>
+    <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
@@ -117,6 +111,7 @@ export default function EditorHeader({
                   handleRedo={handleRedo}
                   showToggleLayoutBtn
                   showUndoRedoBtn
+                  darkMode={darkMode}
                 />
                 <div className="d-flex align-items-center">
                   <div style={{ width: '100px', marginRight: '20px' }}>
@@ -148,61 +143,18 @@ export default function EditorHeader({
               </div>
               <div className="navbar-seperator"></div>
 
+              <EnvironmentManager />
+
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
                   setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                  onVersionDelete={onVersionDelete}
                   isPublic={isPublic ?? false}
+                  darkMode={darkMode}
                 />
               )}
             </div>
-            <div
-              className="d-flex justify-content-end navbar-right-section"
-              style={{ width: '300px', paddingRight: '12px' }}
-            >
-              <div className=" release-buttons navbar-nav flex-row">
-                <div className="preview-share-wrap navbar-nav flex-row" style={{ gap: '4px' }}>
-                  <div className="nav-item">
-                    {appId && (
-                      <ManageAppUsers
-                        app={app}
-                        appId={appId}
-                        slug={slug}
-                        darkMode={darkMode}
-                        isVersionReleased={isVersionReleased}
-                        pageHandle={pageHandle}
-                        M={M}
-                        isPublic={isPublic ?? false}
-                      />
-                    )}
-                  </div>
-                  <div className="nav-item">
-                    <Link
-                      title="Preview"
-                      to={appVersionPreviewLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      data-cy="preview-link-button"
-                      className="editor-header-icon tj-secondary-btn"
-                    >
-                      <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
-                    </Link>
-                  </div>
-                </div>
-
-                {isSocketOpen && (
-                  <div className="nav-item dropdown promote-release-btn">
-                    <ReleaseVersionButton
-                      appId={appId}
-                      appName={appName}
-                      onVersionRelease={onVersionRelease}
-                      saveEditingVersion={saveEditingVersion}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+            <RightTopHeaderButtons onVersionRelease={onVersionRelease} />
           </div>
         </div>
       </header>

@@ -37,18 +37,16 @@ describe("App Version Functionality", () => {
   let currentVersion = "";
   let newVersion = [];
   let versionFrom = "";
-  before(() => {
-    cy.apiLogin();
-    cy.apiCreateApp(data.appName);
-    cy.logoutApi();
-  });
+
   beforeEach(() => {
-    cy.apiLogin();
-    cy.visit('/my-workspace')
+    cy.defaultWorkspaceLogin();
+    cy.skipWalkthrough();
   })
 
   it("Verify the elements of the version module", () => {
-    navigateToAppEditor(data.appName);
+    data.appName = `${fake.companyName}-App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp()
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "have.value",
@@ -68,9 +66,10 @@ describe("App Version Functionality", () => {
   });
 
   it("Verify all functionality for the app version", () => {
-    navigateToAppEditor(data.appName);
+    data.appName = `${fake.companyName}-App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp()
     cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-    cy.skipEditorPopover();
 
     cy.dragAndDropWidget("Toggle Switch", 50, 50);
     verifyComponent("toggleswitch1");

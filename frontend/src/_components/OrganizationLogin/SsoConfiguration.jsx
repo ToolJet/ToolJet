@@ -176,7 +176,7 @@ class SSOConfiguration extends React.Component {
     const isEnabledKey = `${key}Enabled`;
     const enabledStatus = !this.state[isEnabledKey];
 
-    if (enabledStatus === false) {
+    if (!enabledStatus) {
       try {
         await this.handleToggleSSOOption(key);
         toast.success(
@@ -228,9 +228,9 @@ class SSOConfiguration extends React.Component {
     const iconStyles = { width: '20px', height: '20x' };
     switch (key) {
       case 'google':
-        return <img src="/assets/images/Google.png" alt="Google" style={iconStyles} />;
+        return <img src="assets/images/Google.png" alt="Google" style={iconStyles} />;
       case 'git':
-        return <img src="/assets/images/Github.png" alt="GitHub" style={iconStyles} />;
+        return <img src="assets/images/Github.png" alt="GitHub" style={iconStyles} />;
       default:
         return null;
     }
@@ -238,10 +238,15 @@ class SSOConfiguration extends React.Component {
 
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
-    const isEnabled = this.state[isEnabledKey];
+    const isEnabled = this.state[isEnabledKey] || false;
 
     return (
-      <div className="sso-option" key={key} onClick={() => this.openModal(key)} data-cy="sso-card">
+      <div
+        className="sso-option"
+        key={key}
+        onClick={() => this.openModal(key)}
+        data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-sso-card`}
+      >
         <div className="sso-option-label">
           {
             <div
@@ -254,7 +259,7 @@ class SSOConfiguration extends React.Component {
               </span>
               {
                 <img
-                  src="/assets/images/EditIcon.png"
+                  src="assets/images/EditIcon.png"
                   className="option-icon"
                   style={{ width: '14px', height: '14px', marginLeft: '8px' }}
                   data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-edit-icon`}
@@ -303,7 +308,7 @@ class SSOConfiguration extends React.Component {
                 justifyContent: 'flex-start',
               }}
               bsPrefix="no-caret-dropdown-toggle"
-              data-testid="instance-sso-toggle"
+              data-cy="dropdown-custom-toggle"
             >
               <div
                 className="sso-option-label"
@@ -346,7 +351,7 @@ class SSOConfiguration extends React.Component {
             </Dropdown.Menu>
           </Dropdown>
 
-          <label className="switch" style={{ marginLeft: '95px' }}>
+          <label className="switch" style={{ marginLeft: '95px' }} data-cy="instance-sso-toggle">
             <input type="checkbox" checked={defaultSSO} onChange={this.toggleDefaultSSO} />
             <span className="slider round"></span>
           </label>

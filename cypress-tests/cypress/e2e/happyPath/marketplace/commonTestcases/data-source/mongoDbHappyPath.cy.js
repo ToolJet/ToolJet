@@ -40,6 +40,10 @@ describe("Data source MongoDB", () => {
       "have.text",
       postgreSqlText.allDataSources()
     );
+    cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
+      "have.text",
+      postgreSqlText.commonlyUsed
+    );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
       postgreSqlText.allDatabase()
@@ -108,7 +112,7 @@ describe("Data source MongoDB", () => {
     );
     cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
-      "connect ECONNREFUSED ::1:27017"
+      mongoDbText.errorConnectionRefused
     );
     cy.get('[data-cy="query-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
@@ -149,7 +153,11 @@ describe("Data source MongoDB", () => {
     cy.get(postgreSqlSelector.buttonSave)
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .click();
-
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
+    cy.wait(1000);
     deleteDatasource(`cypress-${data.dataSourceName}-mongodb`);
   });
 

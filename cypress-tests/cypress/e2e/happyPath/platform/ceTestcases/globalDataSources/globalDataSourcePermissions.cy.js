@@ -50,17 +50,25 @@ describe("Global Datasource Manager", () => {
       expect($el.contents().first().text().trim()).to.eq("Data sources");
     });
 
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+      "have.text",
+      ' Commonly used'
+    );
+    cy.get(dataSourceSelector.commonDsLabelAndCount).verifyVisibleElement(
+      "have.text",
+      "Commonly used (5)"
+    ).click();
     cy.get(dataSourceSelector.databaseLabelAndCount).verifyVisibleElement(
       "have.text",
       dataSourceText.allDatabase
-    );
+    ).click();
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
       " Databases"
     );
     cy.get(dataSourceSelector.querySearchBar)
       .invoke("attr", "placeholder")
-      .should("eq", "Search  data sources");
+      .should("eq", "Search data sources");
 
     cy.get(dataSourceSelector.apiLabelAndCount)
       .verifyVisibleElement("have.text", dataSourceText.allApis)
@@ -242,6 +250,7 @@ describe("Global Datasource Manager", () => {
       }
     });
   });
+
   it("Should validate the user's global data source permissions on apps created by admin", () => {
     logout();
     cy.apiLogin("test@tooljet.com", "password");
@@ -274,6 +283,7 @@ describe("Global Datasource Manager", () => {
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     verifyValueOnInspector("student_data", "4 items ");
   });
+
   it("Should verify the query creation and scope changing functionality.", () => {
     cy.removeAssignedApps();
 

@@ -14,9 +14,14 @@ const Pagination = ({
 
   const handleOnChange = (value) => {
     const parsedValue = parseInt(value, 10);
-
     if (parsedValue > 0 && parsedValue <= totalPage && parsedValue !== currentPage) {
       gotoNextPage(true, parsedValue);
+    } else if (parsedValue > totalPage) {
+      setCurrentPageNumber(totalPage);
+      gotoNextPage(true, totalPage);
+    } else if (isNaN(parsedValue) || parsedValue === 0) {
+      setCurrentPageNumber(1);
+      gotoNextPage(true, 1);
     }
   };
 
@@ -38,7 +43,7 @@ const Pagination = ({
         <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
       </Button.UnstyledButton>
 
-      <div className="d-flex">
+      <div className="d-flex align-items-center">
         <input
           disabled={isDisabled || disableInput}
           type="text"

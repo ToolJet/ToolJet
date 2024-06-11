@@ -22,6 +22,8 @@ export const TooljetDatabaseContext = createContext({
   setColumns: () => {},
   totalRecords: 0,
   setTotalRecords: () => {},
+  loadingState: false,
+  setLoadingState: () => {},
   handleBuildFilterQuery: () => {},
   handleBuildSortQuery: () => {},
   buildPaginationQuery: () => {},
@@ -38,6 +40,8 @@ export const TooljetDatabaseContext = createContext({
   pageSize: 50,
   setPageSize: () => {},
   handleRefetchQuery: () => {},
+  foreignKeys: [],
+  setForeignKeys: () => [],
 });
 
 export const TooljetDatabase = (props) => {
@@ -53,16 +57,22 @@ export const TooljetDatabase = (props) => {
   const [pageSize, setPageSize] = useState(50);
 
   const [totalRecords, setTotalRecords] = useState(0);
+  const [loadingState, setLoadingState] = useState(false);
 
   const [queryFilters, setQueryFilters] = useState({});
   const [sortFilters, setSortFilters] = useState({});
   const [collapseSidebar, setCollapseSidebar] = useState(false);
+
+  const [foreignKeys, setForeignKeys] = useState([]);
 
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
   };
   const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
+  // let { state } = useLocation();
+
+  // console.log('state', selectedTable);
 
   if (!admin) {
     navigate('/');
@@ -81,6 +91,7 @@ export const TooljetDatabase = (props) => {
     selectedTable,
     setSelectedTableData,
     setTotalRecords,
+    setLoadingState,
   });
 
   const value = useMemo(
@@ -114,6 +125,10 @@ export const TooljetDatabase = (props) => {
       pageSize,
       setPageSize,
       handleRefetchQuery,
+      loadingState,
+      setLoadingState,
+      foreignKeys,
+      setForeignKeys,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -126,6 +141,7 @@ export const TooljetDatabase = (props) => {
       totalRecords,
       queryFilters,
       sortFilters,
+      foreignKeys,
     ]
   );
 
@@ -133,6 +149,9 @@ export const TooljetDatabase = (props) => {
 
   useEffect(() => {
     updateSidebarNAV('');
+    // if (state.id && state.name) {
+    //   setSelectedTable({ id: state.id, table_name: state.name });
+    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

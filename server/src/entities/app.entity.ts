@@ -1,24 +1,24 @@
 import {
   Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
   AfterLoad,
-  BaseEntity,
-  ManyToMany,
-  JoinTable,
   AfterInsert,
   getRepository,
   getManager,
+  Column,
+  CreateDateColumn,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  BaseEntity,
 } from 'typeorm';
-import { User } from './user.entity';
 import { AppVersion } from './app_version.entity';
-import { GroupPermission } from './group_permission.entity';
 import { AppGroupPermission } from './app_group_permission.entity';
+import { GroupPermission } from './group_permission.entity';
+import { User } from './user.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {

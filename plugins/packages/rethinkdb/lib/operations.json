@@ -207,6 +207,7 @@
         "type": "codehinter",
         "description": "Enter data to be inserted",
         "height": "150px",
+        "editorType": "extendedSingleLine",
         "placeholder": "Enter data to be inserted"
       }
     },
@@ -344,6 +345,7 @@
         "type": "codehinter",
         "description": "Enter data to be inserted",
         "height": "150px",
+        "editorType": "extendedSingleLine",
         "placeholder": "Enter data to be inserted"
       }
     },
@@ -376,6 +378,7 @@
         "type": "codehinter",
         "description": "Enter data to be inserted",
         "height": "150px",
+        "editorType": "extendedSingleLine",
         "placeholder": "Enter data to be inserted"
       }
     }

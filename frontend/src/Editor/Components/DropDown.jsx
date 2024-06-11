@@ -21,7 +21,6 @@ export const DropDown = function DropDown({
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
   const [showValidationError, setShowValidationError] = useState(false);
-
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
@@ -61,7 +60,10 @@ export const DropDown = function DropDown({
 
   const setExposedItem = (value, index, onSelectFired = false) => {
     setCurrentValue(value);
-    onSelectFired ? setExposedVariable('value', value).then(fireEvent('onSelect')) : setExposedVariable('value', value);
+    if (onSelectFired) {
+      setExposedVariable('value', value);
+      fireEvent('onSelect');
+    } else setExposedVariable('value', value);
     setExposedVariable('selectedOptionLabel', index === undefined ? undefined : display_values?.[index]);
   };
 
@@ -98,7 +100,7 @@ export const DropDown = function DropDown({
     setExposedItem(newValue, index);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, JSON.stringify(values)]);
+  }, [JSON.stringify(value), JSON.stringify(values)]);
 
   useEffect(() => {
     let index = null;

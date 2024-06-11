@@ -1,0 +1,57 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Databricks datasource",
+  "description": "A schema defining Databricks datasource",
+  "type": "database",
+  "source": {
+    "name": "Databricks",
+    "kind": "databricks",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "host.cloud.databricks.com"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "443"
+    },
+    "http_path": {
+      "label": "HTTP Path",
+      "key": "http_path",
+      "type": "text",
+      "description": "/sql/2.0/warehouse/id"
+    },
+    "default_catalog": {
+      "label": "Default Catalog",
+      "key": "default_catalog",
+      "type": "text",
+      "description": "tooljet_metastore"
+    },
+    "default_schema": {
+      "label": "Default Schema",
+      "key": "default_schema",
+      "type": "text",
+      "description": "default"
+    },
+    "personal_access_token": {
+      "label": "Personal Access Token",
+      "key": "personal_access_token",
+      "type": "password",
+      "description": "default"
+    }
+  },
+  "required": ["host", "http_path", "personal_access_token"]
+}

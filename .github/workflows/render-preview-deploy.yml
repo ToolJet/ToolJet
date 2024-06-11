@@ -132,6 +132,10 @@ jobs:
               {
                 "key": "ENABLE_MARKETPLACE_FEATURE",
                 "value": "true"
+              },
+              {
+                "key": "TOOLJET_MARKETPLACE_URL",
+                "value": "${{ secrets.MARKETPLACE_BUCKET }}"
               }
             ],
             "serviceDetails": {

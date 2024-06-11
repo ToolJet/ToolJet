@@ -16,7 +16,7 @@ You can import various JavaScript libraries using their Content Delivery Network
 Start by creating a new application in ToolJet. Then, proceed to create a new RunJS query from the query panel.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/neww.png" alt="reate a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/create-new-query.png" alt="Create a new RunJS query" />
 </div>
 
 </div>
@@ -64,7 +64,7 @@ Enable the **Run this query on application load?** option to make the libraries 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/importeds.png" alt="reate a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/import-successful.png" alt="Import Successful" />
 </div>
 
 </div>
@@ -92,7 +92,7 @@ return flatten({
 Preview the output in the query manager or run the query to see the flattened JSON.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flattens.png" alt="reate a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flatten-js.png" alt="Use FlattenJS" />
 </div>
 
 </div>
@@ -110,7 +110,7 @@ return math.atan2(3, -3) / math.pi;
 Preview the output, or Run the query to see the result of the calculation.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/mathjss.png" alt="reate a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/math-js-v2.png" alt="Use MathJs" />
 </div>
 
 </div>

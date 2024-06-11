@@ -39,6 +39,10 @@ describe("Data sources MySql", () => {
       "have.text",
       postgreSqlText.allDataSources()
     );
+    cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
+      "have.text",
+      postgreSqlText.commonlyUsed
+    );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
       postgreSqlText.allDatabase()
@@ -117,7 +121,7 @@ describe("Data sources MySql", () => {
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
-      "3306"
+      "3318"
     );
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
@@ -141,7 +145,7 @@ describe("Data sources MySql", () => {
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
       postgreSqlText.placeholderNameOfDB,
-      "testdv"
+      "test_db"
     );
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
@@ -210,7 +214,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
-      "Database Name": "testdv",
+      "Database Name": "test_db",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });
@@ -388,7 +392,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
-      "Database Name": "testdv",
+      "Database Name": "test_db",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });
@@ -421,7 +425,7 @@ describe("Data sources MySql", () => {
 
     cy.get(".p-3").should(
       "have.text",
-      `[{"Tables_in_testdv (${dbName})":"${dbName}"}]`
+      `[{"Tables_in_test_db (${dbName})":"${dbName}"}]`
     );
 
     // addQuery(
@@ -462,8 +466,8 @@ describe("Data sources MySql", () => {
     );
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
-      Port: "3306",
-      "Database Name": "testdv",
+      Port: "3318",
+      "Database Name": "test_db",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });

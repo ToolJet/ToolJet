@@ -160,7 +160,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 className={`form-control ${name?.error ? 'is-invalid' : 'is-valid'}`}
                 placeholder={t('header.organization.workspaceName', 'Workspace name')}
                 disabled={isCreating}
-                onKeyDown={handleKeyDown}
                 maxLength={50}
                 data-cy="workspace-name-input-field"
                 autoFocus
@@ -247,6 +246,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 disabled={isDisabled}
                 onClick={createOrganization}
                 data-cy="create-workspace-button"
+                type="submit"
                 isLoading={isCreating}
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -5,60 +5,65 @@ title: PDF
 
 # PDF
 
-PDF widget can be used to embed the PDF file either by URL or as a Base64 encoded.
+The PDF component can be used to embed PDF files either by URL or through Base64 code.
 
-:::info
-Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string
-:::
+## Compatibility
+
+The PDF component is compatible with the following browser versions: <br/>
+
+| Browser | Version |
+|:--------|:--------------------|
+| Chrome  | 92 or later         |
+| Edge    | 92 or later         |
+| Safari  | 15.4 or later       |
+| Firefox | 90 or later         |
+
+
+If the PDF component is integrated into your application, it will only render in supported browsers.
 
 ## Properties
 
 ### File URL
 
-The URL of the PDF file on the web. `data:application/pdf;base64,` format is supported and the input needs to be prefixed with `data:application/pdf;base64,`
+Under this property, you can enter the URL of the PDF file to display. Base64 format is also supported, the input needs to be prefixed with `data:application/pdf;base64,`. 
 
+For example: 
+```js
+{{'data:application/pdf;base64,' + components.filepicker1.file[0].base64Data}}
+```
 ### Scale page to width
 
-It can be toggled to adjust the PDF content to fit the width or height of the component
+The `Scale page to width` property automatically adjusts the PDF to fill the entire width of the component.
 
 ### Show page controls
 
-By default, page number, previous & next button is displayed while hovering the PDF file. It can be toggled on or off.
+By default, when hovering over the PDF file, buttons for the previous and next page, along with the page number, are displayed. They can be toggled on or off using the `Show page controls` toggle.
 
 ### Show the download
 
-The `Download` button on the PDF component allows you to download the pdf file. By default, Show the download button is enabled. Toggle it off to remove the `Download` button from PDF component, you can also click on the `Fx` button to set the values `{{true}}` or `{{false}}` dynamically.
+The `Download` button on the PDF component allows you to download the PDF file. By default, `Show the download` button is enabled. Toggle it off to remove the `Download` button from the PDF component. 
 
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+To display instructional text when a user hovers over the PDF component, add some text under the Tooltip property.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+## Devices
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - PDF" />
-
-</div>
-
-## Layout
-
-| Layout          | description                               | Expected value                                                                                                |
-| --------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Property          | Description                               | Expected value    |
+| :-------------- | :---------------------------------------- | :------------------ |
+| Show on desktop | Display the component in Desktop view | Programmatically determine the value by clicking on `fx` or use the toggle switch |
+| Show on mobile  | Display the component in Mobile view  | Programmatically determine the value by clicking on `fx` or use the toggle switch |
 
 ## Styles
 
-| Style      | Description                                                                                                                                                                                                                                              |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+### Visibility 
+
+Toggle the `Visibility` condition on or off to control the visibility of the component. You can also programmatically change its value by clicking on the `fx` button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`. 
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string
 :::
-
 
 ## Exposed variables
 
