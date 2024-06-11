@@ -1,6 +1,6 @@
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import _, { isEmpty } from 'lodash';
+import _, { has, isEmpty, isObject } from 'lodash';
 import React, { useState, useEffect, useMemo } from 'react';
 import Select from 'react-select';
 import './multiselectV2.scss';
@@ -14,13 +14,6 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from '../DropdownV2/utils';
-
-const SHOW_MORE_CHIP_WIDTH = 40;
-const ICON_WIDTH = 16;
-const SCALING_FACTOR = 0.6;
-const FONT_SIZE = 12;
-const GAP = 4;
-const MARGIN = 26; // including left and right side margin
 
 export const MultiselectV2 = ({
   id,
@@ -74,8 +67,6 @@ export const MultiselectV2 = ({
   const validationData = validate(selected.length ? selected.map((option) => option.value) : null);
   const { isValid, validationError } = validationData;
   const valueContainerRef = React.useRef(null);
-  const [visibleElements, setVisibleElements] = useState([]);
-  const [showMore, setShowMore] = useState(false);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
@@ -91,36 +82,6 @@ export const MultiselectV2 = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, multiSelectLoadingState, disabledState]);
-
-  // useEffect(() => {
-  //   const updateVisibleElements = () => {
-  //     if (!isEmpty(valueContainerRef.current)) {
-  //       let totalWidth = 0;
-  //       let maxVisibleOptions = 0;
-  //       const containerWidth =
-  //         valueContainerRef.current.offsetWidth -
-  //         (iconVisibility ? ICON_WIDTH + SHOW_MORE_CHIP_WIDTH : SHOW_MORE_CHIP_WIDTH);
-  //       // // Calculate total width of all span elements
-  //       for (const option of selected) {
-  //         const valueWidth = option.label.length * FONT_SIZE * SCALING_FACTOR + MARGIN + GAP;
-  //         console.log(valueWidth, "valueWidth")
-  //         totalWidth += valueWidth;
-  //         if (totalWidth <= containerWidth) {
-  //           maxVisibleOptions++;
-  //         } else {
-  //           break;
-  //         }
-  //       }
-  //       if (maxVisibleOptions) {
-  //         setVisibleElements(selected.slice(0, maxVisibleOptions));
-  //       } else {
-  //         setVisibleElements(selected.slice(0, 1));
-  //       }
-  //       setShowMore(selected.length > maxVisibleOptions);
-  //     }
-  //   };
-  //   updateVisibleElements();
-  // }, [selected, width, iconVisibility]);
 
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
@@ -175,7 +136,10 @@ export const MultiselectV2 = ({
       'selectedOptions',
       selected.map(({ label, value }) => ({ label, value }))
     );
-    setExposedVariable('options', selectOptions);
+    setExposedVariable(
+      'options',
+      selectOptions?.map(({ label, value }) => ({ label, value }))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selected), selectOptions]);
 
@@ -211,40 +175,38 @@ export const MultiselectV2 = ({
   useEffect(() => {
     // Expose selectOption
     setExposedVariable('selectOptions', async function (value) {
-      if (
-        selectOptions.some((option) => option.value === value) &&
-        !selected.some((option) => option.value === value)
-      ) {
-        const newSelected = [
-          ...selected,
-          ...selectOptions.filter(
-            (option) =>
-              option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
-          ),
-        ];
+      if (Array.isArray(value)) {
+        const newSelected = [...selected];
+        value.forEach((val) => {
+          // Check if array provided is a list of objects with value key
+          if (isObject(val) && has(val, 'value')) {
+            val = val.value;
+          }
+          if (
+            selectOptions.some((option) => option.value === val) &&
+            !selected.some((option) => option.value === val)
+          ) {
+            const optionsToAdd = selectOptions.filter(
+              (option) => option.value === val && !selected.some((selectedOption) => selectedOption.value === val)
+            );
+            newSelected.push(...optionsToAdd);
+          }
+        });
         setSelected(newSelected);
-        fireEvent('onSelect');
       }
     });
 
     // Expose deselectOption
     setExposedVariable('deselectOptions', async function (value) {
-      if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
-        const newSelected = [
-          ...selected.filter(function (item) {
-            return item.value !== value;
-          }),
-        ];
+      if (Array.isArray(value)) {
+        // Check if array provided is a list of objects with value key
+        const _value = value.map((val) => (isObject(val) && has(val, 'value') ? val.value : val));
+        const newSelected = selected.filter((option) => !_value.includes(option.value));
         setSelected(newSelected);
-        setExposedVariable(
-          'selectedOptions',
-          newSelected.map(({ label, value }) => ({ label, value }))
-        );
-        // fireEvent('onSelect');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, setSelected]);
+  }, [selectOptions, selected, setSelected]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -435,7 +397,7 @@ export const MultiselectV2 = ({
             menuIsOpen={isMultiselectOpen}
             placeholder={placeholder}
             components={{
-              MenuList: (props) => <CustomMenuList {...props} fireEvent={() => fireEvent('onSelect')} />,
+              MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
@@ -454,9 +416,6 @@ export const MultiselectV2 = ({
             icon={icon}
             doShowIcon={iconVisibility}
             containerRef={valueContainerRef}
-            visibleValues={visibleElements}
-            showMore={showMore}
-            setShowMore={setShowMore}
             showAllOption={showAllOption}
             isSelectAllSelected={isSelectAllSelected}
             setIsSelectAllSelected={setIsSelectAllSelected}
@@ -465,6 +424,7 @@ export const MultiselectV2 = ({
             optionsLoadingState={optionsLoadingState}
             searchInputValue={searchInputValue}
             darkMode={darkMode}
+            fireEvent={() => fireEvent('onSelect')}
           />
         </div>
       </div>

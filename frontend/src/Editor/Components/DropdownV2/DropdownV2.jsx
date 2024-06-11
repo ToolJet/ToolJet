@@ -101,7 +101,6 @@ export const DropdownV2 = ({
   const [isFocused, setIsFocused] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
-  const inputRef = React.useRef(null); // Ref for the input search box
   const labelRef = useRef();
 
   function findDefaultItem(schema) {
@@ -159,13 +158,6 @@ export const DropdownV2 = ({
       setSearchInputValue('');
     }
   };
-
-  useEffect(() => {
-    // Focus the input search box when the menu list is open and the component is focused
-    if (isFocused && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isFocused]);
 
   useEffect(() => {
     if (advanced) {
@@ -442,7 +434,6 @@ export const DropdownV2 = ({
             searchInputValue={searchInputValue}
             setSearchInputValue={setSearchInputValue}
             optionsLoadingState={properties.optionsLoadingState}
-            inputRef={inputRef}
           />
         </div>
       </div>

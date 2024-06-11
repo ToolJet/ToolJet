@@ -8,7 +8,7 @@ import cx from 'classnames';
 
 const { MenuList } = components;
 
-// This Menulist also used in Multiselect
+// This Menulist also used in MultiselectV2
 const CustomMenuList = ({ selectProps, ...props }) => {
   const {
     onInputChange,
@@ -20,10 +20,11 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     darkMode,
     setSelected,
     setIsSelectAllSelected,
+    fireEvent,
   } = selectProps;
 
   const handleSelectAll = (e) => {
-    e.target.checked && props?.fireEvent();
+    e.target.checked && fireEvent();
     if (e.target.checked) {
       setSelected(props.options);
     } else {
