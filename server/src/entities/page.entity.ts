@@ -28,8 +28,8 @@ export class Page {
   @Column()
   disabled: boolean;
 
-  @Column()
-  hidden: boolean;
+  @Column('simple-json', { name: 'hidden' })
+  hidden;
 
   @Column()
   icon: string;
