@@ -65,7 +65,7 @@ function FolderList({
           })}
           style={{
             ...(backgroundColor && { backgroundColor }),
-            ...((isHovered || selectedItem) && { ...computedStyles.pill }),
+            ...{ ...computedStyles.pill, ...computedStyles.text },
           }}
           onClick={isHoveredInside ? menuToggle : onClick}
           data-cy={`${dataCy}-list-item`}

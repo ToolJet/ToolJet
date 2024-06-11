@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import FolderList from '@/_ui/FolderList/FolderList';
@@ -87,8 +88,8 @@ export const ViewerSidebarNavigation = ({
   return (
     <div
       className={classNames('navigation-area', {
-        close: !isSidebarPinned,
-        'sidebar-overlay': !isSidebarPinned,
+        close: !isSidebarPinned && properties?.collapsable,
+        'sidebar-overlay': !isSidebarPinned && properties?.collapsable,
         'icon-only': labelStyle?.label?.hidden,
       })}
       style={{
@@ -108,7 +109,7 @@ export const ViewerSidebarNavigation = ({
           }}
           as="a"
           variant="tertiary"
-          className="left-sidebar-header-btn pin"
+          className={cx('left-sidebar-header-btn pin', { 'd-none': !properties?.collapsable })}
           fill={`var(--slate12)`}
           darkMode={darkMode}
           leftIcon={isSidebarPinned ? 'unpin01' : 'pin'}
