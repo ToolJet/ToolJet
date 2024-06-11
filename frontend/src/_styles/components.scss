@@ -129,7 +129,7 @@ $btn-dark-color: #FFFFFF;
   .page-handler {
     height: 32px !important;
     padding: 0;
-    margin-bottom: 2px;
+    margin-bottom: 13px;
     font-weight: 500;
 
     .card {
@@ -137,9 +137,19 @@ $btn-dark-color: #FFFFFF;
       padding: 8px;
     }
 
+    .option-icon {
+      width: 25px;
+      background: white;
+      height: 25px;
+      border-radius: 6px;
+      border: 1px solid var(--slate10);
+      padding: 0px;
+      visibility: unset !important;
+    }
+
     .card,
     .card-body {
-      height: 32px;
+      height: 38px;
 
       .page-name {
         color: var(--slate12);

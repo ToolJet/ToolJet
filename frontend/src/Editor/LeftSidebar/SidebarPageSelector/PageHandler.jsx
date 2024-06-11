@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import * as Icons from '@tabler/icons-react';
+import cx from 'classnames';
 import { RenameInput } from './RenameInput';
 import { PagehandlerMenu } from './PagehandlerMenu';
 import { EditModal } from './EditModal';
@@ -226,16 +226,15 @@ export const PageHandler = ({
             {isHovered && isDisabled && (
               <FileRemove fill={computedStyles.icon.fill} width={16} height={16} viewBox={'0 0 16 16'} />
             )}
-            {/* {isHovered && !isDisabled && (
+            {isHovered && !isDisabled && (
               <div style={{ paddingRight: '4px' }}>
                 <SortableList.DragHandle show />
               </div>
-            )} */}
+            )}
           </div>
           <div
-            className={`col text-truncate font-weight-400 page-name tj-text-xsm ${labelStyle.label.hidden && 'd-none'}`}
+            className={`col text-truncate font-weight-400 page-name tj-text-sm ${labelStyle.label.hidden && 'd-none'}`}
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
-            style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
           >
             <span style={{ ...computedStyles.text }} className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
             {isIconApplied && (
@@ -251,7 +250,10 @@ export const PageHandler = ({
               </span>
             )}
           </div>
-          <div className="col-auto" data-cy="page-menu-option-icon">
+          <div
+            className={cx('col-auto', { 'option-icon mx-1': isHovered || isSelected })}
+            data-cy="page-menu-option-icon"
+          >
             {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
