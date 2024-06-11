@@ -1196,26 +1196,26 @@ export class OrganizationsService {
     const options = [
       {
         key: 'host',
-        value: this.configService.get<string>('PG_HOST'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_HOST'),
         encrypted: true,
       },
       {
         key: 'port',
-        value: this.configService.get<string>('PG_PORT'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PORT'),
         encrypted: true,
       },
       {
         key: 'database',
-        value: 'sample_db',
+        value: this.configService.get<string>('SAMPLE_DB') || 'sample_db',
       },
       {
         key: 'username',
-        value: this.configService.get<string>('PG_USER'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_USER'),
         encrypted: true,
       },
       {
         key: 'password',
-        value: this.configService.get<string>('PG_PASS'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PASS'),
         encrypted: true,
       },
       {

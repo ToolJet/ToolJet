@@ -41,26 +41,26 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
       const options = [
         {
           key: 'host',
-          value: envVar.PG_HOST,
+          value: envVar.SAMPLE_PG_DB_HOST,
           encrypted: true,
         },
         {
           key: 'port',
-          value: envVar.PG_PORT,
+          value: envVar.SAMPLE_PG_DB_PORT,
           encrypted: true,
         },
         {
           key: 'database',
-          value: 'sample_db',
+          value: envVar.SAMPLE_DB ||'sample_db',
         },
         {
           key: 'username',
-          value: envVar.PG_USER,
+          value: envVar.SAMPLE_PG_DB_USER,
           encrypted: true,
         },
         {
           key: 'password',
-          value: envVar.PG_PASS,
+          value: envVar.SAMPLE_PG_DB_PASS,
           encrypted: true,
         },
         {
