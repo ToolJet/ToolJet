@@ -193,7 +193,8 @@
         "type": "codehinter",
         "description": "Enter document body",
         "height": "150px",
-        "editorType": "extendedSingleLine"
+        "editorType": "extendedSingleLine",
+        "placeholder": "{'name': 'John', 'age': 30}"
       }
     },
     "update_document": {
@@ -223,7 +224,8 @@
         "type": "codehinter",
         "description": "Enter document body",
         "height": "150px",
-        "editorType": "extendedSingleLine"
+        "editorType": "extendedSingleLine",
+        "placeholder": "{'name': 'John', 'age': 30}"
       }
     },
     "delete_document": {
@@ -269,7 +271,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter key for document Id"
+        "placeholder": "Enter key for document Id ($id)"
       },
       "records": {
         "label": "Records",
@@ -278,7 +280,8 @@
         "mode": "javascript",
         "description": "Enter records",
         "height": "150px",
-        "editorType": "extendedSingleLine"
+        "editorType": "extendedSingleLine",
+        "placeholder": "{{ [{'$id': '666858665f96ddef83f8', 'name': 'John', 'age': 30}]  }}"
       }
     }
   }
