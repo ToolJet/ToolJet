@@ -5,7 +5,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 
-export const SelectBox = ({ options, onClick, width, height, value = '' }) => {
+export const SelectBox = ({ options, handleChange, width, height, value = '' }) => {
   const validOptionStructure = options.map(({ description = '', ...rest }) => {
     return rest;
   });
@@ -13,10 +13,7 @@ export const SelectBox = ({ options, onClick, width, height, value = '' }) => {
     <Select
       options={validOptionStructure}
       value={value}
-      //   onChange={(value) => {
-      //     statusValuesChanged(value);
-      //     setStatusVal(value);
-      //   }}
+      onChange={handleChange}
       height={height}
       useMenuPortal={true}
       closeMenuOnSelect={true}

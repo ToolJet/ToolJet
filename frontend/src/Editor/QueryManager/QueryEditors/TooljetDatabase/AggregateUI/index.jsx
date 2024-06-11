@@ -22,6 +22,18 @@ export const AggregateUi = () => {
     };
     handleOptionsChange('aggregates', updatedAggregates);
   };
+
+  const handleAggregateOptionChange = (key, selecetdValue, optionToUpdate) => {
+    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const aggregateToUpdate = { ...currentAggregates[key], [optionToUpdate]: selecetdValue };
+    const updatedAggregates = {
+      ...currentAggregates,
+      [key]: aggregateToUpdate,
+    };
+    console.log('db :: handleAggregateOptionChange', { key, selecetdValue, optionToUpdate, updatedAggregates });
+    handleOptionsChange('aggregates', updatedAggregates);
+  };
+
   const columnAccessorsOptions = useMemo(() => {
     return columns.map((column) => {
       return {
@@ -52,6 +64,7 @@ export const AggregateUi = () => {
                     { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
                     { label: 'Count', value: 'count', description: 'Count number of not null values in this column' },
                   ]}
+                  handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggregateFx')}
                 />
                 <div style={{ flex: '1' }}>
                   <SelectBox
