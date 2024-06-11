@@ -76,28 +76,21 @@ export const dropdownV2Config = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
-      validation: {
-        schema: { type: 'boolean' },
-      },
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-      },
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+
       section: 'additionalActions',
     },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-      },
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
     tooltip: {
