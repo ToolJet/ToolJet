@@ -566,3 +566,10 @@
         }
     }
 }
+
+.disabled-cursor{
+    cursor: not-allowed;
+}
+.disabled-pointerevents{
+    pointer-events: none;
+}
