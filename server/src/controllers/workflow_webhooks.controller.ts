@@ -1,9 +1,10 @@
-import { Controller, Post, Param, UseGuards, Body, Patch, Query } from '@nestjs/common';
+import { Controller, Post, Param, UseGuards, Body, Patch, Query, Res } from '@nestjs/common';
 import { WorkflowWebhooksService } from '@services/workflow_webhooks.service';
 import { WebhookGuard } from '@ee/licensing/guards/webhook.guard';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ValidateLicenseGuard } from '@ee/licensing/guards/validLicense.guard';
+import { Response } from 'express';
 
 @Controller({
   path: 'webhooks',
@@ -14,10 +15,20 @@ export class WorkflowWebhooksController {
 
   @UseGuards(ThrottlerGuard, ValidateLicenseGuard, WebhookGuard)
   @Post('workflows/:id/trigger')
-  async triggerWorkflow(@Param('id') id: any, @Body() workflowParams, @Query('environment') environment: string) {
+  async triggerWorkflow(
+    @Param('id') id: any,
+    @Body() workflowParams,
+    @Query('environment') environment: string,
+    @Res({ passthrough: true }) response: Response
+  ) {
     const workflowApps = { executeUsing: 'app', appId: id };
 
-    const result = await this.workflowWebhookService.triggerWorkflow(workflowApps, workflowParams, environment);
+    const result = await this.workflowWebhookService.triggerWorkflow(
+      workflowApps,
+      workflowParams,
+      environment,
+      response
+    );
     return result;
   }
 

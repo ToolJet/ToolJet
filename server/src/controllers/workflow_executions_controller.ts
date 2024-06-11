@@ -1,5 +1,5 @@
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
-import { Body, Controller, ForbiddenException, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { WorkflowExecutionsService } from '@services/workflow_executions.service';
 import { App } from 'src/entities/app.entity';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
@@ -12,6 +12,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { Repository } from 'typeorm';
 import { ValidateLicenseGuard } from '@ee/licensing/guards/validLicense.guard';
 import { WorkflowGuard } from '@ee/licensing/guards/workflow.guard';
+import { Response } from 'express';
 
 @Controller('workflow_executions')
 export class WorkflowExecutionsController {
@@ -32,7 +33,11 @@ export class WorkflowExecutionsController {
   @UseGuards(ValidateLicenseGuard, WorkflowGuard)
   // !Removing auth guard for allowing workflow executions to be triggered for public apps
   @Post()
-  async create(@User() user, @Body() createWorkflowExecutionDto: CreateWorkflowExecutionDto) {
+  async create(
+    @User() user,
+    @Body() createWorkflowExecutionDto: CreateWorkflowExecutionDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
     const appDetails =
       createWorkflowExecutionDto.executeUsing === 'version'
         ? await this.appVersionsRepository.findOne(createWorkflowExecutionDto.appVersionId, { relations: ['app'] })
@@ -65,7 +70,8 @@ export class WorkflowExecutionsController {
     const result = await this.workflowExecutionsService.execute(
       workflowExecution,
       createWorkflowExecutionDto.params,
-      appEnvId
+      appEnvId,
+      response
     );
 
     return { workflowExecution, result };

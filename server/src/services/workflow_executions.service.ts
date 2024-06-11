@@ -16,6 +16,7 @@ import { Graph, alg } from '@dagrejs/graphlib';
 import * as moment from 'moment';
 import { LicenseService } from '@services/license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { Response } from 'express';
 
 @Injectable()
 export class WorkflowExecutionsService {
@@ -148,7 +149,12 @@ export class WorkflowExecutionsService {
     return workflowExecutions;
   }
 
-  async execute(workflowExecution: WorkflowExecution, params: object = {}, envId = ''): Promise<object> {
+  async execute(
+    workflowExecution: WorkflowExecution,
+    params: object = {},
+    envId = '',
+    response: Response
+  ): Promise<object> {
     const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId, {
       relations: ['app'],
     });
@@ -201,7 +207,7 @@ export class WorkflowExecutionsService {
           }
 
           case 'query': {
-            await this.processQueryNode(currentNode, workflowExecution, appVersion, state, addLog);
+            await this.processQueryNode(currentNode, workflowExecution, appVersion, state, addLog, response);
             break;
           }
 
@@ -265,7 +271,8 @@ export class WorkflowExecutionsService {
     execution: WorkflowExecution,
     appVersion: AppVersion,
     state: object,
-    addLog: any
+    addLog: any,
+    response: Response
   ) {
     const queryId = find(appVersion.definition.queries, {
       idOnDefinition: node.definition.idOnDefinition,
@@ -291,7 +298,7 @@ export class WorkflowExecutionsService {
       const result =
         query.kind === 'runjs'
           ? resolveCode({ code: query.options?.code, state, addLog })
-          : await this.dataQueriesService.runQuery(user, query, options, currentEnvironmentId);
+          : await this.dataQueriesService.runQuery(user, query, options, response, currentEnvironmentId);
 
       const newState = {
         ...state,
