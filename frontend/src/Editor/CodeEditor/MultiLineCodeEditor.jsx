@@ -41,6 +41,7 @@ const MultiLineCodeEditor = (props) => {
     portalProps,
     showPreview,
     paramLabel = '',
+    delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   } = props;
 
   const [currentValue, setCurrentValue] = React.useState(() => initialValue);
@@ -63,6 +64,7 @@ const MultiLineCodeEditor = (props) => {
   }, []);
 
   const handleOnBlur = () => {
+    if (!delayOnChange) return onChange(currentValue);
     setTimeout(() => {
       onChange(currentValue);
     }, 100);
