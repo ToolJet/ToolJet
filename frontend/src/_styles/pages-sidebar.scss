@@ -11,8 +11,14 @@
         z-index: 2;
         border-right: 1px solid var(--slate6);
 
+        .left-sidebar-header-btn {
+            width: 25px;
+            height: 25px;
+        }
+
         .tj-list-item {
             width: 96%;
+            justify-content: start;
         }
 
         &.close {
@@ -35,8 +41,23 @@
 
                 .tj-list-item {
                     opacity: 1;
-                    display: unset;
+                    display: flex;
                 }
+        }
+
+        &.icon-only {
+            width: 65px !important;
+            padding: 0.5rem;
+
+            .tj-list-item {
+                justify-content: center;
+
+                .custom-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+            }
         }
     }
 
@@ -44,5 +65,18 @@
         &.close {
             margin-left: 22px !important;
         }
+    }
+}
+
+.pages-settings {
+    .label-style {
+        width: unset !important;
+        .ToggleGroupItem {
+            width: unset !important;
+            .toggle-item {
+                width: unset !important;
+            }
+        }
+
     }
 }

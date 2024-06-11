@@ -7,10 +7,11 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState, useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -23,6 +24,7 @@ const LeftSidebarPageSelector = ({
   clonePage,
   hidePage,
   unHidePage,
+  updatePageIcon,
   disableEnablePage,
   updateHomePage,
   updatePageHandle,
@@ -84,9 +86,16 @@ const LeftSidebarPageSelector = ({
       setPinned(state);
     }
   };
+  const { definition: { styles } = {} } = getCurrentState().pageSettings ?? {};
 
   return (
-    <div>
+    <div
+      style={{
+        background: styles?.backgroundColor?.value,
+        borderRight: `1px solid ${styles?.borderColor?.value}`,
+        flex: 1,
+      }}
+    >
       <div className="card-body p-0 pb-5">
         <HeaderSection darkMode={darkMode}>
           <HeaderSection.PanelHeader
@@ -113,6 +122,25 @@ const LeftSidebarPageSelector = ({
                 fill={`var(--slate12)`}
                 darkMode={darkMode}
                 leftIcon="plus"
+                iconWidth="14"
+                variant="tertiary"
+              ></ButtonSolid>
+              <ButtonSolid
+                title={'Settings'}
+                onClick={() => {
+                  if (isVersionReleased) {
+                    enableReleasedVersionPopupState();
+                    return;
+                  }
+                  useEditorStore.getState().actions.updateEditorState({
+                    pageSettingSelected: true,
+                    selectedComponents: [],
+                  });
+                }}
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
+                darkMode={darkMode}
+                leftIcon="settings"
                 iconWidth="14"
                 variant="tertiary"
               ></ButtonSolid>
@@ -165,6 +193,7 @@ const LeftSidebarPageSelector = ({
                 clonePage={clonePage}
                 hidePage={hidePage}
                 unHidePage={unHidePage}
+                updatePageIcon={updatePageIcon}
                 disableEnablePage={disableEnablePage}
                 homePageId={homePageId}
                 currentPageId={currentPageId}

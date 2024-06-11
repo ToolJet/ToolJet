@@ -11,7 +11,7 @@ import {
   isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isArray, isEmpty } from 'lodash';
+import _, { isArray, isEmpty, merge } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -38,6 +38,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
 import { updateParentNodes } from './utility';
+import { pageConfig } from '@/Editor/Inspector/PageSettings/pageConfig';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1448,6 +1449,24 @@ export function computeComponentState(components = {}) {
   }
 }
 
+export const computePageSettings = () => {
+  try {
+    const currentPageSettings = useEditorStore.getState().appDefinition.pageSettings;
+    const pageSettingMeta = _.cloneDeep(pageConfig);
+    useCurrentStateStore.getState().actions.setCurrentState({
+      pageSettings: {
+        ...pageConfig,
+        definition: {
+          ...merge({}, pageSettingMeta.definition, currentPageSettings),
+        },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return Promise.reject(error);
+  }
+};
+
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
@@ -2091,6 +2110,7 @@ export const buildAppDefinition = (data) => {
     homePageId: editingVersion.homePageId,
     showViewerNavigation: editingVersion.showViewerNavigation ?? true,
     pages: pages,
+    pageSettings: editingVersion.pageSettings,
   };
 
   return appJSON;

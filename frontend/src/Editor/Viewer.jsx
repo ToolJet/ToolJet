@@ -21,6 +21,7 @@ import {
   runQuery,
   computeComponentState,
   buildAppDefinition,
+  computePageSettings,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
@@ -111,6 +112,7 @@ class ViewerComponent extends React.Component {
       appDefinition: appDefData,
     });
     useResolveStore.getState().actions.resetStore();
+    computePageSettings();
   };
 
   onViewerLoadUpdateEntityReferences = (pageId, loadType) => {

@@ -12,7 +12,13 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import {
+  catchDbException,
+  cleanObject,
+  dbTransactionWrap,
+  defaultAppEnvironments,
+  mergeDeep,
+} from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -1057,10 +1063,11 @@ export class AppsService {
       };
     }
 
+    console.log({ pageSettings });
+
     if (body?.pageSettings) {
       editableParams['pageSettings'] = {
-        ...pageSettings,
-        ...body.pageSettings,
+        ...mergeDeep(pageSettings, body.pageSettings),
       };
     }
 

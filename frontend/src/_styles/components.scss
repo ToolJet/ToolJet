@@ -125,7 +125,6 @@ $btn-dark-color: #FFFFFF;
 .page-selector-panel-body {
   height: 100%;
   padding: 12px 16px;
-  background-color: var(--base);
 
   .page-handler {
     height: 32px !important;
@@ -134,7 +133,7 @@ $btn-dark-color: #FFFFFF;
     font-weight: 500;
 
     .card {
-      background: var(--base);
+      background: none;
       padding: 8px;
     }
 

@@ -1,9 +1,11 @@
 import React from 'react';
 import _ from 'lodash';
+import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import FolderList from '@/_ui/FolderList/FolderList';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import classNames from 'classnames';
+import { getCurrentState } from '@/_stores/currentStateStore';
 
 const APP_HEADER_HEIGHT = 47;
 
@@ -20,11 +22,74 @@ export const ViewerSidebarNavigation = ({
   if (isMobileDevice) {
     return null;
   }
+
+  const { definition: { styles, properties } = {} } = getCurrentState().pageSettings ?? {};
+  const computeStyles = (isSelected, isHovered) => {
+    const baseStyles = {
+      pill: {
+        borderRadius: `${styles?.pillRadius?.value}px`,
+      },
+      icon: {
+        color: styles?.iconColor?.value,
+        fill: styles?.iconColor?.value,
+      },
+    };
+
+    switch (true) {
+      case isSelected: {
+        return {
+          ...baseStyles,
+          text: {
+            color: styles?.selectedTextColor?.value,
+          },
+          icon: {
+            color: styles?.selectedIconColor?.value,
+            fill: styles?.selectedIconColor?.value,
+          },
+          pill: {
+            background: styles?.pillSelectedBackgroundColor?.value,
+            ...baseStyles?.pill,
+          },
+        };
+      }
+      case isHovered: {
+        return {
+          ...baseStyles,
+          pill: {
+            background: styles?.pillHoverBackgroundColor?.value,
+            ...baseStyles?.pill,
+          },
+        };
+      }
+      default: {
+        return {
+          text: {
+            color: styles?.textColor?.value,
+          },
+          icon: {
+            color: styles?.iconColor?.value,
+            fill: styles?.iconColor?.value,
+          },
+          ...baseStyles,
+        };
+      }
+    }
+  };
+
+  const labelStyle = {
+    icon: {
+      hidden: properties?.style === 'text',
+    },
+    label: {
+      hidden: properties?.style === 'icon',
+    },
+  };
   return (
     <div
       className={classNames('navigation-area', {
         close: !isSidebarPinned,
         'sidebar-overlay': !isSidebarPinned,
+        'icon-only': labelStyle?.label?.hidden,
       })}
       style={{
         width: 200,
@@ -32,6 +97,8 @@ export const ViewerSidebarNavigation = ({
         height: `calc(100% - ${showHeader ? APP_HEADER_HEIGHT : 0}px)`,
         top: showHeader ? '47px' : '0px',
         bottom: '0px',
+        background: styles?.backgroundColor?.value,
+        border: `${styles?.pillRadius?.value}px`,
       }}
     >
       <div className="position-relative">
@@ -45,22 +112,28 @@ export const ViewerSidebarNavigation = ({
           fill={`var(--slate12)`}
           darkMode={darkMode}
           leftIcon={isSidebarPinned ? 'unpin01' : 'pin'}
-          iconWidth="18"
+          iconWidth="16"
         ></ButtonSolid>
         <div className="page-handler-wrapper">
-          {pages.map((page) =>
-            page.hidden || page.disabled ? null : (
+          {pages.map((page) => {
+            // eslint-disable-next-line import/namespace
+            const IconElement = Icons?.[page.icon] ?? Icons?.['IconHome2'];
+            return page.hidden || page.disabled ? null : (
               <FolderList
                 key={page.handle}
                 onClick={() => switchPage(page?.id)}
                 selectedItem={page?.id === currentPageId}
+                CustomIcon={!labelStyle?.icon?.hidden && IconElement}
+                customStyles={computeStyles}
               >
-                <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-3 text-wrap page-name">
-                  {_.truncate(page?.name, { length: 18 })}
-                </span>
+                {!labelStyle?.label?.hidden && (
+                  <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-3 text-wrap page-name">
+                    {_.truncate(page?.name, { length: 18 })}
+                  </span>
+                )}
               </FolderList>
-            )
-          )}
+            );
+          })}
         </div>
       </div>
     </div>

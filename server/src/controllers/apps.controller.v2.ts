@@ -212,7 +212,7 @@ export class AppsControllerV2 {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
-  @Put(':id/versions/:versionId/global_settings')
+  @Put([':id/versions/:versionId/global_settings', ':id/versions/:versionId/page_settings'])
   async updateGlobalSettings(
     @User() user,
     @Param('id') id,
