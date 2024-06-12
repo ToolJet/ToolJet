@@ -5,7 +5,7 @@ import { debounce } from 'lodash';
 const userStatusOptions = [
   { name: 'All', value: '' },
   { name: 'Active', value: 'active' },
-  { name: 'Invited', value: 'invited' },
+  { name: 'Invited/Requested', value: 'invited' },
   { name: 'Archived', value: 'archived' },
 ];
 
@@ -56,6 +56,7 @@ const UsersFilter = ({ filterList }) => {
           </div>
           <div className="users-filter-dropdown" data-cy="users-filter-input">
             <Select
+              hasSearch={false}
               options={userStatusOptions}
               value={options.status}
               onChange={(value) => {
@@ -65,7 +66,7 @@ const UsersFilter = ({ filterList }) => {
               height="32px"
               useMenuPortal={true}
               closeMenuOnSelect={true}
-              width="161.25px"
+              width="180px"
             />
           </div>
         </div>

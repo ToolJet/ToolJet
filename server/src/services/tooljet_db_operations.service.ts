@@ -5,6 +5,7 @@ import { TooljetDbService } from './tooljet_db.service';
 import { isEmpty } from 'lodash';
 import { PostgrestProxyService } from './postgrest_proxy.service';
 import { ConfigService } from '@nestjs/config';
+import { maybeSetSubPath } from 'src/helpers/utils.helper';
 
 // This service encapsulates all TJDB data manipulation operations
 // which can act like any other datasource
@@ -81,7 +82,7 @@ export class TooljetDbOperationsService implements QueryService {
       !isEmpty(offset) && query.push(`offset=${offset}`);
     }
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = `/api/tooljet-db/proxy/${tableId}` + `?${query}`;
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}` + `?${query}`);
 
     return await this.proxyPostgrest(url, 'GET', headers);
   }
@@ -94,7 +95,7 @@ export class TooljetDbOperationsService implements QueryService {
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
 
-    const url = `/api/tooljet-db/proxy/${queryOptions.table_id}`;
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${queryOptions.table_id}`);
     return await this.proxyPostgrest(url, 'POST', headers, columns);
   }
 
@@ -119,7 +120,7 @@ export class TooljetDbOperationsService implements QueryService {
     !isEmpty(whereQuery) && query.push(whereQuery);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = `/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id';
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
     return await this.proxyPostgrest(url, 'PATCH', headers, body);
   }
 
@@ -156,7 +157,7 @@ export class TooljetDbOperationsService implements QueryService {
     limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = `/api/tooljet-db/proxy/${tableId}?` + query.join('&');
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
     return await this.proxyPostgrest(url, 'DELETE', headers);
   }
 

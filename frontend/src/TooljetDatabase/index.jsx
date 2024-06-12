@@ -4,8 +4,8 @@ import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
-import { fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
+import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -154,6 +154,10 @@ export const TooljetDatabase = (props) => {
     // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchAndSetWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
+  }, [selectedTable]);
 
   return (
     <Layout

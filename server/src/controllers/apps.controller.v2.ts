@@ -36,6 +36,9 @@ import { LicenseService } from '@services/license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { VersionReleaseDto } from '@dto/version-release.dto';
+import { PromoteVersionDto } from '@dto/promote-version.dto';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 
 @Controller({
   path: 'apps',
@@ -114,17 +117,22 @@ export class AppsControllerV2 {
         user.organizationId
       );
       let shouldFreezeEditor = false;
+      let appVersionEnvironment: AppEnvironment;
       if (hasMultiEnvLicense) {
-        const currentEnvironment = await this.appEnvironmentService.get(
+        appVersionEnvironment = await this.appEnvironmentService.get(
           user.organizationId,
           response['editing_version']['current_environment_id']
         );
-        shouldFreezeEditor = currentEnvironment.priority > 1;
+        shouldFreezeEditor = appVersionEnvironment.priority > 1;
       } else {
-        const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
-        response['editing_version']['current_environment_id'] = developmentEnv.id;
+        appVersionEnvironment = await this.appEnvironmentService.getByPriority(user.organizationId);
+        response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
       response['should_freeze_editor'] = app.creationMode === 'GIT' || shouldFreezeEditor;
+      response['editorEnvironment'] = {
+        id: appVersionEnvironment.id,
+        name: appVersionEnvironment.name,
+      };
     }
 
     return response;
@@ -545,5 +553,38 @@ export class AppsControllerV2 {
     }
 
     return await this.eventService.deleteEvent(eventId, versionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/release')
+  async releaseVersion(
+    @User() user,
+    @Param('id') id,
+    @AppDecorator() app: App,
+    @Body() versionReleaseDto: VersionReleaseDto
+  ) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('updateParams', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    return await this.appsService.releaseVersion(app, versionReleaseDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId/promote')
+  async promoteVersion(
+    @User() user,
+    @Param('id') appId,
+    @Param('versionId') versionId,
+    @AppDecorator() app: App,
+    @Body() promoteVersionDto: PromoteVersionDto
+  ) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('updateParams', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    return await this.appsService.promoteVersion(appId, versionId, promoteVersionDto, user.organizationId);
   }
 }

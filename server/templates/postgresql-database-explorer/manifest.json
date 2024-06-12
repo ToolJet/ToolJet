@@ -1,0 +1,19 @@
+{
+  "name": "PostgreSQL database explorer",
+  "description": "Navigate, explore, and manage PostgreSQL tables seamlessly with our user-friendly database explorer.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "postgresql-database-explorer",
+  "category": "developer-utilities"
+}

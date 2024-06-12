@@ -25,7 +25,7 @@ import { toast } from 'react-hot-toast';
 import './style.scss';
 import Header from './Header';
 import LogsPanel from './LogsPanel';
-import { fetchAndSetWindowTitle, pageTitles } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 // Wherever this file uses the term 'app', it means 'workflow'
 function WorkflowEditor(props) {

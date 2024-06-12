@@ -7,7 +7,8 @@ import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
 import AppLogo from '../_components/AppLogo';
-import { getuserName, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { getuserName } from '@/_helpers/utils';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import { redirectToDashboard } from '@/_helpers/routes';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import startsWith from 'lodash.startswith';
@@ -20,14 +21,13 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source = null }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSkipLoading, setSkipLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [trialErrorMessage, setShowTrialErrorMessage] = useState('');
-  const [whiteLabelText, setWhiteLabelText] = useState('');
   const [formData, setFormData] = useState({
     companyName: '',
     role: '',
@@ -35,6 +35,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     phoneNumber: '',
     requestedTrial: false,
   });
+  const source = new URLSearchParams(location?.search).get('source');
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const pageProps = {
     formData,
@@ -47,9 +49,6 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   };
 
   useEffect(() => {
-    retrieveWhiteLabelText().then((labelText) => {
-      setWhiteLabelText(labelText);
-    });
     if (completed) {
       authenticationService
         .onboarding({

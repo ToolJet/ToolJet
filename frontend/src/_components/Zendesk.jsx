@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { retrieveWhiteLabelText } from '../_helpers/utils';
 import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import EncryptedFieldWrapper from './EncyrptedFieldWrapper';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 const Zendesk = ({
   optionchanged,
@@ -20,13 +19,9 @@ const Zendesk = ({
   optionsChanged,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    retrieveWhiteLabelText().then(setWhiteLabelText);
-  }, []);
 
   function authZendesk() {
     const provider = 'zendesk';

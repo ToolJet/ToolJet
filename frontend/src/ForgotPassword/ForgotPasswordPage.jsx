@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { validateEmail, retrieveWhiteLabelText } from '@/_helpers/utils';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { validateEmail } from '@/_helpers/utils';
 import { authenticationService } from '@/_services';
 import { ForgotPasswordInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -11,6 +10,7 @@ import { withTranslation } from 'react-i18next';
 import EnterIcon from '@/../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
 import { Alert } from '@/_ui/Alert';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
@@ -21,16 +21,10 @@ class ForgotPasswordComponent extends React.Component {
       email: '',
       responseShow: false,
       emailError: '',
-      whiteLabelText: defaultWhiteLabellingSettings.WHITE_LABEL_TEXT,
     };
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
-
-  componentDidMount() {
-    retrieveWhiteLabelText().then((labelText) => {
-      this.setState({ whiteLabelText: labelText });
-    });
-  }
+  whiteLabelText = retrieveWhiteLabelText();
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
@@ -63,7 +57,7 @@ class ForgotPasswordComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, whiteLabelText } = this.state;
+    const { isLoading } = this.state;
 
     return (
       <div className="common-auth-section-whole-wrapper page">
@@ -78,9 +72,10 @@ class ForgotPasswordComponent extends React.Component {
                       Forgot Password
                     </h2>
                     <p className="common-auth-sub-header" data-cy="forgot-password-sub-header">
-                      New to {whiteLabelText}? &nbsp;
+                      New to {this.whiteLabelText}? &nbsp;
                       <Link
                         to={'/signup'}
+                        state={{ from: '/forgot-password' }}
                         tabIndex="-1"
                         style={{ color: this.darkMode && '#3E63DD' }}
                         data-cy="create-an-account-link"
@@ -128,33 +123,6 @@ class ForgotPasswordComponent extends React.Component {
                           </>
                         )}
                       </ButtonSolid>
-                      <div className="separator-onboarding ">
-                        <div className="mt-2 separator" data-cy="onboarding-separator">
-                          <h2>
-                            <span>OR</span>
-                          </h2>
-                        </div>
-                      </div>
-                      <Alert
-                        svg="tj-info"
-                        cls="reset-password-info-banner justify-content-center"
-                        useDarkMode={false}
-                        imgHeight={'25px'}
-                        imgWidth={'25px'}
-                      >
-                        <div
-                          className="d-flex align-items-center"
-                          style={{
-                            height: '100%',
-                            fontSize: '12px',
-                            color: '#3E63DD',
-                            fontWeight: '500',
-                          }}
-                          data-cy="reset-password-info-banner"
-                        >
-                          {'Contact super admin to reset your password'}
-                        </div>
-                      </Alert>
                     </div>
                   </>
                 ) : (

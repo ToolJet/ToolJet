@@ -379,7 +379,7 @@ export class OrganizationPaymentService {
 
     const metaData = paymentObject.metadata;
 
-    if (!metaData) {
+    if (!metaData?.organizationId) {
       // No metadata available -> payment from tooljet.com
       this.emailService
         .sendSubscriptionStartInfoToToolJet(paymentObject)

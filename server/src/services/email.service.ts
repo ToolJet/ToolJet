@@ -118,11 +118,12 @@ export class EmailService {
     organizationInvitationToken?: string,
     organizationId?: string,
     organizationName?: string,
-    sender?: string
+    sender?: string,
+    redirectTo?: string
   ) {
     await this.init(organizationId);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId);
+    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo);
     const subject = isOrgInvite ? `Welcome to ${this.WHITE_LABEL_TEXT || 'ToolJet'}` : 'Set up your account!';
     const footerText = isOrgInvite
       ? `You have received this email as an invitation to join ${this.WHITE_LABEL_TEXT}’s workspace`
@@ -161,11 +162,12 @@ export class EmailService {
     sender: string,
     invitationtoken: string,
     organizationName: string,
-    organizationId?: string
+    organizationId: string,
+    redirectTo?: string
   ) {
     await this.init(organizationId);
     const subject = `Welcome to ${this.WHITE_LABEL_TEXT || 'ToolJet'}`;
-    const inviteUrl = generateOrgInviteURL(invitationtoken);
+    const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo);
     const templateData = {
       name: name || '',
       inviteUrl,
@@ -313,9 +315,10 @@ export class EmailService {
   }
 
   sendSubscriptionStartInfoToToolJet(paymentObj) {
-    return this.sendEmail(this.FROM_EMAIL, this.FROM_EMAIL, {
-      bodyHeader: 'Subscription started',
-      bodyContent: `<div>${JSON.stringify(paymentObj)}</div>`,
+    return this.sendEmail(this.FROM_EMAIL, 'Subscription started', {
+      bodyContent: `<div><div>${JSON.stringify(paymentObj)}</div><a href='https://dashboard.stripe.com/subscriptions/${
+        paymentObj?.subscription
+      }'>Subscription Link</a></div>`,
       footerText: '',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,

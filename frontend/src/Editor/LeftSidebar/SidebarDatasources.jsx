@@ -18,6 +18,7 @@ import { useDataSources } from '@/_stores/dataSourcesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Alert } from '@/_ui/Alert/Alert';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -264,6 +265,20 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
             {dataSources.length ? (
               <>
                 <div className="tj-text-sm my-2 datasources-category">Local Data sources</div>
+                <Alert
+                  svg="tj-info-warning"
+                  cls="workspace-variables-alert-banner"
+                  useDarkMode={false}
+                  placeSvgTop="true"
+                >
+                  <div className="d-flex align-items-center" style={{ color: 'black' }}>
+                    <p>
+                      We are deprecating local data sources soon. Please migrate local data sources to global data
+                      sources immediately to safeguard your applications from this breaking change.
+                    </p>
+                  </div>
+                </Alert>
+
                 <div className="mt-2 w-100 color-slate12" data-cy="datasource-Label">
                   {dataSources?.map((source, idx) => (
                     <RenderDataSource

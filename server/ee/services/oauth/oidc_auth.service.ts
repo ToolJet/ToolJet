@@ -112,8 +112,10 @@ export class OidcOAuthService {
 
   async signIn(code: string, configs: any): Promise<any> {
     await this.#setClient(configs, configs.configId);
+    const { iss } = configs;
     const params: CallbackParamsType = {
       code,
+      ...(iss && { iss }),
     };
     const tokenSet: TokenSet = await this.oidcClient.callback(this.#getRedirectURL(configs.configId), params, {
       code_verifier: configs.codeVerifier,

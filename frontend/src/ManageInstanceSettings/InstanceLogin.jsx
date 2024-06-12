@@ -24,6 +24,7 @@ class InstanceLogin extends React.Component {
       ssoOptions: [],
       featureAccess: {},
       isAllowPersonalWorkspaceEnabled: window.public_config?.ALLOW_PERSONAL_WORKSPACE === 'true',
+      isBasicPlan: false,
     };
     this.copyFunction = this.copyFunction.bind(this);
   }
@@ -71,7 +72,8 @@ class InstanceLogin extends React.Component {
   async setInstanceLoginConfigs() {
     const featureAccess = await licenseService.getFeatureAccess();
     const ssoConfigs = await instanceSettingsService.fetchSSOConfigs();
-    const passwordLoginEnabled = ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
+    const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
+    const passwordLoginEnabled = isBasicPlan ? true : ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
     const isAnySSOEnabled = ssoConfigs?.some(
       (obj) => obj.sso !== 'form' && obj.enabled && (!this.protectedSSO.includes(obj.sso) || featureAccess?.[obj.sso])
     );
@@ -88,6 +90,7 @@ class InstanceLogin extends React.Component {
       ssoOptions: [...ssoConfigs],
       isAnySSOEnabled: isAnySSOEnabled,
       featureAccess: featureAccess,
+      isBasicPlan: isBasicPlan,
     });
   }
 
@@ -232,6 +235,7 @@ class InstanceLogin extends React.Component {
       ssoOptions,
       featureAccess,
       isAllowPersonalWorkspaceEnabled,
+      isBasicPlan,
     } = this.state;
     const flexContainerStyle = {
       display: 'flex',
@@ -341,7 +345,7 @@ class InstanceLogin extends React.Component {
                               onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
                               data-cy="password-enable-toggle"
                               checked={options?.passwordLoginEnabled === true}
-                              disabled={!isAnySSOEnabled}
+                              disabled={isBasicPlan ? true : !isAnySSOEnabled}
                             />
                             <label className="form-check-label bold-text" data-cy="label-password-login">
                               Password login

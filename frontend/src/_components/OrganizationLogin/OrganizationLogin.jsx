@@ -24,6 +24,7 @@ class OrganizationLogin extends React.Component {
       defaultSSO: false,
       instanceSSO: [],
       featureAccess: {},
+      isBasicPlan: false,
     };
     this.copyFunction = this.copyFunction.bind(this);
   }
@@ -70,11 +71,12 @@ class OrganizationLogin extends React.Component {
 
   async setLoginConfigs() {
     const featureAccess = await licenseService.getFeatureAccess();
+    const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
     const settings = await this.fetchSSOSettings();
     const instanceSSO = await instanceSettingsService.fetchSSOConfigs();
     const organizationSettings = settings?.organization_details;
     const ssoConfigs = organizationSettings?.sso_configs;
-    const passwordLoginEnabled = ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
+    const passwordLoginEnabled = isBasicPlan ? true : ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
     const initialOptions = {
       enableSignUp: organizationSettings?.enable_sign_up || false,
       domain: organizationSettings?.domain,
@@ -87,6 +89,7 @@ class OrganizationLogin extends React.Component {
       defaultSSO: organizationSettings?.inherit_s_s_o,
       instanceSSO: [...instanceSSO],
       featureAccess: featureAccess,
+      isBasicPlan: isBasicPlan,
       isAnySSOEnabled:
         ssoConfigs?.some(
           (obj) =>
@@ -132,6 +135,7 @@ class OrganizationLogin extends React.Component {
       this.setState({ isSaving: false });
     }
   };
+  //
 
   enablePasswordLogin = async () => {
     this.setState({ isSaving: true });
@@ -247,6 +251,7 @@ class OrganizationLogin extends React.Component {
       defaultSSO,
       instanceSSO,
       featureAccess,
+      isBasicPlan,
     } = this.state;
     const flexContainerStyle = {
       display: 'flex',
@@ -365,7 +370,7 @@ class OrganizationLogin extends React.Component {
                               onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
                               data-cy="password-enable-toggle"
                               checked={options?.passwordLoginEnabled === true}
-                              disabled={!isAnySSOEnabled}
+                              disabled={isBasicPlan ? true : !isAnySSOEnabled}
                             />
                             <label className="form-check-label bold-text" data-cy="label-password-login">
                               Password login

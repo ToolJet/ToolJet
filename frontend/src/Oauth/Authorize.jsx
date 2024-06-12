@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import useRouter from '@/_hooks/use-router';
-import { authenticationService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
 import { getCookie } from '@/_helpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { redirectToWorkspace } from '@/_helpers/utils';
+import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
-export function Authorize() {
+export function Authorize({ navigate }) {
   const [error, setError] = useState('');
+  const [inviteeEmail, setInviteeEmail] = useState();
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
   const redirectUrl = getCookie('redirectPath');
+  const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
+  const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -43,6 +47,7 @@ export function Authorize() {
     } else {
       authParams.token = router.query[configs.params.token];
       authParams.state = router.query[configs.params.state];
+      authParams.iss = router.query[configs.params.iss];
     }
 
     /* If the params has SAMLResponse the SAML auth is success */
@@ -70,13 +75,13 @@ export function Authorize() {
   const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then((response) => {
-        const { redirect_url, organization_id, current_organization_id, email } = response;
+      .then(({ redirect_url, ...restResponse }) => {
+        const { organization_id, current_organization_id, email } = restResponse;
 
         const event = `${redirect_url ? 'signup' : 'signin'}_${
           router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
         }`;
-        initPosthog(response);
+        initPosthog(restResponse);
         posthog.capture(event, {
           email,
           workspace_id: organization_id || current_organization_id,
@@ -87,13 +92,48 @@ export function Authorize() {
           window.location.href = redirect_url;
           return;
         }
-        /*for workspace login / normal login response will contain the next organization_id user want to login*/
-        if (current_organization_id) {
-          redirectToWorkspace();
+        if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
+        else {
+          updateCurrentSession({
+            isUserLoggingIn: true,
+          });
+          onLoginSuccess(restResponse, navigate);
         }
+        initPosthog({ redirect_url, ...restResponse });
+        posthog.capture(event, {
+          email,
+          workspace_id: organization_id || current_organization_id,
+        });
       })
-      .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
+      .catch((err) => {
+        const details = err?.data?.message;
+        const inviteeEmail = details?.inviteeEmail;
+        if (inviteeEmail) setInviteeEmail(inviteeEmail);
+        const errMessage = details?.message || err?.error || 'something went wrong';
+        if (!inviteeEmail && inviteFlowIdentifier) {
+          /* Some unexpected error happened from the provider side. Need to retreive email to continue */
+          appService
+            .getInviteeDetails(inviteFlowIdentifier)
+            .then((response) => {
+              setInviteeEmail(response.email);
+            })
+            .catch(() => {
+              console.error('Error while fetching invitee details');
+            })
+            .finally(() => {
+              setError(`${configs.name} login failed - ${errMessage}`);
+            });
+        } else {
+          setError(`${configs.name} login failed - ${errMessage}`);
+        }
+      });
   };
+
+  const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
+  const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
+  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
+    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+  }`;
 
   return (
     <div>
@@ -101,10 +141,11 @@ export function Authorize() {
       {error && (
         <Navigate
           replace
-          to={`/login${error && organizationSlug ? `/${organizationSlug}` : '/'}${
-            redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-          }`}
-          state={{ errorMessage: error && error }}
+          to={errorURL}
+          state={{
+            errorMessage: error && error,
+            ...(inviteFlowIdentifier ? { organizationToken: inviteFlowIdentifier, inviteeEmail } : {}),
+          }}
         />
       )}
     </div>

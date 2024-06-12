@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
-import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -14,15 +12,12 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@/_helpers/utils';
-import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
+import { buildURLWithQuery } from '@/_helpers/utils';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
-import { redirectToDashboard } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
-
+import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
+import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [verifiedToken, setVerifiedToken] = useState(false);
@@ -34,17 +29,20 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
-  const [whiteLabelFavicon, setWhiteLabelFavicon] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON);
   const { t } = useTranslation();
   const [defaultState, setDefaultState] = useState(false);
 
   const location = useLocation();
   const params = useParams();
+  const searchParams = new URLSearchParams(location?.search);
 
-  const organizationId = new URLSearchParams(location?.search).get('oid');
-  const source = new URLSearchParams(location?.search).get('source');
+  const organizationId = searchParams.get('oid');
+  const organizationToken = searchParams.get('organizationToken') || params?.organizationToken;
+  const source = searchParams.get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const redirectTo = searchParams.get('redirectTo');
+  const navigate = useNavigate();
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const setRedirectUrlToCookie = () => {
     const params = new URL(window.location.href).searchParams;
@@ -56,7 +54,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(params?.token, params?.organizationToken)
+      .verifyToken(params?.token, organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = buildURLWithQuery(data.redirect_url, {
@@ -68,7 +66,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
-          if (params?.organizationToken) {
+          if (organizationToken) {
             setShowJoinWorkspace(true);
             return;
           }
@@ -94,9 +92,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
-            const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
-            setWhiteLabelFavicon(whiteLabelFavicon);
-            setWhiteLabelText(whiteLabelText);
+            setFaviconAndTitle(null, null, location);
           },
           () => {
             setIsGettingConfigs(false);
@@ -110,10 +106,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
-  }, [whiteLabelFavicon, whiteLabelText, location]);
 
   useEffect(() => {
     const keyDownHandler = (event) => {
@@ -137,8 +129,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         companySize: '',
         role: '',
         token: params?.token,
-        organizationToken: params?.organizationToken ?? '',
-        source: source,
+        organizationToken,
+        source,
         password: password,
       })
       .then((user) => {
@@ -154,7 +146,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         });
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        redirectToDashboard(user);
+        onLoginSuccess(user, navigate, redirectTo);
       })
       .catch((res) => {
         setIsLoading(false);
@@ -172,6 +164,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
+    if (showJoinWorkspace && !showOnboarding) {
+      e.preventDefault();
+      userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
+        ? (setShowOnboarding(true), setShowJoinWorkspace(false))
+        : setUpAccount(e);
+      return;
+    }
+
     userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
       ? setShowOnboarding(true)
       : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
@@ -182,6 +182,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
+      {isGettingConfigs && (
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <div className="loader-wrapper">
+              <ShowLoading />
+            </div>
+          </div>
+        </div>
+      )}
+
       {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
@@ -189,7 +199,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
-                  <ShowLoading />
+                  <div className="loader-wrapper">
+                    <ShowLoading />
+                  </div>
                 ) : (
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
@@ -203,53 +215,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           : `${whiteLabelText}.`
                       }`}
                     </div>
-                    {(configs?.google?.enabled || configs?.git?.enabled || configs?.openid?.enabled) &&
-                      source !== 'sso' && (
-                        <div className="d-flex flex-column align-items-center separator-bottom">
-                          {configs?.google?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <GoogleSSOLoginButton
-                                text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                configs={configs?.google?.configs}
-                                configId={configs?.google?.config_id}
-                                setRedirectUrlToCookie={() => {
-                                  setRedirectUrlToCookie();
-                                }}
-                              />
-                            </div>
-                          )}
-                          {configs?.git?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <GitSSOLoginButton
-                                text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                                configs={configs?.git?.configs}
-                                setRedirectUrlToCookie={() => {
-                                  setRedirectUrlToCookie();
-                                }}
-                              />
-                            </div>
-                          )}
-                          {configs?.openid?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <OIDCSSOLoginButton
-                                configId={configs?.openid?.config_id}
-                                configs={configs?.openid?.configs}
-                                text={t('confirmationPage.signupWithOpenid', `Sign up with`)}
-                                setRedirectUrlToCookie={() => {
-                                  setRedirectUrlToCookie();
-                                }}
-                              />
-                            </div>
-                          )}
-                          <div className="separator-onboarding " style={{ width: '100%' }}>
-                            <div className="mt-2 separator" data-cy="onboarding-separator">
-                              <h2>
-                                <span>{t('confirmationPage.or', 'OR')}</span>
-                              </h2>
-                            </div>
-                          </div>
-                        </div>
-                      )}
 
                     <div className="org-page-inputs-wrapper">
                       <label className="tj-text-input-label" data-cy="name-input-label">
@@ -269,7 +234,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       </p>
                     </div>
 
-                    {userDetails?.onboarding_details?.password && source != 'sso' && (
+                    {userDetails?.onboarding_details?.password && source !== 'sso' && (
                       <div className="mb-3">
                         <label className="form-label" data-cy="password-label">
                           {t('verificationSuccessPage.password', 'Password')}
@@ -287,7 +252,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
                           <div className="org-password-hide-img" onClick={handleOnCheck} data-cy="show-password-icon">
                             {showPassword ? (
-                              <EyeHide
+                              <EyeShow
                                 fill={
                                   darkMode
                                     ? password?.length
@@ -299,7 +264,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                                 }
                               />
                             ) : (
-                              <EyeShow
+                              <EyeHide
                                 fill={
                                   darkMode
                                     ? password?.length
@@ -343,7 +308,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         ) : (
                           <>
                             <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" />
+                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
                           </>
                         )}
                       </ButtonSolid>
@@ -427,7 +392,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         <OnBoardingForm
           userDetails={userDetails}
           token={params?.token}
-          organizationToken={params?.organizationToken ?? ''}
+          organizationToken={organizationToken}
           password={password}
           darkMode={darkMode}
           source={source}

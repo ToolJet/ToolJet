@@ -33,7 +33,8 @@
         "description": "JSON payload to send to the Lambda function",
         "className": "codehinter-plugins",
         "placeholder": "{\"key\": \"value\"}",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       }
     }
   }

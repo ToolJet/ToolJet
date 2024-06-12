@@ -5,27 +5,29 @@ import { authenticationService } from '@/_services';
 import { getPrivateRoute, redirectToDashboard } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
-import { useEditorActions } from '@/_stores/editorStore';
 
 export default function LogoNavDropdown({ darkMode, type = 'apps' }) {
   const { admin } = authenticationService?.currentSessionValue ?? {};
   const isWorkflows = type === 'workflows';
   const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
-  const { updateEditorState } = useEditorActions();
 
   const handleBackClick = (e) => {
     e.preventDefault();
-    updateEditorState({ isLoading: true });
     // Force a reload for clearing interval triggers
     redirectToDashboard();
   };
 
-  const backToLinkProps = isWorkflows ? { to: getPrivateRoute('workflows') } : { onClick: handleBackClick };
+  const backToLinkProps = { to: getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard') };
 
   const getOverlay = () => {
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
-        <Link className="dropdown-item tj-text tj-text-xsm" data-cy="back-to-app-option" {...backToLinkProps}>
+        <Link
+          className="dropdown-item tj-text tj-text-xsm"
+          data-cy="back-to-app-option"
+          onClick={handleBackClick}
+          {...backToLinkProps}
+        >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>

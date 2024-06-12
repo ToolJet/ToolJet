@@ -9,7 +9,7 @@ import { commonText } from "Texts/common";
 import { addQuery, addQueryAndOpenEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
-import { addNewUser } from "Support/utils/onboarding";
+import { addNewUserEE } from "Support/utils/eeCommon";
 import { groupsSelector } from "Selectors/manageGroups";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import {
@@ -45,12 +45,12 @@ describe("Global Datasource Manager", () => {
 
     it("Connect Data source and assign to user groups", () => {
         cy.apiCreateApp(data.appName);
-        addNewUser(data.userName1, data.userEmail1);
+        addNewUserEE(data.userName1, data.userEmail1);
         cy.logoutApi();
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
         createGroupAddAppAndUserToGroup(data.userName1, data.userEmail1);
-        addNewUser(data.userName2, data.userEmail2);
+        addNewUserEE(data.userName2, data.userEmail2);
         cy.logoutApi();
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
@@ -235,7 +235,7 @@ describe("Global Datasource Manager", () => {
             "You do not have permissions to perform this action"
         );
     });
-    it("verify the second user permissions on assigned ansd unassigned datasource", () => {
+    it("verify the second user permissions on assigned and unassigned datasource", () => {
         cy.logoutApi();
         cy.apiLogin(data.userEmail2, "password");
         cy.visit("/my-workspace");

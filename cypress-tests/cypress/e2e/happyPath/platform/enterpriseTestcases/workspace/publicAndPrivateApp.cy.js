@@ -11,7 +11,6 @@ import {
     userSignUp,
     allowPersonalWorkspace,
     inviteUser,
-    WorkspaceInvitationLink,
     createAnAppWithSlug,
 } from "Support/utils/eeCommon";
 
@@ -110,6 +109,8 @@ describe(
             navigateToManageUsers();
             inviteUser(data.firstName, data.email);
             cy.clearAndType(commonSelectors.passwordInputField, "password");
+            cy.get(commonSelectors.signUpButton).click();
+            cy.wait(500)
             cy.get(commonSelectors.acceptInviteButton).click();
             cy.wait(2000);
 
@@ -165,9 +166,6 @@ describe(
                 "Sign in to your workspace - My workspace"
             );
 
-            cy.visit("/");
-            cy.wait(2000);
-            logout();
             cy.defaultWorkspaceLogin();
             navigateToAppEditor(data.appName);
             cy.get(commonWidgetSelector.shareAppButton).click();

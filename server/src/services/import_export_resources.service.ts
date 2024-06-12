@@ -58,7 +58,7 @@ export class ImportExportResourcesService {
     const imports = { app: [], tooljet_database: [] };
     const importingVersion = importResourcesDto.tooljet_version;
 
-    if (importResourcesDto.tooljet_database) {
+    if (this.tooljetDbManager && importResourcesDto.tooljet_database) {
       for (const tjdbImportDto of importResourcesDto.tooljet_database) {
         const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
 

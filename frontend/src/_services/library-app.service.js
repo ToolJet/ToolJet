@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const libraryAppService = {
   deploy,
   templateManifests,
+  createSampleApp,
 };
 
 function deploy(identifier, appName) {
@@ -19,4 +20,9 @@ function deploy(identifier, appName) {
 function templateManifests() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/library_apps`, requestOptions).then(handleResponse);
+}
+
+function createSampleApp() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/library_apps/sample-app`, requestOptions).then(handleResponse);
 }

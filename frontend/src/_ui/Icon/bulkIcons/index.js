@@ -115,11 +115,15 @@ import Telescope from './Telescope.jsx';
 import Unlock from './Unlock.jsx';
 import DragHandle from './DragHandle.jsx';
 import Lock from './Lock.jsx';
+import AddTemplate from './AddTemplate.jsx';
+import InviteCollaborator from './InviteCollabarator.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'addtemplate':
+      return <AddTemplate {...props} />;
     case 'apps':
       return <Apps {...props} />;
     case 'archive':
@@ -244,6 +248,8 @@ const Icon = (props) => {
       return <NotificationSilent {...props} />;
     case 'notificationunread':
       return <NotificationUnread {...props} />;
+    case 'invitecollab':
+      return <InviteCollaborator {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':

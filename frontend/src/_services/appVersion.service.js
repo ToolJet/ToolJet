@@ -34,7 +34,7 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
     credentials: 'include',
     body: JSON.stringify({ currentEnvironmentId }),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
 }
 function getAppVersionData(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };

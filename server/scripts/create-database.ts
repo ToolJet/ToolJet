@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { ExecFileSyncOptions, execFileSync } from 'child_process';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
 import { isEmpty } from 'lodash';
-
+import { populateSampleData } from './populate-sample-db';
 async function createDatabaseFromFile(envPath: string): Promise<void> {
   const result = dotenv.config({ path: envPath });
 
@@ -41,6 +41,8 @@ async function createDatabase(): Promise<void> {
     if (process.env.ENABLE_TOOLJET_DB === 'true') {
       await createTooljetDb(envVars, envVars.TOOLJET_DB);
     }
+    createSampleDb(envVars, envVars.SAMPLE_DB);
+    populateSampleData(envVars);
   }
 }
 
@@ -94,6 +96,31 @@ async function createTooljetDb(envVars, dbName): Promise<void> {
   } catch (error) {
     if (error.message.includes(`database "${dbName}" already exists`)) {
       console.log(`Using Tooljet database\nTOOLJET_DB: ${dbName}\nTOOLJET_DB_HOST: ${envVars.TOOLJET_DB_HOST}\n`);
+    } else {
+      throw error;
+    }
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function createSampleDb(envVars, dbName): Promise<void> {
+  if (isEmpty(dbName)) {
+    throw new Error('Database name cannot be empty');
+  }
+
+  try {
+    executeCreateDb(
+      envVars.SAMPLE_PG_DB_HOST,
+      envVars.SAMPLE_PG_DB_PORT,
+      envVars.SAMPLE_PG_DB_USER,
+      envVars.SAMPLE_PG_DB_PASS,
+      dbName
+    );
+  } catch (error) {
+    if (error.message.includes(`database "${dbName}" already exists`)) {
+      console.log(
+        `Already present Sample database\n${dbName}\n HOST: ${envVars.SAMPLE_PG_DB_HOST}\n PORT: ${envVars.SAMPLE_PG_DB_PORT}`
+      );
     } else {
       throw error;
     }

@@ -36,7 +36,7 @@ export class DataSource extends BaseEntity {
     type: 'enum',
     enumName: 'type',
     name: 'type',
-    enum: [DataSourceTypes.STATIC, DataSourceTypes.DEFAULT],
+    enum: [DataSourceTypes.STATIC, DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
     default: DataSourceTypes.DEFAULT,
   })
   type: string;

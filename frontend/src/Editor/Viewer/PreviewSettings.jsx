@@ -10,11 +10,11 @@ import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from 'classnames';
-import EnvironmentManager from '../EnvironmentsManager';
 import { shallow } from 'zustand/shallow';
 import { useEditorStore } from '@/_stores/editorStore';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
+import EnvironmentManager from '@/Editor/Header/EnvironmentManager';
 
 const PreviewSettings = ({
   isMobileLayout,

@@ -6,8 +6,8 @@ import {
   folderService,
   authenticationService,
   libraryAppService,
-  licenseService,
   gitSyncService,
+  licenseService,
 } from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
@@ -21,7 +21,8 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
-import { getWorkspaceId, fetchAndSetWindowTitle, pageTitles } from '../_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { withTranslation } from 'react-i18next';
 import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
@@ -30,6 +31,7 @@ import posthog from 'posthog-js';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
+import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { LicenseBannerCloud } from '@/LicenseBannerCloud';
@@ -38,7 +40,8 @@ import Skeleton from 'react-loading-skeleton';
 import { LicenseBanner } from '@/LicenseBanner';
 import DueBanner from '@/ManageLicenseKey/DueBanner';
 import FolderFilter from './FolderFilter';
-import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
 
 const { iconList, defaultIcon } = configs;
 
@@ -80,7 +83,7 @@ class HomePageComponent extends React.Component {
       showTemplateLibraryModal: false,
       app: {},
       appsLimit: {},
-      featureAccess: {},
+      featureAccess: null,
       newAppName: '',
       commitEnabled: false,
       fetchingOrgGit: false,
@@ -107,9 +110,15 @@ class HomePageComponent extends React.Component {
     };
   }
 
-  async componentDidMount() {
+  setQueryParameter = () => {
+    const showImportTemplateModal = getQueryParams('fromtemplate');
+    this.setState({
+      showTemplateLibraryModal: showImportTemplateModal ? showImportTemplateModal : false,
+    });
+  };
+  componentDidMount() {
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
-    await Promise.all([
+    Promise.all([
       this.fetchApps(1, this.state.currentFolder.id),
       this.fetchFolders(),
       this.fetchFeatureAccesss(),
@@ -118,6 +127,7 @@ class HomePageComponent extends React.Component {
       this.fetchWorkflowsWorkspaceLimit(),
       this.fetchOrgGit(),
     ]);
+    this.setQueryParameter();
   }
 
   componentDidUpdate(prevProps) {
@@ -125,7 +135,19 @@ class HomePageComponent extends React.Component {
       this.fetchFolders();
       this.fetchApps(1);
     }
+    if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
+      this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
+    }
   }
+
+  fetchFeatureAccesss = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      this.setState({
+        featureAccess: data,
+        featuresLoaded: true,
+      });
+    });
+  };
 
   fetchAppsLimit() {
     appsService.getAppsLimit().then((data) => {
@@ -144,15 +166,6 @@ class HomePageComponent extends React.Component {
       this.setState({ workflowWorkspaceLevelLimit: data?.appsCount });
     });
   }
-
-  fetchFeatureAccesss = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      this.setState({
-        featureAccess: data,
-        featuresLoaded: true,
-      });
-    });
-  };
 
   fetchApps = (page = 1, folder, searchKey) => {
     const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
@@ -472,7 +485,6 @@ class HomePageComponent extends React.Component {
         );
         this.fetchFolders();
         this.fetchAppsLimit();
-        this.fetchFeatureAccesss();
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
@@ -698,10 +710,17 @@ class HomePageComponent extends React.Component {
   handleNewAppNameChange = (e) => {
     this.setState({ newAppName: e.target.value });
   };
+
+  removeQueryParameters = () => {
+    const urlWithoutParams = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, urlWithoutParams);
+  };
+
   showTemplateLibraryModal = (posthog_from) => {
     this.setState({ showTemplateLibraryModal: true, posthog_from });
   };
   hideTemplateLibraryModal = () => {
+    this.removeQueryParameters();
     this.setState({ showTemplateLibraryModal: false });
   };
   handleCommitEnableChange = (e) => {
@@ -1296,7 +1315,7 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {
+                {(isLoading || meta.total_count > 0 || currentFolder.count === 0) && (
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}
@@ -1314,7 +1333,7 @@ class HomePageComponent extends React.Component {
                     appType={this.props.appType}
                     basicPlan={featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid}
                   />
-                }
+                )}
               </div>
               <div className="footer-container">
                 {this.pageCount() > MAX_APPS_PER_PAGE && (
@@ -1348,4 +1367,16 @@ class HomePageComponent extends React.Component {
   }
 }
 
-export const HomePage = withTranslation()(withRouter(HomePageComponent));
+const withStore = (Component) => (props) => {
+  const { featureAccess, featuresLoaded } = useLicenseStore(
+    (state) => ({
+      featureAccess: state.featureAccess,
+      featuresLoaded: state.featuresLoaded,
+    }),
+    shallow
+  );
+
+  return <Component {...props} featureAccess={featureAccess} featuresLoaded={featuresLoaded} />;
+};
+
+export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));

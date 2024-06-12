@@ -81,13 +81,16 @@ export const RealtimeEditor = (props) => {
     color: '',
   };
 
-  if ((featuresLoaded && !multiPlayerEdit) || !provider) {
-    return <Editor {...props} />;
+  if (featuresLoaded) {
+    if (!multiPlayerEdit) return <Editor {...props} />;
+    if (provider) {
+      return (
+        <RoomProvider awareness={provider?.awareness} initialPresence={initialPresence}>
+          <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
+        </RoomProvider>
+      );
+    } else {
+      return <Spinner />;
+    }
   }
-
-  return (
-    <RoomProvider awareness={provider?.awareness} initialPresence={initialPresence}>
-      <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
-    </RoomProvider>
-  );
 };

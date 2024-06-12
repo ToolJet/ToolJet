@@ -5,7 +5,7 @@ import {
     navigateToManageSSO,
     navigateToManageGroups,
 } from "Support/utils/common";
-import { addNewUser, InstanceSSO } from "Support/utils/eeCommon";
+import { InstanceSSO } from "Support/utils/eeCommon";
 import {
     commonEeSelectors,
     instanceSettingsSelector,

@@ -7,7 +7,6 @@ import { toast } from 'react-hot-toast';
 import { licenseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { LoadingScreen } from './LoadingScreen';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 const SubscriptionKey = () => {
   const [license, setLicense] = useState(null);
@@ -17,7 +16,6 @@ const SubscriptionKey = () => {
   const [featureAccess, setFeatureAccess] = useState(false);
   const { state } = useLocation();
   const hasKeyChanged = licenseKey !== license?.license_key;
-  const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
   const { workspaceId } = useParams();
 
   const optionChanged = (value) => {

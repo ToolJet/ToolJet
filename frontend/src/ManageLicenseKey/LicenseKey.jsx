@@ -7,14 +7,17 @@ import { licenseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { LoadingScreen } from './LoadingScreen';
 import { textAreaEnterOnSave } from '@/_components/FormWrapper';
+import { ERROR_TYPES, ERROR_MESSAGES } from '@/_helpers/constants';
+import { LicenseUpgradeErrorModal } from '../_components/ErrorComponents/LicenseUpgradeErrorModal';
 
-const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
+const LicenseKey = ({ fetchFeatureAccess, featureAccess, darkMode }) => {
   const [license, setLicense] = useState(null);
   const [licenseLoading, setLicenseLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [licenseKey, setLicenseKey] = useState(false);
   const [generatingLicense, setGeneratingLicense] = useState(false);
   const hasKeyChanged = licenseKey !== license?.value;
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const optionChanged = (value) => {
     setLicenseKey(value);
@@ -49,10 +52,14 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
           window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
         }instance-settings/license`;
       })
-      .catch(({ error }) => {
+      .catch((error) => {
         setLoading(false);
         fetchLicenseSettings();
-        toast.error(error, { position: 'top-center' });
+        if (error?.data?.statusCode == 402) {
+          setShowErrorModal(true);
+        } else {
+          toast.error(error?.error, { position: 'top-center' });
+        }
       });
   };
 
@@ -73,7 +80,9 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
             <div style={{ position: 'relative' }}>
               <Textarea
                 placeholder="Enter license key"
-                className={cx('form-control', { 'errored-textarea': featureAccess?.licenseStatus?.isExpired })}
+                className={cx('form-control custom-textarea-height', {
+                  'errored-textarea': featureAccess?.licenseStatus?.isExpired,
+                })}
                 rows="12"
                 value={licenseKey}
                 onChange={(e) => optionChanged(e.target.value)}
@@ -95,6 +104,14 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
             Update
           </ButtonSolid>
         </div>
+      )}
+      {showErrorModal && (
+        <LicenseUpgradeErrorModal
+          show={showErrorModal}
+          onHide={() => setShowErrorModal(false)}
+          errorMsg={ERROR_MESSAGES[ERROR_TYPES.USERS_EXCEEDING_LICENSE_LIMIT]}
+          darkMode={darkMode}
+        />
       )}
     </div>
   );

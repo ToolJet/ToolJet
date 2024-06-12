@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import React, { useContext, useMemo, useState } from 'react';
-import { CodeHinter } from '../../../Editor/CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import WorkflowEditorContext from '../../context';
 import './response-node-configuration-styles.scss';

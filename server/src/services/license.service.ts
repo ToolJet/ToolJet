@@ -264,12 +264,6 @@ export class LicenseService {
         database: {
           table: '',
         },
-        domains: [
-          {
-            ...(subpath ? { subpath } : {}),
-            hostname,
-          },
-        ],
         features: {
           oidc: true,
           auditLogs: true,
@@ -410,6 +404,4 @@ export class LicenseService {
 
     return true;
   }
-
-  isBasicPlan = async () => !(await this.getLicenseFieldValue(LICENSE_FIELD.VALID));
 }

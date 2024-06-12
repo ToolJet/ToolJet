@@ -1,6 +1,6 @@
 import React from 'react';
 import DynamicForm from '@/_components/DynamicForm';
-
+// eslint-disable-next-line import/no-unresolved
 import { allOperations } from '@tooljet/plugins/client';
 import { Restapi } from './Restapi';
 // eslint-disable-next-line import/no-unresolved

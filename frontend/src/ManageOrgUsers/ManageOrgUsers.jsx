@@ -12,6 +12,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import { getDateDifferenceInDays, USER_DRAWER_MODES } from '@/_helpers/utils';
+import { getQueryParams } from '@/_helpers/routes';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -43,7 +44,15 @@ class ManageOrgUsersComponent extends React.Component {
 
   componentDidMount() {
     this.fetchUserLimits();
+    this.setQueryParameter();
   }
+
+  setQueryParameter = () => {
+    const showAdduserDrawer = getQueryParams('adduser');
+    this.setState({
+      isInviteUsersDrawerOpen: showAdduserDrawer ? showAdduserDrawer : false,
+    });
+  };
 
   validateEmail(email) {
     const re =

@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ darkMode }) {
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
+  const whiteLabelText = retrieveWhiteLabelText();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    retrieveWhiteLabelText().then(setWhiteLabelText);
-  }, []);
 
   return (
     <div className="info-screen-wrapper">
@@ -34,7 +29,11 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ darkMo
         </p>
         <ButtonSolid
           variant="secondary"
-          onClick={() => navigate('/login')}
+          onClick={() =>
+            navigate('/login', {
+              state: { from: '/reset-password' },
+            })
+          }
           className="reset-password-info-btn"
           data-cy="back-to-login-button"
         >

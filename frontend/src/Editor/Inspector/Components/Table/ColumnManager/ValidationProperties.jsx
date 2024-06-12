@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CodeHinter } from '../../../../CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import ReactDatePicker from 'react-datepicker';
 import moment from 'moment';
 import Timepicker from '@/ToolJetUI/Timepicker/Timepicker';
@@ -211,7 +211,19 @@ export const ValidationProperties = ({
         );
       default:
         return (
-          <div data-cy={validation.dataCy} className="field flex-fill" key={validation.property}>
+          <div
+            data-cy={validation.dataCy}
+            className="field flex-fill"
+            key={validation.property}
+            style={
+              validation?.property === 'minValue' || //for number & string
+              validation?.property === 'maxValue' ||
+              validation?.property === 'minLength' ||
+              validation?.property === 'maxLength'
+                ? { width: '50%' }
+                : null
+            }
+          >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <CodeHinter
               currentState={currentState}

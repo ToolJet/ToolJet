@@ -1,10 +1,11 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { authenticationService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
+import { decodeEntities } from '@/_helpers/utils';
 
 function AccountSettings(props) {
   const currentSession = authenticationService.currentSessionValue;
@@ -21,6 +22,8 @@ function AccountSettings(props) {
   const focusRef = React.useRef(null);
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const [helperText, setHelperText] = useState('');
+  const [validPassword, setValidPassword] = useState(true);
 
   useEffect(() => {
     updateSidebarNAV('');
@@ -80,6 +83,20 @@ function AccountSettings(props) {
     } catch (error) {
       toast.error('Something went wrong');
       setUpdateInProgress(false);
+    }
+  };
+
+  const handlePasswordInput = (input) => {
+    setNewPassword(input);
+    if (input.length > 100) {
+      setHelperText('Password should be Max 100 characters');
+      setValidPassword(false);
+    } else if (input.length < 5 && input.length > 0) {
+      setHelperText('Password should be at least 5 characters');
+      setValidPassword(false);
+    } else {
+      setHelperText('');
+      setValidPassword(true);
     }
   };
 
@@ -161,7 +178,7 @@ function AccountSettings(props) {
                           className="form-control"
                           name="first-name"
                           placeholder={'Enter full name'}
-                          value={fullName}
+                          value={decodeEntities(fullName)}
                           onChange={(event) => setFullName(event.target.value)}
                           autoComplete="off"
                           data-cy="name-input-field"
@@ -254,10 +271,13 @@ function AccountSettings(props) {
                           name="last-name"
                           placeholder={t('header.profileSettingPage.enterNewPassword', 'Enter new password')}
                           value={newPassword}
-                          onChange={(event) => setNewPassword(event.target.value)}
+                          onChange={(event) => handlePasswordInput(event.target.value)}
                           onKeyPress={newPasswordKeyPressHandler}
                           data-cy="new-password-input"
                         />
+                        <small style={{ color: !validPassword ? 'red' : undefined }} data-cy="password-helper-text">
+                          {helperText}
+                        </small>
                       </div>
                     </div>
                   </div>
@@ -281,7 +301,7 @@ function AccountSettings(props) {
                   </div>
                   <ButtonSolid
                     isLoading={passwordChangeInProgress}
-                    disabled={newPassword.length < 5 || confirmPassword.length < 5}
+                    disabled={newPassword.length < 5 || confirmPassword.length < 5 || !validPassword}
                     onClick={changePassword}
                     data-cy="change-password-button"
                   >

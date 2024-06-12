@@ -34,7 +34,7 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   }, [canCreateVariableOrConstant]);
   return (
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
-      <div className="workspace-constants-wrapper">
+      <div>
         <ManageOrgConstants darkMode={darkMode} />
       </div>
     </Layout>

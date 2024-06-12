@@ -14,6 +14,8 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
+  const [helperText, setHelperText] = useState('Password should be at least 5 characters');
+  const [validPassword, setValidPassword] = useState(true);
 
   useEffect(() => {
     if (show) {
@@ -28,6 +30,20 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
 
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
+  };
+
+  const handlePasswordInput = (input) => {
+    setPassword(input);
+    if (input.length > 100) {
+      setHelperText('Password should be Max 100 characters');
+      setValidPassword(false);
+    } else if (input.length < 5) {
+      setHelperText('Password should be at least 5 characters');
+      setValidPassword(false);
+    } else {
+      setHelperText('Password should be at least 5 characters');
+      setValidPassword(true);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -78,7 +94,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
             <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               Cancel
             </ButtonSolid>
-            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled} data-cy="reset-button">
+            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled || !validPassword} data-cy="reset-button">
               {isLoading ? 'Resetting...' : 'Reset'}
             </ButtonSolid>
           </>
@@ -125,7 +141,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                     <div className="tj-text-input-wrapper">
                       <div className="login-password signup-password-wrapper">
                         <input
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={(e) => handlePasswordInput(e.target.value)}
                           name="password"
                           type={isPasswordVisible ? 'text' : 'password'}
                           className="tj-text-input"
@@ -174,7 +190,9 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                         </div>
                       </div>
                     </div>
-                    <small data-cy="password-helper-text">Password should be at least 5 characters</small>
+                    <small style={{ color: !validPassword ? 'red' : undefined }} data-cy="password-helper-text">
+                      {helperText}
+                    </small>
                   </div>
                 )}
               </div>

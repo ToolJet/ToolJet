@@ -10,9 +10,11 @@ export const orgEnvironmentConstantService = {
   getConstantsFromPublicApp,
 };
 
-function getAll() {
+function getAll(decryptValue = false) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organization-constants`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organization-constants?decryptValue=${decryptValue}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function create(name, value, environments) {
@@ -43,14 +45,17 @@ function remove(id, environmentId) {
   );
 }
 
-function getConstantsFromEnvironment(environmentId) {
+function getConstantsFromEnvironment(environmentId, decryptValue = false) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organization-constants/environment/${environmentId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    `${config.apiUrl}/organization-constants/environment/${environmentId}?decryptValue=${decryptValue}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
-function getConstantsFromPublicApp(slug) {
+function getConstantsFromPublicApp(slug, decryptValue = false) {
   const requestOptions = { method: 'GET' };
-  return fetch(`${config.apiUrl}/organization-constants/${slug}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organization-constants/${slug}?decryptValue=${decryptValue}`, requestOptions).then(
+    handleResponse
+  );
 }

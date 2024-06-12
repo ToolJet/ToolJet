@@ -17,7 +17,7 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
     } else if (connectionStatus === 'success') {
       setButtonText('Connection verified');
     } else {
-      setButtonText('Test Connection');
+      setButtonText('Test connection');
     }
   }, [isTesting, connectionStatus]);
 

@@ -175,6 +175,8 @@ function InviteUsersForm({
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
+  const ctaLicenseCheck =
+    !isEditing && !userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount?.percentage >= 100;
 
   return (
     <div>
@@ -238,11 +240,7 @@ function InviteUsersForm({
           {activeTab == 1 ? (
             <div className={`manage-users-drawer-content`}>
               {Banner}
-              <div
-                className={`invite-user-by-email ${
-                  !userLimits?.canAddUnlimited && userLimits?.usersCount?.percentage >= 100 && 'disabled'
-                }`}
-              >
+              <div className={`invite-user-by-email ${ctaLicenseCheck && 'disabled'}`}>
                 <form
                   onSubmit={isEditing ? handleEditUser : handleCreateUser}
                   noValidate
@@ -373,17 +371,11 @@ function InviteUsersForm({
             >
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
-
             <ButtonSolid
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={
-                uploadingUsers ||
-                creatingUser ||
-                !isEdited() ||
-                (!userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled')
-              }
+              disabled={uploadingUsers || creatingUser || !isEdited() || ctaLicenseCheck}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

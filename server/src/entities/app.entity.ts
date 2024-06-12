@@ -99,7 +99,6 @@ export class App extends BaseEntity {
   @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, { onDelete: 'CASCADE' })
   appGitSync: AppGitSync;
 
-  @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, {
     onDelete: 'CASCADE',
   })

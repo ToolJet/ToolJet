@@ -21,6 +21,7 @@ import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { RequestContext } from 'src/models/request-context.model';
+import { IUpdatingReferencesOptions } from '@dto/data-query.dto';
 import { DataQueryStatus } from 'src/models/data_query_status.model';
 
 @Injectable()
@@ -107,6 +108,24 @@ export class DataQueriesService {
     });
 
     return dataQuery;
+  }
+
+  async bulkUpdateQueryOptions(dataQueriesOptions: IUpdatingReferencesOptions[]) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      for (const { id, options } of dataQueriesOptions) {
+        await manager.save(DataQuery, {
+          id,
+          options,
+          updatedAt: new Date(),
+        });
+      }
+
+      return await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .select(['id', 'options', 'updated_at'])
+        .where('data_query.id IN (:...ids)', { ids: dataQueriesOptions.map((query) => query.id) })
+        .execute();
+    });
   }
 
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
@@ -217,10 +236,11 @@ export class DataQueriesService {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
                 // unauthorized error need to re-authenticate
                 queryStatus.setSuccess('needs_oauth');
+                const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
                 return {
                   status: 'needs_oauth',
                   data: {
-                    auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+                    auth_url: result.url,
                   },
                 };
               }
@@ -286,6 +306,7 @@ export class DataQueriesService {
             dataSource.kind === 'zendesk'
           ) {
             queryStatus.setSuccess('needs_oauth');
+            const result = await this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions);
             return {
               status: 'needs_oauth',
               data: {
@@ -293,7 +314,7 @@ export class DataQueriesService {
                 options: {
                   access_type: sourceOptions['access_type'],
                 },
-                auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+                auth_url: result.url,
               },
             };
           } else {
@@ -443,7 +464,7 @@ export class DataQueriesService {
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     let tokenOptions: any;
-    if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
+    if (['googlesheets', 'slack', 'zendesk', 'salesforce'].includes(dataSource.kind)) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
     } else {
       const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
@@ -483,6 +504,7 @@ export class DataQueriesService {
           if (Array.isArray(curr)) {
             for (let j = 0; j < curr.length; j++) {
               const inner = curr[j];
+              constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
                 const resolved = await this.resolveConstants(inner, organization_id, environmentId);

@@ -10,6 +10,7 @@ export const dataqueryService = {
   preview,
   changeQueryDataSource,
   updateStatus,
+  bulkUpdateQueryOptions,
 };
 
 function getAll(appVersionId) {
@@ -42,6 +43,17 @@ function update(id, name, options, dataSourceId) {
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
+}
+
+function bulkUpdateQueryOptions(queryOptions, appVersionId) {
+  const body = {
+    data_queries_options: queryOptions,
+    app_version_id: appVersionId,
+  };
+
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+
+  return fetch(`${config.apiUrl}/data_queries/`, requestOptions).then(handleResponse);
 }
 
 function updateStatus(id, status) {

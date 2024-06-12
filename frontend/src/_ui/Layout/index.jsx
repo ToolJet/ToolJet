@@ -12,11 +12,12 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import Beta from '../Beta';
 import Settings from '@/_components/Settings';
 import './styles.scss';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { useLicenseState, useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
+import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
 function Layout({
   children,
@@ -27,8 +28,14 @@ function Layout({
   toggleCollapsibleSidebar = () => {},
 }) {
   const router = useRouter();
-  const [featureAccess, setFeatureAccess] = useState({});
-  const [whiteLabelLogo, setWhiteLabelLogo] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_LOGO);
+  const { featureAccess } = useLicenseStore(
+    (state) => ({
+      featureAccess: state.featureAccess,
+    }),
+    shallow
+  );
+  fetchWhiteLabelDetails();
+  const whiteLabelLogo = retrieveWhiteLabelLogo();
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const canAnyGroupPerformAction = (action, permissions) => {
@@ -37,13 +44,6 @@ function Layout({
     }
 
     return permissions.some((p) => p[action]);
-  };
-
-  const fetchFeatureAccess = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      setFeatureAccess({ ...data });
-    });
-    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   const canCreateDataSource = () => {
@@ -71,24 +71,7 @@ function Layout({
   };
 
   useEffect(() => {
-    fetchFeatureAccess();
-    const fetchData = async () => {
-      const { isWhiteLabelDetailsFetched, actions } = useWhiteLabellingStore.getState();
-      let whiteLabelLogo;
-
-      if (!isWhiteLabelDetailsFetched) {
-        // Fetch white labeling details if not loaded yet
-        try {
-          await actions.fetchWhiteLabelDetails();
-        } catch (error) {
-          console.error('Unable to update white label settings', error);
-        }
-      }
-      whiteLabelLogo = useWhiteLabellingStore.getState().whiteLabelLogo;
-      setWhiteLabelLogo(whiteLabelLogo);
-    };
-
-    fetchData();
+    useLicenseStore.getState().actions.fetchFeatureAccess();
   }, []);
 
   const currentUserValue = authenticationService.currentSessionValue;

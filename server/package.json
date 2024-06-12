@@ -26,6 +26,7 @@
     "db:migrate:prod": "node ./node_modules/typeorm/cli.js migration:run --config dist/ormconfig.js && npm run db:migrate:data:prod",
     "db:migrate:data:prod": "node ./node_modules/typeorm/cli.js migration:run --config dist/data-migration-config.js",
     "db:seed": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/seeds.ts",
+    "db:sample:reset":"ts-node -r tsconfig-paths/register --transpile-only ./scripts/sample-db-config-reset.ts",
     "db:seed:prod": "node dist/scripts/seeds.js",
     "plugins:install": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/plugins-install.ts",
     "plugins:install:prod": "node dist/scripts/plugins-install.js",

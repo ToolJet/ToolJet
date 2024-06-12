@@ -4,9 +4,9 @@
   width: 600px;
   height: 100%;
   overflow: auto;
-  // padding: 24px;
 
-  .left-handle, .right-handle {
+  .left-handle,
+  .right-handle {
     width: 20px;
   }
 
@@ -67,6 +67,10 @@
 
         .query-hinter {
           height: 250px !important;
+
+          .cm-editor {
+            border: none !important;
+          }
         }
       }
     }
@@ -84,35 +88,40 @@
       margin-bottom: 8px;
     }
 
-    .workflows-query-node{
+    .workflows-query-node {
 
-      .dynamic-form-row{
+      .dynamic-form-row {
         flex-direction: column !important;
-      .tooljetdb-worflow-operations{
-        flex-direction: column !important;
+
+        .tooljetdb-worflow-operations {
+          flex-direction: column !important;
+        }
+
+        .tdb-join-filtersection {
+          flex-direction: column !important;
+        }
+
+        .column-update,
+        .column-create {
+          justify-content: space-between;
+        }
       }
-      .tdb-join-filtersection{
-        flex-direction: column !important;
+
+      .stripe-operation-container {
+        flex-direction: column;
+        margin-top: 16px !important;
+
+        label {
+          margin-bottom: 0;
+        }
+
+        .stripe-operation-options {
+          width: 100% !important;
+        }
       }
-      .column-update,.column-create{
-        justify-content: space-between;
-      }
-    }
-    
-    .stripe-operation-container{
-     flex-direction: column;
-     margin-top: 16px !important;
-     label{
-      margin-bottom: 0;
-     }
-     .stripe-operation-options{
-      width: 100% !important;
-     }
-    }
 
     }
-    
+
   }
 
 }
-

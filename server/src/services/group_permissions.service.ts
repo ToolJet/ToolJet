@@ -11,7 +11,7 @@ import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { dbTransactionWrap, getMaxCopyNumber } from 'src/helpers/utils.helper';
 import { DataSource } from 'src/entities/data_source.entity';
-import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
@@ -192,6 +192,7 @@ export class GroupPermissionsService {
         groupPermissionId: groupPermissionId,
       },
     });
+
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: dataSourceGroupPermission.groupPermissionId,
@@ -368,6 +369,7 @@ export class GroupPermissionsService {
         if (groupPermission.group == 'admin') {
           throw new BadRequestException('Cannot update admin group');
         }
+
         for (const dataSourceId of remove_data_sources) {
           await manager.delete(DataSourceGroupPermission, {
             dataSourceId: dataSourceId,
@@ -448,7 +450,7 @@ export class GroupPermissionsService {
       .getMany();
 
     let newName = `${groupToDuplicate.group}_copy`;
-    const number = getMaxCopyNumber(existNameList);
+    const number = getMaxCopyNumber(existNameList.map((group) => group.group));
     if (number) newName = `${groupToDuplicate.group}_copy_${number}`;
     await dbTransactionWrap(async (manager: EntityManager) => {
       newGroup = manager.create(GroupPermission, {
@@ -652,6 +654,7 @@ export class GroupPermissionsService {
         id: Not(In(DataSourcesInGroupIds)),
         organizationId: user.organizationId,
         scope: DataSourceScopes.GLOBAL,
+        type: Not(DataSourceTypes.SAMPLE),
       },
       loadEagerRelations: false,
       relations: ['groupPermissions', 'dataSourceGroupPermissions'],

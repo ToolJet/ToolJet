@@ -34,6 +34,7 @@ export const ERROR_TYPES = {
   INVALID: 'invalid-link',
   UNKNOWN: 'unknown',
   WORKSPACE_ARCHIVED: 'Organization is Archived',
+  USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
 };
 
 export const ERROR_MESSAGES = {
@@ -58,11 +59,40 @@ export const ERROR_MESSAGES = {
     retry: false,
     queryParams: [],
   },
+  'invalid-invite-session': {
+    title: 'Incorrect email address',
+    message: 'The user details of the active session does not match that of the invite. Please log out and try again.',
+    cta: 'Back to home page',
+    queryParams: [],
+  },
+  'no-active-workspace': {
+    title: 'No active workspaces',
+    message: 'No active workspace were found for this user. Kindly contact admin to know more.',
+    queryParams: [],
+  },
   unknown: {
     title: 'Oops, something went wrong!',
     message: 'An error occurred while loading the app. Please try again or contact admin.',
     cta: 'Back to home page',
     retry: true,
+    queryParams: [],
+  },
+  'user-count-exceeding': {
+    title: 'User count exceeding',
+    message:
+      'Your builder or end-user count exceeds the limit for your upgraded plan. Please archive users or increase your plan limits to upgrade successfully.',
+    retry: false,
+  },
+  'invited-workspace-archived': {
+    title: 'Archived workspace',
+    message: 'The workspace you are invited to has been archived. Kindly contact admin to know more.',
+    cta: 'Back to home page',
+    queryParams: [],
+  },
+  'user-is-not-activated': {
+    title: 'Account not activated',
+    message: 'Your account is not activated yet. Please check your email for activation link.',
+    cta: 'Back to home page',
     queryParams: [],
   },
 };
@@ -75,4 +105,15 @@ export const PLANS = {
   BUSINESS: 'business',
   ENTERPRISE: 'enterprise',
   TRIAL: 'trial',
+};
+
+export const DATA_SOURCE_TYPE = {
+  SAMPLE: 'sample',
+  LOCAL: 'local',
+  GLOBAL: 'global',
+};
+
+export const SAMPLE_DB_KIND = {
+  POSTGRESQL: 'postgresql',
+  TOOLJET_DB: 'tooljetdb',
 };

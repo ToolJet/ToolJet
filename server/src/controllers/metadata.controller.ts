@@ -22,26 +22,27 @@ export class MetadataController {
   async getMetadata() {
     const metadata = await this.metadataService.getMetaData();
     const data = metadata.data;
-    let latestVersion = data['latest_version'];
-    let versionIgnored = data['version_ignored'] || false;
+    const latestVersion = data['latest_version'];
+    const versionIgnored = data['version_ignored'] || false;
     const instanceId = metadata['id'];
     const onboarded = data['onboarded'];
 
-    if (process.env.NODE_ENV == 'production') {
-      if (
-        process.env.CHECK_FOR_UPDATES === '1' ||
-        process.env.CHECK_FOR_UPDATES === 'true' ||
-        !process.env.CHECK_FOR_UPDATES
-      ) {
-        const result = await this.metadataService.checkForUpdates(metadata);
-        latestVersion = result.latestVersion;
-        versionIgnored = false;
-      }
+    // Removing since its not used on cloud
+    // if (process.env.NODE_ENV == 'production') {
+    //   if (
+    //     process.env.CHECK_FOR_UPDATES === '1' ||
+    //     process.env.CHECK_FOR_UPDATES === 'true' ||
+    //     !process.env.CHECK_FOR_UPDATES
+    //   ) {
+    //     const result = await this.metadataService.checkForUpdates(metadata);
+    //     latestVersion = result.latestVersion;
+    //     versionIgnored = false;
+    //   }
 
-      if (process.env.DISABLE_TOOLJET_TELEMETRY !== 'true') {
-        void this.metadataService.sendTelemetryData(metadata);
-      }
-    }
+    //   if (process.env.DISABLE_TOOLJET_TELEMETRY !== 'true') {
+    //     void this.metadataService.sendTelemetryData(metadata);
+    //   }
+    // }
 
     return {
       instance_id: instanceId,

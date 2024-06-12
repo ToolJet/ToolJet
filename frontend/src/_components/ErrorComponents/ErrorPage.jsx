@@ -1,24 +1,59 @@
 import { ERROR_MESSAGES } from '@/_helpers/constants';
 import { redirectToDashboard, getPrivateRoute, getSubpath } from '@/_helpers/routes';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './static-modal.scss';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import { authenticationService } from '@/_services';
 
 export default function ErrorPage({ darkMode }) {
   const params = useParams();
   const errorType = params?.errorType;
   const errorMsg = ERROR_MESSAGES[errorType];
-
   if (!errorMsg) redirectToDashboard();
 
   const searchParams = new URLSearchParams(location.search);
   const appSlug = searchParams.get('appSlug');
 
+  const [isLoading, setLoading] = React.useState(true);
+  const [isValidSession, setValidSession] = React.useState(null);
+
+  useEffect(() => {
+    authenticationService
+      .validateSession()
+      .then(() => {
+        setValidSession(true);
+      })
+      .catch(() => {
+        setValidSession(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  if (isLoading) {
+    return <TJLoader />;
+  }
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <ErrorModal errorMsg={errorMsg} appSlug={appSlug} show={true} darkMode={darkMode} />
+      <ErrorModal
+        errorMsg={
+          isValidSession === true
+            ? errorMsg
+            : {
+                ...errorMsg,
+                cta: '',
+              }
+        }
+        isValidSession={isValidSession === true}
+        appSlug={appSlug}
+        show={true}
+        darkMode={darkMode}
+      />
     </div>
   );
 }
@@ -107,13 +142,17 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
               {t('globals.workspace-modal.continue-btn', 'Open app')}
             </button>
           )}
-          <button
-            className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
-            onClick={() => redirectToDashboard()}
-            data-cy="back-to-home-button"
-          >
-            {t('globals.workspace-modal.continue-btn', errorMsg?.cta)}
-          </button>
+          {errorMsg?.cta ? (
+            <button
+              className={errorMsg?.retry || appSlug ? 'btn btn-primary' : 'btn btn-primary action-btn'}
+              onClick={() => redirectToDashboard()}
+              data-cy="back-to-home-button"
+            >
+              {t('globals.workspace-modal.continue-btn', errorMsg.cta)}
+            </button>
+          ) : (
+            <span className="pb-1"></span>
+          )}
         </Modal.Footer>
       </Modal>
     </div>

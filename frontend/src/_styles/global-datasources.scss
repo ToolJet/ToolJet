@@ -7,6 +7,7 @@
     background: var(--base);
     display: grid;
     grid-template-rows: auto 1fr auto;
+    border-right: 1px solid var(--slate5);
 
     .add-datasource-btn {
         height: 40px;
@@ -40,6 +41,13 @@
 
             .ds-delete-btn {
                 visibility: visible;
+
+                .disabled-button{
+                    background-color: #FFFF;
+                    width: 19px;
+                    height: 19px;
+                    padding: 3px;
+                }
             }
         }
 
@@ -53,6 +61,10 @@
             visibility: hidden;
             border: none;
             background: none;
+        }
+        
+        .tooltip-sampl-db{
+            width: 10px;
         }
     }
 
@@ -165,11 +177,13 @@
 .datasource-selection-confirm-backdrop {
     z-index: 1060;
     opacity: 0.4 !important;
+    border-left: 1px solid var(--slate5);
 }
 
 .datasource-list-container {
     overflow-y: auto;
     max-height: calc(100vh - 64px);
+    border-left: 1px solid var(--slate5);
     .datasource-list {
         width: 976px;
         margin: 0 auto;
@@ -185,7 +199,8 @@
             }
 
             input {
-                background: transparent;
+                background: none !important;
+                border: none !important;
             }
         }
     }

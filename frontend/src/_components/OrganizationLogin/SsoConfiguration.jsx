@@ -300,7 +300,7 @@ class SSOConfiguration extends React.Component {
                 </span>
                 {
                   <img
-                    src="/assets/images/EditIcon.png"
+                    src="assets/images/EditIcon.png"
                     className="option-icon"
                     style={{
                       width: '14px',

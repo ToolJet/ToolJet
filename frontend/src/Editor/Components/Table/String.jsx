@@ -93,7 +93,7 @@ const StringColumn = ({
         e.stopPropagation();
       }}
     >
-      {cellValue && <span>{String(cellValue)}</span>}
+      <span> {String(cellValue)}</span>
     </div>
   );
 
@@ -120,7 +120,6 @@ const StringColumn = ({
     ref?.current &&
     (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
-
   return (
     <>
       <OverlayTrigger

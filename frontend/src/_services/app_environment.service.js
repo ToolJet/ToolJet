@@ -6,6 +6,9 @@ export const appEnvironmentService = {
   getAllEnvironments,
   getVersionsByEnvironment,
   getEnvironment,
+  init,
+  postVersionDeleteAction,
+  postEnvironmentChangedAction,
 };
 
 /* This endpoint now only will work with viewer. For Editor we may need to do some logic changes in backend code */
@@ -43,4 +46,32 @@ function getVersionsByEnvironment(appId, environmentId /* not needed for CE */) 
     `${config.apiUrl}/app-environments${environmentId ? `/${environmentId}` : ''}/versions${query ? `?${query}` : ''}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function init(editing_version_id = null) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = queryString.stringify({ editing_version_id });
+  return fetch(`${config.apiUrl}/app-environments/init?${query}`, requestOptions).then(handleResponse);
+}
+
+function postVersionDeleteAction(actionParams = {}) {
+  const requestOptions = {
+    method: 'POST',
+    body: JSON.stringify(actionParams),
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-environments/post-action/version_deleted`, requestOptions).then(handleResponse);
+}
+
+function postEnvironmentChangedAction(actionParams = {}) {
+  const requestOptions = {
+    method: 'POST',
+    body: JSON.stringify(actionParams),
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-environments/post-action/environment_changed`, requestOptions).then(
+    handleResponse
+  );
 }

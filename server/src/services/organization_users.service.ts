@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { createQueryBuilder, DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
@@ -9,11 +9,23 @@ import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
-import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import {
+  USER_STATUS,
+  WORKSPACE_STATUS,
+  WORKSPACE_USER_SOURCE,
+  WORKSPACE_USER_STATUS,
+} from 'src/helpers/user_lifecycle';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
 import { UpdateUserDto } from '@dto/user.dto';
 const uuid = require('uuid');
+
+/* TYPES */
+type InvitedUserType = Partial<User> & {
+  invitedOrganizationId?: string;
+  organizationStatus?: string;
+  organizationUserSource?: string;
+};
 
 @Injectable()
 export class OrganizationUsersService {
@@ -29,7 +41,8 @@ export class OrganizationUsersService {
     user: User,
     organization: DeepPartial<Organization>,
     isInvite?: boolean,
-    manager?: EntityManager
+    manager?: EntityManager,
+    source: WORKSPACE_USER_SOURCE = WORKSPACE_USER_SOURCE.INVITE
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
@@ -38,11 +51,18 @@ export class OrganizationUsersService {
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
+          source,
           role: 'all-users',
           createdAt: new Date(),
           updatedAt: new Date(),
         })
       );
+    }, manager);
+  }
+
+  async getOrganizationUser(organizationId: string, manager?: EntityManager) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOne(OrganizationUser, { where: { organizationId } });
     }, manager);
   }
 
@@ -58,14 +78,93 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
+  async findByWorkspaceInviteToken(invitationToken: string): Promise<InvitedUserType> {
+    const organizationUser = await getRepository(OrganizationUser)
+      .createQueryBuilder('organizationUser')
+      .select([
+        'organizationUser.organizationId',
+        'organizationUser.invitationToken',
+        'organizationUser.source',
+        'organizationUser.status',
+        'user.id',
+        'user.email',
+        'user.invitationToken',
+        'user.status',
+        'user.firstName',
+        'user.lastName',
+        'user.source',
+        'organization.status',
+      ])
+      .innerJoin('organizationUser.user', 'user')
+      .innerJoin('organizationUser.organization', 'organization')
+      .where('organizationUser.invitationToken = :invitationToken', { invitationToken })
+      .getOne();
+
+    if (organizationUser?.organization?.status === WORKSPACE_STATUS.ARCHIVE) {
+      /* Invited workspace is archive */
+      const errorResponse = {
+        message: {
+          error: 'The workspace is archived. Please contact the super admin to get access.',
+          isWorkspaceArchived: true,
+        },
+      };
+      throw new BadRequestException(errorResponse);
+    }
+
+    const user: InvitedUserType = organizationUser?.user;
+    /* Invalid organization token */
+    if (!user) {
+      const errorResponse = {
+        message: {
+          error: 'Invalid invitation token. Please ensure that you have a valid invite url',
+          isInvalidInvitationUrl: true,
+        },
+      };
+      throw new BadRequestException(errorResponse);
+    }
+    user.invitedOrganizationId = organizationUser.organizationId;
+    user.organizationStatus = organizationUser.status;
+    user.organizationUserSource = organizationUser.source;
+    return user;
+  }
+
+  async getActiveWorkspacesCount(userId: string) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      },
+    });
+  }
+
+  async isTheUserIsAnActiveMemberOfTheWorkspace(userId: string, organizationId: string) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        organizationId,
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      },
+    });
+  }
+
+  async isAllWorkspacesArchivedBySuperAdmin(userId: string) {
+    const archivedWorkspaceCount = await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        status: WORKSPACE_USER_STATUS.ARCHIVED,
+      },
+    });
+    const allWorkspacesCount = await this.organizationUsersRepository.count({ userId });
+    return allWorkspacesCount === archivedWorkspaceCount;
+  }
+
   async updateOrgUser(organizationUserId: string, updateUserDto: UpdateUserDto) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
-    return await this.usersService.update(
-      organizationUser.userId,
-      updateUserDto,
-      null,
-      organizationUser.organizationId
-    );
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      await this.usersService.update(organizationUser.userId, updateUserDto, manager, organizationUser.organizationId);
+      await this.usersService.validateLicense(manager, organizationUser.organizationId);
+      return;
+    });
   }
 
   async archive(id: string, organizationId: string, user?: User): Promise<void> {
@@ -96,6 +195,7 @@ export class OrganizationUsersService {
   async unarchiveUser(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.usersService.updateUser(userId, { status: USER_STATUS.ACTIVE }, manager);
+      await this.validateLicense(manager);
     });
   }
 
@@ -115,19 +215,38 @@ export class OrganizationUsersService {
     const invitationToken = uuid.v4();
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
+      await manager.update(OrganizationUser, id, {
+        status: WORKSPACE_USER_STATUS.INVITED,
+        source: WORKSPACE_USER_SOURCE.INVITE,
+        invitationToken,
+      });
 
-      await this.usersService.updateUser(organizationUser.userId, { status: USER_STATUS.ACTIVE }, manager);
       await this.usersService.validateLicense(manager, organizationId);
       await this.validateLicense(manager);
     }, manager);
+
+    if (organizationUser.user.invitationToken) {
+      /* User is not activated in instance level. Send setup/welcome email */
+      this.emailService
+        .sendWelcomeEmail(
+          organizationUser.user.email,
+          organizationUser.user.firstName,
+          organizationUser.user.invitationToken,
+          invitationToken,
+          organizationUser.organizationId,
+          organizationUser.organization.name,
+          user.firstName
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+      return;
+    }
 
     this.emailService
       .sendOrganizationUserWelcomeEmail(
         organizationUser.user.email,
         organizationUser.user.firstName,
         user.firstName,
-        `${invitationToken}?oid=${organizationUser.organizationId}`,
+        invitationToken,
         organizationUser.organization.name,
         organizationUser.organizationId
       )
@@ -143,6 +262,33 @@ export class OrganizationUsersService {
         invitationToken: null,
       });
     }, manager);
+  }
+
+  async personalWorkspaceCount(userId: string): Promise<number> {
+    const personalWorkspacesCount = await this.personalWorkspaces(userId);
+    return personalWorkspacesCount?.length;
+  }
+
+  async personalWorkspaces(userId: string): Promise<OrganizationUser[]> {
+    const personalWorkspaces: Partial<OrganizationUser[]> = await this.organizationUsersRepository.find({
+      select: ['organizationId', 'invitationToken'],
+      where: { userId },
+    });
+    const personalWorkspaceArray: OrganizationUser[] = [];
+    for (const workspace of personalWorkspaces) {
+      const { organizationId } = workspace;
+      const workspaceOwner = await this.organizationUsersRepository.find({
+        where: { organizationId },
+        order: { createdAt: 'ASC' },
+        take: 1,
+      });
+      if (workspaceOwner[0]?.userId === userId) {
+        /* First user of the workspace = created by the user */
+        personalWorkspaceArray.push(workspace);
+      }
+    }
+
+    return personalWorkspaceArray;
   }
 
   async lastActiveAdmin(organizationId: string): Promise<boolean> {
@@ -185,5 +331,12 @@ export class OrganizationUsersService {
     if ((await this.organizationsCount(manager)) > workspacesCount) {
       throw new HttpException('You have reached your limit for number of workspaces.', 451);
     }
+  }
+
+  async getUser(token: string) {
+    return await this.organizationUsersRepository.findOneOrFail({
+      where: { invitationToken: token },
+      relations: ['user'],
+    });
   }
 }

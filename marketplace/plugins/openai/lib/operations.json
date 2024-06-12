@@ -27,7 +27,8 @@
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter prompt",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       },
       "max_tokens": {
         "label": "Max Tokens",
@@ -77,7 +78,8 @@
         "type": "codehinter",
         "description": "Enter message",
         "placeholder": "Draft an email or other piece of writing",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       },
       "max_tokens": {
         "label": "Max Tokens",

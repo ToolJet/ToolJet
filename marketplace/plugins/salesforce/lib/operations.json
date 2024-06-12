@@ -1,0 +1,161 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Salesforce datasource",
+  "description": "A schema defining Salesforce datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "soql",
+          "name": "SOQL Query"
+        },
+        {
+          "value": "crud",
+          "name": "CRUD Action"
+        }
+      ]
+    },
+    "soql":{
+      "language": {
+        "label": "Language",
+        "key": "language",
+        "type": "dropdown",
+        "description": "Select the language",
+        "list": [
+          {
+            "value": "soql",
+            "name": "SOQL"
+          }
+        ]
+
+      },
+      "query":{
+      "label": "Query",
+        "key": "soql_query",
+        "type": "codehinter",
+        "description": "Write SOQL Query",
+        "height": "150px"
+      }
+    },
+    "crud":{
+      "actiontype":{
+        "label": "Action Type",
+        "key": "actiontype",
+        "type": "dropdown-component-flip",
+        "description": "Select the action type",
+        "list": [
+          {
+            "value": "create",
+            "name": "Create"
+          },
+          {
+            "value": "retrieve",
+            "name": "Retrieve"
+          },
+          {
+            "value": "update",
+            "name": "Update"
+          },
+          {
+            "value": "delete",
+            "name": "Delete"
+          }
+        ]
+      },
+      "create": {
+        "resource_name": {
+          "label": "Resource Name",
+          "key": "resource_name",
+          "type": "dropdown",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Account",
+          "list": [
+            {
+              "value": "Account",
+              "name": "Account"
+            }
+          ]
+        },
+        "resource_body": {
+          "label": "Resource Body",
+          "key": "resource_body",
+          "type": "codehinter",
+          "lineNumbers": true,
+          "placeholder": "{{ name : “ToolJet” }}",
+          "description": "Enter the resource body",
+          "height": "100px"
+        }
+      },
+      "update":{
+        "resource_name": {
+          "label": "Resource Name",
+          "key": "resource_name",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Account"
+        },
+        "resource_body": {
+          "label": "Resource Body",
+          "key": "resource_body",
+          "type": "codehinter",
+          "placeholder": "{{ Id:”0012F3E4R56487900N” , name : “ToolJet” }}",
+          "description": "Enter the resource body",
+          "height": "100px"
+        }
+      },
+      "delete":{
+        "resource_name": {
+          "label": "Resource Name",
+          "key": "resource_name",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Account"
+        },
+        "resource_id": {
+          "label": "Resource ID",
+          "key": "resource_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "placeholder": "0012F3E4R56487900N",
+          "description": "Enter the resource ID",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        }
+      },
+      "retrieve":{
+        "resource_name": {
+          "label": "Resource Name",
+          "key": "resource_name",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Account"
+        },
+        "resource_id": {
+          "label": "Resource ID",
+          "key": "resource_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "placeholder": "0012F3E4R56487900N",
+          "description": "Enter the resource ID",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        }
+      }
+   }
+  }
+}

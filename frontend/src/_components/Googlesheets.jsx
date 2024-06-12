@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
-
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
 
@@ -18,12 +16,8 @@ const Googlesheets = ({
   isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
-  const [whiteLabelText, setWhiteLabelText] = useState(defaultWhiteLabellingSettings.WHITE_LABEL_TEXT);
+  const whiteLabelText = retrieveWhiteLabelText();
   const { t } = useTranslation();
-
-  useEffect(() => {
-    retrieveWhiteLabelText().then(setWhiteLabelText);
-  }, []);
 
   function authGoogle() {
     const provider = 'googlesheets';
