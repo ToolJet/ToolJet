@@ -255,7 +255,7 @@ Configurations for instance level SSO.
 
 ### Enable Cookie Forwarding to REST API (Optional)
 
-By default, ToolJet server does not forward cookies to the REST API. If you want to forward cookies to the REST API, set the environment variable `FORWARD_RESTAPI_COOKIES` to `true`.
+By default, the ToolJet server does not forward cookies along with the REST API requests. You can enable this functionality by setting the `FORWARD_RESTAPI_COOKIES` environment variable to `true`. This option is available only in the self-hosted version of ToolJet.
 
 | variable                | description                                                  |
 | ----------------------- | ------------------------------------------------------------ |
