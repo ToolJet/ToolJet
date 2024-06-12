@@ -1051,6 +1051,7 @@ const WidgetWrapper = ({
         widgetid={id}
         style={{
           transform: `translate(332px, -134px)`,
+          zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
           ...styles,
         }}
       >
