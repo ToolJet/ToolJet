@@ -67,7 +67,9 @@ export class AuthService {
     private emailService: EmailService,
     private metadataService: MetadataService,
     private configService: ConfigService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>
   ) {}
 
   verifyToken(token: string) {
