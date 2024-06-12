@@ -1860,7 +1860,7 @@ const EditorComponent = (props) => {
     setIsSaving(true);
     appVersionService
       .clonePage(appId, editingVersionId, pageId)
-      .then((data) => {
+      .then(async (data) => {
         const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
         const pages = data.pages.reduce((acc, page) => {
@@ -1884,6 +1884,8 @@ const EditorComponent = (props) => {
           events: data.events,
         });
         appDefinitionChanged(newAppDefinition);
+        await onEditorLoad(newAppDefinition, pageId, false);
+        updateEntityReferences(newAppDefinition, pageId);
       })
       .finally(() => setIsSaving(false));
   };
