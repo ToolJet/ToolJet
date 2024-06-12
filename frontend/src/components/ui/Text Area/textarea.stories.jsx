@@ -1,4 +1,4 @@
-import { name } from 'file-loader';
+import React from 'react';
 import TextArea from './index';
 
 export default {
@@ -45,4 +45,31 @@ export default {
   },
 };
 
-export const RocketTextArea = {};
+const Template = (args) => <TextArea {...args} />;
+
+export const RocketTextArea = Template.bind({});
+RocketTextArea.args = {
+  width: '',
+  placeholder: 'Placeholder',
+  label: '',
+  helperText: '',
+  name: 'name',
+  id: 'id',
+  'aria-label': 'aria-label',
+  disabled: false,
+  required: false,
+  onChange: () => {},
+  validation: () => {},
+};
+
+export const RocketTextAreaWithLabel = (args) => <TextArea {...args} label="Label text" />;
+RocketTextAreaWithLabel.args = {
+  ...RocketTextArea.args,
+};
+
+export const RocketTextAreaWithLabelAndHelperText = (args) => (
+  <TextArea {...args} label="Label text" helperText="Helper text" />
+);
+RocketTextAreaWithLabelAndHelperText.args = {
+  ...RocketTextArea.args,
+};

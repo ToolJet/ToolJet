@@ -44,7 +44,7 @@ const TextArea = (props) => {
         <HelperMessage
           helperText={props.helperText}
           className="tw-gap-[5px]"
-          labelStyle={`${props.disabled ? 'tw-text-text-disabled' : ''}`}
+          labelStyle={`${props.disabled ? '!tw-text-text-disabled' : ''}`}
         />
       )}
       {(isValid === 'true' || isValid === 'false') && !props.disabled && (
