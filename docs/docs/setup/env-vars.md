@@ -253,6 +253,14 @@ Configurations for instance level SSO.
 | SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication |
 | SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist      |
 
+### Enable Cookie Forwarding to REST API (Optional)
+
+By default, ToolJet server does not forward cookies to the REST API. If you want to forward cookies to the REST API, set the environment variable `FORWARD_RESTAPI_COOKIES` to `true`.
+
+| variable                | description                                                  |
+| ----------------------- | ------------------------------------------------------------ |
+| FORWARD_RESTAPI_COOKIES | `true` or `false`                                            |
+
 ## ToolJet client
 
 ### Server URL ( optionally required )
