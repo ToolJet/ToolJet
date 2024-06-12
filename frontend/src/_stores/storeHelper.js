@@ -1,4 +1,5 @@
 import { schemaUnavailableOptions } from '@/Editor/QueryManager/constants';
+// eslint-disable-next-line import/no-unresolved
 import { allOperations } from '@tooljet/plugins/client';
 import { capitalize } from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';

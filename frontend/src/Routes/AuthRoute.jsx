@@ -63,8 +63,8 @@ export const AuthRoute = ({ children }) => {
   };
 
   const verifyWhiteLabeling = (pathname) => {
-    const signupRegex = /^\/signup\/[^\/]+$/;
-    const loginRegex = /^\/login\/[^\/]+$/;
+    const signupRegex = /^\/signup\/[^/]+$/;
+    const loginRegex = /^\/login\/[^/]+$/;
     if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
       useWhiteLabellingStore.getState().actions.resetWhiteLabellingStoreBackToInitialState();
     }
