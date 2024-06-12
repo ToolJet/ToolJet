@@ -5,7 +5,7 @@ export const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'ToolJet Database', shortName: 'ToolJet DB' },
 ];
 
-export const tabs = ['JSON', 'Raw'];
+export const tabs = ['JSON', 'Raw', 'Table'];
 
 export const getTheme = (darkMode) => {
   return {
