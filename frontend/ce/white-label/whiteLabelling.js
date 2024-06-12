@@ -16,6 +16,10 @@ export async function fetchWhiteLabelDetails(organizationId = null) {
   return;
 }
 
+export async function checkWhiteLabelsDefaultState(organizationId = null) {
+  return true;
+}
+
 export function retrieveWhiteLabelText() {
   return window.public_config?.WHITE_LABEL_TEXT || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
 }
@@ -78,13 +82,18 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
     'account-settings': pageTitles.ACCOUNT_SETTINGS,
     settings: pageTitles.INSTANCE_SETTINGS,
     login: '',
+    signUp: '',
+    error: '',
+    signup: '',
+    'organization-invitations': '',
+    invitation: '',
     'forgot-password': '',
+    'reset-password': '',
     'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
     setup: '',
   };
   const pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname.includes(path));
   const pageTitle = pathToTitle[pageTitleKey];
-  console.log(pageTitle, 'page title');
 
   //For undefined routes
   if (pageTitle === undefined) {
@@ -118,49 +127,5 @@ export async function fetchAndSetWindowTitle(pageDetails) {
       break;
     }
   }
-  console.log(pageTitle, 'here');
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
 }
-
-export const setWindowTitle = async (pageDetails, location) => {
-  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  const pathToTitle = {
-    'instance-settings': pageTitles.INSTANCE_SETTINGS,
-    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
-    integrations: pageTitles.INTEGRATIONS,
-    workflows: pageTitles.WORKFLOWS,
-    database: pageTitles.DATABASE,
-    'data-sources': pageTitles.DATA_SOURCES,
-    'audit-logs': pageTitles.AUDIT_LOGS,
-    'account-settings': pageTitles.ACCOUNT_SETTINGS,
-    settings: pageTitles.SETTINGS,
-    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
-  };
-  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
-  let pageTitleKey = pageDetails?.page || '';
-  let pageTitle = '';
-  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
-    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
-  }
-  switch (pageTitleKey) {
-    case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
-      break;
-    }
-    case pageTitles.EDITOR:
-    case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
-      break;
-    }
-    default: {
-      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
-      break;
-    }
-  }
-  if (pageTitle) {
-    document.title = !(pageDetails?.preview === false)
-      ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
-      : `${pageTitle}`;
-  }
-};

@@ -77,9 +77,9 @@ class AppComponent extends React.Component {
   };
 
   componentDidMount() {
-    setFaviconAndTitle(null, null, this.props.location);
     authorizeWorkspace();
     this.fetchMetadata();
+    setFaviconAndTitle(null, null, this.props.location);
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
   // check if its getting routed from editor

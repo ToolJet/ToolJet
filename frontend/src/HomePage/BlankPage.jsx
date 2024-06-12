@@ -58,14 +58,14 @@ export const BlankPage = function BlankPage({
               <div className="row homepage-empty-container">
                 <div className="col-7">
                   <h3 className="empty-welcome-header" data-cy="empty-homepage-welcome-header">
-                    {t('blankPage.welcomeToToolJet', 'Welcome to your new ${whiteLabelText} workspace', {
+                    {t('blankPage.welcomeToToolJet', `Welcome to your new ${whiteLabelText} workspace`, {
                       whiteLabelText,
                     })}
                   </h3>
                   <p className={`empty-title`} data-cy="empty-homepage-description">
                     {t(
                       'blankPage.getStartedCreateNewApp',
-                      'You can get started by creating a new application or by creating an application using a template in ${whiteLabelText} Library.',
+                      `You can get started by creating a new application or by creating an application using a template in ${whiteLabelText} Library.`,
                       {
                         whiteLabelText,
                       }

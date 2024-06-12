@@ -77,7 +77,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'Enter your phone number',
     'Enter your phone number', //dummy for styling
   ];
-  const FormSubTitles = ['This information will help us improve ${whiteLabelText}.'];
+  const FormSubTitles = [`This information will help us improve ${whiteLabelText}.`];
 
   return (
     <div className="flex">

@@ -17,6 +17,7 @@ import { extractErrorObj, onInvitedUserSignUpSuccess } from '@/_helpers/platform
 import { isEmpty } from 'lodash';
 import { EmailComponent } from './EmailComponent';
 import SSOLoginModule from '@/LoginPage/SSOLoginModule';
+import { checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -34,6 +35,7 @@ class SignupPageComponent extends React.Component {
       emailError: '',
       disableOnEdit: false,
       email: this.inviteeEmail || '',
+      defaultState: false,
     };
   }
 
@@ -42,6 +44,9 @@ class SignupPageComponent extends React.Component {
     if (errorMessage) {
       toast.error(errorMessage);
     }
+    checkWhiteLabelsDefaultState(this.inviteOrganizationId).then((res) => {
+      this.setState({ defaultState: res });
+    });
   }
 
   backtoSignup = (email, name) => {
@@ -122,7 +127,7 @@ class SignupPageComponent extends React.Component {
 
   render() {
     const { configs } = this.props;
-    const { isLoading, signupSuccess } = this.state;
+    const { isLoading, signupSuccess, defaultState } = this.state;
     const comingFromInviteFlow = !!this.organizationToken;
     const isSignUpButtonDisabled =
       isLoading ||
@@ -320,20 +325,22 @@ class SignupPageComponent extends React.Component {
                           </>
                         )}
 
-                        <p className="signup-terms" data-cy="signup-terms-helper">
-                          By signing up you are agreeing to the
-                          <br />
-                          <span>
-                            <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                              Terms of Service{' '}
-                            </a>
-                            &
-                            <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                              {' '}
-                              Privacy Policy
-                            </a>
-                          </span>
-                        </p>
+                        {defaultState && (
+                          <p className="signup-terms" data-cy="signup-terms-helper">
+                            By signing up you are agreeing to the
+                            <br />
+                            <span>
+                              <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                                Terms of Service{' '}
+                              </a>
+                              &
+                              <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                                {' '}
+                                Privacy Policy
+                              </a>
+                            </span>
+                          </p>
+                        )}
                       </div>
                     </>
                   )

@@ -11,7 +11,7 @@ export const withRouter = (WrappedComponent) => (props) => {
 
   useEffect(() => {
     setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
-  }, [location]);
+  }, [whiteLabelFavicon, whiteLabelText, location]);
 
   return <WrappedComponent {...props} params={params} location={location} navigate={navigate} />;
 };
