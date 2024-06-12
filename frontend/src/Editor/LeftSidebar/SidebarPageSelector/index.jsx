@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import Fuse from 'fuse.js';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
-import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
@@ -98,16 +97,7 @@ const LeftSidebarPageSelector = ({
     >
       <div className="card-body p-0 pb-5">
         <HeaderSection darkMode={darkMode}>
-          <HeaderSection.PanelHeader
-            title="Pages"
-            settings={
-              <GlobalSettings
-                darkMode={darkMode}
-                showHideViewerNavigationControls={showHideViewerNavigationControls}
-                isViewerNavigationDisabled={!appDefinition?.showViewerNavigation}
-              />
-            }
-          >
+          <HeaderSection.PanelHeader title="Pages">
             <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
               <ButtonSolid
                 title={'Add Page'}
