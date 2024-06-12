@@ -148,18 +148,3 @@ export async function deleteDocument(
   await db.deleteDocument(databaseId, collectionId, documentId);
   return { deleted: true };
 }
-
-export async function bulkUpdate(
-  db: Databases,
-  databaseId: string,
-  collectionId: string,
-  records: Array<object>,
-  documentIdKey: string
-): Promise<object> {
-  for (const record of records) {
-    const documentId = record[documentIdKey];
-    await db.updateDocument(databaseId, collectionId, documentId, record);
-  }
-
-  return { message: 'Docs are being updated' };
-}

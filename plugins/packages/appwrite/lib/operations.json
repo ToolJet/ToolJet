@@ -28,10 +28,6 @@
           "name": "Update Document"
         },
         {
-          "value": "bulk_update",
-          "name": "Bulk update using document id"
-        },
-        {
           "value": "delete_document",
           "name": "Delete Document"
         }
@@ -248,40 +244,6 @@
         "height": "36px",
         "className": "codehinter-plugins col-6",
         "placeholder": "Enter document id"
-      }
-    },
-    "bulk_update": {
-      "collectionId": {
-        "label": "Collection ID",
-        "key": "collectionId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter collection id"
-      },
-      "document_id_key": {
-        "label": "Key for document Id",
-        "key": "document_id_key",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter key for document Id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter key for document Id ($id)"
-      },
-      "records": {
-        "label": "Records",
-        "key": "records",
-        "type": "codehinter",
-        "mode": "javascript",
-        "description": "Enter records",
-        "height": "150px",
-        "editorType": "extendedSingleLine",
-        "placeholder": "{{ [{'$id': '666858665f96ddef83f8', 'name': 'John', 'age': 30}]  }}"
       }
     }
   }
