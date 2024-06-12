@@ -114,13 +114,13 @@ export const dropdownV2Config = {
     labelColor: {
       type: 'color',
       displayName: 'Color',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: 'side' },
       options: [
         { displayName: 'Side', value: 'side' },
         { displayName: 'Top', value: 'top' },
@@ -130,7 +130,7 @@ export const dropdownV2Config = {
     direction: {
       type: 'switch',
       displayName: 'Direction',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
       showLabel: false,
       isIcon: true,
       options: [
@@ -147,6 +147,7 @@ export const dropdownV2Config = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
     auto: {
       type: 'checkbox',
@@ -158,42 +159,43 @@ export const dropdownV2Config = {
         key: 'alignment',
         value: 'side',
       },
+      isFxNotRequired: true,
     },
 
     fieldBackgroundColor: {
       type: 'color',
       displayName: 'Background',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     fieldBorderColor: {
       type: 'color',
       displayName: 'Border',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
       type: 'color',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     selectedTextColor: {
       type: 'color',
       displayName: 'Text',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
       type: 'color',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
     },
     icon: {
       type: 'icon',
       displayName: 'Icon',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
       accordian: 'field',
       visibility: false,
     },
@@ -203,25 +205,32 @@ export const dropdownV2Config = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
+        defaultValue: '#6A727C',
       },
       accordian: 'field',
     },
     fieldBorderRadius: {
       type: 'input',
       displayName: 'Border radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '6' },
       accordian: 'field',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
       accordian: 'field',
     },
     padding: {
       type: 'switch',
       displayName: 'Padding',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
@@ -265,7 +274,7 @@ export const dropdownV2Config = {
       showOnMobile: { value: '{{false}}' },
     },
     validation: {
-      mandatory: { value: false },
+      mandatory: { value: '{{false}}' },
       customRule: { value: null },
     },
     properties: {
