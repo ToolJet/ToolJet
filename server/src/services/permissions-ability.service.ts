@@ -52,6 +52,8 @@ export class AbilityService {
     if (resources && resources.some((item) => item.resource === TOOLJET_RESOURCE.APP)) {
       userPermissions[TOOLJET_RESOURCE.APP] = this.createUserAppsPermissions(appsGranularPermissions);
     }
+    console.log('printing user permissions');
+    console.log(userPermissions);
 
     return userPermissions;
   }
@@ -60,12 +62,19 @@ export class AbilityService {
     const userAppsPermissions: UserAppsPermissions = appsGranularPermissions.reduce((acc, permission) => {
       const appsPermission = permission?.appsGroupPermissions;
       const groupApps = appsPermission?.groupApps ? appsPermission.groupApps.map((item) => item.appId) : [];
+      console.log('logging');
+      console.log(appsPermission);
+      console.log(groupApps);
+      console.log(acc);
+
       return {
         isAllEditable: acc.isAllEditable || (permission.isAll && appsPermission?.canEdit),
-        editableAppsId: Array.from(new Set([...acc.editableAppsId, ...(appsPermission?.canEdit && groupApps)])),
+        editableAppsId: Array.from(new Set([...acc.editableAppsId, ...(appsPermission?.canEdit ? groupApps : [])])),
         isAllViewable: acc.isAllViewable || (permission.isAll && appsPermission?.canView),
-        viewableAppsId: Array.from(new Set([...acc.viewableAppsId, ...(appsPermission?.canView && groupApps)])),
-        hiddenAppsId: Array.from(new Set([...acc.hiddenAppsId, ...(appsPermission?.hideFromDashboard && groupApps)])),
+        viewableAppsId: Array.from(new Set([...acc.viewableAppsId, ...(appsPermission?.canView ? groupApps : [])])),
+        hiddenAppsId: Array.from(
+          new Set([...acc.hiddenAppsId, ...(appsPermission?.hideFromDashboard ? groupApps : [])])
+        ),
       };
     }, DEFAULT_USER_APPS_PERMISSIONS);
     return userAppsPermissions;

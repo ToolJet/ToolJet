@@ -19,9 +19,8 @@ export function getUserPermissionsQuery(
       organizationId,
     });
 
-  const resourceTypes = Array.from(new Set(resources.map((item) => item.resource)));
-
   if (resources?.length) {
+    const resourceTypes = Array.from(new Set(resources.map((item) => item.resource)));
     const orConditions = Array.from(resourceTypes)
       .map((resource, index) => `granularPermissions.type = :type${index}`)
       .join(' OR ');
@@ -34,10 +33,14 @@ export function getUserPermissionsQuery(
       .andWhere(orConditions, parameters)
       .addSelect(['granularPermissions.isAll', 'granularPermissions.type']);
   }
-  const appsResourcesList = resources.filter((item) => item.resource === TOOLJET_RESOURCE.APP);
-  if (appsResourcesList.length) {
-    addAppsPermissionsTOQuery(query, appsResourcesList);
+
+  if (resources?.length) {
+    const appsResourcesList = resources.filter((item) => item.resource === TOOLJET_RESOURCE.APP);
+    if (appsResourcesList?.length) {
+      addAppsPermissionsTOQuery(query, appsResourcesList);
+    }
   }
+
   return query;
 }
 
