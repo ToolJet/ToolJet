@@ -17,6 +17,7 @@ import './styles.scss';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/_components/DateTimePicker';
 
 const EditRowForm = ({
   onEdit,
@@ -392,6 +393,15 @@ const EditRowForm = ({
               disabled={inputValues[index]?.value === null || shouldInputBeDisabled}
             />
           </label>
+        );
+
+      case 'timestamp with time zone':
+        return (
+          <DateTimePicker
+            timestamp={inputValues[index]?.value}
+            setTimestamp={(value) => handleInputChange(index, value, columnName)}
+            isOpenOnStart={false}
+          />
         );
 
       default:

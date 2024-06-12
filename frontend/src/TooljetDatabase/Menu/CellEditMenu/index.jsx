@@ -400,9 +400,10 @@ export const CellEditMenu = ({
       ) : isTimestamp ? (
         <DateTimePicker
           isOpenOnStart={true}
-          timestamp={new Date(selectedValue)}
+          timestamp={selectedValue}
           setTimestamp={setSelectedValue}
           saveFunction={saveFunction}
+          isEditCell={true}
         />
       ) : (
         children

@@ -15,10 +15,12 @@ export const DateTimePicker = ({
   setTimestamp,
   isNotNull = true,
   defaultValue = null,
+  isEditCell = false,
   saveFunction = () => {},
 }) => {
   // States
-  const timestampRef = useRef(timestamp);
+  const transformedTimestamp = timestamp ? new Date(timestamp) : null;
+  const timestampRef = useRef(transformedTimestamp);
   const [isOpen, setIsOpen] = useState(isOpenOnStart);
 
   const handleCancel = useCallback(() => {
@@ -29,6 +31,17 @@ export const DateTimePicker = ({
     saveFunction(timestampRef.current);
     setIsOpen(false);
   }, []);
+
+  const handleCellEditChange = (newTimestamp) => {
+    timestampRef.current = newTimestamp;
+    setTimestamp(newTimestamp);
+  };
+
+  const handleDefaultChange = (newTimestamp) => {
+    timestampRef.current = newTimestamp;
+    setTimestamp(newTimestamp);
+    setIsOpen(false);
+  };
 
   const SaveChangesSection = () => {
     return (
@@ -168,13 +181,13 @@ export const DateTimePicker = ({
         className={`input-field form-control validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
         }`}
-        shouldCloseOnSelect={false}
+        shouldCloseOnSelect={!isEditCell}
         onInputClick={() => setIsOpen(true)}
-        value={timestamp}
-        selected={timestamp}
-        onChange={(timestamp) => {
-          timestampRef.current = timestamp;
-          setTimestamp(timestamp);
+        onClickOutside={() => setIsOpen(false)}
+        value={transformedTimestamp !== null ? transformedTimestamp : 'Select date'}
+        selected={transformedTimestamp}
+        onChange={(newTimestamp) => {
+          isEditCell ? handleCellEditChange(newTimestamp) : handleDefaultChange(newTimestamp);
         }}
         open={isOpen}
         showTimeInput={enableTime ? true : false}
@@ -183,8 +196,8 @@ export const DateTimePicker = ({
         showYearDropdown
         dropdownMode="select"
         customInput={
-          timestamp ? (
-            <input style={{ borderRadius: `${styles.borderRadius}px` }} />
+          transformedTimestamp || !isEditCell ? (
+            <input style={{ borderRadius: `${styles.borderRadius}px`, display: isEditCell ? 'block' : 'flex' }} />
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ padding: '0px 14px 0px 14px' }} className="cell-text-null">
@@ -195,7 +208,7 @@ export const DateTimePicker = ({
         }
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
         dateFormat={format}
-        calendarContainer={memoizedCustomCalendarContainer}
+        {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer })}
       />
     </div>
   );

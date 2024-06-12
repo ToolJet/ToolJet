@@ -14,6 +14,7 @@ import cx from 'classnames';
 
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/_components/DateTimePicker';
 
 const RowForm = ({
   onCreate,
@@ -396,6 +397,15 @@ const RowForm = ({
               disabled={inputValues[index].checkboxValue === null}
             />
           </label>
+        );
+
+      case 'timestamp with time zone':
+        return (
+          <DateTimePicker
+            timestamp={inputValues[index]?.value}
+            setTimestamp={(value) => handleInputChange(index, value, columnName)}
+            isOpenOnStart={false}
+          />
         );
 
       default:

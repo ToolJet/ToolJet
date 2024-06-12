@@ -15,7 +15,11 @@
 }
 
 .datepicker-widget.theme-tjdb {
+      .react-datepicker-wrapper{ 
+        width:100%;
+      }
     .react-datepicker__tab-loop {
+   
       .react-datepicker__month-container{
         float:none;
       }
@@ -35,6 +39,9 @@
 
 
   .datepicker-widget.theme-dark {
+    .react-datepicker-wrapper{ 
+      width:100%;
+    }
     .react-datepicker__tab-loop {
       .react-datepicker__month-container{
         float:none;
