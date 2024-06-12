@@ -27,6 +27,7 @@ import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import { formatTimestampToCustomString } from '@/_helpers/utils';
 
 import './styles.scss';
 
@@ -731,7 +732,7 @@ const Table = ({ collapseSidebar }) => {
     setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
-    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
+    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellValue };
 
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
 
@@ -1325,7 +1326,12 @@ const Table = ({ collapseSidebar }) => {
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             <ToolTip
-                              message={getTooltipTextForCell(cell.value, index)}
+                              message={getTooltipTextForCell(
+                                cell.column.dataType == 'timestamp with time zone'
+                                  ? formatTimestampToCustomString(cell.value)
+                                  : cell.value,
+                                index
+                              )}
                               placement="bottom"
                               delay={{ show: 200, hide: 0 }}
                               show={
@@ -1374,6 +1380,7 @@ const Table = ({ collapseSidebar }) => {
                                       setNullValue={setNullValue}
                                       nullValue={nullValue}
                                       isBoolean={cell.column?.dataType === 'boolean' ? true : false}
+                                      isTimestamp={cell.column?.dataType === 'timestamp with time zone' ? true : false}
                                       referencedColumnDetails={referencedColumnDetails}
                                       referenceColumnName={
                                         foreignKeys.length > 0 &&
@@ -1536,7 +1543,11 @@ const Table = ({ collapseSidebar }) => {
                                           })}
                                         >
                                           <div className="cell-text">
-                                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                            {isBoolean(cell?.value)
+                                              ? cell?.value?.toString()
+                                              : cell.column?.dataType === 'timestamp with time zone'
+                                              ? formatTimestampToCustomString(cell?.value)
+                                              : cell.render('Cell')}
                                           </div>
                                           {/* <ToolTip
                                             message={'Open referenced table'}

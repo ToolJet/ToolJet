@@ -6756,6 +6756,9 @@ tbody {
 
 .datepicker-widget.theme-tjdb {
   .react-datepicker__tab-loop {
+    .react-datepicker__month-container{
+      float:none;
+    }
     .react-datepicker__header {
       background-color: #F0F4FF;
 
@@ -6773,6 +6776,9 @@ tbody {
 
 .datepicker-widget.theme-dark {
   .react-datepicker__tab-loop {
+    .react-datepicker__month-container{
+      float:none;
+    } 
     .react-datepicker__header {
       background-color: #232e3c;
 

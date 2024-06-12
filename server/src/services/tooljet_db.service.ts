@@ -24,7 +24,14 @@ export type ForeignKeyDetails = {
   on_update: string;
 };
 
-export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
+export type SupportedDataTypes =
+  | 'character varying'
+  | 'integer'
+  | 'bigint'
+  | 'serial'
+  | 'double precision'
+  | 'boolean'
+  | 'timestamp with time zone';
 
 // Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
 declare module 'typeorm' {

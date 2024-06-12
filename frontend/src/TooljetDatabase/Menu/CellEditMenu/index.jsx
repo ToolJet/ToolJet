@@ -11,6 +11,7 @@ import cx from 'classnames';
 import './styles.scss';
 import styles from './styles.module.scss';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/_components/DateTimePicker';
 
 export const CellEditMenu = ({
   darkMode = false,
@@ -27,6 +28,7 @@ export const CellEditMenu = ({
   setNullValue,
   nullValue,
   isBoolean,
+  isTimestamp,
   referencedColumnDetails = [],
   referenceColumnName = '',
   isForeignKey = false,
@@ -370,6 +372,13 @@ export const CellEditMenu = ({
           shouldCloseFkMenu={shouldCloseFkMenu}
           cachedOptions={cachedOptions}
           columnDataType={dataType}
+        />
+      ) : isTimestamp ? (
+        <DateTimePicker
+          isOpenOnStart={true}
+          timestamp={new Date(selectedValue)}
+          setTimestamp={setSelectedValue}
+          saveFunction={saveFunction}
         />
       ) : (
         children

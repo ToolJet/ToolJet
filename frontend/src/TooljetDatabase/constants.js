@@ -7,6 +7,7 @@ import Boolean from './Icons/Toggle.svg';
 import Serial from './Icons/Serial.svg';
 import ArrowRight from './Icons/ArrowRight.svg';
 import RightFlex from './Icons/Right-flex.svg';
+import Datetime from './Icons/Datetime.svg';
 
 export const dataTypes = [
   {
@@ -24,6 +25,12 @@ export const dataTypes = [
     label: 'serial',
     icon: <Serial width="16" height="16" />,
     value: 'serial',
+  },
+  {
+    name: 'Date and time',
+    label: 'timestamp',
+    icon: <Datetime width="16" height="16" />,
+    value: 'timestamp with time zone',
   },
 ];
 
@@ -252,6 +259,8 @@ export const renderDatatypeIcon = (type) => {
       return <Float width="18" height="18" className="tjdb-column-header-name" />;
     case 'serial':
       return <Serial width="18" height="14" className="tjdb-column-header-name" />;
+    case 'timestamp with time zone':
+      return <Datetime width="18" height="18" className="tjdb-column-header-name" />;
     default:
       return type;
   }

@@ -1363,3 +1363,23 @@ export const triggerKeyboardShortcut = (keyCallbackFnArray, initiator) => {
 export function decodeEntities(encodedString) {
   return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
 }
+
+export function formatTimestampToCustomString(timestamp, targetTimezone = 'UTC', sourceTimezone = 'UTC') {
+  const date = moment.tz(timestamp, sourceTimezone).utc();
+  if (!date.isValid()) {
+    return timestamp;
+  }
+
+  const formattedDate = date.tz(targetTimezone).format('DD/MM/yyyy, h:mm a');
+  return formattedDate;
+}
+
+export function parseCustomStringToTimestamp(customString, targetTimezone = 'UTC', sourceTimezone = 'UTC') {
+  const parsedDate = moment.tz(customString, 'DD/MM/yyyy, h:mm aa', sourceTimezone);
+  if (!parsedDate.isValid()) {
+    return customString;
+  }
+
+  const formattedTimestamp = parsedDate.clone().tz(targetTimezone).format('YYYY-MM-DDTHH:mm:ssZ');
+  return formattedTimestamp;
+}
