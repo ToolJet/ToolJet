@@ -13,3 +13,31 @@
     font-size: 10px;
     color: #7E868C;
 }
+
+.datepicker-widget.theme-tjdb {
+    .react-datepicker__tab-loop {
+      .react-datepicker__month-container{
+        float:none;
+      }
+      .react-datepicker__header {
+        background-color: #F0F4FF;
+  
+        .react-datepicker__current-month{
+          color:#4662d5;
+        }
+  
+      }
+    }
+    .react-datepicker__navigation-icon::before{
+      border-color: #4662d5;
+    }
+  }
+
+
+  .datepicker-widget.theme-dark {
+    .react-datepicker__tab-loop {
+      .react-datepicker__month-container{
+        float:none;
+      } 
+    }
+}

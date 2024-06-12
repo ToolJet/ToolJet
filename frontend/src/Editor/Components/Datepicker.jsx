@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
-import cx from 'classnames';
 
 export const Datepicker = function Datepicker({
   height,
@@ -17,7 +16,6 @@ export const Datepicker = function Datepicker({
   darkMode,
   fireEvent,
   dataCy,
-  isTjdb,
 }) {
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
@@ -83,10 +81,7 @@ export const Datepicker = function Datepicker({
   return (
     <div
       data-disabled={disabledState}
-      className={cx('datepicker-widget', {
-        'theme-tjdb': isTjdb && !darkMode,
-        'theme-dark': darkMode,
-      })}
+      className={`datepicker-widget ${darkMode && 'theme-dark'}`}
       data-cy={dataCy}
       style={{
         height,

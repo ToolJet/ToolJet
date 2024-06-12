@@ -6754,31 +6754,8 @@ tbody {
   }
 }
 
-.datepicker-widget.theme-tjdb {
-  .react-datepicker__tab-loop {
-    .react-datepicker__month-container{
-      float:none;
-    }
-    .react-datepicker__header {
-      background-color: #F0F4FF;
-
-      .react-datepicker__current-month{
-        color:#4662d5;
-      }
-    
-    }
-  }
-  .react-datepicker__navigation-icon::before{
-    border-color: #4662d5;
-  }
-}
-
-
 .datepicker-widget.theme-dark {
   .react-datepicker__tab-loop {
-    .react-datepicker__month-container{
-      float:none;
-    } 
     .react-datepicker__header {
       background-color: #232e3c;
 
@@ -10236,6 +10213,8 @@ tbody {
 
 
 .manage-users-drawer-content-bulk {
+  margin: 24px 15px;
+
   form {
     display: flex;
     flex-direction: column;
@@ -10682,6 +10661,7 @@ tbody {
   padding: 16px 20px;
   border-bottom: 1px solid var(--slate5);
   height: 64px;
+
   h3 {
     margin-bottom: 0px !important;
     font-size: 18px;
@@ -10840,6 +10820,7 @@ tbody {
         -webkit-text-fill-color: var(--slate12) !important;
       }
     }
+
     &::placeholder {
       font-size: 12px;
       line-height: 20px;
@@ -12139,6 +12120,11 @@ tbody {
 
 .tjdb-mainCellEdit-scrollbar {
   width: 300px !important;
+
+  .tjdb-cellmenu-error,
+  .tjdb-cellmenu-loader {
+    height: 177px;
+  }
 
   .action-description {
     color: var(--slate9);
