@@ -369,6 +369,9 @@ export const MultiselectV2 = ({
           useEditorStore.getState().actions.setHoveredComponent('');
         }}
         onClick={() => {
+          if (!isMultiSelectDisabled) {
+            fireEvent('onFocus');
+          }
           setIsMultiselectOpen(!isMultiselectOpen);
         }}
       >
