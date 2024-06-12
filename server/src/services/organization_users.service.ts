@@ -156,7 +156,11 @@ export class OrganizationUsersService {
     const invitationToken = uuid.v4();
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
+      await manager.update(OrganizationUser, id, {
+        status: WORKSPACE_USER_STATUS.INVITED,
+        source: WORKSPACE_USER_SOURCE.INVITE,
+        invitationToken,
+      });
     }, manager);
 
     if (organizationUser.user.invitationToken) {
