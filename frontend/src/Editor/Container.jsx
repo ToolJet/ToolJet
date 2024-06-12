@@ -115,7 +115,7 @@ export const Container = ({
   // const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
-  const [isContainerFocused, setContainerFocus] = useState(false);
+  const [isContainerFocused, setContainerFocus] = useState(true);
   const [canvasHeight, setCanvasHeight] = useState(null);
 
   useEffect(() => {
@@ -236,6 +236,7 @@ export const Container = ({
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
     updateCanvasHeight(boxes);
+    noOfBoxs != 0 && setContainerFocus(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs]);
 
