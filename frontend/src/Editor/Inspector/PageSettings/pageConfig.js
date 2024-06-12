@@ -3,8 +3,8 @@ export const pageConfig = {
     collapsable: true,
     style: 'texticon',
     disableMenu: {
-      value: false,
-      fx: '',
+      value: `{{false}}`,
+      fxActive: false,
     },
   },
   styles: {
@@ -59,8 +59,8 @@ export const pageConfig = {
       collapsable: true,
       style: 'texticon',
       disableMenu: {
-        value: false,
-        fx: '',
+        value: '{{false}}',
+        fxActive: false,
       },
     },
     styles: {

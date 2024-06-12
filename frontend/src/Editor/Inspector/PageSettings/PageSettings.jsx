@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
 import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -13,8 +13,16 @@ import { Color } from '@/Editor/CodeBuilder/Elements/Color';
 import { NumberInput } from '@/Editor/CodeBuilder/Elements/NumberInput';
 import LabelStyleToggle from './LabelStyleToggle';
 import { useEditorStore } from '@/_stores/editorStore';
+import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import CodeHinter from '@/Editor/CodeEditor';
+import { resolveReferences } from '@/_helpers/utils';
 
 export default function PageSettings({ settings, pageSettingsChanged }) {
+  const {
+    definition: { properties },
+  } = settings;
+  const [forceCodeBox, setForceCodeBox] = useState(properties.disableMenu.fxActive);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -109,6 +117,84 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
                 <div className="tj-text-xsm color-slate12 ">
                   <CollapsableToggle pageSettingsChanged={pageSettingsChanged} settings={settings} />
                   <LabelStyleToggle pageSettingsChanged={pageSettingsChanged} settings={settings} />
+                  <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor')}>
+                    <div className={cx('d-flex align-items-center justify-content-between')}>
+                      <div className={`field`}>
+                        <ToolTip
+                          label={'Hide page menu on launched apps'}
+                          labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
+                            darkMode && 'color-whitish-darkmode'
+                          }`}
+                        />
+                      </div>
+                      <div className={`flex-grow-1`}>
+                        <div
+                          style={{ marginBottom: forceCodeBox ? '0.5rem' : '0px' }}
+                          className={`d-flex align-items-center justify-content-end`}
+                        >
+                          <div
+                            className={`col-auto pt-0 mx-1 fx-button-container ${
+                              forceCodeBox && 'show-fx-button-container'
+                            }`}
+                          >
+                            <FxButton
+                              active={forceCodeBox}
+                              onPress={() => {
+                                if (forceCodeBox) {
+                                  setForceCodeBox(false);
+                                } else {
+                                  setForceCodeBox(true);
+                                }
+                              }}
+                            />
+                          </div>
+
+                          {!forceCodeBox && (
+                            <div className="form-check form-switch m-0">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                checked={
+                                  forceCodeBox
+                                    ? resolveReferences(properties.disableMenu.value)
+                                    : properties.disableMenu.value
+                                }
+                                onChange={(e) =>
+                                  pageSettingsChanged(
+                                    {
+                                      disableMenu: {
+                                        value: forceCodeBox ? resolveReferences(e.target.checked) : e.target.checked,
+                                        fxActive: forceCodeBox,
+                                      },
+                                    },
+                                    'properties'
+                                  )
+                                }
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {forceCodeBox && (
+                      <CodeHinter
+                        initialValue={properties.disableMenu.value}
+                        lang="javascript"
+                        lineNumbers={false}
+                        onChange={(value) => {
+                          pageSettingsChanged(
+                            {
+                              disableMenu: {
+                                value: value,
+                                fxActive: forceCodeBox,
+                              },
+                            },
+                            'properties'
+                          );
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </Tab>
