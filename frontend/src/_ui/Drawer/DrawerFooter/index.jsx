@@ -107,7 +107,7 @@ function DrawerFooter({
             message={'Foreign key relations checks for referential integrity between two tables. Read more.'}
             placement="top"
             tooltipClassName="tootip-table read-docs-fk"
-            show={showToolTipForFkOnReadDocsSection}
+            show={initiator === 'ForeignKeyTableForm'}
           >
             <div className="d-flex align-items-center">
               <Student />
