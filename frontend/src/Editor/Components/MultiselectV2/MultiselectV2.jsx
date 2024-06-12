@@ -242,6 +242,11 @@ export const MultiselectV2 = ({
   }, [selectOptions, selected]);
 
   const customStyles = {
+    container: (base) => ({
+      ...base,
+      width: '100%',
+      minWidth: '72px',
+    }),
     control: (provided, state) => {
       return {
         ...provided,

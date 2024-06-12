@@ -232,6 +232,7 @@ export const DropdownV2 = ({
     container: (base) => ({
       ...base,
       width: '100%',
+      minWidth: '72px',
     }),
     control: (provided, state) => {
       return {
