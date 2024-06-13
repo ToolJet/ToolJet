@@ -13,7 +13,7 @@
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
 @import './pages-sidebar.scss';
-
+@import "./componentdesign.scss";
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -469,7 +469,7 @@ button {
     left: 0;
     overflow-x: hidden;
     flex: 1 1 auto;
-    background-color: var(--base) !important;
+    background-color: var(--page-default);
     background-clip: border-box;
     margin-top: 48px;
     padding-top: 8px;
@@ -7540,6 +7540,7 @@ tbody {
 
 .workspace-content-wrapper,
 .database-page-content-wrap {
+  background-color: var(--page-default);
   height: calc(100vh - 64px) !important;
 }
 
@@ -7551,7 +7552,7 @@ tbody {
 .organization-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
-  background-color: var(--base);
+  background-color: var(--page-default);
   border-right: 1px solid var(--slate5) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
@@ -7568,7 +7569,7 @@ tbody {
 
 .home-page-sidebar {
   max-width: 288px;
-  background-color: var(--base);
+  background-color: var(--page-default);
   border-right: 1px solid var(--slate5);
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -7987,6 +7988,7 @@ tbody {
 
 
 .tj-dashboard-section-header {
+  background-color: var(--page-default);
   max-width: 288px;
   max-height: 64px;
   padding-top: 20px;
@@ -8053,6 +8055,7 @@ tbody {
   border-radius: 6px;
 
   .react-select__control {
+    background-color: var(--page-default);
     border: none !important;
   }
 }
@@ -8114,7 +8117,7 @@ tbody {
 
 .home-page-footer {
   height: 52px;
-  background-color: var(--base) !important;
+  background-color: var(--page-default) !important;
   border-top: 1px solid var(--slate5) !important;
   width: calc(100% - 336px) !important;
 
@@ -8248,6 +8251,7 @@ tbody {
 }
 
 .home-page-content {
+  background-color: var(--page-default);
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
   position: relative;
@@ -8783,6 +8787,7 @@ tbody {
 }
 
 .tj-dashboard-header-wrap {
+  background-color: var(--page-default);
   padding-top: 22px;
   padding-bottom: 22px;
   padding-left: 40px;
@@ -11372,7 +11377,7 @@ tbody {
 }
 
 .profile-page-content-wrap {
-  background-color: var(--slate2);
+  background-color: var(--page-default);
   padding-top: 40px;
 }
 
@@ -12831,6 +12836,7 @@ tbody {
 }
 
 .workspace-constants-wrapper {
+  background-color: var(--page-default);
   height: calc(100vh - 64px);
   display: flex;
   align-items: center;

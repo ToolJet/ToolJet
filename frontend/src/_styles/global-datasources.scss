@@ -1,10 +1,10 @@
 @import "./typography.scss";
 @import "./designtheme.scss";
-
+@import "./componentdesign.scss";
 .global-datasources-sidebar {
     height: calc(100vh - 64px);
     max-width: 288px;
-    background: var(--base);
+    background: var(--page-default);
     display: grid;
     grid-template-rows: auto 1fr auto;
     border-right: 1px solid var(--slate5);
@@ -177,6 +177,7 @@
 }
 
 .datasource-list-container {
+    background-color: var(--page-default);
     overflow-y: auto;
     max-height: calc(100vh - 64px);
 
