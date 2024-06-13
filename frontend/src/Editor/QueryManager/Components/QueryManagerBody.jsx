@@ -50,9 +50,9 @@ export const QueryManagerBody = ({
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
 
   const queryName = selectedQuery?.name ?? '';
-  const sourceComponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
+  const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
-  const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourceComponentName];
+  const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
   const defaultOptions = useRef({});
 
@@ -89,10 +89,11 @@ export const QueryManagerBody = ({
   const validateNewOptions = (newOptions) => {
     const updatedOptions = cleanFocusedFields(newOptions);
     setOptions((options) => ({ ...options, ...updatedOptions }));
+
     updateDataQuery(cloneDeep({ ...options, ...updatedOptions }));
   };
 
-  const optionChanged = (option, value) => {
+  const optionchanged = (option, value) => {
     const newOptions = { ...options, [option]: value };
     validateNewOptions(newOptions);
   };
@@ -103,10 +104,9 @@ export const QueryManagerBody = ({
 
   const toggleOption = (option) => {
     const currentValue = selectedQuery?.options?.[option] ?? false;
-    optionChanged(option, !currentValue);
+    optionchanged(option, !currentValue);
   };
-
-  const optionsChangedForParams = (newOptions) => {
+  const optionsChangedforParmas = (newOptions) => {
     setOptions(newOptions);
     updateDataQuery(cloneDeep(newOptions));
   };
@@ -119,7 +119,7 @@ export const QueryManagerBody = ({
         ...prevOptions,
         parameters: [...(prevOptions?.parameters ?? []), newParameter],
       };
-      optionsChangedForParams(newOptions);
+      optionsChangedforParmas(newOptions);
     }
   };
 
@@ -129,27 +129,33 @@ export const QueryManagerBody = ({
     if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
       const updatedParameters = [...prevOptions.parameters];
       updatedParameters[index] = updatedParameter;
-      optionsChangedForParams({ ...prevOptions, parameters: updatedParameters });
+      optionsChangedforParmas({ ...prevOptions, parameters: updatedParameters });
     }
   };
 
   const handleParameterRemove = (index) => {
     const prevOptions = { ...options };
     const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChangedForParams({ ...prevOptions, parameters: updatedParameters });
+    optionsChangedforParmas({ ...prevOptions, parameters: updatedParameters });
   };
 
-  const renderDataSourcesList = () => (
-    <div className={cx('datasource-picker p-0', { disabled: isVersionReleased })}>
-      <DataSourcePicker
-        dataSources={dataSources}
-        staticDataSources={staticDataSources}
-        globalDataSources={globalDataSources}
-        sampleDataSource={sampleDataSource}
-        darkMode={darkMode}
-      />
-    </div>
-  );
+  const renderDataSourcesList = () => {
+    return (
+      <div
+        className={cx(`datasource-picker p-0`, {
+          'disabled ': isVersionReleased,
+        })}
+      >
+        <DataSourcePicker
+          dataSources={dataSources}
+          staticDataSources={staticDataSources}
+          globalDataSources={globalDataSources}
+          sampleDataSource={sampleDataSource}
+          darkMode={darkMode}
+        />
+      </div>
+    );
+  };
 
   const renderTransformation = () => {
     if (
@@ -157,10 +163,10 @@ export const QueryManagerBody = ({
       selectedDataSource?.kind === 'runjs' ||
       selectedDataSource?.kind === 'runpy'
     )
-      return null;
+      return;
     return (
       <Transformation
-        changeOption={optionChanged}
+        changeOption={optionchanged}
         options={options ?? {}}
         currentState={currentState}
         darkMode={darkMode}
@@ -173,33 +179,39 @@ export const QueryManagerBody = ({
     updateDataQuery(options);
   };
 
-  const renderQueryElement = () => (
-    <div className={cx({ disabled: isVersionReleased })}>
-      <ElementToRender
-        key={selectedQuery?.id}
-        pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
-        selectedDataSource={selectedDataSource}
-        options={selectedQuery?.options}
-        optionsChanged={optionsChanged}
-        optionChanged={optionChanged}
-        currentState={currentState}
-        darkMode={darkMode}
-        isEditMode={true} // Made TRUE always to avoid setting default options again
-        queryName={queryName}
-        onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
-      />
-    </div>
-  );
+  const renderQueryElement = () => {
+    return (
+      <div
+        className={cx({
+          'disabled ': isVersionReleased,
+        })}
+      >
+        <ElementToRender
+          key={selectedQuery?.id}
+          pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
+          selectedDataSource={selectedDataSource}
+          options={selectedQuery?.options}
+          optionsChanged={optionsChanged}
+          optionchanged={optionchanged}
+          currentState={currentState}
+          darkMode={darkMode}
+          isEditMode={true} // Made TRUE always to avoid setting default options again
+          queryName={queryName}
+          onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
+        />
+      </div>
+    );
+  };
 
   const renderEventManager = () => {
     const queryComponent = mockDataQueryAsComponent(options?.events || []);
     return (
       <div className="d-flex">
-        <div className="form-label">{t('editor.queryManager.eventsHandler', 'Events')}</div>
+        <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4">
           <EventManager
             sourceId={selectedQuery?.id}
-            eventSourceType="data_query"
+            eventSourceType="data_query" //check
             eventMetaDefinition={queryComponent.componentMeta}
             currentState={currentState}
             components={allComponents}
@@ -220,48 +232,52 @@ export const QueryManagerBody = ({
     );
   };
 
-  const renderQueryOptions = () => (
-    <div>
-      <div className={cx('d-flex pb-1', { disabled: isVersionReleased })}>
-        <div className="form-label">{t('editor.queryManager.settings', 'Triggers')}</div>
-        <div className="flex-grow-1">
-          {Object.keys(customToggles).map((toggle, index) => (
-            <CustomToggleFlag
-              {...customToggles[toggle]}
-              toggleOption={toggleOption}
-              value={selectedQuery?.options?.[customToggles[toggle]?.action]}
-              index={index}
-              key={toggle}
-              darkMode={darkMode}
-            />
-          ))}
+  const renderQueryOptions = () => {
+    return (
+      <div>
+        <div
+          className={cx(`d-flex pb-1`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
+          <div className="form-label">{t('editor.queryManager.settings', 'Triggers')}</div>
+          <div className="flex-grow-1">
+            {Object.keys(customToggles).map((toggle, index) => (
+              <CustomToggleFlag
+                {...customToggles[toggle]}
+                toggleOption={toggleOption}
+                value={selectedQuery?.options?.[customToggles[toggle]?.action]}
+                index={index}
+                key={toggle}
+                darkMode={darkMode}
+              />
+            ))}
+          </div>
         </div>
+        <div className="d-flex">
+          <div className="form-label">{}</div>
+          <SuccessNotificationInputs
+            currentState={currentState}
+            options={options}
+            darkMode={darkMode}
+            optionchanged={optionchanged}
+          />
+        </div>
+        {renderEventManager()}
       </div>
-      <div className="d-flex">
-        <div className="form-label" />
-        <SuccessNotificationInputs
-          currentState={currentState}
-          options={options}
-          darkMode={darkMode}
-          optionChanged={optionChanged}
-        />
-      </div>
-      {renderEventManager()}
-    </div>
-  );
+    );
+  };
 
   const renderChangeDataSource = () => {
     const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
       .filter(Boolean)
       .filter((ds) => ds.kind === selectedQuery?.kind);
-
     if (isEmpty(selectableDataSources)) {
-      return null;
+      return '';
     }
-
     return (
       <>
-        <div ref={paramListContainerRef}>
+        <div className="" ref={paramListContainerRef}>
           {selectedQuery && (
             <ParameterList
               parameters={options.parameters}
@@ -275,17 +291,21 @@ export const QueryManagerBody = ({
           )}
         </div>
         <div
-          className={cx('d-flex', { disabled: isVersionReleased })}
+          className={cx('d-flex', { 'disabled ': isVersionReleased })}
           style={{ marginBottom: '16px', marginTop: '12px' }}
         >
-          <div className="d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source">
+          <div
+            className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+          >
             Source
           </div>
           <div className="d-flex align-items-end" style={{ width: '364px' }}>
             <ChangeDataSource
               dataSources={selectableDataSources}
               value={selectedDataSource}
-              onChange={(newDataSource) => changeDataQuery(newDataSource)}
+              onChange={(newDataSource) => {
+                changeDataQuery(newDataSource);
+              }}
             />
           </div>
         </div>
@@ -293,22 +313,17 @@ export const QueryManagerBody = ({
     );
   };
 
-  if (selectedQueryId !== selectedQuery?.id) return null;
+  if (selectedQueryId !== selectedQuery?.id) return;
 
   return (
-    <div className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}>
-      {selectedQuery?.data_source_id && selectedDataSource && activeTab === 1 && renderChangeDataSource()}
+    <div className={` query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}>
+      {selectedQuery?.data_source_id && selectedDataSource !== null ? activeTab == 1 && renderChangeDataSource() : null}
+      {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : activeTab == 1 && renderQueryElement()}
+      {selectedDataSource === null || !selectedQuery
+        ? renderDataSourcesList()
+        : activeTab == 2 && renderTransformation()}
 
-      {!selectedDataSource || !selectedQuery ? (
-        renderDataSourcesList()
-      ) : (
-        <>
-          {activeTab === 1 && renderQueryElement()}
-          {activeTab === 2 && renderTransformation()}
-          {activeTab === 3 && renderQueryOptions()}
-        </>
-      )}
-
+      {selectedDataSource !== null ? activeTab == 3 && renderQueryOptions() : null}
       <Preview darkMode={darkMode} />
     </div>
   );
@@ -316,6 +331,7 @@ export const QueryManagerBody = ({
 
 const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggleOption, darkMode, index }) => {
   const [flag, setFlag] = useState(false);
+
   const { t } = useTranslation();
 
   useEffect(() => {
