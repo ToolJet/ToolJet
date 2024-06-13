@@ -186,6 +186,23 @@ export const QueryManagerBody = ({
           'disabled ': isVersionReleased,
         })}
       >
+        <div ref={paramListContainerRef} style={{ marginBottom: '16px' }}>
+          {selectedQuery &&
+            (selectedDataSource?.kind === 'runjs' ||
+              selectedDataSource?.kind === 'runpy' ||
+              selectedDataSource?.kind === 'tooljetdb' ||
+              (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
+              <ParameterList
+                parameters={options.parameters}
+                handleAddParameter={handleAddParameter}
+                handleParameterChange={handleParameterChange}
+                handleParameterRemove={handleParameterRemove}
+                currentState={currentState}
+                darkMode={darkMode}
+                containerRef={paramListContainerRef}
+              />
+            )}
+        </div>
         <ElementToRender
           key={selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
@@ -322,7 +339,6 @@ export const QueryManagerBody = ({
       {selectedDataSource === null || !selectedQuery
         ? renderDataSourcesList()
         : activeTab == 2 && renderTransformation()}
-
       {selectedDataSource !== null ? activeTab == 3 && renderQueryOptions() : null}
       <Preview darkMode={darkMode} />
     </div>
