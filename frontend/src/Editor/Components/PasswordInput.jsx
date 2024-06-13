@@ -108,11 +108,14 @@ export const PasswordInput = function PasswordInput({
   }, [label]);
 
   useEffect(() => {
-    if (labelRef?.current) {
-      const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
-      setLabelWidth(absolutewidth);
-    } else setLabelWidth(0);
-
+    // Adding a setTimeout to get the width of the label after the component is rendered
+    // Without setTimeout, the width of the label is not calculated properly on the first mount in editor
+    setTimeout(() => {
+      if (labelRef?.current) {
+        const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
+        setLabelWidth(absolutewidth);
+      } else setLabelWidth(0);
+    }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isResizing,
