@@ -4,19 +4,20 @@ import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
-import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import {
+  GROUP_PERMISSIONS_TYPE,
+  USER_ROLE,
+} from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { UserRoleService } from './user-role.service';
 import { validateDeleteGroupUserOperation } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 import { Organization } from 'src/entities/organization.entity';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -125,7 +126,13 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.userRoleService.addUserRole({ role, userId: user.id }, defaultOrganizationId || organizationId);
+      await this.userRoleService.addUserRole(
+        { role, userId: user.id },
+        defaultOrganizationId || organizationId,
+        manager
+      );
+      console.log('working till here');
+
       await this.attachUserGroup(groups, organizationId, user.id, manager);
     }, manager);
 
@@ -228,7 +235,6 @@ export class UsersService {
     }, manager);
   }
 
-  //TODO: Remove this function if not needed
   async throwErrorIfUserIsLastActiveAdmin(user: User, organizationId: string) {
     const result = await this.groupPermissionsUtilityService.getRoleUsersList(USER_ROLE.ADMIN, organizationId);
     const isAdmin = result.find((userItem) => userItem.id === user.id);
@@ -236,27 +242,22 @@ export class UsersService {
     if (isAdmin && result.length <= 2) throw new BadRequestException('Atleast one active admin is required');
   }
 
-  //TODO: Remove this function if not needed
-  async hasGroup(user: User, group: string, organizationId?: string, manager?: EntityManager): Promise<boolean> {
+  async hasGroup(user: User, role: USER_ROLE, organizationId?: string, manager?: EntityManager): Promise<boolean> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await manager
-        .createQueryBuilder(GroupPermission, 'group_permissions')
-        .innerJoin('group_permissions.userGroupPermission', 'user_group_permissions')
-        .where('group_permissions.organization_id = :organizationId', {
+        .createQueryBuilder(GroupPermissions, 'group_permissions')
+        .innerJoin('group_permissions.groupUsers', 'groupUsers')
+        .where('group_permissions.organizationId = :organizationId', {
           organizationId: organizationId || user.organizationId,
         })
-        .andWhere('group_permissions.group = :group ', { group })
-        .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
+        .andWhere('group_permissions.name = :role ', { role })
+        .andWhere('group_permissions.type = :type', { type: GROUP_PERMISSIONS_TYPE.DEFAULT })
+        .andWhere('groupUsers.userId = :userId', { userId: user.id })
         .getCount();
 
       return result > 0;
     }, manager);
   }
-
-  //Moving to ability servoce
-  //////////---------------------------------------------------------------
-
-  //----------_Till Here ------------------------------------------
 
   async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
     let app: App;
@@ -289,61 +290,5 @@ export class UsersService {
       }
       return avatar;
     });
-  }
-
-  /// Need to move to ability service with new logic
-  async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
-      const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
-
-      return await manager.findByIds(GroupPermission, groupIds);
-    }, manager);
-  }
-
-  //Move to group permissions
-  async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
-    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
-    const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
-
-    if (!groupIds || groupIds.length === 0) {
-      return [];
-    }
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const query = manager
-        .createQueryBuilder(AppGroupPermission, 'app_group_permissions')
-        .innerJoin(
-          'app_group_permissions.groupPermission',
-          'group_permissions',
-          'group_permissions.organization_id = :organizationId',
-          {
-            organizationId: user.organizationId,
-          }
-        )
-        .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
-
-      if (appId) {
-        query.andWhere('app_group_permissions.appId = :appId', { appId });
-      }
-      return await query.getMany();
-    }, manager);
-  }
-
-  // Move to group Permissions
-  async userGroupPermissions(
-    user: User,
-    organizationId?: string,
-    manager?: EntityManager
-  ): Promise<UserGroupPermission[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager
-        .createQueryBuilder(UserGroupPermission, 'user_group_permissions')
-        .innerJoin('user_group_permissions.groupPermission', 'group_permissions')
-        .where('group_permissions.organization_id = :organizationId', {
-          organizationId: organizationId || user.organizationId,
-        })
-        .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
-        .getMany();
-    }, manager);
   }
 }

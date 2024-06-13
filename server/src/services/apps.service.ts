@@ -14,7 +14,7 @@ import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
 import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
-import { viewableAppsQuery } from 'src/helpers/queries';
+import { viewableAppsQueryUsingPermissions } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -33,6 +33,8 @@ import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'sr
 import { isEmpty } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
+import { AbilityService } from './permissions-ability.service';
+import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 
 const uuid = require('uuid');
 
@@ -55,7 +57,8 @@ export class AppsService {
 
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService,
-    private appEnvironmentService: AppEnvironmentService
+    private appEnvironmentService: AppEnvironmentService,
+    private abilityService: AbilityService
   ) {}
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
@@ -226,7 +229,18 @@ export class AppsService {
 
   async count(user: User, searchKey): Promise<number> {
     //Migrate it to app module utility files
-    return await viewableAppsQuery(user, searchKey).getCount();
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      resources: [{ resource: TOOLJET_RESOURCE.APP }],
+      organizationId: user.organizationId,
+    });
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await viewableAppsQueryUsingPermissions(
+        user,
+        userPermission[TOOLJET_RESOURCE.APP],
+        manager,
+        searchKey
+      ).getCount();
+    });
   }
 
   getAppVersionsCount = async (appId: string) => {
@@ -237,16 +251,26 @@ export class AppsService {
 
   async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
     //Migrate it to app utility files
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      resources: [{ resource: TOOLJET_RESOURCE.APP }],
+      organizationId: user.organizationId,
+    });
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const viewableAppsQb = viewableAppsQueryUsingPermissions(
+        user,
+        userPermission[TOOLJET_RESOURCE.APP],
+        manager,
+        searchKey
+      );
 
-    if (page) {
-      return await viewableAppsQb
-        .take(9)
-        .skip(9 * (page - 1))
-        .getMany();
-    }
-
-    return await viewableAppsQb.getMany();
+      if (page) {
+        return await viewableAppsQb
+          .take(9)
+          .skip(9 * (page - 1))
+          .getMany();
+      }
+      return await viewableAppsQb.getMany();
+    });
   }
 
   async findAll(organizationId: string, searchParam): Promise<App[]> {

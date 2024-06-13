@@ -126,24 +126,15 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const canCreateVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return authenticationService.currentSessionValue.org_constant_crud;
   };
 
   const canUpdateVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_update',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return authenticationService.currentSessionValue.org_constant_crud;
   };
 
   const canDeleteVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_delete',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return authenticationService.currentSessionValue.org_constant_crud;
   };
 
   const fetchEnvironments = () => {

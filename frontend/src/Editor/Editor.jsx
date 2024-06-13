@@ -237,7 +237,7 @@ const EditorComponent = (props) => {
           email: currentUser.email,
           firstName: currentUser.first_name,
           lastName: currentUser.last_name,
-          groups: currentSession.group_permissions?.map((group) => group.group),
+          groups: currentSession.group_permissions?.map((group) => group.name),
         };
 
         const appUserDetails = {

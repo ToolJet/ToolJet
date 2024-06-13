@@ -19,6 +19,7 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
     viewableAppsId: [],
     isAllViewable: false,
     hiddenAppsId: [],
+    hideAll: false,
   },
 };
 
@@ -28,4 +29,5 @@ export const DEFAULT_USER_APPS_PERMISSIONS: UserAppsPermissions = {
   viewableAppsId: [],
   isAllViewable: false,
   hiddenAppsId: [],
+  hideAll: false,
 };

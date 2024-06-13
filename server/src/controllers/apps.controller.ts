@@ -284,8 +284,9 @@ export class AppsController {
 
     if (folderId) {
       const folder = await this.foldersService.findOne(folderId);
-      apps = await this.foldersService.getAppsFor(user, folder, page, searchKey);
-      totalFolderCount = await this.foldersService.userAppCount(user, folder, searchKey);
+      const { viewableApps, totalCount } = await this.foldersService.getAppsFor(user, folder, page, searchKey);
+      apps = viewableApps;
+      totalFolderCount = totalCount;
     } else {
       apps = await this.appsService.all(user, page, searchKey);
     }

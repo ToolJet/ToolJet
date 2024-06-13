@@ -35,6 +35,9 @@ export class AbilityService {
     user: User,
     resourcePermissionsObject: ResourcePermissionQueryObject
   ): Promise<UserPermissions> {
+    console.log('logging resource object');
+    console.log(resourcePermissionsObject);
+
     const permissions = await this.getResourcePermission(user, resourcePermissionsObject);
     const adminGroup = permissions.find((group) => group.name === USER_ROLE.ADMIN);
     const appsGranularPermissions = permissions.flatMap((item) => item.groupGranularPermissions);
@@ -75,6 +78,7 @@ export class AbilityService {
         hiddenAppsId: Array.from(
           new Set([...acc.hiddenAppsId, ...(appsPermission?.hideFromDashboard ? groupApps : [])])
         ),
+        hideAll: acc.hideAll || (appsPermission.hideFromDashboard && permission.isAll),
       };
     }, DEFAULT_USER_APPS_PERMISSIONS);
     return userAppsPermissions;

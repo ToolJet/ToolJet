@@ -1,8 +1,9 @@
+import { UserAppsPermissions } from '@module/permissions/interface/permissions-ability.interface';
 import { AppBase } from 'src/entities/app_base.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { User } from 'src/entities/user.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { Brackets, createQueryBuilder, SelectQueryBuilder } from 'typeorm';
+import { Brackets, createQueryBuilder, EntityManager, SelectQueryBuilder } from 'typeorm';
 
 //Need to change this based on new group permissions
 export function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): SelectQueryBuilder<AppBase> {
@@ -48,25 +49,50 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
   return viewableAppsQb;
 }
 
-export function getFolderQuery(
-  getAllFolders: boolean,
-  allViewableAppIds: Array<string>,
-  organizationId: string
-): SelectQueryBuilder<Folder> {
-  const query = createQueryBuilder(Folder, 'folders');
-  if (getAllFolders) {
-    query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.app_id IN(:...allViewableAppIds)', {
-      allViewableAppIds: [null, ...allViewableAppIds],
-    });
-  } else {
-    query.innerJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.app_id IN(:...allViewableAppIds)', {
-      allViewableAppIds: [null, ...allViewableAppIds],
-    });
-  }
-  query
+export function getFolderQuery(organizationId: string, searchKey?: string): SelectQueryBuilder<Folder> {
+  const query = createQueryBuilder(Folder, 'folders')
+    .innerJoinAndSelect('folders.folderApps', 'folder_apps')
+    .innerJoin('folder_apps.app', 'app', 'LOWER(app.name) like :searchKey', {
+      searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+    })
     .andWhere('folders.organization_id = :organizationId', {
       organizationId,
     })
     .orderBy('folders.name', 'ASC');
   return query;
+}
+
+export function viewableAppsQueryUsingPermissions(
+  user: User,
+  userAppPermissions: UserAppsPermissions,
+  manager: EntityManager,
+  searchKey?: string,
+  select?: Array<string>
+): SelectQueryBuilder<AppBase> {
+  const viewableApps = [
+    null,
+    ...Array.from(
+      new Set(
+        [...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId].filter(
+          (id) => !userAppPermissions.hiddenAppsId.includes(id)
+        )
+      )
+    ),
+  ];
+
+  const viewableAppsQb = createQueryBuilder(AppBase, 'viewable_apps')
+    .innerJoin('viewable_apps.user', 'user')
+    .addSelect(['user.firstName', 'user.lastName'])
+    .where('viewable_apps.organization_id = :organizationId', { organizationId: user.organizationId });
+
+  if (select) {
+    viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));
+  }
+
+  if (!userAppPermissions.hideAll && !(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
+    viewableAppsQb.where('viewable_apps IN (:...viewableApps)', {
+      viewableApps,
+    });
+  }
+  return viewableAppsQb;
 }

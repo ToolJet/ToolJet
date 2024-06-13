@@ -121,6 +121,8 @@ export class OrganizationsService {
 
       if (user) {
         await this.organizationUserService.create(user, organization, false, manager);
+        console.log('yes this is running');
+
         await this.userRoleService.addUserRole({ role: USER_ROLE.ADMIN, userId: user.id }, organization.id, manager);
       }
     }, manager);

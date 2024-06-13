@@ -53,11 +53,12 @@ export class AppsAbilityFactory {
       ...(id && { resources: [{ resource: TOOLJET_RESOURCE.APP, resourceId: id }] }),
     });
     const userAppPermissions = userPermission?.App;
-    const appUpdateAllowed =
-      (userAppPermissions && userAppPermissions.isAllEditable) || userAppPermissions.editableAppsId.includes(id);
-    const appViewAllowed =
-      userAppPermissions &&
-      (appUpdateAllowed || userAppPermissions.isAllViewable || userAppPermissions.viewableAppsId.includes(id));
+    const appUpdateAllowed = userAppPermissions
+      ? userAppPermissions.isAllEditable || userAppPermissions.editableAppsId.includes(id)
+      : false;
+    const appViewAllowed = userAppPermissions
+      ? appUpdateAllowed || userAppPermissions.isAllViewable || userAppPermissions.viewableAppsId.includes(id)
+      : false;
 
     //For app users.
     if (userPermission.appCreate) {

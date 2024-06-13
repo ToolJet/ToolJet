@@ -1,4 +1,4 @@
-import { Brackets, EntityManager, SelectQueryBuilder, createQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { USER_ROLE, GROUP_PERMISSIONS_TYPE } from '../constants/group-permissions.constant';
 import { User } from 'src/entities/user.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
@@ -110,8 +110,13 @@ export function validateAddGroupUserOperation(group: GroupPermissions) {
     throw new MethodNotAllowedException(ERROR_HANDLER.ADD_GROUP_USER_DEFAULT_GROUP);
 }
 
-export function getAllUserGroupsQuery(userId: string, organizationId: string): SelectQueryBuilder<GroupPermissions> {
-  const query = createQueryBuilder(GroupPermissions, 'groups')
+export function getAllUserGroupsQuery(
+  userId: string,
+  organizationId: string,
+  manager: EntityManager
+): SelectQueryBuilder<GroupPermissions> {
+  const query = manager
+    .createQueryBuilder(GroupPermissions, 'groups')
     .innerJoinAndSelect('groups.groupUsers', 'groupUsers', 'groups.organizationId = :organizationId', {
       organizationId,
     })

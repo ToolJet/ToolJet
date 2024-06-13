@@ -50,6 +50,9 @@ import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dt
 import { AppAuthenticationDto, AppSignupDto } from '@dto/app-authentication.dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
 import { UserRoleService } from './user-role.service';
+import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
+import { AbilityService } from './permissions-ability.service';
+import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -68,7 +71,9 @@ export class AuthService {
     private metadataService: MetadataService,
     private configService: ConfigService,
     private sessionService: SessionService,
-    private userRoleService: UserRoleService
+    private userRoleService: UserRoleService,
+    private groupPermissionsService: GroupPermissionsServiceV2,
+    private abilityService: AbilityService
   ) {}
 
   verifyToken(token: string) {
@@ -225,15 +230,22 @@ export class AuthService {
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
       const organization = await this.organizationsService.get(user.organizationId);
-
+      const permissions = await this.groupPermissionsService.getAllUserGroups(user.id, user.organizationId);
+      const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+        organizationId: user.organizationId,
+        resources: [{ resource: TOOLJET_RESOURCE.APP }],
+      });
+      const appGroupPermissions = userPermissions?.[TOOLJET_RESOURCE.APP];
+      delete userPermissions?.[TOOLJET_RESOURCE.APP];
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
         //Check this for permissions.........
         currentOrganizationName: organization.name,
-        admin: await this.usersService.hasGroup(user, 'admin', null, manager),
-        groupPermissions: await this.usersService.groupPermissions(user, manager),
-        appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        admin: await this.usersService.hasGroup(user, USER_ROLE.ADMIN, null, manager),
+        userPermissions: userPermissions,
+        groupPermissions: permissions,
+        appGroupPermissions: appGroupPermissions,
         currentUser: {
           id: user.id,
           email: user.email,
@@ -692,6 +704,7 @@ export class AuthService {
         null,
         manager
       );
+
       const user = await this.usersService.create(
         {
           email,
@@ -712,6 +725,7 @@ export class AuthService {
         null,
         manager
       );
+
       await this.organizationUsersService.create(user, organization, false, manager);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });

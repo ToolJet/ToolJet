@@ -37,6 +37,7 @@ export interface UserAppsPermissions {
   viewableAppsId: string[];
   isAllViewable: boolean;
   hiddenAppsId: string[];
+  hideAll: boolean;
 }
 
 export type ResourceAction =

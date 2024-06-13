@@ -29,8 +29,9 @@ export class CommentsAbilityFactory {
       ...(id && { resources: [{ resource: TOOLJET_RESOURCE.APP, resourceId: id }] }),
     });
     const userAppPermissions = userPermission?.App;
-    const appUpdateAllowed =
-      (userAppPermissions && userAppPermissions.isAllEditable) || userAppPermissions.editableAppsId.includes(id);
+    const appUpdateAllowed = userAppPermissions
+      ? userAppPermissions.isAllEditable || userAppPermissions.editableAppsId.includes(id)
+      : false;
 
     if (appUpdateAllowed) {
       can(COMMENT_RESOURCE_ACTION.CREATE, Comment, { organizationId: user.organizationId });

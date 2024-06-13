@@ -144,8 +144,10 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async getAllUserGroups(userId: string, organizationId: string): Promise<GroupPermissions[]> {
-    return await getAllUserGroupsQuery(userId, organizationId).getMany();
+  async getAllUserGroups(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await getAllUserGroupsQuery(userId, organizationId, manager).getMany();
+    }, manager);
   }
 
   async deleteGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
