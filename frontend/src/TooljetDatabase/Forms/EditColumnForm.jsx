@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
@@ -10,6 +10,7 @@ import tjdbDropdownStyles, {
   serialDataType,
   getColumnDataType,
   renderDatatypeIcon,
+  tzStrings,
 } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
@@ -25,6 +26,8 @@ import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Skeleton from 'react-loading-skeleton';
+import Tick from '@/_ui/Icon/bulkIcons/Tick';
+import DateTimePicker from '@/_components/DateTimePicker';
 
 const ColumnForm = ({
   onClose,
@@ -68,6 +71,9 @@ const ColumnForm = ({
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
+  const [timezone, setTimezone] = useState('Asia/Amman');
+  const isTimestamp = dataType === 'timestamp with time zone';
+  const { Option } = components;
 
   //  this is for DropDownDetails component which is react select
   const [foreignKeyDefaultValue, setForeignKeyDefaultValue] = useState(() => {
@@ -187,6 +193,25 @@ const ColumnForm = ({
   const lightBorder = '#dadcde';
   const darkBorder = '#3a3f42 !important';
   const dropdownContainerWidth = '360px';
+
+  const CustomSelectOption = (props) => (
+    <Option {...props}>
+      <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center justify-content-start">
+          <div>{props.data.icon}</div>
+          <span className="dataType-dropdown-label">{props.data.label}</span>
+          <span className="dataType-dropdown-value">{props.data.name}</span>
+        </div>
+        <div>
+          {dataType?.value === props.data.value ? (
+            <div>
+              <Tick width="16" height="16" />
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </Option>
+  );
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -506,6 +531,26 @@ const ColumnForm = ({
               </div>
             </ToolTip>
           </div>
+          {isTimestamp && (
+            <div
+              className="column-datatype-selector mb-3 data-type-dropdown-section"
+              data-cy="timezone-type-dropdown-section"
+            >
+              <div className="form-label" data-cy="data-type-input-field-label">
+                Display time
+              </div>
+              <Select
+                //useMenuPortal={false}
+                placeholder="Select Timezone"
+                value={timezone}
+                formatOptionLabel={formatOptionLabel}
+                options={tzStrings}
+                onChange={setTimezone}
+                components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
+                styles={customStyles}
+              />
+            </div>
+          )}
 
           <div className="mb-3 tj-app-input">
             <div className="form-label" data-cy="default-value-input-field-label">
@@ -518,7 +563,9 @@ const ColumnForm = ({
               show={selectedColumn?.dataType === 'serial'}
             >
               <div>
-                {!isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
+                {isTimestamp ? (
+                  <DateTimePicker timestamp={defaultValue} setTimestamp={setDefaultValue} />
+                ) : !isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
                   <input
                     value={selectedColumn?.dataType !== 'serial' ? defaultValue : null}
                     type="text"

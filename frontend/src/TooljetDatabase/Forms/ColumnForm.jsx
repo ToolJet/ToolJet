@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, tzStrings } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import Tick from '../Icons/Tick.svg';
@@ -18,6 +18,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/_components/DateTimePicker';
 
 const ColumnForm = ({
   onCreate,
@@ -31,6 +32,7 @@ const ColumnForm = ({
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
+  const [timezone, setTimezone] = useState('Asia/Amman');
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
   const [onDeletePopup, setOnDeletePopup] = useState(false);
@@ -50,6 +52,8 @@ const ColumnForm = ({
     value: '',
     label: '',
   });
+  const isTimestamp = dataType?.value === 'timestamp with time zone';
+  console.log(timezone, 'timezone');
 
   const [foreignKeyDetails, setForeignKeyDetails] = useState({
     column_names: [],
@@ -264,6 +268,26 @@ const ColumnForm = ({
             styles={customStyles}
           />
         </div>
+        {isTimestamp && (
+          <div
+            className="column-datatype-selector mb-3 data-type-dropdown-section"
+            data-cy="timezone-type-dropdown-section"
+          >
+            <div className="form-label" data-cy="data-type-input-field-label">
+              Display time
+            </div>
+            <Select
+              //useMenuPortal={false}
+              placeholder="Select Timezone"
+              value={timezone}
+              formatOptionLabel={formatOptionLabel}
+              options={tzStrings}
+              onChange={setTimezone}
+              components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
+              styles={customStyles}
+            />
+          </div>
+        )}
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="default-value-input-field-label">
             Default value
@@ -275,7 +299,9 @@ const ColumnForm = ({
             show={dataType === 'serial'}
           >
             <div>
-              {!foreignKeyDetails?.length > 0 && !isForeignKey ? (
+              {isTimestamp ? (
+                <DateTimePicker timestamp={defaultValue} setTimestamp={setDefaultValue} />
+              ) : !foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input
                   value={defaultValue}
                   type="text"

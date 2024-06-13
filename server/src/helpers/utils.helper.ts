@@ -67,6 +67,16 @@ export function sanitizeInput(value: string) {
   });
 }
 
+export function formatTimestamp(value: any, params: any) {
+  const { data_type } = params;
+  if (data_type === 'timestamp with time zone') {
+    let formattedTimestamp = value.split('.')[0].split('T').join(' ') + '+00';
+    formattedTimestamp = `'${formattedTimestamp}'`;
+    return formattedTimestamp;
+  }
+  return value;
+}
+
 export function lowercaseString(value: string) {
   return value?.toLowerCase()?.trim();
 }
