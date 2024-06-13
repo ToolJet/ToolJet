@@ -25,6 +25,9 @@ export const useQueryPanelStore = create(
               return { selectedQuery: null };
             }
             const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+            if (query && query.options) {
+              query.options = { retryOnNetworkError: true, ...query.options };
+            }
             return { selectedQuery: query };
           });
         },

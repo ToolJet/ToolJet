@@ -278,7 +278,17 @@ export const QueryManagerBody = ({
   );
 };
 
-const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggleOption, darkMode, index }) => {
+const CustomToggleFlag = ({
+  dataCy,
+  action,
+  translatedLabel,
+  label,
+  subLabel,
+  value,
+  toggleOption,
+  darkMode,
+  index,
+}) => {
   const [flag, setFlag] = useState(false);
 
   const { t } = useTranslation();
@@ -288,7 +298,7 @@ const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggl
   }, [value]);
 
   return (
-    <div className={cx({ 'pb-3 pt-3': index === 1 })}>
+    <div className="query-manager-settings-toggles">
       <CustomToggleSwitch
         dataCy={dataCy}
         isChecked={flag}
@@ -299,6 +309,7 @@ const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggl
         action={action}
         darkMode={darkMode}
         label={t(translatedLabel, label)}
+        subLabel={subLabel}
       />
     </div>
   );
