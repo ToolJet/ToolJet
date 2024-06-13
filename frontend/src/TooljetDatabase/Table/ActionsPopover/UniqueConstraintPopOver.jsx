@@ -5,6 +5,8 @@ import Popover from 'react-bootstrap/Popover';
 import DeleteIcon from '../../Icons/DeleteIcon.svg';
 import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import Select, { components } from 'react-select';
+import { formatOptionLabel, tzStrings } from '@/TooljetDatabase/constants';
 // eslint-disable-next-line no-unused-vars
 export const UniqueConstraintPopOver = ({
   disabled,
@@ -16,10 +18,25 @@ export const UniqueConstraintPopOver = ({
   index,
   isEditMode,
 }) => {
+  const [timezone, setTimezone] = React.useState(null);
   if (disabled) return children;
   const toolTipPlacementStyle = {
     width: '126px',
   };
+
+  const { Option } = components;
+
+  const CustomSelectOption = (props) => (
+    <Option {...props}>
+      <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center justify-content-start">
+          <div>{props.data.icon}</div>
+          <span className="dataType-dropdown-label">{props.data.label}</span>
+          <span className="dataType-dropdown-value">{props.data.name}</span>
+        </div>
+      </div>
+    </Option>
+  );
 
   const showUniqueConstraintInfo = () => {
     const numberOfPrimaryKeys = Object.values(columns).reduce((count, column) => {
@@ -44,6 +61,25 @@ export const UniqueConstraintPopOver = ({
             </div>
           )}
           <div className="column-popover row cursor-pointer p-1">
+            {columns[index]?.data_type === 'timestamp with time zone' && (
+              <div
+                className="column-datatype-selector mb-3 data-type-dropdown-section"
+                data-cy="timezone-type-dropdown-section"
+              >
+                <div className="form-label" data-cy="data-type-input-field-label">
+                  Display time
+                </div>
+                <Select
+                  //useMenuPortal={false}
+                  placeholder="Select Timezone"
+                  value={timezone}
+                  formatOptionLabel={formatOptionLabel}
+                  options={tzStrings}
+                  onChange={setTimezone}
+                  components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
+                />
+              </div>
+            )}
             <ToolTip
               message={
                 columns[index]?.constraints_type?.is_primary_key === true
@@ -90,6 +126,7 @@ export const UniqueConstraintPopOver = ({
                     }
                   />
                 </label>
+
                 <div>
                   <div className="tj-text-xsm unique-tag">
                     {columns[index]?.constraints_type?.is_primary_key || columns[index]?.constraints_type?.is_unique

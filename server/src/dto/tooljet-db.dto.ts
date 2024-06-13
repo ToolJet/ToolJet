@@ -195,7 +195,7 @@ export class PostgrestTableColumnDto {
   @Validate(SQLInjectionValidator)
   data_type: string;
 
-  // @IsOptional()
+  @IsOptional()
   @Transform(({ value, obj }) => {
     const sanitizedValue = sanitizeInput(value);
     const transformedData = formatTimestamp(sanitizedValue, obj);
