@@ -85,41 +85,40 @@ export class UserRoleService {
   ): Promise<void> {
     const { newRole, userId } = editRoleDto;
     console.log('Edit role update');
-    const userRole = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId);
-    if (!userRole) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
-    const userGroup = userRole.groupUsers[0];
-    if (userRole.name == newRole)
-      throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
-
-    if (userRole.name == USER_ROLE.ADMIN) {
-      const groupUsers = await this.groupPermissionsService.getAllGroupUsers(userRole.id);
-      console.log(groupUsers);
-
-      if (groupUsers.length < 2) throw new BadRequestException(ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED);
-    }
-    if (newRole == USER_ROLE.END_USER) {
-      const userCreatedApps = await manager.find(App, {
-        where: {
-          userId: userId,
-        },
-      });
-      if (userCreatedApps.length > 0) {
-        const user = await manager.findOne(User, userGroup.userId);
-        throw new BadRequestException({
-          message: {
-            error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),
-            data: userCreatedApps.map((app) => app.name),
-            title: 'Can not change user role',
-          },
-        });
-      }
-    }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const userRole = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId);
+      if (!userRole) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
+      const userGroup = userRole.groupUsers[0];
+      if (userRole.name == newRole)
+        throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
+
+      if (userRole.name == USER_ROLE.ADMIN) {
+        const groupUsers = await this.groupPermissionsService.getAllGroupUsers(userRole.id, null, manager);
+        console.log(groupUsers);
+
+        if (groupUsers.length < 2) throw new BadRequestException(ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED);
+      }
+      if (newRole == USER_ROLE.END_USER) {
+        const userCreatedApps = await manager.find(App, {
+          where: {
+            userId: userId,
+          },
+        });
+        if (userCreatedApps.length > 0) {
+          const user = await manager.findOne(User, userGroup.userId);
+          throw new BadRequestException({
+            message: {
+              error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),
+              data: userCreatedApps.map((app) => app.name),
+              title: 'Can not change user role',
+            },
+          });
+        }
+      }
       await this.groupPermissionsService.deleteGroupUser(userGroup.id, manager);
       if (newRole == USER_ROLE.END_USER) {
         const userGroups = await this.groupPermissionsService.getAllUserGroups(userId, organizationId);
-        console.log(userGroups);
 
         for (const customUserGroup of userGroups) {
           const editPermissionsPresent = Object.values(customUserGroup).some(

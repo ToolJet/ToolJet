@@ -299,11 +299,11 @@ class HomePageComponent extends React.Component {
     const userPermissions = currentSession.user_permissions;
     const appPermission = currentSession.app_group_permissions;
     const canUpdateApp =
-      appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.include(app?.id));
+      appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.includes(app?.id));
     const canReadApp =
       (appPermission && canUpdateApp) ||
       appPermission.is_all_viewable ||
-      appPermission.viewable_apps_id.include(app?.id);
+      appPermission.viewable_apps_id.includes(app?.id);
     let permissionGrant;
 
     switch (action) {
