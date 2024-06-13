@@ -188,6 +188,14 @@
           "type": "react-component-headers",
           "description": "key-value pair headers for rest api"
         },
+        "retry_toggle": {
+          "text": "Retry on network errors",
+          "subtext": "By default, ToolJet tries to hit API endpoint 3 times before declaring query failed as server did not respond",
+          "key": "retry_toggle",
+          "type": "rest-api-toggle",
+          "description": "key-value pair headers for rest api",
+          "checked": true
+        },
         "auth_type": {
           "label": "Authentication Type",
           "key": "auth_type",

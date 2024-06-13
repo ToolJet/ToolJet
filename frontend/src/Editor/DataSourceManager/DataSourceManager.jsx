@@ -37,12 +37,12 @@ class DataSourceManagerComponent extends React.Component {
     let selectedDataSource = null;
     let dataSourceSchema = null;
     let selectedDataSourceIcon = null;
-    let options = {};
+    let options = { retry_toggle: { value: true } };
     let dataSourceMeta = {};
     let datasourceName = '';
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
-      options = selectedDataSource.options;
+      options = { ...selectedDataSource.options, retry_toggle: { value: true } };
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
       dataSourceSchema = props.selectedDataSource?.plugin?.manifestFile?.data;
       selectedDataSourceIcon = props.selectDataSource?.plugin?.iconFile.data;
@@ -99,7 +99,7 @@ class DataSourceManagerComponent extends React.Component {
       let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
-        options: this.props.selectedDataSource?.options,
+        options: { ...this.props.selectedDataSource?.options, retry_toggle: { value: true } },
         dataSourceMeta,
         dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
