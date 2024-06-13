@@ -174,7 +174,7 @@ export class OrganizationsService {
       organizationId
     );
     const oidcIncluded = licenseDetails[LICENSE_FIELD.OIDC];
-    const isBasicPlan = licenseDetails[LICENSE_FIELD.VALID];
+    const isBasicPlan = !licenseDetails[LICENSE_FIELD.VALID];
     const ssoConfigs = await this.getInstanceSSOConfigs();
     const enableSignUp = await this.instanceSettingsService.getSettings(INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP);
 
@@ -580,7 +580,7 @@ export class OrganizationsService {
       result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
     }
     const ssoConfigs = await this.getInstanceSSOConfigs(false);
-    const isBasicPlan = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const isBasicPlan = !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID));
     const isEnableWorkspaceLoginConfiguration =
       (await this.instanceSettingsService.getSettings(
         INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION
@@ -686,7 +686,7 @@ export class OrganizationsService {
       [LICENSE_FIELD.OIDC, LICENSE_FIELD.LDAP, LICENSE_FIELD.SAML, LICENSE_FIELD.VALID],
       organizationId
     );
-    const isBasicPlan = licenseTerms[LICENSE_FIELD.VALID];
+    const isBasicPlan = !licenseTerms[LICENSE_FIELD.VALID];
 
     ssoConfigs.map((config) => {
       const copiedConfig = config;
