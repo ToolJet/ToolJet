@@ -14,7 +14,7 @@ const CustomOption = (props) => {
           </span>
         )}
         <span style={{ color: props.isDisabled ? '#889096' : 'unset', wordBreak: 'break-all' }}>
-          {highlightText(props.label, props.selectProps.searchInputValue)}
+          {highlightText(props.label, props.selectProps.inputValue)}
         </span>
       </div>
     </components.Option>

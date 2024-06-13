@@ -12,7 +12,6 @@ const { MenuList } = components;
 const CustomMenuList = ({ selectProps, ...props }) => {
   const {
     onInputChange,
-    searchInputValue,
     onMenuInputFocus,
     showAllOption,
     isSelectAllSelected,
@@ -21,6 +20,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     setSelected,
     setIsSelectAllSelected,
     fireEvent,
+    inputValue,
   } = selectProps;
 
   const handleSelectAll = (e) => {
@@ -46,7 +46,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           autoComplete="off"
           spellCheck="false"
           type="text"
-          value={searchInputValue}
+          value={inputValue}
           onChange={(e) =>
             onInputChange(e.currentTarget.value, {
               action: 'input-change',

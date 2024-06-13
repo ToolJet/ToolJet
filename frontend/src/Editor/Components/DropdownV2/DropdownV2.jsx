@@ -404,6 +404,7 @@ export const DropdownV2 = ({
             styles={customStyles}
             isLoading={isDropdownLoading}
             onInputChange={onSearchTextChange}
+            inputValue={searchInputValue}
             onFocus={() => {
               fireEvent('onFocus');
             }}
@@ -432,8 +433,6 @@ export const DropdownV2 = ({
             iconColor={iconColor}
             isSearchable={false}
             darkMode={darkMode}
-            searchInputValue={searchInputValue}
-            setSearchInputValue={setSearchInputValue}
             optionsLoadingState={properties.optionsLoadingState}
           />
         </div>

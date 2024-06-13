@@ -402,6 +402,7 @@ export const MultiselectV2 = ({
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
             onInputChange={onSearchTextChange}
+            inputValue={searchInputValue}
             menuIsOpen={isMultiselectOpen}
             placeholder={placeholder}
             components={{
@@ -430,7 +431,6 @@ export const MultiselectV2 = ({
             setSelected={setSelected}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState}
-            searchInputValue={searchInputValue}
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
           />
