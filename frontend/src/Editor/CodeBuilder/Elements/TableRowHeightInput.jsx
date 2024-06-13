@@ -9,6 +9,12 @@ const TableRowHeightInput = ({ value, onChange, cyLabel, staticText, styleDefini
     setInputValue(value < minValue ? minValue : value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, styleDefinition.cellSize?.value]);
+  useEffect(() => {
+    onChange(
+      styleDefinition.cellSize?.value === 'condensed' ? MIN_TABLE_ROW_HEIGHT_CONDENSED : MIN_TABLE_ROW_HEIGHT_DEFAULT
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const minValue =
     styleDefinition.cellSize?.value === 'condensed' ? MIN_TABLE_ROW_HEIGHT_CONDENSED : MIN_TABLE_ROW_HEIGHT_DEFAULT;

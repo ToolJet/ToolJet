@@ -347,6 +347,7 @@ export const tableConfig = {
     },
     maxRowHeightValue: {
       type: 'tableRowHeightInput',
+      isFxNotRequired: true,
       showLabel: false,
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
