@@ -109,6 +109,8 @@ export class UsersService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       if (!existingUser) {
+        console.log('creating exisitng user');
+
         user = manager.create(User, {
           email,
           firstName,
@@ -126,12 +128,14 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.userRoleService.addUserRole(
-        { role, userId: user.id },
-        defaultOrganizationId || organizationId,
-        manager
-      );
-      console.log('working till here');
+      if (defaultOrganizationId) {
+        await this.userRoleService.addUserRole(
+          { role: USER_ROLE.ADMIN, userId: user.id },
+          defaultOrganizationId,
+          manager
+        );
+      }
+      await this.userRoleService.addUserRole({ role, userId: user.id }, organizationId, manager);
 
       await this.attachUserGroup(groups, organizationId, user.id, manager);
     }, manager);

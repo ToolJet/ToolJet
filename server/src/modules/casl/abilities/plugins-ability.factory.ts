@@ -1,7 +1,6 @@
 import { User } from 'src/entities/user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from 'src/services/users.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { AbilityService } from '@services/permissions-ability.service';
 import { PLUGIN_RESOURCE_ACTION } from 'src/constants/global.constant';
@@ -14,7 +13,7 @@ export type PluginsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class PluginsAbilityFactory {
-  constructor(private usersService: UsersService, private abilityService: AbilityService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async pluginActions(user: User) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<PluginsAbility>);

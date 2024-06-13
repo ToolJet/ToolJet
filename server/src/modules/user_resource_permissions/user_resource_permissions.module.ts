@@ -4,10 +4,11 @@ import { GroupPermissionsServiceV2 } from '@services/group_permissions.service.v
 import { GranularPermissionsService } from '@services/granular_permissions.service';
 import { UserRoleService } from '@services/user-role.service';
 import { GroupPermissionsUtilityService } from './services/group-permissions.utility.service';
+import { CaslModule } from '@module/casl/casl.module';
 
 @Module({
   controllers: [GroupPermissionsControllerV2],
-  imports: [],
+  imports: [CaslModule],
   exports: [UserRoleService, GroupPermissionsServiceV2, GroupPermissionsUtilityService],
   providers: [GroupPermissionsServiceV2, GranularPermissionsService, UserRoleService, GroupPermissionsUtilityService],
 })

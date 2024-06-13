@@ -573,11 +573,15 @@ export class OrganizationsService {
       ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
     //TODO: Need to add single role as option and same need to be changed on frontend
+    console.log('invite user');
+    console.log(inviteNewUserDto);
+
     const groups = inviteNewUserDto?.groups;
     const role = inviteNewUserDto.role;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
+      console.log(user);
 
       if (user?.status === USER_STATUS.ARCHIVED) {
         throw new BadRequestException(getUserErrorMessages(user.status));
@@ -608,11 +612,12 @@ export class OrganizationsService {
         // User not setup
         shouldSendWelcomeMail = true;
       }
+      console.log('default organization');
+      console.log(defaultOrganization);
 
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
-        //TODO: Need to add it as single group
         role,
         groups,
         user,
@@ -620,6 +625,8 @@ export class OrganizationsService {
         defaultOrganization?.id,
         manager
       );
+
+      console.log('loggin users');
 
       if (defaultOrganization) {
         // Setting up default organization

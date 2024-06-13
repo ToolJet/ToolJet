@@ -2,7 +2,6 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '@services/users.service';
 import { ORGANIZATION_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 import { AbilityService } from '@services/permissions-ability.service';
 
@@ -21,7 +20,7 @@ export type AppAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  constructor(private usersService: UsersService, private abilityService: AbilityService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async organizationUserActions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppAbility>);

@@ -1,7 +1,6 @@
 import { User } from 'src/entities/user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from 'src/services/users.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { AbilityService } from '@services/permissions-ability.service';
 import { GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS } from 'src/constants/global.constant';
@@ -19,7 +18,7 @@ export type GlobalDataSourcesAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class GlobalDataSourceAbilityFactory {
-  constructor(private usersService: UsersService, private abilityService: AbilityService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async globalDataSourceActions(user: User) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(

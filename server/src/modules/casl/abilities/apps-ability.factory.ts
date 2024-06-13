@@ -3,7 +3,6 @@ import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectTyp
 import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { UsersService } from 'src/services/users.service';
 import { AbilityService } from '@services/permissions-ability.service';
 import { APP_RESOURCE_ACTIONS, TOOLJET_RESOURCE } from 'src/constants/global.constant';
 
@@ -41,7 +40,7 @@ export type AppsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class AppsAbilityFactory {
-  constructor(private usersService: UsersService, private abilityService: AbilityService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async appsActions(user: User, id?: string) {
     const { can, build } = new AbilityBuilder<Ability<[Actions | APP_RESOURCE_ACTIONS, Subjects]>>(

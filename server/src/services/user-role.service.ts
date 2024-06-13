@@ -50,13 +50,17 @@ export class UserRoleService {
           DEFAULT_RESOURCE_PERMISSIONS[group.name];
         for (const resource of Object.keys(groupGranularPermissions)) {
           const createResourcePermissionObj: CreateResourcePermissionObject = groupGranularPermissions[resource];
+          const dtoObject = {
+            name: DEFAULT_GRANULAR_PERMISSIONS_NAME[resource],
+            groupId: group.id,
+            type: resource as ResourceType,
+            isAll: true,
+            createAppsPermissionsObject: {},
+          };
           await this.granularPermissionsService.create(
             {
-              name: DEFAULT_GRANULAR_PERMISSIONS_NAME[resource],
-              groupId: group.id,
-              type: resource as ResourceType,
-              isAll: true,
-              createAppsPermissionsObject: {},
+              createGranularPermissionDto: dtoObject,
+              organizationId,
             },
             createResourcePermissionObj,
             manager

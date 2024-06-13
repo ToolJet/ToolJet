@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateGranularPermissionDto } from '@dto/granular-permissions.dto';
 import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 import {
   GranularResourcePermissions,
   CreateResourcePermissionObject,
   CreateAppsPermissionsObject,
   UpdateResourceGroupPermissionsObject,
+  CreateGranularPermissionObject,
+  ResourcePermissionMetaData,
 } from '@module/user_resource_permissions/interface/granular-permissions.interface';
 import { EntityManager } from 'typeorm';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
@@ -26,23 +27,28 @@ import {
 } from '@module/user_resource_permissions/utility/granular-permissios.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 import { GroupApps } from 'src/entities/group_apps.entity';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
 
 @Injectable()
 export class GranularPermissionsService {
   constructor(private groupPermissionsUtilityService: GroupPermissionsUtilityService) {}
   async create(
-    createGranularPermissionDto: CreateGranularPermissionDto,
+    createGranularPermissionObject: CreateGranularPermissionObject,
     createResourcePermissionsObj?: CreateResourcePermissionObject,
     manager?: EntityManager
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { createGranularPermissionDto, organizationId } = createGranularPermissionObject;
       const { name, type, groupId, isAll } = createGranularPermissionDto;
-      const granularPermissions = await catchDbException(async () => {
+      const granularPermissions: GranularPermissions = await catchDbException(async () => {
         const granularPermissions = manager.create(GranularPermissions, { name, type, groupId, isAll });
         return await manager.save(granularPermissions);
       }, [DATA_BASE_CONSTRAINTS.GRANULAR_PERMISSIONS_NAME_UNIQUE]);
-      await this.createResourceGroupPermission(granularPermissions, createResourcePermissionsObj, manager);
+
+      await this.createResourceGroupPermission(
+        { granularPermissions, organizationId },
+        createResourcePermissionsObj,
+        manager
+      );
       return granularPermissions;
     }, manager);
   }
@@ -92,18 +98,19 @@ export class GranularPermissionsService {
   }
 
   async createResourceGroupPermission(
-    granularPermissions: GranularPermissions,
+    createMetaData: ResourcePermissionMetaData,
     createResourcePermissionsObj?: CreateResourcePermissionObject,
     manager?: EntityManager
   ): Promise<GranularResourcePermissions> {
     let resourceGranularPermissions;
+    const { granularPermissions, organizationId } = createMetaData;
     const { type } = granularPermissions;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       switch (type) {
         case ResourceType.APP:
           resourceGranularPermissions = await this.createAppGroupPermission(
-            granularPermissions,
+            { granularPermissions, organizationId },
             createResourcePermissionsObj,
             manager
           );
@@ -114,16 +121,16 @@ export class GranularPermissionsService {
   }
 
   private async createAppGroupPermission(
-    granularPermissions: GranularPermissions,
+    createMetaData: ResourcePermissionMetaData,
     createAppPermissionsObj?: CreateAppsPermissionsObject,
     manager?: EntityManager
   ): Promise<AppsGroupPermissions> {
+    const { granularPermissions, organizationId } = createMetaData;
     const { resourcesToAdd, canEdit } = createAppPermissionsObj;
-    const group = await manager.findOne(GroupPermissions, granularPermissions.groupId);
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const groupEditors = await this.groupPermissionsUtilityService.getRoleUsersList(
         USER_ROLE.END_USER,
-        group.organizationId,
+        organizationId,
         granularPermissions.groupId,
         manager
       );

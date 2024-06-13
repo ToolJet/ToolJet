@@ -80,7 +80,6 @@ export class OauthService {
     if (defaultOrganization) {
       // Setting up default organization
       await this.organizationUsersService.create(user, defaultOrganization, true, manager);
-      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
     }
     return user;
   }
@@ -239,6 +238,7 @@ export class OauthService {
               ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
             },
             defaultOrganization.id,
+            //Adding as admin since this is instance login
             USER_ROLE.ADMIN,
             [],
             null,

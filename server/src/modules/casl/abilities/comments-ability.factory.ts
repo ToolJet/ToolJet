@@ -2,7 +2,6 @@ import { User } from 'src/entities/user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { Comment } from 'src/entities/comment.entity';
-import { UsersService } from 'src/services/users.service';
 import { COMMENT_RESOURCE_ACTION, TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { AbilityService } from '@services/permissions-ability.service';
 
@@ -18,7 +17,7 @@ export type CommentsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class CommentsAbilityFactory {
-  constructor(private usersService: UsersService, private abilityService: AbilityService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async appsActions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<CommentsAbility>);
