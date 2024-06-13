@@ -74,6 +74,7 @@ export class TooljetDbOperationsService implements QueryService {
       !isEmpty(limit) && query.push(`limit=${limit}`);
       !isEmpty(offset) && query.push(`offset=${offset}`);
     }
+
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
     const url =
       query.length > 0
