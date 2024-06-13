@@ -1186,6 +1186,7 @@ $border-radius: 4px;
     .preview-data-container {
       background-color: var(--slate3);
       overflow-y: auto;
+      user-select: text !important;
     }
   }
 
