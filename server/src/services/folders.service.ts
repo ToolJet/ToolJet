@@ -102,7 +102,7 @@ export class FoldersService {
         viewableAppIds,
       });
     } else {
-      viewableAppsInFolder.where('apps.organizationId =: organizationId', {
+      viewableAppsInFolder.where('apps.organizationId = :organizationId', {
         organizationId: user.organizationId,
       });
     }
