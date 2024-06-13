@@ -106,7 +106,7 @@ export const QueryManagerBody = ({
     const currentValue = selectedQuery?.options?.[option] ?? false;
     optionchanged(option, !currentValue);
   };
-  const optionsChangedforParmas = (newOptions) => {
+  const optionsChangedforParams = (newOptions) => {
     setOptions(newOptions);
     updateDataQuery(cloneDeep(newOptions));
   };
@@ -119,7 +119,7 @@ export const QueryManagerBody = ({
         ...prevOptions,
         parameters: [...(prevOptions?.parameters ?? []), newParameter],
       };
-      optionsChangedforParmas(newOptions);
+      optionsChangedforParams(newOptions);
     }
   };
 
@@ -129,14 +129,14 @@ export const QueryManagerBody = ({
     if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
       const updatedParameters = [...prevOptions.parameters];
       updatedParameters[index] = updatedParameter;
-      optionsChangedforParmas({ ...prevOptions, parameters: updatedParameters });
+      optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
     }
   };
 
   const handleParameterRemove = (index) => {
     const prevOptions = { ...options };
     const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChangedforParmas({ ...prevOptions, parameters: updatedParameters });
+    optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
   };
 
   const renderDataSourcesList = () => {
