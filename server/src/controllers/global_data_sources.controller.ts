@@ -19,7 +19,7 @@ import { CreateDataSourceDto, UpdateDataSourceDto } from '@dto/data-source.dto';
 import { decode } from 'js-base64';
 import { User } from 'src/decorators/user.decorator';
 import { DataSource } from 'src/entities/data_source.entity';
-import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { getServiceAndRpcNames } from '../helpers/utils.helper';
 
 @Controller({
@@ -60,6 +60,11 @@ export class GlobalDataSourcesController {
         tempDs['options'] = decamelizedOptions;
         return tempDs;
       }
+
+      if(dataSource.type === DataSourceTypes.SAMPLE){
+        delete dataSource.options
+      }
+
       return decamelizeKeys(dataSource);
     });
 

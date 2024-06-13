@@ -9,6 +9,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
+import { MigrationProgress } from 'src/helpers/migration.helper';
 
 export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -29,6 +30,12 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
     const workspaces = await entityManager.find(Organization, {
       select: ['id'],
     });
+
+    const migrationProgress = new MigrationProgress(
+      'CreateSampleDataSourceToExistingWorkspace1714626631309',
+      workspaces.length
+    );
+
     for (const workspace of workspaces) {
       const { id: organizationId } = workspace;
       const config = {
@@ -42,21 +49,21 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
         {
           key: 'host',
           value: envVar.SAMPLE_PG_DB_HOST,
-          encrypted: true,
+          encrypted: false,
         },
         {
           key: 'port',
           value: envVar.SAMPLE_PG_DB_PORT,
-          encrypted: true,
+          encrypted: false,
         },
         {
           key: 'database',
-          value: envVar.SAMPLE_DB ||'sample_db',
+          value: envVar.SAMPLE_DB || 'sample_db',
         },
         {
           key: 'username',
           value: envVar.SAMPLE_PG_DB_USER,
-          encrypted: true,
+          encrypted: false,
         },
         {
           key: 'password',
@@ -66,7 +73,7 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
         {
           key: 'ssl_enabled',
           value: false,
-          encrypted: true,
+          encrypted: false,
         },
         { key: 'ssl_certificate', value: 'none', encrypted: false },
       ];
@@ -97,6 +104,7 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
           await entityManager.query(insertQuery, values);
         })
       );
+      migrationProgress.show();
     }
   }
 

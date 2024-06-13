@@ -1197,12 +1197,12 @@ export class OrganizationsService {
       {
         key: 'host',
         value: this.configService.get<string>('SAMPLE_PG_DB_HOST'),
-        encrypted: true,
+        encrypted: false,
       },
       {
         key: 'port',
         value: this.configService.get<string>('SAMPLE_PG_DB_PORT'),
-        encrypted: true,
+        encrypted: false,
       },
       {
         key: 'database',
@@ -1211,7 +1211,7 @@ export class OrganizationsService {
       {
         key: 'username',
         value: this.configService.get<string>('SAMPLE_PG_DB_USER'),
-        encrypted: true,
+        encrypted: false,
       },
       {
         key: 'password',
@@ -1221,7 +1221,7 @@ export class OrganizationsService {
       {
         key: 'ssl_enabled',
         value: false,
-        encrypted: true,
+        encrypted: false,
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
     ];
