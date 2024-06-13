@@ -53,7 +53,6 @@ const ColumnForm = ({
     label: '',
   });
   const isTimestamp = dataType?.value === 'timestamp with time zone';
-  console.log(timezone, 'timezone');
 
   const [foreignKeyDetails, setForeignKeyDetails] = useState({
     column_names: [],

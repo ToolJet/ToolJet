@@ -14,6 +14,7 @@ import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDataba
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/_components/DateTimePicker';
 
 function TableSchema({
   columns,
@@ -359,36 +360,47 @@ function TableSchema({
                 show={columnDetails[index]?.data_type === 'serial'}
               >
                 <div className="m-0" data-cy="column-default-input-field">
-                  <input
-                    onChange={(e) => {
-                      e.persist();
-                      const prevColumns = { ...columnDetails };
-                      prevColumns[index].column_default = e.target.value;
-                      setColumns(prevColumns);
-                    }}
-                    value={
-                      columnDetails[index].data_type === 'serial'
-                        ? 'Auto-generated'
-                        : // : checkDefaultValue(columnDetails[index].column_default)
-                          // ? null
-                          columnDetails[index].column_default
-                    }
-                    type="text"
-                    className="form-control defaultValue"
-                    data-cy="default-input-field"
-                    placeholder={
-                      (columnDetails[index].data_type === 'serial' &&
-                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                      columnDetails[index].data_type === 'serial'
-                        ? 'Auto-generated'
-                        : 'Enter value'
-                    }
-                    disabled={
-                      (columnDetails[index].data_type === 'serial' &&
-                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                      columnDetails[index].data_type === 'serial'
-                    }
-                  />
+                  {columnDetails[index].data_type === 'timestamp with time zone' ? (
+                    <DateTimePicker
+                      timestamp={columnDetails[index].column_default}
+                      setTimestamp={(value) => {
+                        const prevColumns = { ...columnDetails };
+                        prevColumns[index].column_default = value;
+                        setColumns(prevColumns);
+                      }}
+                    />
+                  ) : (
+                    <input
+                      onChange={(e) => {
+                        e.persist();
+                        const prevColumns = { ...columnDetails };
+                        prevColumns[index].column_default = e.target.value;
+                        setColumns(prevColumns);
+                      }}
+                      value={
+                        columnDetails[index].data_type === 'serial'
+                          ? 'Auto-generated'
+                          : // : checkDefaultValue(columnDetails[index].column_default)
+                            // ? null
+                            columnDetails[index].column_default
+                      }
+                      type="text"
+                      className="form-control defaultValue"
+                      data-cy="default-input-field"
+                      placeholder={
+                        (columnDetails[index].data_type === 'serial' &&
+                          columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                        columnDetails[index].data_type === 'serial'
+                          ? 'Auto-generated'
+                          : 'Enter value'
+                      }
+                      disabled={
+                        (columnDetails[index].data_type === 'serial' &&
+                          columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                        columnDetails[index].data_type === 'serial'
+                      }
+                    />
+                  )}
                 </div>
               </ToolTip>
             )}
