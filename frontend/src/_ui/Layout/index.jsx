@@ -44,7 +44,7 @@ function Layout({
   };
 
   const canCreateVariableOrConstant = () => {
-    return authenticationService.currentSessionValue.user_permissions?.org_constant_crud;
+    return authenticationService.currentSessionValue.user_permissions?.org_constant_c_r_u_d;
   };
 
   return (

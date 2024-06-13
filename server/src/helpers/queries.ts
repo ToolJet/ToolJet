@@ -50,15 +50,22 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
 }
 
 export function getFolderQuery(organizationId: string, searchKey?: string): SelectQueryBuilder<Folder> {
-  const query = createQueryBuilder(Folder, 'folders')
-    .innerJoinAndSelect('folders.folderApps', 'folder_apps')
-    .innerJoin('folder_apps.app', 'app', 'LOWER(app.name) like :searchKey', {
-      searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-    })
+  const query = createQueryBuilder(Folder, 'folders');
+
+  if (searchKey) {
+    query
+      .leftJoinAndSelect('folders.folderApps', 'folder_apps')
+      .leftJoin('folder_apps.app', 'app')
+      .where('LOWER(app.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+  }
+  query
     .andWhere('folders.organization_id = :organizationId', {
       organizationId,
     })
     .orderBy('folders.name', 'ASC');
+
   return query;
 }
 

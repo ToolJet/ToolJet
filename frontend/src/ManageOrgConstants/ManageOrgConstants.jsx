@@ -126,15 +126,15 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const canCreateVariable = () => {
-    return authenticationService.currentSessionValue.org_constant_crud;
+    return authenticationService.currentSessionValue.org_constant_c_r_u_d;
   };
 
   const canUpdateVariable = () => {
-    return authenticationService.currentSessionValue.org_constant_crud;
+    return authenticationService.currentSessionValue.org_constant_c_r_u_d;
   };
 
   const canDeleteVariable = () => {
-    return authenticationService.currentSessionValue.org_constant_crud;
+    return authenticationService.currentSessionValue.org_constant_c_r_u_d;
   };
 
   const fetchEnvironments = () => {

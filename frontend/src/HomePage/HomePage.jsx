@@ -361,15 +361,15 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_create', authenticationService.currentSessionValue?.group_permissions);
+    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
   };
 
   canDeleteFolder = () => {
-    return this.canAnyGroupPerformAction('folder_delete', authenticationService.currentSessionValue?.group_permissions);
+    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
   };
 
   canUpdateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_update', authenticationService.currentSessionValue?.group_permissions);
+    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
   };
 
   cancelDeleteAppDialog = () => {

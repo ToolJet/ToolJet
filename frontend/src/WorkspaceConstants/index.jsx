@@ -17,7 +17,7 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   };
 
   const canCreateVariableOrConstant = () => {
-    return authenticationService.currentSessionValue.org_constant_crud;
+    return authenticationService.currentSessionValue.org_constant_c_r_u_d;
   };
 
   useEffect(() => {
