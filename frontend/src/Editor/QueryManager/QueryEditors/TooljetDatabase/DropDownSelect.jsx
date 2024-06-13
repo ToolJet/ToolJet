@@ -242,7 +242,7 @@ const DropDownSelect = ({
           style={{
             position: 'relative',
             left: '-10px',
-            top: selected.label === null || selected.label === undefined ? '0px' : '2px',
+            top: selected.label === null || selected.label === undefined || isCellEdit ? '0px' : '2px',
             paddingLeft: '10px',
             paddingBottom: '4px',
           }}
@@ -251,10 +251,11 @@ const DropDownSelect = ({
             setShowMenu(true);
           }}
         >
-          <span
+          <p
             className={cx({
-              'd-flex align-items-center justify-content-center':
+              'd-flex align-items-center justify-content-center m-0':
                 selected.label === null || selected.label === undefined,
+              'cell-menu-text m-0': selected.label !== null || selected.label !== undefined,
             })}
             style={{
               color: darkMode ? '#fff' : '',
@@ -263,7 +264,7 @@ const DropDownSelect = ({
             }}
           >
             {selected.label === null || selected.label === undefined ? 'Null' : selected.label}
-          </span>
+          </p>
         </div>
       ) : (
         <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
