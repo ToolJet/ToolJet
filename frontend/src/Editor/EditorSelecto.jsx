@@ -1,28 +1,33 @@
-import React, { useCallback, memo } from 'react';
+import React, { useCallback, memo, useContext } from 'react';
 import Selecto from 'react-selecto';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
-import { setMultipleComponentsSelected } from '@/_helpers/appUtils';
 
-const EditorSelecto = ({ selectionRef, canvasContainerRef, setSelectedComponent, selectionDragRef }) => {
-  const { setSelectionInProgress, currentPageId, appDefinition } = useEditorStore(
+const EditorSelecto = ({
+  selectionRef,
+  canvasContainerRef,
+  currentPageId,
+  setSelectedComponent,
+  appDefinition,
+  selectionDragRef,
+}) => {
+  const { setSelectionInProgress, setSelectedComponents, scrollOptions } = useEditorStore(
     (state) => ({
       setSelectionInProgress: state?.actions?.setSelectionInProgress,
-      currentPageId: state?.currentPageId,
-      appDefinition: state?.appDefinition,
+      setSelectedComponents: state?.actions?.setSelectedComponents,
+      scrollOptions: state.scrollOptions,
     }),
     shallow
   );
 
-  const scrollOptions = {
-    container: canvasContainerRef.current,
-    throttleTime: 30,
-    threshold: 0,
-  };
-
-  const onAreaSelectionStart = useCallback(() => {
-    setSelectionInProgress(true);
-  }, [setSelectionInProgress]);
+  const onAreaSelectionStart = useCallback(
+    (e) => {
+      const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
+      setSelectionInProgress(true);
+      setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY)]);
+    },
+    [setSelectionInProgress, setSelectedComponents]
+  );
 
   const onAreaSelection = useCallback((e) => {
     e.added.forEach((el) => {
@@ -33,31 +38,17 @@ const EditorSelecto = ({ selectionRef, canvasContainerRef, setSelectedComponent,
         el.classList.remove('resizer-select');
       });
     }
-    e.removed.forEach((el) => {
-      el.classList.remove('resizer-select');
-    });
   }, []);
 
   const onAreaSelectionEnd = useCallback(
     (e) => {
       setSelectionInProgress(false);
-      const selectedItems = [];
       e.selected.forEach((el, index) => {
         const id = el.getAttribute('widgetid');
         const component = appDefinition.pages[currentPageId].components[id].component;
         const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
-        if (e.selected.length > 0 && !e.isClick) {
-          selectedItems.push({
-            id,
-            component,
-          });
-        } else {
-          setSelectedComponent(id, component, isMultiSelect);
-        }
+        setSelectedComponent(id, component, isMultiSelect);
       });
-      if (selectedItems.length > 0) {
-        setMultipleComponentsSelected(selectedItems);
-      }
     },
     [appDefinition, currentPageId, setSelectedComponent, setSelectionInProgress]
   );
@@ -89,26 +80,24 @@ const EditorSelecto = ({ selectionRef, canvasContainerRef, setSelectedComponent,
   };
 
   return (
-    <>
-      <Selecto
-        dragContainer={'.canvas-container'}
-        selectableTargets={['.moveable-box']}
-        hitRate={0}
-        selectByClick={true}
-        toggleContinueSelect={['shift']}
-        ref={selectionRef}
-        scrollOptions={scrollOptions}
-        onSelectStart={onAreaSelectionStart}
-        onSelectEnd={onAreaSelectionEnd}
-        onSelect={onAreaSelection}
-        onDragStart={onAreaSelectionDragStart}
-        onDrag={onAreaSelectionDrag}
-        onDragEnd={onAreaSelectionDragEnd}
-        onScroll={(e) => {
-          canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
-        }}
-      />
-    </>
+    <Selecto
+      dragContainer={'.canvas-container'}
+      selectableTargets={['.react-draggable']}
+      hitRate={0}
+      selectByClick={true}
+      toggleContinueSelect={['shift']}
+      ref={selectionRef}
+      scrollOptions={scrollOptions}
+      onSelectStart={onAreaSelectionStart}
+      onSelectEnd={onAreaSelectionEnd}
+      onSelect={onAreaSelection}
+      onDragStart={onAreaSelectionDragStart}
+      onDrag={onAreaSelectionDrag}
+      onDragEnd={onAreaSelectionDragEnd}
+      onScroll={(e) => {
+        canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
+      }}
+    />
   );
 };
 

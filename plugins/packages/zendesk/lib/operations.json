@@ -1,3 +1,4 @@
+
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Zendesk datasource",
@@ -110,7 +111,6 @@
         "type": "codehinter",
         "className": "codehinter-plugins",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "description": "Enter ticket",
         "placeholder": "Enter ticket"
       }

@@ -70,7 +70,7 @@ export class LayoutUpdateDto {
   @IsObject()
   @IsNotEmpty()
   @Validate(LayoutDataValidator, { each: true })
-  diff: Record<string, { layouts: LayoutData; component?: { parent: string } }>;
+  diff: Record<string, { layouts: LayoutData }>;
 }
 
 class ComponentDto {

@@ -97,7 +97,6 @@
         "type": "codehinter",
         "description": "Enter rows",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "placeholder": "Enter rows"
       }
     },
@@ -111,6 +110,7 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
+        
       }
     },
     "delete_row": {
@@ -218,7 +218,6 @@
         "key": "body",
         "type": "codehinter",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "description": "Enter body"
       }
     }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const NumberInput = ({ value, onChange, cyLabel, meta }) => {
+export const NumberInput = ({ value, onChange, cyLabel, staticText }) => {
   return (
     <div className="form-text tj-number-input-element">
       <input
@@ -17,7 +17,7 @@ export const NumberInput = ({ value, onChange, cyLabel, meta }) => {
         autoComplete="off"
       />
       <label for="labelId" className="static-value tj-text-xsm">
-        {meta.staticText?.length > 0 ? meta.staticText : meta.staticText?.length == 0 ? '' : 'px'}
+        {staticText?.length > 0 ? staticText : staticText?.length == 0 ? '' : 'px'}
       </label>
     </div>
   );

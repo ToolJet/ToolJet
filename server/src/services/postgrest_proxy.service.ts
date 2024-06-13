@@ -1,12 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { isEmpty } from 'lodash';
-import { EntityManager, In, QueryFailedError } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
-import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import got from 'got';
 
@@ -23,35 +22,14 @@ export class PostgrestProxyService {
     const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
     req.headers = {};
     req.headers['Authorization'] = authToken;
-    // https://postgrest.org/en/v12/references/api/preferences.html#prefer-header
-    req.headers['Prefer'] = 'count=exact, return=representation';
+    req.headers['Prefer'] = 'count=exact'; // To get the total count of records
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
-
-    const tableId = req.url.split('?')[0].split('/').pop();
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: {
-        organizationId,
-        id: tableId,
-      },
-    });
-
-    if (internalTable.tableName) {
-      const tableInfo = {};
-      tableInfo[tableId] = internalTable.tableName;
-
-      req.headers['tableInfo'] = tableInfo;
-    }
 
     return this.httpProxy(req, res, next);
   }
 
-  async perform(
-    url: string,
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-    headers: Record<string, any>,
-    body: Record<string, any> = {}
-  ) {
+  async perform(url, method, headers, body) {
     try {
       const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
       const updatedPath = replaceUrlForPostgrest(url);
@@ -61,25 +39,10 @@ export class PostgrestProxyService {
         postgrestUrl = 'http://' + postgrestUrl;
       }
 
-      const tableId = postgrestUrl.split('?')[0].split('/').pop();
-      const internalTable = await this.manager.findOne(InternalTable, {
-        where: {
-          organizationId: headers['tj-workspace-id'],
-          id: tableId,
-        },
-      });
-
-      if (internalTable.tableName) {
-        const tableInfo = {};
-        tableInfo[tableId] = internalTable.tableName;
-
-        headers['tableinfo'] = tableInfo;
-      }
-
       const reqHeaders = {
         ...headers,
         Authorization: authToken,
-        Prefer: 'count=exact, return=representation',
+        Prefer: 'count=exact', // get the total no of records
       };
 
       const response = await got(postgrestUrl, {
@@ -91,25 +54,6 @@ export class PostgrestProxyService {
 
       return response.body;
     } catch (error) {
-      if (!isEmpty(error.response) && (error.response.statusCode < 200 || error.response.statusCode >= 300)) {
-        const postgrestResponse = JSON.parse(error.response.rawBody.toString().toString('utf8'));
-        const errorMessage = postgrestResponse.message;
-        const errorContext: {
-          origin: TooljetDbActions;
-          internalTables: { id: string; tableName: string }[];
-        } = {
-          origin: 'proxy_postgrest',
-          internalTables: Object.entries(error.options.headers.tableinfo).map(([key, value]) => ({
-            id: key,
-            tableName: value as string,
-          })),
-        };
-        const errorObj = new QueryFailedError(postgrestResponse, [], new PostgrestError(postgrestResponse));
-
-        const tooljetDbError = new TooljetDatabaseError(errorMessage, errorContext, errorObj);
-        throw new QueryError(tooljetDbError.toString(), { code: tooljetDbError.code }, {});
-      }
-
       throw new QueryError('Query could not be completed', error.message, {});
     }
   }
@@ -117,30 +61,6 @@ export class PostgrestProxyService {
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
     proxyReqPathResolver: function (req) {
       return replaceUrlForPostgrest(req.url);
-    },
-    userResDecorator: function (proxyRes, proxyResData, userReq, _userRes) {
-      if (proxyRes.statusCode < 200 || proxyRes.statusCode >= 300) {
-        const postgrestResponse = Buffer.isBuffer(proxyResData)
-          ? JSON.parse(proxyResData.toString('utf8'))
-          : proxyResData;
-
-        const errorMessage = postgrestResponse.message;
-        const errorContext: {
-          origin: TooljetDbActions;
-          internalTables: { id: string; tableName: string }[];
-        } = {
-          origin: 'proxy_postgrest',
-          internalTables: Object.entries(userReq.headers.tableInfo).map(([key, value]) => ({
-            id: key,
-            tableName: value as string,
-          })),
-        };
-        const errorObj = new QueryFailedError(postgrestResponse, [], new PostgrestError(postgrestResponse));
-
-        throw new TooljetDatabaseError(errorMessage, errorContext, errorObj);
-      }
-
-      return proxyResData;
     },
   });
 

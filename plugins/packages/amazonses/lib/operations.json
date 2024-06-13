@@ -1,3 +1,4 @@
+
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Amazon SES datasource",
@@ -77,7 +78,7 @@
         "type": "codehinter",
         "description": "Supports HTML",
         "height": "150px",
-        "editorType": "extendedSingleLine",
+        "mode": "handlebars",
         "lineNumbers": true
       }
     }

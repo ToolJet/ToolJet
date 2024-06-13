@@ -27,6 +27,7 @@ const LeftSidebarPageSelector = ({
   disableEnablePage,
   updateHomePage,
   updatePageHandle,
+  pages,
   homePageId,
   showHideViewerNavigationControls,
   updateOnSortingPages,
@@ -35,13 +36,6 @@ const LeftSidebarPageSelector = ({
   pinned,
   setPinned,
 }) => {
-  const pages = useMemo(
-    () =>
-      Object.entries(_.cloneDeep(appDefinition.pages))
-        .map(([id, page]) => ({ id, ...page }))
-        .sort((a, b) => a.index - b.index) || [],
-    [JSON.stringify(appDefinition.pages)]
-  );
   const { t } = useTranslation();
   const [allpages, setPages] = useState(pages);
   const [haveUserPinned, setHaveUserPinned] = useState(false);

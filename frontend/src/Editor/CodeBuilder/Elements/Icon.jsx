@@ -7,7 +7,7 @@ import * as Icons from '@tabler/icons-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { Visibility } from './Visibility';
 
-export const Icon = ({ value, onChange, onVisibilityChange, styleDefinition, component }) => {
+export const Icon = ({ value, onChange, onVisibilityChange, component }) => {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
   const iconList = useRef(Object.keys(Icons));
@@ -81,7 +81,7 @@ export const Icon = ({ value, onChange, onVisibilityChange, styleDefinition, com
 
     return (
       <>
-        <div className="color-picker-input icon-style-container" style={{ position: 'relative' }}>
+        <div className="color-picker-input icon-style-container">
           <div className="p-0">
             <div className="field">
               <OverlayTrigger
@@ -116,7 +116,6 @@ export const Icon = ({ value, onChange, onVisibilityChange, styleDefinition, com
                     onChange={onChange}
                     onVisibilityChange={onVisibilityChange}
                     component={component}
-                    styleDefinition={styleDefinition}
                   />
                 </div>
               </OverlayTrigger>

@@ -19,7 +19,6 @@ import {
   isTooljetVersionWithNormalizedAppDefinitionSchem,
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
-import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
@@ -32,7 +31,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -241,7 +240,7 @@ export class AppImportExportService {
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
     const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    const resourceMapping = await this.setupImportedAppAssociations(
+    await this.setupImportedAppAssociations(
       this.entityManager,
       importedApp,
       schemaUnifiedAppParams,
@@ -251,7 +250,6 @@ export class AppImportExportService {
       currentTooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
-    await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
 
     // NOTE: App slug updation callback doesn't work while wrapped in transaction
     // hence updating slug explicitly
@@ -260,64 +258,6 @@ export class AppImportExportService {
     await this.entityManager.save(importedApp);
 
     return importedApp;
-  }
-
-  async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
-    const mappings = { ...resourceMapping.componentsMapping, ...resourceMapping.dataQueryMapping };
-    const newComponentIds = Object.values(resourceMapping.componentsMapping);
-    const newQueriesIds = Object.values(resourceMapping.dataQueryMapping);
-
-    if (newComponentIds.length > 0) {
-      const components = await manager
-        .createQueryBuilder(Component, 'components')
-        .where('components.id IN(:...componentIds)', { componentIds: newComponentIds })
-        .select([
-          'components.id',
-          'components.properties',
-          'components.styles',
-          'components.general',
-          'components.validation',
-          'components.generalStyles',
-          'components.displayPreferences',
-        ])
-        .getMany();
-
-      const toUpdateComponents = components.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, mappings);
-        }
-      });
-
-      if (!isEmpty(toUpdateComponents)) {
-        await manager.save(toUpdateComponents);
-      }
-    }
-
-    if (newQueriesIds.length > 0) {
-      const dataQueries = await manager
-        .createQueryBuilder(DataQuery, 'dataQueries')
-        .where('dataQueries.id IN(:...dataQueryIds)', { dataQueryIds: newQueriesIds })
-        .select(['dataQueries.id', 'dataQueries.options'])
-        .getMany();
-
-      const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInQueryOptions.length > 0) {
-          return updateEntityReferences(dataQuery, mappings);
-        }
-      });
-
-      if (!isEmpty(toUpdateDataQueries)) {
-        await manager.save(toUpdateDataQueries);
-      }
-    }
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
@@ -492,7 +432,6 @@ export class AppImportExportService {
                 index: pagePostionIntheList,
                 disabled: page.disabled || false,
                 hidden: page.hidden || false,
-                autoComputeLayout: page.autoComputeLayout || false,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -513,11 +452,7 @@ export class AppImportExportService {
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
-                    newLayout.left =
-                      layout.dimensionUnit !== LayoutDimensionUnits.COUNT
-                        ? resolveGridPositionForComponent(layout.left, type)
-                        : layout.left;
-                    newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+                    newLayout.left = layout.left;
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];
@@ -738,7 +673,6 @@ export class AppImportExportService {
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
           manager,
-          user.organizationId,
           importingDataQueriesForAppVersion,
           importingDataSource,
           dataSourceForAppVersion,
@@ -759,7 +693,6 @@ export class AppImportExportService {
           index: page.index,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
-          autoComputeLayout: page.autoComputeLayout || false,
         });
 
         const pageCreated = await manager.save(newPage);
@@ -835,11 +768,7 @@ export class AppImportExportService {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
-              newLayout.left =
-                layout.dimensionUnit !== LayoutDimensionUnits.COUNT
-                  ? resolveGridPositionForComponent(layout.left, layout.type)
-                  : layout.left;
-              newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+              newLayout.left = layout.left;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;
@@ -994,7 +923,6 @@ export class AppImportExportService {
 
   async createDataQueriesForAppVersion(
     manager: EntityManager,
-    organizationId: string,
     importingDataQueriesForAppVersion: DataQuery[],
     importingDataSource: DataSource,
     dataSourceForAppVersion: DataSource,
@@ -1011,11 +939,7 @@ export class AppImportExportService {
     for (const importingQuery of importingQueriesForSource) {
       const options =
         importingDataSource.kind === 'tooljetdb'
-          ? this.replaceTooljetDbTableIds(
-              importingQuery.options,
-              externalResourceMappings['tooljet_database'],
-              organizationId
-            )
+          ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -1583,11 +1507,7 @@ export class AppImportExportService {
         appVersionId: query.appVersionId,
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
-            ? this.replaceTooljetDbTableIds(
-                query.options,
-                externalResourceMappings['tooljet_database'],
-                user.organizationId
-              )
+            ? this.replaceTooljetDbTableIds(query.options, externalResourceMappings['tooljet_database'])
             : query.options,
       });
       await manager.save(newQuery);
@@ -1625,93 +1545,72 @@ export class AppImportExportService {
   }
 
   // Entire function should be santised for Undefined values
-  replaceTooljetDbTableIds(queryOptions, tooljetDatabaseMapping, organizationId: string) {
-    if (queryOptions?.operation === 'join_tables')
-      return this.replaceTooljetDbTableIdOnJoin(queryOptions, tooljetDatabaseMapping, organizationId);
+  replaceTooljetDbTableIds(queryOptions: any, tooljetDatabaseMapping: any) {
+    if (queryOptions?.operation && queryOptions.operation === 'join_tables') {
+      const joinOptions = { ...(queryOptions?.join_table ?? {}) };
 
-    const mappedTableId = tooljetDatabaseMapping[queryOptions.table_id]?.id;
-    return {
-      ...queryOptions,
-      ...(mappedTableId && { table_id: mappedTableId }),
-      ...(organizationId && { organization_id: organizationId }),
-    };
-  }
+      // JOIN Section
+      if (joinOptions?.joins && joinOptions.joins.length > 0) {
+        const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
+          const updatedJoinCondition = { ...joinCondition };
+          // Updating Join tableId
+          if (updatedJoinCondition.table)
+            updatedJoinCondition.table =
+              tooljetDatabaseMapping[updatedJoinCondition.table]?.id ?? updatedJoinCondition.table;
+          // Updating TableId on Conditions in Join Query
+          if (updatedJoinCondition.conditions) {
+            const updatedJoinConditionFilter = this.updateNewTableIdForFilter(
+              updatedJoinCondition.conditions,
+              tooljetDatabaseMapping
+            );
+            updatedJoinCondition.conditions = updatedJoinConditionFilter.conditions;
+          }
 
-  replaceTooljetDbTableIdOnJoin(
-    queryOptions,
-    tooljetDatabaseMapping,
-    organizationId: string
-  ): Partial<{
-    table_id: string;
-    join_table: unknown;
-    organization_id: string;
-  }> {
-    const joinOptions = { ...(queryOptions?.join_table ?? {}) };
+          return updatedJoinCondition;
+        });
+        joinOptions.joins = joinsTableIdUpdatedList;
+      }
 
-    // JOIN Section
-    if (joinOptions?.joins && joinOptions.joins.length > 0) {
-      const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
-        const updatedJoinCondition = { ...joinCondition };
-        // Updating Join tableId
-        if (updatedJoinCondition.table)
-          updatedJoinCondition.table =
-            tooljetDatabaseMapping[updatedJoinCondition.table]?.id ?? updatedJoinCondition.table;
-        // Updating TableId on Conditions in Join Query
-        if (updatedJoinCondition.conditions) {
-          const updatedJoinConditionFilter = this.updateNewTableIdForFilter(
-            updatedJoinCondition.conditions,
-            tooljetDatabaseMapping
-          );
-          updatedJoinCondition.conditions = updatedJoinConditionFilter.conditions;
-        }
+      // Filter Section
+      if (joinOptions?.conditions) {
+        joinOptions.conditions = this.updateNewTableIdForFilter(
+          joinOptions.conditions,
+          tooljetDatabaseMapping
+        ).conditions;
+      }
 
-        return updatedJoinCondition;
-      });
-      joinOptions.joins = joinsTableIdUpdatedList;
-    }
-
-    // Filter Section
-    if (joinOptions?.conditions) {
-      joinOptions.conditions = this.updateNewTableIdForFilter(
-        joinOptions.conditions,
-        tooljetDatabaseMapping
-      ).conditions;
-    }
-
-    // Select Section
-    if (joinOptions?.fields) {
-      joinOptions.fields = joinOptions.fields.map((eachField) => {
-        if (eachField.table) {
-          eachField.table = tooljetDatabaseMapping[eachField.table]?.id ?? eachField.table;
+      // Select Section
+      if (joinOptions?.fields) {
+        joinOptions.fields = joinOptions.fields.map((eachField) => {
+          if (eachField.table) {
+            eachField.table = tooljetDatabaseMapping[eachField.table]?.id ?? eachField.table;
+            return eachField;
+          }
           return eachField;
-        }
-        return eachField;
-      });
-    }
+        });
+      }
 
-    // From Section
-    if (joinOptions?.from) {
-      const { name = '' } = joinOptions.from;
-      joinOptions.from = { ...joinOptions.from, name: tooljetDatabaseMapping[name]?.id ?? name };
-    }
+      // From Section
+      if (joinOptions?.from) {
+        const { name = '' } = joinOptions.from;
+        joinOptions.from = { ...joinOptions.from, name: tooljetDatabaseMapping[name]?.id ?? name };
+      }
 
-    // Sort Section
-    if (joinOptions?.order_by) {
-      joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
-        if (eachOrderBy.table) {
-          eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
+      // Sort Section
+      if (joinOptions?.order_by) {
+        joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
+          if (eachOrderBy.table) {
+            eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
+            return eachOrderBy;
+          }
           return eachOrderBy;
-        }
-        return eachOrderBy;
-      });
-    }
+        });
+      }
 
-    return {
-      ...queryOptions,
-      table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id,
-      join_table: joinOptions,
-      organization_id: organizationId,
-    };
+      return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id, join_table: joinOptions };
+    } else {
+      return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
+    }
   }
 
   updateNewTableIdForFilter(joinConditions, tooljetDatabaseMapping) {
@@ -1742,10 +1641,9 @@ export class AppImportExportService {
       .createQueryBuilder(EventHandler, 'event')
       .where('event.appVersionId = :versionId', { versionId })
       .getMany();
-    const mappings = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping } as Record<string, string>;
 
     for (const event of allEvents) {
-      const eventDefinition = updateEntityReferences(event.event, mappings);
+      const eventDefinition = event.event;
 
       if (eventDefinition?.actionId === 'run-query' && oldDataQueryToNewMapping[eventDefinition.queryId]) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];

@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { useTranslation } from 'react-i18next';
-import CodeHinter from '@/Editor/CodeEditor';
 
 export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMode }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [appOptions, setAppOptions] = useState([]);
-
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
@@ -40,17 +37,6 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMod
     }
   });
 
-  useEffect(() => {
-    getAllApps()
-      .then((apps) => {
-        setAppOptions(apps);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const styles = {
     ...defaultStyles(darkMode),
     menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
@@ -63,14 +49,12 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMod
     <div className="p-1 go-to-app">
       <label className="form-label mt-1">App</label>
       <Select
-        options={appOptions}
+        options={getAllApps()}
         search={true}
         value={event.slug}
         onChange={(value) => {
           handlerChanged(eventIndex, 'slug', value);
         }}
-        isDisabled={isLoading}
-        isLoading={isLoading}
         placeholder={t('globals.select', 'Select') + '...'}
         styles={styles}
         useMenuPortal={false}
@@ -85,16 +69,18 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMod
           <div key={index} className="row input-group mt-1">
             <div className="col">
               <CodeHinter
-                type="basic"
                 initialValue={event?.queryParams?.[index]?.[0]}
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
+                mode="javascript"
+                height={30}
               />
             </div>
             <div className="col">
               <CodeHinter
-                type="basic"
                 initialValue={event?.queryParams?.[index]?.[1]}
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
+                mode="javascript"
+                height={30}
               />
             </div>
             <span className="btn-sm col-auto my-1" role="button" onClick={() => deleteQueryParam(index)}>

@@ -80,8 +80,7 @@
       "type": "codehinter",
       "description": "Field for message",
       "placeholder": "Enter message",
-      "height": "150px",
-      "editorType": "extendedSingleLine"
+      "height": "150px"
     },
     "htmlContent": {
       "key": "htmlContent",
@@ -89,8 +88,7 @@
       "type": "codehinter",
       "description": "Field for message",
       "placeholder": "Enter message",
-      "height": "150px",
-      "editorType": "extendedSingleLine"
+      "height": "150px"
     },
     "attachment_array": {
       "key": "attachment_array",

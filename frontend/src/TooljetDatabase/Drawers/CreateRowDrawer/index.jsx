@@ -4,15 +4,8 @@ import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
-const CreateRowDrawer = ({
-  isCreateRowDrawerOpen,
-  setIsCreateRowDrawerOpen,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
-}) => {
+const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
   const {
     organizationId,
     selectedTable,
@@ -21,7 +14,6 @@ const CreateRowDrawer = ({
     pageSize,
     setSortFilters,
     setQueryFilters,
-    columns,
   } = useContext(TooljetDatabaseContext);
 
   return (
@@ -32,15 +24,8 @@ const CreateRowDrawer = ({
             const limit = pageSize;
             setSortFilters({});
             setQueryFilters({});
-
-            const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
-            const sortQuery = new PostgrestQueryBuilder();
-            primaryKeyColumns.map((primaryKeyColumnName) => {
-              sortQuery.order(primaryKeyColumnName, 'desc');
-            });
-
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
+              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
@@ -59,8 +44,6 @@ const CreateRowDrawer = ({
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
-          referencedColumnDetails={referencedColumnDetails}
-          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
     </>

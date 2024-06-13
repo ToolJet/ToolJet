@@ -1,3 +1,4 @@
+
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Notion datasource",
@@ -8,7 +9,7 @@
     "resource": {
       "label": "Resource",
       "key": "resource",
-      "className": "col-md-4",
+      "className":"col-md-4",
       "type": "dropdown-component-flip",
       "description": "Resource select",
       "list": [
@@ -30,11 +31,11 @@
         }
       ]
     },
-    "database": {
+    "database":{
       "operation": {
         "label": "Operation",
         "key": "operation",
-        "className": "col-md-4",
+        "className":"col-md-4",
         "type": "dropdown-component-flip",
         "description": "Operation select",
         "list": [
@@ -56,8 +57,8 @@
           }
         ]
       },
-      "get_database": {
-        "database_id": {
+      "get_database":{
+        "database_id":{
           "label": "Database ID",
           "key": "database_id",
           "type": "codehinter",
@@ -68,8 +69,8 @@
           "description": "Enter database id here"
         }
       },
-      "query_database": {
-        "database_id": {
+      "query_database":{
+        "database_id":{
           "label": "Database ID",
           "key": "database_id",
           "type": "codehinter",
@@ -86,10 +87,9 @@
           "mode": "javascript",
           "placeholder": "{or: [{ property: 'In stock', checkbox: { equals: true, } },...]}",
           "description": "Enter filter object",
-          "height": "150px",
-          "editorType": "extendedSingleLine"
+          "height": "150px"
         },
-        "sorts": {
+        "sorts":{
           "label": "Sort",
           "key": "sorts",
           "type": "codehinter",
@@ -97,10 +97,9 @@
           "placeholder": "[{\"property\": \"Name\",\"direction\": \"ascending\"}]",
           "description": "Enter the sort array",
           "height": "150px",
-          "editorType": "extendedSingleLine",
-          "width": "400px"
+          "width":"400px"
         },
-        "limit": {
+        "limit":{
           "label": "Limit",
           "key": "limit",
           "type": "codehinter",
@@ -110,7 +109,7 @@
           "className": "codehinter-plugins",
           "description": "Enter limit here"
         },
-        "start_cursor": {
+        "start_cursor":{
           "label": "Start cursor",
           "key": "start_cursor",
           "type": "codehinter",
@@ -121,8 +120,8 @@
           "description": "Enter cursor id"
         }
       },
-      "create_database": {
-        "page_id": {
+      "create_database":{
+        "page_id":{
           "label": "Page ID",
           "key": "page_id",
           "type": "codehinter",
@@ -132,7 +131,7 @@
           "className": "codehinter-plugins",
           "description": "Enter page id here"
         },
-        "title": {
+        "title":{
           "label": "Title",
           "key": "title",
           "type": "codehinter",
@@ -140,10 +139,9 @@
           "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
           "description": "Enter filter object",
           "height": "150px",
-          "editorType": "extendedSingleLine",
-          "width": "400px"
+          "width":"400px"
         },
-        "properties": {
+        "properties":{
           "label": "Properties",
           "key": "properties",
           "type": "codehinter",
@@ -152,10 +150,10 @@
           "description": "Enter filter object",
           "height": "200px"
         },
-        "icon_type": {
+        "icon_type":{
           "label": "Icon Type",
           "key": "icon_type",
-          "className": "col-md-4",
+          "className":"col-md-4",
           "type": "dropdown",
           "description": "Icon type select",
           "list": [
@@ -179,10 +177,10 @@
           "height": "36px",
           "className": "codehinter-plugins"
         },
-        "cover_type": {
+        "cover_type":{
           "label": "Cover Type",
           "key": "cover_type",
-          "className": "col-md-4",
+          "className":"col-md-4",
           "type": "dropdown",
           "description": "Cover type select",
           "list": [
@@ -203,8 +201,8 @@
           "className": "codehinter-plugins"
         }
       },
-      "update_database": {
-        "database_id": {
+      "update_database":{
+        "database_id":{
           "label": "Database ID",
           "key": "database_id",
           "type": "codehinter",
@@ -214,7 +212,7 @@
           "className": "codehinter-plugins",
           "description": "Enter database id here"
         },
-        "title": {
+        "title":{
           "label": "Title",
           "key": "title",
           "type": "codehinter",
@@ -222,10 +220,9 @@
           "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
           "description": "Enter filter object",
           "height": "150px",
-          "editorType": "extendedSingleLine",
-          "width": "400px"
+          "width":"400px"
         },
-        "properties": {
+        "properties":{
           "label": "Properties",
           "key": "properties",
           "type": "codehinter",
@@ -234,10 +231,10 @@
           "description": "Enter filter object",
           "height": "200px"
         },
-        "icon_type": {
+        "icon_type":{
           "label": "Icon Type",
           "key": "icon_type",
-          "className": "col-md-4",
+          "className":"col-md-4",
           "type": "dropdown",
           "description": "Icon type select",
           "list": [
@@ -261,10 +258,10 @@
           "height": "36px",
           "className": "codehinter-plugins"
         },
-        "cover_type": {
+        "cover_type":{
           "label": "Cover Type",
           "key": "cover_type",
-          "className": "col-md-4",
+          "className":"col-md-4",
           "type": "dropdown",
           "description": "Cover type select",
           "list": [
@@ -286,11 +283,11 @@
         }
       }
     },
-    "page": {
+    "page":{
       "operation": {
         "label": "Operation",
         "key": "operation",
-        "className": "col-md-4",
+        "className":"col-md-4",
         "type": "dropdown-component-flip",
         "description": "Operation select",
         "list": [
@@ -316,8 +313,8 @@
           }
         ]
       },
-      "get_page": {
-        "page_id": {
+      "get_page":{
+        "page_id":{
           "label": "Page ID",
           "key": "page_id",
           "type": "codehinter",
@@ -328,11 +325,11 @@
           "description": "Enter page id here"
         }
       },
-      "create_page": {
+      "create_page":{
         "parent_type": {
           "label": "Parent Type",
           "key": "parent_type",
-          "className": "col-md-4",
+          "className":"col-md-4",
           "type": "dropdown-component-flip",
           "description": "Parent select",
           "list": [
@@ -346,8 +343,8 @@
             }
           ]
         },
-        "page_id": {
-          "page_id": {
+        "page_id":{
+          "page_id":{
             "label": "Page ID",
             "key": "page_id",
             "type": "codehinter",
@@ -357,7 +354,7 @@
             "className": "codehinter-plugins",
             "description": "Enter page id here"
           },
-          "properties": {
+          "properties":{
             "label": "Properties",
             "key": "properties",
             "type": "codehinter",
@@ -366,7 +363,7 @@
             "description": "Enter filter object",
             "height": "200px"
           },
-          "children": {
+          "children":{
             "label": "Children (Blocks)",
             "key": "children",
             "type": "codehinter",
@@ -375,10 +372,10 @@
             "description": "Enter blocks array",
             "height": "200px"
           },
-          "icon_type": {
+          "icon_type":{
             "label": "Icon Type",
             "key": "icon_type",
-            "className": "col-md-4",
+            "className":"col-md-4",
             "type": "dropdown",
             "description": "Icon type select",
             "list": [
@@ -402,10 +399,10 @@
             "height": "36px",
             "className": "codehinter-plugins"
           },
-          "cover_type": {
+          "cover_type":{
             "label": "Cover Type",
             "key": "cover_type",
-            "className": "col-md-4",
+            "className":"col-md-4",
             "type": "dropdown",
             "description": "Cover type select",
             "list": [
@@ -426,8 +423,8 @@
             "className": "codehinter-plugins"
           }
         },
-        "database_id": {
-          "database_id": {
+        "database_id":{
+          "database_id":{
             "label": "Database ID",
             "key": "database_id",
             "type": "codehinter",
@@ -437,7 +434,7 @@
             "className": "codehinter-plugins",
             "description": "Enter database id here"
           },
-          "properties": {
+          "properties":{
             "label": "Properties",
             "key": "properties",
             "type": "codehinter",
@@ -446,7 +443,7 @@
             "description": "Enter filter object",
             "height": "200px"
           },
-          "children": {
+          "children":{
             "label": "Children (Blocks)",
             "key": "children",
             "type": "codehinter",
@@ -455,10 +452,10 @@
             "description": "Enter blocks array",
             "height": "200px"
           },
-          "icon_type": {
+          "icon_type":{
             "label": "Icon Type",
             "key": "icon_type",
-            "className": "col-md-4",
+            "className":"col-md-4",
             "type": "dropdown",
             "description": "Icon type select",
             "list": [
@@ -482,10 +479,10 @@
             "height": "36px",
             "className": "codehinter-plugins"
           },
-          "cover_type": {
+          "cover_type":{
             "label": "Cover Type",
             "key": "cover_type",
-            "className": "col-md-4",
+            "className":"col-md-4",
             "type": "dropdown",
             "description": "Cover type select",
             "list": [
@@ -507,8 +504,8 @@
           }
         }
       },
-      "update_page": {
-        "page_id": {
+      "update_page":{
+        "page_id":{
           "label": "Page ID",
           "key": "page_id",
           "type": "codehinter",
@@ -518,7 +515,7 @@
           "className": "codehinter-plugins",
           "description": "Enter page id here"
         },
-        "properties": {
+        "properties":{
           "label": "Properties",
           "key": "properties",
           "type": "codehinter",
@@ -527,10 +524,10 @@
           "description": "Enter filter object",
           "height": "200px"
         },
-        "icon_type": {
+        "icon_type":{
           "label": "Icon Type",
           "key": "icon_type",
-          "className": "col-md-4",
+          "className":"col-md-4",
           "type": "dropdown",
           "description": "Icon type select",
           "list": [
@@ -554,10 +551,10 @@
           "height": "36px",
           "className": "codehinter-plugins"
         },
-        "cover_type": {
+        "cover_type":{
           "label": "Cover Type",
           "key": "cover_type",
-          "className": "col-md-4",
+          "className":"col-md-4",
           "type": "dropdown",
           "description": "Cover type select",
           "list": [
@@ -578,8 +575,8 @@
           "className": "codehinter-plugins"
         }
       },
-      "get_page_property": {
-        "page_id": {
+      "get_page_property":{
+        "page_id":{
           "label": "Page ID",
           "key": "page_id",
           "type": "codehinter",
@@ -589,7 +586,7 @@
           "className": "codehinter-plugins",
           "description": "Enter page id here"
         },
-        "property_id": {
+        "property_id":{
           "label": "Property ID",
           "key": "property_id",
           "type": "codehinter",
@@ -599,7 +596,7 @@
           "className": "codehinter-plugins",
           "description": "Enter property id here"
         },
-        "limit": {
+        "limit":{
           "label": "Limit",
           "key": "limit",
           "type": "codehinter",
@@ -609,7 +606,7 @@
           "className": "codehinter-plugins",
           "description": "Enter limit here"
         },
-        "start_cursor": {
+        "start_cursor":{
           "label": "Start cursor",
           "key": "start_cursor",
           "type": "codehinter",
@@ -620,8 +617,8 @@
           "description": "Enter cursor id"
         }
       },
-      "archive_page": {
-        "page_id": {
+      "archive_page":{
+        "page_id":{
           "label": "Page ID",
           "key": "page_id",
           "type": "codehinter",
@@ -650,11 +647,11 @@
         }
       }
     },
-    "block": {
+    "block":{
       "operation": {
         "label": "Operation",
         "key": "operation",
-        "className": "col-md-4",
+        "className":"col-md-4",
         "type": "dropdown-component-flip",
         "description": "Operation select",
         "list": [
@@ -680,8 +677,8 @@
           }
         ]
       },
-      "get_block": {
-        "block_id": {
+      "get_block":{
+        "block_id":{
           "label": "Block ID",
           "key": "block_id",
           "type": "codehinter",
@@ -692,8 +689,8 @@
           "description": "Enter block id here"
         }
       },
-      "update_block": {
-        "block_id": {
+      "update_block":{
+        "block_id":{
           "label": "Block ID",
           "key": "block_id",
           "type": "codehinter",
@@ -703,7 +700,7 @@
           "className": "codehinter-plugins",
           "description": "Enter block id here"
         },
-        "properties": {
+        "properties":{
           "label": "Properties",
           "key": "properties",
           "type": "codehinter",
@@ -734,8 +731,8 @@
           ]
         }
       },
-      "get_block_children": {
-        "block_id": {
+      "get_block_children":{
+        "block_id":{
           "label": "Block ID",
           "key": "block_id",
           "type": "codehinter",
@@ -745,7 +742,7 @@
           "className": "codehinter-plugins",
           "description": "Enter block id here"
         },
-        "limit": {
+        "limit":{
           "label": "Limit",
           "key": "limit",
           "type": "codehinter",
@@ -755,7 +752,7 @@
           "className": "codehinter-plugins",
           "description": "Enter limit here"
         },
-        "start_cursor": {
+        "start_cursor":{
           "label": "Start cursor",
           "key": "start_cursor",
           "type": "codehinter",
@@ -766,8 +763,8 @@
           "description": "Enter cursor id"
         }
       },
-      "append_block_children": {
-        "block_id": {
+      "append_block_children":{
+        "block_id":{
           "label": "Block ID",
           "key": "block_id",
           "type": "codehinter",
@@ -777,7 +774,7 @@
           "className": "codehinter-plugins",
           "description": "Enter block id here"
         },
-        "children": {
+        "children":{
           "label": "Children (Blocks)",
           "key": "children",
           "type": "codehinter",
@@ -787,8 +784,8 @@
           "height": "200px"
         }
       },
-      "delete_block": {
-        "block_id": {
+      "delete_block":{
+        "block_id":{
           "label": "Block ID",
           "key": "block_id",
           "type": "codehinter",
@@ -800,11 +797,11 @@
         }
       }
     },
-    "user": {
+    "user":{
       "operation": {
         "label": "Operation",
         "key": "operation",
-        "className": "col-md-4",
+        "className":"col-md-4",
         "type": "dropdown-component-flip",
         "description": "Operation select",
         "list": [
@@ -818,8 +815,8 @@
           }
         ]
       },
-      "get_user": {
-        "user_id": {
+      "get_user":{
+        "user_id":{
           "label": "User ID",
           "key": "user_id",
           "type": "codehinter",
@@ -830,8 +827,8 @@
           "description": "Enter user id here"
         }
       },
-      "list_users": {
-        "limit": {
+      "list_users":{
+        "limit":{
           "label": "Limit",
           "key": "limit",
           "type": "codehinter",
@@ -841,7 +838,7 @@
           "className": "codehinter-plugins",
           "description": "Enter limit here"
         },
-        "start_cursor": {
+        "start_cursor":{
           "label": "Start cursor",
           "key": "start_cursor",
           "type": "codehinter",

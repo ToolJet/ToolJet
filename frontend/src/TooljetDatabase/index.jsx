@@ -40,8 +40,6 @@ export const TooljetDatabaseContext = createContext({
   pageSize: 50,
   setPageSize: () => {},
   handleRefetchQuery: () => {},
-  foreignKeys: [],
-  setForeignKeys: () => [],
 });
 
 export const TooljetDatabase = (props) => {
@@ -63,16 +61,11 @@ export const TooljetDatabase = (props) => {
   const [sortFilters, setSortFilters] = useState({});
   const [collapseSidebar, setCollapseSidebar] = useState(false);
 
-  const [foreignKeys, setForeignKeys] = useState([]);
-
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
   };
   const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
-  // let { state } = useLocation();
-
-  // console.log('state', selectedTable);
 
   if (!admin) {
     navigate('/');
@@ -127,8 +120,6 @@ export const TooljetDatabase = (props) => {
       handleRefetchQuery,
       loadingState,
       setLoadingState,
-      foreignKeys,
-      setForeignKeys,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -141,7 +132,6 @@ export const TooljetDatabase = (props) => {
       totalRecords,
       queryFilters,
       sortFilters,
-      foreignKeys,
     ]
   );
 
@@ -149,9 +139,6 @@ export const TooljetDatabase = (props) => {
 
   useEffect(() => {
     updateSidebarNAV('');
-    // if (state.id && state.name) {
-    //   setSelectedTable({ id: state.id, table_name: state.name });
-    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

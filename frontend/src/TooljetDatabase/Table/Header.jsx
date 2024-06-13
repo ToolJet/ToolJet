@@ -29,8 +29,6 @@ const Header = ({
   setIsEditRowDrawerOpen,
   setFilterEnable,
   filterEnable,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
@@ -39,6 +37,7 @@ const Header = ({
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
   const {
+    columns,
     totalRecords,
     sortFilters,
     setSortFilters,
@@ -101,14 +100,15 @@ const Header = ({
         return;
       }
 
-      const { processed_rows: processedRows } = data.result;
-      const toastMessage = `${pluralize(processedRows, 'row')} processed`;
+      const { processed_rows: processedRows, rows_inserted: rowsInserted, rows_updated: rowsUpdated } = data.result;
+      const toastMessage =
+        `${pluralize(rowsInserted, 'new row')} added, ` + `${pluralize(rowsUpdated, 'row')} updated.`;
 
       toast.success(toastMessage, {
         position: 'top-center',
       });
 
-      setUploadResult({ processedRows });
+      setUploadResult({ processedRows, rowsInserted, rowsUpdated });
     } catch (error) {
       toast.error(error.errors, { position: 'top-center' });
       setIsBulkUploading(false);
@@ -199,8 +199,6 @@ const Header = ({
                       setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
                       selectedRowIds={selectedRowIds}
                       rows={rows}
-                      referencedColumnDetails={referencedColumnDetails}
-                      setReferencedColumnDetails={setReferencedColumnDetails}
                     />
                   ) : null}
                   {Object.keys(selectedRowIds).length > 0 && (
@@ -260,14 +258,10 @@ const Header = ({
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
         rows={rows}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <BulkUploadDrawer
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}

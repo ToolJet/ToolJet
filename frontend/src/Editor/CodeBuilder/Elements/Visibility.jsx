@@ -1,20 +1,22 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const Visibility = ({ onVisibilityChange, styleDefinition }) => {
-  const iconVisibility = styleDefinition?.iconVisibility?.value || false;
-
+export const Visibility = ({ value, onVisibilityChange, component }) => {
   return (
     <div
       data-cy={`icon-visibility-button`}
       className="cursor-pointer visibility-eye"
-      style={{ top: iconVisibility && '42%' }}
+      style={{ top: component.component.definition.styles.iconVisibility?.value && '42%' }}
       onClick={(e) => {
         e.stopPropagation();
-        onVisibilityChange(!iconVisibility);
+        onVisibilityChange(!component.component.definition.styles?.iconVisibility?.value);
       }}
     >
-      <SolidIcon name={iconVisibility ? 'eye1' : 'eyedisable'} width="20" fill={'var(--slate8)'} />
+      <SolidIcon
+        name={component.component.definition.styles?.iconVisibility?.value ? 'eye1' : 'eyedisable'}
+        width="20"
+        fill={'var(--slate8)'}
+      />
     </div>
   );
 };

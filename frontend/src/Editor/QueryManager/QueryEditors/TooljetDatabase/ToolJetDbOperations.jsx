@@ -39,7 +39,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
   );
   const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
-  const [tableForeignKeyInfo, setTableForeignKeyInfo] = useState({});
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
@@ -227,7 +226,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
       setTableInfo((info) => ({
         ...info,
-        [table_name]: data?.result?.columns.map(({ column_name, data_type, keytype, ...rest }) => ({
+        [table_name]: data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
           Header: column_name,
           accessor: column_name,
           dataType: data_type,
@@ -236,18 +235,13 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         })),
       }));
 
-      setTableForeignKeyInfo((fk_info) => ({
-        ...fk_info,
-        [table_name]: data?.result?.foreign_keys || [],
-      }));
-
       if (isNewTableAdded) {
         setJoinTableOptions((joinOptions) => {
           const { fields } = joinOptions;
           const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
           newFields.push(
-            ...(data?.result?.columns
-              ? data.result.columns.map((col) => ({
+            ...(data?.result
+              ? data.result.map((col) => ({
                   name: col.column_name,
                   table: tableId,
                   // alias: `${tableId}_${col.column_name}`,
@@ -318,8 +312,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       deleteJoinTableOptions,
       findTableDetails,
       findTableDetailsByName,
-      tableForeignKeyInfo,
-      setTableForeignKeyInfo,
     }),
     [
       organizationId,
@@ -374,8 +366,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         return;
       }
 
-      if (data?.result?.columns?.length > 0) {
-        const columnList = data?.result?.columns.map(({ column_name, data_type, keytype, ...rest }) => ({
+      if (data?.result?.length > 0) {
+        const columnList = data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
           Header: column_name,
           accessor: column_name,
           dataType: data_type,
@@ -385,18 +377,13 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         setColumns(columnList);
         setTableInfo((prevTableInfo) => ({ ...prevTableInfo, [table_name]: columnList }));
 
-        setTableForeignKeyInfo((fk_info) => ({
-          ...fk_info,
-          [table_name]: data?.result?.foreign_keys || [],
-        }));
-
         if (isNewTableAdded) {
           setJoinTableOptions((joinOptions) => {
             const { fields } = joinOptions;
             const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
             newFields.push(
-              ...(data?.result?.columns
-                ? data.result.columns.map((col) => ({
+              ...(data?.result
+                ? data.result.map((col) => ({
                     name: col.column_name,
                     table: tableId,
                     // alias: `${tableId}_${col.column_name}`,

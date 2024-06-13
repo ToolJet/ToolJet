@@ -60,10 +60,7 @@ export const DropDown = function DropDown({
 
   const setExposedItem = (value, index, onSelectFired = false) => {
     setCurrentValue(value);
-    if (onSelectFired) {
-      setExposedVariable('value', value);
-      fireEvent('onSelect');
-    } else setExposedVariable('value', value);
+    onSelectFired ? setExposedVariable('value', value).then(fireEvent('onSelect')) : setExposedVariable('value', value);
     setExposedVariable('selectedOptionLabel', index === undefined ? undefined : display_values?.[index]);
   };
 

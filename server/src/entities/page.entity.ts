@@ -37,9 +37,6 @@ export class Page {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ name: 'auto_compute_layout' })
-  autoComputeLayout: boolean;
-
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 

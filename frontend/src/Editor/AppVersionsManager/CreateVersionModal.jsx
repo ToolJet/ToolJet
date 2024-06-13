@@ -6,25 +6,17 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 
 export const CreateVersion = ({
   appId,
+  appVersions,
+  setAppVersions,
   setAppDefinitionFromVersion,
   showCreateAppVersion,
   setShowCreateAppVersion,
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
-  const { versionsPromotedToEnvironment: appVersions, createNewVersionAction } = useEnvironmentsAndVersionsStore(
-    (state) => ({
-      appVersionsLazyLoaded: state.appVersionsLazyLoaded,
-      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
-      lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
-      createNewVersionAction: state.actions.createNewVersionAction,
-    }),
-    shallow
-  );
 
   const { t } = useTranslation();
   const { editingVersion } = useAppVersionStore(
@@ -54,29 +46,30 @@ export const CreateVersion = ({
 
     setIsCreatingVersion(true);
 
-    createNewVersionAction(
-      appId,
-      versionName,
-      selectedVersion.id,
-      (newVersion) => {
+    appVersionService
+      .create(appId, versionName, selectedVersion.id)
+      .then((data) => {
         toast.success('Version Created');
-        setVersionName('');
-        setIsCreatingVersion(false);
-        setShowCreateAppVersion(false);
+        appVersionService.getAll(appId).then((data) => {
+          setVersionName('');
+          setIsCreatingVersion(false);
+          setAppVersions(data.versions);
+          setShowCreateAppVersion(false);
+        });
+
         appVersionService
-          .getAppVersionData(appId, newVersion.id)
+          .getAppVersionData(appId, data.id)
           .then((data) => {
             setAppDefinitionFromVersion(data);
           })
           .catch((error) => {
             toast.error(error);
           });
-      },
-      (error) => {
+      })
+      .catch((error) => {
         toast.error(error?.error);
         setIsCreatingVersion(false);
-      }
-    );
+      });
   };
 
   return (

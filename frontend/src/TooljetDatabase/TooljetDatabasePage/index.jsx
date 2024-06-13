@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Table from '../Table';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import Warning from '../Icons/warning.svg';
 import WarningDark from '../Icons/warning-dark.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -50,12 +51,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
             </div>
           </div>
         </div>
-        <Drawer
-          isOpen={isCreateTableDrawerOpen}
-          onClose={() => setIsCreateTableDrawerOpen(false)}
-          position="right"
-          drawerStyle={{ width: '630px' }}
-        >
+        <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
           <CreateTableForm
             onCreate={(tableInfo) => {
               tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {

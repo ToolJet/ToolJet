@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDragLayer } from 'react-dnd';
-import { ItemTypes } from './editorConstants';
+import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from '@/_helpers/appUtils';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -97,7 +97,7 @@ export const CustomDragLayer = ({ canvasWidth, onDragging }) => {
   }
 
   return (
-    <div style={{ ...layerStyles, ...(isDragging ? { zIndex: 1061 } : {}) }}>
+    <div style={layerStyles}>
       <div
         style={getItemStyles(
           delta,

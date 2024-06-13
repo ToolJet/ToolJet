@@ -1,3 +1,4 @@
+
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Oracle DB datasource",
@@ -27,8 +28,7 @@
         "type": "codehinter",
         "description": "Enter query",
         "placeholder": "SELECT * FROM customers",
-        "height": "150px",
-        "editorType": "multiline"
+        "height": "150px"
       }
     },
     "gui": {
@@ -55,6 +55,7 @@
           "height": "36px",
           "className": "codehinter-plugins",
           "placeholder": "Enter table"
+          
         },
         "primary_key_column": {
           "label": "Primary key column",
@@ -72,8 +73,7 @@
           "key": "records",
           "type": "codehinter",
           "description": "Enter records",
-          "height": "150px",
-          "editorType": "extendedSingleLine"
+          "height": "150px"
         }
       }
     }

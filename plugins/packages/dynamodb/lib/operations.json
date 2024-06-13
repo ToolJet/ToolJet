@@ -67,8 +67,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter key name",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "query_table": {
@@ -78,8 +77,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter query condition",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "scan_table": {
@@ -89,8 +87,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter scan condition",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "delete_item": {
@@ -111,8 +108,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter key name",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "update_item": {
@@ -122,8 +118,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter update condition",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "create_table": {
@@ -155,8 +150,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter new item details to insert",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     }
   }

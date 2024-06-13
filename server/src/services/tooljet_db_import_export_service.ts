@@ -16,14 +16,14 @@ export class TooljetDbImportExportService {
 
     if (!internalTable) throw new NotFoundException('Tooljet database table not found');
 
-    const { columns, foreign_keys } = await this.tooljetDbService.perform(organizationId, 'view_table', {
+    const columnSchema = await this.tooljetDbService.perform(organizationId, 'view_table', {
       id: tjDbDto.table_id,
     });
 
     return {
       id: internalTable.id,
       table_name: internalTable.tableName,
-      schema: { columns, foreign_keys },
+      schema: { columns: columnSchema },
     };
   }
 
@@ -46,12 +46,9 @@ export class TooljetDbImportExportService {
       ? `${tjDbDto.table_name}_${new Date().getTime()}`
       : tjDbDto.table_name;
 
-    // TODO: Add support for foreign keys
-    const { columns } = tjDbDto.schema;
-
     return await this.tooljetDbService.perform(organizationId, 'create_table', {
       table_name: tableName,
-      ...{ columns, foreign_keys: [] },
+      ...tjDbDto.schema,
     });
   }
 

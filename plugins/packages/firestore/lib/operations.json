@@ -192,8 +192,7 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "update_document": {
@@ -213,8 +212,7 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "set_document": {
@@ -234,8 +232,7 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "bulk_update": {
@@ -267,8 +264,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter records",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "delete_document": {
