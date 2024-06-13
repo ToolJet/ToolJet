@@ -122,6 +122,7 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
+      label: column?.label,
       Cell: function ({
         cell,
         isEditable,

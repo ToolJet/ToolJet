@@ -529,6 +529,7 @@ export const tableConfig = {
             fxActiveFields: [],
             columnSize: 30,
             columnType: 'string',
+            label: 'id',
           },
           {
             name: 'photo',
@@ -540,6 +541,7 @@ export const tableConfig = {
             objectFit: 'contain',
             borderRadius: '100',
             columnSize: 70,
+            label: 'photo',
           },
           {
             name: 'name',
@@ -548,6 +550,7 @@ export const tableConfig = {
             fxActiveFields: [],
             columnSize: 130,
             columnType: 'string',
+            label: 'name',
           },
           {
             name: 'email',
@@ -556,6 +559,7 @@ export const tableConfig = {
             fxActiveFields: [],
             columnSize: 230,
             columnType: 'string',
+            label: 'email',
           },
           {
             name: 'date',
@@ -568,6 +572,7 @@ export const tableConfig = {
             parseDateFormat: 'DD/MM/YYYY',
             isDateSelectionEnabled: true,
             columnSize: 130,
+            label: 'date',
           },
           {
             name: 'mobile_number',
@@ -576,6 +581,7 @@ export const tableConfig = {
             fxActiveFields: [],
             columnType: 'number',
             columnSize: 140,
+            label: 'mobile number',
           },
           {
             name: 'interest',
@@ -585,6 +591,8 @@ export const tableConfig = {
             fxActiveFields: [],
             columnType: 'newMultiSelect',
             columnSize: 300,
+            label: 'interest',
+
             options: [
               {
                 label: 'Reading',

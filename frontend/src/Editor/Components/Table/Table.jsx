@@ -428,7 +428,6 @@ export function Table({
   const tableRef = useRef();
 
   const columnProperties = useDynamicColumn ? generatedColumn : component.definition.properties.columns.value;
-
   let columnData = generateColumnsData({
     columnProperties,
     columnSizes,
@@ -1346,7 +1345,7 @@ export function Table({
                                               resolveReferences(columnHeaderWrap, currentState) === 'wrap',
                                           })}
                                         >
-                                          {column.render('Header')}
+                                          {column?.label ?? column.render('Header')}
                                         </div>
                                       </div>
                                       <div
