@@ -93,7 +93,6 @@
     .react-datepicker {
         width: 250px;
         border: none;
-        // background-color: var(--surfaces-surface-01);
     }
 
     .dark-theme {
@@ -283,7 +282,6 @@
         padding: 0px;
         height: 24px;
         text-align: center;
-        // margin-right: 6px !important;
         color: var(--text-primary);
         font-weight: 500;
     }
@@ -291,9 +289,6 @@
     /* Optional: Style when select is focused */
     select:focus {
         outline: none;
-        /* Remove default focus outline */
-        // box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-        /* Add a subtle box-shadow when focused */
     }
 
     .react-datepicker__triangle {
@@ -319,10 +314,6 @@
         .react-datepicker__time-box {
             width: 85px;
             margin: 0px;
-        }
-
-        .react-datepicker__time-list {
-            // padding: 4px 6px;
         }
 
         .react-datepicker__time-list-item {
@@ -415,7 +406,6 @@
     transform: translateY(-50%)
 }
 
-
 td {
     &.isEditable {
 
@@ -449,7 +439,6 @@ td {
 
     .react-datepicker__header {
         background-color: #232e3c !important;
-
     }
 }
 
