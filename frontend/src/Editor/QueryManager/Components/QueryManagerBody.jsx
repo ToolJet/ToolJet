@@ -138,7 +138,11 @@ export const QueryManagerBody = ({
     const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
     optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
   };
+  const [previewHeight, setPreviewHeight] = useState(40); //preview non expanded height
 
+  const calculatePreviewHeight = (height, previewPanelExpanded) => {
+    setPreviewHeight(previewPanelExpanded ? height : 40);
+  };
   const renderDataSourcesList = () => {
     return (
       <div
@@ -333,14 +337,17 @@ export const QueryManagerBody = ({
   if (selectedQueryId !== selectedQuery?.id) return;
 
   return (
-    <div className={` query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}>
+    <div
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}
+      style={{ height: `calc(100% - ${previewHeight + 40}px )`, overflowY: 'auto' }} //40px in preview header height
+    >
       {selectedQuery?.data_source_id && selectedDataSource !== null ? activeTab == 1 && renderChangeDataSource() : null}
       {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : activeTab == 1 && renderQueryElement()}
       {selectedDataSource === null || !selectedQuery
         ? renderDataSourcesList()
         : activeTab == 2 && renderTransformation()}
       {selectedDataSource !== null ? activeTab == 3 && renderQueryOptions() : null}
-      <Preview darkMode={darkMode} />
+      <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
     </div>
   );
 };

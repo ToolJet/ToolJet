@@ -202,18 +202,16 @@ const QueryPanel = ({
           />
           <div className="query-definition-pane-wrapper">
             <div className="query-definition-pane">
-              <div>
-                <QueryManager
-                  toggleQueryEditor={toggleQueryEditor}
-                  dataQueries={dataQueries}
-                  dataQueriesChanged={updateDataQueries}
-                  appId={appId}
-                  darkMode={darkMode}
-                  allComponents={allComponents}
-                  appDefinition={appDefinition}
-                  editorRef={editorRef}
-                />
-              </div>
+              <QueryManager
+                toggleQueryEditor={toggleQueryEditor}
+                dataQueries={dataQueries}
+                dataQueriesChanged={updateDataQueries}
+                appId={appId}
+                darkMode={darkMode}
+                allComponents={allComponents}
+                appDefinition={appDefinition}
+                editorRef={editorRef}
+              />
             </div>
           </div>
         </div>

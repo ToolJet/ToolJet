@@ -305,6 +305,8 @@ $border-radius: 4px;
   }
 
   .query-definition-pane {
+    height: 100%;
+
     .header {
       border: solid var(--slate5);
       border-width: 0px 0px 1px 0px;
@@ -993,6 +995,7 @@ $border-radius: 4px;
 //query manager
 .query-manager {
   background-color: var(--base);
+  height: 100%;
 
   .header {
     background-color: var(--base);

@@ -13,7 +13,7 @@ import { getTheme, tabs } from '../constants';
 import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
-const Preview = ({ darkMode }) => {
+const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
   const [isJson, setIsJson] = useState(false);
   const [isDragging, setDragging] = useState(false);
@@ -21,15 +21,19 @@ const Preview = ({ darkMode }) => {
 
   const storedHeight = usePreviewPanelHeight();
   // initialize height with stored height if present in state
-  const [height, setHeight] = useState(storedHeight);
   const heightSetOnce = useRef(!!storedHeight);
   const previewPanelExpanded = usePreviewPanelExpanded();
-
+  const [height, setHeight] = useState(storedHeight);
   const [theme, setTheme] = useState(() => getTheme(darkMode));
   const queryPreviewData = usePreviewData();
   const previewLoading = usePreviewLoading();
   const previewPanelRef = useRef();
   const queryPanelHeight = usePanelHeight();
+
+  useEffect(() => {
+    calculatePreviewHeight(height, previewPanelExpanded);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     useQueryPanelStore.getState().actions.updatePreviewPanelHeight(height);
@@ -114,6 +118,7 @@ const Preview = ({ darkMode }) => {
 
   const onMouseUp = () => {
     setDragging(false);
+    calculatePreviewHeight(height, previewPanelExpanded);
   };
 
   const onMouseDown = () => {
@@ -144,6 +149,7 @@ const Preview = ({ darkMode }) => {
         <div
           onClick={() => {
             useQueryPanelStore.getState().actions.setPreviewPanelExpanded(!previewPanelExpanded);
+            calculatePreviewHeight(height, !previewPanelExpanded);
           }}
           className="left"
         >
