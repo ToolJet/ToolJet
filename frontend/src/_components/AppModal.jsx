@@ -128,7 +128,13 @@ export function AppModal({
       title={title}
       footerContent={
         <>
-          <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
+          <ButtonSolid
+            variant="tertiary"
+            onClick={closeModal}
+            data-cy="cancel-button"
+            className="modal-footer-divider"
+            disabled={isLoading}
+          >
             {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid
@@ -161,6 +167,7 @@ export function AppModal({
               style={{
                 borderColor: errorText ? '#DB4324 !important' : 'initial',
               }}
+              disabled={isLoading}
             />
             {errorText ? (
               <small
