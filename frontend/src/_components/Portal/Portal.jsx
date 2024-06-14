@@ -85,12 +85,12 @@ const Modal = ({
         className={`resize-handle portal-header d-flex ${darkMode ? 'dark-mode-border' : ''}`}
         style={{ ...portalStyles }}
       >
-        <div className="w-100 ">
+        <div className="w-100">
           <span
             style={{
               textTransform: 'none',
             }}
-            className="codehinder-popup-badge"
+            className="color-indigo9"
             data-cy="codehinder-popup-badge"
           >
             {componentName ?? 'Editor'}

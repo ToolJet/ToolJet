@@ -1,3 +1,4 @@
+
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Appwrite datasource",
@@ -37,7 +38,7 @@
         }
       ]
     },
-    "list_docs": {
+    "list_docs":{
       "collectionId": {
         "label": "Collection ID",
         "key": "collectionId",
@@ -176,8 +177,7 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter document body",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "update_document": {
@@ -206,8 +206,7 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter document body",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "delete_document": {
@@ -261,8 +260,7 @@
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter records",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     }
   }

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { ChangesComponent } from '../TooljetDatabase/constants';
-import cx from 'classnames';
 
 export function ConfirmDialog({
   show,
@@ -21,14 +19,6 @@ export function ConfirmDialog({
   onCloseIconClick,
   footerStyle,
   confirmIcon,
-  currentPrimaryKeyIcons = {},
-  newPrimaryKeyIcons = {},
-  isEditToolJetDbTable = false,
-  foreignKeyChanges = [],
-  existingReferencedTableName = '',
-  existingReferencedColumnName = '',
-  currentReferencedTableName = '',
-  currentReferencedColumnName = '',
 }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
@@ -83,26 +73,9 @@ export function ConfirmDialog({
         </Modal.Header>
       )}
       <Modal.Body className="confirm-dialogue-body" data-cy="modal-message">
-        {isEditToolJetDbTable && (
-          <ChangesComponent
-            currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-            newPrimaryKeyIcons={newPrimaryKeyIcons}
-            foreignKeyChanges={foreignKeyChanges}
-            existingReferencedTableName={existingReferencedTableName}
-            existingReferencedColumnName={existingReferencedColumnName}
-            currentReferencedTableName={currentReferencedTableName}
-            currentReferencedColumnName={currentReferencedColumnName}
-          />
-        )}
         {message}
       </Modal.Body>
-      <Modal.Footer
-        className={cx({
-          'mt-3': !footerStyle?.marginTop,
-          '': footerStyle?.marginTop,
-        })}
-        style={footerStyle}
-      >
+      <Modal.Footer className="mt-3" style={footerStyle}>
         <ButtonSolid variant={cancelButtonType} onClick={handleClose} data-cy="cancel-button">
           {cancelButtonText ?? t('globals.cancel', 'Cancel')}
         </ButtonSolid>

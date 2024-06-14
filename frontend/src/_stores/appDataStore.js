@@ -1,12 +1,6 @@
 import { appVersionService } from '@/_services';
-import { create, findAllEntityReferences, zustandDevTools } from './utils';
+import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
-import { useResolveStore } from './resolverStore';
-import { useEditorStore } from './editorStore';
-import { useDataQueriesStore } from './dataQueriesStore';
-import _ from 'lodash';
-import { dfs, handleReferenceTransactions } from './handleReferenceTransactions';
-import { isValidUUID } from '@/_helpers/utils';
 
 const initialState = {
   editingVersion: null,
@@ -52,17 +46,11 @@ export const useAppDataStore = create(
             get().actions.setIsSaving(true);
             const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
 
-            let updateDiff = appDefinitionDiff.updateDiff;
-
-            if (appDefinitionDiff.operation === 'update') {
-              updateDiff = useResolveStore.getState().actions.findReferences(updateDiff);
-            }
-
             appVersionService
               .autoSaveApp(
                 appId,
                 versionId,
-                updateDiff,
+                appDefinitionDiff.updateDiff,
                 appDefinitionDiff.type,
                 pageId,
                 appDefinitionDiff.operation,
@@ -90,14 +78,7 @@ export const useAppDataStore = create(
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
-          const entityIdMappingData = useResolveStore.getState().actions.findReferences(events);
-
-          const response = await appVersionService.saveAppVersionEventHandlers(
-            appId,
-            versionId,
-            entityIdMappingData,
-            updateType
-          );
+          const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events, updateType);
 
           get().actions.setIsSaving(false);
           set({ eventsUpdatedLoader: false, actionsUpdatedLoader: false });
@@ -110,23 +91,7 @@ export const useAppDataStore = create(
             }
           });
 
-          const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])?.filter(
-            (entity) => entity && isValidUUID(entity)
-          );
-
-          const manager = useResolveStore.getState().referenceMapper;
-          let newEvents = JSON.parse(JSON.stringify(updatedEvents));
-
-          entityReferencesInEvents.forEach((entity) => {
-            const entityrefExists = manager.has(entity);
-
-            if (entityrefExists) {
-              const value = manager.get(entity);
-              newEvents = dfs(newEvents, entity, value);
-            }
-          });
-
-          set(() => ({ events: newEvents }));
+          set(() => ({ events: updatedEvents }));
         },
 
         createAppVersionEventHandlers: async (event) => {
@@ -176,7 +141,6 @@ export const useAppDataStore = create(
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
-        setComponents: (components) => set(() => ({ components })),
         setMetadata: (metadata) => set(() => ({ metadata })),
         setEventToDeleteLoaderIndex: (index) => set(() => ({ eventToDeleteLoaderIndex: index })),
         updateIsTJDarkMode: (isTJDarkMode) => set({ isTJDarkMode }),
@@ -184,58 +148,6 @@ export const useAppDataStore = create(
     }),
     { name: 'App Data Store' }
   )
-);
-
-const itemToObserve = 'appDiffOptions';
-
-useAppDataStore.subscribe(
-  (state) => {
-    const isComponentNameUpdated = state[itemToObserve]?.componentNameUpdated;
-
-    if (!isComponentNameUpdated) return;
-
-    const { appDefinition, currentPageId, isUpdatingEditorStateInProcess } = useEditorStore.getState();
-    const { dataQueries } = useDataQueriesStore.getState();
-
-    if (isComponentNameUpdated && !isUpdatingEditorStateInProcess) {
-      const components = JSON.parse(JSON.stringify(state.components));
-      const _dataQueries = JSON.parse(JSON.stringify(dataQueries));
-      const currentAppEvents = JSON.parse(JSON.stringify(state.events));
-      const updatedNames = [];
-
-      const referenceManager = useResolveStore.getState().referenceMapper;
-
-      Object.entries(state.components).forEach(([id, component]) => {
-        const existingName = referenceManager.get(id);
-
-        if (existingName === component.component.name) {
-          return;
-        }
-
-        referenceManager.update(id, component.component.name);
-
-        updatedNames.push({
-          id: id,
-          name: existingName,
-          newName: component.component.name,
-          type: 'components',
-        });
-      });
-
-      if (updatedNames.length === 0) return;
-
-      handleReferenceTransactions(
-        components,
-        _dataQueries,
-        currentAppEvents,
-        appDefinition,
-        currentPageId,
-        state.currentVersionId,
-        updatedNames
-      );
-    }
-  },
-  (state) => [state[itemToObserve]]
 );
 
 export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion, shallow);

@@ -4,6 +4,7 @@ import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import FxButton from '../CodeBuilder/Elements/FxButton';
+import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences, validateName, getWorkspaceId } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -14,9 +15,6 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
-import { useEditorStore } from '@/_stores/editorStore';
-import CodeHinter from '../CodeEditor';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import AppModeToggle from './AppModeToggle';
 
 export const GlobalSettings = ({
@@ -25,18 +23,11 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   isMaintenanceOn,
+  backgroundFxQuery,
+  realState,
 }) => {
-  const realState = useCurrentState();
   const { t } = useTranslation();
-
-  const { canvasBackgroundColor, backgroundFxQuery } = useEditorStore(
-    (state) => ({
-      canvasBackgroundColor: state.canvasBackground?.canvasBackgroundColor,
-      backgroundFxQuery: state.canvasBackground?.backgroundFxQuery,
-    }),
-    shallow
-  );
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = useState(false);
   const [forceCodeBox, setForceCodeBox] = useState(true);
   const [showConfirmation, setConfirmationShow] = useState(false);
@@ -325,8 +316,9 @@ export const GlobalSettings = ({
                         onChangeComplete={(color) => {
                           const options = {
                             canvasBackgroundColor: [color.hex, color.rgb],
-                            backgroundFxQuery: '',
+                            backgroundFxQuery: color.hex,
                           };
+
                           globalSettingsChanged(options);
                         }}
                       />
@@ -362,8 +354,11 @@ export const GlobalSettings = ({
                     {!forceCodeBox && (
                       <CodeHinter
                         cyLabel={`canvas-bg-colour`}
+                        currentState={realState}
                         initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                        lang="javascript"
+                        value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                        theme={darkMode ? 'monokai' : 'duotone-light'}
+                        mode="javascript"
                         className="canvas-hinter-wrap"
                         lineNumbers={false}
                         onChange={(color) => {

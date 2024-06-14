@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker, Autocomplete, Polygon } from '@react-google-maps/api';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ export const Map = function Map({
   component,
   darkMode,
   onComponentClick,
+  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   styles,
@@ -26,27 +27,27 @@ export const Map = function Map({
   const { t } = useTranslation();
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
-  const canAddNewMarkers = addNewMarkersProp ? resolveWidgetFieldValue(addNewMarkersProp.value) : false;
+  const canAddNewMarkers = addNewMarkersProp ? resolveReferences(addNewMarkersProp.value, currentState) : false;
 
   const canSearchProp = component.definition.properties.canSearch;
-  const canSearch = canSearchProp ? resolveWidgetFieldValue(canSearchProp.value) : false;
+  const canSearch = canSearchProp ? resolveReferences(canSearchProp.value, currentState) : false;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
   const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
 
   try {
-    parsedWidgetVisibility = resolveWidgetFieldValue(parsedWidgetVisibility);
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) {
     console.log(err);
   }
 
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
-  const [mapCenter, setMapCenter] = useState(() => resolveWidgetFieldValue(center));
+  const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
   const [markers, setMarkers] = useState(defaultMarkers);
 
   const containerStyle = {
@@ -96,7 +97,7 @@ export const Map = function Map({
   }
 
   useEffect(() => {
-    const resolvedCenter = resolveWidgetFieldValue(center);
+    const resolvedCenter = resolveReferences(center, currentState);
     setMapCenter(resolvedCenter);
     onComponentOptionsChanged(component, [['center', addMapUrlToJson(resolvedCenter)]]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -125,7 +126,7 @@ export const Map = function Map({
 
   useEffect(() => {
     setExposedVariable('setLocation', async function (lat, lng) {
-      if (lat && lng) setMapCenter(resolveWidgetFieldValue({ lat, lng }));
+      if (lat && lng) setMapCenter(resolveReferences({ lat, lng }, currentState));
     });
   }, [setMapCenter]);
 

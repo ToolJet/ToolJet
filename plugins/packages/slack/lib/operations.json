@@ -44,7 +44,6 @@
         "description": "Enter message",
         "className": "codehinter-plugins",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "placeholder": "Enter message"
       }
     },
@@ -59,6 +58,7 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter channel id"
       },
+
       "limit": {
         "label": "Limit",
         "key": "limit",
@@ -69,6 +69,7 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter limit"
       },
+
       "cursor": {
         "label": "Next cursor",
         "key": "cursor",

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
+import 'codemirror/theme/duotone-light.css';
 import { componentTypes } from '../WidgetManager/components';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { debounce } from 'lodash';
@@ -95,6 +96,7 @@ export function CodeBuilder({ initialValue, onChange, components }) {
         return { item: item };
       });
     } else {
+      console.log(currentWord);
       filteredVariables = fuse.search(currentWord);
     }
     return filteredVariables.map((variable) => renderVariable(type, key, variable.item.name));

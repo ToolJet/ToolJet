@@ -104,8 +104,7 @@ export const RenderHighlight = ({
             }}
             useCustomStyles={true}
             value={annotation.data.text}
-            // useMenuPortal={false}
-            useMenuPortal
+            useMenuPortal={false}
             styles={selectElementStyles(darkMode, '100%')}
           />
         </div>

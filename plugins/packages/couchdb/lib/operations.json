@@ -107,7 +107,6 @@
         "type": "codehinter",
         "description": "Enter list of records",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "placeholder": "[{ \"fields\": \"value\"}]"
       }
     },
@@ -140,7 +139,6 @@
         "type": "codehinter",
         "description": "Enter body",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "placeholder": "[{ \"fields\": \"value\"}]"
       }
     },
@@ -175,7 +173,6 @@
         "type": "codehinter",
         "description": "",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "placeholder": ""
       }
     },

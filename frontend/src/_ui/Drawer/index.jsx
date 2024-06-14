@@ -24,7 +24,6 @@ const Drawer = ({
   position = 'left',
   removeWhenClosed = true,
   drawerStyle,
-  isForeignKeyRelation = false,
 }) => {
   const bodyRef = useRef(document.querySelector('body'));
   const portalRootRef = useRef(document.getElementById('tooljet-drawer-root') || createPortalRoot());
@@ -79,16 +78,9 @@ const Drawer = ({
     };
   }
 
-  const isForeignKeyDrawer = isForeignKeyRelation ? 'foreignKeyDrawerRight' : '';
-  const isForeignKeyBackdrop = isForeignKeyRelation ? 'foreignKeyBackdrop' : '';
-
   return createPortal(
     <ErrorBoundary showFallback={true}>
-      <FocusTrap
-        // The allowOutsideClick option is used to enable or disable clicks outside the popover for functions that are inside the popover but not within the focus trap. On the other hand, clickOutsideDeactivates is used to unfocus the last focused element which is outside the popover.
-        focusTrapOptions={{ initialFocus: false, allowOutsideClick: true, clickOutsideDeactivates: true }}
-        active={isOpen && !disableFocus}
-      >
+      <FocusTrap focusTrapOptions={{ initialFocus: false }} active={isOpen && !disableFocus}>
         <div
           aria-hidden={`${!isOpen}`}
           className={cx('drawer-container', {
@@ -99,10 +91,10 @@ const Drawer = ({
           })}
         >
           <Toast toastOptions={toastOptions} />
-          <div className={cx('drawer', position, isForeignKeyDrawer)} role="dialog" style={drawerStyle}>
+          <div className={cx('drawer', position)} role="dialog" style={drawerStyle}>
             {children}
           </div>
-          <div className={cx('backdrop', isForeignKeyBackdrop)} onClick={onClose} />
+          <div className="backdrop" onClick={onClose} />
         </div>
       </FocusTrap>
     </ErrorBoundary>,

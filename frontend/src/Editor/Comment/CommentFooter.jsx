@@ -40,7 +40,7 @@ function CommentFooter({
     setOpen(false);
   };
 
-  useHotkeys('meta+enter, control+enter', () => handleClick(), { scopes: 'editor' });
+  useHotkeys('meta+enter, control+enter', () => handleClick());
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <>

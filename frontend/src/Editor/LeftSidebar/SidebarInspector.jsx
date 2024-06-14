@@ -63,19 +63,13 @@ export const LeftSidebarInspector = ({
   const memoizedJSONData = React.useMemo(() => {
     const updatedQueries = {};
     const { queries: currentQueries } = currentState;
-    // if (!_.isEmpty(dataQueries)) {
-    //   const copyCurrentQueies = JSON.parse(JSON.stringify(currentQueries));
-    //   dataQueries.forEach((query) => {
-    //     updatedQueries[query.name] = _.merge(copyCurrentQueies[query.name], {
-    //       id: query.id,
-    //       isLoading: false,
-    //       data: [],
-    //       rawData: [],
-    //     });
-    //   });
-    // }
+    if (!_.isEmpty(dataQueries)) {
+      dataQueries.forEach((query) => {
+        updatedQueries[query.name] = _.merge(currentQueries[query.name], { id: query.id });
+      });
+    }
     // const data = _.merge(currentState, { queries: updatedQueries });
-    const jsontreeData = { ...currentState, queries: currentQueries };
+    const jsontreeData = { ...currentState, queries: updatedQueries };
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;

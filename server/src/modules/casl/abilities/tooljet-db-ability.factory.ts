@@ -16,9 +16,6 @@ export enum Action {
   BulkUpload = 'bulkUpload',
   JoinTables = 'joinTables',
   EditColumn = 'editColumn',
-  AddForeignKey = 'addForeignKey',
-  UpdateForeignKey = 'updateForeignKey',
-  DeleteForeignKey = 'deleteForeignKey',
 }
 
 type Subjects = 'all';
@@ -44,9 +41,6 @@ export class TooljetDbAbilityFactory {
       can(Action.RenameTable, 'all');
       can(Action.BulkUpload, 'all');
       can(Action.EditColumn, 'all');
-      can(Action.AddForeignKey, 'all');
-      can(Action.UpdateForeignKey, 'all');
-      can(Action.DeleteForeignKey, 'all');
     }
 
     if (isPublicAppRequest || isUserLoggedin) {

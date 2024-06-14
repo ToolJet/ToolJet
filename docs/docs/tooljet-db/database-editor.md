@@ -87,13 +87,10 @@ The constraints for the primary key column ensure the integrity and uniqueness o
 
 <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/single-field-pk.gif" alt="ToolJet database"/>
 
-#### Constraints
-- The primary key column cannot contain null values.
-- The primary key column must have unique values across all rows.
-
 #### Limitations
-- Every table must have at least one primary key.
+- The primary key column cannot contain null values.
 - The primary key column cannot have the Boolean data type.
+- The primary key column must have unique values across all rows.
 
 ### Creating Composite Primary Key
 
@@ -107,12 +104,10 @@ By utilizing a composite primary key, you can uniquely identify records based on
 
 <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/composite-pk.gif" alt="ToolJet database"/>
 
-#### Constraints
+#### Limitations
 - None of the composite key columns can contain null values.
-- The combination of values across all composite key columns must be unique for each row in the table.
-
-#### Limitation
 - The composite key columns cannot be of the Boolean data type.
+- The combination of values across all composite key columns must be unique for each row in the table.
 
 ### Modifying Primary Key
 
@@ -148,18 +143,22 @@ You cannot delete a Primary Key of a target table if it is being used as a forei
 
 A foreign key relation refers to linking one column or set of columns of the current table with one column or set of columns in an existing table. This relationship establishes a connection between the two tables, enabling the current source table to reference the existing target table. While creating a Foreign Key relationship, you can select the desired [action](#available-actions) to be performed on the source row when the referenced(target) row is updated or deleted.
 
-### Constraints
-- The target table must contain a column having the same data type as the column in the source table.
-- The column that has to be referenced in the target table must have Unique constraint explicitly.
-- The target table must already exist before adding the Foreign Key relationship in the source table.
-
 ### Limitations
 - Self-references are not allowed i.e. Target table and Source table cannot be the same.
+- The target table must contain a column having the same data type as the column in the source table.
 - No foreign key can be created with a column of serial data type in the source table.
-- No foreign key can be reference a column in target table that is a part of its composite Primary key.
-
-### Exception
 - The foreign key created with a column having integer data type in the source table can also reference a column of serial data type in the target table.
+- The source table must already exist before creating the Foreign Key relationship.
+
+### Available Actions
+
+| Option | Description |
+| --- | --- |
+| No Action | If a row in the target table is updated, it will throw an error if there are rows in the source table referencing it. |
+| Cascade | Updates to rows in the target table will be reflected in the corresponding rows of the source table that reference it. |
+| Restrict | No updates can be made to the target table. |
+| Set to NULL | If a default value is present, this option will set the foreign key value in the source table to NULL. |
+| Set to Default | If a default value is present, this option will set the foreign key value in the source table to the default value of the column. |
 
 ### Creating Foreign Key
 
@@ -179,45 +178,6 @@ To create a Foreign Key relationship, follow these steps:
 
 </div>
 
-### Foreign Key Actions
-
-When creating a foreign key relationship, ToolJet Database lets you choose from several actions to be performed on the source row when the referenced row in the target table is updated or deleted.
-
-#### On Update
-
-| Option | Description |
-| --- | --- |
-| Restrict (default) | Restrict any updates on target table if any referenced row is being updated. |
-| Cascade | Any updates in referenced row in target table will show up in the source table as well. |
-| Set NULL | Any updates in referenced row in target table will set it's instances in the source table as NULL. |
-| Set to Default | Any updates referenced row in target table will set it's instances in the source table as default value of foreign key column of source table. |
-
-#### On Delete
-
-| Option | Description |
-| --- | --- |
-| Restrict (default) | Restrict any deletion on target table if any referenced row is being updated. |
-| Cascade | Any deletion of referenced row in target table will delete the row having it's instance in the source table as well. |
-| Set NULL | Any deletion of referenced row in target table will set it's instances in the source table as NULL. |
-| Set to Default | Any deletion of referenced row in target table will set it's instances in the source table as default value of foreign key column of source table. |
-
-### Referential Integrity
-
-The foreign key constraint ensures referential integrity between the source and target tables. This constraint enforces that the foreign key column in the source table has one of the unique values present in the foreign key column in the target table. <br/>
-- When creating a new row in the source table the column with the foreign key relation will have a dropdown with the unique values present in the target table. This ensures that the data in the source table is always consistent with the data in the target table. 
-- On the bottom of the dropdown, there is a button to **Open referenced table** which will take you to the target table.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/create-new-row-fk.png" alt="ToolJet database" />
-</div>
-
-- When editing the value of a foreign key cell in an existing row of the source table, the dropdown will show the unique values present in the target table. This ensures that even when the data in the source table is being updated, it is always consistent with the data in the target table.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/edit-row-fk.png" alt="ToolJet database" />
-</div>
-
-
 ### Example
 
 Let's consider an example where we want to create a foreign key relationship between the `Orders` and `Customers` tables in an e-commerce application.
@@ -226,20 +186,20 @@ First, create the following two tables in the ToolJet Database:
 
 **Customers**
 
-| Column Name | Data Type | Primary Key    | Not Null | Unique   |
-|-------------|-----------|:--------------:|:--------:|:--------:|
-| customer_id | int       | ✅             | ✅        | ✅       |
-| name        | varchar   | ❌             | ✅        | ❌       |
-| email       | varchar   | ❌             | ✅        | ✅       |
+| Column Name | Data Type | Primary Key    | Null | Unique  |
+|-------------|-----------|:--------------:|:------:|:--------:|
+| customer_id | int       | ✅             | ❌    | ✅      |
+| name        | varchar   | ❌             | ❌    | ❌      |
+| email       | varchar   | ❌             | ❌    | ✅      |
 
 **Orders**
 
-| Column Name  | Data Type | Primary Key    | Not Null | Unique   |
-|--------------|-----------|:--------------:|:--------:|:--------:|
-| order_id     | int       |  ✅            | ✅        | ✅       |
-| customer_id  | int       |  ❌            | ✅        | ❌       |
-| order_date   | varchar   |  ❌            | ✅        | ❌       |
-| total_amount | float     |  ❌            | ✅        | ❌       |
+| Column Name  | Data Type | Primary Key    | Null | Unique  |
+|--------------|-----------|:--------------:|:------:|:--------:|
+| order_id     | int       |  ✅            | ❌    | ✅      |
+| customer_id  | int       |  ❌            | ❌    | ❌      |
+| order_date   | varchar   |  ❌            | ❌    | ❌      |
+| total_amount | float     |  ❌            | ❌    | ❌      |
 
 We want to create a foreign key relationship between the `customer_id` column in the `Orders` table and the `customer_id` column in the `Customers` table.
 

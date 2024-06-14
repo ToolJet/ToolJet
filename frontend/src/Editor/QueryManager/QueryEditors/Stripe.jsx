@@ -1,11 +1,11 @@
 import React from 'react';
-// import 'codemirror/theme/duotone-light.css';
+import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
 import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
-import CodeHinter from '@/Editor/CodeEditor';
 
 const operationColorMapping = {
   get: 'azure',
@@ -231,10 +231,13 @@ class StripeComponent extends React.Component {
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
-                                type="basic"
                                 initialValue={this.state.options.params.path[param.name]}
+                                mode="text"
                                 placeholder={'Value'}
+                                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                                lineNumbers={false}
                                 onChange={(value) => this.changeParam('path', param.name, value)}
+                                height={'32px'}
                               />
                             </div>
                             <span
@@ -284,10 +287,13 @@ class StripeComponent extends React.Component {
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
-                                type="basic"
                                 initialValue={this.state.options.params?.query[param.name] ?? ''}
+                                mode="text"
                                 placeholder={'Value'}
+                                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                                lineNumbers={false}
                                 onChange={(value) => this.changeParam('query', param.name, value)}
+                                height={'32px'}
                               />
                             </div>
                             <span
@@ -337,10 +343,13 @@ class StripeComponent extends React.Component {
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
-                                type="basic"
                                 initialValue={this.state.options.params?.request[param] ?? ''}
+                                mode="text"
                                 placeholder={'Value'}
+                                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                                lineNumbers={false}
                                 onChange={(value) => this.changeParam('request', param, value)}
+                                height={'32px'}
                               />
                             </div>
                             <span

@@ -49,6 +49,7 @@
         }
       ]
     },
+
     "insert_record": {
       "tableId": {
         "label": "Table id",
@@ -79,10 +80,10 @@
         "mode": "javascript",
         "placeholder": "[{name: 'Tom', age: 30},{name: 'Jane', age: 32}]",
         "description": "Enter rows",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
+
     "delete_record": {
       "tableId": {
         "label": "Table id",
@@ -113,8 +114,7 @@
         "mode": "javascript",
         "placeholder": "CustomerName='Alfreds Futterkiste'",
         "description": "Enter condition",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryOptions": {
         "label": "Query options",
@@ -123,8 +123,7 @@
         "mode": "javascript",
         "placeholder": "{ location: 'US', dryRun: true }",
         "description": "Enter query options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryResultsOptions": {
         "label": "Query results options",
@@ -133,10 +132,10 @@
         "mode": "javascript",
         "placeholder": "{ wrapIntegers: true }",
         "description": "Enter Query results options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
+
     "create_table": {
       "tableId": {
         "label": "Table id",
@@ -167,8 +166,7 @@
         "mode": "javascript",
         "placeholder": "{schema: [{name: 'Name', type: 'STRING', mode: 'REQUIRED'},{name: 'Age', type: 'INTEGER'}], location: 'US' }",
         "description": "Enter options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "delete_table": {
@@ -235,8 +233,7 @@
         "type": "codehinter",
         "placeholder": "column1, column2, ... ",
         "description": "Enter viewcolumns",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "condition": {
         "label": "Condition",
@@ -245,8 +242,7 @@
         "mode": "javascript",
         "placeholder": "CustomerName='Alfreds Futterkiste'",
         "description": "Enter condition",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryOptions": {
         "label": "Query options",
@@ -255,8 +251,7 @@
         "mode": "javascript",
         "placeholder": "{ location: 'US', dryRun: true }",
         "description": "Enter query options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryResultsOptions": {
         "label": "Query results options",
@@ -265,8 +260,7 @@
         "mode": "javascript",
         "placeholder": "{ wrapIntegers: true }",
         "description": "Enter Query results options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "update_record": {
@@ -298,8 +292,7 @@
         "type": "codehinter",
         "placeholder": "{{({name:'bob',age:30})}}",
         "description": "Enter columns",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "condition": {
         "label": "Condition",
@@ -308,8 +301,7 @@
         "mode": "javascript",
         "placeholder": "CustomerName='Alfreds Futterkiste'",
         "description": "Enter condition",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryOptions": {
         "label": "Query options",
@@ -318,8 +310,7 @@
         "mode": "javascript",
         "placeholder": "{ location: 'US', dryRun: true }",
         "description": "Enter query options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryResultsOptions": {
         "label": "Query results options",
@@ -328,8 +319,7 @@
         "mode": "javascript",
         "placeholder": "{ wrapIntegers: true }",
         "description": "Enter Query results options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "list_tables": {
@@ -350,10 +340,10 @@
         "label": "Query",
         "key": "query",
         "type": "codehinter",
+        "mode": "text",
         "placeholder": "SELECT name FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = 'TX' LIMIT 100",
         "description": "Enter query",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryOptions": {
         "label": "Query options",
@@ -362,8 +352,7 @@
         "mode": "javascript",
         "placeholder": "{ location: 'US', dryRun: true }",
         "description": "Enter query options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       },
       "queryResultsOptions": {
         "label": "Query results options",
@@ -372,8 +361,7 @@
         "mode": "javascript",
         "placeholder": "{ wrapIntegers: true }",
         "description": "Enter Query results options",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     }
   }

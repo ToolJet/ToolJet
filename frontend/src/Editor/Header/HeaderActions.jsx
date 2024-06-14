@@ -22,14 +22,6 @@ function HeaderActions({
     }),
     shallow
   );
-
-  const clearSelectionBorder = () => {
-    const selectedElems = document.getElementsByClassName('resizer-select');
-    for (const element of selectedElems) {
-      element.classList.remove('resizer-select');
-    }
-  };
-
   return (
     <div className={cx('editor-header-actions', { 'w-100': showFullWidth })}>
       {showToggleLayoutBtn && (
@@ -51,10 +43,7 @@ function HeaderActions({
               type="button"
               aria-selected="true"
               tabIndex="0"
-              onClick={() => {
-                clearSelectionBorder();
-                toggleCurrentLayout('desktop');
-              }}
+              onClick={() => toggleCurrentLayout('desktop')}
               data-cy={`button-change-layout-to-desktop`}
             >
               <SolidIcon
@@ -75,7 +64,6 @@ function HeaderActions({
               aria-selected="false"
               tabIndex="-1"
               onClick={() => {
-                clearSelectionBorder();
                 toggleCurrentLayout('mobile');
               }}
               data-cy={`button-change-layout-to-mobile`}

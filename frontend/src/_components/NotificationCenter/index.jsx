@@ -36,6 +36,11 @@ export const NotificationCenter = ({ darkMode }) => {
     fetchData();
   };
 
+  React.useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRead]);
+
   const overlay = (
     <div
       className={`notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card ${
@@ -108,7 +113,7 @@ export const NotificationCenter = ({ darkMode }) => {
   );
 
   return (
-    <OverlayTrigger onEntering={fetchData} rootClose trigger="click" placement="right" overlay={overlay}>
+    <OverlayTrigger rootClose trigger="click" placement="right" overlay={overlay}>
       <div>
         <ToolTip message="Comment notifications" placement="right">
           <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">

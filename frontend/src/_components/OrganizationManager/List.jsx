@@ -1,31 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { getAvatar, decodeEntities } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
-import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
-import { shallow } from 'zustand/shallow';
 
-/* TODO: 
-  each workspace related component has organizations list component which can be moved to a single wrapper. 
-  otherwise this component will intiate everytime we switch between pages
-*/
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentSessionValue;
-  const { fetchOrganizations, organizationList, isGettingOrganizations } = useCurrentSessionStore(
-    (state) => ({
-      organizationList: state.organizations,
-      isGettingOrganizations: state.isGettingOrganizations,
-      fetchOrganizations: state.actions.fetchOrganizations,
-    }),
-    shallow
-  );
+  const [organizationList, setOrganizationList] = useState([]);
+  const [getOrgStatus, setGetOrgStatus] = useState('');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
-    fetchOrganizations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setGetOrgStatus('loading');
+    const sessionObservable = authenticationService.currentSession.subscribe((newSession) => {
+      setOrganizationList(newSession.organizations ?? []);
+      if (newSession.organizations?.length > 0) setGetOrgStatus('success');
+    });
+
+    () => sessionObservable.unsubscribe();
   }, []);
 
   const switchOrganization = (id) => {
@@ -61,7 +54,7 @@ export const OrganizationList = function () {
   return (
     <div className="org-select-container">
       <CustomSelect
-        isLoading={isGettingOrganizations}
+        isLoading={getOrgStatus === 'loading'}
         options={options}
         value={current_organization_id}
         onChange={(id) => switchOrganization(id)}

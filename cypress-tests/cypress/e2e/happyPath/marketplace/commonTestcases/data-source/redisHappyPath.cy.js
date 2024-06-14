@@ -32,10 +32,6 @@ describe("Data source Redis", () => {
       "have.text",
       postgreSqlText.allDataSources()
     );
-    cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
-      "have.text",
-      postgreSqlText.commonlyUsed
-    );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
       postgreSqlText.allDatabase()

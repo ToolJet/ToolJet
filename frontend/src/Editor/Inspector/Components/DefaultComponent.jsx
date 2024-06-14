@@ -5,8 +5,7 @@ import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
-// import { AllComponents } from '@/Editor/Box';
-import { AllComponents } from '@/_helpers/editorHelpers';
+import { AllComponents } from '@/Editor/Box';
 
 const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput'];
 const PROPERTIES_VS_ACCORDION_TITLE = {

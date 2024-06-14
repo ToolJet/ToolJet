@@ -1,8 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
-import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
-import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { resolveReferences, resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 
 export const Tabs = function Tabs({
   id,
@@ -10,6 +9,7 @@ export const Tabs = function Tabs({
   width,
   height,
   containerProps,
+  currentState,
   removeComponent,
   setExposedVariable,
   setExposedVariables,
@@ -24,13 +24,13 @@ export const Tabs = function Tabs({
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
   // config for tabs. Includes title
-  const tabs = isExpectedDataType(resolveWidgetFieldValue(component.definition.properties?.tabs?.value), 'array');
+  const tabs = isExpectedDataType(resolveReferences(component.definition.properties.tabs.value, currentState), 'array');
   let parsedTabs = tabs;
-  parsedTabs = resolveWidgetFieldValue(parsedTabs);
+  parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
 
-  //* renderOnlyActiveTab - TRUE (renders only the content of the active tab)
-  //* renderOnlyActiveTab - FALSE (renders all the content irrespective of the active tab to persist value from other tabs)
+  // renderOnlyActiveTab - TRUE (renders only the content of the active tab)
+  // renderOnlyActiveTab - FALSE (renders all the content irrespective of the active tab to persist value from other tabs)
   const renderOnlyActiveTab = component.definition.properties?.renderOnlyActiveTab?.value ?? false;
 
   // set index as id if id is not provided
@@ -39,23 +39,25 @@ export const Tabs = function Tabs({
   // Highlight color - for active tab text and border
   const highlightColor = component.definition.styles?.highlightColor?.value ?? '#f44336';
   let parsedHighlightColor = highlightColor;
-  parsedHighlightColor = resolveWidgetFieldValue(highlightColor);
+  parsedHighlightColor = resolveWidgetFieldValue(highlightColor, currentState);
 
   // Default tab
   let parsedDefaultTab = defaultTab;
-  parsedDefaultTab = resolveWidgetFieldValue(parsedDefaultTab, 1);
+  parsedDefaultTab = resolveWidgetFieldValue(parsedDefaultTab, currentState, 1);
 
   const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
-  const parsedHideTabs = typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(hideTabs) : hideTabs;
+  const parsedHideTabs = typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(hideTabs, currentState) : hideTabs;
   const parsedRenderOnlyActiveTab =
-    typeof renderOnlyActiveTab !== 'boolean' ? resolveWidgetFieldValue(renderOnlyActiveTab) : renderOnlyActiveTab;
+    typeof renderOnlyActiveTab !== 'boolean'
+      ? resolveWidgetFieldValue(renderOnlyActiveTab, currentState)
+      : renderOnlyActiveTab;
 
   let parsedWidgetVisibility = widgetVisibility;
 
   try {
-    parsedWidgetVisibility = resolveWidgetFieldValue(parsedWidgetVisibility);
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) {
     console.log(err);
   }
@@ -63,8 +65,6 @@ export const Tabs = function Tabs({
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
   const [bgColor, setBgColor] = useState('#fff');
-
-  const [tabSwitchingOnProgress, setTabSwitchingOnProgress] = useState(false);
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
@@ -74,7 +74,7 @@ export const Tabs = function Tabs({
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab, darkMode]);
+  }, [currentState, currentTab]);
 
   function computeTabVisibility(componentId, id) {
     let tabVisibility = 'hidden';
@@ -126,17 +126,9 @@ export const Tabs = function Tabs({
         removeComponent={removeComponent}
         containerCanvasWidth={width - 4}
         parentComponent={component}
-        readOnly={tab.id !== currentTab}
       />
     </div>
   );
-
-  function shouldRenderTabContent(tab) {
-    if (tabSwitchingOnProgress || parsedRenderOnlyActiveTab) {
-      return tab.id === currentTab;
-    }
-    return true; // Render by default if no specific conditions are met
-  }
 
   return (
     <div
@@ -160,15 +152,9 @@ export const Tabs = function Tabs({
             className="nav-item"
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
-              setTabSwitchingOnProgress(true);
-
               !tab?.disabled && setCurrentTab(tab.id);
               !tab?.disabled && setExposedVariable('currentTab', tab.id);
-
-              handleLowPriorityWork(() => {
-                fireEvent('onTabSwitch');
-                setTabSwitchingOnProgress(false);
-              });
+              fireEvent('onTabSwitch');
             }}
             key={tab.id}
           >
@@ -201,8 +187,7 @@ export const Tabs = function Tabs({
           id={`${id}-${tab.id}`}
           key={tab.id}
         >
-          {shouldRenderTabContent(tab) && renderTabContent(id, tab)}
-
+          {parsedRenderOnlyActiveTab ? tab.id === currentTab && renderTabContent(id, tab) : renderTabContent(id, tab)}
           {tab.id === currentTab && (
             <SubCustomDragLayer
               parent={`${id}-${tab.id}`}

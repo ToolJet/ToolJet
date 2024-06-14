@@ -3,32 +3,24 @@ import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
+import Select from '@/_ui/Select';
 import _ from 'lodash';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
-import Information from '@/_ui/Icon/solidIcons/Information';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components/ToolTip';
+import { isSerialDataType } from '../constants';
+import BigInt from '../Icons/Biginteger.svg';
+import Float from '../Icons/Float.svg';
+import Integer from '../Icons/Integer.svg';
+import CharacterVar from '../Icons/Text.svg';
+import Boolean from '../Icons/Toggle.svg';
+import Serial from '../Icons/Serial.svg';
 import './styles.scss';
-import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
-import { Link } from 'react-router-dom';
-import { getPrivateRoute } from '@/_helpers/routes';
-import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
-import ArrowRight from '../Icons/ArrowRight.svg';
 
-const EditRowForm = ({
-  onEdit,
-  onClose,
-  selectedRowObj = null,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
-}) => {
+const EditRowForm = ({ onEdit, onClose, rowIdToBeEdited = null }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, selectedTableData } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(rowIdToBeEdited);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
-  const currentValue = selectedRowObj;
+  const currentValue = selectedTableData.find((row) => row.id === selectedRow);
   const [inputValues, setInputValues] = useState([]);
 
   useEffect(() => {
@@ -65,14 +57,13 @@ const EditRowForm = ({
               currentValue[key] === null || currentValue[key]?.toString() === columns[index].column_default
                 ? true
                 : false;
-            return { value: value, disabled: disabledValue, label: value };
+            return { value: value, disabled: disabledValue };
           })
         : [];
 
       setInputValues(initialInputValues);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
+  }, [currentValue, selectedRow]);
 
   const [rowData, setRowData] = useState(() => {
     const data = {};
@@ -87,23 +78,6 @@ const EditRowForm = ({
     return data;
   });
 
-  const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
-    return {
-      label: key[1] === null ? 'Null' : key[1],
-      value: key[1] === null ? 'Null' : key[1],
-    };
-  });
-
-  function isMatchingForeignKeyColumn(columnName) {
-    return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
-  }
-
-  function isMatchingForeignKeyColumnDetails(columnHeader) {
-    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
-    return matchingColumn;
-  }
-
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
     const newActiveTabs = [...activeTab];
     newActiveTabs[index] = tabData;
@@ -113,19 +87,19 @@ const EditRowForm = ({
     const actualDefaultVal = defaultValue === 'true' ? true : false;
     const newInputValues = [...inputValues];
     if (defaultValue && tabData === 'Default' && dataType !== 'boolean') {
-      newInputValues[index] = { value: defaultValue, disabled: true, label: defaultValue };
+      newInputValues[index] = { value: defaultValue, disabled: true };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
-      newInputValues[index] = { value: actualDefaultVal, disabled: true, label: actualDefaultVal };
+      newInputValues[index] = { value: actualDefaultVal, disabled: true };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
-      newInputValues[index] = { value: null, disabled: true, label: null };
+      newInputValues[index] = { value: null, disabled: true };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
-      newInputValues[index] = { value: null, disabled: true, label: null };
+      newInputValues[index] = { value: null, disabled: true };
     } else if (tabData === 'Custom' && customVal.length > 0) {
-      newInputValues[index] = { value: customVal, disabled: false, label: customVal };
+      newInputValues[index] = { value: customVal, disabled: false };
     } else if (tabData === 'Custom' && customVal.length <= 0) {
-      newInputValues[index] = { value: '', disabled: false, label: '' };
+      newInputValues[index] = { value: '', disabled: false };
     } else {
-      newInputValues[index] = { value: customVal, disabled: false, label: customVal };
+      newInputValues[index] = { value: customVal, disabled: false };
     }
 
     setInputValues(newInputValues);
@@ -164,33 +138,39 @@ const EditRowForm = ({
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
-    newInputValues[index] = {
-      value: value === 'Null' ? null : value,
-      disabled: false,
-      label: value === 'Null' ? null : value,
-    };
+    newInputValues[index] = { value: value, disabled: false };
     setInputValues(newInputValues);
-    setRowData({ ...rowData, [columnName]: value === 'Null' ? null : value });
+    setRowData({ ...rowData, [columnName]: value });
+  };
+
+  const checkDataTypeIcons = (type) => {
+    switch (type) {
+      case 'integer':
+        return <Integer width="18" height="18" className="tjdb-column-header-name" />;
+      case 'bigint':
+        return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
+      case 'character varying':
+        return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
+      case 'boolean':
+        return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
+      case 'double precision':
+        return <Float width="18" height="18" className="tjdb-column-header-name" />;
+      default:
+        return type;
+    }
   };
 
   useEffect(() => {
     toast.dismiss();
   }, []);
 
+  const handleOnSelect = (selectedOption) => {
+    setSelectedRow(selectedOption);
+  };
+
   const handleSubmit = async () => {
     setFetching(true);
-    const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
-    const filterQuery = new PostgrestQueryBuilder();
-    const sortQuery = new PostgrestQueryBuilder();
-
-    primaryKeyColumns.forEach((primaryKeyColumnName) => {
-      if (selectedRowObj[primaryKeyColumnName]) {
-        filterQuery.filter(primaryKeyColumnName, 'eq', selectedRowObj[primaryKeyColumnName]);
-        sortQuery.order(primaryKeyColumnName, 'desc');
-      }
-    });
-
-    const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
+    const query = `id=eq.${selectedRow}&order=id`;
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
@@ -202,7 +182,7 @@ const EditRowForm = ({
     onEdit && onEdit();
   };
 
-  const renderElement = (columnName, dataType, index, shouldInputBeDisabled = false) => {
+  const renderElement = (columnName, dataType, isPrimaryKey, index) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -211,44 +191,18 @@ const EditRowForm = ({
       case 'double precision':
         return (
           <div style={{ position: 'relative' }}>
-            {isMatchingForeignKeyColumn(columnName) ? (
-              <DropDownSelect
-                buttonClasses="border border-end-1 foreignKeyAcces-container-drawer"
-                showPlaceHolder={true}
-                options={referenceTableDetails}
-                darkMode={darkMode}
-                emptyError={
-                  <div className="dd-select-alert-error m-2 d-flex align-items-center">
-                    <Information />
-                    No table selected
-                  </div>
-                }
-                value={inputValues[index]?.value !== null && inputValues[index]}
-                foreignKeyAccessInRowForm={true}
-                disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
-                topPlaceHolder={inputValues[index]?.value !== null && 'Select a value'}
-                onChange={(value) => handleInputChange(index, value.value, columnName)}
-                onAdd={true}
-                addBtnLabel={'Open referenced table'}
-                foreignKeys={foreignKeys}
-                setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
-                cellColumnName={columnName}
-              />
-            ) : (
-              <input
-                //defaultValue={currentValue}
-                value={inputValues[index]?.value !== null && inputValues[index]?.value}
-                type="text"
-                disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
-                onChange={(e) => handleInputChange(index, e.target.value, columnName)}
-                placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
-                className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
-                data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
-                autoComplete="off"
-                // onFocus={onFocused}
-              />
-            )}
+            <input
+              //defaultValue={currentValue}
+              value={inputValues[index]?.value !== null && inputValues[index]?.value}
+              type="text"
+              disabled={inputValues[index]?.disabled}
+              onChange={(e) => handleInputChange(index, e.target.value, columnName)}
+              placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
+              className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
+              data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
+              autoComplete="off"
+              // onFocus={onFocused}
+            />
             {inputValues[index]?.value === null ? (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             ) : null}
@@ -265,7 +219,7 @@ const EditRowForm = ({
               onChange={(e) => {
                 if (!inputValues[index]?.disabled) handleInputChange(index, e.target.checked, columnName);
               }}
-              disabled={inputValues[index]?.value === null || shouldInputBeDisabled}
+              disabled={inputValues[index]?.value === null}
             />
           </label>
         );
@@ -275,20 +229,20 @@ const EditRowForm = ({
     }
   };
 
-  let matchingObject = {};
-  let matchingObjectForCharacter = {};
+  const primaryColumn = columns.find((column) => column.constraints_type.is_primary_key)?.accessor || null;
+  const serialDatatypeColumn = columns.find((column) => column.constraints_type.is_primary_key);
 
-  const primaryKeyColumns = [];
-  const nonPrimaryKeyColumns = [];
-  columns.forEach((column) => {
-    if (column?.constraints_type?.is_primary_key) {
-      primaryKeyColumns.push({ ...column });
-    } else {
-      nonPrimaryKeyColumns.push({ ...column });
-    }
+  const options = selectedTableData.map((row) => {
+    return {
+      value: row[primaryColumn],
+      label: row[primaryColumn],
+    };
   });
 
-  const editRowColumns = [...primaryKeyColumns, ...nonPrimaryKeyColumns];
+  const headerText = primaryColumn;
+
+  let matchingObject = {};
+  let matchingObjectForCharacter = {};
 
   columns.forEach((obj) => {
     const keyName = Object.values(obj)[0];
@@ -301,51 +255,54 @@ const EditRowForm = ({
     }
   });
 
-  const isSubset = Object.entries(matchingObject).every(([key, value]) => currentValue[key] == value);
+  const isSubset = Object.entries(matchingObject).every(([key, value]) => currentValue[key] === value);
   const isSubsetForCharacter = Object.entries(matchingObjectForCharacter).every(
-    ([key, value]) => currentValue[key] == value
+    ([key, value]) => currentValue[key] === value
   );
-
-  const handleNavigateToReferencedtable = (id, name) => {
-    const data = { id: id, table_name: name };
-    localStorage.setItem('tableDetails', JSON.stringify(data));
-  };
 
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title">
-        <div className="editRow-header-container">
-          <h3 className="card-title" data-cy="edit-row-header">
-            Edit row
-          </h3>
-          {/* {foreignKeys.length > 0 &&
-            foreignKeys.map((foreignKey, index) => (
-              <ToolTip key={index} message="Open referenced table" placement="right" tooltipClassName="tootip-table">
-                <Link target="_blank" to={getPrivateRoute('database')}>
-                  <div
-                    className="edit-row-tableName"
-                    onClick={() =>
-                      handleNavigateToReferencedtable(foreignKey.referenced_table_id, foreignKey.referenced_table_name)
-                    }
-                  >
-                    <span>{foreignKey.referenced_table_name}</span> <Maximize />
-                  </div>
-                </Link>
-              </ToolTip>
-            ))} */}
-        </div>
+        <h3 className="card-title" data-cy="edit-row-header">
+          Edit a row
+        </h3>
       </div>
       <div className="card-body">
         <div>
-          {selectedRowObj &&
-            Array.isArray(editRowColumns) &&
-            editRowColumns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
-              const currentValue = selectedRowObj[accessor];
+          <div className="createRow-idContainer">
+            <div
+              className="form-label d-flex align-items-center justify-content-start mb-2"
+              data-cy={`${primaryColumn}-column-name-label`}
+            >
+              {isSerialDataType(serialDatatypeColumn) && (
+                <span style={{ width: '24px' }}>
+                  <Serial width="18" height="14" className="tjdb-column-header-name" />
+                </span>
+              )}
+              <span>{headerText}</span>
+            </div>
+
+            <div className="edit-row-container mb-3">
+              <div style={{ position: 'relative' }}>
+                <input
+                  value={selectedRow}
+                  type="text"
+                  disabled={true}
+                  className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
+                />
+              </div>
+            </div>
+          </div>
+
+          {selectedRow &&
+            Array.isArray(columns) &&
+            columns?.map(({ Header, accessor, dataType, column_default, constraints_type }, index) => {
+              const currentValue = selectedTableData.find((row) => row.id === selectedRow)?.[accessor];
               const headerText = Header;
-              const isPrimaryKey = constraints_type?.is_primary_key ?? false;
-              const isNullable = !constraints_type?.is_not_null;
-              const isSerialDataTypeColumn = dataType === 'serial';
-              const shouldInputBeDisabled = isPrimaryKey || isSerialDataTypeColumn;
+              const isPrimaryKey = constraints_type.is_primary_key;
+              const isNullable = !constraints_type.is_not_null;
+
+              if (isPrimaryKey) return null;
 
               return (
                 <div className="edit-row-container mb-3" key={index}>
@@ -354,107 +311,81 @@ const EditRowForm = ({
                       className="form-label"
                       data-cy={`${String(Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-name-label`}
                     >
-                      <div className="headerText-withIcon d-flex align-items-center justify-content-start">
-                        <span style={{ width: '24px' }}>
-                          {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
-                        </span>
-                        <span style={{ marginRight: '5px' }}>{headerText}</span>
-                        {constraints_type?.is_primary_key === true && (
-                          <span style={{ marginRight: '3px' }}>
-                            <SolidIcon name="primarykey" />
-                          </span>
-                        )}
-                        <ToolTip
-                          message={
-                            isMatchingForeignKeyColumn(Header) ? (
-                              <div>
-                                <span>Foreign key relation</span>
-                                <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                                  <span>{isMatchingForeignKeyColumnDetails(Header)?.column_names[0]}</span>
-                                  <ArrowRight />
-                                  <span>{`${isMatchingForeignKeyColumnDetails(Header)?.referenced_table_name}.${
-                                    isMatchingForeignKeyColumnDetails(Header)?.referenced_column_names[0]
-                                  }`}</span>
-                                </div>
-                              </div>
-                            ) : null
-                          }
-                          placement="top"
-                          tooltipClassName="tjdb-table-tooltip"
-                        >
-                          <div>
-                            {isMatchingForeignKeyColumn(Header) && (
-                              <span>
-                                <ForeignKeyIndicator />
-                              </span>
-                            )}
-                          </div>
-                        </ToolTip>
+                      <div className="d-flex align-items-center justify-content-start mb-2">
+                        <span style={{ width: '24px' }}>{checkDataTypeIcons(dataType)}</span>
+                        <span>{headerText}</span>
                       </div>
                     </div>
-
-                    <div
-                      className={`${
-                        darkMode ? 'row-tabs-dark' : 'row-tabs'
-                      } d-flex align-items-center justify-content-start gap-2`}
-                    >
-                      {isNullable && !isPrimaryKey && (
-                        <div
-                          onClick={() =>
-                            handleTabClick(index, 'Null', column_default, isNullable, accessor, dataType, currentValue)
-                          }
-                          style={{
-                            backgroundColor:
-                              activeTab[index] === 'Null' && !darkMode
-                                ? 'white'
-                                : activeTab[index] === 'Null' && darkMode
-                                ? '#242f3c'
-                                : 'transparent',
-                            color:
-                              activeTab[index] === 'Null' && !darkMode
-                                ? '#3E63DD'
-                                : activeTab[index] === 'Null' && darkMode
-                                ? 'white'
-                                : '#687076',
-                          }}
-                          className="row-tab-content"
-                        >
-                          Null
-                        </div>
-                      )}
-                      {column_default !== null && !isSerialDataTypeColumn && !isPrimaryKey && (
-                        <div
-                          onClick={() =>
-                            handleTabClick(
-                              index,
-                              'Default',
-                              column_default,
-                              isNullable,
-                              accessor,
-                              dataType,
-                              currentValue
-                            )
-                          }
-                          style={{
-                            backgroundColor:
-                              activeTab[index] === 'Default' && !darkMode
-                                ? 'white'
-                                : activeTab[index] === 'Default' && darkMode
-                                ? '#242f3c'
-                                : 'transparent',
-                            color:
-                              activeTab[index] === 'Default' && !darkMode
-                                ? '#3E63DD'
-                                : activeTab[index] === 'Default' && darkMode
-                                ? 'white'
-                                : '#687076',
-                          }}
-                          className="row-tab-content"
-                        >
-                          Default value
-                        </div>
-                      )}
-                      {!isSerialDataTypeColumn && !isPrimaryKey && (
+                    {index > 0 && (
+                      <div
+                        className={`${
+                          darkMode ? 'row-tabs-dark' : 'row-tabs'
+                        } d-flex align-items-center justify-content-start gap-2`}
+                      >
+                        {isNullable && (
+                          <div
+                            onClick={() =>
+                              handleTabClick(
+                                index,
+                                'Null',
+                                column_default,
+                                isNullable,
+                                accessor,
+                                dataType,
+                                currentValue
+                              )
+                            }
+                            style={{
+                              backgroundColor:
+                                activeTab[index] === 'Null' && !darkMode
+                                  ? 'white'
+                                  : activeTab[index] === 'Null' && darkMode
+                                  ? '#242f3c'
+                                  : 'transparent',
+                              color:
+                                activeTab[index] === 'Null' && !darkMode
+                                  ? '#3E63DD'
+                                  : activeTab[index] === 'Null' && darkMode
+                                  ? 'white'
+                                  : '#687076',
+                            }}
+                            className="row-tab-content"
+                          >
+                            Null
+                          </div>
+                        )}
+                        {column_default !== null && (
+                          <div
+                            onClick={() =>
+                              handleTabClick(
+                                index,
+                                'Default',
+                                column_default,
+                                isNullable,
+                                accessor,
+                                dataType,
+                                currentValue
+                              )
+                            }
+                            style={{
+                              backgroundColor:
+                                activeTab[index] === 'Default' && !darkMode
+                                  ? 'white'
+                                  : activeTab[index] === 'Default' && darkMode
+                                  ? '#242f3c'
+                                  : 'transparent',
+                              color:
+                                activeTab[index] === 'Default' && !darkMode
+                                  ? '#3E63DD'
+                                  : activeTab[index] === 'Default' && darkMode
+                                  ? 'white'
+                                  : '#687076',
+                            }}
+                            className="row-tab-content"
+                          >
+                            Default value
+                          </div>
+                        )}
                         <div
                           onClick={() =>
                             handleTabClick(
@@ -485,29 +416,17 @@ const EditRowForm = ({
                         >
                           Custom
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                  <ToolTip
-                    message={
-                      isSerialDataTypeColumn
-                        ? 'Serial data type values cannot be modified'
-                        : constraints_type?.is_primary_key
-                        ? 'Cannot edit primary key values'
-                        : null
-                    }
-                    placement="top"
-                    tooltipClassName="tootip-table"
-                    show={isSerialDataTypeColumn || constraints_type?.is_primary_key}
-                  >
-                    {renderElement(accessor, dataType, index, shouldInputBeDisabled)}
-                  </ToolTip>
+
+                  {renderElement(accessor, dataType, isPrimaryKey, index)}
                 </div>
               );
             })}
         </div>
       </div>
-      {selectedRowObj && (
+      {selectedRow && (
         <DrawerFooter
           isEditMode={true}
           fetching={fetching}

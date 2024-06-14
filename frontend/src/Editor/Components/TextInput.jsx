@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
+import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -18,6 +18,8 @@ export const TextInput = function TextInput({
   darkMode,
   dataCy,
   isResizing,
+  adjustHeightBasedOnAlignment,
+  currentLayout,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -45,8 +47,8 @@ export const TextInput = function TextInput({
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
-
-  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
+  const currentState = useCurrentState();
+  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [loading, setLoading] = useState(loadingState);
@@ -180,13 +182,11 @@ export const TextInput = function TextInput({
     const exposedVariables = {
       setText: async function (text) {
         setValue(text);
-        setExposedVariable('value', text);
-        fireEvent('onChange');
+        setExposedVariable('value', text).then(fireEvent('onChange'));
       },
       clear: async function () {
         setValue('');
-        setExposedVariable('value', '');
-        fireEvent('onChange');
+        setExposedVariable('value', '').then(fireEvent('onChange'));
       },
     };
     setExposedVariables(exposedVariables);
@@ -196,6 +196,15 @@ export const TextInput = function TextInput({
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
+
+  useEffect(() => {
+    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
+      adjustHeightBasedOnAlignment(true);
+    else {
+      adjustHeightBasedOnAlignment(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
@@ -241,7 +250,7 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
-  return (
+  const renderInput = () => (
     <>
       <div
         data-cy={`label-${String(component.name).toLowerCase()} `}
@@ -251,8 +260,8 @@ export const TextInput = function TextInput({
             ? 'flex-column'
             : 'align-items-center '
         }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
-    ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
-    ${visibility || 'invisible'}`}
+      ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
+      ${visibility || 'invisible'}`}
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
@@ -357,4 +366,6 @@ export const TextInput = function TextInput({
       )}
     </>
   );
+
+  return <>{renderInput()}</>;
 };

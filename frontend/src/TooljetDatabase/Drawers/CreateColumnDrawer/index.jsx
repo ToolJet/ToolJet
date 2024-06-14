@@ -4,16 +4,9 @@ import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import { getColumnDataType } from '../../constants';
 
-const CreateColumnDrawer = ({
-  setIsCreateColumnDrawerOpen,
-  isCreateColumnDrawerOpen,
-  rows,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
-}) => {
-  const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize, setForeignKeys } =
+const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen, rows }) => {
+  const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize } =
     useContext(TooljetDatabaseContext);
 
   return (
@@ -27,22 +20,15 @@ const CreateColumnDrawer = ({
                 return;
               }
 
-              const { foreign_keys = [] } = data?.result || {};
-              if (data?.result?.columns?.length > 0) {
+              if (data?.result?.length > 0) {
                 setColumns(
-                  data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
+                  data?.result.map(({ column_name, data_type, ...rest }) => ({
                     Header: column_name,
                     accessor: column_name,
-                    dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+                    dataType: data_type,
                     ...rest,
                   }))
                 );
-              }
-
-              if (foreign_keys.length > 0) {
-                setForeignKeys([...foreign_keys]);
-              } else {
-                setForeignKeys([]);
               }
             });
             handleRefetchQuery({}, {}, 1, pageSize);
@@ -51,8 +37,6 @@ const CreateColumnDrawer = ({
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}
           rows={rows}
-          referencedColumnDetails={referencedColumnDetails}
-          setReferencedColumnDetails={setReferencedColumnDetails}
         />
       </Drawer>
     </>

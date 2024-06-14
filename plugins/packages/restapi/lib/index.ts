@@ -111,6 +111,7 @@ export default class RestapiQueryService implements QueryService {
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
       headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
       searchParams,
+      ...(isUrlEncoded ? { form: json } : { json }),
     };
 
     const hasFiles = (json) => {
