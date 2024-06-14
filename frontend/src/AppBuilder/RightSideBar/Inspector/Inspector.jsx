@@ -66,6 +66,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Checkbox',
   'DropdownV2',
   'MultiselectV2',
+  'RadioButtonV2',
   'Button',
 ];
 
