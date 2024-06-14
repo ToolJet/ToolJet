@@ -93,6 +93,7 @@
     .react-datepicker {
         width: 250px;
         border: none;
+        background-color: var(--surfaces-surface-01);
     }
 
     .dark-theme {
@@ -367,6 +368,13 @@
 
 
 
+.react-datepicker-popper,
+.tj-datepicker-widget {
+    background-color: var(--surfaces-surface-01);
+}
+
+
+
 .react-datepicker-popper[data-placement^=bottom] {
     padding-top: 0px !important;
     margin-top: 12px;
@@ -406,6 +414,7 @@
     transform: translateY(-50%)
 }
 
+
 td {
     &.isEditable {
 
@@ -420,28 +429,4 @@ td {
 
 .react-datepicker-popper {
     z-index: 4 !important;
-}
-
-.dark-theme {
-
-    .react-datepicker {
-        background-color: #232e3c !important;
-    }
-
-    .react-datepicker__day,
-    .react-datepicker__time-name,
-    .react-datepicker__day-name,
-    .react-datepicker__current-month,
-    .react-datepicker-time__header,
-    .react-datepicker-year-header {
-        color: #fff !important;
-    }
-
-    .react-datepicker__header {
-        background-color: #232e3c !important;
-    }
-}
-
-.react-datepicker__day:hover {
-    color: #000 !important;
 }
