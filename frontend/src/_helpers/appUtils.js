@@ -102,7 +102,7 @@ export function onComponentOptionsChanged(component, options, id) {
 
     const components = getCurrentState().components;
     let componentData = components[componentName];
-    componentData = componentData || {};
+    componentData = deepClone(componentData) || {};
 
     const shouldUpdateResolvedRefsOfHints = [];
 
@@ -177,7 +177,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   const { isEditorReady, components: currentComponents } = getCurrentState();
 
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
-  let componentData = components[componentName] || {};
+  let componentData = deepClone(components[componentName]) || {};
   componentData[option_name] = value;
 
   const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
