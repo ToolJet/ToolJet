@@ -1968,7 +1968,7 @@ export const checkExistingQueryName = (newName) =>
 export const runQueries = async (queries, _ref, isOnLoad = false) => {
   try {
     for (const query of queries) {
-      if (query.options.runOnPageLoad && isQueryRunnable(query)) {
+      if (query.options.runOnPageLoad && isQueryRunnable(query) && !query.options?.requestConfirmation) {
         await runQuery(_ref, query.id, query.name, isOnLoad);
       }
     }
