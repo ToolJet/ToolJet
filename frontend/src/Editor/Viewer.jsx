@@ -929,20 +929,18 @@ class ViewerComponent extends React.Component {
                   }}
                 >
                   <div className="areas d-flex flex-rows">
-                    {pagesVisibility?.fxActive
-                      ? !resolveReferences(pagesVisibility?.value)
-                      : !pagesVisibility?.value && (
-                          <ViewerSidebarNavigation
-                            showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
-                            isMobileDevice={this.props.currentLayout === 'mobile'}
-                            pages={pages}
-                            currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-                            switchPage={this.switchPage}
-                            darkMode={this.props.darkMode}
-                            isSidebarPinned={isSidebarPinned}
-                            toggleSidebarPinned={this.toggleSidebarPinned}
-                          />
-                        )}
+                    {resolveReferences(pagesVisibility?.value) && (
+                      <ViewerSidebarNavigation
+                        showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                        isMobileDevice={this.props.currentLayout === 'mobile'}
+                        pages={pages}
+                        currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                        switchPage={this.switchPage}
+                        darkMode={this.props.darkMode}
+                        isSidebarPinned={isSidebarPinned}
+                        toggleSidebarPinned={this.toggleSidebarPinned}
+                      />
+                    )}
                     <div
                       className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
                         close: !isSidebarPinned,

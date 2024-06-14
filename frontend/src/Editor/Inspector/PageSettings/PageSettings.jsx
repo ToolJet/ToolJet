@@ -154,16 +154,12 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
                               <input
                                 className="form-check-input"
                                 type="checkbox"
-                                checked={
-                                  forceCodeBox
-                                    ? resolveReferences(properties.disableMenu.value)
-                                    : properties.disableMenu.value
-                                }
+                                checked={resolveReferences(properties.disableMenu.value)}
                                 onChange={(e) =>
                                   pageSettingsChanged(
                                     {
                                       disableMenu: {
-                                        value: forceCodeBox ? resolveReferences(e.target.checked) : e.target.checked,
+                                        value: `{{${e.target.checked}}}`,
                                         fxActive: forceCodeBox,
                                       },
                                     },
