@@ -47,7 +47,7 @@ export function renderCustomStyles(
     componentConfig.component == 'Checkbox' ||
     componentConfig.component == 'Table' ||
     componentConfig.component == 'DropdownV2' ||
-    componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'MultiselectV2' || componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'Button'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};

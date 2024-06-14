@@ -63,6 +63,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Checkbox',
   'DropdownV2',
   'MultiselectV2',
+  'RadioButtonV2',
   'Button',
 ];
 
@@ -697,6 +698,7 @@ const GetAccordion = React.memo(
 
       case 'DropdownV2':
       case 'MultiselectV2':
+      case 'RadioButtonV2':
         return <Select {...restProps} />;
 
       default: {

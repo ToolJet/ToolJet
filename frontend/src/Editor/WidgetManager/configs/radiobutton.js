@@ -1,5 +1,5 @@
 export const radiobuttonConfig = {
-  name: 'Radio-button',
+  name: 'Radio-button-legacy',
   displayName: 'Radio Button',
   description: 'Select one from multiple choices',
   component: 'RadioButton',
