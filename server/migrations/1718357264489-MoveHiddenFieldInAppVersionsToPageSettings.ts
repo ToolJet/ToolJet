@@ -16,13 +16,13 @@ export class MoveHiddenFieldInAppVersionsToPageSettings1718357264489 implements 
       if (idsToUpdate.length > 0) {
         const quotedIds = idsToUpdate.map((id) => `'${id}'`).join(',');
         await queryRunner.query(
-          `UPDATE app_versions SET page_settings = '{"properties": {"disableMenu": {"value": "{{true}}", "fxActive": false}}}' WHERE id IN (${quotedIds})`
+          `UPDATE app_versions SET page_settings = '{"properties": {"disableMenu": {"value": "{{false}}", "fxActive": false}}}' WHERE id IN (${quotedIds})`
         );
       }
       if (idsToUpdateFalse.length > 0) {
         const quotedIds = idsToUpdateFalse.map((id) => `'${id}'`).join(',');
         await queryRunner.query(
-          `UPDATE app_versions SET page_settings = '{"properties": {"disableMenu": {"value": "{{false}}", "fxActive": false}}}' WHERE id IN (${quotedIds})`
+          `UPDATE app_versions SET page_settings = '{"properties": {"disableMenu": {"value": "{{true}}", "fxActive": false}}}' WHERE id IN (${quotedIds})`
         );
       }
 
