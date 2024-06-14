@@ -1027,7 +1027,7 @@ const WidgetWrapper = ({
 
   const calculateMoveableBoxHeight = () => {
     // Early return for non input components
-    if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
+    if (!['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2'].includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};

@@ -607,7 +607,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex, _ref);
+        setTablePageIndex(event.table, event.pageIndex);
         break;
       }
 
@@ -1410,7 +1410,7 @@ export function runQuery(
   });
 }
 
-export function setTablePageIndex(tableId, index, _ref) {
+export function setTablePageIndex(tableId, index) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();

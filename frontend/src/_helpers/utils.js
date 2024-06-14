@@ -273,7 +273,7 @@ export function computeComponentName(componentType, currentComponents) {
   let currentNumber = currentComponentsForKind.length + 1;
   let _componentName = '';
   while (!found) {
-    _componentName = `${componentName.toLowerCase()}${currentNumber}`;
+    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
     if (
       Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
