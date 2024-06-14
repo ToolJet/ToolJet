@@ -1,5 +1,5 @@
 export const toggleswitchConfig = {
-  name: 'ToggleSwitch',
+  name: 'ToggleSwitchLegacy',
   displayName: 'Toggle Switch',
   description: 'User-controlled on-off switch',
   component: 'ToggleSwitch',
@@ -17,7 +17,6 @@ export const toggleswitchConfig = {
       displayName: 'Label',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'Toggle label',
       },
     },
     defaultValue: {
@@ -25,7 +24,6 @@ export const toggleswitchConfig = {
       displayName: 'Default status',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
       },
     },
   },
@@ -35,18 +33,16 @@ export const toggleswitchConfig = {
   styles: {
     textColor: {
       type: 'color',
-      displayName: 'Text Color',
+      displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
       },
     },
     toggleSwitchColor: {
       type: 'color',
-      displayName: 'Toggle Switch Color',
+      displayName: 'Toggle switch color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
       },
     },
     visibility: {
@@ -54,7 +50,6 @@ export const toggleswitchConfig = {
       displayName: 'Visibility',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: true,
       },
     },
     disabledState: {
@@ -62,7 +57,6 @@ export const toggleswitchConfig = {
       displayName: 'Disable',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
       },
     },
   },

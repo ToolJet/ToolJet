@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty } from 'lodash';
+import { camelCase, isEmpty, noop } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
@@ -136,6 +136,7 @@ const EditorInput = ({
   type,
   delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   paramLabel = '',
+  disabled = false,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -192,6 +193,7 @@ const EditorInput = ({
         class: 'cm-completionInfo-top cm-custom-completion-info',
       };
     },
+    maxRenderedOptions: 10,
   });
 
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
@@ -224,6 +226,7 @@ const EditorInput = ({
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
     'widget-code-editor': componentId,
+    'disabled-pointerevents': disabled,
   });
 
   const currentEditorHeightRef = useRef(null);
@@ -241,7 +244,7 @@ const EditorInput = ({
   return (
     <div
       ref={currentEditorHeightRef}
-      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`}
+      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
       data-cy={`${cyLabel}-input-field`}
     >
       {usePortalEditor && (
@@ -292,6 +295,7 @@ const EditorInput = ({
             className={customClassNames}
             theme={theme}
             indentWithTab={true}
+            readOnly={disabled}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>
@@ -310,10 +314,11 @@ const DynamicEditorBridge = (props) => {
     fieldMeta,
     darkMode,
     className,
-    onFxPress,
+    onFxPress = noop,
     cyLabel = '',
     onChange,
     styleDefinition,
+    component,
     onVisibilityChange,
     isEventManagerParam = false,
   } = props;
@@ -326,7 +331,6 @@ const DynamicEditorBridge = (props) => {
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
-
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
@@ -379,6 +383,7 @@ const DynamicEditorBridge = (props) => {
                 meta={fieldMeta}
                 cyLabel={cyLabel}
                 styleDefinition={styleDefinition}
+                component={component}
                 onVisibilityChange={onVisibilityChange}
               />
             )}
