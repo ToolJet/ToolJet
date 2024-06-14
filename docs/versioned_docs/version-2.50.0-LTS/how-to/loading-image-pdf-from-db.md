@@ -51,7 +51,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 </div>
 
 - After uploading, you will see the filenames displayed on their respective Filepicker components.
-- Click on the **+ Add** button in the query panel to create a new query, choose Tooljet Database as the data source, select `testDB` as Table name, and `Create Row` as Operations. Name this query *uploadFiles*.
+- Click on the **+ Add** button in the query panel to create a new query, choose ToolJet Database as the data source, select `testDB` as Table name, and `Create Row` as Operations. Name this query *uploadFiles*.
 - Under the Columns section, add two columns - `pdf` and `image`. 
 - Set the below value for the `pdf` column: 
 ```js
@@ -84,7 +84,7 @@ The upload process is now complete. Whenever files are selected in the Filepicke
 
 ## 3. View Image and PDF Files 
 
-- Create a query named *getFiles* to retrieve base64 strings from testDB: Click on **+ Add** button in the query panel, select Tooljet as Database, `testDB` as Table name, and `List rows` as Operations.
+- Create a query named *getFiles* to retrieve base64 strings from testDB: Click on **+ Add** button in the query panel, select ToolJet as Database, `testDB` as Table name, and `List rows` as Operations.
 - Enable **Run this query on application load?** and click on the **Run** button to run the getFiles query.
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>

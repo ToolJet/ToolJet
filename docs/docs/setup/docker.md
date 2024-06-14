@@ -140,7 +140,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
   :::info
   i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
 
-  ii. If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+  ii. If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
 
   iii. If you're running a linux server, `docker` might need sudo permissions. In that case you can either run:
   `sudo docker-compose up -d`

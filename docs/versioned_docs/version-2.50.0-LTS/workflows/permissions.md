@@ -5,7 +5,7 @@ title: Permissions
 
 Permissions in **ToolJet Workflows** provide a structured approach to access control, ensuring precise management of who can view, edit, or execute workflows. The below table gives a detailed summary of permissions in context of ToolJet Workflows. 
 
-| User Group                          | Workflows Dashboard Access | Create/Edit Workflows | Execute Workflows | Using Workflows in Tooljet App Builder | Enable/Disable Workflows |
+| User Group                          | Workflows Dashboard Access | Create/Edit Workflows | Execute Workflows | Using Workflows in ToolJet App Builder | Enable/Disable Workflows |
 |:------------------------------------:|:-----------------:|:--------:|:----------:|:------------:|:-------------:|
 | **Admins**                          | ✅               | ✅      | ✅       | ✅          | ✅          |
 | **Groups with App Editing Permissions** | ❌           | ❌      | ✅       | ✅          | ❌          |

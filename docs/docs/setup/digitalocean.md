@@ -87,7 +87,7 @@ Follow the steps below to configure Redis database:
 ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on DigitalOcean, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.
 :::
 
-## Deploying Tooljet Database
+## Deploying ToolJet Database
 
 If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 You can learn more about this feature [here](/docs/tooljet-database).

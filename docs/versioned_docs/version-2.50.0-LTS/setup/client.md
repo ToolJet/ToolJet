@@ -43,7 +43,7 @@ For example: `SERVE_CLIENT=false TOOLJET_SERVER_URL=https://server.tooljet.io np
 
 #### Using Load balancer
 
-Tooljet client can be hosted from Cloud Storage bucket just like hosting any other static website.
+ToolJet client can be hosted from Cloud Storage bucket just like hosting any other static website.
 Follow the instructions from google documentation [here](https://cloud.google.com/storage/docs/hosting-static-website).
 
 Summarizing the steps below:
