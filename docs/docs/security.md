@@ -10,7 +10,7 @@ slug: /security
 
 ## Uncompromised Data Security with SOC 2 Compliance
 
-With SOC 2 compliance, Tooljet ensures the highest level of data security. The adherence to SOC 2 standards mirrors the rigorous data protection measures in place, covering everything from encryption to robust access controls. It also guarantees a consistent level of service availability and process integrity, instilling confidence in our customers and stakeholders about the safe handling of their sensitive information.
+With SOC 2 compliance, ToolJet ensures the highest level of data security. The adherence to SOC 2 standards mirrors the rigorous data protection measures in place, covering everything from encryption to robust access controls. It also guarantees a consistent level of service availability and process integrity, instilling confidence in our customers and stakeholders about the safe handling of their sensitive information.
 
 </div>
 

@@ -116,7 +116,7 @@ To generate user tokens, ensure you provide a Signing Key when establishing a co
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Adding the In-App Inbox element to your Tooljet app
+### Adding the In-App Inbox element to your ToolJet app
    To set up an In-App Inbox element in your ToolJet application, refer to the [Adding In-App](https://docs.engagespot.co/docs/plugins/tooljet/adding-the-inbox-component) guide.
 
 </div>
