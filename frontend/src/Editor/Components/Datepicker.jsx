@@ -108,6 +108,8 @@ export const Datepicker = function Datepicker({
         excludeDates={excludedDates}
         customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
+        onCalendarOpen={() => (document.querySelector(`.ele-${id}`).style.zIndex = 3)}
+        onCalendarClose={() => (document.querySelector(`.ele-${id}`).style.zIndex = '')}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
