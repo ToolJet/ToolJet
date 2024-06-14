@@ -115,7 +115,7 @@ export const Container = ({
   // const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
-  const [isContainerFocused, setContainerFocus] = useState(false);
+  const [isContainerFocused, setContainerFocus] = useState(true);
   const [canvasHeight, setCanvasHeight] = useState(null);
 
   useEffect(() => {
@@ -156,7 +156,7 @@ export const Container = ({
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
             const cliptext = await navigator.clipboard.readText();
-            addComponents(
+            const newComponent = addComponents(
               currentPageId,
               appDefinition,
               appDefinitionChanged,
@@ -164,6 +164,7 @@ export const Container = ({
               JSON.parse(cliptext),
               true
             );
+            setSelectedComponent(newComponent.id, newComponent.component);
           } catch (err) {
             console.log(err);
           }
@@ -235,6 +236,7 @@ export const Container = ({
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
     updateCanvasHeight(boxes);
+    noOfBoxs != 0 && setContainerFocus(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs]);
 
