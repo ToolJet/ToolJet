@@ -1,7 +1,7 @@
 // for selects and dropdowns across app dashboard
 @import "./componentdesign.scss";
 .react-select__control {
-    background-color: var(--page-default) !important;
+    background-color: var(--base) !important;
     border: 1px solid var(--slate7) !important;
 
     &:active {
@@ -57,6 +57,7 @@
         width: 262px;
         height: 32px;
         border: none !important;
+        background-color: var(--page-default) !important;
 
         &:hover {
             background: var(--slate2) !important;
