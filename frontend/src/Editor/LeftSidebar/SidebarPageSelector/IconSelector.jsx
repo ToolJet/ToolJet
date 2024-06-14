@@ -84,8 +84,8 @@ export default function IconSelector({ iconName, iconColor, updatePageIcon, page
       rootClose={true}
       overlay={eventPopover()}
     >
-      <div className="d-flex align-items-center" role="button">
-        <div className="" style={{ marginRight: '2px' }}>
+      <div className="d-flex align-items-center icon-selector" role="button">
+        <div className="">
           <IconElement
             fill={`${darkMode ? '#fff' : iconColor}`}
             color={`${darkMode ? '#fff' : iconColor}`}

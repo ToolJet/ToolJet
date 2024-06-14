@@ -940,7 +940,7 @@ class ViewerComponent extends React.Component {
                   }}
                 >
                   <div className="areas d-flex flex-rows">
-                    {resolveReferences(pagesVisibility?.value) && (
+                    {!resolveReferences(pagesVisibility?.value) && (
                       <ViewerSidebarNavigation
                         showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}

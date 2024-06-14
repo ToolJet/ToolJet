@@ -26,6 +26,9 @@ export const ViewerSidebarNavigation = ({
 
   const { definition: { styles, properties } = {} } = getCurrentState().pageSettings ?? {};
   const computeStyles = (isSelected, isHovered) => {
+    if (darkMode) {
+      return {};
+    }
     const baseStyles = {
       pill: {
         borderRadius: `${styles?.pillRadius?.value}px`,
@@ -85,6 +88,7 @@ export const ViewerSidebarNavigation = ({
       hidden: properties?.style === 'icon',
     },
   };
+  console.log({ styles });
   return (
     <div
       className={classNames('navigation-area', {
@@ -98,7 +102,7 @@ export const ViewerSidebarNavigation = ({
         height: `calc(100% - ${showHeader ? APP_HEADER_HEIGHT : 0}px)`,
         top: showHeader ? '47px' : '0px',
         bottom: '0px',
-        background: styles?.backgroundColor?.value,
+        background: !darkMode && styles?.backgroundColor?.value,
         border: `${styles?.pillRadius?.value}px`,
       }}
     >
@@ -126,6 +130,7 @@ export const ViewerSidebarNavigation = ({
                 selectedItem={page?.id === currentPageId}
                 CustomIcon={!labelStyle?.icon?.hidden && IconElement}
                 customStyles={computeStyles}
+                darkMode={darkMode}
               >
                 {!labelStyle?.label?.hidden && (
                   <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-3 text-wrap page-name">

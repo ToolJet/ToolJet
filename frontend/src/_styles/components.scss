@@ -139,12 +139,13 @@ $btn-dark-color: #FFFFFF;
 
     .option-icon {
       width: 25px;
-      background: white;
+      background: var(--slate7);
       height: 25px;
       border-radius: 6px;
       border: 1px solid var(--slate10);
       padding: 0px;
       visibility: unset !important;
+      margin-left: auto !important;
     }
 
     .card,

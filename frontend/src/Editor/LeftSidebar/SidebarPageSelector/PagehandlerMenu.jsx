@@ -120,7 +120,7 @@ export const PagehandlerMenu = ({
         >
           <SolidIcon
             viewBox="0 0 20 24"
-            fill="var(--slate9)"
+            fill="var(--slate12)"
             width="20"
             view
             dataCy={`page-menu`}

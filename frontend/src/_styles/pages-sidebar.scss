@@ -7,6 +7,10 @@
         transition: var(--tran-01);
     }
 
+    .page-name {
+        font-size: 14px;
+    }
+
     .navigation-area {
         z-index: 2;
         border-right: 1px solid var(--slate6);
@@ -75,8 +79,22 @@
             width: unset !important;
             .toggle-item {
                 width: unset !important;
+                padding: 6px;;
             }
         }
 
+    }
+}
+
+.handler-selector {
+    .icon-selector {
+        width: 25px;
+        height: 25px;
+        margin-right: 2px;
+        justify-content: center;
+        &:hover {
+            background: var(--slate7);
+            border-radius: 6px;
+        }
     }
 }
