@@ -3,9 +3,10 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import React from 'react';
 import cx from 'classnames';
 
-const Switch = ({ value, onChange, meta }) => {
+const Switch = ({ value, onChange, meta, paramName, component }) => {
   const options = meta?.options;
-  const defaultValue = value;
+  const defaultValue =
+    paramName == 'defaultValue' && (component == 'Checkbox' || component == 'ToggleSwitchV2') ? `{{${value}}}` : value;
   return (
     <div className={cx({ 'w-full': meta?.fullWidth })}>
       <ToggleGroup onValueChange={onChange} defaultValue={defaultValue} className={cx({ 'w-full': meta?.fullWidth })}>
