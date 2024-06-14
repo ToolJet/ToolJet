@@ -2,6 +2,7 @@ import { AppsGroupPermissions } from 'src/entities/apps_group_permissions.entity
 import { SearchParamItem } from '@helpers/db-utility/db-utility.interface';
 import { CreateGranularPermissionDto, UpdateGranularPermissionDto } from '@dto/granular-permissions.dto';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 
 export interface AppsPermissionDeleteResourceItem {
   id: string;
@@ -20,6 +21,7 @@ export interface AppsGroupPermissionsActions {
 export type ResourceGroupActions = AppsGroupPermissionsActions;
 
 export interface UpdateGranularPermissionObject {
+  group?: GroupPermissions;
   organizationId: string;
   updateGranularPermissionDto: UpdateGranularPermissionDto;
 }
@@ -28,6 +30,7 @@ export type GranularPermissionAddResourceItems = AppsPermissionAddResourceItem[]
 export type GranularPermissionDeleteResourceItems = AppsPermissionDeleteResourceItem[];
 
 export interface UpdateResourceGroupPermissionsObject {
+  group?: GroupPermissions;
   granularPermissions: GranularPermissions;
   actions: ResourceGroupActions;
   resourcesToAdd: GranularPermissionAddResourceItems;

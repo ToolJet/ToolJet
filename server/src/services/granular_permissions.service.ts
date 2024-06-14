@@ -24,9 +24,11 @@ import { ERROR_HANDLER } from '@module/user_resource_permissions/constants/granu
 import {
   getAllGranularPermissionQuery,
   getGranularPermissionQuery,
+  validateAppResourcePermissionUpdateOperation,
 } from '@module/user_resource_permissions/utility/granular-permissios.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 import { GroupApps } from 'src/entities/group_apps.entity';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 
 @Injectable()
 export class GranularPermissionsService {
@@ -72,13 +74,14 @@ export class GranularPermissionsService {
   async update(id: string, updateGranularPermissionsObj: UpdateGranularPermissionObject, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const granularPermissions = await this.get(id, manager);
-      const { organizationId, updateGranularPermissionDto } = updateGranularPermissionsObj;
+      const { organizationId, updateGranularPermissionDto, group } = updateGranularPermissionsObj;
       const { isAll, name, resourcesToAdd, resourcesToDelete, actions } = updateGranularPermissionDto;
       const updateGranularPermission = {
         isAll: isAll == true ? true : false,
         ...(name && { name }),
       };
       const updateResource: UpdateResourceGroupPermissionsObject = {
+        group,
         granularPermissions,
         actions,
         resourcesToDelete,
@@ -134,11 +137,13 @@ export class GranularPermissionsService {
         granularPermissions.groupId,
         manager
       );
-
       if (groupEditors.length && canEdit)
         throw new BadRequestException({
-          message: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
-          data: groupEditors,
+          message: {
+            error: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
+            data: groupEditors.map((user) => user.email),
+            title: 'Cannot create permissions',
+          },
         });
 
       const appGRoupPermissions = await manager.save(
@@ -181,7 +186,20 @@ export class GranularPermissionsService {
     manager?: EntityManager
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { granularPermissions, actions, resourcesToDelete, resourcesToAdd } = UpdateResourceGroupPermissionsObject;
+      const {
+        granularPermissions,
+        actions,
+        resourcesToDelete,
+        resourcesToAdd,
+        group: permissionGroup,
+      } = UpdateResourceGroupPermissionsObject;
+      let group: GroupPermissions;
+      if (permissionGroup) {
+        group = permissionGroup;
+      } else {
+        group = await manager.findOne(GroupPermissions, granularPermissions.groupId);
+      }
+      validateAppResourcePermissionUpdateOperation(group, actions);
       const { canEdit } = actions;
       const groupEditors = await this.groupPermissionsUtilityService.getRoleUsersList(
         USER_ROLE.END_USER,
@@ -197,8 +215,11 @@ export class GranularPermissionsService {
 
       if (groupEditors.length && canEdit)
         throw new BadRequestException({
-          message: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
-          data: groupEditors,
+          message: {
+            error: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
+            data: groupEditors.map((user) => user.email),
+            title: 'Cannot update permissions',
+          },
         });
       const appsGroupPermissions = await manager.findOne(AppsGroupPermissions, {
         where: {
@@ -207,6 +228,8 @@ export class GranularPermissionsService {
       });
 
       if (actions) {
+        if (actions.canEdit) actions.canView = false;
+        else if (actions.canView) actions.canEdit = false;
         await manager.update(AppsGroupPermissions, appsGroupPermissions.id, actions);
       }
       if (resourcesToDelete?.length) {

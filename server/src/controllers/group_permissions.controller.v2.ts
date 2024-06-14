@@ -183,8 +183,6 @@ export class GroupPermissionsControllerV2 {
     //Check for license validation first here
     // What are license validation for this
     // const { groupId } = createGranularPermissionsDto;
-    console.log('Updating this');
-    console.log(granularPermissionsId);
 
     const granularPermissions = await this.granularPermissionsService.get(granularPermissionsId);
 
@@ -193,6 +191,7 @@ export class GroupPermissionsControllerV2 {
     const group = granularPermissions.group;
     validateGranularPermissionUpdateOperation(group);
     return await this.granularPermissionsService.update(granularPermissionsId, {
+      group: group,
       organizationId: group.organizationId,
       updateGranularPermissionDto,
     });

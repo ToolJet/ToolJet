@@ -3,7 +3,7 @@ import { USER_ROLE } from '../constants/group-permissions.constant';
 import { BadRequestException } from '@nestjs/common';
 import { ERROR_HANDLER } from '../constants/granular-permissions.constant';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
-import { GranularPermissionQuerySearchParam } from '../interface/granular-permissions.interface';
+import { GranularPermissionQuerySearchParam, ResourceGroupActions } from '../interface/granular-permissions.interface';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 
 export function validateGranularPermissionCreateOperation(group: GroupPermissions) {
@@ -14,6 +14,11 @@ export function validateGranularPermissionCreateOperation(group: GroupPermission
 export function validateGranularPermissionUpdateOperation(group: GroupPermissions) {
   if (group.name === USER_ROLE.ADMIN)
     throw new BadRequestException(ERROR_HANDLER.ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS);
+}
+
+export function validateAppResourcePermissionUpdateOperation(group: GroupPermissions, actions: ResourceGroupActions) {
+  if (group.name === USER_ROLE.END_USER && actions.canEdit)
+    throw new BadRequestException(ERROR_HANDLER.EDITOR_LEVEL_PERMISSION_NOT_ALLOWED_END_USER);
 }
 
 export function getAllGranularPermissionQuery(

@@ -53,7 +53,6 @@ const GroupChipTD = ({ groups = [] }) => {
         orderedArray.length > 2 && toggleAllGroupsList(e);
       }}
       className={cx('text-muted resource-name-cell', { 'groups-hover': orderedArray.length > 2 })}
-      ref={groupsListRef}
     >
       <div className="groups-name-container tj-text-sm font-weight-500">
         {orderedArray.length === 0 ? (
@@ -72,12 +71,12 @@ const GroupChipTD = ({ groups = [] }) => {
             </div>
             {orderedArray.length > 4 && (
               <React.Fragment key={4}>
-                <div className="groups-name-row">
+                <div className="groups-name-row" ref={groupsListRef}>
                   <span className="group-chip">+{orderedArray.length - 4} more</span>
                 </div>
                 {showAllGroups && (
                   <div className="all-groups-list">
-                    {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
+                    {orderedArray.slice(4).map((group, index) => renderGroupChip(group, index))}
                   </div>
                 )}
               </React.Fragment>

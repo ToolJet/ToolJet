@@ -34,8 +34,6 @@ export class GroupPermissionsUtilityService {
   }
 
   async getAddableUser(user: User, groupId: string, searchInput?: string, manager?: EntityManager) {
-    console.log('find addable users');
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       console.log(await addableUsersToGroupQuery(groupId, user.organizationId, manager, searchInput).getMany());
 

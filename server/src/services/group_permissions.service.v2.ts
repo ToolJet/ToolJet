@@ -24,6 +24,7 @@ import {
   validateUpdateGroupOperation,
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
+import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 
 @Injectable()
 export class GroupPermissionsServiceV2 {
@@ -100,6 +101,7 @@ export class GroupPermissionsServiceV2 {
           message: {
             error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
             data: getEndUsersList?.map((user) => user.email),
+            title: 'Cannot add this permissions to the group',
           },
         });
       }
@@ -158,20 +160,23 @@ export class GroupPermissionsServiceV2 {
 
   async addGroupUsers(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager) {
     const { userIds, groupId } = addGroupUserDto;
-    const group = await this.getGroup(groupId);
-    validateAddGroupUserOperation(group);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const group = await this.getGroup(groupId, manager);
+      const granularPermission = await this.granularPermissionsService.getAll({ groupId: group.id }, manager);
+      validateAddGroupUserOperation(group);
 
-    return await Promise.all(
-      userIds.map(async (userId) => {
-        return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await Promise.all(
+        userIds.map(async (userId) => {
           const user = await getUserDetailQuery(userId, organizationId, manager).getOne();
           if (!user) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
 
           const role = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId, manager);
-          const editPermissionsPresent = Object.values(group).some(
-            (value) => typeof value === 'boolean' && value === true
-          );
-          //NEED TO CHECK FOR EDITOR LEVEL PERMISSION IN GRANULAR PERMISSIONS
+          const editPermissionsPresent =
+            Object.values(group).some((value) => typeof value === 'boolean' && value === true) ||
+            granularPermission.some((value) => {
+              return value.type === ResourceType.APP && value.appsGroupPermissions.canEdit;
+            });
+
           if (editPermissionsPresent && role.name == USER_ROLE.END_USER) {
             throw new MethodNotAllowedException({
               message: {
@@ -182,8 +187,8 @@ export class GroupPermissionsServiceV2 {
           }
 
           return await this.createGroupUser(user, group, manager);
-        }, manager);
-      })
-    );
+        })
+      );
+    }, manager);
   }
 }

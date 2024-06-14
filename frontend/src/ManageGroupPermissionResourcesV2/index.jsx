@@ -161,7 +161,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           errorMessage: error?.error,
           showEditRoleErrorModal: true,
           errorListItems: error?.data,
-          errorTitle: 'Cannot add this permission to the group',
+          errorTitle: error?.title ? error?.title : 'Cannot add this permission to the group',
           errorIconName: 'lock',
         });
       });
@@ -293,7 +293,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchUsersInGroup(groupPermissionId);
       })
       .catch(({ error }) => {
-        console.log(error);
         this.setState({
           showEditRoleErrorModal: true,
           errorTitle: error?.title,
@@ -390,11 +389,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       isLoadingUsers: false,
     });
 
+  changeThisComponentState = (state = {}) => {
+    console.log('this is changing');
+    this.setState(state);
+  };
+
   generateSelection = (selected) => {
     return selected?.map((d) => {
       return (
         <div className="selected-item tj-ms" key={d.value}>
-          <FilterPreview text={d.name} onClose={() => this.removeSelection(selected, d.value)} />
+          <FilterPreview text={`${d?.email}`} onClose={() => this.removeSelection(selected, d.value)} />
         </div>
       );
     });
@@ -417,8 +421,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       showUserSearchBox: !prevState.showUserSearchBox,
     }));
   };
-
-  hand;
 
   toggleAddUsersToRoleModal = () => this.setState({ isAddUsersToRoleModalOpen: !this.state.isAddUsersToRoleModalOpen });
 
@@ -450,9 +452,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       granularPermissions,
     } = this.state;
 
-    const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
-    const showPermissionInfo = isRoleGroup && (groupPermission.name === 'admin' || groupPermission.name === 'end-user');
+    const isBasicPlan = false;
 
+    const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
+    const showPermissionInfo =
+      isRoleGroup && (groupPermission?.name === 'admin' || groupPermission?.name === 'end-user');
+    const disablePermissionUpdate =
+      isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
     const appSelectOptions = appsNotInGroup.map((app) => {
       return { name: app.name, value: app.id };
     });
@@ -675,12 +681,14 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             Add users
                           </ButtonSolid>
                         </div>
-                        <div className="row mt-2">
-                          <div className="selected-section">
-                            <div className="selected-text">Selected Users:</div>
-                            {this.generateSelection(selectedUsers)}
+                        {selectedUsers.length && (
+                          <div className="row mt-2">
+                            <div className="selected-section">
+                              <div className="selected-text">Selected Users:</div>
+                              {this.generateSelection(selectedUsers)}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
                     <br />
@@ -863,13 +871,17 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.appCreate}
-                                          disabled={isRoleGroup}
+                                          disabled={disablePermissionUpdate}
                                           data-cy="app-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-create-label">
                                           {this.props.t('globals.create', 'Create')}
                                         </span>
-                                        <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>
+                                        <span
+                                          class={`text-muted tj-text-xxsm ${
+                                            disablePermissionUpdate && 'check-label-disable'
+                                          }`}
+                                        >
                                           Create apps in this workspace
                                         </span>
                                       </label>
@@ -883,13 +895,17 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.appDelete}
-                                          disabled={isRoleGroup}
+                                          disabled={disablePermissionUpdate}
                                           data-cy="app-delete-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-delete-label">
                                           {this.props.t('globals.delete', 'Delete')}
                                         </span>
-                                        <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>
+                                        <span
+                                          class={`text-muted tj-text-xxsm ${
+                                            disablePermissionUpdate && 'check-label-disable'
+                                          }`}
+                                        >
                                           Delete any app in this workspace
                                         </span>
                                       </label>
@@ -916,7 +932,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.folderCRUD}
-                                          disabled={isRoleGroup}
+                                          disabled={disablePermissionUpdate}
                                           data-cy="folder-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="folder-create-label">
@@ -925,7 +941,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             'Create/Update/Delete'
                                           )}
                                         </span>
-                                        <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>
+                                        <span
+                                          class={`text-muted tj-text-xxsm ${
+                                            disablePermissionUpdate && 'check-label-disable'
+                                          }`}
+                                        >
                                           All operations on folders
                                         </span>
                                       </label>
@@ -948,7 +968,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.orgConstantCRUD}
-                                          disabled={isRoleGroup}
+                                          disabled={disablePermissionUpdate}
                                           data-cy="env-variable-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="workspace-variable-create-label">
@@ -957,7 +977,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             'Create/Update/Delete'
                                           )}
                                         </span>
-                                        <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>
+                                        <span
+                                          class={`text-muted tj-text-xxsm ${
+                                            disablePermissionUpdate && 'check-label-disable'
+                                          }`}
+                                        >
                                           All operations on workspace constants
                                         </span>
                                       </label>
@@ -978,6 +1002,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       groupPermissionId={groupPermission.id}
                       groupPermission={groupPermission}
                       setErrorState={this.setErrorState}
+                      updateParentState={this.changeThisComponentState}
                     />
                   </aside>
                 </div>

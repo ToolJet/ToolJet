@@ -172,16 +172,14 @@ class ManageGranularAccessComponent extends React.Component {
         this.closeAddPermissionModal();
         toast.success('Permission updated successfully');
       })
-      .catch((err) => {
-        toast.error(err.error);
-        this.closeAddPermissionModal();
-        // this.props.setErrorState({
-        //   showEditRoleErrorModal:true,
-        //   errorTitle:error?.title ? error?.title :"Cannot update permissions",
-        //   errorMessage:error.error,
-        //   errorIconName:'usergear',
-        //   errorListItems:error.data
-        // })
+      .catch(({ error }) => {
+        this.props.updateParentState({
+          showEditRoleErrorModal: true,
+          errorTitle: error?.title ? error?.title : 'Cannot remove last admin',
+          errorMessage: error.error,
+          errorIconName: 'usergear',
+          errorListItems: error.data,
+        });
       });
   };
 
@@ -231,6 +229,25 @@ class ManageGranularAccessComponent extends React.Component {
         toast.error(err.error);
         this.closeAddPermissionModal();
       });
+  };
+  showPermissionText = (groupPermission) => {
+    const text =
+      groupPermission.name === 'admin'
+        ? 'Admin has edit access to all apps. These are not editable'
+        : 'End-user can only have permission to view apps';
+    return (
+      <div className="manage-group-users-info">
+        <p
+          className="tj-text-xsm"
+          style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+          data-cy="helper-text-admin-app-access"
+        >
+          <SolidIcon name="information" fill="#3E63DD" /> {text}
+          <a style={{ margin: '0', padding: '0', textDecoration: 'none', color: '#3E63DD' }}>Read Documentation</a> to
+          know more
+        </p>
+      </div>
+    );
   };
 
   openAddPermissionModal = () => this.setState({ showAddPermissionModal: true });
@@ -297,6 +314,8 @@ class ManageGranularAccessComponent extends React.Component {
     ];
     const currentGroupPermission = this.props?.groupPermission;
     const isRoleGroup = currentGroupPermission.name == 'admin';
+    const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
+    const disableEditUpdate = currentGroupPermission.name == 'end-user';
     return (
       <div className="row granular-access-container justify-content-center">
         <ModalBase
@@ -362,12 +381,14 @@ class ManageGranularAccessComponent extends React.Component {
                   <input
                     className="form-check-input"
                     type="radio"
+                    disabled={disableEditUpdate}
                     checked={initialPermissionState.canEdit}
                     onClick={() => {
                       this.setState((prevState) => ({
                         initialPermissionState: {
                           ...prevState.initialPermissionState,
                           canEdit: !prevState.initialPermissionState.canEdit,
+                          ...(!prevState.initialPermissionState.canEdit && { canView: false }),
                         },
                       }));
                     }}
@@ -390,6 +411,7 @@ class ManageGranularAccessComponent extends React.Component {
                         initialPermissionState: {
                           ...prevState.initialPermissionState,
                           canView: !prevState.initialPermissionState.canView,
+                          ...(!prevState.initialPermissionState.canView && { canEdit: false }),
                         },
                       }));
                     }}
@@ -515,6 +537,7 @@ class ManageGranularAccessComponent extends React.Component {
           </div>
         ) : (
           <div>
+            {showPermissionInfo && this.showPermissionText(currentGroupPermission)}
             <div className="manage-group-permision-header">
               <p data-cy="resource-header" className="tj-text-xsm">
                 {'Name'}
@@ -558,14 +581,14 @@ class ManageGranularAccessComponent extends React.Component {
                             <label className="form-check form-check-inline">
                               <input
                                 className="form-check-input"
-                                type="checkbox"
-                                onChange={() => {
+                                type="radio"
+                                onClick={() => {
                                   this.updateOnlyGranularPermissions(permissions, {
                                     canEdit: !appsPermissions.canEdit,
                                   });
                                 }}
                                 checked={appsPermissions.canEdit}
-                                disabled={isRoleGroup}
+                                disabled={isRoleGroup || disableEditUpdate}
                                 data-cy="app-create-checkbox"
                               />
                               <span className="form-check-label" data-cy="app-create-label">
@@ -577,8 +600,8 @@ class ManageGranularAccessComponent extends React.Component {
                             <label className="form-check form-check-inline">
                               <input
                                 className="form-check-input"
-                                type="checkbox"
-                                onChange={() => {
+                                type="radio"
+                                onClick={() => {
                                   this.updateOnlyGranularPermissions(permissions, {
                                     canView: !appsPermissions.canView,
                                   });

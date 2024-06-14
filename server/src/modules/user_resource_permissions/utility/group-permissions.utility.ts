@@ -83,6 +83,9 @@ export function validateUpdateGroupOperation(
   const { name } = group;
   const { name: newName } = updateGroupPermissionDto;
 
+  console.log('Printing group');
+  console.log(group);
+
   if (
     newName &&
     (Object.values(USER_ROLE).includes(newName as USER_ROLE) || group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
@@ -91,8 +94,6 @@ export function validateUpdateGroupOperation(
   }
 
   if ([USER_ROLE.ADMIN, USER_ROLE.END_USER].includes(name as USER_ROLE)) {
-    console.log('this is running');
-
     throw new MethodNotAllowedException(ERROR_HANDLER.NON_EDITABLE_GROUP_UPDATE);
   }
 }
@@ -150,13 +151,14 @@ export function addableUsersToGroupQuery(
         .select('groupUsers.userId')
         .from(GroupUsers, 'groupUsers')
         .innerJoin('groupUsers.group', 'group')
-        .where('(group.name = :admin OR group.id = :groupId)', { admin: USER_ROLE.ADMIN, groupId })
+        .where('group.id = :groupId', { groupId })
         .andWhere('group.organizationId = :organizationId', { organizationId })
         .getQuery();
 
       return 'users.id NOT IN ' + subQuery;
     })
-    .andWhere(addableUserGetOrConditions(searchInput));
+    .andWhere(addableUserGetOrConditions(searchInput))
+    .orderBy('users.createdAt', 'DESC');
 
   return query;
 }

@@ -95,9 +95,13 @@ export class UserRoleService {
 
       if (userRole.name == USER_ROLE.ADMIN) {
         const groupUsers = await this.groupPermissionsService.getAllGroupUsers(userRole.id, null, manager);
-        console.log(groupUsers);
-
-        if (groupUsers.length < 2) throw new BadRequestException(ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED);
+        if (groupUsers.length < 2)
+          throw new BadRequestException({
+            message: {
+              error: ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED,
+              title: 'Can not remove last active admin',
+            },
+          });
       }
       if (newRole == USER_ROLE.END_USER) {
         const userCreatedApps = await manager.find(App, {

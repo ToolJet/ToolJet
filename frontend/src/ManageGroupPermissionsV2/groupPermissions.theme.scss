@@ -236,7 +236,7 @@
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-      max-width: 130px;
+      max-width: 200px;
     }
   }
 
@@ -250,13 +250,13 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    max-width: 95px;
+    max-width: 100px;
   }
 
   .all-groups-list {
     position: absolute;
     width: 100%;
-    top: 41px;
+    top: 59px;
     display: flex;
     flex-direction: column;
     background: var(--slate1);
@@ -271,6 +271,20 @@
     overflow: auto;
     left: 0px;
     z-index: 1;
+
+
+    .group-chip {
+    padding: 2px 8px;
+    margin: 0;
+    border-radius: 6px;
+    background-color: var(--slate3);
+    color: var(--slate11);
+    min-height: 24px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 200px;
+  }
   }
 }
 

@@ -35,14 +35,19 @@ function MultiSelectUser({
   );
 
   function renderCustom(props, option) {
+    const valuePresent = selectedValues.some((item) => item.value === option.value);
     return (
       <div className={`item-renderer`}>
         <div>
           <input
             type="checkbox"
-            checked={selectedValues.some((item) => item.value === option.value)}
+            checked={valuePresent}
             onClick={(e) => {
-              onSelect([...selectedValues, option]);
+              if (!valuePresent) {
+                onSelect([...selectedValues, option]);
+              } else {
+                onSelect([...selectedValues.filter((item) => item.value !== option.value)]);
+              }
             }}
           />
           <div className="d-flex flex-column" style={{ marginLeft: '12px' }}>
