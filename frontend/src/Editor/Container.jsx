@@ -115,7 +115,7 @@ export const Container = ({
   // const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
-  const [isContainerFocused, setContainerFocus] = useState(false);
+  const [isContainerFocused, setContainerFocus] = useState(true);
   const [canvasHeight, setCanvasHeight] = useState(null);
 
   useEffect(() => {
@@ -156,7 +156,7 @@ export const Container = ({
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
             const cliptext = await navigator.clipboard.readText();
-            addComponents(
+            const newComponent = addComponents(
               currentPageId,
               appDefinition,
               appDefinitionChanged,
@@ -164,6 +164,7 @@ export const Container = ({
               JSON.parse(cliptext),
               true
             );
+            setSelectedComponent(newComponent.id, newComponent.component);
           } catch (err) {
             console.log(err);
           }
@@ -235,6 +236,7 @@ export const Container = ({
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
     updateCanvasHeight(boxes);
+    noOfBoxs != 0 && setContainerFocus(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs]);
 
@@ -1025,7 +1027,7 @@ const WidgetWrapper = ({
 
   const calculateMoveableBoxHeight = () => {
     // Early return for non input components
-    if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
+    if (!['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2'].includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
@@ -1046,15 +1048,16 @@ const WidgetWrapper = ({
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   const { label = { value: null } } = propertiesDefinition ?? {};
+  const visibility = propertiesDefinition?.visibility?.value ?? stylesDefinition?.visibility?.value ?? null;
+  const resolvedVisibility = resolveWidgetFieldValue(visibility);
 
   const styles = {
     width: width + 'px',
-    height: calculateMoveableBoxHeight() + 'px',
+    height: resolvedVisibility ? calculateMoveableBoxHeight() + 'px' : '10px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
-
   return (
     <>
       <div
@@ -1070,6 +1073,7 @@ const WidgetWrapper = ({
         widgetid={id}
         style={{
           transform: `translate(332px, -134px)`,
+          zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
           ...styles,
         }}
       >

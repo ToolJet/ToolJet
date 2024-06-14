@@ -73,24 +73,19 @@
         "resource_name": {
           "label": "Resource Name",
           "key": "resource_name",
-          "type": "dropdown",
+          "type": "codehinter",
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
           "placeholder": "Account",
-          "list": [
-            {
-              "value": "Account",
-              "name": "Account"
-            }
-          ]
+          "disabled": true
         },
         "resource_body": {
           "label": "Resource Body",
           "key": "resource_body",
           "type": "codehinter",
           "lineNumbers": true,
-          "placeholder": "{{ name : “ToolJet” }}",
+          "placeholder": "{{ {name: “ToolJet”} }}",
           "description": "Enter the resource body",
           "height": "100px"
         }
@@ -103,13 +98,14 @@
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account"
+          "placeholder": "Account",
+          "disabled": true
         },
         "resource_body": {
           "label": "Resource Body",
           "key": "resource_body",
           "type": "codehinter",
-          "placeholder": "{{ Id:”0012F3E4R56487900N” , name : “ToolJet” }}",
+          "placeholder": "{{ {Id:”0012F3E4R56487900N”, name: “ToolJet”} }}",
           "description": "Enter the resource body",
           "height": "100px"
         }
@@ -122,7 +118,8 @@
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account"
+          "placeholder": "Account",
+          "disabled": true
         },
         "resource_id": {
           "label": "Resource ID",
@@ -143,7 +140,8 @@
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account"
+          "placeholder": "Account",
+          "disabled": true
         },
         "resource_id": {
           "label": "Resource ID",

@@ -10219,6 +10219,8 @@ tbody {
 
 
 .manage-users-drawer-content-bulk {
+  margin: 24px 15px;
+
   form {
     display: flex;
     flex-direction: column;
@@ -10654,19 +10656,23 @@ tbody {
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
-  padding: 24px 32px;
+  padding: 16px 24px;
   gap: 8px;
-  height: 88px;
+  height: 72px;
   border-top: 1px solid var(--slate5);
   background: var(--base);
 }
 
 .drawer-card-title {
-  padding: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--slate5);
+  height: 64px;
 
   h3 {
     margin-bottom: 0px !important;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
   }
 }
 
@@ -10786,7 +10792,7 @@ tbody {
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
     transition: none;
-
+    font-weight: 400;
 
     &:hover {
       background: var(--slate1) !important;
@@ -10821,6 +10827,10 @@ tbody {
       }
     }
 
+    &::placeholder {
+      font-size: 12px;
+      line-height: 20px;
+    }
 
   }
 
@@ -12113,6 +12123,38 @@ tbody {
   }
 }
 
+
+.tjdb-mainCellEdit-scrollbar {
+  width: 300px !important;
+
+  .tjdb-cellmenu-error,
+  .tjdb-cellmenu-loader {
+    height: 177px;
+  }
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+
 .tjdb-cellEdit-scrollbar {
   width: 266px !important;
 
@@ -12957,7 +12999,7 @@ tbody {
 .read-docs-fk {
 
   .tooltip-inner {
-    padding: 8px 12px 8px 12px !important;
+    padding: 8px 10px 8px 10px !important;
     font-size: 12px;
     line-height: 20px;
     font-weight: 400;
@@ -13082,7 +13124,6 @@ tbody {
   background-color: #1E823B;
   @extend .widget-version-identifier
 }
-
 .tjdb-table-tooltip {
   width: max-content !important;
 
@@ -13099,6 +13140,60 @@ tbody {
   }
 }
 
+.tjdb-cell-tooltip {
+  max-width: 420px !important;
+
+  .tooltip-inner {
+    max-width: 100% !important;
+  }
+}
+
 div.ds-svg-container svg {
   padding: 2px;
 }
+
+
+
+.dropdown-multiselect-widget-custom-menu-list {
+  box-shadow: var(--elevation-400-box-shadow) !important;
+  border-radius: 8px;
+
+  .multiselect-custom-menulist-select-all {
+    display: flex;
+    padding: 8px 16px;
+    background-color: var(--surfaces-surface-01) !important;
+    color: var(--text-primary)
+  }
+  .form-check-input:disabled {
+    background-color: var(--surfaces-surface-03) !important;
+  }
+}
+
+.dropdown-multiselect-widget-search-box-wrapper {
+  border-bottom: 1px solid var(--borders-weak-disabled);
+  display: flex;
+  padding: 8px 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  align-self: stretch;
+  height: 40px;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: var(--surfaces-surface-01) !important;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+  .dropdown-multiselect-widget-search-box {
+    width: 100%;
+    box-sizing: 'border-box';
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--slate12);
+    gap: 16px;
+  }
+}
+

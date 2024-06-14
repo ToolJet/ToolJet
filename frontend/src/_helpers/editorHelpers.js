@@ -9,10 +9,12 @@ import { Container } from '@/Editor/Components/Container';
 import { Tabs } from '@/Editor/Components/Tabs';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
 import { DropDown } from '@/Editor/Components/DropDown';
+import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
+import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
 import { Modal } from '@/Editor/Components/Modal';
 import { Chart } from '@/Editor/Components/Chart';
 import { Map as MapComponent } from '@/Editor/Components/Map/Map';
@@ -84,10 +86,12 @@ export const AllComponents = {
   Tabs,
   RichTextEditor,
   DropDown,
+  DropdownV2,
   Checkbox,
   Datepicker,
   DaterangePicker,
   Multiselect,
+  MultiselectV2,
   Modal,
   Chart,
   Map: MapComponent,
@@ -149,7 +153,10 @@ function findReferenceInComponent(node, changedCurrentState) {
     if (typeof node === 'object') {
       for (let key in node) {
         const value = node[key];
-        if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
+        if (
+          typeof value === 'string' &&
+          ((value.includes('{{') && value.includes('}}')) || value.includes('%%client'))
+        ) {
           // Check if the referenced entity is in the state
           if (changedCurrentState.some((state) => value.includes(state))) {
             return true;

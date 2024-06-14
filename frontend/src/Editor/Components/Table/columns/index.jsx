@@ -13,7 +13,7 @@ import { Boolean } from '../Boolean';
 import { CustomSelect } from '../CustomSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Text from '../Text';
-import String from '../String';
+import StringColumn from '../String';
 
 export default function generateColumnsData({
   columnProperties,
@@ -152,7 +152,7 @@ export default function generateColumnsData({
           case 'default': {
             const cellTextColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
             return (
-              <String
+              <StringColumn
                 isEditable={isEditable}
                 darkMode={darkMode}
                 handleCellValueChange={handleCellValueChange}
@@ -401,7 +401,7 @@ export default function generateColumnsData({
                 )}`}
                 style={cellStyles}
               >
-                {cellValue}
+                {String(cellValue)}
               </div>
             );
           }
@@ -562,6 +562,13 @@ export default function generateColumnsData({
                 {cellValue && (
                   <img
                     src={cellValue}
+                    onError={(e) => {
+                      if (!_.get(e, 'target.src', '').includes('/assets/images/image-not-found.svg')) {
+                        e.target.onerror = null;
+                        e.target.src = '/assets/images/image-not-found.svg';
+                        e.target.style = e.target.style + ' border-radius: 0;';
+                      }
+                    }}
                     style={{
                       pointerEvents: 'auto',
                       width: `${column?.width}px`,
