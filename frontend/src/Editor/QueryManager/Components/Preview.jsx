@@ -116,8 +116,7 @@ const Preview = ({ darkMode }) => {
     setDragging(false);
   };
 
-  const onMouseDown = (e) => {
-    e.preventDefault();
+  const onMouseDown = () => {
     isTopOfPreviewPanel && setDragging(true);
   };
 
