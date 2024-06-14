@@ -33,6 +33,10 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 
 Note: Adjustments can be made based on specific needs and the expected load on the server.
 
+:::info
+To enable multiplayer editing and background jobs in ToolJet, you need to configure Redis. It is recommended to use Redis version 6.x.
+:::
+
 ## Database software:
 
 - It is recommended that your PostgreSQL database is of version 13.x.
