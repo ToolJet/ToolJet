@@ -1040,7 +1040,7 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0" isLoading={eventsCreatedLoader}>
+      <AddNewButton onClick={addHandler} dataCy="add-event-handler" isLoading={eventsCreatedLoader}>
         {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
     );
@@ -1050,7 +1050,7 @@ export const EventManager = ({
     return (
       <>
         {!hideEmptyEventsAlert && <NoListItem text={'No event handlers'} />}
-        {renderAddHandlerBtn()}
+        <div className="d-flex">{renderAddHandlerBtn()}</div>
       </>
     );
   }
@@ -1059,7 +1059,7 @@ export const EventManager = ({
 
   if (events.length === 0) {
     return (
-      <>
+      <div className="d-flex">
         {renderAddHandlerBtn()}
         {!hideEmptyEventsAlert ? (
           <div className="text-left">
@@ -1074,7 +1074,7 @@ export const EventManager = ({
             </small>
           </div>
         ) : null}
-      </>
+      </div>
     );
   }
 

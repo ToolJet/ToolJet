@@ -966,11 +966,12 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
   let parameters = userSuppliedParameters;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
   const queryEvents = useAppDataStore
     .getState()
     .events.filter((event) => event.target === 'data_query' && event.sourceId === query.id);
   setPreviewLoading(true);
+  setPreviewPanelExpanded(true);
   if (queryPreviewData) {
     setPreviewData('');
   }
@@ -1138,8 +1139,13 @@ export function runQuery(
   // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
 
+  if (shouldSetPreviewData) {
+    setPreviewPanelExpanded(true);
+    setPreviewLoading(true);
+    queryPreviewData && setPreviewData('');
+  }
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
