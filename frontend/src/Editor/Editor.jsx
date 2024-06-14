@@ -1991,7 +1991,7 @@ const EditorComponent = (props) => {
     }
   }
 
-  const handleCanvasContainerMouseUp = (e) => {
+  const handleCanvasContainerMouseClick = (e) => {
     if (
       ['real-canvas', 'modal'].includes(e.target.className) &&
       useEditorStore.getState()?.selectedComponents?.length
@@ -2121,7 +2121,7 @@ const EditorComponent = (props) => {
                     height: computeCanvasContainerHeight(),
                     background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
                   }}
-                  onMouseUp={handleCanvasContainerMouseUp}
+                  onClick={handleCanvasContainerMouseClick}
                   ref={canvasContainerRef}
                   onScroll={() => {
                     selectionRef.current?.checkScroll();
