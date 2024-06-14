@@ -80,7 +80,7 @@ export const pageConfig = {
         value: '#CCD1D5',
       },
       pillSelectedBackgroundColor: {
-        value: '#4368E3',
+        value: '#F0F4FF',
       },
       pillRadius: {
         value: '8',

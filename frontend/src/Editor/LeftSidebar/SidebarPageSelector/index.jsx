@@ -89,11 +89,15 @@ const LeftSidebarPageSelector = ({
 
   return (
     <div
-      style={{
-        background: styles?.backgroundColor?.value,
-        borderRight: `1px solid ${styles?.borderColor?.value}`,
-        flex: 1,
-      }}
+      style={
+        !darkMode
+          ? {
+              background: styles?.backgroundColor?.value,
+              borderRight: `1px solid ${styles?.borderColor?.value}`,
+              flex: 1,
+            }
+          : {}
+      }
     >
       <div className="card-body p-0 pb-5">
         <HeaderSection darkMode={darkMode}>

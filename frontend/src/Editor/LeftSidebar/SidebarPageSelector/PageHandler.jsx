@@ -136,6 +136,10 @@ export const PageHandler = ({
   const slug = windowUrl.split(page.handle)[0];
 
   const computeStyles = () => {
+    if (darkMode) {
+      return {};
+    }
+
     const baseStyles = {
       pill: {
         borderRadius: `${styles.pillRadius.value}px`,
@@ -202,16 +206,16 @@ export const PageHandler = ({
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
+      className={`card cursor-pointer handler-selector ${isSelected ? 'active' : 'non-active-page'}`}
       onClick={() => page.id != currentPageId && switchPage(page.id)}
-      style={{ display: 'flex', justifyContent: 'center', ...computedStyles.pill }}
+      style={{ display: 'flex', justifyContent: 'center', ...computedStyles?.pill }}
     >
       <div>
         <div className="row" role="button">
           <div className="col-auto d-flex align-items-center">
             {!isDisabled && !isHidden && !labelStyle.icon.hidden && (
               <IconSelector
-                iconColor={computedStyles.icon.color}
+                iconColor={computedStyles?.icon?.color ?? 'var(--slate11)'}
                 iconName={page.icon}
                 updatePageIcon={updatePageIcon}
                 pageId={page.id}
@@ -219,15 +223,15 @@ export const PageHandler = ({
             )}
             {/* When the page is hidden as well as disabled, disabled icon takes precedence */}
             {!isHovered && (isDisabled || (isDisabled && isHidden)) && (
-              <FileRemove fill={computedStyles.icon.fill} width={16} height={16} viewBox={'0 0 16 16'} />
+              <FileRemove fill={computedStyles?.icon?.fill} width={16} height={16} viewBox={'0 0 16 16'} />
             )}
             {!isHovered && isHidden && !isDisabled && <EyeDisable width={16} height={16} />}
             {/* When hovered on disabled page, show disabled icon instead of hovered icon */}
             {isHovered && isDisabled && (
-              <FileRemove fill={computedStyles.icon.fill} width={16} height={16} viewBox={'0 0 16 16'} />
+              <FileRemove fill={computedStyles?.icon?.fill} width={16} height={16} viewBox={'0 0 16 16'} />
             )}
-            {isHovered && !isDisabled && (
-              <div style={{ paddingRight: '4px' }}>
+            {!isDisabled && (
+              <div style={{ paddingRight: '4px', paddingTop: '5px' }}>
                 <SortableList.DragHandle show />
               </div>
             )}
@@ -236,7 +240,7 @@ export const PageHandler = ({
             className={`col text-truncate font-weight-400 page-name tj-text-sm ${labelStyle.label.hidden && 'd-none'}`}
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
           >
-            <span style={{ ...computedStyles.text }} className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
+            <span style={{ ...computedStyles?.text }} className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
             {isIconApplied && (
               <span
                 style={{
