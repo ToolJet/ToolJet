@@ -299,7 +299,7 @@ export class TooljetDbService {
       for (const column of params.columns) {
         const columnUuid = uuidv4();
         columnNames[column.column_name] = columnUuid;
-        columnConfigrations[columnUuid] = {};
+        columnConfigrations[columnUuid] = column?.configurations || {};
       }
 
       const configurations = {
@@ -421,6 +421,12 @@ export class TooljetDbService {
       const columnstoBeUpdated = [];
       const columnsToBeInserted = [];
       const columnsToBeDeleted = [];
+      const columnConfigurationMap = {};
+
+      columns.forEach((column) => {
+        const { new_column = {} } = column;
+        columnConfigurationMap[new_column.column_name] = new_column?.configurations || {};
+      });
 
       columns.forEach((column) => {
         const { old_column = {}, new_column = {} } = column;
@@ -536,12 +542,18 @@ export class TooljetDbService {
         const newColumn = column.newColumn;
         const oldColumn = column.oldColumn;
         const columnUuid = columnNames[oldColumn.name];
-        columnNames[newColumn.name] = columnUuid;
-        if (newColumn.type !== oldColumn.type) {
-          columnConfigurations[columnUuid] = {};
-        }
-        if (oldColumn.name !== newColumn.name) {
-          delete columnNames[oldColumn.name];
+        if (columnUuid) {
+          columnNames[newColumn.name] = columnUuid;
+          if (newColumn.type !== oldColumn.type) {
+            columnConfigurations[columnUuid] = {};
+          }
+          columnConfigurations[columnUuid] = {
+            ...columnConfigurations[columnUuid],
+            ...columnConfigurationMap[newColumn.name],
+          };
+          if (oldColumn.name !== newColumn.name) {
+            delete columnNames[oldColumn.name];
+          }
         }
       });
 
@@ -554,7 +566,7 @@ export class TooljetDbService {
       columnsToBeInserted.forEach((column) => {
         const columnUuid = uuidv4();
         columnNames[column.name] = columnUuid;
-        columnConfigurations[columnUuid] = {};
+        columnConfigurations[columnUuid] = columnConfigurationMap[column.name];
       });
 
       const configurations = {
@@ -638,7 +650,7 @@ export class TooljetDbService {
       const columnConfigurations = internalTable.configurations.columns.configurations;
       const columnUuid = uuidv4();
       columnNames[column['column_name']] = columnUuid;
-      columnConfigurations[columnUuid] = {};
+      columnConfigurations[columnUuid] = column?.configurations || {};
       const configurations = {
         columns: {
           column_names: columnNames,
@@ -922,8 +934,12 @@ export class TooljetDbService {
       const columnNames = internalTable.configurations.columns.column_names;
       const columnConfigurations = internalTable.configurations.columns.configurations;
       const columnUuid = columnNames[column.column_name];
-      columnNames[column.new_column_name] = columnUuid;
-      delete columnNames[column.column_name];
+      columnConfigurations[columnUuid] = { ...columnConfigurations[columnUuid], ...(column?.configurations || {}) };
+      if (column?.new_column_name) {
+        columnNames[column.new_column_name] = columnUuid;
+        delete columnNames[column.column_name];
+      }
+
       const configurations = {
         columns: {
           column_names: columnNames,

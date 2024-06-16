@@ -80,6 +80,7 @@ export const tzStrings = [
   { label: '(GMT-02:00) Mid-Atlantic', value: 'America/Noronha' },
   { label: '(GMT-01:00) Cape Verde Is.', value: 'Atlantic/Cape_Verde' },
   { label: '(GMT-01:00) Azores', value: 'Atlantic/Azores' },
+  { label: '(GMT+00:00) UTC', value: 'UTC' },
   { label: '(GMT+00:00) Casablanca, Monrovia, Reykjavik', value: 'Africa/Casablanca' },
   { label: '(GMT+00:00) Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London', value: 'Etc/Greenwich' },
   { label: '(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna', value: 'Europe/Amsterdam' },

@@ -209,6 +209,9 @@ export class PostgrestTableColumnDto {
 
   @IsOptional()
   constraints_type: ConstraintTypeDto;
+
+  @IsOptional()
+  configurations: any;
 }
 
 export class EditTableColumnsDto {
@@ -305,6 +308,9 @@ export class EditColumnTableDto {
 
   @IsOptional()
   constraints_type: ConstraintTypeDto;
+
+  @IsOptional()
+  configurations: any;
 }
 
 export class AddColumnDto {

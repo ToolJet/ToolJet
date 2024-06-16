@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
@@ -32,7 +32,6 @@ const ColumnForm = ({
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
-  const [timezone, setTimezone] = useState('Asia/Amman');
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
   const [onDeletePopup, setOnDeletePopup] = useState(false);
@@ -45,6 +44,7 @@ const ColumnForm = ({
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
+  const [configurations, setConfigurations] = useState({});
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
   //  this is for DropDownDetails component which is react select
@@ -53,6 +53,14 @@ const ColumnForm = ({
     label: '',
   });
   const isTimestamp = dataType?.value === 'timestamp with time zone';
+
+  const tzDictionary = useMemo(() => {
+    const dict = {};
+    tzStrings.forEach((option) => {
+      dict[option.value] = option;
+    });
+    return dict;
+  }, []);
 
   const [foreignKeyDetails, setForeignKeyDetails] = useState({
     column_names: [],
@@ -70,6 +78,7 @@ const ColumnForm = ({
       is_primary_key: false,
       is_unique: isUniqueConstraint,
     },
+    configurations,
     dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
     column_default: defaultValue,
   };
@@ -172,7 +181,8 @@ const ColumnForm = ({
       isUniqueConstraint,
       isSerialType,
       isCheckingValues,
-      foreignKeyDetails
+      foreignKeyDetails,
+      configurations
     );
     setFetching(false);
     if (error) {
@@ -278,10 +288,12 @@ const ColumnForm = ({
             <Select
               //useMenuPortal={false}
               placeholder="Select Timezone"
-              value={timezone}
+              value={tzDictionary[configurations?.timezone || 'UTC']}
               formatOptionLabel={formatOptionLabel}
               options={tzStrings}
-              onChange={setTimezone}
+              onChange={(option) => {
+                setConfigurations({ ...configurations, timezone: option.value });
+              }}
               components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
               styles={customStyles}
             />

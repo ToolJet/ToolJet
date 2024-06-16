@@ -17,13 +17,12 @@ export const UniqueConstraintPopOver = ({
   setColumns,
   index,
   isEditMode,
+  tzDictionary,
 }) => {
-  const [timezone, setTimezone] = React.useState(null);
   if (disabled) return children;
   const toolTipPlacementStyle = {
     width: '126px',
   };
-
   const { Option } = components;
 
   const CustomSelectOption = (props) => (
@@ -70,12 +69,17 @@ export const UniqueConstraintPopOver = ({
                   Display time
                 </div>
                 <Select
-                  //useMenuPortal={false}
                   placeholder="Select Timezone"
-                  value={timezone}
+                  value={tzDictionary[columns[index]?.configurations?.timezone || 'UTC']}
                   formatOptionLabel={formatOptionLabel}
                   options={tzStrings}
-                  onChange={setTimezone}
+                  onChange={(option) => {
+                    const prevColumns = { ...columns };
+                    const columnConfigurations = prevColumns[index]?.configurations ?? {};
+                    columnConfigurations.timezone = option.value;
+                    prevColumns[index].configurations = { ...columnConfigurations };
+                    setColumns(prevColumns);
+                  }}
                   components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
                 />
               </div>

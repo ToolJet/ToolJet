@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { toast } from 'react-hot-toast';
@@ -71,7 +71,7 @@ const ColumnForm = ({
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
-  const [timezone, setTimezone] = useState('Asia/Amman');
+  const [configurations, setConfigurations] = useState({});
   const isTimestamp = dataType === 'timestamp with time zone';
   const { Option } = components;
 
@@ -142,6 +142,7 @@ const ColumnForm = ({
       is_primary_key: selectedColumn.is_primary_key,
       is_unique: isUniqueConstraint,
     },
+    configurations,
     dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
     column_default: defaultValue,
   };
@@ -287,6 +288,7 @@ const ColumnForm = ({
           is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
           is_unique: isUniqueConstraint,
         },
+        configurations,
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
       },
 
@@ -386,6 +388,14 @@ const ColumnForm = ({
 
     return newForeignKeyDetails;
   };
+
+  const tzDictionary = useMemo(() => {
+    const dict = {};
+    tzStrings.forEach((option) => {
+      dict[option.value] = option;
+    });
+    return dict;
+  }, []);
 
   const newChangesInForeignKey = changesInForeignKey();
 
@@ -542,10 +552,12 @@ const ColumnForm = ({
               <Select
                 //useMenuPortal={false}
                 placeholder="Select Timezone"
-                value={timezone}
+                value={tzDictionary[configurations?.timezone || 'UTC']}
                 formatOptionLabel={formatOptionLabel}
                 options={tzStrings}
-                onChange={setTimezone}
+                onChange={(option) => {
+                  setConfigurations({ ...configurations, timezone: option.value });
+                }}
                 components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
                 styles={customStyles}
               />

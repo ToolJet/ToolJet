@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
@@ -11,7 +11,13 @@ import ArrowRight from '../Icons/ArrowRight.svg';
 import Tick from '../Icons/Tick.svg';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
+import tjdbDropdownStyles, {
+  dataTypes,
+  formatOptionLabel,
+  serialDataType,
+  checkDefaultValue,
+  tzStrings,
+} from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/_components/DateTimePicker';
@@ -62,6 +68,14 @@ function TableSchema({
     }));
     setDefaultValue(newDefaultValue);
   }, [columnDetails]);
+
+  const tzDictionary = useMemo(() => {
+    const dict = {};
+    tzStrings.forEach((option) => {
+      dict[option.value] = option;
+    });
+    return dict;
+  }, []);
 
   const CustomSelectOption = (props) => {
     return (
@@ -534,6 +548,7 @@ function TableSchema({
                 setColumns={setColumns}
                 index={index}
                 isEditMode={isEditMode}
+                tzDictionary={tzDictionary}
               >
                 <div className="cursor-pointer">
                   <MenuIcon />
