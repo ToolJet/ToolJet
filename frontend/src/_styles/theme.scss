@@ -14,6 +14,7 @@
 @import './table-component.scss';
 @import './pages-sidebar.scss';
 @import "./componentdesign.scss";
+
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -472,6 +473,7 @@ button {
     background-clip: border-box;
     margin-top: 48px;
     padding-top: 8px;
+    background: var(--base) !important;
 
     .accordion-item {
       border: solid var(--slate5);
