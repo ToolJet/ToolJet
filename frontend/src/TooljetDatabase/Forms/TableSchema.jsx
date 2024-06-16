@@ -409,20 +409,22 @@ function TableSchema({
               message={
                 columnDetails[index]?.data_type === 'boolean'
                   ? 'Boolean type column cannot be a primary key'
+                  : columnDetails[index]?.data_type === 'timestamp with time zone'
+                  ? ' Primary key cannot be created with this column type'
                   : 'There must be atleast one Primary key'
               }
               placement="top"
               tooltipClassName="tootip-table"
               show={
                 (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                columnDetails[index]?.data_type === 'boolean'
+                ['boolean', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)
               }
             >
               <div className="primary-check">
                 <IndeterminateCheckbox
                   checked={
                     columnDetails[index]?.constraints_type?.is_primary_key &&
-                    columnDetails[index]?.data_type === 'boolean'
+                    ['boolean', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)
                       ? false
                       : columnDetails[index]?.constraints_type?.is_primary_key
                       ? true
@@ -453,7 +455,7 @@ function TableSchema({
                   }}
                   disabled={
                     (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                    columnDetails[index].data_type === 'boolean'
+                    ['boolean', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)
                   }
                 />
               </div>

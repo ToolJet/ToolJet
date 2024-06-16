@@ -86,13 +86,16 @@ export const UniqueConstraintPopOver = ({
                   ? 'Primary key values must be unique'
                   : columns[index]?.data_type === 'boolean'
                   ? 'Boolean data type cannot be unique'
+                  : columns[index]?.data_type === 'timestamp with time zone'
+                  ? 'Unique constraint cannot be added to this column type'
                   : null
               }
               placement="top"
               tooltipClassName="tootip-table"
               style={toolTipPlacementStyle}
               show={
-                columns[index]?.constraints_type?.is_primary_key === true || columns[index]?.data_type === 'boolean'
+                columns[index]?.constraints_type?.is_primary_key === true ||
+                ['boolean', 'timestamp with time zone'].includes(columns[index]?.data_type)
               }
             >
               <div className="d-flex not-null-toggle">
@@ -122,7 +125,7 @@ export const UniqueConstraintPopOver = ({
                     }}
                     disabled={
                       columns[index]?.constraints_type?.is_primary_key === true ||
-                      columns[index]?.data_type === 'boolean'
+                      ['boolean', 'timestamp with time zone'].includes(columns[index]?.data_type)
                     }
                   />
                 </label>

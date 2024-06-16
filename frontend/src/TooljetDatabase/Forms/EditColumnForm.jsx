@@ -648,11 +648,17 @@ const ColumnForm = ({
                   ? 'Foreign key relation cannot be created for serial type column'
                   : dataType === 'boolean'
                   ? 'Foreign key relation cannot be created for boolean type column'
+                  : dataType === 'timestamp with time zone'
+                  ? 'Foreign key relation cannot be created for this data type'
                   : 'Fill in column details to create a foreign key relation'
               }
               placement="top"
               tooltipClassName="tootip-table"
-              show={dataType === 'serial' || isEmpty(dataType) || isEmpty(columnName) || dataType === 'boolean'}
+              show={
+                isEmpty(dataType) ||
+                isEmpty(columnName) ||
+                ['boolean', 'serial', 'timestamp with time zone'].includes(dataType)
+              }
             >
               <div className="col-1">
                 <label className={`form-switch`}>
@@ -672,10 +678,9 @@ const ColumnForm = ({
                     }}
                     disabled={
                       dataType?.value === 'serial' ||
-                      dataType === 'serial' ||
                       isEmpty(dataType) ||
                       isEmpty(columnName) ||
-                      dataType === 'boolean'
+                      ['boolean', 'serial', 'timestamp with time zone'].includes(dataType)
                     }
                   />
                 </label>
@@ -798,7 +803,7 @@ const ColumnForm = ({
               </div>
             </div>
           </ToolTip>
-          {dataType !== 'boolean' && (
+          {!['boolean', 'timestamp with time zone'].includes(dataType) && (
             <ToolTip
               message={
                 selectedColumn.constraints_type.is_primary_key === true

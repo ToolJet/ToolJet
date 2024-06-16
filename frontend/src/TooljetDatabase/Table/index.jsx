@@ -731,9 +731,9 @@ const Table = ({ collapseSidebar }) => {
 
     setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
+    const dataType = headerGroups[0].headers[index].dataType;
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellValue };
-
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
 
     if (error) {
@@ -768,7 +768,7 @@ const Table = ({ collapseSidebar }) => {
     // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
     const selectedTableDataCopy = [...selectedTableData];
     if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
-      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellVal;
+      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
       setSelectedTableData([...selectedTableDataCopy]);
     }
 
@@ -783,6 +783,7 @@ const Table = ({ collapseSidebar }) => {
     }));
     cellValue === null ? setNullValue(true) : setNullValue(false);
     handleProgressAnimation('Column edited successfully', true);
+    if (dataType === 'timestamp with time zone') return;
     document.getElementById('edit-input-blur').blur();
   };
 

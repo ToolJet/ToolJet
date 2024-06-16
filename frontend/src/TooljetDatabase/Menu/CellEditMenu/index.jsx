@@ -399,6 +399,8 @@ export const CellEditMenu = ({
         />
       ) : isTimestamp ? (
         <DateTimePicker
+          isNotNull={columnDetails?.constraints_type.is_not_null}
+          defaultValue={columnDetails?.column_default}
           isOpenOnStart={true}
           timestamp={selectedValue}
           setTimestamp={setSelectedValue}

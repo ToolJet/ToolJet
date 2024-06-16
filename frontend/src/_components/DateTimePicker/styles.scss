@@ -14,6 +14,20 @@
     color: #7E868C;
 }
 
+.cell-text-null {
+  background-color: var(--slate3) !important;
+  color: var(--slate11) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default !important;
+  border-radius: 6px !important;
+  width: 40px !important;
+  height: 20px !important;
+  font-size: 12px !important;
+}
+
+
 .datepicker-widget.theme-tjdb {
       .react-datepicker-wrapper{ 
         width:100%;

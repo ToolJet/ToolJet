@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import cx from 'classnames';
@@ -21,16 +21,27 @@ export const DateTimePicker = ({
   // States
   const transformedTimestamp = timestamp ? new Date(timestamp) : null;
   const timestampRef = useRef(transformedTimestamp);
+  const prevTimestampRef = useRef(transformedTimestamp);
   const [isOpen, setIsOpen] = useState(isOpenOnStart);
 
-  const handleCancel = useCallback(() => {
-    setIsOpen(false);
-  }, []);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      handleCancel();
+    } else if (e.key === 'Enter') {
+      handleSave();
+    }
 
-  const handleSave = useCallback(() => {
+    e.stopPropagation();
+  };
+
+  const handleCancel = () => {
+    setIsOpen(false);
+  };
+
+  const handleSave = () => {
     saveFunction(timestampRef.current);
     setIsOpen(false);
-  }, []);
+  };
 
   const handleCellEditChange = (newTimestamp) => {
     timestampRef.current = newTimestamp;
@@ -43,7 +54,53 @@ export const DateTimePicker = ({
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    if (transformedTimestamp !== defaultValue && transformedTimestamp !== null) {
+      prevTimestampRef.current = transformedTimestamp;
+    }
+  }, [transformedTimestamp]);
+
   const SaveChangesSection = () => {
+    const [isNull, setIsNull] = useState(timestampRef.current === null);
+    const [isDefault, setIsDefault] = useState(timestampRef.current === defaultValue);
+
+    const handleNullToggle = () => {
+      setIsNull((prev) => !prev);
+      setIsDefault(false);
+      if (!isNull) {
+        timestampRef.current = null;
+        setTimestamp(null);
+      } else {
+        timestampRef.current = prevTimestampRef.current;
+        setTimestamp(prevTimestampRef.current);
+      }
+    };
+
+    const handleDefaultToggle = () => {
+      setIsDefault((prev) => !prev);
+      setIsNull(false);
+      if (!isDefault) {
+        timestampRef.current = defaultValue;
+        setTimestamp(defaultValue);
+      } else {
+        timestampRef.current = prevTimestampRef.current;
+        setTimestamp(prevTimestampRef.current);
+      }
+    };
+
+    useEffect(() => {
+      if (timestampRef.current === null && timestampRef.current === defaultValue) {
+        setIsNull(true);
+        setIsDefault(true);
+      } else if (timestampRef.current === defaultValue) {
+        setIsNull(false);
+        setIsDefault(true);
+      } else if (timestampRef.current === null) {
+        setIsNull(true);
+        setIsDefault(false);
+      }
+    }, [timestampRef.current]);
+
     return (
       <div className="d-flex justify-content-between align-items-center">
         <div className="d-flex flex-column align-items-start gap-1">
@@ -68,12 +125,7 @@ export const DateTimePicker = ({
               </div>
               <div>
                 <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    // checked={nullValue}
-                    // onChange={() => setNullValue((prev) => !prev)}
-                  />
+                  <input className="form-check-input" type="checkbox" checked={isNull} onChange={handleNullToggle} />
                 </label>
               </div>
             </div>
@@ -91,8 +143,8 @@ export const DateTimePicker = ({
                   <input
                     className="form-check-input"
                     type="checkbox"
-                    // checked={defaultValue}
-                    // onChange={() => handleDefaultChange(columnDetails?.column_default, !defaultValue)}
+                    checked={isDefault}
+                    onChange={handleDefaultToggle}
                   />
                 </label>
               </div>
@@ -154,7 +206,7 @@ export const DateTimePicker = ({
     );
   };
 
-  const memoizedCustomCalendarContainer = useCallback(CustomCalendarContainer, []);
+  const memoizedCustomCalendarContainer = useCallback(CustomCalendarContainer, [isOpen]);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -184,7 +236,8 @@ export const DateTimePicker = ({
         shouldCloseOnSelect={!isEditCell}
         onInputClick={() => setIsOpen(true)}
         onClickOutside={() => setIsOpen(false)}
-        value={transformedTimestamp !== null ? transformedTimestamp : 'Select date'}
+        placeholderText="DD/MM/YYYY, 12:00pm"
+        value={transformedTimestamp}
         selected={transformedTimestamp}
         onChange={(newTimestamp) => {
           isEditCell ? handleCellEditChange(newTimestamp) : handleDefaultChange(newTimestamp);
@@ -196,11 +249,14 @@ export const DateTimePicker = ({
         showYearDropdown
         dropdownMode="select"
         customInput={
-          transformedTimestamp || !isEditCell ? (
+          transformedTimestamp ? (
             <input style={{ borderRadius: `${styles.borderRadius}px`, display: isEditCell ? 'block' : 'flex' }} />
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ padding: '0px 14px 0px 14px' }} className="cell-text-null">
+            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+              <span
+                style={{ position: 'static', margin: isEditCell ? '0px 0px 0px 0px' : '4px 0px 4px 0px' }}
+                className={cx({ 'cell-text-null': isEditCell, 'null-tag': !isEditCell })}
+              >
                 Null
               </span>
             </div>
@@ -208,7 +264,7 @@ export const DateTimePicker = ({
         }
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
         dateFormat={format}
-        {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer })}
+        {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer, onKeyDown: handleKeyDown })}
       />
     </div>
   );
