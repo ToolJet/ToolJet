@@ -4,6 +4,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
+import { v4 as uuidv4 } from 'uuid';
 
 export type TableColumnSchema = {
   column_name: string;
@@ -293,9 +294,25 @@ export class TooljetDbService {
     await tjdbQueryRunner.startTransaction();
 
     try {
+      const columnNames = {};
+      const columnConfigrations = {};
+      for (const column of params.columns) {
+        const columnUuid = uuidv4();
+        columnNames[column.column_name] = columnUuid;
+        columnConfigrations[columnUuid] = {};
+      }
+
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigrations,
+        },
+      };
+
       const internalTable = queryRunner.manager.create(InternalTable, {
         tableName,
         organizationId,
+        configurations,
       });
 
       await queryRunner.manager.save(internalTable);
@@ -512,6 +529,43 @@ export class TooljetDbService {
         }
       });
 
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+
+      columnstoBeUpdated.forEach((column) => {
+        const newColumn = column.newColumn;
+        const oldColumn = column.oldColumn;
+        const columnUuid = columnNames[oldColumn.name];
+        columnNames[newColumn.name] = columnUuid;
+        if (newColumn.type !== oldColumn.type) {
+          columnConfigurations[columnUuid] = {};
+        }
+        if (oldColumn.name !== newColumn.name) {
+          delete columnNames[oldColumn.name];
+        }
+      });
+
+      columnsToBeDeleted.forEach((column) => {
+        const columnUuid = columnNames[column];
+        delete columnNames[column];
+        delete columnConfigurations[columnUuid];
+      });
+
+      columnsToBeInserted.forEach((column) => {
+        const columnUuid = uuidv4();
+        columnNames[column.name] = columnUuid;
+        columnConfigurations[columnUuid] = {};
+      });
+
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+
       if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
 
       if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(internalTable.id, columnsToBeDeleted);
@@ -575,7 +629,25 @@ export class TooljetDbService {
     await tjdbQueryRunnner.connect();
     await tjdbQueryRunnner.startTransaction();
 
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const columnUuid = uuidv4();
+      columnNames[column['column_name']] = columnUuid;
+      columnConfigurations[columnUuid] = {};
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+
       await tjdbQueryRunnner.addColumn(
         internalTable.id,
         new TableColumn({
@@ -600,12 +672,16 @@ export class TooljetDbService {
         await tjdbQueryRunnner.createForeignKeys(internalTable.id, foreignKeys);
       }
 
+      await queryRunner.commitTransaction();
       await tjdbQueryRunnner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await queryRunner.release();
       await tjdbQueryRunnner.release();
     } catch (err) {
       await tjdbQueryRunnner.rollbackTransaction();
       await tjdbQueryRunnner.release();
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
         ([tableName, tableId]): { id: string; tableName: string } => {
           return {
@@ -634,11 +710,30 @@ export class TooljetDbService {
     // const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN "${column['column_name']}"`;
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunnner.connect();
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const columnUuid = columnNames[column['column_name']];
+      delete columnNames[column['column_name']];
+      delete columnConfigurations[columnUuid];
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
       const result = await tjdbQueryRunnner.dropColumn(internalTable.id, column['column_name']);
+      await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await queryRunner.release();
       return result;
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       throw new TooljetDatabaseError(error.message, { origin: 'drop_column', internalTables: [internalTable] }, error);
     } finally {
       await tjdbQueryRunnner.release();
@@ -819,8 +914,25 @@ export class TooljetDbService {
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const columnUuid = columnNames[column.column_name];
+      columnNames[column.new_column_name] = columnUuid;
+      delete columnNames[column.column_name];
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+
       if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id_to_delete);
       await tjdbQueryRunner.changeColumn(
         internalTable.id,
@@ -845,11 +957,15 @@ export class TooljetDbService {
       }
 
       await tjdbQueryRunner.commitTransaction();
+      await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
+      await queryRunner.release();
     } catch (error) {
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       throw new TooljetDatabaseError(error.message, { origin: 'edit_column', internalTables: [internalTable] }, error);
     }
   }
