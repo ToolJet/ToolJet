@@ -22,30 +22,26 @@ export default class AirtableQueryService implements QueryService {
     try {
       switch (operation) {
         case 'list_records': {
-          const pageSize = queryOptions.page_size || '';
-          const offset = queryOptions.offset || '';
-          const filterFormula = queryOptions.filter_by_formula || '';
+          const pageSize = queryOptions.page_size || null;
+          const offset = queryOptions.offset || null;
+          const filterFormula = queryOptions.filter_by_formula || null;
+
+          const requestBody: any = {};
 
           if (filterFormula) {
-            const page_size = Number(pageSize);
-            response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/listRecords`, {
-              method: 'post',
-              headers: this.authHeader(apiToken),
-              json: {
-                filterByFormula: filterFormula,
-                pageSize: page_size,
-                offset: offset,
-              },
-            });
-          } else {
-            response = await got(
-              `https://api.airtable.com/v0/${baseId}/${tableName}/?pageSize=${pageSize}&offset=${offset}`,
-              {
-                method: 'get',
-                headers: this.authHeader(apiToken),
-              }
-            );
+            requestBody.filterByFormula = filterFormula;
           }
+          if (pageSize) {
+            requestBody.pageSize = Number(pageSize);
+          }
+          if (offset) {
+            requestBody.offset = offset;
+          }
+          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/listRecords`, {
+            method: 'post',
+            headers: this.authHeader(apiToken),
+            json: requestBody,
+          });
           result = JSON.parse(response.body);
           break;
         }
