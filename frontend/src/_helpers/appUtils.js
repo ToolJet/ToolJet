@@ -1688,8 +1688,15 @@ export const cloneComponents = (
   isCloning = true,
   isCut = false
 ) => {
+  const selectedText = getSelectedText();
+  if (selectedText) {
+    navigator.clipboard.writeText(selectedText);
+    toast.success('Text copied to clipboard');
+    return;
+  }
   let addedComponent = {};
-  if (selectedComponents.length < 1) return getSelectedText();
+
+  if (selectedComponents.length < 1) return;
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
 
@@ -2070,15 +2077,13 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
 };
 
 const getSelectedText = () => {
+  let selectedText = '';
   if (window.getSelection) {
-    navigator.clipboard.writeText(window.getSelection());
+    selectedText = window.getSelection().toString();
+  } else if (window.document.selection) {
+    selectedText = window.ALLOC_STACKdocument.selection.createRange().text;
   }
-  if (window.document.getSelection) {
-    navigator.clipboard.writeText(window.document.getSelection());
-  }
-  if (window.document.selection) {
-    navigator.clipboard.writeText(window.document.selection.createRange().text);
-  }
+  return selectedText || null;
 };
 
 function convertMapSet(obj) {
