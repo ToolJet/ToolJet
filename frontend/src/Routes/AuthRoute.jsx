@@ -4,8 +4,7 @@ import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { getPathname, getRedirectURL } from '@/_helpers/routes';
 import { authenticationService } from '@/_services';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useWhiteLabellingStore } from '@/_stores/cloud/whiteLabellingStore';
-import { setFaviconAndTitle } from '../../cloud/white-label/whiteLabelling';
+import { resetToDefaultWhiteLabels, retrieveWhiteLabelFavicon, retrieveWhiteLabelText, setFaviconAndTitle, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
 export const AuthRoute = ({ children }) => {
   const { isLoading, session, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
@@ -66,9 +65,10 @@ export const AuthRoute = ({ children }) => {
     const signupRegex = /^\/signup\/[^/]+$/;
     const loginRegex = /^\/login\/[^/]+$/;
     if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
-      useWhiteLabellingStore.getState().actions.resetWhiteLabellingStoreBackToInitialState();
+        resetToDefaultWhiteLabels();
     }
-    const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
+    const whiteLabelText = retrieveWhiteLabelText();
+    const whiteLabelFavicon = retrieveWhiteLabelFavicon();
     setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
   };
 
