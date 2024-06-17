@@ -784,6 +784,7 @@ const EditorComponent = (props) => {
       should_freeze_editor: shouldFreezeEditor,
       editorEnvironment,
     } = appData;
+
     const startingPageHandle = props.params.pageHandle;
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
@@ -1828,7 +1829,7 @@ const EditorComponent = (props) => {
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
 
-    const pageHandle = getCurrentState().page.handle;
+    const pageHandle = useCurrentStateStore.getState().page?.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
