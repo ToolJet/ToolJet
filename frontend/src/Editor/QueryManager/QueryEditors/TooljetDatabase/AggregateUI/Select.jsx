@@ -30,6 +30,7 @@ export const SelectBox = ({
       value={value}
       isMulti={isMulti}
       showControlComponent={true}
+      placeholder={placeholder}
     />
   );
 };

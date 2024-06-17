@@ -64,6 +64,7 @@ const DropDownSelect = ({
   columnDefaultValue = '',
   setColumnDefaultValue = () => {},
   showControlComponent = false,
+  placeholder = '',
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -317,7 +318,11 @@ const DropDownSelect = ({
                   )
                 ) : showPlaceHolder ? (
                   <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
-                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
+                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer
+                      ? topPlaceHolder
+                      : placeholder
+                      ? placeholder
+                      : 'Select...'}
                   </span>
                 ) : (
                   ''

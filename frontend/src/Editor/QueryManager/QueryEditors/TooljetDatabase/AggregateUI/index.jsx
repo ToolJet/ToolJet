@@ -225,6 +225,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                           description: 'Count number of not null values in this column',
                         },
                       ]}
+                      placeholder="Select..."
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggregateFx')}
                       darkMode={darkMode}
                     />
@@ -237,6 +238,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       options={operation === 'joinTable' ? tableList : columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
                       darkMode={darkMode}
+                      placeholder="Select column..."
                     />
                   </div>
                   <div
@@ -266,7 +268,9 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
             onClick={() => {
               addNewAggregateOption();
             }}
-            className={isEmpty(operationDetails?.aggregates || {}) ? '' : 'mt-2'}
+            className={`${
+              isEmpty(operationDetails?.aggregates || {}) ? '' : 'mt-2'
+            } d-flex justify-content-start width-fit-content`}
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
