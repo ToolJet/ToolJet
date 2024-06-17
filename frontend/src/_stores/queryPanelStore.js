@@ -1,6 +1,8 @@
 import { create, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
+
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 const initialState = {
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
@@ -25,8 +27,16 @@ export const useQueryPanelStore = create(
               return { selectedQuery: null };
             }
             const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+            const globalDataSources = useDataSourcesStore.getState().globalDataSources;
             if (query && query.options) {
-              query.options = { retryOnNetworkError: true, ...query.options };
+              let retryToggleOption = true;
+              if (globalDataSources) {
+                const matchingSource = globalDataSources.find((source) => source.id === query.data_source_id);
+                if (matchingSource) {
+                  retryToggleOption = matchingSource.options.retry_toggle.value;
+                }
+              }
+              query.options = { retryOnNetworkError: retryToggleOption, ...query.options };
             }
             return { selectedQuery: query };
           });
