@@ -198,13 +198,13 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
         <label className="form-label" data-cy="label-column-filter">
           Aggregate
         </label>
-        <div className="field-container col ">
+        <div className="field-container col d-flex custom-gap-8 flex-column ">
           {isEmpty(operationDetails?.aggregates || {}) && <NoCondition />}
           {operationDetails?.aggregates &&
             !isEmpty(operationDetails?.aggregates) &&
             Object.entries(operationDetails.aggregates).map(([aggregateKey, aggregateDetails]) => {
               return (
-                <div key={aggregateKey} className="d-flex flex-row">
+                <div key={aggregateKey} className="d-flex flex-row ">
                   <div
                     style={{ minWidth: '25%', borderRadius: '4px 0 0 4px' }}
                     className="border overflow-hidden border-width-except-right"
