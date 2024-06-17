@@ -53,7 +53,7 @@ const MultiLineCodeEditor = (props) => {
 
   const handleChange = debounce((value) => {
     setCurrentValue(value);
-  }, 100);
+  }, 800);
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValue);
@@ -184,7 +184,7 @@ const MultiLineCodeEditor = (props) => {
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [hints]);
+  const overRideFunction = (context) => autoCompleteExtensionConfig(context);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
