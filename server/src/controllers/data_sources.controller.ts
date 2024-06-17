@@ -24,6 +24,7 @@ import {
   CreateDataSourceDto,
   GetDataSourceOauthUrlDto,
   TestDataSourceDto,
+  TestSampleDataSourceDto,
   UpdateDataSourceDto,
 } from '@dto/data-source.dto';
 import { decode } from 'js-base64';
@@ -137,6 +138,14 @@ export class DataSourcesController {
   async testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
     const { kind, options, plugin_id, environment_id } = testDataSourceDto;
     return await this.dataSourcesService.testConnection(kind, options, plugin_id, user.organizationId, environment_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('test_connection/sample-db')
+  async testConnectionSampleDb(@User() user, @Body() testDataSourceDto: TestSampleDataSourceDto) {
+    const { kind, plugin_id, environment_id, dataSourceId } = testDataSourceDto;
+    const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId,environment_id);
+    return await this.dataSourcesService.testConnection(kind, dataSource.options, plugin_id, user.organizationId, environment_id);
   }
 
   @UseGuards(JwtAuthGuard)
