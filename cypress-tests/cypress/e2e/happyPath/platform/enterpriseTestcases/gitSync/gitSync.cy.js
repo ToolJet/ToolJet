@@ -44,7 +44,7 @@ describe("", () => {
         cy.get(gitSyncSelector.gitCommitInput).check();
         cy.get(commonSelectors.createAppButton).click();
         cy.wait(3000);
-        cy.dragAndDropWidget("Text", 300, 250);
+        cy.dragAndDropWidget("Text Input", 300, 250);
         editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
 
@@ -64,7 +64,7 @@ describe("", () => {
         cy.wait(3000);
         cy.get(commonWidgetSelector.draggableWidget(data.text1)).click();
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror("Git sync testing");
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
@@ -201,7 +201,7 @@ describe("", () => {
         cy.get(commonEeSelectors.confirmButton).click();
 
         cy.get(commonSelectors.warningText, { timeout: 50000 });
-        cy.get(commonSelectors.warningText).verifyVisibleElement(
+        cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
             "have.text",
             "Apps imported from git repository cannot be edited"
         );
@@ -250,7 +250,7 @@ describe("", () => {
         cy.visit(`/applications/${data.slug}`);
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "Git sync testing");
+        ).verifyVisibleElement("have.value", "Git sync testing");
     });
 
     it("Verify git sync modal UI", () => {

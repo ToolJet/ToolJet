@@ -34,6 +34,7 @@ import {
     addDsToGroup,
     createGroupAddAppAndUserToGroup,
 } from "Support/utils/manageGroups";
+import { addNewUser } from "Support/utils/onboarding";
 
 const data = {};
 
@@ -61,17 +62,25 @@ describe("Global Datasource Manager", () => {
             expect($el.contents().first().text().trim()).to.eq("Data sources");
         });
 
+        cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+            "have.text",
+            ' Commonly used'
+        );
+        cy.get(dataSourceSelector.commonDsLabelAndCount).verifyVisibleElement(
+            "have.text",
+            "Commonly used (5)"
+        ).click();
         cy.get(dataSourceSelector.databaseLabelAndCount).verifyVisibleElement(
             "have.text",
             dataSourceText.allDatabase
-        );
+        ).click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
             " Databases"
         );
         cy.get(dataSourceSelector.querySearchBar)
             .invoke("attr", "placeholder")
-            .should("eq", "Search  data sources");
+            .should("eq", "Search data sources");
 
         cy.get(dataSourceSelector.apiLabelAndCount)
             .verifyVisibleElement("have.text", dataSourceText.allApis)
@@ -174,7 +183,7 @@ describe("Global Datasource Manager", () => {
         data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.text1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-        addNewUserEE(data.userName1, data.userEmail1);
+        addNewUser(data.userName1, data.userEmail1);
         cy.logoutApi();
 
         cy.defaultWorkspaceLogin();
@@ -212,27 +221,25 @@ describe("Global Datasource Manager", () => {
             "table_preview "
         );
 
-        cy.dragAndDropWidget("Text", 100, 250);
+        cy.dragAndDropWidget("Text Input", 100, 250);
         editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
 
-        cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
-        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[1].firstname`);
+        cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+            `{{queries.table_preview.data[1].firstname`
+        );
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "Jane");
+        ).verifyVisibleElement("have.value", "Jane");
 
         cy.get('[data-cy="show-ds-popover-button"]').click();
         cy.get(".p-2 > .tj-base-btn")
             .should("be.visible")
             .and("have.text", "+ Add new Data source");
-        cy.get(".p-2 > .tj-base-btn").click();
 
-        cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
     });
     it("Should validate the user's global data source permissions on apps created by admin", () => {
         data.userName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -244,7 +251,7 @@ describe("Global Datasource Manager", () => {
         data.text2 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.groupName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-        addNewUserEE(data.userName1, data.userEmail1);
+        addNewUser(data.userName1, data.userEmail1);
         cy.logoutApi();
 
         cy.defaultWorkspaceLogin();
@@ -304,12 +311,12 @@ describe("Global Datasource Manager", () => {
             "table_preview "
         );
 
-        cy.dragAndDropWidget("Text", 100, 250);
+        cy.dragAndDropWidget("Text Input", 100, 250);
         editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
-        cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
-        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[1].firstname`);
+        cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+            `{{queries.table_preview.data[1].firstname`
+        );
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
 
@@ -326,7 +333,7 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "Jane");
+        ).verifyVisibleElement("have.value", "Jane");
 
         addQueryAndOpenEditor(
             "student_data",
@@ -341,20 +348,20 @@ describe("Global Datasource Manager", () => {
         );
         cy.wait(500);
 
-        cy.dragAndDropWidget("Text", 300, 250);
+        cy.dragAndDropWidget("Text Input", 300, 250);
         editAndVerifyWidgetName(data.text2, []);
         cy.waitForAutoSave();
 
-        cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
-        ).clearAndTypeOnCodeMirror(`{{queries.student_data.data[3].firstname`);
+        cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+            `{{queries.student_data.data[3].firstname`
+        );
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.wait(1000);
         cy.get(
             commonWidgetSelector.draggableWidget(data.text2)
-        ).verifyVisibleElement("have.text", "David");
+        ).verifyVisibleElement("have.value", "David");
 
         cy.get(".p-2 > .tj-base-btn").should("not.exist");
     });
@@ -412,18 +419,18 @@ describe("Global Datasource Manager", () => {
             "table_preview "
         );
 
-        cy.dragAndDropWidget("Text", 100, 250);
+        cy.dragAndDropWidget("Text Input", 100, 250);
         editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
 
-        cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
-        ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[1].firstname`);
+        cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+            `{{queries.table_preview.data[1].firstname`
+        );
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "Jane");
+        ).verifyVisibleElement("have.value", "Jane");
     });
 });

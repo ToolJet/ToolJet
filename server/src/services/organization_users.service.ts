@@ -9,7 +9,12 @@ import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
-import { USER_STATUS, WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import {
+  USER_STATUS,
+  WORKSPACE_STATUS,
+  WORKSPACE_USER_SOURCE,
+  WORKSPACE_USER_STATUS,
+} from 'src/helpers/user_lifecycle';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
 import { UpdateUserDto } from '@dto/user.dto';
@@ -19,6 +24,7 @@ const uuid = require('uuid');
 type InvitedUserType = Partial<User> & {
   invitedOrganizationId?: string;
   organizationStatus?: string;
+  organizationUserSource?: string;
 };
 
 @Injectable()
@@ -35,7 +41,8 @@ export class OrganizationUsersService {
     user: User,
     organization: DeepPartial<Organization>,
     isInvite?: boolean,
-    manager?: EntityManager
+    manager?: EntityManager,
+    source: WORKSPACE_USER_SOURCE = WORKSPACE_USER_SOURCE.INVITE
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
@@ -44,6 +51,7 @@ export class OrganizationUsersService {
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
+          source,
           role: 'all-users',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -76,6 +84,7 @@ export class OrganizationUsersService {
       .select([
         'organizationUser.organizationId',
         'organizationUser.invitationToken',
+        'organizationUser.source',
         'organizationUser.status',
         'user.id',
         'user.email',
@@ -115,6 +124,7 @@ export class OrganizationUsersService {
     }
     user.invitedOrganizationId = organizationUser.organizationId;
     user.organizationStatus = organizationUser.status;
+    user.organizationUserSource = organizationUser.source;
     return user;
   }
 
@@ -150,12 +160,11 @@ export class OrganizationUsersService {
 
   async updateOrgUser(organizationUserId: string, updateUserDto: UpdateUserDto) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
-    return await this.usersService.update(
-      organizationUser.userId,
-      updateUserDto,
-      null,
-      organizationUser.organizationId
-    );
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      await this.usersService.update(organizationUser.userId, updateUserDto, manager, organizationUser.organizationId);
+      await this.usersService.validateLicense(manager);
+      return;
+    });
   }
 
   async archive(id: string, organizationId: string, user?: User): Promise<void> {
@@ -185,7 +194,16 @@ export class OrganizationUsersService {
 
   async unarchiveUser(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.usersService.updateUser(userId, { status: USER_STATUS.ACTIVE }, manager);
+      const unarchivingUser = await manager.findOneOrFail(User, {
+        where: { id: userId },
+        select: ['id', 'status', 'invitationToken', 'source'],
+      });
+      const { status, invitationToken } = unarchivingUser;
+      /* Special case. what if the user is archived when the status is invited. we were changing status to active before */
+      const updatedStatus =
+        !!invitationToken && status === USER_STATUS.ARCHIVED ? USER_STATUS.INVITED : USER_STATUS.ACTIVE;
+      await this.usersService.updateUser(userId, { status: updatedStatus }, manager);
+      await this.validateLicense(manager);
     });
   }
 
@@ -205,9 +223,12 @@ export class OrganizationUsersService {
     const invitationToken = uuid.v4();
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
+      await manager.update(OrganizationUser, id, {
+        status: WORKSPACE_USER_STATUS.INVITED,
+        source: WORKSPACE_USER_SOURCE.INVITE,
+        invitationToken,
+      });
 
-      await this.usersService.updateUser(organizationUser.userId, { status: USER_STATUS.ACTIVE }, manager);
       await this.usersService.validateLicense(manager);
       await this.validateLicense(manager);
     }, manager);
@@ -318,5 +339,12 @@ export class OrganizationUsersService {
     if ((await this.organizationsCount(manager)) > workspacesCount) {
       throw new HttpException('You have reached your limit for number of workspaces.', 451);
     }
+  }
+
+  async getUser(token: string) {
+    return await this.organizationUsersRepository.findOneOrFail({
+      where: { invitationToken: token },
+      relations: ['user'],
+    });
   }
 }

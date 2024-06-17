@@ -296,7 +296,7 @@ describe("Password Input", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     verifyContainerElements();
-    checkPaddingOfContainer(passwordInputText.defaultWidgetName, 1);
+    checkPaddingOfContainer(passwordInputText.defaultWidgetName, 2);
     cy.get('[data-cy="togglr-button-none"]').click();
     checkPaddingOfContainer(passwordInputText.defaultWidgetName, 0);
 

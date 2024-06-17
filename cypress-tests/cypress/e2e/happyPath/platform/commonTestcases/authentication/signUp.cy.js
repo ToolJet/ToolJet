@@ -51,9 +51,7 @@ describe("User signup", () => {
     verifyOnboardingQuestions(data.fullName, data.workspaceName);
   });
   it("Verify invalid invitation link", () => {
-    cy.log(invitationLink)
     cy.visit(invitationLink);
-    cy.pause()
     verifyInvalidInvitationLink();
     cy.get(commonSelectors.backtoSignUpButton).click();
     cy.get(commonSelectors.SignUpSectionHeader).should("be.visible");

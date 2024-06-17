@@ -49,7 +49,7 @@ describe("Editor- CSA", () => {
     cy.get(".nav-link").eq(2).verifyVisibleElement("have.class", "active");
   });
 
-  it("Should verify Form CSA", () => {
+  it.only("Should verify Form CSA", () => {
     cy.dragAndDropWidget("Form", 200, 100);
     verifyComponent("form1");
     addDefaultEventHandler("Form submitted successfully");
@@ -68,7 +68,7 @@ describe("Editor- CSA", () => {
     cy.get('[data-cy="button-to-submit-form-fx-button"] > svg').click();
     cy.get(
       '[data-cy="button-to-submit-form-input-field"]'
-    ).clearAndTypeOnCodeMirror(`{{components.button2`);
+    ).clearAndTypeOnCodeMirror(`{{components.button1.id`);
     cy.get('[data-cy="draggable-widget-textinput1"]').click().type("Nick");
     cy.get('[data-cy="draggable-widget-numberinput1"]')
       .click()
@@ -269,12 +269,14 @@ describe("Editor- CSA", () => {
       `{{{ id: "c11", title: "New Card", description: "Add new card", columnId: "r1" }`
     );
 
+    cy.wait(200)
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Button", 250, 200);
     selectEvent("On click", "Control Component");
     selectCSA("kanban1", "Delete Card");
     addSupportCSAData("Card Id", "c11");
 
+    cy.wait(200)
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Button", 350, 200);
     selectEvent("On click", "Control Component");
@@ -282,6 +284,7 @@ describe("Editor- CSA", () => {
     addSupportCSAData("Card Id", "c1");
     addSupportCSAData("Destination Column Id", "r2");
 
+    cy.wait(200)
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Button", 450, 200);
     selectEvent("On click", "Control Component");

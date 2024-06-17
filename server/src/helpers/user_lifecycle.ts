@@ -23,6 +23,11 @@ export enum SOURCE {
   WORKSPACE_SIGNUP = 'workspace_signup',
 }
 
+export enum WORKSPACE_USER_SOURCE {
+  INVITE = 'invite',
+  SIGNUP = 'signup',
+}
+
 export enum USER_TYPE {
   INSTANCE = 'instance',
   WORKSPACE = 'workspace',

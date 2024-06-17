@@ -104,10 +104,10 @@ Cypress.Commands.add(
   {
     prevSubject: "optional",
   },
-  (subject, value) => {
+  (subject, value, delay = 0) => {
     cy.wrap(subject)
       .realClick()
-      .find("pre.CodeMirror-line")
+      .find(".cm-line")
       .invoke("text")
       .then((text) => {
         cy
@@ -122,16 +122,16 @@ Cypress.Commands.add(
     if (!Array.isArray(value)) {
       cy.wrap(subject).last().type(value, {
         parseSpecialCharSequences: false,
-        delay: 0,
+        delay: delay,
       });
     } else {
       cy.wrap(subject)
         .last()
         .type(value[1], {
           parseSpecialCharSequences: false,
-          delay: 0,
+          delay: delay,
         })
-        .type(`{home}${value[0]}`, { delay: 0 });
+        .type(`{home}{home}${value[0]}`, { delay: 0 });
     }
   }
 );
@@ -189,7 +189,7 @@ Cypress.Commands.add(
   (subject, value) => {
     cy.wrap(subject)
       .realClick()
-      .find("pre.CodeMirror-line")
+      .find(".cm-line")
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
@@ -273,7 +273,7 @@ Cypress.Commands.add("waitForAppLoad", () => {
   const API_ENDPOINT =
     Cypress.env("environment") === "Community"
       ? "/api/v2/data_sources"
-      : "/api/app-environments**";
+      : "/api/data_sources?**";
 
   const TIMEOUT = 15000;
 

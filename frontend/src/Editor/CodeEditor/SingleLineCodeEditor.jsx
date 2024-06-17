@@ -315,7 +315,6 @@ const DynamicEditorBridge = (props) => {
     darkMode,
     className,
     onFxPress,
-    cyLabel = '',
     onChange,
     styleDefinition,
     onVisibilityChange,
@@ -328,6 +327,7 @@ const DynamicEditorBridge = (props) => {
   const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
 

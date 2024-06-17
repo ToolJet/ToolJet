@@ -96,12 +96,12 @@ describe("Multi env", () => {
     cy.get(".custom-toggle-switch>.switch>").eq(3).click();
     cy.waitForAutoSave();
 
-    cy.dragAndDropWidget("Text", 550, 650);
+    cy.dragAndDropWidget("Text Input", 550, 650);
     editAndVerifyWidgetName(data.constName, []);
     cy.waitForAutoSave();
 
     cy.get(
-      '[data-cy="textcomponenttextinput-input-field"]'
+      '[data-cy="default-value-input-field"]'
     ).clearAndTypeOnCodeMirror(`{{queries.restapi1.data.data[0].email`);
     cy.wait(1000);
     cy.forceClickOnCanvas();
@@ -109,13 +109,13 @@ describe("Multi env", () => {
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+    ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
 
     pinInspector();
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(commonWidgetSelector.inspectorNodeComponents).click();
     cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
-    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+    cy.get('[data-cy="inspector-node-value"] > .mx-2').verifyVisibleElement(
       "have.text",
       `"george.bluth@reqres.in"`
     );
@@ -132,7 +132,7 @@ describe("Multi env", () => {
 
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+    ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
 
     cy.go("back");
     cy.waitForAppLoad();
@@ -166,12 +166,12 @@ describe("Multi env", () => {
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "michael.lawson@reqres.in");
+    ).verifyVisibleElement("have.value", "michael.lawson@reqres.in");
 
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(commonWidgetSelector.inspectorNodeComponents).click();
     cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
-    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+    cy.get('[data-cy="inspector-node-value"] > .mx-2').verifyVisibleElement(
       "have.text",
       `"michael.lawson@reqres.in"`
     );
@@ -188,7 +188,7 @@ describe("Multi env", () => {
 
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "michael.lawson@reqres.in");
+    ).verifyVisibleElement("have.value", "michael.lawson@reqres.in");
 
     cy.go("back");
     cy.waitForAppLoad();
@@ -222,12 +222,12 @@ describe("Multi env", () => {
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+    ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
 
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(commonWidgetSelector.inspectorNodeComponents).click();
     cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
-    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+    cy.get('[data-cy="inspector-node-value"] > .mx-2').verifyVisibleElement(
       "have.text",
       `"george.bluth@reqres.in"`
     );
@@ -244,7 +244,7 @@ describe("Multi env", () => {
 
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+    ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
 
     cy.go("back");
     cy.waitForAppLoad();
@@ -262,7 +262,7 @@ describe("Multi env", () => {
     cy.visit(`/applications/${slug}`);
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+    ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
   });
 
   it("should verify edit privilages of a promoted version", () => {
@@ -288,17 +288,19 @@ describe("Multi env", () => {
     appPromote("development", "staging");
 
     selectVersion((currentVersion = "v3"), (newVersion = ["v1"]));
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "App cannot be edited after promotion. Please create a new version from Development to make any changes."
     );
+
+    cy.forceClickOnCanvas();
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
     cy.get(".components-container").should("have.class", "disabled");
 
     cy.wait(1000);
     selectEnv("development");
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "App cannot be edited after promotion. Please create a new version from Development to make any changes."
     );
@@ -307,7 +309,7 @@ describe("Multi env", () => {
     cy.get(".components-container").should("have.class", "disabled");
 
     selectVersion((currentVersion = "v1"), (newVersion = ["v2"]));
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "This version of the app is released. Please create a new version in development to make any changes."
     );
@@ -317,7 +319,7 @@ describe("Multi env", () => {
 
     cy.wait(1000);
     selectEnv("staging");
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "This version of the app is released. Please create a new version in development to make any changes."
     );
@@ -327,7 +329,7 @@ describe("Multi env", () => {
 
     cy.wait(1000);
     selectEnv("production");
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "This version of the app is released. Please create a new version in development to make any changes."
     );
@@ -494,7 +496,7 @@ describe("Multi env", () => {
     cy.waitForAppLoad();
     cy.wait(3000);
 
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "App cannot be edited after promotion. Please create a new version from Development to make any changes."
     );
@@ -543,6 +545,7 @@ describe("Multi env", () => {
       multiEnvSelector.createNewVersionButton,
       "New versions can only be created in development"
     );
+    cy.forceClickOnCanvas();
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
     cy.get(".components-container").should("have.class", "disabled");
@@ -566,7 +569,7 @@ describe("Multi env", () => {
     cy.waitForAppLoad();
     cy.wait(3000);
 
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "App cannot be edited after promotion. Please create a new version from Development to make any changes."
     );
@@ -641,7 +644,7 @@ describe("Multi env", () => {
     cy.get(commonSelectors.yesButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
     cy.wait(500);
-    cy.get(commonSelectors.warningText).verifyVisibleElement(
+    cy.get(commonSelectors.warningText).eq(0).verifyVisibleElement(
       "have.text",
       "This version of the app is released. Please create a new version in development to make any changes."
     );

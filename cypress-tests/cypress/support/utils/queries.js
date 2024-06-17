@@ -33,8 +33,8 @@ export const renameQueryFromEditor = (name) => {
 export const addInputOnQueryField = (field, data) => {
   cy.get(`[data-cy="${field}-input-field"]`)
     .click()
-    .clearAndTypeOnCodeMirror(`{backSpace}`);
-  cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data);
+    .type(`{selectAll}{backspace}{del}{del}`,);
+  cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data,20);
   cy.forceClickOnCanvas();
 };
 

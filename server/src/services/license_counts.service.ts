@@ -52,14 +52,7 @@ export class LicenseCountsService {
         .getMany()
     ).map((record) => record.id);
 
-    const userIdsOfSuperAdmins = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .select('users.id')
-        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
-        .andWhere('users.status = :status', { status: USER_STATUS.ACTIVE })
-        .getMany()
-    ).map((record) => record.id);
+    const userIdsOfSuperAdmins = await this.fetchSuperAdminIds(manager);
 
     return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
   }
@@ -109,22 +102,41 @@ export class LicenseCountsService {
       const organizationStatusList = [WORKSPACE_STATUS.ACTIVE];
       !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
       !isOnlyActive && organizationStatusList.push(WORKSPACE_STATUS.ARCHIVE);
-      return await manager
-        .createQueryBuilder(User, 'users')
-        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
-          statusList,
-        })
-        .innerJoin(
-          'organization_users.organization',
-          'organization',
-          'organization.status IN (:...organizationStatusList)',
-          {
-            organizationStatusList,
-          }
-        )
-        .select('users.id')
-        .distinct()
-        .getCount();
+
+      const userIdsWithoutNonActiveSuperadmins = (
+        await manager
+          .createQueryBuilder(User, 'users')
+          .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+            statusList,
+          })
+          .innerJoin(
+            'organization_users.organization',
+            'organization',
+            'organization.status IN (:...organizationStatusList)',
+            {
+              organizationStatusList,
+            }
+          )
+          .select('users.id')
+          .distinct()
+          .getMany()
+      ).map((record) => record.id);
+      const userIdsOfSuperAdmins = await this.fetchSuperAdminIds(manager);
+      const ids = [...new Set([...userIdsWithoutNonActiveSuperadmins, ...userIdsOfSuperAdmins])];
+
+      return ids.length;
     }, manager);
+  }
+
+  async fetchSuperAdminIds(manager: EntityManager): Promise<string[]> {
+    const userIdsOfSuperAdmins = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .select('users.id')
+        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .getMany()
+    ).map((record) => record.id);
+    return userIdsOfSuperAdmins;
   }
 }

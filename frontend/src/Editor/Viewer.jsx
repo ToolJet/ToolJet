@@ -786,7 +786,7 @@ class ViewerComponent extends React.Component {
 
     //! For basic plan, env is undefined so we need to remove it from the url
     const navigationParamsString = navigationParams.env
-      ? `env=${navigationParams.env}`
+      ? `env=${navigationParams.env}&version=${navigationParams.version}`
       : '' + navigationParams.version
       ? `version=${navigationParams.version}`
       : '';
