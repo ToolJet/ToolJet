@@ -108,15 +108,15 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   const disableGroupBy = () => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const isAnyAggregateTruthyValue = isEmpty(currentAggregates)
-      ? true
+      ? false
       : Object.values(currentAggregates).some((aggregate) => {
           if (aggregate.aggregateFx && aggregate.column) {
+            return true;
+          } else {
             return false;
           }
-          return true;
         });
-
-    return isAnyAggregateTruthyValue;
+    return !isAnyAggregateTruthyValue;
   };
   const getTableName = (id) => {
     return tables.find((table) => table.table_id === id)?.table_name;
@@ -300,6 +300,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                 handleChange={(value) => handleGroupByChange(selectedTableId, value)}
                 disabled={disableGroupBy()}
                 darkMode={darkMode}
+                showTooltip={disableGroupBy()}
               />
             </div>
           )}
@@ -323,6 +324,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                     handleChange={(value) => handleGroupByChange(selectedTableId, value)}
                     disabled={disableGroupBy()}
                     darkMode={darkMode}
+                    showTooltip={disableGroupBy()}
                   />
                 </div>
               </div>
@@ -346,6 +348,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                         handleChange={(value) => handleGroupByChange(table.table, value)}
                         disabled={disableGroupBy()}
                         darkMode={darkMode}
+                        showTooltip={disableGroupBy()}
                       />
                     </div>
                   </div>

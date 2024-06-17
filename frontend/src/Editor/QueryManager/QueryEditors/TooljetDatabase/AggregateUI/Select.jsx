@@ -14,24 +14,33 @@ export const SelectBox = ({
   isMulti = false,
   disabled = false,
   darkMode,
+  showTooltip = false,
 }) => {
   const validOptionStructure = options.map(({ description = '', ...rest }) => {
     return rest;
   });
   return (
-    <DropDownSelect
-      customBorder={false}
-      showPlaceHolder
-      options={validOptionStructure}
-      darkMode={darkMode}
-      onChange={handleChange}
-      // onAdd={() => navigate(getPrivateRoute('database'))}
-      // addBtnLabel={'Add new table'}
-      value={value}
-      isMulti={isMulti}
-      showControlComponent={true}
-      placeholder={placeholder}
-    />
+    <ToolTip
+      message="Group by can only be used with aggregate function"
+      tooltipClassName="tjdb-table-tooltip"
+      placement="top"
+      show={showTooltip}
+    >
+      <div>
+        <DropDownSelect
+          customBorder={false}
+          showPlaceHolder
+          options={validOptionStructure}
+          darkMode={darkMode}
+          onChange={handleChange}
+          value={value}
+          isMulti={isMulti}
+          showControlComponent={true}
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+      </div>
+    </ToolTip>
   );
 };
 // <Select
