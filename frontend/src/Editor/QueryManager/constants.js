@@ -49,6 +49,9 @@ export const customToggles = {
     label: 'Show notification on success?',
     translatedLabel: 'editor.queryManager.notificationOnSuccess',
   },
+};
+
+export const RestAPIToggles = {
   retryOnNetworkError: {
     dataCy: 'retry-on-network-error',
     action: 'retryOnNetworkError',

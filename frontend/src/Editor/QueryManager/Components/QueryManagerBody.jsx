@@ -11,7 +11,7 @@ import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
-import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
+import { staticDataSources, customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -203,6 +203,7 @@ export const QueryManagerBody = ({
   };
 
   const renderQueryOptions = () => {
+    const isScopeStatic = selectedDataSource?.id === 'null';
     return (
       <div style={{ padding: '0 32px' }}>
         <div
@@ -222,6 +223,18 @@ export const QueryManagerBody = ({
                 darkMode={darkMode}
               />
             ))}
+            {selectedDataSource?.kind === 'restapi' &&
+              Object.keys(RestAPIToggles).map((toggle, index) => (
+                <CustomToggleFlag
+                  {...RestAPIToggles[toggle]}
+                  toggleOption={toggleOption}
+                  value={selectedQuery?.options?.[RestAPIToggles[toggle]?.action]}
+                  index={index}
+                  key={toggle}
+                  darkMode={darkMode}
+                  isScopeStatic={isScopeStatic}
+                />
+              ))}
           </div>
         </div>
         <SuccessNotificationInputs
@@ -288,6 +301,7 @@ const CustomToggleFlag = ({
   toggleOption,
   darkMode,
   index,
+  isScopeStatic,
 }) => {
   const [flag, setFlag] = useState(false);
 
@@ -310,6 +324,7 @@ const CustomToggleFlag = ({
         darkMode={darkMode}
         label={t(translatedLabel, label)}
         subLabel={subLabel}
+        isScopeStatic={isScopeStatic}
       />
     </div>
   );
