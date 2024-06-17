@@ -10,7 +10,6 @@ import tjdbDropdownStyles, {
   serialDataType,
   getColumnDataType,
   renderDatatypeIcon,
-  tzStrings,
 } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
@@ -28,6 +27,7 @@ import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDataba
 import Skeleton from 'react-loading-skeleton';
 import Tick from '@/_ui/Icon/bulkIcons/Tick';
 import DateTimePicker from '@/_components/DateTimePicker';
+import { getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
 
 const ColumnForm = ({
   onClose,
@@ -52,6 +52,8 @@ const ColumnForm = ({
     sortFilters,
     setForeignKeys,
     foreignKeys,
+    configurations,
+    setConfigurations,
   } = useContext(TooljetDatabaseContext);
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
@@ -71,7 +73,6 @@ const ColumnForm = ({
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
-  const [configurations, setConfigurations] = useState({});
   const isTimestamp = dataType === 'timestamp with time zone';
   const { Option } = components;
 
@@ -142,10 +143,13 @@ const ColumnForm = ({
       is_primary_key: selectedColumn.is_primary_key,
       is_unique: isUniqueConstraint,
     },
-    configurations,
     dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
     column_default: defaultValue,
   };
+
+  const columnUuid = configurations?.columns?.column_names?.[selectedColumn?.Header];
+  const columnConfigurations = configurations?.columns?.configurations?.[columnUuid] || {};
+  const [timezone, setTimezone] = useState(columnConfigurations?.timezone || getLocalTimeZone());
 
   const existingReferencedTableName = foreignKeys[selectedForeignkeyIndex]?.referenced_table_name;
   const existingReferencedColumnName = foreignKeys[selectedForeignkeyIndex]?.referenced_column_names[0];
@@ -247,6 +251,7 @@ const ColumnForm = ({
       }
 
       const { foreign_keys = [] } = data?.result || {};
+      setConfigurations(data?.result?.configurations || {});
       if (data?.result?.columns?.length > 0) {
         setColumns(
           data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
@@ -278,6 +283,9 @@ const ColumnForm = ({
   const getForeignKeyColumnDetails = foreignKeys?.filter((item) => item.column_names[0] === selectedColumn?.Header); // this is for getting current foreign key column
 
   const handleEdit = async () => {
+    const reqConfigurations = {};
+    if (selectedColumn?.dataType === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
+
     const colDetails = {
       column: {
         column_name: selectedColumn?.Header,
@@ -288,7 +296,7 @@ const ColumnForm = ({
           is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
           is_unique: isUniqueConstraint,
         },
-        configurations,
+        configurations: { ...columnConfigurations, ...reqConfigurations },
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
       },
 
@@ -389,9 +397,11 @@ const ColumnForm = ({
     return newForeignKeyDetails;
   };
 
+  const tzOptions = useMemo(() => timeZonesWithOffsets(), []);
+
   const tzDictionary = useMemo(() => {
     const dict = {};
-    tzStrings.forEach((option) => {
+    tzOptions.forEach((option) => {
       dict[option.value] = option;
     });
     return dict;
@@ -552,11 +562,11 @@ const ColumnForm = ({
               <Select
                 //useMenuPortal={false}
                 placeholder="Select Timezone"
-                value={tzDictionary[configurations?.timezone || 'UTC']}
+                value={tzDictionary[timezone]}
                 formatOptionLabel={formatOptionLabel}
-                options={tzStrings}
+                options={tzOptions}
                 onChange={(option) => {
-                  setConfigurations({ ...configurations, timezone: option.value });
+                  setTimezone(option.value);
                 }}
                 components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
                 styles={customStyles}

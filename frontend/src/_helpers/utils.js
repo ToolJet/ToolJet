@@ -1383,3 +1383,54 @@ export function parseCustomStringToTimestamp(customString, targetTimezone = 'UTC
   const formattedTimestamp = parsedDate.clone().tz(targetTimezone).format('YYYY-MM-DDTHH:mm:ssZ');
   return formattedTimestamp;
 }
+
+// Function to get the current date in a specific time zone
+const getDateInTimeZone = (timeZone) => new Date().toLocaleString('en-US', { timeZone });
+
+// Function to get the UTC offset for a given time zone
+export const getUTCOffset = (timeZone) => {
+  const dateInTimeZone = new Date(getDateInTimeZone(timeZone));
+  const dateInTimeZoneInSeconds = dateInTimeZone.getTime() / 1000;
+
+  const dateInUTC = new Date(getDateInTimeZone('UTC'));
+  const dateInUTCInSeconds = dateInUTC.getTime() / 1000;
+
+  const difference = Math.floor(Math.abs(dateInTimeZoneInSeconds - dateInUTCInSeconds) / 60);
+
+  const offsetHours = Math.floor(difference / 60);
+  const offsetMinutes = difference % 60;
+  const offsetSign = offsetMinutes > 0 ? '+ ' : '- ';
+  const formattedOffset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes
+    .toString()
+    .padStart(2, '0')}`;
+  return formattedOffset;
+};
+
+// Function to format the time zone display name
+const formatTimeZoneLabel = (timeZone, offset) => `${timeZone} (UTC ${offset})`;
+
+// Function to get the local time zone with its UTC offset
+const getLocalTimeZoneWithOffset = () => {
+  const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const localOffset = getUTCOffset(localTimeZone);
+  return {
+    label: `Local time (UTC ${localOffset})`,
+    value: localTimeZone,
+  };
+};
+
+// Main function to get and log the list of time zones with UTC offsets
+export const timeZonesWithOffsets = () => {
+  const timeZones = Intl.supportedValuesOf('timeZone');
+  const localTimeZone = getLocalTimeZoneWithOffset();
+  const formattedTimeZones = timeZones.map((tz) => ({
+    label: formatTimeZoneLabel(tz, getUTCOffset(tz)),
+    value: tz,
+  }));
+  const timeZonesWithLocal = [localTimeZone, ...formattedTimeZones];
+  return timeZonesWithLocal;
+};
+
+export const getLocalTimeZone = () => {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+};

@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, tzStrings } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import Tick from '../Icons/Tick.svg';
@@ -19,6 +19,7 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/_components/DateTimePicker';
+import { getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
 
 const ColumnForm = ({
   onCreate,
@@ -33,7 +34,9 @@ const ColumnForm = ({
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
+
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
+  const [timezone, setTimezone] = useState(getLocalTimeZone());
   const [onDeletePopup, setOnDeletePopup] = useState(false);
   const [isNotNull, setIsNotNull] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
@@ -44,7 +47,7 @@ const ColumnForm = ({
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
-  const [configurations, setConfigurations] = useState({});
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
   //  this is for DropDownDetails component which is react select
@@ -54,9 +57,11 @@ const ColumnForm = ({
   });
   const isTimestamp = dataType?.value === 'timestamp with time zone';
 
+  const tzOptions = useMemo(() => timeZonesWithOffsets(), []);
+
   const tzDictionary = useMemo(() => {
     const dict = {};
-    tzStrings.forEach((option) => {
+    tzOptions.forEach((option) => {
       dict[option.value] = option;
     });
     return dict;
@@ -78,7 +83,6 @@ const ColumnForm = ({
       is_primary_key: false,
       is_unique: isUniqueConstraint,
     },
-    configurations,
     dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
     column_default: defaultValue,
   };
@@ -171,6 +175,9 @@ const ColumnForm = ({
     const isCheckingValues = foreignKeyDetails?.length > 0 && isForeignKey ? true : false;
 
     setFetching(true);
+    const reqConfigurations = {};
+    if (dataType.value === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
+
     const { error } = await tooljetDatabaseService.createColumn(
       organizationId,
       selectedTable.table_name,
@@ -182,7 +189,7 @@ const ColumnForm = ({
       isSerialType,
       isCheckingValues,
       foreignKeyDetails,
-      configurations
+      reqConfigurations
     );
     setFetching(false);
     if (error) {
@@ -288,11 +295,11 @@ const ColumnForm = ({
             <Select
               //useMenuPortal={false}
               placeholder="Select Timezone"
-              value={tzDictionary[configurations?.timezone || 'UTC']}
+              value={tzDictionary[timezone]}
               formatOptionLabel={formatOptionLabel}
-              options={tzStrings}
+              options={tzOptions}
               onChange={(option) => {
-                setConfigurations({ ...configurations, timezone: option.value });
+                setTimezone(option.value);
               }}
               components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
               styles={customStyles}

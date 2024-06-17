@@ -27,7 +27,7 @@ import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { formatTimestampToCustomString } from '@/_helpers/utils';
+import { formatTimestampToCustomString, getLocalTimeZone, getUTCOffset } from '@/_helpers/utils';
 
 import './styles.scss';
 
@@ -50,6 +50,8 @@ const Table = ({ collapseSidebar }) => {
     loadingState,
     setForeignKeys,
     foreignKeys,
+    configurations,
+    setConfigurations,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -363,7 +365,8 @@ const Table = ({ collapseSidebar }) => {
           return;
         }
 
-        const { foreign_keys = [] } = data?.result || {};
+        const { foreign_keys = [], configurations = {} } = data?.result || {};
+        setConfigurations(configurations);
         if (data?.result?.columns?.length > 0) {
           setColumns(
             data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
@@ -931,6 +934,9 @@ const Table = ({ collapseSidebar }) => {
       (obj) => obj.constraints_type.is_primary_key === true
     ).length;
 
+    const columnUuid = configurations?.columns?.column_names?.[column.Header];
+    const columnConfig = configurations?.columns?.configurations?.[columnUuid] || {};
+
     return is_primary_key ? (
       <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
         <div
@@ -1005,7 +1011,7 @@ const Table = ({ collapseSidebar }) => {
           <span className="tj-text-xsm tj-db-dataype text-lowercase">
             {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
           </span>
-          <span style={{ width: '100px' }}>{column.render('Header')}</span>
+          <span style={{ width: '100px' }}>{column.render('Header')} </span>
         </div>
 
         <ToolTip
@@ -1021,6 +1027,8 @@ const Table = ({ collapseSidebar }) => {
                   }`}</span>
                 </div>
               </div>
+            ) : dataType === 'timestamp with time zone' ? (
+              <span>Display time</span>
             ) : null
           }
           placement="top"
@@ -1028,7 +1036,7 @@ const Table = ({ collapseSidebar }) => {
           show={true}
         >
           <div>
-            {isMatchingForeignKeyColumn(column.Header) && (
+            {isMatchingForeignKeyColumn(column.Header) ? (
               <span
                 style={{
                   marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
@@ -1036,7 +1044,11 @@ const Table = ({ collapseSidebar }) => {
               >
                 <ForeignKeyIndicator />
               </span>
-            )}
+            ) : dataType === 'timestamp with time zone' ? (
+              <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                columnConfig?.timezone || getLocalTimeZone()
+              )}`}</span>
+            ) : null}
           </div>
         </ToolTip>
       </div>

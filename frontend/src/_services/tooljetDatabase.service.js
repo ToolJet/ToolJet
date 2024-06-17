@@ -43,9 +43,8 @@ function createColumn(
   isCheckSerialType = false,
   checkingValues = false,
   foreignKeyArray,
-  configurations
+  configurations = {}
 ) {
-  console.log('configurations', configurations);
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
       column_name: columnName,

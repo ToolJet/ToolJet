@@ -6,7 +6,8 @@ import DeleteIcon from '../../Icons/DeleteIcon.svg';
 import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import Select, { components } from 'react-select';
-import { formatOptionLabel, tzStrings } from '@/TooljetDatabase/constants';
+import { formatOptionLabel } from '@/TooljetDatabase/constants';
+import { getLocalTimeZone } from '@/_helpers/utils';
 // eslint-disable-next-line no-unused-vars
 export const UniqueConstraintPopOver = ({
   disabled,
@@ -18,12 +19,16 @@ export const UniqueConstraintPopOver = ({
   index,
   isEditMode,
   tzDictionary,
+  tzOptions,
 }) => {
   if (disabled) return children;
   const toolTipPlacementStyle = {
     width: '126px',
   };
   const { Option } = components;
+  if (columns[index]?.data_type === 'timestamp with time zone' && !columns[index]?.configurations?.timezone) {
+    columns[index].configurations.timezone = getLocalTimeZone();
+  }
 
   const CustomSelectOption = (props) => (
     <Option {...props}>
@@ -70,9 +75,9 @@ export const UniqueConstraintPopOver = ({
                 </div>
                 <Select
                   placeholder="Select Timezone"
-                  value={tzDictionary[columns[index]?.configurations?.timezone || 'UTC']}
+                  value={tzDictionary[columns[index].configurations.timezone]}
                   formatOptionLabel={formatOptionLabel}
-                  options={tzStrings}
+                  options={tzOptions}
                   onChange={(option) => {
                     const prevColumns = { ...columns };
                     const columnConfigurations = prevColumns[index]?.configurations ?? {};

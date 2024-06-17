@@ -11,16 +11,11 @@ import ArrowRight from '../Icons/ArrowRight.svg';
 import Tick from '../Icons/Tick.svg';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
-import tjdbDropdownStyles, {
-  dataTypes,
-  formatOptionLabel,
-  serialDataType,
-  checkDefaultValue,
-  tzStrings,
-} from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/_components/DateTimePicker';
+import { timeZonesWithOffsets } from '@/_helpers/utils';
 
 function TableSchema({
   columns,
@@ -69,9 +64,11 @@ function TableSchema({
     setDefaultValue(newDefaultValue);
   }, [columnDetails]);
 
+  const tzOptions = useMemo(() => timeZonesWithOffsets(), []);
+
   const tzDictionary = useMemo(() => {
     const dict = {};
-    tzStrings.forEach((option) => {
+    tzOptions.forEach((option) => {
       dict[option.value] = option;
     });
     return dict;
@@ -549,6 +546,7 @@ function TableSchema({
                 index={index}
                 isEditMode={isEditMode}
                 tzDictionary={tzDictionary}
+                tzOptions={tzOptions}
               >
                 <div className="cursor-pointer">
                   <MenuIcon />
