@@ -45,8 +45,6 @@ const MultiLineCodeEditor = (props) => {
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   } = props;
 
-  const [currentValue, setCurrentValue] = React.useState(() => initialValue);
-
   const context = useContext(CodeHinterContext);
 
   const { suggestionList } = createReferencesLookup(context, true);
@@ -62,12 +60,6 @@ const MultiLineCodeEditor = (props) => {
     }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   };
-
-  useEffect(() => {
-    currentValueRef.current = initialValue;
-    setCurrentValue(initialValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
 
   const heightInPx = typeof height === 'string' && height?.includes('px') ? height : `${height}px`;
 
@@ -214,7 +206,7 @@ const MultiLineCodeEditor = (props) => {
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
-                value={currentValueRef.current}
+                value={initialValue}
                 placeholder={placeholder}
                 height={'100%'}
                 minHeight={heightInPx}
