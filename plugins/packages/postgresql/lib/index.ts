@@ -6,8 +6,10 @@ import {
   QueryResult,
 } from '@tooljet-plugins/common';
 
-const { Pool } = require('pg');
 import { SourceOptions, QueryOptions } from './types';
+import knex, { Knex } from 'knex';
+
+const STATEMENT_TIMEOUT = 10000;
 
 function isEmpty(value: number | null | undefined | string) {
   return (
@@ -50,22 +52,24 @@ export default class PostgresqlQueryService implements QueryService {
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
-    const pool = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+    const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
     let result = {
       rows: [],
     };
-    let query = '';
 
     if (queryOptions.mode === 'gui') {
       if (queryOptions.operation === 'bulk_update_pkey') {
-        query = await this.buildBulkUpdateQuery(queryOptions);
+        const bulkQueryOptions = await this.buildBulkUpdateQuery(queryOptions);
+        result = await knexInstance
+          .raw(bulkQueryOptions.query, bulkQueryOptions.queryParams)
+          .timeout(STATEMENT_TIMEOUT);
       }
     } else {
-      query = queryOptions.query;
+      const query = queryOptions.query;
+      const queryParams = isEmpty(queryOptions.queryParams) ? {} : queryOptions.queryParams;
+      result = await knexInstance.raw(query, queryParams).timeout(STATEMENT_TIMEOUT);
     }
-
-    result = await pool.query(query);
 
     return {
       status: 'ok',
@@ -74,40 +78,38 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const pool = await this.getConnection(sourceOptions, {}, false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const result = await pool.query('SELECT version();');
+    const knexInstance = await this.getConnection(sourceOptions, {}, false);
+    await knexInstance.raw('SELECT version();').timeout(STATEMENT_TIMEOUT);
 
     return {
       status: 'ok',
     };
   }
 
-  async buildConnection(sourceOptions: SourceOptions) {
-    const poolConfig: any = {
-      user: sourceOptions.username,
-      host: sourceOptions.host,
-      database: sourceOptions.database,
-      password: sourceOptions.password,
-      port: sourceOptions.port,
-      statement_timeout: 10000,
-      connectionTimeoutMillis: 10000,
+  async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
+    const connectionOptions: Knex.Config = {
+      client: 'pg',
+      connection: {
+        user: sourceOptions.username,
+        host: sourceOptions.host,
+        database: sourceOptions.database,
+        password: sourceOptions.password,
+        port: sourceOptions.port,
+        ssl: sourceOptions.ssl_enabled
+          ? {
+              rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') != 'none',
+              ca: sourceOptions.ssl_certificate === 'ca_certificate' ? sourceOptions.ca_cert : undefined,
+              key: sourceOptions.ssl_certificate === 'self_signed' ? sourceOptions.client_key : undefined,
+              cert: sourceOptions.ssl_certificate === 'self_signed' ? sourceOptions.client_cert : undefined,
+            }
+          : undefined,
+      },
+      pool: { min: 0, max: 10, acquireTimeoutMillis: 10000 },
+      acquireConnectionTimeout: 10000,
       ...this.connectionOptions(sourceOptions),
     };
 
-    const sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') != 'none' };
-    if (sourceOptions.ssl_certificate === 'ca_certificate') {
-      sslObject['ca'] = sourceOptions.ca_cert;
-    }
-    if (sourceOptions.ssl_certificate === 'self_signed') {
-      sslObject['ca'] = sourceOptions.root_cert;
-      sslObject['key'] = sourceOptions.client_key;
-      sslObject['cert'] = sourceOptions.client_cert;
-    }
-
-    if (sourceOptions.ssl_enabled) poolConfig['ssl'] = sslObject;
-
-    return new Pool(poolConfig);
+    return knex(connectionOptions);
   }
 
   async getConnection(
@@ -116,7 +118,7 @@ export default class PostgresqlQueryService implements QueryService {
     checkCache: boolean,
     dataSourceId?: string,
     dataSourceUpdatedAt?: string
-  ): Promise<any> {
+  ): Promise<Knex> {
     if (checkCache) {
       let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
 
@@ -132,28 +134,35 @@ export default class PostgresqlQueryService implements QueryService {
     }
   }
 
-  async buildBulkUpdateQuery(queryOptions: any): Promise<string> {
+  async buildBulkUpdateQuery(queryOptions: any): Promise<{
+    query: string;
+    queryParams: Record<string, any>;
+  }> {
     let queryText = '';
 
     const tableName = queryOptions['table'];
     const primaryKey = queryOptions['primary_key_column'];
     const records = queryOptions['records'];
+    const queryParams: Record<string, any> = isEmpty(queryOptions.queryParams) ? {} : queryOptions.queryParams;
 
-    for (const record of records) {
-      const primaryKeyValue = typeof record[primaryKey] === 'string' ? `'${record[primaryKey]}'` : record[primaryKey];
+    records.forEach((record: any, index: number) => {
+      const primaryKeyValue = `pkey_${index}`;
+      queryParams[primaryKeyValue] = record[primaryKey];
 
-      queryText = `${queryText} UPDATE ${tableName} SET`;
+      queryText += `UPDATE ${tableName} SET`;
 
-      for (const key of Object.keys(record)) {
+      Object.keys(record).forEach((key) => {
         if (key !== primaryKey) {
-          queryText = ` ${queryText} ${key} = ${record[key] === null ? null : `'${record[key]}'`},`;
+          const paramKey = `${key}_${index}`;
+          queryText += ` ${key} = :${paramKey},`;
+          queryParams[paramKey] = record[key];
         }
-      }
+      });
 
-      queryText = queryText.slice(0, -1);
-      queryText = `${queryText} WHERE ${primaryKey} = ${primaryKeyValue};`;
-    }
+      queryText = queryText.slice(0, -1); // Remove trailing comma
+      queryText += ` WHERE ${primaryKey} = :${primaryKeyValue}; `;
+    });
 
-    return queryText.trim();
+    return { query: queryText.trim(), queryParams };
   }
 }
