@@ -1,14 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import PostgrestQueryBuilder from 'src/helpers/postgrest_query_builder';
 import { QueryService, QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { TooljetDbService } from './tooljet_db.service';
 import { isEmpty } from 'lodash';
 import { PostgrestProxyService } from './postgrest_proxy.service';
 import { maybeSetSubPath } from 'src/helpers/utils.helper';
+import { EntityManager } from 'typeorm';
+import { InternalTable } from 'src/entities/internal_table.entity';
 
 @Injectable()
 export class TooljetDbOperationsService implements QueryService {
-  constructor(private tooljetDbService: TooljetDbService, private postgrestProxyService: PostgrestProxyService) {}
+  constructor(
+    private tooljetDbService: TooljetDbService,
+    private postgrestProxyService: PostgrestProxyService,
+    private readonly manager: EntityManager
+  ) {}
 
   async run(_sourceOptions, queryOptions, _dataSourceCacheId, _dataSourceCacheUpdatedAt): Promise<QueryResult> {
     switch (queryOptions.operation) {
@@ -52,11 +58,27 @@ export class TooljetDbOperationsService implements QueryService {
         data: {},
       };
     }
-    const { table_id: tableId, list_rows: listRows } = queryOptions;
+    const { table_id: tableId, list_rows: listRows, organization_id: organizationId } = queryOptions;
     const query = [];
 
     if (!isEmpty(listRows)) {
-      const { limit, where_filters: whereFilters, order_filters: orderFilters, offset } = listRows;
+      const {
+        limit,
+        where_filters: whereFilters,
+        order_filters: orderFilters,
+        offset,
+        aggregates = {},
+        group_by: groupBy = {},
+      } = listRows;
+
+      const internalTable = await this.manager.findOne(InternalTable, {
+        where: {
+          organizationId,
+          id: tableId,
+        },
+      });
+
+      if (!internalTable) throw new NotFoundException('Table not found');
 
       if (limit && isNaN(limit)) {
         return {
@@ -68,7 +90,12 @@ export class TooljetDbOperationsService implements QueryService {
 
       const whereQuery = buildPostgrestQuery(whereFilters);
       const orderQuery = buildPostgrestQuery(orderFilters);
-
+      const groupByAndAggregateQueryList = this.buildAggregateAndGroupByQuery(
+        internalTable.tableName,
+        aggregates,
+        groupBy
+      );
+      if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
       !isEmpty(whereQuery) && query.push(whereQuery);
       !isEmpty(orderQuery) && query.push(orderQuery);
       !isEmpty(limit) && query.push(`limit=${limit}`);
@@ -201,6 +228,33 @@ export class TooljetDbOperationsService implements QueryService {
     });
 
     return { status: 'ok', data: { result } };
+  }
+
+  private buildAggregateAndGroupByQuery(
+    tableName: string,
+    aggregates: { [key: string]: { aggFx: string; column: string } },
+    groupBy: { [key: string]: Array<string> }
+  ) {
+    enum AggregateFunctions {
+      sum = 'sum',
+      count = 'count',
+    }
+
+    const query = [];
+    if (!isEmpty(aggregates)) {
+      Object.entries(aggregates).forEach(([_key, aggregateDetail]) => {
+        const { aggFx, column } = aggregateDetail;
+        if (aggFx && column) query.push(`${tableName}_${column}_${aggFx}:${column}.${AggregateFunctions[aggFx]}()`);
+      });
+    }
+
+    if (!isEmpty(groupBy)) {
+      Object.entries(groupBy).forEach(([_key, groupByColumList]) => {
+        if (!isEmpty(groupByColumList)) query.push(...groupByColumList);
+      });
+    }
+
+    return query;
   }
 }
 
