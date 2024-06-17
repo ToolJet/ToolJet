@@ -31,7 +31,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   const addNewAggregateOption = () => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const uniqueId = uuidv4();
-    const newAggregate = { aggregateFx: '', column: '', tableId: '' };
+    const newAggregate = { aggFx: '', column: '', tableId: '' };
     const updatedAggregates = {
       ...currentAggregates,
       [uniqueId]: newAggregate,
@@ -61,7 +61,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
       delete currentAggregates[aggregateKey];
       return handleChange('aggregates', currentAggregates);
     } else {
-      const currentGroupBy = { ...(operationDetails?.groupBy || {}) };
+      const currentGroupBy = { ...(operationDetails?.group_by || {}) };
       const isValidGroupByPresent = Object.entries(currentGroupBy).some(([tableId, selectedColumn]) => {
         if (tableId && selectedColumn.length >= 1) {
           return true;
@@ -80,20 +80,20 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   const executeAggregateDeletion = async (aggregateKey) => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     delete currentAggregates[aggregateKey];
-    const currentGroupBy = { ...(operationDetails?.groupBy || {}) };
+    const currentGroupBy = { ...(operationDetails?.group_by || {}) };
     delete currentGroupBy?.[selectedTableId];
 
-    handleChange('groupBy', currentGroupBy);
+    handleChange('group_by', currentGroupBy);
     handleChange('aggregates', currentAggregates);
   };
 
   const handleGroupByChange = (selectedTableId, value) => {
-    const currentGroupBy = { ...(operationDetails?.groupBy || {}) };
+    const currentGroupBy = { ...(operationDetails?.group_by || {}) };
     const updatedGroupBy = {
       ...currentGroupBy,
       [selectedTableId]: value,
     };
-    handleChange('groupBy', updatedGroupBy);
+    handleChange('group_by', updatedGroupBy);
   };
 
   const columnAccessorsOptions = useMemo(() => {
@@ -110,7 +110,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     const isAnyAggregateTruthyValue = isEmpty(currentAggregates)
       ? false
       : Object.values(currentAggregates).some((aggregate) => {
-          if (aggregate.aggregateFx && aggregate.column) {
+          if (aggregate.aggFx && aggregate.column) {
             return true;
           } else {
             return false;
@@ -216,7 +216,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                     <SelectBox
                       width="25%"
                       height="32"
-                      value={aggregateDetails.aggregateFx}
+                      value={aggregateDetails.aggFx}
                       options={[
                         { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
                         {
@@ -226,7 +226,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                         },
                       ]}
                       placeholder="Select..."
-                      handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggregateFx')}
+                      handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggFx')}
                       darkMode={darkMode}
                     />
                   </div>
@@ -293,7 +293,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
               <SelectBox
                 width="100%"
                 height="32"
-                value={operationDetails?.groupBy?.[selectedTableId]}
+                value={operationDetails?.group_by?.[selectedTableId]}
                 options={columnAccessorsOptions}
                 placeholder={`Select column(s) to group by`}
                 isMulti={true}
@@ -317,7 +317,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                   <SelectBox
                     width="100%"
                     height="32"
-                    value={operationDetails?.groupBy?.[selectedTableId]}
+                    value={operationDetails?.group_by?.[selectedTableId]}
                     options={columnAccessorsOptions}
                     placeholder={`Select column(s) to group by`}
                     isMulti={true}
@@ -341,7 +341,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       <SelectBox
                         width="100%"
                         height="32"
-                        value={operationDetails?.groupBy?.[table.table]}
+                        value={operationDetails?.group_by?.[table.table]}
                         options={columnAccessorsOptions}
                         placeholder={`Select column(s) to group by`}
                         isMulti={true}
