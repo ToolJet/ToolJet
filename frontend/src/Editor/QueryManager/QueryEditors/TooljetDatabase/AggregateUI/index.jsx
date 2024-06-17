@@ -9,42 +9,52 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { ToolTip } from '@/_components/ToolTip';
 import { Confirm } from '@/Editor/Viewer/Confirm';
-export const AggregateUi = ({ darkMode }) => {
-  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, selectedTableId } =
-    useContext(TooljetDatabaseContext);
+export const AggregateUi = ({ darkMode, operation = '' }) => {
+  const {
+    columns,
+    listRowsOptions,
+    selectedTableId,
+    handleOptionsChange,
+    joinTableOptionsChange,
+    joinTableOptions,
+    tables,
+    getColumnDetailsForTable,
+  } = useContext(TooljetDatabaseContext);
+  const operationDetails = operation === 'listRows' ? listRowsOptions : joinTableOptions;
+  const handleChange = operation === 'listRows' ? handleOptionsChange : joinTableOptionsChange;
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const addNewAggregateOption = () => {
-    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const uniqueId = uuidv4();
     const newAggregate = { aggregateFx: '', column: '' };
     const updatedAggregates = {
       ...currentAggregates,
       [uniqueId]: newAggregate,
     };
-    handleOptionsChange('aggregates', updatedAggregates);
+    handleChange('aggregates', updatedAggregates);
   };
 
   const handleAggregateOptionChange = (key, selecetdValue, optionToUpdate) => {
-    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const aggregateToUpdate = { ...currentAggregates[key], [optionToUpdate]: selecetdValue };
     const updatedAggregates = {
       ...currentAggregates,
       [key]: aggregateToUpdate,
     };
     console.log('db :: handleAggregateOptionChange', { key, selecetdValue, optionToUpdate, updatedAggregates });
-    handleOptionsChange('aggregates', updatedAggregates);
+    handleChange('aggregates', updatedAggregates);
   };
 
   const handleDeleteAggregate = (aggregateKey) => {
-    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const numberOfAggregates = Object.keys(currentAggregates).length;
     if (numberOfAggregates > 1) {
       delete currentAggregates[aggregateKey];
-      return handleOptionsChange('aggregates', currentAggregates);
+      return handleChange('aggregates', currentAggregates);
     } else {
-      const currentGroupBy = { ...(listRowsOptions?.groupBy || {}) };
+      const currentGroupBy = { ...(operationDetails?.groupBy || {}) };
       const isValidGroupByPresent = Object.entries(currentGroupBy).some(([tableId, selectedColumn]) => {
         if (tableId && selectedColumn.length >= 1) {
           return true;
@@ -55,28 +65,28 @@ export const AggregateUi = ({ darkMode }) => {
         setShowDeleteConfirmation(true);
       } else {
         delete currentAggregates[aggregateKey];
-        return handleOptionsChange('aggregates', currentAggregates);
+        return handleChange('aggregates', currentAggregates);
       }
     }
   };
 
   const executeAggregateDeletion = async (aggregateKey) => {
-    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     delete currentAggregates[aggregateKey];
-    const currentGroupBy = { ...(listRowsOptions?.groupBy || {}) };
+    const currentGroupBy = { ...(operationDetails?.groupBy || {}) };
     delete currentGroupBy?.[selectedTableId];
 
-    handleOptionsChange('groupBy', currentGroupBy);
-    handleOptionsChange('aggregates', currentAggregates);
+    handleChange('groupBy', currentGroupBy);
+    handleChange('aggregates', currentAggregates);
   };
 
   const handleGroupByChange = (selectedTableId, value) => {
-    const currentGroupBy = { ...(listRowsOptions?.groupBy || {}) };
+    const currentGroupBy = { ...(operationDetails?.groupBy || {}) };
     const updatedGroupBy = {
       ...currentGroupBy,
       [selectedTableId]: value,
     };
-    handleOptionsChange('groupBy', updatedGroupBy);
+    handleChange('groupBy', updatedGroupBy);
   };
 
   const columnAccessorsOptions = useMemo(() => {
@@ -89,7 +99,7 @@ export const AggregateUi = ({ darkMode }) => {
   }, [columns]);
 
   const disableGroupBy = () => {
-    const currentAggregates = { ...(listRowsOptions?.aggregates || {}) };
+    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const isAnyAggregateTruthyValue = isEmpty(currentAggregates)
       ? true
       : Object.values(currentAggregates).some((aggregate) => {
@@ -101,7 +111,47 @@ export const AggregateUi = ({ darkMode }) => {
 
     return isAnyAggregateTruthyValue;
   };
+  const getTableName = (id) => {
+    return tables.find((table) => table.table_id === id)?.table_name;
+  };
 
+  // const getAllColumns = async () => {
+  //   const allTables = joinTableOptions?.joins?.reduce(
+  //     (accumulator, table) => {
+  //       accumulator?.push(table.table);
+  //       return accumulator;
+  //     },
+  //     [selectedTableId]
+  //   );
+
+  //   async function fetchColumns(table) {
+  //     try {
+  //       const data = await getColumnDetailsForTable(table);
+  //       console.log('m', { data });
+  //       return data;
+  //     } catch (error) {
+  //       console.error('Error fetching column details:', error);
+  //       return []; // or handle the error as needed
+  //     }
+  //   }
+
+  //   const columns = allTables.reduce((accumulator, table) => {
+  //     const columns = fetchColumns(table);
+  //     columns?.forEach((column) => {
+  //       if (accumulator?.find((col) => col?.label === column?.column_name)) {
+  //         return;
+  //       } else {
+  //         accumulator?.push({
+  //           label: column.column_name,
+  //           value: column.column_name,
+  //         });
+  //       }
+  //     });
+  //     return accumulator;
+  //   }, []);
+  //   return columns;
+  //   // return [];
+  // };
   return (
     <>
       <div className="d-flex mb-2">
@@ -109,10 +159,10 @@ export const AggregateUi = ({ darkMode }) => {
           Aggregate
         </label>
         <div className="field-container col ">
-          {isEmpty(listRowsOptions?.aggregates || {}) && <NoCondition />}
-          {listRowsOptions?.aggregates &&
-            !isEmpty(listRowsOptions?.aggregates) &&
-            Object.entries(listRowsOptions.aggregates).map(([aggregateKey, aggregateDetails]) => {
+          {isEmpty(operationDetails?.aggregates || {}) && <NoCondition />}
+          {operationDetails?.aggregates &&
+            !isEmpty(operationDetails?.aggregates) &&
+            Object.entries(operationDetails.aggregates).map(([aggregateKey, aggregateDetails]) => {
               return (
                 <div key={aggregateKey} className="d-flex flex-row">
                   <SelectBox
@@ -161,7 +211,7 @@ export const AggregateUi = ({ darkMode }) => {
             onClick={() => {
               addNewAggregateOption();
             }}
-            className={isEmpty(listRowsOptions?.aggregates || {}) ? '' : 'mt-2'}
+            className={isEmpty(operationDetails?.aggregates || {}) ? '' : 'mt-2'}
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -179,24 +229,35 @@ export const AggregateUi = ({ darkMode }) => {
         </label>
         <div className="field-container col ">
           {/* tooltip is not working */}
-          <ToolTip
-            message="Group by can only be used with aggregate function"
-            placement="top"
-            tooltipClassName="tootip-table"
-            show={true}
-            trigger={['focus', 'hover']}
-          >
-            <SelectBox
-              width="100%"
-              height="32"
-              value={listRowsOptions?.groupBy?.[selectedTableId]}
-              options={columnAccessorsOptions}
-              placeholder={`Select column(s) to group by`}
-              isMulti={true}
-              handleChange={(value) => handleGroupByChange(selectedTableId, value)}
-              disabled={disableGroupBy()}
-            />
-          </ToolTip>
+          {getTableName(selectedTableId)}
+          <SelectBox
+            width="100%"
+            height="32"
+            value={operationDetails?.groupBy?.[selectedTableId]}
+            options={columnAccessorsOptions}
+            placeholder={`Select column(s) to group by`}
+            isMulti={true}
+            handleChange={(value) => handleGroupByChange(selectedTableId, value)}
+            disabled={disableGroupBy()}
+          />
+          {operation === 'joinTable' &&
+            joinTableOptions?.joins?.map((table) => {
+              return (
+                <div key={table.table}>
+                  <div>{getTableName(table.table)}</div>
+                  <SelectBox
+                    width="100%"
+                    height="32"
+                    value={operationDetails?.groupBy?.[table.table]}
+                    options={columnAccessorsOptions}
+                    placeholder={`Select column(s) to group by`}
+                    isMulti={true}
+                    handleChange={(value) => handleGroupByChange(table.table, value)}
+                    disabled={disableGroupBy()}
+                  />
+                </div>
+              );
+            })}
         </div>
       </div>
     </>

@@ -85,7 +85,7 @@ export const ListRows = React.memo(({ darkMode }) => {
     <div>
       <div className="row my-2 tj-db-field-wrapper">
         <div className="tab-content-wrapper">
-          <AggregateUi darkMode={darkMode} />
+          <AggregateUi darkMode={darkMode} operation="listRows" />
           <div className="d-flex mb-2">
             <label className="form-label" data-cy="label-column-filter">
               Filter

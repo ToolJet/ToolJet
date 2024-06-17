@@ -12,6 +12,7 @@ import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/Editor/CodeEditor';
+import { AggregateUi } from './AggregateUI';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -29,7 +30,17 @@ const SelectTableMenu = ({ darkMode }) => {
     joinTableOptions,
     joinTableOptionsChange,
     deleteJoinTableOptions,
+    ...context
   } = useContext(TooljetDatabaseContext);
+  console.log('db :: join', {
+    selectedTableId,
+    joinOptions,
+    setJoinOptions: setJoins,
+    joinTableOptions,
+    joinTableOptionsChange,
+    deleteJoinTableOptions,
+    context,
+  });
 
   const joins = clone(joinOptions);
 
@@ -131,6 +142,8 @@ const SelectTableMenu = ({ darkMode }) => {
           </Row>
         </div>
       </div>
+      <AggregateUi darkMode={darkMode} operation="joinTable" />
+
       {/* Filter Section */}
       <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Filter</label>
