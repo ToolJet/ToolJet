@@ -15,15 +15,21 @@ export const whiteLabellingOptions = {
 
 export async function fetchWhiteLabelDetails(organizationId = null) {
   const { isWhiteLabelDetailsFetched, actions, activeOrganizationId } = useWhiteLabellingStore.getState();
+  const shouldFetch = !isWhiteLabelDetailsFetched || !activeOrganizationId || organizationId && activeOrganizationId != organizationId
 
   // Only fetch white labeling details if they haven't been fetched yet or the activeOrganizationId has not been set or is not equal to the current organizationId
-  if (!isWhiteLabelDetailsFetched || !activeOrganizationId || activeOrganizationId != organizationId) {
+  if (shouldFetch) {
     try {
       await actions.fetchWhiteLabelDetails(organizationId);
     } catch (error) {
       console.error('Unable to update white label settings', error);
     }
   }
+}
+
+export async function resetToDefaultWhiteLabels() {
+  const { actions} = useWhiteLabellingStore.getState();
+  actions.resetWhiteLabellingStoreBackToInitialState();
 }
 
 export async function checkWhiteLabelsDefaultState(organizationId = null) {

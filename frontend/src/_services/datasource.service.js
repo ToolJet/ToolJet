@@ -10,6 +10,7 @@ export const datasourceService = {
   setOauth2Token,
   save,
   fetchOauth2BaseUrl,
+  testSampleDb,
 };
 
 function getAll(appVersionId, environment_id, includeStaticSources = false) {
@@ -64,6 +65,11 @@ function test(kind, options, plugin_id, environment_id) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data_sources/test_connection`, requestOptions).then(handleResponse);
+}
+
+function testSampleDb(body){
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data_sources/test_connection/sample-db`, requestOptions).then(handleResponse);
 }
 
 function setOauth2Token(dataSourceId, body, current_organization_id) {

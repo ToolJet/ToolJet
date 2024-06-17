@@ -1045,6 +1045,8 @@ class DataSourceManagerComponent extends React.Component {
                         onConnectionTestFailed={this.onConnectionTestFailed}
                         darkMode={this.props.darkMode}
                         environmentId={this.props.currentEnvironment?.id}
+                        dataSourceId={selectedDataSource?.id}
+                        dataSourceType={selectedDataSource?.type}
                       />
                     </div>
                     {!isSampleDb && (

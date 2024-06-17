@@ -4,8 +4,9 @@ import { datasourceService } from '@/_services';
 import posthog from 'posthog-js';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
-export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, appId, environmentId }) => {
+export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, appId, environmentId, dataSourceId, dataSourceType }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -27,8 +28,26 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
 
   function testDataSource() {
     setTestingStatus(true);
-    posthog.capture('test_connection_datasource', { dataSource: kind, appId }); //posthog event
-    datasourceService.test(kind, options, pluginId, environmentId).then(
+    posthog.capture('test_connection_datasource', { dataSource: kind, appId });
+    //posthog event
+
+    const testConnectionBody = {
+      kind,
+      options,
+      plugin_id:pluginId,
+      environment_id:environmentId
+    }
+    const sampleDbTestConnection = {
+      kind,
+      options,
+      plugin_id:pluginId,
+      environment_id:environmentId,
+      dataSourceId
+    }
+    const body = dataSourceType === DATA_SOURCE_TYPE.SAMPLE ? sampleDbTestConnection : testConnectionBody
+    
+    const testFunction = dataSourceType === DATA_SOURCE_TYPE.SAMPLE ? datasourceService.testSampleDb : datasourceService.test
+    testFunction(body).then(
       (data) => {
         setTestingStatus(false);
         if (data.status === 'ok') {

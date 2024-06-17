@@ -41,6 +41,12 @@ export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {
   environment_id: string;
 }
 
+export class TestSampleDataSourceDto extends TestDataSourceDto {
+  
+  @IsString()
+  dataSourceId: string;
+}
+
 export class GetDataSourceOauthUrlDto {
   @IsString()
   @IsNotEmpty()
