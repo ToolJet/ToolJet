@@ -18,10 +18,8 @@ import CodeHinter from '@/Editor/CodeEditor';
 import { resolveReferences } from '@/_helpers/utils';
 
 export default function PageSettings({ settings, pageSettingsChanged }) {
-  const {
-    definition: { properties },
-  } = settings;
-  const [forceCodeBox, setForceCodeBox] = useState(properties.disableMenu.fxActive);
+  const { definition: { properties = {} } = {} } = settings ?? {};
+  const [forceCodeBox, setForceCodeBox] = useState(properties?.disableMenu?.fxActive);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -58,9 +56,7 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
   };
 
   const renderCustomStyles = (style, name) => {
-    const {
-      definition: { styles },
-    } = settings;
+    const { definition: { styles = {} } = {} } = settings ?? {};
     return (
       <div className={cx('d-flex align-items-center justify-content-between mb-3')}>
         <div className={`field`}>
@@ -68,7 +64,7 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
         </div>
         {style.type === 'color' && (
           <Color
-            value={styles[name].value}
+            value={styles[name]?.value}
             onChange={(value) => {
               pageSettingsChanged({ [name]: { value } }, 'styles');
             }}
@@ -76,7 +72,7 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
         )}
         {style.type === 'numberInput' && (
           <NumberInput
-            value={styles[name].value}
+            value={styles[name]?.value}
             meta={{ staticText: 'px' }}
             onChange={(value) => {
               pageSettingsChanged({ [name]: { value } }, 'styles');
@@ -154,7 +150,7 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
                               <input
                                 className="form-check-input"
                                 type="checkbox"
-                                checked={resolveReferences(properties.disableMenu.value)}
+                                checked={resolveReferences(properties?.disableMenu?.value)}
                                 onChange={(e) =>
                                   pageSettingsChanged(
                                     {
@@ -174,7 +170,7 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
                     </div>
                     {forceCodeBox && (
                       <CodeHinter
-                        initialValue={properties.disableMenu.value}
+                        initialValue={properties?.disableMenu?.value}
                         lang="javascript"
                         lineNumbers={false}
                         onChange={(value) => {

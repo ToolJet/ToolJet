@@ -1297,6 +1297,7 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
+        version.pageSettings = appVersion.pageSettings;
       } else {
         version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
@@ -1314,6 +1315,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
+          version.pageSettings = appVersion.definition?.pageSettings;
         }
       }
 

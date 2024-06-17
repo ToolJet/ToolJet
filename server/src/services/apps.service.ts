@@ -403,7 +403,8 @@ export class AppsService {
       if (versionFrom) {
         (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
           (appVersion.globalSettings = versionFrom.globalSettings),
-          await manager.save(appVersion);
+          (appVersion.pageSettings = versionFrom.pageSettings);
+        await manager.save(appVersion);
 
         const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
           manager,

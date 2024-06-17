@@ -9,10 +9,8 @@ const MODES = [
 ];
 
 const CollapsableToggle = ({ pageSettingsChanged, settings }) => {
-  const {
-    definition: { properties },
-  } = settings;
-  const { collapsable } = properties;
+  const { definition: { properties = {} } = {} } = settings ?? {};
+  const { collapsable } = properties ?? {};
 
   function stringToBoolean(str) {
     return str.toLowerCase() === 'true';
@@ -35,7 +33,7 @@ const CollapsableToggle = ({ pageSettingsChanged, settings }) => {
             });
             pageSettingsChanged({ collapsable: stringToBoolean(value) }, 'properties');
           }}
-          defaultValue={collapsable.toString()}
+          defaultValue={collapsable?.toString()}
         >
           {MODES.map((mode) => (
             <ToggleGroupItem key={mode.value} value={mode.value}>

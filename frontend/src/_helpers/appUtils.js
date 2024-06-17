@@ -1453,11 +1453,12 @@ export const computePageSettings = () => {
   try {
     const currentPageSettings = useEditorStore.getState().appDefinition.pageSettings;
     const pageSettingMeta = _.cloneDeep(pageConfig);
+    const mergedSettings = merge({}, pageSettingMeta.definition, currentPageSettings);
     useCurrentStateStore.getState().actions.setCurrentState({
       pageSettings: {
         ...pageConfig,
         definition: {
-          ...merge({}, pageSettingMeta.definition, currentPageSettings),
+          ...mergedSettings,
         },
       },
     });
