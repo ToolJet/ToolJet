@@ -30,8 +30,12 @@ export default class AirtableQueryService implements QueryService {
           const requestBody: any = {};
 
           if (fields) {
-            const parsedFields = JSON.parse(fields);
-            requestBody.fields = parsedFields;
+            try {
+              const parsedFields = JSON.parse(fields);
+              requestBody.fields = parsedFields;
+            } catch (error) {
+              throw new Error('Invalid JSON format for fields');
+            }
           }
           if (filterFormula) {
             requestBody.filterByFormula = filterFormula;
