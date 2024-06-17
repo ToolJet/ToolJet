@@ -51,8 +51,7 @@ function FolderList({
     setIsHoveredInside(false);
   };
 
-  const computedStyles = customStyles(selectedItem, isHovered);
-
+  const computedStyles = customStyles ? customStyles(selectedItem, isHovered) : {};
   return (
     <>
       {!isLoading ? (

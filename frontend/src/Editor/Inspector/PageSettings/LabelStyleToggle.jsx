@@ -12,26 +12,25 @@ const MODES = [
 const LabelStyleToggle = ({ pageSettingsChanged, settings }) => {
   const { definition: { properties = {} } = {} } = settings ?? {};
   const { style } = properties ?? {};
+
+  const handleValueChange = (value) => {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      pageSettings: {
+        ...settings,
+        properties: {
+          ...settings.properties,
+          style: value,
+        },
+      },
+    });
+    pageSettingsChanged({ style: value }, 'properties');
+  };
+
   return (
     <div className="d-flex align-items-center mb-3">
       <span>Style</span>
       <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px', width: '194px' }}>
-        <ToggleGroup
-          className="label-style"
-          onValueChange={(value) => {
-            useCurrentStateStore.getState().actions.setCurrentState({
-              pageSettings: {
-                ...settings,
-                properties: {
-                  ...settings.properties,
-                  style: value,
-                },
-              },
-            });
-            pageSettingsChanged({ style: value }, 'properties');
-          }}
-          defaultValue={style}
-        >
+        <ToggleGroup className="label-style" onValueChange={handleValueChange} defaultValue={style}>
           {MODES.map((mode) => (
             <ToggleGroupItem key={mode.value} value={mode.value}>
               {mode.label}
