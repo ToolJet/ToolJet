@@ -107,6 +107,10 @@ class ViewerComponent extends React.Component {
       isAppLoaded: true,
       appDefinition: { ...appDefData },
       pages: appDefData.pages,
+      showViewerNavigation: !resolveReferences(
+        appDefData.pageSettings.properties.disableMenu.value,
+        this.props.currentState
+      ),
     });
 
     useEditorStore.getState().actions.updateEditorState({
