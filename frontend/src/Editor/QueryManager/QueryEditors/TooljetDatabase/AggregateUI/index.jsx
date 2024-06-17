@@ -19,6 +19,9 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     joinTableOptions,
     tables,
     getColumnDetailsForTable,
+    joinOptions,
+    tableInfo,
+    findTableDetails,
   } = useContext(TooljetDatabaseContext);
   const operationDetails = operation === 'listRows' ? listRowsOptions : joinTableOptions;
   const handleChange = operation === 'listRows' ? handleOptionsChange : joinTableOptionsChange;
@@ -152,6 +155,43 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   //   return columns;
   //   // return [];
   // };
+  const tableList = [];
+
+  if (operation === 'joinTable') {
+    const tableSet = new Set();
+    (joinOptions || []).forEach((join) => {
+      const { table, conditions } = join;
+      tableSet.add(table);
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          tableSet.add(leftField?.table);
+        }
+        if (rightField?.table) {
+          tableSet.add(rightField?.table);
+        }
+      });
+    });
+
+    const tablesDetails = [...tableSet];
+
+    tablesDetails.forEach((tableId) => {
+      const tableDetails = findTableDetails(tableId);
+      if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
+        const tableDetailsForDropDown = {
+          label: tableDetails.table_name,
+          value: tableId,
+          options:
+            tableInfo[tableDetails.table_name]?.map((columns) => ({
+              label: columns.Header,
+              value: columns.Header + '-' + tableId,
+              table: tableId,
+            })) || [],
+        };
+        tableList.push(tableDetailsForDropDown);
+      }
+    });
+  }
   return (
     <>
       <div className="d-flex mb-2">
@@ -190,7 +230,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       height="32"
                       width="100%"
                       value={aggregateDetails.column}
-                      options={columnAccessorsOptions}
+                      options={operation === 'joinTable' ? tableList : columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
                       darkMode={darkMode}
                     />
