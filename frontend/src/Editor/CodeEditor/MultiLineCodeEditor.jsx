@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
@@ -51,19 +51,20 @@ const MultiLineCodeEditor = (props) => {
 
   const { suggestionList } = createReferencesLookup(context, true);
 
-  const handleChange = debounce((value) => {
-    setCurrentValue(value);
-  }, 800);
+  const currentValueRef = useRef(initialValue);
+
+  const handleChange = (val) => (currentValueRef.current = val);
 
   const handleOnBlur = () => {
-    if (!delayOnChange) return onChange(currentValue);
+    if (!delayOnChange) return onChange(currentValueRef.current);
     setTimeout(() => {
-      onChange(currentValue);
+      onChange(currentValueRef.current);
     }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
   useEffect(() => {
+    currentValueRef.current = initialValue;
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
@@ -213,7 +214,7 @@ const MultiLineCodeEditor = (props) => {
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
-                value={currentValue}
+                value={currentValueRef.current}
                 placeholder={placeholder}
                 height={'100%'}
                 minHeight={heightInPx}
@@ -249,7 +250,7 @@ const MultiLineCodeEditor = (props) => {
             {showPreview && (
               <div className="multiline-previewbox-wrapper">
                 <PreviewBox
-                  currentValue={currentValue}
+                  currentValue={currentValueRef.current}
                   validationSchema={null}
                   setErrorStateActive={() => null}
                   componentId={null}
