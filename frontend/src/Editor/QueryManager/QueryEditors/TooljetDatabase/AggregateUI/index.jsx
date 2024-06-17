@@ -39,12 +39,11 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     handleChange('aggregates', updatedAggregates);
   };
 
-  const handleAggregateOptionChange = (key, selecetdValue, optionToUpdate, tableId = '') => {
+  const handleAggregateOptionChange = (key, selecetdValue, optionToUpdate) => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const aggregateToUpdate = {
       ...currentAggregates[key],
       [optionToUpdate]: selecetdValue,
-      table_id: tableId ? tableId : selectedTableId,
     };
     const updatedAggregates = {
       ...currentAggregates,
@@ -189,7 +188,8 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
             tableInfo[tableDetails.table_name]?.map((columns) => ({
               label: columns.Header,
               value: columns.Header + '-' + tableId,
-              table: tableId,
+              tableId: tableId,
+              tableName: tableDetails?.table_name,
             })) || [],
         };
         tableList.push(tableDetailsForDropDown);
@@ -207,6 +207,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
           {operationDetails?.aggregates &&
             !isEmpty(operationDetails?.aggregates) &&
             Object.entries(operationDetails.aggregates).map(([aggregateKey, aggregateDetails]) => {
+              console.log('man ::', { aggregateDetails });
               return (
                 <div key={aggregateKey} className="d-flex flex-row ">
                   <div
@@ -234,7 +235,14 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                     <SelectBox
                       height="32"
                       width="100%"
-                      value={aggregateDetails.column}
+                      value={
+                        operation === 'joinTable'
+                          ? {
+                              ...aggregateDetails.column,
+                              label: aggregateDetails.column.label + ' ' + aggregateDetails.column.tableName,
+                            }
+                          : aggregateDetails.column
+                      }
                       options={operation === 'joinTable' ? tableList : columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
                       darkMode={darkMode}
