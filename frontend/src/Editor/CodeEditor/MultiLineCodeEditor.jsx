@@ -16,6 +16,7 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
+import { debounce } from 'lodash';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -50,18 +51,9 @@ const MultiLineCodeEditor = (props) => {
 
   const { suggestionList } = createReferencesLookup(context, true);
 
-  const diffOfCurrentValue = React.useRef(null);
-
-  const handleChange = React.useCallback((val) => {
-    setCurrentValue(val);
-
-    const diff = val.length - currentValue.length;
-
-    if (diff > 0) {
-      diffOfCurrentValue.current = val.slice(-diff);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleChange = debounce((value) => {
+    setCurrentValue(value);
+  }, 100);
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValue);
