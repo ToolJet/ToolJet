@@ -53,8 +53,9 @@ export const useAppDataStore = create(
             const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
 
             let updateDiff = appDefinitionDiff.updateDiff;
+            console.log({ updateDiff, appDefinitionDiff });
 
-            if (appDefinitionDiff.operation === 'update') {
+            if (appDefinitionDiff.operation === 'update' && appDefinitionDiff.type !== 'page_settings') {
               updateDiff = useResolveStore.getState().actions.findReferences(updateDiff);
             }
 

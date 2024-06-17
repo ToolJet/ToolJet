@@ -75,6 +75,7 @@ class ViewerComponent extends React.Component {
       isSidebarPinned: localStorage.getItem('isPagesSidebarPinned') === 'false' ? false : true,
       isSidebarHovered: false,
       canvasAreaWidth: null,
+      showViewerNavigation: false,
     };
   }
 
@@ -625,7 +626,17 @@ class ViewerComponent extends React.Component {
         this.loadApplicationByVersion(this.props.id, useAppVersionStore.getState().editingVersion.id);
       }
     }
-
+    if (
+      this.props.currentState.pageSettings?.definition?.properties?.disableMenu?.fxActive &&
+      prevProps.currentState.components !== this.props.currentState.components
+    ) {
+      this.setState({
+        showViewerNavigation: !resolveReferences(
+          this.props.currentState.pageSettings?.definition?.properties?.disableMenu.value,
+          this.props.currentState
+        ),
+      });
+    }
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
     if (this.state.homepage !== prevState.homepage && !this.state.isLoading) {
       <Navigate to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
@@ -824,7 +835,7 @@ class ViewerComponent extends React.Component {
 
     if (appDefinition.globalSettings?.canvasMaxWidthType === 'px')
       computedCanvasMaxWidth =
-        (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - (appDefinition?.showViewerNavigation ? 200 : 0);
+        (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - (this.state.showViewerNavigation ? 200 : 0);
     else if (appDefinition.globalSettings?.canvasMaxWidthType === '%')
       computedCanvasMaxWidth = +appDefinition.globalSettings?.canvasMaxWidth + '%';
 
@@ -847,12 +858,12 @@ class ViewerComponent extends React.Component {
       canvasWidth,
       isSidebarPinned,
       canvasAreaWidth,
+      showViewerNavigation,
     } = this.state;
 
     const currentCanvasWidth = canvasWidth;
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
-    const pagesVisibility = this.props.currentState?.pageSettings?.definition?.properties?.disableMenu;
 
     const pages =
       Object.entries(_.cloneDeep(appDefinition)?.pages)
@@ -914,7 +925,7 @@ class ViewerComponent extends React.Component {
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                showViewerNavigation={appDefinition?.showViewerNavigation}
+                showViewerNavigation={showViewerNavigation}
               />
             )}
             {/* Render following mobile header only when its in preview mode and not in launched app */}
@@ -928,7 +939,7 @@ class ViewerComponent extends React.Component {
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
                 setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                showViewerNavigation={appDefinition?.showViewerNavigation}
+                showViewerNavigation={showViewerNavigation}
               />
             )}
             <div className="sub-section">
@@ -940,7 +951,7 @@ class ViewerComponent extends React.Component {
                   }}
                 >
                   <div className="areas d-flex flex-rows">
-                    {!resolveReferences(pagesVisibility?.value) && (
+                    {showViewerNavigation && (
                       <ViewerSidebarNavigation
                         showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
                         isMobileDevice={this.props.currentLayout === 'mobile'}
@@ -958,10 +969,7 @@ class ViewerComponent extends React.Component {
                       })}
                       style={{
                         backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
-                        marginLeft:
-                          appDefinition?.showViewerNavigation && this.props.currentLayout !== 'mobile'
-                            ? '210px'
-                            : 'auto',
+                        marginLeft: showViewerNavigation && this.props.currentLayout !== 'mobile' ? '210px' : 'auto',
                       }}
                     >
                       <div
@@ -985,7 +993,7 @@ class ViewerComponent extends React.Component {
                             currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                             switchPage={this.switchPage}
                             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                            showViewerNavigation={appDefinition?.showViewerNavigation}
+                            showViewerNavigation={showViewerNavigation}
                           />
                         )}
                         {defaultComponentStateComputed && (

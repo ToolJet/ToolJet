@@ -10,10 +10,8 @@ const MODES = [
 ];
 
 const LabelStyleToggle = ({ pageSettingsChanged, settings }) => {
-  const {
-    definition: { properties },
-  } = settings;
-  const { style } = properties;
+  const { definition: { properties = {} } = {} } = settings ?? {};
+  const { style } = properties ?? {};
   return (
     <div className="d-flex align-items-center mb-3">
       <span>Style</span>

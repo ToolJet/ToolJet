@@ -88,7 +88,6 @@ export const ViewerSidebarNavigation = ({
       hidden: properties?.style === 'icon',
     },
   };
-  console.log({ styles });
   return (
     <div
       className={classNames('navigation-area', {
