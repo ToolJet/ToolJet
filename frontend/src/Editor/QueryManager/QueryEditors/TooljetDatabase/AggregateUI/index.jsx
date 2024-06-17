@@ -165,28 +165,39 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
             Object.entries(operationDetails.aggregates).map(([aggregateKey, aggregateDetails]) => {
               return (
                 <div key={aggregateKey} className="d-flex flex-row">
-                  <SelectBox
-                    width="25%"
-                    height="32"
-                    value={aggregateDetails.aggregateFx}
-                    options={[
-                      { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
-                      { label: 'Count', value: 'count', description: 'Count number of not null values in this column' },
-                    ]}
-                    handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggregateFx')}
-                  />
-                  <div style={{ flex: '1' }}>
+                  <div
+                    style={{ minWidth: '25%', borderRadius: '4px 0 0 4px' }}
+                    className="border overflow-hidden border-width-except-right"
+                  >
+                    <SelectBox
+                      width="25%"
+                      height="32"
+                      value={aggregateDetails.aggregateFx}
+                      options={[
+                        { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
+                        {
+                          label: 'Count',
+                          value: 'count',
+                          description: 'Count number of not null values in this column',
+                        },
+                      ]}
+                      handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggregateFx')}
+                      darkMode={darkMode}
+                    />
+                  </div>
+                  <div style={{ flex: '1', borderRadius: '0 4px 4px 0' }} className="border border-width-except-right">
                     <SelectBox
                       height="32"
                       width="100%"
                       value={aggregateDetails.column}
                       options={columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
+                      darkMode={darkMode}
                     />
                   </div>
                   <div
-                    style={{ width: '32px', minWidth: '32px' }}
-                    className="d-flex justify-content-center align-items-center"
+                    style={{ width: '32px', minWidth: '32px', borderRadius: '0 4px 4px 0' }}
+                    className="d-flex justify-content-center align-items-center border"
                     onClick={() => handleDeleteAggregate(aggregateKey)}
                   >
                     <SolidIcon name="trash" width="16" fill="var(--slate9)" />
@@ -229,35 +240,71 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
         </label>
         <div className="field-container col ">
           {/* tooltip is not working */}
-          {getTableName(selectedTableId)}
-          <SelectBox
-            width="100%"
-            height="32"
-            value={operationDetails?.groupBy?.[selectedTableId]}
-            options={columnAccessorsOptions}
-            placeholder={`Select column(s) to group by`}
-            isMulti={true}
-            handleChange={(value) => handleGroupByChange(selectedTableId, value)}
-            disabled={disableGroupBy()}
-          />
-          {operation === 'joinTable' &&
-            joinTableOptions?.joins?.map((table) => {
-              return (
-                <div key={table.table}>
-                  <div>{getTableName(table.table)}</div>
+          {operation === 'listRows' && (
+            <div className="border rounded">
+              <SelectBox
+                width="100%"
+                height="32"
+                value={operationDetails?.groupBy?.[selectedTableId]}
+                options={columnAccessorsOptions}
+                placeholder={`Select column(s) to group by`}
+                isMulti={true}
+                handleChange={(value) => handleGroupByChange(selectedTableId, value)}
+                disabled={disableGroupBy()}
+                darkMode={darkMode}
+              />
+            </div>
+          )}
+          {operation === 'joinTable' && (
+            <div className="d-flex flex-column custom-gap-8">
+              <div className="border rounded d-flex">
+                <div
+                  style={{ width: '15%', padding: '4px 8px' }}
+                  className="border border-only-right d-flex align-items-center"
+                >
+                  {getTableName(selectedTableId)}
+                </div>
+                <div style={{ width: '85%' }}>
                   <SelectBox
                     width="100%"
                     height="32"
-                    value={operationDetails?.groupBy?.[table.table]}
+                    value={operationDetails?.groupBy?.[selectedTableId]}
                     options={columnAccessorsOptions}
                     placeholder={`Select column(s) to group by`}
                     isMulti={true}
-                    handleChange={(value) => handleGroupByChange(table.table, value)}
+                    handleChange={(value) => handleGroupByChange(selectedTableId, value)}
                     disabled={disableGroupBy()}
+                    darkMode={darkMode}
                   />
                 </div>
-              );
-            })}
+              </div>
+              {joinTableOptions?.joins?.map((table) => {
+                return (
+                  <div key={table.table} className="border rounded d-flex">
+                    <div
+                      style={{ width: '15%', padding: '4px 8px' }}
+                      className="border border-only-right d-flex align-items-center"
+                    >
+                      {getTableName(table.table)}
+                    </div>
+                    <div style={{ width: '85%' }}>
+                      <SelectBox
+                        width="100%"
+                        height="32"
+                        value={operationDetails?.groupBy?.[table.table]}
+                        options={columnAccessorsOptions}
+                        placeholder={`Select column(s) to group by`}
+                        isMulti={true}
+                        handleChange={(value) => handleGroupByChange(table.table, value)}
+                        disabled={disableGroupBy()}
+                        darkMode={darkMode}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -154,6 +154,7 @@ function DataSourceSelect({
   isLoading = false,
   columnDefaultValue,
   setColumnDefaultValue,
+  showControlComponent = false,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
@@ -552,7 +553,8 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && !scrollEventForColumnValues && { Control: () => '' }),
+          ...((showControlComponent ? false : optionsCount < 5) &&
+            !scrollEventForColumnValues && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({

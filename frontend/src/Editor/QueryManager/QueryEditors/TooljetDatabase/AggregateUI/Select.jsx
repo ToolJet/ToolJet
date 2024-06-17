@@ -4,33 +4,45 @@ import { components } from 'react-select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
+import DropDownSelect from '../DropDownSelect';
 
 export const SelectBox = ({
   options,
   handleChange,
-  width,
-  height,
   value = '',
   placeholder = '',
   isMulti = false,
   disabled = false,
+  darkMode,
 }) => {
   const validOptionStructure = options.map(({ description = '', ...rest }) => {
     return rest;
   });
   return (
-    <Select
+    <DropDownSelect
+      customBorder={false}
+      showPlaceHolder
       options={validOptionStructure}
-      value={value}
+      darkMode={darkMode}
       onChange={handleChange}
-      height={height}
-      useMenuPortal={true}
-      closeMenuOnSelect={true}
-      width={width}
-      search={true}
-      placeholder={placeholder}
+      // onAdd={() => navigate(getPrivateRoute('database'))}
+      // addBtnLabel={'Add new table'}
+      value={value}
       isMulti={isMulti}
-      isDisabled={disabled}
+      showControlComponent={true}
     />
   );
 };
+// <Select
+//   options={validOptionStructure}
+//   value={value}
+//   onChange={handleChange}
+//   height={height}
+//   useMenuPortal={true}
+//   closeMenuOnSelect={true}
+//   width={width}
+//   search={true}
+//   placeholder={placeholder}
+//   isMulti={isMulti}
+//   isDisabled={disabled}
+// />

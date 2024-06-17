@@ -63,6 +63,7 @@ const DropDownSelect = ({
   isLoading = false,
   columnDefaultValue = '',
   setColumnDefaultValue = () => {},
+  showControlComponent = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -232,6 +233,7 @@ const DropDownSelect = ({
             saveFKValue={saveFKValue}
             columnDefaultValue={columnDefaultValue}
             setColumnDefaultValue={setColumnDefaultValue}
+            showControlComponent={showControlComponent}
           />
         </Popover>
       }
