@@ -994,10 +994,6 @@ const EditorComponent = (props) => {
           });
         });
     });
-
-    return new Promise((resolve) => {
-      resolve();
-    });
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
