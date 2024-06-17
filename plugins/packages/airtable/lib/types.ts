@@ -11,5 +11,6 @@ export type QueryOptions = {
   record_id: string;
   body: string;
   offset: string;
+  fields: string;
   filter_by_formula: string;
 };

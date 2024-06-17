@@ -78,6 +78,17 @@
         "className": "codehinter-plugins",
         "placeholder": "recAOzdIHaRpvRaGE"
       },
+      "fields": {
+        "label": "Fields",
+        "key": "fields",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter fields name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "[\"column1\",\"column2\",\"column3\"]"
+      },
       "filter_by_formula": {
         "label": "Filter By Formula",
         "key": "filter_by_formula",

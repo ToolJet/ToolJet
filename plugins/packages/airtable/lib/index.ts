@@ -24,10 +24,15 @@ export default class AirtableQueryService implements QueryService {
         case 'list_records': {
           const pageSize = queryOptions.page_size || null;
           const offset = queryOptions.offset || null;
+          const fields = queryOptions.fields || null;
           const filterFormula = queryOptions.filter_by_formula || null;
 
           const requestBody: any = {};
 
+          if (fields) {
+            const parsedFields = JSON.parse(fields);
+            requestBody.fields = parsedFields;
+          }
           if (filterFormula) {
             requestBody.filterByFormula = filterFormula;
           }
@@ -42,6 +47,7 @@ export default class AirtableQueryService implements QueryService {
             headers: this.authHeader(apiToken),
             json: requestBody,
           });
+
           result = JSON.parse(response.body);
           break;
         }
