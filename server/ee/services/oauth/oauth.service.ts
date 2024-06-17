@@ -17,6 +17,7 @@ import {
   lifecycleEvents,
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_USER_SOURCE,
 } from 'src/helpers/user_lifecycle';
 import {
   dbTransactionWrap,
@@ -108,7 +109,13 @@ export class OauthService {
     }
 
     // Setting up invited organization, organization user status should be invited if user status is invited
-    await this.organizationUsersService.create(user, organization, !!user.invitationToken, manager);
+    await this.organizationUsersService.create(
+      user,
+      organization,
+      !!user.invitationToken,
+      manager,
+      WORKSPACE_USER_SOURCE.SIGNUP
+    );
 
     if (defaultOrganization) {
       // Setting up default organization
@@ -463,6 +470,7 @@ export class OauthService {
             await this.syncUserAndGroups(userResponse, userDetails.id, organization.id, manager);
           }
 
+          await this.usersService.validateLicense(manager);
           return await this.authService.processOrganizationSignup(
             response,
             userDetails,
@@ -540,7 +548,10 @@ export class OauthService {
   ) => {
     const { groups: ssoGroups, profilePhoto, email } = userResponse;
     /* Sync LDAP / SAML groups before signup to the workspace */
-    if (ssoGroups?.length) await this.usersService.attachUserGroup(ssoGroups, organizationId, userId, true, manager);
+    if (ssoGroups?.length) {
+      await this.usersService.attachUserGroup(ssoGroups, organizationId, userId, true, manager);
+      await this.usersService.validateLicense(manager);
+    }
 
     /* Create avatar if profilePhoto available */
     if (profilePhoto) {

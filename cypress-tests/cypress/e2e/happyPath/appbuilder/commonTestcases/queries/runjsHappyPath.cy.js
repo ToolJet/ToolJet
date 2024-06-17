@@ -100,8 +100,11 @@ describe("RunJS", () => {
       `setTimeout(() => {
         actions.setVariable('var', 'test');
       actions.setPageVariable('pageVar', 'pageTest');
-    }, [0]) `
+    }, [0])`
     );
+    cy.get(`[data-cy="runjs-input-field"]`)
+    .click()
+    .type('{backSpace}{backSpace}')
     query("run");
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
@@ -121,6 +124,9 @@ describe("RunJS", () => {
         actions.unsetPageVariable('pageVar');
       }, [0]) `
     );
+    cy.get(`[data-cy="runjs-input-field"]`)
+    .click()
+    .type('{backSpace}{backSpace}')
     query("run");
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
@@ -274,6 +280,7 @@ describe("RunJS", () => {
       "runjs",
       "actions.showAlert('success', 'alert from runjs');"
     );
+    cy.wait(300)
     query("run");
     openEditorSidebar("button1");
     selectEvent("On Click", "Run query", 1);
@@ -302,7 +309,9 @@ describe("RunJS", () => {
       "actions.showAlert('success', 'alert from runjs');"
     );
     changeQueryToggles("run-on-app-load");
+
     cy.wait(`@editQuery`);
+    cy.wait(200)
     cy.waitForAutoSave();
     cy.reload();
     cy.verifyToastMessage(

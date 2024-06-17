@@ -73,6 +73,7 @@ class ForgotPasswordComponent extends React.Component {
                       New to {retrieveWhiteLabelText()}? &nbsp;
                       <Link
                         to={'/signup'}
+                        state={{ from: '/forgot-password' }}
                         tabIndex="-1"
                         style={{ color: this.darkMode && '#3E63DD' }}
                         data-cy="create-an-account-link"

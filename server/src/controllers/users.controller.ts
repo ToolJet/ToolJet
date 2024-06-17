@@ -23,7 +23,7 @@ import { ChangePasswordDto } from '@dto/app-authentication.dto';
 import { EntityManager } from 'typeorm';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
-import { LIMIT_TYPE, USER_TYPE } from 'src/helpers/user_lifecycle';
+import { LIMIT_TYPE } from 'src/helpers/user_lifecycle';
 import { SessionService } from '@services/session.service';
 import { LicenseService } from '@services/license.service';
 import { LicenseCountsService } from '@services/license_counts.service';
@@ -80,19 +80,8 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Patch('/user-type')
-  async updateUserTypr(@Body() body) {
-    const { userType, userId, firstName, lastName } = body;
-
-    if (!userType || !userId) {
-      throw new BadRequestException();
-    }
-    if (userType === USER_TYPE.WORKSPACE) {
-      const instanceUsers = await this.usersService.findSuperAdmins();
-      if (instanceUsers.length === 1 && instanceUsers[0].id === userId) {
-        throw new Error('At least one super admin is required');
-      }
-    }
-    await this.usersService.updateUser(userId, { userType, firstName, lastName });
+  async updateUserType(@Body() body) {
+    return this.usersService.updateUserType(body);
   }
 
   @UseGuards(JwtAuthGuard, UserCountGuard)

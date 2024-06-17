@@ -32,7 +32,7 @@ export const openEditorSidebar = (widgetName = "") => {
   cy.hideTooltip();
 
   cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
-    "mouseover"
+    "mouseover", 'topRight'
   );
   cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
 };
@@ -53,7 +53,7 @@ export const verifyAndModifyToggleFx = (
   cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
-      .find("pre.CodeMirror-line")
+      .find(".cm-line")
       .should("have.text", defaultValue);
   cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   if (toggleModification == true)
@@ -89,7 +89,7 @@ export const editAndVerifyWidgetName = (
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
 
-  cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
+  cy.get(`._tooljet-${name}`).trigger("mouseover");
   cy.get(commonWidgetSelector.widgetConfigHandle(name))
     .click()
     .should("have.text", name);
@@ -245,7 +245,7 @@ export const verifyAndModifyStylePickerFx = (
 
   cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
-    cy.get(".CodeMirror-line")
+    cy.get(".cm-line")
       .should("be.visible")
       .and("have.text", `${boxShadow}${defaultValue}`);
   });
@@ -257,7 +257,7 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName))
     .eq(index)
     .within(() => {
-      cy.get(".CodeMirror-line").should("be.visible").and("have.text", value);
+      cy.get(".cm-line").should("be.visible").and("have.text", value);
     });
 };
 
@@ -302,12 +302,17 @@ export const verifyLayout = (
     commonWidgetText.codeMirrorLabelTrue
   );
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("not.exist");
-
+  verifyAndModifyToggleFx(
+    commonWidgetText.parameterShowOnDesktop,
+    commonWidgetText.codeMirrorLabelFalse
+  );
   verifyAndModifyToggleFx(
     commonWidgetText.parameterShowOnMobile,
     commonWidgetText.codeMirrorLabelFalse
   );
   cy.get(commonWidgetSelector.changeLayoutToMobileButton).click();
+  cy.get('[data-cy="disable-auto-alignment-button"]').click();
+  cy.get('[data-cy="tjdb-delete-confirmation-modal-confirm-btn"]').click()
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
 };
 

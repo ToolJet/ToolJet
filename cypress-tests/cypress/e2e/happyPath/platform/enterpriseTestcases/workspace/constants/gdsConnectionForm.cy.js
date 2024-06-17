@@ -22,6 +22,7 @@ data.constantsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.appName = `${fake.companyName}-App`;
 data.dsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
 describe("Workspace constants", () => {
     beforeEach(() => {
@@ -232,26 +233,26 @@ describe("Workspace constants", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
         cy.waitForAutoSave();
-        cy.dragAndDropWidget("Text", 550, 650);
+        cy.dragAndDropWidget("Text Input", 550, 650);
         editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[0].envname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(4000);
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         cy.go("back");
         cy.waitForAppLoad();
@@ -260,13 +261,13 @@ describe("Workspace constants", () => {
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "staging");
+        ).verifyVisibleElement("have.value", "staging");
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(4000);
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "staging");
+        ).verifyVisibleElement("have.value", "staging");
 
         cy.go("back");
         cy.waitForAppLoad();
@@ -275,23 +276,30 @@ describe("Workspace constants", () => {
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "production");
+        ).verifyVisibleElement("have.value", "production");
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(4000);
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "production");
+        ).verifyVisibleElement("have.value", "production");
 
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
         releaseApp();
 
-        launchApp();
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+        cy.wait(2000);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.wait(2000);
+        cy.visit(`/applications/${data.slug}`);
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "production");
+        ).verifyVisibleElement("have.value", "production");
     });
+
+
 });

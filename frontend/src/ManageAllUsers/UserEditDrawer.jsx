@@ -26,6 +26,11 @@ export default function UserEditDrawer({
   const { super_admin } = authenticationService.currentSessionValue;
   const formEnabled = canAddUnlimited || current < total || updatingUser?.user_type === 'instance';
   const { first_name, last_name, email, user_type } = updatingUser ?? {};
+  const archivedUserToSuperAdminCheck = updatingUser?.user_type === 'workspace' && updatingUser.status === 'archived';
+  const superAdminToggleDisableCheck =
+    !formEnabled ||
+    (disabled && !(current > 1 && updatingUser?.user_type === 'instance')) ||
+    archivedUserToSuperAdminCheck;
 
   useEffect(() => {
     if (updatingUser) {
@@ -127,9 +132,7 @@ export default function UserEditDrawer({
                   <div className="form-group mb-3">
                     <label className="form-check form-switch">
                       <input
-                        disabled={
-                          !formEnabled || (disabled && !(current > 1 && updatingUser?.user_type === 'instance'))
-                        }
+                        disabled={superAdminToggleDisableCheck}
                         className="form-check-input"
                         type="checkbox"
                         onChange={(event) => changeOptions('userType', event.target.checked)}

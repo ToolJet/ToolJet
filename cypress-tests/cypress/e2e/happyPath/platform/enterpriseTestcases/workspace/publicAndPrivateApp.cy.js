@@ -110,7 +110,7 @@ describe(
             inviteUser(data.firstName, data.email);
             cy.clearAndType(commonSelectors.passwordInputField, "password");
             cy.get(commonSelectors.signUpButton).click();
-            cy.wait(500)
+            cy.wait(500);
             cy.get(commonSelectors.acceptInviteButton).click();
             cy.wait(2000);
 
@@ -121,6 +121,7 @@ describe(
 
             cy.defaultWorkspaceLogin();
             navigateToAppEditor(data.appName);
+            cy.wait(2000);
             cy.get(commonWidgetSelector.shareAppButton).click();
             cy.wait(500);
             cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
@@ -168,6 +169,7 @@ describe(
 
             cy.defaultWorkspaceLogin();
             navigateToAppEditor(data.appName);
+            cy.wait(2000);
             cy.get(commonWidgetSelector.shareAppButton).click();
             cy.wait(2000);
             cy.get(commonWidgetSelector.makePublicAppToggle).check();

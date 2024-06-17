@@ -39,6 +39,7 @@ describe("Superadmin", () => {
   after(() => {
     cy.defaultWorkspaceLogin();
     passwordToggle(true);
+    allowPersonalWorkspace()
   });
   it("Verify elements of the instance settings page", () => {
     openInstanceSettings();

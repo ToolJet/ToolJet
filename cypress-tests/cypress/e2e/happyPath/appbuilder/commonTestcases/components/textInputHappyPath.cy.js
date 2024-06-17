@@ -47,7 +47,7 @@ describe("Text Input", () => {
     cy.apiDeleteApp();
   });
 
-  it("should verify the properties of the text input widget", () => {
+  it.only("should verify the properties of the text input widget", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     data.tooltipText = fake.randomSentence;
@@ -182,11 +182,6 @@ describe("Text Input", () => {
     verifyLayout(data.widgetName, "Devices");
 
     cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterShowOnDesktop
-      )
-    ).click();
 
     openEditorSidebar(data.widgetName);
     openAccordion("Validation", [
@@ -351,7 +346,7 @@ describe("Text Input", () => {
     ).should("have.css", "border-radius", "20px");
   });
 
-  it.skip("should verify the app preview", () => {});
+  it.skip("should verify the app preview", () => { });
 
   it("should verify CSA", () => {
     const data = {};

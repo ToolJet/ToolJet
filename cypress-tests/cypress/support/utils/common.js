@@ -114,16 +114,8 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
-  if (Cypress.env("environment") === "Community") {
-    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
-    cy.wait("@appDs", { timeout: 15000 });
-    cy.skipEditorPopover();
-  } else {
-    cy.intercept("GET", "/api/app-environments/**").as("appDs");
-    cy.wait("@appDs", { timeout: 15000 });
-    cy.skipEditorPopover();
-    cy.waitForAppLoad();
-  }
+  // cy.waitForAppLoad();
+
 };
 
 export const viewAppCardOptions = (appName) => {

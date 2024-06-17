@@ -318,12 +318,12 @@ describe("Workspace constants", () => {
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
 
         cy.waitForAutoSave();
-        cy.dragAndDropWidget("Text", 550, 650);
+        cy.dragAndDropWidget("Text Input", 550, 650);
         editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.restapi1.data.message`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
@@ -418,12 +418,12 @@ describe("Workspace constants", () => {
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
 
         cy.waitForAutoSave();
-        cy.dragAndDropWidget("Text", 550, 650);
+        cy.dragAndDropWidget("Text Input", 550, 650);
         editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.${data.ds}.data.message`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
