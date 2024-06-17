@@ -1925,6 +1925,29 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
     delete newDefinition.pages[pageId].components[componentId];
   });
 
+  const appDefinition = useEditorStore.getState().appDefinition;
+
+  const deleteFromMap = [...toDeleteComponents];
+  const deletedComponentNames = deleteFromMap.map((id) => {
+    return appDefinition.pages[pageId].components[id].component.name;
+  });
+
+  const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+  const allHintsAssociatedWithQuery = [];
+
+  if (allAppHints.length > 0) {
+    deletedComponentNames.forEach((componentName) => {
+      return allAppHints.forEach((suggestion) => {
+        if (suggestion?.hint.includes(componentName)) {
+          allHintsAssociatedWithQuery.push(suggestion.hint);
+        }
+      });
+    });
+  }
+
+  useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
+  useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
+
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
 };
 
