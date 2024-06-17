@@ -6,15 +6,24 @@ title: Upgrading ToolJet to the LTS Version
 
 ToolJet has released its first Long Term Support (LTS) version, which provides extended support and stability for your environments. Upgrading to this LTS version ensures you benefit from the latest features and security updates while maintaining a stable and supported environment.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}} >
+
 ### Check the latest LTS Version
 
-ToolJet will be releasing new LTS versions every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet:EE-LTS-latest`.
+ToolJet will release new LTS versions every 3 to 5 months with a minimum 18-month end-of-life period. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet:EE-LTS-latest`.
+
+</div>
+
+<div style={{paddingBottom:'24px'}} >
+
 
 ### Prerequisites
 
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+</div>
 
 ### Upgrade Process
 
