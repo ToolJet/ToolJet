@@ -21,10 +21,17 @@ jobs:
     if: "${{ github.event.release }}"
 
     steps:
-      - name: Checkout code
+      - name: Checkout code to develop for no LTS tag
+        if: "!contains(github.event.release.tag_name, 'Cloud-LTS')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/develop
+
+      - name: Checkout code to lts-2.50 for LTS tag
+        if: "contains(github.event.release.tag_name, 'Cloud-LTS')"
+        uses: actions/checkout@v2
+        with:
+          ref: refs/heads/lts-2.50
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
@@ -47,12 +54,26 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image
+        if: "!contains(github.event.release.tag_name, 'Cloud-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
           tags: tooljet/saas:${{ github.event.release.tag_name }},tooljet/saas:latest
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        if: "contains(github.event.release.tag_name, 'Cloud-LTS')"
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/saas:${{ github.event.release.tag_name }},tooljet/saas:Cloud-LTS-latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
