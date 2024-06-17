@@ -31,7 +31,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   const addNewAggregateOption = () => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const uniqueId = uuidv4();
-    const newAggregate = { aggregateFx: '', column: '' };
+    const newAggregate = { aggregateFx: '', column: '', tableId: '' };
     const updatedAggregates = {
       ...currentAggregates,
       [uniqueId]: newAggregate,
@@ -39,9 +39,13 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     handleChange('aggregates', updatedAggregates);
   };
 
-  const handleAggregateOptionChange = (key, selecetdValue, optionToUpdate) => {
+  const handleAggregateOptionChange = (key, selecetdValue, optionToUpdate, tableId = '') => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
-    const aggregateToUpdate = { ...currentAggregates[key], [optionToUpdate]: selecetdValue };
+    const aggregateToUpdate = {
+      ...currentAggregates[key],
+      [optionToUpdate]: selecetdValue,
+      table_id: tableId ? tableId : selectedTableId,
+    };
     const updatedAggregates = {
       ...currentAggregates,
       [key]: aggregateToUpdate,
