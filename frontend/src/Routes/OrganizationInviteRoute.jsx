@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useLocation, useParams } from 'react-router-dom';
-import { authenticationService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { toast } from 'react-hot-toast';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
+import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 
 export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, navigate }) => {
   /* Needed to pass invite token to signup page if the user doesn't exist */
@@ -15,6 +16,8 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
   const organizationToken = params.organizationToken || (isOrgazanizationOnlyInvite ? params.token : null);
   const accountToken = !isOrgazanizationOnlyInvite ? params.token : null;
   const [extraProps, setExtraProps] = useState({});
+  const searchParams = new URLSearchParams(location?.search);
+  const redirectTo = searchParams.get('redirectTo');
 
   useEffect(() => {
     getInvitedUserSession();
@@ -33,6 +36,8 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
         name,
         organization_invite_url,
         is_workspace_sign_up_invite,
+        source,
+        organization_user_source,
       } = invitedUserSession;
       /* 
         We should only run the authorization against the session if the user has active workspace 
@@ -42,6 +47,10 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
         email,
         name,
       });
+      if (source === 'workspace_signup' || organization_user_source === 'signup') {
+        acceptInvite(accountToken, organizationToken, navigate, source, redirectTo);
+        return;
+      }
       if (is_workspace_sign_up_invite) {
         setLoading(false);
         return;
@@ -139,6 +148,41 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
       },
       { replace: true }
     );
+  };
+
+  const acceptInvite = (token, organizationToken, navigate, source, redirectTo) => {
+    if (token && organizationToken) {
+      authenticationService
+        .onboarding({
+          token,
+          organizationToken,
+          source,
+        })
+        .then((user) => {
+          onLoginSuccess(user, navigate, redirectTo);
+        })
+        .catch((res) => {
+          toast.error(res.error || 'Something went wrong', {
+            id: 'toast-login-auth-error',
+            position: 'top-center',
+          });
+        });
+    } else {
+      appService
+        .acceptInvite({
+          token: organizationToken,
+        })
+        .then((data) => {
+          toast.success(`Added to the workspace successfully.`);
+          updateCurrentSession({
+            isUserLoggingIn: true,
+          });
+          onLoginSuccess(data, navigate);
+        })
+        .catch(() => {
+          toast.error('Error while setting up your account.', { position: 'top-center' });
+        });
+    }
   };
 
   if (invalidLink) return <LinkExpiredPage />;
