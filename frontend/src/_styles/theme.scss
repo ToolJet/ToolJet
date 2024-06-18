@@ -12,6 +12,10 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import "./componentdesign.scss";
 @import './pages-sidebar.scss';
 
 /* ibm-plex-sans-100 - latin */
@@ -4634,9 +4638,7 @@ input[type="text"] {
   }
 
   .modal-footer-btn {
-    justify-content: end;
-
-    button {
+    justify-content: flex-end button {
       margin-left: 16px;
     }
   }
@@ -5730,7 +5732,7 @@ div#driver-page-overlay {
   .node-key {
     font-weight: 400 !important;
     margin-left: -0.25rem !important;
-    justify-content: start !important;
+    justify-content: flex-start !important;
     min-width: fit-content !important;
   }
 
@@ -5843,7 +5845,7 @@ div#driver-page-overlay {
   border-bottom: 1px solid #eee;
   padding: 5px;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end
 }
 
 .autosave-indicator {
@@ -10042,7 +10044,8 @@ tbody {
   border-top: 1px solid var(--slate5) !important;
   display: flex;
   gap: 8px;
-  justify-content: end;
+
+  justify-content: flex-end;
 
   .invite-btn {
     width: 140px;
@@ -10348,7 +10351,7 @@ tbody {
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: end;
+  justify-content: flex-end
 }
 
 .add-users-button {
@@ -11165,7 +11168,7 @@ tbody {
 
 
   .input-with-icon {
-    justify-content: end;
+    justify-content: flex-end
   }
 
   .form-check-input {
@@ -13096,6 +13099,17 @@ tbody {
 
   &:active {
     background-color: var(--interactive-overlays-fill-pressed) !important;
+  }
+}
+
+.component-spinner {
+  animation: l13 1s infinite linear;
+  position: absolute;
+}
+
+@keyframes l13 {
+  100% {
+    transform: rotate(1turn)
   }
 }
 
