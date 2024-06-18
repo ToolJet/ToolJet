@@ -1056,14 +1056,18 @@ const withStore = (Component) => (props) => {
   }
 
   React.useEffect(() => {
-    const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
-    const currentComponents = Object.keys(currentComponentsDef);
+    const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
-    setTimeout(() => {
-      if (currentComponents.length > 0) {
-        batchUpdateComponents(currentComponents);
-      }
-    }, 400);
+    if (isPageSwitched) {
+      const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
+      const currentComponents = Object.keys(currentComponentsDef);
+
+      setTimeout(() => {
+        if (currentComponents.length > 0) {
+          batchUpdateComponents(currentComponents);
+        }
+      }, 400);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPageId]);
 
