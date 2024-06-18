@@ -31,7 +31,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   const addNewAggregateOption = () => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const uniqueId = uuidv4();
-    const newAggregate = { aggFx: '', column: '', tableId: '' };
+    const newAggregate = { aggFx: '', column: '' };
     const updatedAggregates = {
       ...currentAggregates,
       [uniqueId]: newAggregate,
@@ -39,11 +39,32 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     handleChange('aggregates', updatedAggregates);
   };
 
-  const handleAggregateOptionChange = (key, selecetdValue, optionToUpdate) => {
+  const handleAggregateOptionChange = (key, selectedValue, optionToUpdate) => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
+
+    const getValue = (operation, optionToUpdate, selectedValue) => {
+      if (optionToUpdate === 'aggFx') {
+        return selectedValue.value;
+      } else if (optionToUpdate === 'column') {
+        switch (operation) {
+          case 'listRows':
+            return selectedValue.value;
+          case 'joinTable': {
+            const value = selectedValue.value.split('-')[0];
+            return value;
+          }
+          default:
+            break;
+        }
+      }
+    };
+
+    const value = getValue(operation, optionToUpdate, selectedValue);
+    const table_id = selectedValue.hasOwnProperty('tableId') ? selectedValue.tableId : selectedTableId;
     const aggregateToUpdate = {
       ...currentAggregates[key],
-      [optionToUpdate]: selecetdValue,
+      [optionToUpdate]: value,
+      table_id,
     };
     const updatedAggregates = {
       ...currentAggregates,
@@ -139,7 +160,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     return tables.find((table) => table.table_id === id)?.table_name;
   };
 
-  const getTableList = () => {
+  const tableListOptions = useMemo(() => {
     const tableList = [];
 
     const tableSet = new Set();
@@ -177,7 +198,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
       }
     });
     return tableList;
-  };
+  }, [joinOptions, tableInfo]);
 
   const getColumnsDetails = (tableId) => {
     const tableDetails = findTableDetails(tableId);
@@ -185,6 +206,48 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
       label: columns.Header,
       value: columns.Header,
     }));
+  };
+
+  const aggFxOptions = [
+    { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
+    {
+      label: 'Count',
+      value: 'count',
+      description: 'Count number of not null values in this column',
+    },
+  ];
+
+  const constructValue = (value, operation, option, tableId = '') => {
+    if (option === 'aggFx') {
+      const option = aggFxOptions.find((option) => option?.value === value);
+      return option;
+    }
+    if (option === 'column') {
+      switch (operation) {
+        case 'joinTable': {
+          const option = tableListOptions?.reduce((acc, singleOption) => {
+            const valueToFilter = `${value}-${tableId}`;
+            singleOption?.options?.find((option) => {
+              if (option.value === valueToFilter) {
+                acc = {
+                  value: valueToFilter.split('-')[0],
+                  label: option.tableName + '.' + option.label,
+                  table: tableId,
+                };
+              }
+            });
+            return acc;
+          }, {});
+          return option || {};
+        }
+        case 'listRows': {
+          const option = columnAccessorsOptions?.find((option) => option?.value === value);
+          return option;
+        }
+        default:
+          break;
+      }
+    }
   };
 
   return (
@@ -207,15 +270,8 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                     <SelectBox
                       width="25%"
                       height="32"
-                      value={aggregateDetails.aggFx}
-                      options={[
-                        { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
-                        {
-                          label: 'Count',
-                          value: 'count',
-                          description: 'Count number of not null values in this column',
-                        },
-                      ]}
+                      value={constructValue(aggregateDetails.aggFx, operation, 'aggFx')}
+                      options={aggFxOptions}
                       placeholder="Select..."
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggFx')}
                       darkMode={darkMode}
@@ -227,13 +283,10 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       width="100%"
                       value={
                         operation === 'joinTable'
-                          ? {
-                              ...aggregateDetails.column,
-                              label: aggregateDetails.column.tableName + '.' + aggregateDetails.column.label,
-                            }
-                          : aggregateDetails.column
+                          ? constructValue(aggregateDetails.column, 'joinTable', 'column', aggregateDetails?.table_id)
+                          : constructValue(aggregateDetails.column, 'listRows', 'column')
                       }
-                      options={operation === 'joinTable' ? getTableList() : columnAccessorsOptions}
+                      options={operation === 'joinTable' ? tableListOptions : columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
                       darkMode={darkMode}
                       placeholder="Select column..."
