@@ -529,7 +529,7 @@ export default function DragContainer({
               isDraggingRef.current = false;
             }
 
-            if (draggedSubContainer) {
+            if (draggedSubContainer || !e.lastEvent) {
               return;
             }
 
