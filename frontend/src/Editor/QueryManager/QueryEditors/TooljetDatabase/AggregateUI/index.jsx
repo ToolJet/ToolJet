@@ -127,9 +127,17 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
 
   const handleGroupByChange = (selectedTableId, value) => {
     const currentGroupBy = { ...(operationDetails?.group_by || {}) };
+    const validValueData = value?.reduce((acc, val) => {
+      if (typeof val === 'object' && !acc.some((option) => option === val.value)) {
+        acc.push(val.value);
+      } else if (typeof val !== 'object' && !acc.some((option) => option === val.value)) {
+        acc.push(val);
+      }
+      return acc;
+    }, []);
     const updatedGroupBy = {
       ...currentGroupBy,
-      [selectedTableId]: value,
+      [selectedTableId]: validValueData,
     };
     handleChange('group_by', updatedGroupBy);
   };
@@ -217,7 +225,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     },
   ];
 
-  const constructValue = (value, operation, option, tableId = '') => {
+  const constructAggregateValue = (value, operation, option, tableId = '') => {
     if (option === 'aggFx') {
       const option = aggFxOptions.find((option) => option?.value === value);
       return option;
@@ -250,6 +258,15 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     }
   };
 
+  const constructGroupByValue = (value) => {
+    return value?.map((val) => {
+      return {
+        label: val,
+        value: val,
+      };
+    });
+  };
+
   return (
     <>
       <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
@@ -270,7 +287,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                     <SelectBox
                       width="25%"
                       height="32"
-                      value={constructValue(aggregateDetails.aggFx, operation, 'aggFx')}
+                      value={constructAggregateValue(aggregateDetails.aggFx, operation, 'aggFx')}
                       options={aggFxOptions}
                       placeholder="Select..."
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggFx')}
@@ -283,8 +300,13 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       width="100%"
                       value={
                         operation === 'joinTable'
-                          ? constructValue(aggregateDetails.column, 'joinTable', 'column', aggregateDetails?.table_id)
-                          : constructValue(aggregateDetails.column, 'listRows', 'column')
+                          ? constructAggregateValue(
+                              aggregateDetails.column,
+                              'joinTable',
+                              'column',
+                              aggregateDetails?.table_id
+                            )
+                          : constructAggregateValue(aggregateDetails.column, 'listRows', 'column')
                       }
                       options={operation === 'joinTable' ? tableListOptions : columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
@@ -342,7 +364,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
               <SelectBox
                 width="100%"
                 height="32"
-                value={operationDetails?.group_by?.[selectedTableId]}
+                value={constructGroupByValue(operationDetails?.group_by?.[selectedTableId])}
                 options={columnAccessorsOptions}
                 placeholder={`Select column(s) to group by`}
                 isMulti={true}
@@ -366,7 +388,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                   <SelectBox
                     width="100%"
                     height="32"
-                    value={operationDetails?.group_by?.[selectedTableId]}
+                    value={constructGroupByValue(operationDetails?.group_by?.[selectedTableId])}
                     options={getColumnsDetails(selectedTableId)}
                     placeholder={`Select column(s) to group by`}
                     isMulti={true}
@@ -390,7 +412,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       <SelectBox
                         width="100%"
                         height="32"
-                        value={operationDetails?.group_by?.[table.table]}
+                        value={constructGroupByValue(operationDetails?.group_by?.[table.table])}
                         options={getColumnsDetails(table.table)}
                         placeholder={`Select column(s) to group by`}
                         isMulti={true}
