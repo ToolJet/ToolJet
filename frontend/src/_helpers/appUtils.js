@@ -1449,7 +1449,7 @@ export function computeComponentState(components = {}) {
   }
 }
 
-export const computePageSettings = () => {
+export const computePageSettings = (cb) => {
   try {
     const currentPageSettings = useEditorStore.getState().appDefinition.pageSettings;
     const pageSettingMeta = _.cloneDeep(pageConfig);
@@ -1462,6 +1462,9 @@ export const computePageSettings = () => {
         },
       },
     });
+    if (cb) {
+      cb(mergedSettings.properties.disableMenu.value);
+    }
   } catch (error) {
     console.log(error);
     return Promise.reject(error);

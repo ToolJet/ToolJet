@@ -95,7 +95,6 @@ class ViewerComponent extends React.Component {
     if (byAppSlug) {
       appDefData.globalSettings = data.globalSettings;
       appDefData.homePageId = data.homePageId;
-      appDefData.showViewerNavigation = data.showViewerNavigation;
     }
     const appMode = data.globalSettings?.appMode || data?.editing_version?.globalSettings?.appMode;
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
@@ -107,17 +106,15 @@ class ViewerComponent extends React.Component {
       isAppLoaded: true,
       appDefinition: { ...appDefData },
       pages: appDefData.pages,
-      showViewerNavigation: !resolveReferences(
-        appDefData.pageSettings.properties.disableMenu.value,
-        this.props.currentState
-      ),
     });
 
     useEditorStore.getState().actions.updateEditorState({
       appDefinition: appDefData,
     });
+    computePageSettings((value) => {
+      this.setState({ showViewerNavigation: !resolveReferences(value, this.props.currentState) });
+    });
     useResolveStore.getState().actions.resetStore();
-    computePageSettings();
   };
 
   onViewerLoadUpdateEntityReferences = (pageId, loadType) => {
