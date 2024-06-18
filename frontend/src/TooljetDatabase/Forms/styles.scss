@@ -366,7 +366,7 @@
     .table-schema-row {
       display: flex;
       align-items: center;
-      justify-content: start;
+      justify-content: flex-start;
       gap: 6px;
 
       input.form-control {
@@ -494,7 +494,7 @@
 
   .key-changes-container {
     display: flex;
-    align-items: start;
+    align-items: flex-start;
     justify-content: space-between;
     padding: 12px;
     font-weight: 500;
