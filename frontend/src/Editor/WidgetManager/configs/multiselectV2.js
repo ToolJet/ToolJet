@@ -13,7 +13,11 @@ export const multiselectV2Config = {
   },
   validation: {
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
-    customRule: { type: 'code', displayName: 'Custom validation' },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+    },
   },
   actions: [
     {
