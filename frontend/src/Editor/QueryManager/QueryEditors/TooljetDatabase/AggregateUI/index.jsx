@@ -211,7 +211,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                         operation === 'joinTable'
                           ? {
                               ...aggregateDetails.column,
-                              label: aggregateDetails.column.label + ' ' + aggregateDetails.column.tableName,
+                              label: aggregateDetails.column.tableName + '.' + aggregateDetails.column.label,
                             }
                           : aggregateDetails.column
                       }

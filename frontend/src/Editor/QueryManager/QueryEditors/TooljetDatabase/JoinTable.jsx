@@ -97,6 +97,12 @@ const SelectTableMenu = ({ darkMode }) => {
     return cleanedJoin;
   };
 
+  const showSelectSection = () => {
+    const groupBy = joinTableOptions?.groupBy;
+    const isGroupByUsed = Object.entries(groupBy).some((condition) => condition.length >= 1);
+    return isGroupByUsed ? false : true;
+  };
+  console.log('db:joinTable', { joinTableOptions });
   return (
     <div>
       {/* Join Section */}
@@ -198,12 +204,14 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Select Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label flex-shrink-0">Select</label>
-        <div className="field flex-grow-1">
-          <JoinSelect darkMode={darkMode} />
+      {showSelectSection() && (
+        <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+          <label className="form-label flex-shrink-0">Select</label>
+          <div className="field flex-grow-1">
+            <JoinSelect darkMode={darkMode} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
