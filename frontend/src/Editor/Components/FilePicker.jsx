@@ -239,31 +239,33 @@ export const FilePicker = ({
       if (parseContent) {
         onComponentOptionChanged(component, 'isParsing', true, id);
       }
-      acceptedFiles.map((acceptedFile) => {
-        const acceptedFileData = fileReader(acceptedFile);
-        acceptedFileData.then((data) => {
-          if (fileData.length < parsedMaxFileCount) {
-            fileData.push(data);
-          }
-        });
-      });
-      setSelectedFiles(fileData);
-      onComponentOptionChanged(component, 'file', fileData, id);
+      acceptedFiles.forEach(async (acceptedFile) => {
+        const acceptedFileData = await fileReader(acceptedFile);
 
-      onEvent('onFileSelected', filePickerEvents, { component })
-        .then(() => {
-          setAccepted(true);
-          // eslint-disable-next-line no-unused-vars
-          return new Promise(function (resolve, reject) {
-            setTimeout(() => {
-              setShowSelectedFiles(true);
-              setAccepted(false);
-              onComponentOptionChanged(component, 'isParsing', false, id);
-              resolve();
-            }, 600);
-          });
-        })
-        .then(() => onEvent('onFileLoaded', filePickerEvents, { component }));
+        if (fileData.length < parsedMaxFileCount) {
+          fileData.push(acceptedFileData);
+        }
+      });
+
+      setTimeout(() => {
+        setSelectedFiles(fileData);
+        onComponentOptionChanged(component, 'file', fileData, id);
+
+        onEvent('onFileSelected', filePickerEvents, { component })
+          .then(() => {
+            setAccepted(true);
+            // eslint-disable-next-line no-unused-vars
+            return new Promise(function (resolve, reject) {
+              setTimeout(() => {
+                setShowSelectedFiles(true);
+                setAccepted(false);
+                onComponentOptionChanged(component, 'isParsing', false, id);
+                resolve();
+              }, 600);
+            });
+          })
+          .then(() => onEvent('onFileLoaded', filePickerEvents, { component }));
+      }, 100);
     }
 
     if (fileRejections.length > 0) {
