@@ -54,13 +54,13 @@ export class ImportExportResourcesService {
     const imports = { app: [], tooljet_database: [] };
     const importingVersion = importResourcesDto.tooljet_version;
 
-    if (importResourcesDto.tooljet_database) {
+    if (!isEmpty(importResourcesDto.tooljet_database)) {
       const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
       tableNameMapping = res.tableNameMapping;
       imports.tooljet_database = res.tooljet_database;
     }
 
-    if (importResourcesDto.app) {
+    if (!isEmpty(importResourcesDto.app)) {
       for (const appImportDto of importResourcesDto.app) {
         user.organizationId = importResourcesDto.organization_id;
         const createdApp = await this.appImportExportService.import(
