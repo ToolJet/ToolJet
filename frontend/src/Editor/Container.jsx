@@ -780,6 +780,151 @@ export const Container = ({
           </div>
         </div>
       )}
+    </ContainerWrapper>
+  );
+};
+
+const WidgetWrapper = ({
+  children,
+  widget,
+  id,
+  gridWidth,
+  currentLayout,
+  isResizing,
+  mode,
+  propertiesDefinition,
+  stylesDefinition,
+  componentType,
+}) => {
+  const isGhostComponent = id === 'resizingComponentId';
+  const {
+    component: { parent },
+    layouts,
+  } = widget;
+  const { isSelected, isHovered } = useEditorStore((state) => {
+    const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
+    const isHovered = state?.hoveredComponent == id;
+    return { isSelected, isHovered };
+  }, shallow);
+
+  const isDragging = useGridStore((state) => state?.draggingComponentId === id);
+
+  let layoutData = layouts?.[currentLayout];
+  if (isEmpty(layoutData)) {
+    layoutData = layouts?.['desktop'];
+  }
+  // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
+  const width = gridWidth * layoutData.width;
+
+  const calculateMoveableBoxHeight = () => {
+    // Early return for non input components
+    if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
+      return layoutData?.height;
+    }
+    const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+
+    const resolvedLabel = label?.value?.length ?? 0;
+    const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
+    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
+
+    let newHeight = layoutData?.height;
+    if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
+      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
+        newHeight += 20;
+      }
+    }
+
+    return newHeight;
+  };
+  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+
+  const { label = { value: null } } = propertiesDefinition ?? {};
+  const visibility = propertiesDefinition?.visibility?.value ?? stylesDefinition?.visibility?.value ?? null;
+  const resolvedVisibility = resolveWidgetFieldValue(visibility);
+
+  const styles = {
+    width: width + 'px',
+    height: resolvedVisibility ? calculateMoveableBoxHeight() + 'px' : '10px',
+    transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+    ...(isGhostComponent ? { opacity: 0.5 } : {}),
+    ...(isWidgetActive ? { zIndex: 3 } : {}),
+  };
+  return (
+    <>
+      <div
+        className={
+          isGhostComponent
+            ? `ghost-target`
+            : `target widget-target target1 ele-${id} moveable-box ${isResizing ? 'resizing-target' : ''} ${
+                isWidgetActive ? 'active-target' : ''
+              } ${isHovered ? 'hovered-target' : ''} ${isDragging ? 'opacity-0' : ''}`
+        }
+        data-id={`${parent}`}
+        id={id}
+        widgetid={id}
+        style={{
+          transform: `translate(332px, -134px)`,
+          zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
+          ...styles,
+        }}
+      >
+        {children}
+      </div>
+    </>
+  );
+};
+
+function DragGhostWidget() {
+  const draggingComponentId = useGridStore((state) => state?.draggingComponentId);
+  if (!draggingComponentId) return '';
+  return (
+    <div
+      id={'moveable-drag-ghost'}
+      style={{
+        zIndex: 4,
+        position: 'absolute',
+        background: '#D9E2FC',
+        opacity: '0.7',
+      }}
+    ></div>
+  );
+}
+
+function ContainerWrapper({ children, canvasHeight, isDropping, showComments, handleAddThread, containerRef, styles }) {
+  const { resizingComponentId, draggingComponentId, dragTarget } = useGridStore((state) => {
+    const { resizingComponentId, draggingComponentId, dragTarget } = state;
+    return { resizingComponentId, draggingComponentId, dragTarget };
+  }, shallow);
+
+  return (
+    <div
+      {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
+      ref={containerRef}
+      style={{ ...styles, height: canvasHeight }}
+      className={cx('real-canvas', {
+        'show-grid': (!!resizingComponentId && !dragTarget) || (!!draggingComponentId && !dragTarget) || isDropping,
+      })}
+      id="real-canvas"
+      data-cy="real-canvas"
+      canvas-height={canvasHeight}
+    >
+      {children}
     </div>
+  );
+}
+
+const ResizeGhostWidget = ({ resizingComponentId, widgets, currentLayout, canvasWidth, gridWidth }) => {
+  const dragTarget = useGridStore((state) => state.dragTarget);
+  if (!resizingComponentId || dragTarget) {
+    return '';
+  }
+
+  return (
+    <GhostWidget
+      layouts={widgets?.[resizingComponentId]?.layouts}
+      currentLayout={currentLayout}
+      canvasWidth={canvasWidth}
+      gridWidth={gridWidth}
+    />
   );
 };

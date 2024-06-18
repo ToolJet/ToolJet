@@ -116,7 +116,8 @@ export class CreatePostgrestTableDto {
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
-    message: 'Table name can only contain letters, numbers and underscores',
+    message:
+      'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores.',
   })
   @Validate(SQLInjectionValidator)
   table_name: string;
@@ -126,6 +127,47 @@ export class CreatePostgrestTableDto {
   @ValidateNested({ each: true })
   @Type(() => PostgrestTableColumnDto)
   columns: PostgrestTableColumnDto[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
+}
+
+export class PostgrestForeignKeyDto {
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 column' })
+  column_names: Array<string>;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(31, { message: 'Referenced table name must be less than 32 characters' })
+  @MinLength(1, { message: 'Referenced table name must be at least 1 character' })
+  @Matches(/^[a-zA-Z0-9_]*$/, {
+    message:
+      'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores.',
+  })
+  @Validate(SQLInjectionValidator)
+  referenced_table_name: string;
+
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 referenced column' })
+  referenced_column_names: Array<string>;
+
+  @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-remove operation has invalid input',
+  })
+  @IsOptional()
+  on_delete: string;
+
+  @IsString()
+  @IsIn(['RESTRICT', 'NO ACTION', 'CASCADE', 'SET NULL', 'SET DEFAULT'], {
+    message: 'On-delete operation has invalid input',
+  })
+  @IsOptional()
+  on_update: string;
 }
 
 export class PostgrestTableColumnDto {
@@ -170,7 +212,8 @@ export class RenamePostgrestTableDto {
   @IsNotEmpty()
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
-    message: 'Table name can only contain letters, numbers and underscores',
+    message:
+      'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores.',
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   table_name: string;
@@ -180,7 +223,8 @@ export class RenamePostgrestTableDto {
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
-    message: 'Table name can only contain letters, numbers and underscores',
+    message:
+      'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores.',
   })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;

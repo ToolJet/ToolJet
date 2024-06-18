@@ -194,6 +194,7 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
+    disabled = false,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -339,6 +340,8 @@ const DynamicForm = ({
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           ignoreBraces,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          disabled,
+          delayOnChange: false,
         };
       case 'react-component-openapi-validator':
         return {

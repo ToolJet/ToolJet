@@ -50,7 +50,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table' | 'Button' | 'Checkbox';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -60,7 +60,15 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
-const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
+const NewRevampedComponents: NewRevampedComponent[] = [
+  'Text',
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'Table',
+  'Checkbox',
+  'Button',
+];
 
 @Injectable()
 export class AppImportExportService {
@@ -1545,9 +1553,37 @@ export class AppImportExportService {
   }
 
   // Entire function should be santised for Undefined values
-  replaceTooljetDbTableIds(queryOptions: any, tooljetDatabaseMapping: any) {
-    if (queryOptions?.operation && queryOptions.operation === 'join_tables') {
-      const joinOptions = { ...(queryOptions?.join_table ?? {}) };
+  replaceTooljetDbTableIds(queryOptions, tooljetDatabaseMapping, organizationId: string) {
+    let transformedQueryOptions;
+    if (Object.keys(queryOptions).includes('join_table')) {
+      transformedQueryOptions = this.replaceTooljetDbTableIdOnJoin(
+        queryOptions,
+        tooljetDatabaseMapping,
+        organizationId
+      );
+    }
+    if (queryOptions?.operation === 'join_tables') {
+      return transformedQueryOptions;
+    }
+
+    const mappedTableId = tooljetDatabaseMapping[transformedQueryOptions.table_id]?.id;
+    return {
+      ...transformedQueryOptions,
+      ...(mappedTableId && { table_id: mappedTableId }),
+      ...(organizationId && { organization_id: organizationId }),
+    };
+  }
+
+  replaceTooljetDbTableIdOnJoin(
+    queryOptions,
+    tooljetDatabaseMapping,
+    organizationId: string
+  ): Partial<{
+    table_id: string;
+    join_table: unknown;
+    organization_id: string;
+  }> {
+    const joinOptions = { ...(queryOptions?.join_table ?? {}) };
 
       // JOIN Section
       if (joinOptions?.joins && joinOptions.joins.length > 0) {
@@ -1620,10 +1656,8 @@ export class AppImportExportService {
         return this.updateNewTableIdForFilter(condition.conditions, tooljetDatabaseMapping);
       } else {
         const { operator = '=', leftField = {}, rightField = {} } = { ...condition };
-        if (leftField?.type && leftField.type === 'Column')
-          leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
-        if (rightField?.type && rightField.type === 'Column')
-          rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
+        if (leftField?.table) leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
+        if (rightField?.table) rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
         return { operator, leftField, rightField };
       }
     });

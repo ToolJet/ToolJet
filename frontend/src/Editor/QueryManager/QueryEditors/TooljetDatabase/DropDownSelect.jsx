@@ -24,13 +24,66 @@ const DropDownSelect = ({
   showPlaceHolder = false,
   highlightSelected = true,
   buttonClasses = '',
+  foreignKeyAccess = false,
+  showRedirection = false,
+  columnInfoForTable,
+  showColumnInfo = false,
+  showDescription = false,
+  foreignKeyAccessInRowForm = false,
+  topPlaceHolder = '',
+  showPlaceHolderInForeignKeyDrawer = false,
+  isCellEdit = false,
+  scrollEventForColumnValues,
+  organizationId,
+  foreignKeys,
+  setReferencedColumnDetails,
+  shouldShowForeignKeyIcon = false,
+  cellColumnName,
+  tableName,
+  targetTable,
+  actions,
+  actionName,
+  fetchTables,
+  onTableClick,
+  referencedForeignKeyDetails = [],
+  cachedOptions,
+  columnDataType = '',
+  isCreateRow = false,
+  isEditRow = false,
+  isCreateColumn = false,
+  isEditColumn = false,
+  isEditTable = false,
+  isCreateTable = false,
+  customChildren,
+  isForeignKeyInEditCell = false,
+  shouldCloseFkMenu,
+  closeFKMenu,
+  saveFKValue,
+  loader,
+  isLoading = false,
+  columnDefaultValue = '',
+  setColumnDefaultValue = () => {},
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
-  const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
+  const [showMenu, setShowMenu] = useShowPopover(
+    isForeignKeyInEditCell,
+    `#${popoverId.current}`,
+    `#${popoverBtnId.current}`
+  );
   const [selected, setSelected] = useState(value);
   const selectRef = useRef();
   const [isOverflown, setIsOverflown] = useState(false);
+  // Applicable when drop down is used to list FK data
+  const [isInitialForeignKeyDataLoaded, setIsInitialForeignKeyDataLoaded] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [pageNumber, setPageNumber] = useState(1);
+
+  useEffect(() => {
+    if (shouldCloseFkMenu) {
+      setShowMenu(false);
+    }
+  }, [shouldCloseFkMenu]);
 
   useEffect(() => {
     if (showMenu) {
@@ -64,6 +117,9 @@ const DropDownSelect = ({
   }, [selected]);
 
   function checkElementPosition() {
+    if (isForeignKeyInEditCell) {
+      return 'bottom-start';
+    }
     const selectControl = document.getElementById(popoverBtnId.current);
     if (!selectControl) {
       return 'top-start';
@@ -107,8 +163,24 @@ const DropDownSelect = ({
           id={popoverId.current}
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{
-            width: '244px',
-            maxWidth: '246px',
+            width: isForeignKeyInEditCell
+              ? '300px'
+              : foreignKeyAccess
+              ? '403px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '244px',
+            maxWidth: isForeignKeyInEditCell
+              ? '300px'
+              : foreignKeyAccess
+              ? '403px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '246px',
             overflow: 'hidden',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }}
@@ -122,86 +194,164 @@ const DropDownSelect = ({
               setSelected(values);
             }}
             selected={selected}
-            closePopup={() => setShowMenu(false)}
+            closePopup={() => setShowMenu(isForeignKeyInEditCell ? true : false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
+            // loader={loader}
+            isLoading={isLoading}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
+            foreignKeyAccess={foreignKeyAccess}
+            showRedirection={showRedirection}
+            columnInfoForTable={columnInfoForTable}
+            showColumnInfo={showColumnInfo}
+            showDescription={showDescription}
+            foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
+            isCellEdit={isCellEdit}
+            scrollEventForColumnValues={scrollEventForColumnValues}
+            organizationId={organizationId}
+            foreignKeys={foreignKeys}
+            setReferencedColumnDetails={setReferencedColumnDetails}
+            shouldShowForeignKeyIcon={shouldShowForeignKeyIcon}
+            cellColumnName={cellColumnName}
+            isInitialForeignKeyDataLoaded={isInitialForeignKeyDataLoaded}
+            setIsInitialForeignKeyDataLoaded={setIsInitialForeignKeyDataLoaded}
+            totalRecords={totalRecords}
+            setTotalRecords={setTotalRecords}
+            pageNumber={pageNumber}
+            setPageNumber={setPageNumber}
+            tableName={tableName}
+            targetTable={targetTable}
+            actions={actions}
+            actionName={actionName}
+            referencedForeignKeyDetails={referencedForeignKeyDetails}
+            cachedOptions={cachedOptions}
+            columnDataType={columnDataType}
+            isCreateRow={isCreateRow}
+            isEditRow={isEditRow}
+            isEditColumn={isEditColumn}
+            isCreateColumn={isCreateColumn}
+            isEditTable={isEditTable}
+            isCreateTable={isCreateTable}
+            customChildren={customChildren}
+            isForeignKeyInEditCell={isForeignKeyInEditCell}
+            closeFKMenu={closeFKMenu}
+            saveFKValue={saveFKValue}
+            columnDefaultValue={columnDefaultValue}
+            setColumnDefaultValue={setColumnDefaultValue}
           />
         </Popover>
       }
     >
-      <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
-        <ButtonSolid
-          size="sm"
-          variant="tertiary"
-          disabled={disabled}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (disabled) {
-              return;
-            }
-            setShowMenu((show) => !show);
+      {isForeignKeyInEditCell ? (
+        <div
+          className={`col-auto`}
+          style={{
+            position: 'relative',
+            left: '-10px',
+            top: selected.label === null || selected.label === undefined || isCellEdit ? '0px' : '2px',
+            paddingLeft: '10px',
+            paddingBottom: '4px',
           }}
-          className={cx(
-            {
-              'justify-content-start': !shouldCenterAlignText,
-              'justify-content-centre': shouldCenterAlignText,
-            },
-            'tdb-dropdown-btn',
-            'gap-0',
-            'w-100',
-            'border-0',
-            'rounded-0',
-            'position-relative',
-            'font-weight-normal',
-            'px-1'
-          )}
-          data-cy={`show-ds-popover-button`}
+          id={popoverBtnId.current}
+          onClick={() => {
+            setShowMenu(true);
+          }}
         >
-          <div className={`text-truncate`}>
-            {renderSelected && renderSelected(selected)}
-
-            {!renderSelected && isValidInput(selected) ? (
-              Array.isArray(selected) ? (
-                !isOverflown && (
-                  <MultiSelectValueBadge
-                    options={options}
-                    selected={selected}
-                    setSelected={setSelected}
-                    onChange={onChange}
-                  />
-                )
-              ) : (
-                selected?.label
-              )
-            ) : showPlaceHolder ? (
-              <span style={{ color: '#9e9e9e' }}>Select..</span>
-            ) : (
-              ''
+          <p
+            className={cx({
+              'd-flex align-items-center justify-content-center m-0':
+                selected.label === null || selected.label === undefined,
+              'cell-menu-text m-0': selected.label !== null || selected.label !== undefined,
+            })}
+            style={{
+              color: darkMode ? '#fff' : '',
+              width: (selected.label === null || selected.label === undefined) && '40px',
+              background: (selected.label === null || selected.label === undefined) && 'var(--slate3)',
+            }}
+          >
+            {selected.label === null || selected.label === undefined ? 'Null' : selected.label}
+          </p>
+        </div>
+      ) : (
+        <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
+          <ButtonSolid
+            size="sm"
+            variant="tertiary"
+            disabled={disabled}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (disabled) {
+                return;
+              }
+              setShowMenu((show) => !show);
+              if (onTableClick === true) {
+                fetchTables();
+              }
+            }}
+            className={cx(
+              {
+                'justify-content-start': !shouldCenterAlignText,
+                'justify-content-centre': shouldCenterAlignText,
+                'border-1 tdb-dropdown-btn-foreignKeyAccess': foreignKeyAccess || foreignKeyAccessInRowForm,
+                'border-0 tdb-dropdown-btn': !foreignKeyAccess || !foreignKeyAccessInRowForm,
+              },
+              'gap-0',
+              'w-100',
+              'rounded-0',
+              'position-relative',
+              'font-weight-normal',
+              'px-1'
             )}
-            {!renderSelected && isOverflown && !Array.isArray(selected) && (
-              <Badge className="me-1 dd-select-value-badge" bg="secondary">
-                {selected?.length} selected
-                <span
-                  role="button"
-                  onClick={(e) => {
-                    setSelected([]);
-                    onChange && onChange([]);
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                >
-                  <Remove fill="var(--slate12)" width="12px" />
-                </span>
-              </Badge>
-            )}
-          </div>
-          <div className="dd-select-control-chevron">
-            <CheveronDown width="15" height="15" />
-          </div>
-        </ButtonSolid>
-      </div>
+            data-cy={`show-ds-popover-button`}
+          >
+            <div className={`text-truncate`}>
+              {renderSelected && renderSelected(selected)}
+              <>
+                {!renderSelected && isValidInput(selected) ? (
+                  Array.isArray(selected) ? (
+                    !isOverflown && (
+                      <MultiSelectValueBadge
+                        options={options}
+                        selected={selected}
+                        setSelected={setSelected}
+                        onChange={onChange}
+                      />
+                    )
+                  ) : (
+                    selected?.label
+                  )
+                ) : showPlaceHolder ? (
+                  <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
+                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
+                  </span>
+                ) : (
+                  ''
+                )}
+                {!renderSelected && isOverflown && !Array.isArray(selected) && (
+                  <Badge className="me-1 dd-select-value-badge" bg="secondary">
+                    {selected?.length} selected
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        setSelected([]);
+                        onChange && onChange([]);
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <Remove fill="var(--slate12)" width="12px" />
+                    </span>
+                  </Badge>
+                )}
+              </>
+            </div>
+            <div className="dd-select-control-chevron">
+              <CheveronDown width="15" height="15" />
+            </div>
+          </ButtonSolid>
+        </div>
+      )}
     </OverlayTrigger>
   );
 };

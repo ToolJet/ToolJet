@@ -173,7 +173,7 @@ const sidebars = {
                 'widgets/rich-text-editor',
                 'widgets/timeline',
                 'widgets/timer',
-                'widgets/toggle-switch',
+                'widgets/toggle-switch-v2',
                 'widgets/tree-select',
                 'widgets/vertical-divider',
               ],

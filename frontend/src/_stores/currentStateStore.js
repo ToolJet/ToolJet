@@ -54,6 +54,39 @@ export const useCurrentState = () =>
     };
   }, shallow);
 
+useCurrentStateStore.subscribe((state) => {
+  const isEditorReady = state.isEditorReady;
+
+  if (!isEditorReady) return;
+
+  // TODO: Change the logic of updating canvas background
+  updateCanvasBackground(useEditorStore.getState().canvasBackground);
+
+  const isStoreIntialized = useResolveStore.getState().storeReady;
+  if (!isStoreIntialized) {
+    const isPageSwitched = useResolveStore.getState().isPageSwitched;
+
+    handleLowPriorityWork(
+      () => {
+        useResolveStore.getState().actions.updateAppSuggestions({
+          queries: state.queries,
+          components: !isPageSwitched ? state.components : {},
+          globals: state.globals,
+          page: state.page,
+          variables: state.variables,
+          client: state.client,
+          server: state.server,
+          constants: state.constants,
+        });
+      },
+      null,
+      isPageSwitched
+    );
+
+    return useResolveStore.getState().actions.updateStoreState({ storeReady: true });
+  }
+}, shallow);
+
 export const getCurrentState = () => {
   return omit(useCurrentStateStore.getState(), 'actions');
 };

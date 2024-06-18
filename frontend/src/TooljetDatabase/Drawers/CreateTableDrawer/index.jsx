@@ -25,7 +25,13 @@ export default function CreateTableDrawer() {
           Create new table
         </ButtonSolid>
       </div>
-      <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isCreateTableDrawerOpen}
+        onClose={() => setIsCreateTableDrawerOpen(false)}
+        position="right"
+        drawerStyle={{ width: '640px' }}
+        className="tj-db-drawer"
+      >
         <CreateTableForm
           onCreate={(tableInfo) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
@@ -43,6 +49,7 @@ export default function CreateTableDrawer() {
             setIsCreateTableDrawerOpen(false);
           }}
           onClose={() => setIsCreateTableDrawerOpen(false)}
+          initiator="CreateTableForm"
         />
       </Drawer>
     </>

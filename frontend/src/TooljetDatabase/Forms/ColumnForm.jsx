@@ -9,8 +9,17 @@ import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Tick from '../Icons/Tick.svg';
 import './styles.scss';
+import Skeleton from 'react-loading-skeleton';
 
-const ColumnForm = ({ onCreate, onClose, rows }) => {
+const ColumnForm = ({
+  onCreate,
+  onClose,
+  rows,
+  isEditColumn = false,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
+  initiator,
+}) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
@@ -19,6 +28,31 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
   const [isNotNull, setIsNotNull] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
+  //  this is for DropDownDetails component which is react select
+  const [foreignKeyDefaultValue, setForeignKeyDefaultValue] = useState({
+    value: '',
+    label: '',
+  });
+
+  const [foreignKeyDetails, setForeignKeyDetails] = useState({
+    column_names: [],
+    referenced_table_name: [],
+    referenced_column_names: [],
+    on_delete: [],
+    on_update: [],
+  });
+
+  const columns = {
+    column_name: columnName,
+    data_type: dataType?.value,
+    constraints_type: {
+      is_not_null: isNotNull,
+      is_primary_key: false,
+      is_unique: isUniqueConstraint,
+    },
+    dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
+    column_default: defaultValue,
+  };
 
   const darkDisabledBackground = '#1f2936';
   const lightDisabledBackground = '#f4f6fa';
@@ -80,6 +114,12 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
     toast.dismiss();
   }, []);
 
+  useEffect(() => {
+    if (dataType?.value === 'boolean') {
+      setIsUniqueConstraint(false);
+    }
+  }, [dataType]);
+
   const handleTypeChange = (value) => {
     setDataType(value);
   };
@@ -118,7 +158,7 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
           Create a new column
         </h3>
       </div>
-      <div className="card-body">
+      <div className="card-body create-drawer-body">
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
             Column name
@@ -153,24 +193,183 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
           <div className="form-label" data-cy="default-value-input-field-label">
             Default value
           </div>
-          <input
-            value={defaultValue}
-            type="text"
-            placeholder="Enter default value"
-            className={
-              isNotNull === true && defaultValue.length <= 0 && rows.length > 0 ? 'form-error' : 'form-control'
-            }
-            data-cy="default-value-input-field"
-            autoComplete="off"
-            onChange={(e) => setDefaultValue(e.target.value)}
-            disabled={dataType === 'serial'}
-          />
-          {isNotNull === true && rows.length > 0 && defaultValue.length <= 0 ? (
+          <ToolTip
+            message={dataType === 'serial' ? 'Serial data type values cannot be modified' : null}
+            placement="top"
+            tooltipClassName="tootip-table"
+            show={dataType === 'serial'}
+          >
+            <div>
+              {!foreignKeyDetails?.length > 0 && !isForeignKey ? (
+                <input
+                  value={defaultValue}
+                  type="text"
+                  placeholder={dataType?.value === 'serial' ? 'Auto-generated' : 'Enter default value'}
+                  className={cx({
+                    'form-error':
+                      dataType?.value !== 'serial' && isNotNull === true && defaultValue.length <= 0 && rows.length > 0,
+                    'form-control': true,
+                  })}
+                  data-cy="default-value-input-field"
+                  autoComplete="off"
+                  onChange={(e) => setDefaultValue(e.target.value)}
+                  disabled={dataType?.value === 'serial'}
+                />
+              ) : (
+                <DropDownSelect
+                  buttonClasses="border border-end-1 foreignKeyAcces-container-drawer mb-2"
+                  showPlaceHolder={true}
+                  options={referenceTableDetails}
+                  darkMode={darkMode}
+                  emptyError={
+                    <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                      <Information />
+                      No data found
+                    </div>
+                  }
+                  loader={
+                    <div className="mx-2">
+                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
+                      <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
+                    </div>
+                  }
+                  isLoading={true}
+                  value={foreignKeyDefaultValue}
+                  foreignKeyAccessInRowForm={true}
+                  disabled={dataType === 'serial'}
+                  topPlaceHolder={dataType === 'serial' ? 'Auto-generated' : 'Enter a value'}
+                  onChange={(value) => {
+                    setForeignKeyDefaultValue(value);
+                    setDefaultValue(value?.value);
+                  }}
+                  onAdd={true}
+                  addBtnLabel={'Open referenced table'}
+                  foreignKeys={foreignKeyDetails}
+                  setReferencedColumnDetails={setReferencedColumnDetails}
+                  scrollEventForColumnValues={true}
+                  cellColumnName={columnName}
+                  columnDataType={dataType?.value}
+                  isCreateColumn={true}
+                />
+              )}
+            </div>
+          </ToolTip>
+          {isNotNull === true && dataType?.value !== 'serial' && rows.length > 0 && defaultValue.length <= 0 ? (
             <span className="form-error-message">
               Default value is required to populate this field in existing rows as NOT NULL constraint is added
             </span>
           ) : null}
         </div>
+
+        <div className="row mb-3">
+          <ToolTip
+            message={
+              dataType?.value === 'serial'
+                ? 'Foreign key relation cannot be created for serial type column'
+                : dataType?.value === 'boolean'
+                ? 'Foreign key relation cannot be created for boolean type column'
+                : 'Fill in column details to create a foreign key relation'
+            }
+            placement="top"
+            tooltipClassName="tootip-table"
+            show={
+              isEmpty(dataType) || isEmpty(columnName) || dataType?.value === 'serial' || dataType?.value === 'boolean'
+            }
+          >
+            <div className="col-1">
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isForeignKey}
+                  onChange={(e) => {
+                    if (foreignKeyDetails?.length > 0) {
+                      setIsForeignKey(e.target.checked);
+                      setIsForeignKeyDraweOpen(false);
+                    } else {
+                      setIsForeignKey(e.target.checked);
+                      setIsForeignKeyDraweOpen(e.target.checked);
+                    }
+                  }}
+                  disabled={
+                    isEmpty(dataType) ||
+                    isEmpty(columnName) ||
+                    dataType?.value === 'serial' ||
+                    dataType?.value === 'boolean'
+                  }
+                />
+              </label>
+            </div>
+          </ToolTip>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500 tj-switch-text">Foreign key relation</p>
+            <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
+              Adding a foreign key relation will link this column with a column in an existing table.
+            </p>
+            {foreignKeyDetails?.length > 0 &&
+              isForeignKey &&
+              foreignKeyDetails?.map((detail, index) => (
+                <div className="foreignKey-details mt-0" key={index} onClick={() => {}}>
+                  <span className="foreignKey-text">{detail.column_names[0]}</span>
+                  <div className="foreign-key-relation">
+                    <ForeignKeyRelationIcon width="13" height="13" />
+                  </div>
+                  <span className="foreignKey-text">{`${detail.referenced_table_name}.${detail.referenced_column_names[0]}`}</span>
+                  <div
+                    className="editForeignkey"
+                    onClick={() => {
+                      setIsForeignKeyDraweOpen(true);
+                    }}
+                  >
+                    <EditIcon width="17" height="18" />
+                  </div>
+                </div>
+              ))}
+            {/* {foreignKeyDetails?.length > 0 && (
+              <p className="fw-400 secondary-text tj-text-xsm mb-2">Create column to add foreign key relation</p>
+            )} */}
+          </div>
+        </div>
+
+        <Drawer
+          isOpen={isForeignKeyDraweOpen}
+          position="right"
+          drawerStyle={{ width: '560px' }}
+          isForeignKeyRelation={true}
+          onClose={() => {
+            setIsForeignKeyDraweOpen(false);
+          }}
+          className="tj-db-drawer"
+        >
+          <ForeignKeyTableForm
+            tableName={selectedTable.table_name}
+            columns={columns}
+            onClose={() => {
+              setIsForeignKeyDraweOpen(false);
+            }}
+            isCreateColumn={true}
+            isForeignKeyForColumnDrawer={true}
+            handleCreateForeignKey={handleCreateForeignKey}
+            setForeignKeyDetails={setForeignKeyDetails}
+            // isRequiredFieldsExistForCreateTableOperation={isRequiredFieldsExistForCreateTableOperation}
+            foreignKeyDetails={foreignKeyDetails}
+            organizationId={organizationId}
+            existingForeignKeyDetails={foreignKeys}
+            onDeletePopup={handleOpenDeletePopup}
+            setSourceColumn={setSourceColumn}
+            sourceColumn={sourceColumn}
+            setTargetTable={setTargetTable}
+            targetTable={targetTable}
+            setTargetColumn={setTargetColumn}
+            targetColumn={targetColumn}
+            setOnDelete={setOnDelete}
+            onDelete={onDelete}
+            setOnUpdate={setOnUpdate}
+            onUpdate={onUpdate}
+            initiator="ForeignKeyTableForm"
+          />
+        </Drawer>
 
         <div className="row mb-3">
           <div className="col-1">
@@ -186,12 +385,35 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
             </label>
           </div>
           <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
-            <p className="fw-400 secondary-text">
+            <p className="m-0 p-0 fw-500 tj-switch-text">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+            <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
               {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
             </p>
           </div>
         </div>
+        {dataType?.value !== 'boolean' && (
+          <div className="row mb-3">
+            <div className="col-1">
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isUniqueConstraint}
+                  onChange={(e) => {
+                    setIsUniqueConstraint(e.target.checked);
+                  }}
+                  disabled={dataType?.value === 'serial'}
+                />
+              </label>
+            </div>
+            <div className="col d-flex flex-column">
+              <p className="m-0 p-0 fw-500">{isUniqueConstraint ? 'UNIQUE' : 'NOT UNIQUE'}</p>
+              <p className="fw-400 secondary-text tj-text-xsm">
+                {isUniqueConstraint ? 'Unique value constraint is added' : 'Unique value constraint is not added'}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
       <DrawerFooter
         fetching={fetching}
@@ -200,6 +422,29 @@ const ColumnForm = ({ onCreate, onClose, rows }) => {
         shouldDisableCreateBtn={
           isEmpty(columnName) || isEmpty(dataType) || (isNotNull === true && rows.length > 0 && isEmpty(defaultValue))
         }
+        showToolTipForFkOnReadDocsSection={true}
+        initiator={initiator}
+      />
+      <ConfirmDialog
+        title={'Delete foreign key relation'}
+        show={onDeletePopup}
+        message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
+        onConfirm={() => {
+          handleDeleteForeignKeyRelationInCreate();
+        }}
+        onCancel={() => {
+          setOnDeletePopup(false);
+        }}
+        darkMode={darkMode}
+        confirmButtonType="dangerPrimary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => {
+          setOnDeletePopup(false);
+        }}
+        confirmButtonText={'Continue'}
+        cancelButtonText={'Cancel'}
+        // confirmIcon={<DeleteIcon />}
+        footerStyle={footerStyle}
       />
     </div>
   );

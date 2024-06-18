@@ -7,12 +7,23 @@ import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
 
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput'];
+const SHOW_ADDITIONAL_ACTIONS = [
+  'Text',
+  'TextInput',
+  'NumberInput',
+  'PasswordInput',
+  'Button',
+  'ToggleSwitchV2',
+  'Checkbox',
+];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
   TextInput: 'Data',
   PasswordInput: 'Data',
   NumberInput: 'Data',
+  ToggleSwitchV2: 'Data',
+  Checkbox: 'Data',
+  Button: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -86,7 +97,17 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Table'],
+    General: [
+      'Modal',
+      'TextInput',
+      'PasswordInput',
+      'NumberInput',
+      'Text',
+      'Table',
+      'Button',
+      'ToggleSwitchV2',
+      'Checkbox',
+    ],
     Layout: [],
   };
   if (component.component.component === 'Listview') {

@@ -79,8 +79,8 @@ const ColumnsForm = ({ columns, setColumns }) => {
   return (
     <div className="">
       <div className="card-header">
-        <h3 className="card-title" data-cy="add-columns-header">
-          Add columns
+        <h3 className={cx('card-sub-title', { 'card-sub-title-light': !darkMode })} data-cy="add-columns-header">
+          Table schema
         </h3>
       </div>
       <div className="card-body">
@@ -101,156 +101,42 @@ const ColumnsForm = ({ columns, setColumns }) => {
             </div>
           </div>
         </div>
-        {Object.keys(columns).map((index) => (
-          <div
-            key={index}
-            className={cx('list-group-item mb-1', {
-              'bg-gray': !darkMode,
-            })}
+
+        <TableSchema
+          columns={columns}
+          editColumns={editColumns}
+          setColumns={setColumns}
+          darkMode={darkMode}
+          columnSelection={columnSelection}
+          setColumnSelection={setColumnSelection}
+          handleDelete={handleDelete}
+          isEditMode={isEditMode}
+          isActiveForeignKey={
+            !isEmpty(foreignKeyDetails?.column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_column_names) &&
+            !isEmpty(foreignKeyDetails?.referenced_table_name) &&
+            !isEmpty(foreignKeyDetails?.on_delete) &&
+            !isEmpty(foreignKeyDetails?.on_update)
+          }
+          indexHover={hoveredColumn}
+          foreignKeyDetails={foreignKeyDetails}
+          existingForeignKeyDetails={existingForeignKeyDetails} // foreignKeys from context state
+        />
+
+        <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            style={{ fontSize: '14px' }}
+            onClick={() => {
+              setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
+                setColumnSelection({ index: 0, value: '' });
+            }}
+            data-cy="add-more-columns-button"
           >
-            <div className="row align-items-center">
-              {/* <div className="col-1">
-                  <DragIcon />
-                </div> */}
-              <div className="col-3 m-0 pe-0 ps-1" data-cy="column-name-input-field">
-                <input
-                  onChange={(e) => {
-                    e.persist();
-                    const prevColumns = { ...columns };
-                    prevColumns[index].column_name = e.target.value;
-                    setColumns(prevColumns);
-                  }}
-                  value={columns[index].column_name}
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter name"
-                  data-cy={`name-input-field-${columns[index].column_name}`}
-                  disabled={columns[index]?.constraints_type?.is_primary_key === true}
-                />
-              </div>
-              <div className="col-3 pe-0 ps-1" data-cy="type-dropdown-field">
-                <Select
-                  width="120px"
-                  height="36px"
-                  isDisabled={columns[index]?.constraints_type?.is_primary_key === true}
-                  //useMenuPortal={false}
-                  options={columns[index]?.constraints_type?.is_primary_key === true ? primaryKeydataTypes : dataTypes}
-                  onChange={(value) => {
-                    setColumnSelection((prevState) => ({
-                      ...prevState,
-                      index: index,
-                      value: value.value,
-                    }));
-                    const prevColumns = { ...columns };
-                    prevColumns[index].data_type = value ? value.value : null;
-                    setColumns(prevColumns);
-                  }}
-                  components={{
-                    Option: CustomSelectOption,
-                    IndicatorSeparator: () => null,
-                  }}
-                  styles={customStyles}
-                  formatOptionLabel={formatOptionLabel}
-                  placeholder={
-                    columns[index]?.constraints_type?.is_primary_key === true ? (
-                      <div>
-                        <span style={{ marginRight: '5px' }}>
-                          <Serial width="16" />
-                        </span>
-                        <span>{columns[0].data_type}</span>
-                      </div>
-                    ) : (
-                      'Select...'
-                    )
-                  }
-                  onMenuOpen={() => {
-                    setColumnSelection((prevState) => ({
-                      ...prevState,
-                      index: index,
-                      value: columns[index]?.data_type,
-                    }));
-                  }}
-                  onMenuClose={() => {
-                    setColumnSelection({ index: 0, value: '' });
-                  }}
-                />
-              </div>
-              <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">
-                <input
-                  onChange={(e) => {
-                    e.persist();
-                    const prevColumns = { ...columns };
-                    prevColumns[index].column_default = e.target.value;
-                    setColumns(prevColumns);
-                  }}
-                  value={columns[index].column_default}
-                  type="text"
-                  className="form-control"
-                  data-cy="default-input-field"
-                  placeholder="NULL"
-                  disabled={
-                    columns[index]?.constraints_type?.is_primary_key === true || columns[index].data_type === 'serial'
-                  }
-                />
-              </div>
-              {columns[index]?.constraints_type?.is_primary_key === true && (
-                <div className="col-3">
-                  <div
-                    className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}
-                    data-cy="primary-key-text"
-                  >
-                    Primary Key
-                  </div>
-                </div>
-              )}
-              {columns[index]?.constraints_type?.is_primary_key !== true && (
-                <div className="col-3 d-flex">
-                  <label className={`form-switch`}>
-                    <input
-                      className="form-check-input"
-                      data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}-checkbox`}
-                      type="checkbox"
-                      checked={columns[index]?.constraints_type?.is_not_null ?? false}
-                      onChange={(e) => {
-                        const prevColumns = { ...columns };
-                        const columnConstraints = prevColumns[index]?.constraints_type ?? {};
-                        columnConstraints.is_not_null = e.target.checked;
-                        prevColumns[index].constraints_type = { ...columnConstraints };
-                        setColumns(prevColumns);
-                      }}
-                    />
-                  </label>
-                  <span
-                    data-cy={`${String(columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL')
-                      .toLowerCase()
-                      .replace(/\s+/g, '-')}-text`}
-                  >
-                    {columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}
-                  </span>
-                </div>
-              )}
-              <div
-                className="col-1 cursor-pointer d-flex"
-                data-cy="column-delete-icon"
-                onClick={() => handleDelete(index)}
-              >
-                {columns[index]?.constraints_type?.is_primary_key !== true && <DeleteIcon width="16" height="16" />}
-              </div>
-            </div>
-          </div>
-        ))}
-        <div
-          onClick={() => {
-            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
-              setColumnSelection({ index: 0, value: '' });
-          }}
-          className="mt-2 btn border-0 card-footer add-more-columns-btn"
-          data-cy="add-more-columns-button"
-        >
-          <AddColumnIcon />
-          &nbsp;&nbsp; Add more columns
+            <AddRectangle width="14" height="14" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            <span className="add-text">Add more columns</span>
+          </ButtonSolid>
         </div>
       </div>
     </div>

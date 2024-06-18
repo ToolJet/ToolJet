@@ -116,10 +116,13 @@ export const Code = ({
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
-        component={component}
-        verticalLine={verticalLine}
-        isIcon={paramMeta?.isIcon}
-        staticText={paramMeta?.staticText}
+        componentName={`component/${componentName}::${getfieldName}`}
+        onChange={(value) => handleCodeChanged(value)}
+        className={options?.className}
+        componentId={component?.id}
+        styleDefinition={component?.component?.definition?.styles ?? {}}
+        component={component?.component?.component}
+        onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
         inspectorTab={paramType}
         bold={true}

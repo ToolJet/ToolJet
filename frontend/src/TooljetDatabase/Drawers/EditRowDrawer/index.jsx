@@ -69,7 +69,12 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
           Edit row
         </span>
       </ButtonSolid>
-      <Drawer isOpen={isEditRowDrawerOpen} onClose={() => setIsEditRowDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isEditRowDrawerOpen}
+        onClose={() => setIsEditRowDrawerOpen(false)}
+        position="right"
+        className="tj-db-drawer"
+      >
         <EditRowForm
           onEdit={() => {
             const limit = pageSize;
@@ -91,7 +96,10 @@ const EditRowDrawer = ({ isEditRowDrawerOpen, setIsEditRowDrawerOpen, selectedRo
             setIsEditRowDrawerOpen(false);
           }}
           onClose={() => setIsEditRowDrawerOpen(false)}
-          rowIdToBeEdited={rowIdToBeEdited}
+          selectedRowObj={selectedRowObj}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="EditRowForm"
         />
       </Drawer>
     </>

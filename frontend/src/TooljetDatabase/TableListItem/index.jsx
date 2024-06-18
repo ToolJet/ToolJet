@@ -129,6 +129,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         isOpen={isEditTableDrawerOpen}
         onClose={() => setIsEditTableDrawerOpen(false)}
         position="right"
+        drawerStyle={{ width: '640px' }}
+        className="tj-db-drawer"
       >
         <EditTableForm
           selectedColumns={formColumns}
@@ -136,6 +138,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           updateSelectedTable={updateSelectedTable}
           onEdit={() => setIsEditTableDrawerOpen(false)}
           onClose={() => setIsEditTableDrawerOpen(false)}
+          initiator="EditTableForm"
         />
       </Drawer>
       <CreateColumnDrawer

@@ -23,6 +23,14 @@ export const primaryKeydataTypes = [
   { name: 'serial', label: 'serial', icon: <Serial width="16" height="16" />, value: 'serial' },
 ];
 
+export const postgresErrorCode = {
+  UniqueViolation: '23505',
+  CheckViolation: '23514',
+  NotNullViolation: '23502',
+  ForeignKeyViolation: '23503',
+  DataTypeMismatch: '22P02',
+};
+
 export const operators = [
   { value: 'eq', label: 'equals' },
   { value: 'gt', label: 'greater than' },
@@ -139,7 +147,10 @@ export default function tjdbDropdownStyles(
       top: '50%',
       transform: 'translateY(-50%)',
       zIndex: '1',
-      color: '#808080',
+      color: '#7E868C',
+      fontSize: '12px',
+      lineHeight: '20px',
+      fontWeight: '400',
     }),
   };
 }

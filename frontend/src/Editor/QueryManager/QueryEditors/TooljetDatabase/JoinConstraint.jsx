@@ -357,7 +357,7 @@ const JoinOn = ({
           emptyError={
             <div className="dd-select-alert-error m-2 d-flex align-items-center">
               <Information />
-              No table selected
+              No data found
             </div>
           }
           value={leftFieldOptions.find((opt) => opt.value === leftFieldColumn)}
@@ -400,7 +400,7 @@ const JoinOn = ({
             emptyError={
               <div className="dd-select-alert-error m-2 d-flex align-items-center">
                 <Information />
-                {rightFieldTable ? 'No columns of the same data type' : 'No table selected'}
+                {rightFieldTable ? 'No columns of the same data type' : 'No data found'}
               </div>
             }
             darkMode={darkMode}

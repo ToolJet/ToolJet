@@ -16,6 +16,20 @@ const transformationsByVersion = {
     dto.schema.columns = transformedColumns;
     return dto;
   },
+  '2.42.0': (dto: ImportTooljetDatabaseDto) => {
+    const transformedColumns = dto.schema.columns.map((col) => {
+      col.constraints_type = {
+        ...col.constraints_type,
+        is_unique: false,
+      };
+      return col;
+    });
+    dto.schema = {
+      columns: transformedColumns,
+      foreign_keys: [],
+    };
+    return dto;
+  },
 };
 
 export function transformTjdbImportDto(

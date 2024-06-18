@@ -30,6 +30,8 @@ import {
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
+  getAllChildComponents,
+  runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
@@ -272,10 +274,78 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
+  /**
+   ** Async updates components in batches to optimize and processing efficiency.
+   * This function iterates over an array of component IDs, updating them in fixed-size batches,
+   * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
+   * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
+   * ensuring the system is ready for the next cycle of updates.
+   *
+   * @param {Array} componentIds An array of component IDs that need updates.
+   * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
+   */
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Flush only updated components
+
+    flushComponentsToRender(updatedComponentIds);
+  }
+
+  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
+
+  useEffect(() => {
+    if (lastUpdatedRef.length > 0) {
+      const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+
+      const directRenders = lastUpdatedRef.map((ref) => ref.includes('rerender') && ref.split(' ')[1]);
+
+      const toUpdateRefs = lastUpdatedRef.filter((ref) => !ref.includes('rerender'));
+
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, toUpdateRefs);
+
+      if (directRenders.length > 0) {
+        componentIdsWithReferences.push(...directRenders);
+      }
+
+      if (componentIdsWithReferences.length > 0) {
+        batchUpdateComponents(componentIdsWithReferences);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastUpdatedRef]);
+
   useEffect(
     () => {
       const components = appDefinition?.pages?.[currentPageId]?.components || {};
       computeComponentState(components);
+
+      const isPageSwitched = useResolveStore.getState().isPageSwitched;
+
+      if (isPageSwitched) {
+        const currentStateObj = useCurrentStateStore.getState();
+
+        useResolveStore.getState().actions.addAppSuggestions({
+          queries: currentStateObj.queries,
+          components: currentStateObj.components,
+          page: currentStateObj.page,
+        });
+        useResolveStore.getState().actions.pageSwitched(false);
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentPageId]
@@ -673,31 +743,59 @@ const EditorComponent = (props) => {
     });
   };
 
-  const callBack = async (data, startingPageHandle, versionSwitched = false) => {
-    setWindowTitle({ page: pageTitles.EDITOR, appName: data.name });
-    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+  /* Only for the first load of an app. Should not use for any other cases */
+  const runForInitialLoad = async () => {
+    const appId = props?.id || props?.params?.slug;
+    const appData = await appService.fetchApp(appId);
+    const {
+      name: appName,
+      current_version_id,
+      editing_version,
+      organization_id: organizationId,
+      slug,
+      is_maintenance_on: isMaintenanceOn,
+      is_public: isPublic,
+      user_id: userId,
+      events,
+    } = appData;
 
-    if (!releasedVersionId || !versionSwitched) {
-      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
-    }
-
-    const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
-    setAppVersions(appVersions.appVersions);
-    const currentOrgId = data?.organization_id || data?.organizationId;
-
+    const startingPageHandle = props.params.pageHandle;
+    setWindowTitle({ page: pageTitles.EDITOR, appName });
+    useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
+    current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
+    await fetchOrgEnvironmentConstants();
     updateState({
-      slug: data.slug,
-      isMaintenanceOn: data?.is_maintenance_on,
-      organizationId: currentOrgId,
-      isPublic: data?.is_public || data?.isPublic,
-      appName: data?.name,
-      userId: data?.user_id,
-      appId: data?.id,
-      events: data.events,
-      currentVersionId: data?.editing_version?.id,
-      app: data,
+      slug,
+      isMaintenanceOn,
+      organizationId,
+      isPublic,
+      appName,
+      userId,
+      appId,
+      events,
+      currentVersionId: editing_version?.id,
+      app: appData,
     });
 
+    await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
+      handleLowPriorityWork(async () => {
+        useResolveStore.getState().actions.updateLastUpdatedRefs(['constants', 'client']);
+        await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+        await fetchDataSources(editing_version?.id);
+        commonLowPriorityActions(events, { homePageId });
+      });
+    });
+  };
+
+  const commonLowPriorityActions = async (events, { homePageId }) => {
+    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+    const editorRef = getEditorRef();
+    await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+  };
+
+  const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
+    useResolveStore.getState().actions.updateJSHints();
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -1163,17 +1261,9 @@ const EditorComponent = (props) => {
 
       let childComponents = [];
 
-      if (newDefinition.pages[currentPageId].components?.[componentId].component.component === 'Tabs') {
-        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter((key) =>
-          newDefinition.pages[currentPageId].components[key].component.parent?.startsWith(componentId)
-        );
-      } else {
-        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
-          (key) => newDefinition.pages[currentPageId].components[key].component.parent === componentId
-        );
-      }
+      childComponents = getAllChildComponents(newDefinition.pages[currentPageId].components, componentId);
 
-      childComponents.forEach((componentId) => {
+      childComponents.forEach(({ componentId }) => {
         delete newDefinition.pages[currentPageId].components[componentId];
       });
 
@@ -1188,6 +1278,12 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
+
+      const deleteFromMap = [componentId, ...childComponents.map(({ componentId }) => componentId)];
+      const deletedComponentNames = deleteFromMap.map((id) => {
+        return appDefinition.pages[currentPageId].components[id].component.name;
+      });
+
       appDefinitionChanged(newDefinition, {
         componentDefinitionChanged: true,
         componentDeleted: true,
@@ -1280,6 +1376,167 @@ const EditorComponent = (props) => {
     }
   };
 
+  const onEditorLoad = (appJson, pageId, isPageSwitchOrVersionSwitch = false) => {
+    useCurrentStateStore.getState().actions.setEditorReady(true);
+
+    const currentComponents = appJson?.pages?.[pageId]?.components;
+    const currentDataQueries = useDataQueriesStore.getState().dataQueries;
+
+    const referenceManager = useResolveStore.getState().referenceMapper;
+
+    const newComponents = Object.keys(currentComponents).map((componentId) => {
+      const component = currentComponents[componentId];
+
+      if (isPageSwitchOrVersionSwitch || !referenceManager.get(componentId)) {
+        return {
+          id: componentId,
+          name: component.component.name,
+        };
+      }
+    });
+    const newDataQueries = currentDataQueries.map((dq) => {
+      if (!referenceManager.get(dq.id)) {
+        return {
+          id: dq.id,
+          name: dq.name,
+        };
+      }
+    });
+
+    useResolveStore.getState().actions.addEntitiesToMap([...newComponents, ...newDataQueries]);
+    // useResolveStore.getState().actions.addEntitiesToMap(newDataQueries);
+  };
+
+  const updateEntityReferences = (appJson, pageId) => {
+    const currentComponents = appJson?.pages?.[pageId]?.components;
+    const globalSettings = appJson['globalSettings'];
+
+    let dataQueries = JSON.parse(JSON.stringify(useDataQueriesStore.getState().dataQueries));
+    let allEvents = JSON.parse(JSON.stringify(useAppDataStore.getState().events));
+
+    const entittyReferencesInGlobalSettings = findAllEntityReferences(globalSettings, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInComponentDefinitions = findAllEntityReferences(currentComponents, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInQueryOptions = findAllEntityReferences(dataQueries, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const entityReferencesInEvents = findAllEntityReferences(allEvents, [])?.filter(
+      (entity) => entity && isValidUUID(entity)
+    );
+
+    const manager = useResolveStore.getState().referenceMapper;
+
+    if (Array.isArray(entittyReferencesInGlobalSettings) && entittyReferencesInGlobalSettings?.length > 0) {
+      let newGlobalSettings = JSON.parse(JSON.stringify(globalSettings));
+      entittyReferencesInGlobalSettings.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newGlobalSettings = dfs(newGlobalSettings, entity, value);
+        }
+      });
+
+      const newAppDefinition = produce(appJson, (draft) => {
+        draft.globalSettings = newGlobalSettings;
+      });
+
+      // Setting the canvas background to the editor store
+      setCanvasBackground({
+        backgroundFxQuery: newGlobalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: newGlobalSettings?.canvasBackgroundColor,
+      });
+
+      updateEditorState({
+        isUpdatingEditorStateInProcess: false,
+        appDefinition: newAppDefinition,
+      });
+    } else {
+      // Setting the canvas background to the editor store
+      setCanvasBackground({
+        backgroundFxQuery: globalSettings?.backgroundFxQuery,
+        canvasBackgroundColor: globalSettings?.canvasBackgroundColor,
+      });
+    }
+
+    if (Array.isArray(entityReferencesInComponentDefinitions) && entityReferencesInComponentDefinitions?.length > 0) {
+      let newComponentDefinition = JSON.parse(JSON.stringify(currentComponents));
+
+      entityReferencesInComponentDefinitions.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newComponentDefinition = dfs(newComponentDefinition, entity, value);
+        }
+      });
+
+      const appDefinition = useEditorStore.getState().appDefinition;
+      const newAppDefinition = produce(appDefinition, (draft) => {
+        draft.pages[pageId].components = newComponentDefinition;
+      });
+
+      handleLowPriorityWork(() => {
+        updateEditorState({
+          isUpdatingEditorStateInProcess: false,
+          appDefinition: newAppDefinition,
+        });
+      });
+    }
+
+    if (Array.isArray(entityReferencesInQueryOptions) && entityReferencesInQueryOptions?.length > 0) {
+      let newQueryOptions = {};
+      dataQueries?.forEach((query) => {
+        newQueryOptions[query.id] = query.options;
+        ``;
+      });
+
+      entityReferencesInQueryOptions.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newQueryOptions = dfs(newQueryOptions, entity, value);
+        }
+      });
+
+      dataQueries = dataQueries.map((query) => {
+        const queryId = query.id;
+        const dqOptions = newQueryOptions[queryId];
+
+        return {
+          ...query,
+          options: dqOptions,
+        };
+      });
+
+      useDataQueriesStore.getState().actions.setDataQueries(dataQueries, 'mappingUpdate');
+    }
+
+    if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
+      let newEvents = JSON.parse(JSON.stringify(allEvents));
+
+      entityReferencesInEvents.forEach((entity) => {
+        const entityrefExists = manager.has(entity);
+
+        if (entityrefExists) {
+          const value = manager.get(entity);
+          newEvents = dfs(newEvents, entity, value);
+        }
+      });
+
+      updateState({
+        events: newEvents,
+      });
+    }
+  };
+
   const removeComponents = () => {
     const selectedComponents = useEditorStore.getState()?.selectedComponents;
     if (!isVersionReleased && selectedComponents?.length > 1) {
@@ -1364,11 +1621,11 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${newHandle}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    // props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${newHandle}`, {
+    //   state: {
+    //     isSwitchingPage: true,
+    //   },
+    // });
 
     const page = {
       id: newPageId,
@@ -1394,11 +1651,24 @@ const EditorComponent = (props) => {
     });
   };
 
-  const switchPage = (pageId, queryParams = []) => {
+  const switchPage = async (pageId, queryParams = []) => {
+    if (useEditorStore.getState().pageSwitchInProgress) {
+      toast('Please wait, page switch in progress', {
+        icon: '⚠️',
+      });
+
+      return;
+    }
+
+    await clearAllQueuedTasks();
+    useResolveStore.getState().actions.resetStore();
+    useEditorStore.getState().actions.setPageProgress(true);
+    useCurrentStateStore.getState().actions.setEditorReady(false);
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
-    const pageHandle = getCurrentState().pageHandle;
+
+    const pageHandle = useCurrentStateStore.getState().page?.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
@@ -1407,6 +1677,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
     navigateToPage(queryParams, handle);
 
     const page = {
@@ -1422,12 +1693,24 @@ const EditorComponent = (props) => {
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+    useResolveStore.getState().actions.pageSwitched(true);
+
+    await onEditorLoad(appDefinition, pageId, true);
+    updateEntityReferences(appDefinition, pageId);
 
     setCurrentPageId(pageId);
 
     const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
+    handleLowPriorityWork(
+      () => {
+        useEditorStore.getState().actions.setPageProgress(false);
+        useResolveStore.getState().actions.updateJSHints();
+      },
+      null,
+      true
+    );
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {

@@ -39,7 +39,7 @@ const Runjs = (props) => {
         enablePreview={false}
         componentName="Runjs"
         cyLabel={`runjs`}
-        currentState={currStateForCodeHinter}
+        delayOnChange={false}
       />
     </Card>
   );

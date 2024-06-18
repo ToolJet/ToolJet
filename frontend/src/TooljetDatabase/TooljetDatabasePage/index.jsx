@@ -51,7 +51,13 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
             </div>
           </div>
         </div>
-        <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
+        <Drawer
+          isOpen={isCreateTableDrawerOpen}
+          onClose={() => setIsCreateTableDrawerOpen(false)}
+          position="right"
+          drawerStyle={{ width: '630px' }}
+          className="tj-db-drawer"
+        >
           <CreateTableForm
             onCreate={(tableInfo) => {
               tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
@@ -69,6 +75,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
               setIsCreateTableDrawerOpen(false);
             }}
             onClose={() => setIsCreateTableDrawerOpen(false)}
+            initiator="CreateTableForm"
           />
         </Drawer>
       </>

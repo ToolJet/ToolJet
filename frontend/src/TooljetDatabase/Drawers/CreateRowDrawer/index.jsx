@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
@@ -15,12 +15,18 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
     setSortFilters,
     setQueryFilters,
   } = useContext(TooljetDatabaseContext);
+  const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
 
   return (
     <>
-      <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
+      <Drawer
+        isOpen={isCreateRowDrawerOpen}
+        onClose={() => setIsCreateRowDrawerOpen(false)}
+        position="right"
+        className="tj-db-drawer"
+      >
         <CreateRowForm
-          onCreate={() => {
+          onCreate={(shouldKeepDrawerOpen) => {
             const limit = pageSize;
             setSortFilters({});
             setQueryFilters({});
@@ -41,9 +47,14 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
 
             const tableElement = document.querySelector('.tj-db-table');
             if (tableElement) tableElement.scrollTop = 0;
-            setIsCreateRowDrawerOpen(false);
+            if (!shouldKeepDrawerOpen) setIsCreateRowDrawerOpen(false);
+            setShouldResetRowForm((prev) => prev + 1);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
+          initiator="CreateRowForm"
+          shouldResetRowForm={shouldResetRowForm}
         />
       </Drawer>
     </>

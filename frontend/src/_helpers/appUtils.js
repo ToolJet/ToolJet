@@ -67,9 +67,42 @@ export function onComponentOptionsChanged(component, options) {
   let componentData = components[componentName];
   componentData = componentData || {};
 
-  for (const option of options) {
-    componentData[option[0]] = option[1];
-  }
+    for (const option of options) {
+      componentData[option[0]] = option[1];
+
+      const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
+
+      let path = null;
+      if (isListviewOrKanbaComponent) {
+        path = `components.${componentName}`;
+      } else {
+        path = `components.${componentName}.${option[0]}`;
+      }
+
+      if (!isListviewOrKanbaComponent && !_.isEmpty(useResolveStore.getState().lookupTable?.resolvedRefs) && path) {
+        const lookUpTable = useResolveStore.getState().lookupTable;
+
+        const existingRef = lookUpTable.resolvedRefs?.get(lookUpTable.hints?.get(path));
+
+        if (typeof existingRef === 'function') continue;
+
+        const shouldUpdateRef = existingRef !== componentData[option[0]];
+
+        if (shouldUpdateRef) {
+          shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
+        }
+      }
+
+      if (isListviewOrKanbaComponent) {
+        useResolveStore.getState().actions.updateLastUpdatedRefs([`rerender ${id}`]);
+      }
+    }
+
+    if (shouldUpdateResolvedRefsOfHints.length > 0) {
+      handleLowPriorityWork(() => {
+        useResolveStore.getState().actions.updateResolvedRefsOfHints(shouldUpdateResolvedRefsOfHints);
+      });
+    }
 
   useCurrentStateStore.getState().actions.setCurrentState({
     components: { ...components, [componentName]: componentData },
@@ -1473,7 +1506,7 @@ export const cloneComponents = (
   });
 };
 
-const getAllChildComponents = (allComponents, parentId) => {
+export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {
@@ -1481,7 +1514,8 @@ const getAllChildComponents = (allComponents, parentId) => {
 
     const isParentTabORCalendar =
       allComponents[parentId]?.component?.component === 'Tabs' ||
-      allComponents[parentId]?.component?.component === 'Calendar';
+      allComponents[parentId]?.component?.component === 'Calendar' ||
+      allComponents[parentId]?.component?.component === 'Kanban';
 
     if (componentParentId && isParentTabORCalendar) {
       const childComponent = allComponents[componentId];

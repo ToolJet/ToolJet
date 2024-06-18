@@ -56,7 +56,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    Read **[environment variables reference](/docs/setup/env-vars)**
 
    :::info
-   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+   If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
    :::
 
 8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use.
@@ -80,7 +80,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 
 12. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
 
-#### Deploying Tooljet Database
+#### Deploying ToolJet Database
 
 ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you'd only have to setup the environment variables in `~/app/.env` file and run `./setup_app` script.
 
@@ -88,7 +88,7 @@ You can learn more about this feature [here](/docs/tooljet-database).
 
 ## Upgrading to the Latest Version
 
-The latest version includes architectural changes and, hence, comes with new migrations.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet:EE-LTS-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 

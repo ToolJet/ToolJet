@@ -83,7 +83,7 @@ export const SubContainer = ({
       setContainerCanvasWidth(canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef, getContainerCanvasWidth(), listmode]);
+  }, [parentRef, getContainerCanvasWidth(), listmode, parentComponent?.definition?.properties?.size?.value]); // Listen for changes to the modal size and update the subcontainer state with the new grid width.
 
   zoomLevel = zoomLevel || 1;
 
@@ -679,6 +679,123 @@ export const SubContainer = ({
           </center>
         </div>
       )}
+    </SubContianerWrapper>
+  );
+};
+
+const ResizeGhostWidget = ({ resizingComponentId, widgets, currentLayout, canvasWidth, gridWidth }) => {
+  if (!resizingComponentId) {
+    return '';
+  }
+
+  return (
+    <GhostWidget
+      layouts={widgets?.[resizingComponentId]?.layouts}
+      currentLayout={currentLayout}
+      canvasWidth={canvasWidth}
+      gridWidth={gridWidth}
+    />
+  );
+};
+
+const SubWidgetWrapper = ({
+  parent,
+  readOnly,
+  id,
+  widget,
+  currentLayout,
+  canvasWidth,
+  gridWidth,
+  children,
+  isResizing,
+  isGhostComponent,
+  mode,
+}) => {
+  const { layouts } = widget;
+
+  const widgetRef = useRef(null);
+
+  const isOnScreen = useOnScreen(widgetRef);
+
+  const layoutData = layouts[currentLayout] || layouts['desktop'] || {};
+  const isSelected = useEditorStore((state) => {
+    const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
+    return state?.hoveredComponent == id || isSelected;
+  }, shallow);
+
+  const isDragging = useGridStore((state) => state?.draggingComponentId === id);
+
+  const isComponentVisible = () => {
+    const visibility =
+      widget.component.definition?.properties?.visibility?.value ??
+      widget.component.definition?.styles?.visibility?.value ??
+      null;
+    return resolveWidgetFieldValue(visibility);
+  };
+
+  let width = (canvasWidth * layoutData.width) / 43;
+  width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
+  const styles = {
+    width: width + 'px',
+    height: isComponentVisible() ? layoutData.height + 'px' : '10px',
+    transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
+    ...(isGhostComponent ? { opacity: 0.5 } : {}),
+  };
+
+  const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
+
+  useEffect(() => {
+    const controlBox = document.querySelector(`[target-id="${id}"]`);
+    // console.log('controlBox', { hide: !isOnScreen && isSelected && !isDragging && !isResizing, isOnScreen });
+    //adding attribute instead of class since react-moveable seems to replace classes internally on scroll stop
+    if (!isOnScreen && isSelected && !isDragging && !isResizing) {
+      controlBox?.classList.add('hide-control');
+      controlBox?.setAttribute('data-off-screen', 'true');
+    } else {
+      // controlBox?.classList.remove('hide-control');
+      controlBox?.removeAttribute('data-off-screen');
+    }
+  }, [isOnScreen]);
+
+  if (isEmpty(layoutData)) {
+    return '';
+  }
+
+  return (
+    <div
+      className={
+        isGhostComponent
+          ? ''
+          : readOnly
+          ? `moveable-box position-absolute`
+          : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target  ${
+              isResizing ? 'resizing-target' : ''
+            } ${isWidgetActive ? 'active-target' : ''} ${isDragging ? 'opacity-0' : ''}`
+      }
+      key={id}
+      id={id}
+      style={{ transform: `translate(332px, -134px)`, ...styles }}
+      widget-id={id}
+      widgetid={id}
+      ref={widgetRef}
+    >
+      {children}
+    </div>
+  );
+};
+
+const SubContianerWrapper = ({ children, isDragging, isResizing, isGridActive, readOnly, drop, styles, parent }) => {
+  return (
+    <div
+      ref={drop}
+      style={styles}
+      id={`canvas-${parent}`}
+      data-parent={parent}
+      className={`sub-canvas real-canvas ${
+        (isDragging || isResizing || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
+      }`}
+    >
+      {children}
     </div>
   );
 };

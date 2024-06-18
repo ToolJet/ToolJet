@@ -87,7 +87,7 @@ Follow the steps below to configure Redis database:
 ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on DigitalOcean, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.
 :::
 
-## Deploying Tooljet Database
+## Deploying ToolJet Database
 
 If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 You can learn more about this feature [here](/docs/tooljet-database).
@@ -110,7 +110,7 @@ Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
 ## Upgrading to the Latest Version
 
-The latest version includes architectural changes and, hence, comes with new migrations.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet:EE-LTS-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
