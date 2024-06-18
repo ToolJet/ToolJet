@@ -13,11 +13,13 @@ export const whiteLabellingOptions = {
 };
 
 export async function fetchWhiteLabelDetails(organizationId = null) {
-  return;
 }
 
 export async function checkWhiteLabelsDefaultState(organizationId = null) {
   return true;
+}
+
+export async function resetToDefaultWhiteLabels() {
 }
 
 export function retrieveWhiteLabelText() {

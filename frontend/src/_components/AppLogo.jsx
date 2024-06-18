@@ -1,6 +1,6 @@
 import React from 'react';
 import Logo from '@assets/images/rocket.svg';
-import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
 
 export default function AppLogo({ isLoadingFromHeader, className }) {
   const url = retrieveWhiteLabelLogo();
