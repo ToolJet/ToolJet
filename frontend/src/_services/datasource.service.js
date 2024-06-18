@@ -69,12 +69,13 @@ function setOauth2Token(dataSourceId, body, current_organization_id) {
   return fetch(`${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2`, requestOptions).then(handleResponse);
 }
 
-function fetchOauth2BaseUrl(provider) {
+function fetchOauth2BaseUrl(provider, plugin_id = null, source_options = {}) {
+  const payload = { provider, ...(plugin_id && { plugin_id }), ...(source_options && { source_options }) };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ provider }),
+    body: JSON.stringify(payload),
   };
   return fetch(`${config.apiUrl}/data_sources/fetch_oauth2_base_url`, requestOptions).then(handleResponse);
 }

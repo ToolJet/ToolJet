@@ -8,7 +8,7 @@ export const SegregatedList = ({ dataSources, activeDatasourceList, handleOnSele
   return (
     <>
       <div className="datasources-info tj-text-xsm datasource-list-header" data-cy="datasource-list-header">
-        All data sources {totalDataSources > 0 && `(${totalDataSources})`}
+        All data sources {totalDataSources > 0 && `(${totalDataSources - 5})`}
       </div>
       {dataSources
         .filter((ds) => ds.list.length > 0 || ds.type === 'Plugins')

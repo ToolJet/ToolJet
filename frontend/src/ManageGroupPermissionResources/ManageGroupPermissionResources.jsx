@@ -319,7 +319,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const orgEnvironmentPermission = groupPermission
       ? groupPermission.org_environment_variable_create &&
         groupPermission.org_environment_variable_update &&
-        groupPermission.org_environment_variable_delete
+        groupPermission.org_environment_variable_delete &&
+        groupPermission.org_environment_constant_create &&
+        groupPermission.org_environment_constant_delete
       : false;
 
     return (
@@ -893,6 +895,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                               org_environment_variable_create: !orgEnvironmentPermission,
                                               org_environment_variable_update: !orgEnvironmentPermission,
                                               org_environment_variable_delete: !orgEnvironmentPermission,
+                                              org_environment_constant_create: !orgEnvironmentPermission,
+                                              org_environment_constant_delete: !orgEnvironmentPermission,
                                             });
                                           }}
                                           checked={orgEnvironmentPermission}

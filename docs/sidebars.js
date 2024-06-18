@@ -65,7 +65,8 @@ const sidebars = {
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',
-        'setup/v2-migration-guide'
+        'setup/v2-migration-guide',
+        'setup/upgrade-to-lts'
       ]
     },
     {
@@ -73,6 +74,27 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
+        'app-builder/walkthrough/create-ui',
+        'app-builder/walkthrough/create-queries',
+        'app-builder/walkthrough/using-code',
+        'app-builder/walkthrough/accessing-values',
+        'app-builder/walkthrough/variables',
+        'app-builder/importing-exporting-applications',
+        {
+          'type': 'category',
+          'label': 'Layout Guide',
+          'items': [
+           'app-builder/components-library',
+           'app-builder/query-panel',
+           'tutorial/pages',
+           'app-builder/topbar',
+           'app-builder/left-sidebar',
+           'app-builder/canvas',
+           'app-builder/preview',
+           'app-builder/share',
+           'app-builder/customstyles',
+          ],
+        },
         {
           'type': 'category',
           'label': 'Components Catalog',
@@ -145,7 +167,7 @@ const sidebars = {
                 'widgets/rich-text-editor',
                 'widgets/timeline',
                 'widgets/timer',
-                'widgets/toggle-switch',
+                'widgets/toggle-switch-v2',
                 'widgets/tree-select',
                 'widgets/vertical-divider',
               ],
@@ -184,16 +206,6 @@ const sidebars = {
             },
           ],
         },
-        'app-builder/components-library',
-        'app-builder/query-panel',
-        'tutorial/pages',
-        'app-builder/topbar',
-        'app-builder/left-sidebar',
-        'app-builder/canvas',
-        'app-builder/preview',
-        'app-builder/share',
-        'app-builder/customstyles',
-        'app-builder/importing-exporting-applications',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -310,6 +322,7 @@ const sidebars = {
           "items": [
             "org-management/workspaces/workspace_overview",
             "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace-variables-migration",
             "org-management/workspaces/workspace_constants"
           ]
         },
@@ -383,6 +396,7 @@ const sidebars = {
         'workflows/overview',
         'workflows/nodes',
         'workflows/workflow-triggers',
+        'workflows/results',
         'workflows/permissions',
         'workflows/logs',
       ],
@@ -446,6 +460,7 @@ const sidebars = {
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
             'contributing-guide/setup/windows',
+            'contributing-guide/setup/system-requirements-for-contributing',
           ],
         },
         {

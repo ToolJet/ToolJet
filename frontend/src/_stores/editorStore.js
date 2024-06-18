@@ -1,5 +1,7 @@
+import _ from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
+import { useResolveStore } from './resolverStore';
 const STORE_NAME = 'Editor';
 
 export const EMPTY_ARRAY = [];
@@ -22,11 +24,6 @@ const initialState = {
   selectedComponents: [],
   isEditorActive: false,
   selectedComponent: null,
-  scrollOptions: {
-    container: null,
-    throttleTime: 0,
-    threshold: 0,
-  },
   canUndo: false,
   canRedo: false,
   currentVersion: {},
@@ -40,7 +37,11 @@ const initialState = {
   queryConfirmationList: [],
   currentPageId: null,
   currentSessionId: uuid(),
+  componentsNeedsUpdateOnNextRender: [],
   appMode: 'auto',
+  editorCanvasWidth: 1092,
+  canvasBackground: {},
+  pageSwitchInProgress: false,
 };
 
 export const useEditorStore = create(
@@ -53,17 +54,35 @@ export const useEditorStore = create(
           type: ACTIONS.SET_HOVERED_COMPONENT,
           showComments,
         }),
+      setCanvasWidth: (editorCanvasWidth) => set({ editorCanvasWidth }),
+      setPageProgress: (bool) => set({ pageSwitchInProgress: bool }),
       toggleComments: () =>
         set({ showComments: !get().showComments }, false, {
           type: ACTIONS.TOGGLE_COMMENTS,
         }),
-      toggleCurrentLayout: (currentLayout) =>
+      toggleCurrentLayout: (currentLayout) => {
+        set({ selectedComponents: EMPTY_ARRAY });
         set({ currentLayout }, false, {
           type: ACTIONS.TOGGLE_CURRENT_LAYOUT,
           currentLayout,
-        }),
+        });
+      },
       setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
       updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
+      updateCurrentStateDiff: (currentStateDiff) => set(() => ({ currentStateDiff })),
+      updateComponentsNeedsUpdateOnNextRender: (componentsNeedsUpdateOnNextRender) => {
+        set(() => ({ componentsNeedsUpdateOnNextRender }));
+      },
+      flushComponentsNeedsUpdateOnNextRender: (toRemoveIds = []) => {
+        const currentComponents = get().componentsNeedsUpdateOnNextRender;
+
+        if (currentComponents.length === 0 || toRemoveIds.length === 0) return;
+
+        const updatedComponents = currentComponents.filter((item) => !toRemoveIds.includes(item));
+
+        set(() => ({ componentsNeedsUpdateOnNextRender: updatedComponents }));
+      },
+
       updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
       setHoveredComponent: (hoveredComponent) =>
         set({ hoveredComponent }, false, {
@@ -88,8 +107,13 @@ export const useEditorStore = create(
           selectedComponents: newSelectedComponents,
         });
       },
+      //TODO: Refactor multiple component selection with a single function
+      selectMultipleComponents: (selectedComponents) => {
+        set({ selectedComponents: selectedComponents });
+      },
       setCurrentPageId: (currentPageId) => set({ currentPageId }),
       setAppMode: (appMode) => set({ appMode }),
+      setCanvasBackground: (canvasBackground) => set({ canvasBackground }),
     },
   }),
   { name: STORE_NAME }
@@ -97,3 +121,14 @@ export const useEditorStore = create(
 
 export const useEditorActions = () => useEditorStore((state) => state.actions);
 export const useEditorState = () => useEditorStore((state) => state);
+
+export const getComponentsToRenders = () => {
+  return useEditorStore.getState().componentsNeedsUpdateOnNextRender;
+};
+
+export const flushComponentsToRender = (componentIds = []) => {
+  if (!componentIds.length) return;
+
+  useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender(componentIds);
+  useResolveStore.getState().actions.flushLastUpdatedRefs();
+};

@@ -4,7 +4,7 @@ import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { authenticationService } from '@/_services';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -86,10 +86,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
                 key={source.id}
                 className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
                 data-tooltip-id="tooltip-for-add-query-dd-option"
-                data-tooltip-content={source.name}
+                data-tooltip-content={decodeEntities(source.name)}
                 data-cy={`ds-${source.name.toLowerCase()}`}
               >
-                {source.name}
+                {decodeEntities(source.name)}
                 <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
               </div>
             ),

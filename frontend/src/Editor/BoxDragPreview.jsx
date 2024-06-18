@@ -33,7 +33,7 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item, canvasWidth }
     >
       <div
         style={{
-          background: '#438fd7',
+          background: '#D9E2FC',
           opacity: '0.7',
           height: '100%',
           width: '100%',

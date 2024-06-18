@@ -14,7 +14,12 @@ import {
   useColumnOrder,
 } from 'react-table';
 import cx from 'classnames';
-import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
+import {
+  resolveReferences,
+  validateWidget,
+  determineJustifyContentValue,
+  resolveWidgetFieldValue,
+} from '@/_helpers/utils';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { Pagination } from './Pagination';
@@ -142,6 +147,7 @@ export function Table({
     maxRowHeightValue,
     borderColor,
     isMaxRowHeightAuto,
+    columnHeaderWrap,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
@@ -404,11 +410,11 @@ export function Table({
   let tableData = [],
     dynamicColumn = [];
 
-  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value, currentState);
+  const useDynamicColumn = resolveWidgetFieldValue(component.definition.properties?.useDynamicColumn?.value);
   if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+    tableData = resolveWidgetFieldValue(component.definition.properties.data.value);
     dynamicColumn = useDynamicColumn
-      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
+      ? resolveWidgetFieldValue(component.definition.properties?.columnData?.value) ?? []
       : [];
     if (!Array.isArray(tableData)) {
       tableData = [];
@@ -590,7 +596,7 @@ export function Table({
     if (
       tableData.length != 0 &&
       component.definition.properties.autogenerateColumns?.value &&
-      (useDynamicColumn || mode === 'edit')
+      (useDynamicColumn || mode === 'edit' || mode === 'view')
     ) {
       const generatedColumnFromData = autogenerateColumns(
         tableData,
@@ -649,7 +655,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: -1 },
+      initialState: { pageIndex: 0, pageSize: 1 },
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
@@ -930,6 +936,7 @@ export function Table({
       );
     }
   }, [JSON.stringify(changeSet)]);
+
   useEffect(() => {
     if (
       allowSelection &&
@@ -939,20 +946,22 @@ export function Table({
     ) {
       const preSelectedRowDetails = getDetailsOfPreSelectedRow();
       if (_.isEmpty(preSelectedRowDetails)) return;
-
       const selectedRow = preSelectedRowDetails?.original ?? {};
+      const selectedRowIndex = preSelectedRowDetails?.index ?? null;
       const selectedRowId = preSelectedRowDetails?.id ?? null;
-      const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
+      const pageNumber = Math.floor(selectedRowIndex / rowsPerPage) + 1;
+
       preSelectRow.current = true;
       if (highlightSelectedRow) {
-        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        setExposedVariables({ selectedRow: selectedRow, selectedRowId });
         toggleRowSelected(selectedRowId, true);
-        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId });
       } else {
         toggleRowSelected(selectedRowId, true);
       }
       if (pageIndex >= 0 && pageNumber !== pageIndex + 1) {
         gotoPage(pageNumber - 1);
+        setPaginationInternalPageIndex(pageNumber);
       }
     }
 
@@ -1328,11 +1337,14 @@ export function Table({
                                           data-cy={`column-header-${String(column.exportValue)
                                             .toLowerCase()
                                             .replace(/\s+/g, '-')}`}
-                                          className={`header-text ${
-                                            column.id === 'selection' &&
-                                            column.columnType === 'selector' &&
-                                            'selector-column'
-                                          }`}
+                                          className={cx('header-text', {
+                                            'selector-column':
+                                              column.id === 'selection' && column.columnType === 'selector',
+                                            'text-truncate':
+                                              resolveReferences(columnHeaderWrap, currentState) === 'fixed',
+                                            'wrap-wrapper':
+                                              resolveReferences(columnHeaderWrap, currentState) === 'wrap',
+                                          })}
                                         >
                                           {column.render('Header')}
                                         </div>

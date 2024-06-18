@@ -1,0 +1,15 @@
+{
+  "name": "Lorem ipsum generator",
+  "description": "Generate placeholder text instantly for your design projects with our user-friendly lorem ipsum generator.",
+  "widgets": [
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "lorem-ipsum-generator",
+  "category": "developer-utilities"
+}

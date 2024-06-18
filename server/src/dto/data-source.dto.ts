@@ -45,6 +45,13 @@ export class GetDataSourceOauthUrlDto {
   @IsString()
   @IsNotEmpty()
   provider: string;
+
+  @IsOptional()
+  source_options: any;
+
+  @IsString()
+  @IsOptional()
+  plugin_id: string;
 }
 
 export class AuthorizeDataSourceOauthDto {

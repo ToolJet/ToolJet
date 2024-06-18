@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
@@ -16,7 +15,7 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
@@ -53,7 +52,16 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
+const NEW_REVAMPED_COMPONENTS = [
+  'Text',
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'Table',
+  'Button',
+  'ToggleSwitchV2',
+  'Checkbox',
+];
 
 export const Inspector = ({
   componentDefinitionChanged,
@@ -94,13 +102,19 @@ export const Inspector = ({
     shallow
   );
   const { t } = useTranslation();
-  useHotkeys('backspace', () => {
-    if (isVersionReleased) return;
-    setWidgetDeleteConfirmation(true);
+  useHotkeys(
+    'backspace',
+    () => {
+      if (isVersionReleased) return;
+      setWidgetDeleteConfirmation(true);
+    },
+    { scopes: 'editor' }
+  );
+  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY), {
+    scopes: 'editor',
   });
-  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
-  const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
+  const componentMeta = JSON.parse(JSON.stringify(allComponents?.[selectedComponentId]?.component));
 
   const isMounted = useMounted();
 
@@ -316,13 +330,9 @@ export const Inspector = ({
         paramUpdated={paramUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
-        // eventUpdated={eventUpdated}
-        // eventOptionUpdated={eventOptionUpdated}
         components={allComponents}
         currentState={currentState}
         darkMode={darkMode}
-        // eventsChanged={eventsChanged}
-        // apps={apps} !check
         pages={pages}
         allComponents={allComponents}
       />
@@ -445,17 +455,17 @@ export const Inspector = ({
         </div>
       </div>
       <span className="widget-documentation-link">
-        <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
+        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
           <span>
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
+                componentMeta:
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
+                    ? 'Toggle (Legacy)'
+                    : componentMeta.displayName === 'Toggle Switch'
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -466,6 +476,11 @@ export const Inspector = ({
       </span>
     </div>
   );
+};
+const getDocsLink = (componentMeta) => {
+  return componentMeta.component == 'ToggleSwitchV2'
+    ? `https://docs.tooljet.io/docs/widgets/toggle-switch`
+    : `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.component ?? '')}`;
 };
 
 const widgetsWithStyleConditions = {

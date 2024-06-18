@@ -1,0 +1,15 @@
+{
+  "name": "Bill of materials",
+  "description": "Accurately plan, track, and manage your material requirements with our streamlined Bill of Materials solution.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "bill-of-materials",
+  "category": "operations"
+}
