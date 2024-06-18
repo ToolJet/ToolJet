@@ -18,7 +18,6 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     joinTableOptionsChange,
     joinTableOptions,
     tables,
-    getColumnDetailsForTable,
     joinOptions,
     tableInfo,
     findTableDetails,
@@ -121,46 +120,9 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     return tables.find((table) => table.table_id === id)?.table_name;
   };
 
-  // const getAllColumns = async () => {
-  //   const allTables = joinTableOptions?.joins?.reduce(
-  //     (accumulator, table) => {
-  //       accumulator?.push(table.table);
-  //       return accumulator;
-  //     },
-  //     [selectedTableId]
-  //   );
+  const getTableList = () => {
+    const tableList = [];
 
-  //   async function fetchColumns(table) {
-  //     try {
-  //       const data = await getColumnDetailsForTable(table);
-  //       console.log('m', { data });
-  //       return data;
-  //     } catch (error) {
-  //       console.error('Error fetching column details:', error);
-  //       return []; // or handle the error as needed
-  //     }
-  //   }
-
-  //   const columns = allTables.reduce((accumulator, table) => {
-  //     const columns = fetchColumns(table);
-  //     columns?.forEach((column) => {
-  //       if (accumulator?.find((col) => col?.label === column?.column_name)) {
-  //         return;
-  //       } else {
-  //         accumulator?.push({
-  //           label: column.column_name,
-  //           value: column.column_name,
-  //         });
-  //       }
-  //     });
-  //     return accumulator;
-  //   }, []);
-  //   return columns;
-  //   // return [];
-  // };
-  const tableList = [];
-
-  if (operation === 'joinTable') {
     const tableSet = new Set();
     (joinOptions || []).forEach((join) => {
       const { table, conditions } = join;
@@ -195,7 +157,17 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
         tableList.push(tableDetailsForDropDown);
       }
     });
-  }
+    return tableList;
+  };
+
+  const getColumnsDetails = (tableId) => {
+    const tableDetails = findTableDetails(tableId);
+    return tableInfo?.[tableDetails?.table_name]?.map((columns) => ({
+      label: columns.Header,
+      value: columns.Header,
+    }));
+  };
+
   return (
     <>
       <div className="d-flex mb-2">
@@ -243,7 +215,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                             }
                           : aggregateDetails.column
                       }
-                      options={operation === 'joinTable' ? tableList : columnAccessorsOptions}
+                      options={operation === 'joinTable' ? getTableList() : columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
                       darkMode={darkMode}
                       placeholder="Select column..."
@@ -326,7 +298,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                     width="100%"
                     height="32"
                     value={operationDetails?.group_by?.[selectedTableId]}
-                    options={columnAccessorsOptions}
+                    options={getColumnsDetails(selectedTableId)}
                     placeholder={`Select column(s) to group by`}
                     isMulti={true}
                     handleChange={(value) => handleGroupByChange(selectedTableId, value)}
@@ -350,7 +322,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                         width="100%"
                         height="32"
                         value={operationDetails?.group_by?.[table.table]}
-                        options={columnAccessorsOptions}
+                        options={getColumnsDetails(table.table)}
                         placeholder={`Select column(s) to group by`}
                         isMulti={true}
                         handleChange={(value) => handleGroupByChange(table.table, value)}

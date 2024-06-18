@@ -1,8 +1,4 @@
 import React from 'react';
-import Select from '@/_ui/Select';
-import { components } from 'react-select';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import DropDownSelect from '../DropDownSelect';
 
@@ -16,9 +12,9 @@ export const SelectBox = ({
   darkMode,
   showTooltip = false,
 }) => {
-  const validOptionStructure = options.map(({ description = '', ...rest }) => {
-    return rest;
-  });
+  // const validOptionStructure = options.map(({ description = '', ...rest }) => {
+  //   return rest;
+  // });
   return (
     <ToolTip
       message="Group by can only be used with aggregate function"
@@ -30,7 +26,7 @@ export const SelectBox = ({
         <DropDownSelect
           customBorder={false}
           showPlaceHolder
-          options={validOptionStructure}
+          options={options}
           darkMode={darkMode}
           onChange={handleChange}
           value={value}
