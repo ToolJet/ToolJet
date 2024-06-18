@@ -20,12 +20,13 @@ import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 import Skeleton from 'react-loading-skeleton';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 const { iconList, defaultIcon } = configs;
 
@@ -87,7 +88,7 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
-    setWindowTitle({ page: pageTitles.DASHBOARD });
+    fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
     this.setQueryParameter();
