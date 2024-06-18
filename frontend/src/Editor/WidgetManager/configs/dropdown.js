@@ -1,6 +1,6 @@
 export const dropdownConfig = {
   name: 'DropdownLegacy',
-  displayName: 'Dropdown',
+  displayName: 'Dropdown (Legacy)',
   description: 'Single item selector',
   defaultSize: {
     width: 8,
