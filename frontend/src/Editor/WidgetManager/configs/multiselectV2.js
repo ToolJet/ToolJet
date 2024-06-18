@@ -191,6 +191,7 @@ export const multiselectV2Config = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
+      isFxNotRequired: true,
     },
     labelWidth: {
       type: 'slider',

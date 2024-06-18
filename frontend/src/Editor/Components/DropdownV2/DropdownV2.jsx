@@ -434,6 +434,7 @@ export const DropdownV2 = ({
             isSearchable={false}
             darkMode={darkMode}
             optionsLoadingState={properties.optionsLoadingState}
+            menuPlacement="auto"
           />
         </div>
       </div>
