@@ -40,8 +40,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
 
   useEffect(() => {
     async function fetchAppTables() {
-      //Removed Main loader on selecting diff version
-      // setLoading(true);
       setVersionSelectLoading(true);
       try {
         if (!versionId) return;
@@ -78,7 +76,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         });
         closeModal();
       }
-      // setLoading(false);
       setVersionSelectLoading(false);
     }
     fetchAppTables();
