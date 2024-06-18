@@ -174,7 +174,7 @@ const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
       try {
         return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
       } catch (error) {
-        console.log('Error processing diff for update type: ', updateTypes, appDiff, error);
+        console.error('Error processing diff for update type: ', updateTypes, appDiff, error);
         return { error, updateDiff: {}, type: null, operation: null };
       }
     }
