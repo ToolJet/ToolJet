@@ -5,6 +5,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
 import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 
 import { EventsService } from './events_handler.service';
 import { LayoutData } from '@dto/component.dto';
@@ -53,6 +54,7 @@ export class ComponentsService {
             newLayout.width = layout.width;
             newLayout.height = layout.height;
             newLayout.component = component;
+            newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
             componentLayouts.push(newLayout);
           }
@@ -139,7 +141,10 @@ export class ComponentsService {
     }, appVersionId);
   }
 
-  async componentLayoutChange(componenstLayoutDiff: Record<string, { layouts: LayoutData }>, appVersionId: string) {
+  async componentLayoutChange(
+    componenstLayoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
+    appVersionId: string
+  ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, { id: componentId });
@@ -152,7 +157,7 @@ export class ComponentsService {
           };
         }
 
-        const { layouts } = componenstLayoutDiff[componentId];
+        const { layouts, component } = componenstLayoutDiff[componentId];
 
         for (const type in layouts) {
           const componentLayout = await manager.findOne(Layout, { componentId, type });
@@ -163,6 +168,10 @@ export class ComponentsService {
             } as Partial<Layout>;
 
             await manager.update(Layout, { id: componentLayout.id }, layout);
+          }
+          //Handle parent change cases. component.parent can be undefined if the element is moved form container to canvas
+          if (component) {
+            await manager.update(Component, { id: componentId }, { parent: component.parent });
           }
         }
       }
@@ -196,7 +205,7 @@ export class ComponentsService {
             const componentData = component;
             const componentLayout = component.layouts;
 
-            const transformedData = this.createComponentWithLayout(componentData, componentLayout);
+            const transformedData = this.createComponentWithLayout(componentData, componentLayout, manager);
 
             acc[componentId] = transformedData[componentId];
 
@@ -230,18 +239,33 @@ export class ComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData: Component, layoutData = []) {
+  createComponentWithLayout(componentData: Component, layoutData = [], manager: EntityManager) {
     const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
     const layouts = {};
 
     layoutData.forEach((layout) => {
-      const { type, top, left, width, height } = layout;
+      const { type, top, left, width, height, dimensionUnit, id } = layout;
+
+      let adjustedLeftValue = left;
+      if (dimensionUnit === LayoutDimensionUnits.PERCENT) {
+        adjustedLeftValue = resolveGridPositionForComponent(left, type);
+        manager.update(
+          Layout,
+          {
+            id,
+          },
+          {
+            dimensionUnit: LayoutDimensionUnits.COUNT,
+            left: adjustedLeftValue,
+          }
+        );
+      }
 
       layouts[type] = {
         top,
-        left,
+        left: adjustedLeftValue,
         width,
         height,
       };

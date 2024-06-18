@@ -12,7 +12,8 @@
       "type": "codehinter",
       "description": "Enter query",
       "placeholder": "PING",
-      "height": "150px"
+      "height": "150px",
+      "editorType": "extendedSingleLine"
     }
   },
   "required": [

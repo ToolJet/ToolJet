@@ -171,8 +171,12 @@ export class JSONTreeViewer extends React.Component {
 
   getOnSelectLabelDispatchActions = (currentNode, path) => {
     const actions = [];
-    const parent = path ? path[path.length - 2] : 'root';
-    const dispatchActionForCurrentNode = this.getDispatchActionsForNode(parent);
+    let parent = path ? path[path.length - 2] : 'root';
+
+    const nodeActions = this.props.treeType === 'debugger' && currentNode === 'componentId' ? 'all' : parent;
+
+    const dispatchActionForCurrentNode = this.getDispatchActionsForNode(nodeActions);
+
     if (currentNode === parent) return;
 
     if (dispatchActionForCurrentNode && dispatchActionForCurrentNode['enableFor1stLevelChildren']) {
@@ -269,6 +273,7 @@ export class JSONTreeViewer extends React.Component {
             getAbsoluteNodePath={this.getAbsoluteNodePath}
             fontSize={this.props.fontSize ?? '12px'}
             inspectorTree={this.props.treeType === 'inspector'}
+            debuggerTree={this.props.treeType === 'debugger'}
             renderCurrentNodeInfoIcon={this.renderCurrentNodeInfoIcon}
           />
         </ErrorBoundary>

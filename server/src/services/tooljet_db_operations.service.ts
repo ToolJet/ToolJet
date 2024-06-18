@@ -4,6 +4,7 @@ import { QueryService, QueryResult } from '@tooljet/plugins/dist/packages/common
 import { TooljetDbService } from './tooljet_db.service';
 import { isEmpty } from 'lodash';
 import { PostgrestProxyService } from './postgrest_proxy.service';
+import { maybeSetSubPath } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class TooljetDbOperationsService implements QueryService {
@@ -74,9 +75,12 @@ export class TooljetDbOperationsService implements QueryService {
       !isEmpty(offset) && query.push(`offset=${offset}`);
     }
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = `/api/tooljet-db/proxy/${tableId}` + `?${query}`;
+    const url =
+      query.length > 0
+        ? `/api/tooljet-db/proxy/${tableId}` + `?${query.join('&')}`
+        : `/api/tooljet-db/proxy/${tableId}`;
 
-    return await this.proxyPostgrest(url, 'GET', headers);
+    return await this.proxyPostgrest(maybeSetSubPath(url), 'GET', headers);
   }
 
   async createRow(queryOptions): Promise<QueryResult> {
@@ -87,7 +91,7 @@ export class TooljetDbOperationsService implements QueryService {
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
 
-    const url = `/api/tooljet-db/proxy/${queryOptions.table_id}`;
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${queryOptions.table_id}`);
     return await this.proxyPostgrest(url, 'POST', headers, columns);
   }
 
@@ -112,7 +116,7 @@ export class TooljetDbOperationsService implements QueryService {
     !isEmpty(whereQuery) && query.push(whereQuery);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = `/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id';
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
     return await this.proxyPostgrest(url, 'PATCH', headers, body);
   }
 
@@ -149,7 +153,7 @@ export class TooljetDbOperationsService implements QueryService {
     limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = `/api/tooljet-db/proxy/${tableId}?` + query.join('&');
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
     return await this.proxyPostgrest(url, 'DELETE', headers);
   }
 

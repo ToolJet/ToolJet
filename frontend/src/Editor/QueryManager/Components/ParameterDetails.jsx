@@ -3,7 +3,6 @@ import { Button, ButtonGroup, OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
 import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ParameterForm from './ParameterForm';
 
 const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState, otherParams }) => {
@@ -13,30 +12,32 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   useEffect(() => {
     const handleClickOutside = (event) => {
       const isClickedOnAddButton = !!event.target.closest('#runjs-param-add-btn');
+      const isClickedOnPillButton = !!event.target.closest('.parameterItemPillButton');
       if (isClickedOnAddButton && !isEdit) {
-        //if the user is in edit mode add button should close other popups open.
-        //modal closing on this even will be taken care by onClick attached to trigger button
+        return;
+      }
+      if (isClickedOnPillButton) {
         return;
       }
       if (
         showModal &&
         event.target.closest('#parameter-form-popover') === null &&
-        event.target.closest('#cm-complete-0') === null
+        event.target.closest('.cm-completionListIncompleteBottom') === null
       ) {
         closeMenu();
       }
     };
 
     if (showModal) {
-      document.addEventListener('mouseup', handleClickOutside);
+      document.addEventListener('click', handleClickOutside);
     } else {
-      document.removeEventListener('mouseup', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mouseup', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
+  }, [showModal]); // Include isEdit in the dependency array
 
   const handleSubmit = (param) => {
     if (param.name) {
@@ -47,10 +48,9 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
 
   return (
     <OverlayTrigger
-      trigger={'click'}
-      placement={'bottom-end'}
+      trigger="click"
+      placement="bottom-end"
       rootClose={true}
-      container={document.getElementsByClassName('query-details ')[0]}
       show={showModal}
       overlay={
         <Popover
@@ -82,14 +82,15 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         ) : (
           <button
             onClick={() => setShowModal((show) => !show)}
-            className="ms-2"
+            className=""
             id="runjs-param-add-btn"
             data-cy={`runjs-add-param-button`}
-            style={{ background: 'none' }}
+            style={{ background: 'none', border: 'none' }}
           >
-            <span className="m-0">
-              <PlusRectangle fill={darkMode ? '#9BA1A6' : '#687076'} width={15} />
-            </span>
+            <p className="m-0 text-default">
+              <PlusRectangle fill={'var(--icons-default)'} width={15} />
+              <span style={{ marginLeft: '6px' }}>Add</span>
+            </p>
           </button>
         )}
       </span>
@@ -101,7 +102,7 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
   <ButtonGroup
     aria-label="Parameter"
     className={cx({ 'mb-2': marginBottom, ...(className && { [className]: true }) })}
-    style={{ borderRadius: '6px', marginLeft: '6px', height: '24px', background: '#A1A7AE1F' }}
+    style={{ borderRadius: '6px', marginRight: '6px', height: '24px', background: 'var(--interactive-default)' }}
   >
     <Button
       size="sm"

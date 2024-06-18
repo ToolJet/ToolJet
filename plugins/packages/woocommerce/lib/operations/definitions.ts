@@ -5,6 +5,7 @@ export const body = {
   description: 'Enter data',
   height: '150px',
   placeholder: '',
+  editorType: 'extendedSingleLine',
 };
 
 export const customer_id = {

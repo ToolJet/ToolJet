@@ -290,54 +290,38 @@ describe("Workspace constants", () => {
 
         cy.apiCreateApp(data.appName);
 
-        cy.getCookie("tj_auth_token").then((cookie) => {
-            const headers = {
-                "Tj-Workspace-Id": Cypress.env("workspaceId"),
-                Cookie: `tj_auth_token=${cookie.value}`,
-            };
-            cy.request({
-                method: "GET",
-                url: `http://localhost:3000/api/app-environments/versions?app_id=${Cypress.env(
-                    "appId"
-                )}`,
-                headers: headers,
-            }).then((response) => {
-                const appVersions = response.body.appVersions;
-                const appVersionId = appVersions[0].id;
-                createDataQuery(
-                    appVersionId,
-                    data.restapilink,
-                    data.restapiHeaderKey,
-                    data.restapiHeaderValue
-                );
-            });
-        });
-
+        cy.wait(1000);
+        createDataQuery(
+            data.appName,
+            data.restapilink,
+            data.restapiHeaderKey,
+            data.restapiHeaderValue
+        );
         cy.openApp();
 
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
 
         cy.waitForAutoSave();
-        cy.dragAndDropWidget("Text", 550, 650);
+        cy.dragAndDropWidget("Text Input", 550, 650);
         editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.restapi1.data.message`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Production environment testing");
+        ).verifyVisibleElement("have.value", "Production environment testing");
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(4000);
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "Production environment testing");
+        ).verifyVisibleElement("have.value", "Production environment testing");
     });
     it("should verify the constants resolving in datasource connection form", () => {
         data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
