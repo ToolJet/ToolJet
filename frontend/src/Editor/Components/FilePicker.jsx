@@ -239,33 +239,33 @@ export const FilePicker = ({
       if (parseContent) {
         onComponentOptionChanged(component, 'isParsing', true, id);
       }
-      acceptedFiles.forEach(async (acceptedFile) => {
-        const acceptedFileData = await fileReader(acceptedFile);
-
-        if (fileData.length < parsedMaxFileCount) {
-          fileData.push(acceptedFileData);
-        }
+      acceptedFiles.map((acceptedFile) => {
+        const acceptedFileData = fileReader(acceptedFile);
+        acceptedFileData.then((data) => {
+          if (fileData.length < parsedMaxFileCount) {
+            fileData.push(data);
+          }
+        });
       });
 
-      setTimeout(() => {
-        setSelectedFiles(fileData);
-        onComponentOptionChanged(component, 'file', fileData, id);
-
-        onEvent('onFileSelected', filePickerEvents, { component })
-          .then(() => {
-            setAccepted(true);
-            // eslint-disable-next-line no-unused-vars
-            return new Promise(function (resolve, reject) {
-              setTimeout(() => {
-                setShowSelectedFiles(true);
-                setAccepted(false);
-                onComponentOptionChanged(component, 'isParsing', false, id);
-                resolve();
-              }, 600);
-            });
-          })
-          .then(() => onEvent('onFileLoaded', filePickerEvents, { component }));
-      }, 100);
+      onEvent('onFileSelected', filePickerEvents, { component })
+        .then(() => {
+          setAccepted(true);
+          // eslint-disable-next-line no-unused-vars
+          return new Promise(function (resolve, reject) {
+            setTimeout(() => {
+              setShowSelectedFiles(true);
+              setAccepted(false);
+              onComponentOptionChanged(component, 'isParsing', false, id);
+              resolve();
+            }, 600);
+          });
+        })
+        .then(() => onEvent('onFileLoaded', filePickerEvents, { component }))
+        .then(() => {
+          setSelectedFiles(fileData);
+          onComponentOptionChanged(component, 'file', fileData, id);
+        });
     }
 
     if (fileRejections.length > 0) {
