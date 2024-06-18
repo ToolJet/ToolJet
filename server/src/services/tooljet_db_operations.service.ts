@@ -204,6 +204,7 @@ export class TooljetDbOperationsService implements QueryService {
     if (!sanitizedJoinTableJson?.fields.length) mandatoryFieldsButEmpty.push('Select');
     if (sanitizedJoinTableJson?.from && !Object.keys(sanitizedJoinTableJson?.from).length)
       mandatoryFieldsButEmpty.push('From');
+
     if (mandatoryFieldsButEmpty.length) {
       return {
         status: 'failed',
@@ -220,6 +221,16 @@ export class TooljetDbOperationsService implements QueryService {
     ) {
       delete sanitizedJoinTableJson.conditions;
     }
+
+    // Sanitise the GroupBy and Aggregate JSON properly
+    if (sanitizedJoinTableJson.group_by && !Object.keys(sanitizedJoinTableJson.group_by)?.length) {
+      delete sanitizedJoinTableJson.group_by;
+    }
+
+    if (sanitizedJoinTableJson.aggregates && !Object.keys(sanitizedJoinTableJson.aggregates)?.length) {
+      delete sanitizedJoinTableJson.aggregates;
+    }
+
     if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
       delete sanitizedJoinTableJson.order_by;
 
