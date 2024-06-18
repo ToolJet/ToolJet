@@ -11,7 +11,7 @@ export const getPrivateRoute = (page, params = {}) => {
     editor: '/apps/:slug/:pageHandle',
     preview: '/applications/:slug/versions/:versionId/:pageHandle',
     launch: '/applications/:slug/:pageHandle',
-    workspace_settings: '/workspace-settings',
+    workspace_settings: '/workspace-settings/users',
     settings: '/settings',
     database: '/database',
     integrations: '/integrations',
@@ -65,12 +65,16 @@ export const getPathname = (path, excludeSlug = false) => {
 
 export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
 
-export const redirectToDashboard = (data, redirectTo) => {
+export const dashboardUrl = (data, redirectTo) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
   const id_slug = data
     ? data?.current_organization_slug || data?.current_organization_id
     : current_organization_slug || current_organization_id || '';
-  window.location = `${getSubpath() ? `${getSubpath()}/${id_slug}` : `/${id_slug}`}${redirectTo || ''}`;
+  return `${getSubpath() ? `${getSubpath()}/${id_slug}` : `/${id_slug}`}${redirectTo || ''}`;
+};
+
+export const redirectToDashboard = (data, redirectTo) => {
+  window.location = dashboardUrl(data, redirectTo); //Get URL from DashBoardUrl
 };
 
 export const appendWorkspaceId = (slug, path, replaceId = false) => {
