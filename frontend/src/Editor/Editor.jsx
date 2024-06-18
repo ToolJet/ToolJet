@@ -2019,10 +2019,12 @@ const EditorComponent = (props) => {
     }
   }
 
-  const handleCanvasContainerMouseClick = (e) => {
+  const handleCanvasContainerMouseUp = (e) => {
+    const selectedText = window.getSelection().toString();
     if (
       ['real-canvas', 'modal'].includes(e.target.className) &&
-      useEditorStore.getState()?.selectedComponents?.length
+      useEditorStore.getState()?.selectedComponents?.length &&
+      !selectedText
     ) {
       setSelectedComponents(EMPTY_ARRAY);
     }
@@ -2149,7 +2151,7 @@ const EditorComponent = (props) => {
                     height: computeCanvasContainerHeight(),
                     background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
                   }}
-                  onClick={handleCanvasContainerMouseClick}
+                  onMouseUp={handleCanvasContainerMouseUp}
                   ref={canvasContainerRef}
                   onScroll={() => {
                     selectionRef.current?.checkScroll();
