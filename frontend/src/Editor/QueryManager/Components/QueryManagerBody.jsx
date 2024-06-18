@@ -339,15 +339,19 @@ export const QueryManagerBody = ({
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}
-      style={{ height: `calc(100% - ${previewHeight + 40}px )`, overflowY: 'auto' }} //40px in preview header height
+      style={{ height: `calc(100% - ${previewHeight + 40}px)`, overflowY: 'auto' }} // 40px for preview header height
     >
-      {selectedQuery?.data_source_id && selectedDataSource !== null ? activeTab == 1 && renderChangeDataSource() : null}
-      {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : activeTab == 1 && renderQueryElement()}
-      {selectedDataSource === null || !selectedQuery
-        ? renderDataSourcesList()
-        : activeTab == 2 && renderTransformation()}
-      {selectedDataSource !== null ? activeTab == 3 && renderQueryOptions() : null}
-      <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
+      {selectedDataSource === null || !selectedQuery ? (
+        renderDataSourcesList()
+      ) : (
+        <>
+          {activeTab === 1 && renderQueryElement()}
+          {activeTab === 2 && renderTransformation()}
+          {activeTab === 3 && renderQueryOptions()}
+          {selectedQuery.data_source_id && activeTab === 1 && renderChangeDataSource()}
+          <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
+        </>
+      )}
     </div>
   );
 };
