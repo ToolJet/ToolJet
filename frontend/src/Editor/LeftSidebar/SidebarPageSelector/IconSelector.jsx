@@ -87,9 +87,8 @@ export default function IconSelector({ iconName, iconColor, updatePageIcon, page
       <div className="d-flex align-items-center icon-selector" role="button">
         <div className="">
           <IconElement
-            fill={`${darkMode ? '#fff' : iconColor}`}
             color={`${darkMode ? '#fff' : iconColor}`}
-            style={{ width: '16px', height: '16px' }}
+            style={{ width: '16px', height: '16px', color: iconColor }}
           />
         </div>
       </div>
