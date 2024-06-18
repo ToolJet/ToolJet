@@ -1,0 +1,16 @@
+.interactice-focus {
+    &:focus-visible {
+        box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368E3), 0px 0px 0px 2px var(--interactive-focus-inner-shadow, #FFF) inset;
+    }
+}
+
+.interactive-focus-nonsolid {
+    &:focus-visible {
+        box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368E3);
+        outline-offset: 2px !important;
+    }
+}
+
+.button-content {
+    min-width: 100px;
+}
