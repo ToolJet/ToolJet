@@ -163,6 +163,8 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
+
   let componentName = component.name;
 
   if (id) {
@@ -175,6 +177,8 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   }
 
   const { isEditorReady, components: currentComponents } = getCurrentState();
+
+  if (!currentComponents) return;
 
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
   let componentData = deepClone(components[componentName]) || {};
