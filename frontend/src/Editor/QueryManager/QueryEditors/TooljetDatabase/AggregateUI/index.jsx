@@ -191,7 +191,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
 
   return (
     <>
-      <div className="d-flex mb-2">
+      <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label" data-cy="label-column-filter">
           Aggregate
         </label>
@@ -269,9 +269,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
             onClick={() => {
               addNewAggregateOption();
             }}
-            className={`${
-              isEmpty(operationDetails?.aggregates || {}) ? '' : 'mt-2'
-            } d-flex justify-content-start width-fit-content`}
+            className={`d-flex justify-content-start width-fit-content`}
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -283,7 +281,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
           </ButtonSolid>
         </div>
       </div>
-      <div className="d-flex mb-2">
+      <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label" data-cy="label-column-filter">
           Group by
         </label>

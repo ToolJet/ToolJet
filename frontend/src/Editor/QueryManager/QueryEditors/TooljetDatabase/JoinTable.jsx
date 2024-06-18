@@ -98,7 +98,7 @@ const SelectTableMenu = ({ darkMode }) => {
   };
 
   const showSelectSection = () => {
-    const groupBy = joinTableOptions?.groupBy;
+    const groupBy = joinTableOptions?.group_by;
     const isGroupByUsed = Object.entries(groupBy).some((condition) => condition.length >= 1);
     return isGroupByUsed ? false : true;
   };
