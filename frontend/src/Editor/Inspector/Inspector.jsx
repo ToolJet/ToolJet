@@ -542,11 +542,17 @@ export const Inspector = ({
   );
 };
 const getDocsLink = (componentMeta) => {
-  return componentMeta.component == 'ToggleSwitchV2'
-    ? `https://docs.tooljet.io/docs/widgets/toggle-switch`
-    : `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.component ?? '')}`;
-};
+  const component = componentMeta?.component ?? '';
 
+  switch (component) {
+    case 'ToggleSwitchV2':
+      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
+    case 'DropdownV2':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    default:
+      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
+  }
+};
 const widgetsWithStyleConditions = {
   Modal: {
     conditions: [
