@@ -455,17 +455,17 @@ export const Inspector = ({
         </div>
       </div>
       <span className="widget-documentation-link">
-        <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
+        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
           <span>
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name === 'ToggleSwitchLegacy' ? 'ToggleLegacy' : componentMeta.name,
+                componentMeta:
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
+                    ? 'Toggle (Legacy)'
+                    : componentMeta.displayName === 'Toggle Switch'
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -476,6 +476,11 @@ export const Inspector = ({
       </span>
     </div>
   );
+};
+const getDocsLink = (componentMeta) => {
+  return componentMeta.component == 'ToggleSwitchV2'
+    ? `https://docs.tooljet.io/docs/widgets/toggle-switch`
+    : `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.component ?? '')}`;
 };
 
 const widgetsWithStyleConditions = {

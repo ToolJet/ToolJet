@@ -11,6 +11,7 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, erase
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 
@@ -1234,71 +1235,6 @@ export const humanizeifDefaultGroupName = (groupName) => {
   }
 };
 
-export const defaultWhiteLabellingSettings = {
-  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
-  WHITE_LABEL_TEXT: 'ToolJet',
-  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
-};
-
-export const pageTitles = {
-  INSTANCE_SETTINGS: 'Settings',
-  WORKSPACE_SETTINGS: 'Workspace settings',
-  INTEGRATIONS: 'Marketplace',
-  WORKFLOWS: 'Workflows',
-  DATABASE: 'Database',
-  DATA_SOURCES: 'Data sources',
-  AUDIT_LOGS: 'Audit logs',
-  ACCOUNT_SETTINGS: 'Profile settings',
-  SETTINGS: 'Profile settings',
-  EDITOR: 'Editor',
-  WORKFLOW_EDITOR: 'workflowEditor',
-  VIEWER: 'Viewer',
-  DASHBOARD: 'Dashboard',
-  WORKSPACE_CONSTANTS: 'Workspace constants',
-};
-
-export const setWindowTitle = async (pageDetails, location) => {
-  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  const pathToTitle = {
-    'instance-settings': pageTitles.INSTANCE_SETTINGS,
-    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
-    integrations: pageTitles.INTEGRATIONS,
-    workflows: pageTitles.WORKFLOWS,
-    database: pageTitles.DATABASE,
-    'data-sources': pageTitles.DATA_SOURCES,
-    'audit-logs': pageTitles.AUDIT_LOGS,
-    'account-settings': pageTitles.ACCOUNT_SETTINGS,
-    settings: pageTitles.SETTINGS,
-    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
-  };
-  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
-  let pageTitleKey = pageDetails?.page || '';
-  let pageTitle = '';
-  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
-    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
-  }
-  switch (pageTitleKey) {
-    case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
-      break;
-    }
-    case pageTitles.EDITOR:
-    case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
-      break;
-    }
-    default: {
-      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
-      break;
-    }
-  }
-  if (pageTitle) {
-    document.title = !(pageDetails?.preview === false)
-      ? `${decodeEntities(pageTitle)} | ${whiteLabelText}`
-      : `${pageTitle}`;
-  }
-};
 // This function is written only to handle diff colors W.R.T button types
 export const computeColor = (styleDefinition, value, meta) => {
   if (styleDefinition.type?.value == 'primary') return value;
@@ -1324,6 +1260,38 @@ export const computeColor = (styleDefinition, value, meta) => {
       return value;
     }
   }
+};
+
+export const triggerKeyboardShortcut = (keyCallbackFnArray, initiator) => {
+  const pressedKeys = [];
+  const keyboardShortcutStore = useKeyboardShortcutStore.getState();
+  const handleKeydown = (event) => {
+    pressedKeys.push(event.key);
+    const stringPressedKeys = pressedKeys.join(', ');
+    const currentComponent = keyboardShortcutStore.actions.getTopComponent();
+    if (initiator !== currentComponent) return;
+    for (const { key, callbackFn, args = [] } of keyCallbackFnArray) {
+      if (key === stringPressedKeys) {
+        callbackFn(...args);
+        break;
+      }
+    }
+  };
+
+  const handleKeyUp = (event) => {
+    const index = pressedKeys.indexOf(event.key);
+    if (index > -1) {
+      pressedKeys.splice(index, 1);
+    }
+  };
+
+  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('keyup', handleKeyUp);
+
+  return () => {
+    document.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('keyup', handleKeyUp);
+  };
 };
 
 //For <>& UI display issues

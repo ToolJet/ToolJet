@@ -12,9 +12,13 @@ describe("Manage SSO for multi workspace", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     SSO.deleteOrganisationSSO("My workspace", ["google", "git"]);
+    SSO.resetDomain();
+  });
+  after(() => {
+    cy.defaultWorkspaceLogin();
+    SSO.resetDomain();
   });
   it("Should verify General settings page elements", () => {
-    SSO.resetDomain();
     SSO.setSignupStatus(false);
     SSO.defaultSSO(true);
 

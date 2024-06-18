@@ -12,8 +12,12 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import "./componentdesign.scss";
 @import './pages-sidebar.scss';
-
+@import "./componentdesign.scss";
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -469,10 +473,10 @@ button {
     left: 0;
     overflow-x: hidden;
     flex: 1 1 auto;
-    background-color: var(--base) !important;
     background-clip: border-box;
     margin-top: 48px;
     padding-top: 8px;
+    background: var(--base) !important;
 
     .accordion-item {
       border: solid var(--slate5);
@@ -4634,9 +4638,7 @@ input[type="text"] {
   }
 
   .modal-footer-btn {
-    justify-content: end;
-
-    button {
+    justify-content: flex-end button {
       margin-left: 16px;
     }
   }
@@ -5730,7 +5732,7 @@ div#driver-page-overlay {
   .node-key {
     font-weight: 400 !important;
     margin-left: -0.25rem !important;
-    justify-content: start !important;
+    justify-content: flex-start !important;
     min-width: fit-content !important;
   }
 
@@ -5843,7 +5845,7 @@ div#driver-page-overlay {
   border-bottom: 1px solid #eee;
   padding: 5px;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end
 }
 
 .autosave-indicator {
@@ -7540,6 +7542,7 @@ tbody {
 
 .workspace-content-wrapper,
 .database-page-content-wrap {
+  background-color: var(--page-default);
   height: calc(100vh - 64px) !important;
 }
 
@@ -7551,7 +7554,7 @@ tbody {
 .organization-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
-  background-color: var(--base);
+  background-color: var(--page-default);
   border-right: 1px solid var(--slate5) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
@@ -7560,7 +7563,7 @@ tbody {
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
-  background-color: var(--base);
+  background-color: var(--page-default);
   border-right: 1px solid var(--slate5) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
@@ -7568,7 +7571,7 @@ tbody {
 
 .home-page-sidebar {
   max-width: 288px;
-  background-color: var(--base);
+  background-color: var(--page-default);
   border-right: 1px solid var(--slate5);
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -7593,7 +7596,7 @@ tbody {
 
 .tooljet-database-sidebar {
   max-width: 288px;
-  background: var(--base);
+  background: var(--page-default);
   border-right: 1px solid var(--slate5);
   height: calc(100vh - 64px) !important;
 
@@ -7987,6 +7990,7 @@ tbody {
 
 
 .tj-dashboard-section-header {
+  background-color: var(--page-default);
   max-width: 288px;
   max-height: 64px;
   padding-top: 20px;
@@ -8053,6 +8057,7 @@ tbody {
   border-radius: 6px;
 
   .react-select__control {
+    background-color: var(--page-default);
     border: none !important;
   }
 }
@@ -8114,7 +8119,7 @@ tbody {
 
 .home-page-footer {
   height: 52px;
-  background-color: var(--base) !important;
+  background-color: var(--page-default) !important;
   border-top: 1px solid var(--slate5) !important;
   width: calc(100% - 336px) !important;
 
@@ -8248,6 +8253,7 @@ tbody {
 }
 
 .home-page-content {
+  background-color: var(--page-default);
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
   position: relative;
@@ -8783,6 +8789,7 @@ tbody {
 }
 
 .tj-dashboard-header-wrap {
+  background-color: var(--page-default);
   padding-top: 22px;
   padding-bottom: 22px;
   padding-left: 40px;
@@ -10042,7 +10049,8 @@ tbody {
   border-top: 1px solid var(--slate5) !important;
   display: flex;
   gap: 8px;
-  justify-content: end;
+
+  justify-content: flex-end;
 
   .invite-btn {
     width: 140px;
@@ -10213,6 +10221,8 @@ tbody {
 
 
 .manage-users-drawer-content-bulk {
+  margin: 24px 15px;
+
   form {
     display: flex;
     flex-direction: column;
@@ -10346,7 +10356,7 @@ tbody {
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: end;
+  justify-content: flex-end
 }
 
 .add-users-button {
@@ -10648,19 +10658,23 @@ tbody {
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
-  padding: 24px 32px;
+  padding: 16px 24px;
   gap: 8px;
-  height: 88px;
+  height: 72px;
   border-top: 1px solid var(--slate5);
   background: var(--base);
 }
 
 .drawer-card-title {
-  padding: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--slate5);
+  height: 64px;
 
   h3 {
     margin-bottom: 0px !important;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
   }
 }
 
@@ -10780,7 +10794,7 @@ tbody {
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
     transition: none;
-
+    font-weight: 400;
 
     &:hover {
       background: var(--slate1) !important;
@@ -10815,6 +10829,10 @@ tbody {
       }
     }
 
+    &::placeholder {
+      font-size: 12px;
+      line-height: 20px;
+    }
 
   }
 
@@ -11155,7 +11173,7 @@ tbody {
 
 
   .input-with-icon {
-    justify-content: end;
+    justify-content: flex-end
   }
 
   .form-check-input {
@@ -11362,7 +11380,7 @@ tbody {
 }
 
 .profile-page-content-wrap {
-  background-color: var(--slate2);
+  background-color: var(--page-default);
   padding-top: 40px;
 }
 
@@ -11612,6 +11630,7 @@ tbody {
 .marketplace-body {
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
+  background-color: var(--page-default);
 }
 
 .plugins-card {
@@ -12106,6 +12125,38 @@ tbody {
     }
   }
 }
+
+
+.tjdb-mainCellEdit-scrollbar {
+  width: 300px !important;
+
+  .tjdb-cellmenu-error,
+  .tjdb-cellmenu-loader {
+    height: 177px;
+  }
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
 
 .tjdb-cellEdit-scrollbar {
   width: 266px !important;
@@ -12789,6 +12840,7 @@ tbody {
 }
 
 .workspace-constants-wrapper {
+  background-color: var(--page-default);
   height: calc(100vh - 64px);
   display: flex;
   align-items: center;
@@ -12953,7 +13005,7 @@ tbody {
 .read-docs-fk {
 
   .tooltip-inner {
-    padding: 8px 12px 8px 12px !important;
+    padding: 8px 10px 8px 10px !important;
     font-size: 12px;
     line-height: 20px;
     font-weight: 400;
@@ -13057,6 +13109,17 @@ tbody {
   }
 }
 
+.component-spinner {
+  animation: l13 1s infinite linear;
+  position: absolute;
+}
+
+@keyframes l13 {
+  100% {
+    transform: rotate(1turn)
+  }
+}
+
 .widget-version-identifier {
   position: absolute;
   right: 0px;
@@ -13092,6 +13155,14 @@ tbody {
       }
     }
 
+  }
+}
+
+.tjdb-cell-tooltip {
+  max-width: 420px !important;
+
+  .tooltip-inner {
+    max-width: 100% !important;
   }
 }
 
