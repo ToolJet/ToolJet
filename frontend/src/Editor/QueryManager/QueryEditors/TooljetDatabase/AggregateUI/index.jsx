@@ -9,6 +9,8 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { ToolTip } from '@/_components/ToolTip';
 import { Confirm } from '@/Editor/Viewer/Confirm';
+import { toast } from 'react-hot-toast';
+
 export const AggregateUi = ({ darkMode, operation = '' }) => {
   const {
     columns,
@@ -55,9 +57,16 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   const handleDeleteAggregate = (aggregateKey) => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const numberOfAggregates = Object.keys(currentAggregates).length;
+
     if (numberOfAggregates > 1) {
       delete currentAggregates[aggregateKey];
-      return handleChange('aggregates', currentAggregates);
+      try {
+        handleChange('aggregates', currentAggregates);
+        toast.success('Aggregate function deleted successfully!');
+        return;
+      } catch (error) {
+        return toast.error('Could not delete aggregate function. Please try again!');
+      }
     } else {
       const currentGroupBy = { ...(operationDetails?.group_by || {}) };
       const isValidGroupByPresent = Object.entries(currentGroupBy).some(([tableId, selectedColumn]) => {
@@ -69,20 +78,32 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
       if (isValidGroupByPresent) {
         setShowDeleteConfirmation(true);
       } else {
-        delete currentAggregates[aggregateKey];
-        return handleChange('aggregates', currentAggregates);
+        try {
+          delete currentAggregates[aggregateKey];
+          handleChange('aggregates', currentAggregates);
+          toast.success('Aggregate function deleted successfully!');
+          return;
+        } catch (error) {
+          return toast.error('Could not delete aggregate function. Please try again!');
+        }
       }
     }
   };
 
   const executeAggregateDeletion = async (aggregateKey) => {
-    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
-    delete currentAggregates[aggregateKey];
-    const currentGroupBy = { ...(operationDetails?.group_by || {}) };
-    delete currentGroupBy?.[selectedTableId];
+    try {
+      const currentAggregates = { ...(operationDetails?.aggregates || {}) };
+      delete currentAggregates[aggregateKey];
+      const currentGroupBy = { ...(operationDetails?.group_by || {}) };
+      delete currentGroupBy?.[selectedTableId];
 
-    handleChange('group_by', currentGroupBy);
-    handleChange('aggregates', currentAggregates);
+      handleChange('group_by', currentGroupBy);
+      handleChange('aggregates', currentAggregates);
+      toast.success('Aggregate function deleted successfully!');
+      return;
+    } catch (error) {
+      return toast.error('Could not delete aggregate function. Please try again!');
+    }
   };
 
   const handleGroupByChange = (selectedTableId, value) => {
