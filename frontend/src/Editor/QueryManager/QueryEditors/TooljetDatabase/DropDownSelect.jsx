@@ -358,7 +358,7 @@ const DropDownSelect = ({
 function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
   if (options?.length === selected?.length && selected?.length !== 0) {
     // Filter Options without 'Select All'
-    const optionsWithoutSelectAll = options.filter((option) => option.value !== 'SELECT ALL');
+    const optionsWithoutSelectAll = options?.filter((option) => option?.value !== 'SELECT ALL');
     return (
       <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
         All {optionsWithoutSelectAll?.length} selected
@@ -377,15 +377,15 @@ function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
     );
   }
 
-  return selected.map((option) => (
-    <Badge key={option.value} className="me-1 dd-select-value-badge" bg="secondary">
-      {option.label}
+  return selected?.map((option) => (
+    <Badge key={option?.value} className="me-1 dd-select-value-badge" bg="secondary">
+      {option?.label}
       <span
         role="button"
         onClick={(e) => {
           setSelected((selected) => {
-            onChange && onChange(selected.filter((opt) => opt.value !== option.value));
-            return selected.filter((opt) => opt.value !== option.value);
+            onChange && onChange(selected.filter((opt) => opt?.value !== option?.value));
+            return selected?.filter((opt) => opt?.value !== option?.value);
           });
           e.preventDefault();
           e.stopPropagation();
