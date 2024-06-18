@@ -108,8 +108,6 @@ export class UsersService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       if (!existingUser) {
-        console.log('creating exisitng user');
-
         user = manager.create(User, {
           email,
           firstName,
@@ -147,8 +145,6 @@ export class UsersService {
     manager?: EntityManager
   ): Promise<void> {
     if (!groups) return;
-    console.log('Adding groups');
-    console.log(groups);
     await dbTransactionWrap(async (manager: EntityManager) => {
       if (groups?.length)
         await this.groupPermissionsUtilityService.validateEditUserGroupPermissionsAddition(
@@ -189,8 +185,6 @@ export class UsersService {
 
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
       if (role) await this.userRoleService.editDefaultGroupUserRole({ userId, newRole: role }, organizationId, manager);
-      console.log('working till here');
-
       await this.attachUserGroup(addGroups, organizationId, userId, manager);
       return user;
     }, manager);

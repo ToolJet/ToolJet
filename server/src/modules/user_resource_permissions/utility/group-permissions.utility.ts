@@ -84,10 +84,6 @@ export function validateUpdateGroupOperation(
 ): void {
   const { name } = group;
   const { name: newName } = updateGroupPermissionDto;
-
-  console.log('Printing group');
-  console.log(group);
-
   if (
     newName &&
     (Object.values(USER_ROLE).includes(newName as USER_ROLE) || group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)

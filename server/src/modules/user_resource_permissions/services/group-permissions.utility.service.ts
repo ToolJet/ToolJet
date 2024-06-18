@@ -48,8 +48,6 @@ export class GroupPermissionsUtilityService {
 
   async getAddableUser(user: User, groupId: string, searchInput?: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log(await addableUsersToGroupQuery(groupId, user.organizationId, manager, searchInput).getMany());
-
       return await addableUsersToGroupQuery(groupId, user.organizationId, manager, searchInput).getMany();
     }, manager);
   }
@@ -99,12 +97,9 @@ export class GroupPermissionsUtilityService {
     manager?: EntityManager
   ) {
     const { organizationId, userId, groupsToAddIds } = functionParam;
-    console.log('validating permissions');
-    console.log(groupsToAddIds);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userRole = await this.getUserRole(userId, organizationId, manager);
-      console.log(userRole);
       if (userRole.name === USER_ROLE.END_USER) {
         return await Promise.all(
           groupsToAddIds.map(async (id) => {

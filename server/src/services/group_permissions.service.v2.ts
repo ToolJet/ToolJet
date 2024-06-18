@@ -16,7 +16,6 @@ import {
   GetUsersResponse,
 } from '@module/user_resource_permissions/interface/group-permissions.interface';
 import { GroupUsers } from 'src/entities/group_users.entity';
-import { GranularPermissionsService } from './granular_permissions.service';
 import {
   getAllUserGroupsQuery,
   getUserDetailQuery,
@@ -28,10 +27,7 @@ import { GroupPermissionsUtilityService } from '@module/user_resource_permission
 
 @Injectable()
 export class GroupPermissionsServiceV2 {
-  constructor(
-    private granularPermissionsService: GranularPermissionsService,
-    private groupPermissionsUtilityService: GroupPermissionsUtilityService
-  ) {}
+  constructor(private groupPermissionsUtilityService: GroupPermissionsUtilityService) {}
 
   /**
    * Creates a new group permission for a specified organization.
@@ -84,8 +80,6 @@ export class GroupPermissionsServiceV2 {
   }
 
   async updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto, manager?: EntityManager) {
-    //License level validation at controller level
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { group } = await this.getGroup(id);
       if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
@@ -147,19 +141,9 @@ export class GroupPermissionsServiceV2 {
   }
 
   private async createGroupUser(user: User, group: GroupPermissions, manager?: EntityManager): Promise<GroupUsers> {
-    console.log(group);
-    console.log('logging group');
-    const createObjec = {
-      userId: user.id,
-      groupId: group.id,
-    };
-    console.log(createObjec);
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await catchDbException(async () => {
-        const groupUser = manager.create(GroupUsers, createObjec);
-        console.log(groupUser);
-
+        const groupUser = manager.create(GroupUsers, { groupId: group.id, userId: user.id });
         return await manager.save(groupUser);
       }, [DATA_BASE_CONSTRAINTS.GROUP_USER_UNIQUE]);
     }, manager);

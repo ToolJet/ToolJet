@@ -35,9 +35,6 @@ export class AbilityService {
     user: User,
     resourcePermissionsObject: ResourcePermissionQueryObject
   ): Promise<UserPermissions> {
-    console.log('logging resource object');
-    console.log(resourcePermissionsObject);
-
     const permissions = await this.getResourcePermission(user, resourcePermissionsObject);
     const adminGroup = permissions.find((group) => group.name === USER_ROLE.ADMIN);
     const appsGranularPermissions = permissions.flatMap((item) => item.groupGranularPermissions);
@@ -55,9 +52,6 @@ export class AbilityService {
     if (resources && resources.some((item) => item.resource === TOOLJET_RESOURCE.APP)) {
       userPermissions[TOOLJET_RESOURCE.APP] = this.createUserAppsPermissions(appsGranularPermissions);
     }
-    console.log('printing user permissions');
-    console.log(userPermissions);
-
     return userPermissions;
   }
 
@@ -65,11 +59,6 @@ export class AbilityService {
     const userAppsPermissions: UserAppsPermissions = appsGranularPermissions.reduce((acc, permission) => {
       const appsPermission = permission?.appsGroupPermissions;
       const groupApps = appsPermission?.groupApps ? appsPermission.groupApps.map((item) => item.appId) : [];
-      console.log('logging');
-      console.log(appsPermission);
-      console.log(groupApps);
-      console.log(acc);
-
       return {
         isAllEditable: acc.isAllEditable || (permission.isAll && appsPermission?.canEdit),
         editableAppsId: Array.from(new Set([...acc.editableAppsId, ...(appsPermission?.canEdit ? groupApps : [])])),

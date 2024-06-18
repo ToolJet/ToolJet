@@ -81,8 +81,6 @@ export class UserRoleService {
     manager?: EntityManager
   ): Promise<void> {
     const { newRole, userId } = editRoleDto;
-    console.log('Edit role update');
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userRole = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId);
       if (!userRole) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
@@ -126,13 +124,11 @@ export class UserRoleService {
         const userGroups = await this.groupPermissionsService.getAllUserGroups(userId, organizationId);
 
         for (const customUserGroup of userGroups) {
-          const editPermissionsPresent = Object.values(customUserGroup).some(
-            (value) => typeof value === 'boolean' && value === true
+          const editPermissionsPresent = await this.groupPermissionsUtilityService.isEditableGroup(
+            customUserGroup,
+            manager
           );
           const groupUsers = customUserGroup.groupUsers;
-          console.log(groupUsers);
-
-          //NEED TO CHECK FOR ALL GRANULAR PERMISSIONS AS WELL FOR THAT GROUP
           if (editPermissionsPresent) await this.groupPermissionsService.deleteGroupUser(groupUsers[0].id, manager);
         }
       }
