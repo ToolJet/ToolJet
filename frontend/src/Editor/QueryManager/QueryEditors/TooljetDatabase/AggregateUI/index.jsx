@@ -109,7 +109,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     }
   };
 
-  const executeAggregateDeletion = async (aggregateKey) => {
+  const executeAggregateDeletion = (aggregateKey) => {
     try {
       const currentAggregates = { ...(operationDetails?.aggregates || {}) };
       delete currentAggregates[aggregateKey];
