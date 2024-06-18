@@ -66,10 +66,10 @@ const CustomMenuList = ({ selectProps, ...props }) => {
         />
       </div>
       {showAllOption && !optionsLoadingState && (
-        <div className="multiselect-custom-menulist-select-all">
-          <FormCheck checked={isSelectAllSelected} onChange={handleSelectAll} />
+        <label htmlFor="select-all-checkbox" className="multiselect-custom-menulist-select-all">
+          <FormCheck id="select-all-checkbox" checked={isSelectAllSelected} onChange={handleSelectAll} />
           <span style={{ marginLeft: '4px' }}>Select all</span>
-        </div>
+        </label>
       )}
       <MenuList {...props} selectProps={selectProps}>
         {optionsLoadingState ? (
