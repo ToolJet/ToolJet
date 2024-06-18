@@ -349,6 +349,11 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, mounted]);
 
+  useEffect(() => {
+    updateEntityReferences(appDefinition, currentPageId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.length]);
+
   const handleYmapEventUpdates = () => {
     props.ymap?.set('eventHandlersUpdated', {
       currentVersionId: currentVersionId,

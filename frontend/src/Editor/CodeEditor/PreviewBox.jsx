@@ -364,6 +364,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}
           groupArraysAfterLength={hasDeepChild ? 10 : 100}
+          maxDisplayLength={hasDeepChild ? 10 : 50}
         />
       </div>
     );
