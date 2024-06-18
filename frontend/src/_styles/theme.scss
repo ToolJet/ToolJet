@@ -471,6 +471,7 @@ button {
     background-clip: border-box;
     margin-top: 48px;
     padding-top: 8px;
+    background: var(--base) !important;
 
     .accordion-item {
       border: solid var(--slate5);
