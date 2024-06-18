@@ -1,0 +1,9 @@
+[build]
+  base = "frontend/"
+  publish = "storybook-static"
+  command = "npx storybook build"
+
+[template.environment]
+  NODE_ENV = "production"  
+  NODE_VERSION = "18.18.2"
+  NPM_VERSION = "9.8.1"
