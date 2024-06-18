@@ -21,13 +21,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        if: "!contains(github.event.release.tag_name, 'EE-LTS')"
+        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
 
       - name: Checkout code
-        if: "contains(github.event.release.tag_name, 'EE-LTS')"
+        if: "contains(github.event.release.tag_name, 'CE-LTS')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-2.50
