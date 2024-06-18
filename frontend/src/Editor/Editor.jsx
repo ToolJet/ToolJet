@@ -1941,7 +1941,6 @@ const EditorComponent = (props) => {
     const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     newAppDefinition.pages[pageId].icon = iconName;
-    switchPage(pageId);
     appDefinitionChanged(newAppDefinition, {
       pageDefinitionChanged: true,
     });
