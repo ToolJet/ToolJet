@@ -38,6 +38,10 @@ export class UpdateGroupPermissionDto {
   @IsBoolean()
   @IsOptional()
   dataSourceDelete: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  allowRoleChange: boolean;
 }
 
 export class EditUserRoleDto {
@@ -59,4 +63,8 @@ export class AddGroupUserDto {
   @IsString()
   @IsNotEmpty()
   groupId: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowRoleChange: boolean;
 }

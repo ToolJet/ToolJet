@@ -11,6 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
+import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -36,6 +37,11 @@ class ManageOrgUsersComponent extends React.Component {
       userDrawerMode: USER_DRAWER_MODES.CREATE,
       newSelectedGroups: [],
       existingGroupsToRemove: [],
+      showErrorModal: false,
+      errorModalMessage: '',
+      errorItemList: [],
+      errorTitle: '',
+      errorIconName: 'usergear',
     };
   }
 
@@ -223,7 +229,13 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error.error);
+          this.setState({
+            showErrorModal: true,
+            errorModalMessage: error.error,
+            errorTitle: error?.title || 'Conflicting Permissions',
+            errorItemList: error?.data,
+            errorIconName: 'usergear',
+          });
           this.setState({ creatingUser: false });
         });
     } else {
@@ -252,6 +264,16 @@ class ManageOrgUsersComponent extends React.Component {
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied');
+  };
+
+  clearErrorState = () => {
+    this.setState({
+      showErrorModal: false,
+      errorModalMessage: '',
+      errorItemList: [],
+      errorTitle: '',
+      errorIconName: '',
+    });
   };
 
   pageChanged = (page) => {
@@ -293,10 +315,24 @@ class ManageOrgUsersComponent extends React.Component {
       meta,
       currentEditingUser,
       userDrawerMode,
+      showErrorModal,
+      errorModalMessage,
+      errorItemList,
+      errorTitle,
+      errorIconName,
     } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
+          <EditRoleErrorModal
+            darkMode={this.props.darkMode}
+            show={showErrorModal}
+            errorMessage={errorModalMessage}
+            errorTitle={errorTitle}
+            listItems={errorItemList}
+            iconName={errorIconName}
+            onClose={this.clearErrorState}
+          />
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}

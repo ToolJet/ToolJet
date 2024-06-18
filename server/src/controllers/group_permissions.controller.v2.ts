@@ -101,7 +101,10 @@ export class GroupPermissionsControllerV2 {
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
   @Get(':groupId/group-user')
   async getAllGroupUser(@User() user, @Param('groupId') groupId: string, @Query('input') searchInput: string) {
-    return await this.groupPermissionsService.getAllGroupUsers(groupId, searchInput);
+    return await this.groupPermissionsService.getAllGroupUsers(
+      { groupId, organizationId: user.organizationId },
+      searchInput
+    );
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -151,7 +154,7 @@ export class GroupPermissionsControllerV2 {
     //Check for license validation first here
     // What are license validation for this
     const { groupId, createAppsPermissionsObject } = createGranularPermissionsDto;
-    const group = await this.groupPermissionsService.getGroup(groupId);
+    const { group } = await this.groupPermissionsService.getGroup(groupId);
     validateGranularPermissionCreateOperation(group);
     return await this.granularPermissionsService.create(
       {

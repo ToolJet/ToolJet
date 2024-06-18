@@ -15,6 +15,17 @@ export interface CreateDefaultGroupObject {
   dataSourceDelete: boolean;
 }
 
+export interface ValidateEditUserGroupAdditionObject {
+  userId: string;
+  groupsToAddIds: string[];
+  organizationId: string;
+}
+
+export interface GetGroupUsersObject {
+  groupId: string;
+  organizationId: string;
+}
+
 export interface GroupQuerySearchParamObject {
   [key: string]: SearchParamItem | boolean | string | number;
   name?: SearchParamItem;

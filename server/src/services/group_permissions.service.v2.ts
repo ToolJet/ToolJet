@@ -12,6 +12,7 @@ import { dbTransactionWrap, catchDbException } from 'src/helpers/utils.helper';
 import { EntityManager, getManager } from 'typeorm';
 import {
   CreateDefaultGroupObject,
+  GetGroupUsersObject,
   GetUsersResponse,
 } from '@module/user_resource_permissions/interface/group-permissions.interface';
 import { GroupUsers } from 'src/entities/group_users.entity';
@@ -24,7 +25,6 @@ import {
   validateUpdateGroupOperation,
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
-import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 
 @Injectable()
 export class GroupPermissionsServiceV2 {
@@ -67,47 +67,70 @@ export class GroupPermissionsServiceV2 {
     return response;
   }
 
-  async getGroup(id: string, manager?: EntityManager): Promise<GroupPermissions> {
+  async getGroup(id: string, manager?: EntityManager): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(GroupPermissions, {
-        where: { id },
-      });
+      const [group, isBuilderLevelResourcePermissions] = await Promise.all([
+        manager.findOne(GroupPermissions, {
+          where: { id },
+        }),
+        await this.groupPermissionsUtilityService.checkIfBuilderLevelResourcesPermissions(id, manager),
+      ]);
+      const isBuilderLevelMainPermissions = Object.values(group).some(
+        (value) => typeof value === 'boolean' && value === true
+      );
+      const isBuilderLevel = isBuilderLevelResourcePermissions || isBuilderLevelMainPermissions;
+      return { group, isBuilderLevel };
     }, manager);
   }
 
   async updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto, manager?: EntityManager) {
     //License level validation at controller level
-    const group = await this.getGroup(id);
-    if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
-
-    validateUpdateGroupOperation(group, updateGroupPermissionDto);
-
-    const keys = Object.keys(updateGroupPermissionDto);
-    const validatePermissionsUpdate = !(keys.length === 1 && keys.includes('name'));
-    const editPermissionsPresent = Object.values(updateGroupPermissionDto).some(
-      (value) => typeof value === 'boolean' && value === true
-    );
-    console.log('running till here');
-
-    if (validatePermissionsUpdate) {
-      const getEndUsersList = await this.groupPermissionsUtilityService.getRoleUsersList(
-        USER_ROLE.END_USER,
-        group.organizationId,
-        group.id
-      );
-
-      if (getEndUsersList.length && editPermissionsPresent) {
-        throw new MethodNotAllowedException({
-          message: {
-            error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
-            data: getEndUsersList?.map((user) => user.email),
-            title: 'Cannot add this permissions to the group',
-          },
-        });
-      }
-    }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { group } = await this.getGroup(id);
+      if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
+
+      validateUpdateGroupOperation(group, updateGroupPermissionDto);
+      const { allowRoleChange } = updateGroupPermissionDto;
+      delete updateGroupPermissionDto.allowRoleChange;
+      const keys = Object.keys(updateGroupPermissionDto);
+      const validatePermissionsUpdate = !(keys.length === 1 && keys.includes('name'));
+      const editPermissionsPresent = Object.keys(updateGroupPermissionDto).some(
+        (value) => typeof updateGroupPermissionDto?.[value] === 'boolean' && updateGroupPermissionDto?.[value] === true
+      );
+      if (validatePermissionsUpdate) {
+        const getEndUsersList = await this.groupPermissionsUtilityService.getRoleUsersList(
+          USER_ROLE.END_USER,
+          group.organizationId,
+          group.id
+        );
+
+        if (getEndUsersList.length && editPermissionsPresent) {
+          if (!allowRoleChange) {
+            throw new MethodNotAllowedException({
+              message: {
+                error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+                data: getEndUsersList?.map((user) => user.email),
+                title: 'Cannot add this permissions to the group',
+                type: 'USER_ROLE_CHANGE',
+              },
+            });
+          }
+          await Promise.all(
+            getEndUsersList.map(async (userItem) => {
+              const currentRoleUser = userItem.userGroups[0].id;
+              const roleGroup = await this.groupPermissionsUtilityService.getRoleGroup(
+                USER_ROLE.BUILDER,
+                group.organizationId,
+                manager
+              );
+              await this.deleteGroupUser(currentRoleUser, manager);
+              const newUserRole = manager.create(GroupUsers, { groupId: roleGroup.id, userId: userItem.id });
+              await manager.save(newUserRole);
+            })
+          );
+        }
+      }
       return await catchDbException(async () => {
         await manager.update(GroupPermissions, id, updateGroupPermissionDto);
       }, [DATA_BASE_CONSTRAINTS.GROUP_NAME_UNIQUE]);
@@ -116,7 +139,7 @@ export class GroupPermissionsServiceV2 {
 
   async deleteGroup(id: string): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const group = await this.getGroup(id, manager);
+      const { group } = await this.getGroup(id, manager);
       if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
         throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_UPDATE_NOT_ALLOWED);
       return await manager.delete(GroupPermissions, id);
@@ -124,17 +147,31 @@ export class GroupPermissionsServiceV2 {
   }
 
   private async createGroupUser(user: User, group: GroupPermissions, manager?: EntityManager): Promise<GroupUsers> {
+    console.log(group);
+    console.log('logging group');
+    const createObjec = {
+      userId: user.id,
+      groupId: group.id,
+    };
+    console.log(createObjec);
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await catchDbException(async () => {
-        const groupUser = manager.create(GroupUsers, { groupId: group.id, userId: user.id });
+        const groupUser = manager.create(GroupUsers, createObjec);
+        console.log(groupUser);
+
         return await manager.save(groupUser);
       }, [DATA_BASE_CONSTRAINTS.GROUP_USER_UNIQUE]);
     }, manager);
   }
 
-  async getAllGroupUsers(groupId: string, searchInput?: string, manager?: EntityManager): Promise<GroupUsers[]> {
+  async getAllGroupUsers(
+    getGroupUsersObject: GetGroupUsersObject,
+    searchInput?: string,
+    manager?: EntityManager
+  ): Promise<GroupUsers[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await getUserInGroupQuery(groupId, manager, searchInput).getMany();
+      return await getUserInGroupQuery(getGroupUsersObject, manager, searchInput).getMany();
     }, manager);
   }
 
@@ -159,33 +196,44 @@ export class GroupPermissionsServiceV2 {
   }
 
   async addGroupUsers(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager) {
-    const { userIds, groupId } = addGroupUserDto;
+    const { userIds, groupId, allowRoleChange } = addGroupUserDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const group = await this.getGroup(groupId, manager);
-      const granularPermission = await this.granularPermissionsService.getAll({ groupId: group.id }, manager);
+      const { group, isBuilderLevel } = await this.getGroup(groupId, manager);
       validateAddGroupUserOperation(group);
-
+      const editorRoleUsers = await this.groupPermissionsUtilityService.getRoleUsersList(
+        USER_ROLE.END_USER,
+        organizationId
+      );
+      const editorUsersToBeAdded = editorRoleUsers.filter((user) => userIds.includes(user.id));
+      if (isBuilderLevel && editorUsersToBeAdded.length) {
+        if (!allowRoleChange) {
+          throw new MethodNotAllowedException({
+            message: {
+              error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+              data: editorUsersToBeAdded?.map((user) => user.email),
+              title: 'Cannot add this permissions to the group',
+              type: 'USER_ROLE_CHANGE_ADD_USERS',
+            },
+          });
+        }
+        await Promise.all(
+          editorUsersToBeAdded.map(async (userItem) => {
+            const currentRoleUser = userItem.userGroups[0].id;
+            const roleGroup = await this.groupPermissionsUtilityService.getRoleGroup(
+              USER_ROLE.BUILDER,
+              organizationId,
+              manager
+            );
+            await this.deleteGroupUser(currentRoleUser, manager);
+            const newUserRole = manager.create(GroupUsers, { groupId: roleGroup.id, userId: userItem.id });
+            await manager.save(newUserRole);
+          })
+        );
+      }
       return await Promise.all(
         userIds.map(async (userId) => {
           const user = await getUserDetailQuery(userId, organizationId, manager).getOne();
           if (!user) throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
-
-          const role = await this.groupPermissionsUtilityService.getUserRole(userId, organizationId, manager);
-          const editPermissionsPresent =
-            Object.values(group).some((value) => typeof value === 'boolean' && value === true) ||
-            granularPermission.some((value) => {
-              return value.type === ResourceType.APP && value.appsGroupPermissions.canEdit;
-            });
-
-          if (editPermissionsPresent && role.name == USER_ROLE.END_USER) {
-            throw new MethodNotAllowedException({
-              message: {
-                error: ERROR_HANDLER.GROUP_USERS_EDITABLE_GROUP_ADDITION(user.email),
-                title: 'Can not add end user to this group',
-              },
-            });
-          }
-
           return await this.createGroupUser(user, group, manager);
         })
       );

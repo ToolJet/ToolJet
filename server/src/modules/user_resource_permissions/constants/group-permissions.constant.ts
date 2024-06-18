@@ -40,6 +40,7 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     orgConstantCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
+    isBuilderLevel: true,
   },
   BUILDER: {
     name: USER_ROLE.BUILDER,
@@ -52,6 +53,7 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     orgConstantCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
+    isBuilderLevel: true,
   },
   END_USER: {
     name: USER_ROLE.END_USER,
@@ -64,6 +66,7 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     orgConstantCRUD: false,
     dataSourceCreate: false,
     dataSourceDelete: false,
+    isBuilderLevel: false,
   },
 } as Record<string, CreateDefaultGroupObject>;
 

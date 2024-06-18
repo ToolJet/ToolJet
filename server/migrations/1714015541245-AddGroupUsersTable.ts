@@ -7,8 +7,8 @@ export class AddGroupUsersTable1714015541245 implements MigrationInterface {
       `
     CREATE TABLE IF NOT EXISTS group_users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID,
-        group_id UUID,
+        user_id UUID NOT NULL,
+        group_id UUID NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 import GroupChipTD from '@/ManageGroupPermissionsV2/ResourceChip';
 import '../ManageGroupPermissionsV2/groupPermissions.theme.scss';
 import { Action } from 'rxjs/internal/scheduler/Action';
+import ChangeRoleModal from '@/ManageGroupPermissionResourcesV2/ChangeRoleModal';
 
 class ManageGranularAccessComponent extends React.Component {
   constructor(props) {
@@ -37,6 +38,13 @@ class ManageGranularAccessComponent extends React.Component {
       addableApps: [],
       modalType: 'add',
       modalTitle: 'Add app permissions',
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalMessage: '',
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
+      updateParam: {},
+      updatingPermission: {},
+      updateType: '',
     };
   }
 
@@ -119,9 +127,15 @@ class ManageGranularAccessComponent extends React.Component {
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
       })
-      .catch((error) => {
-        toast.error(error.error);
-        console.log(error);
+      .catch(({ error }) => {
+        this.closeAddPermissionModal();
+        this.props.updateParentState({
+          showEditRoleErrorModal: true,
+          errorTitle: error?.title ? error?.title : 'Cannot remove last admin',
+          errorMessage: error.error,
+          errorIconName: 'usergear',
+          errorListItems: error.data,
+        });
       });
     // .then(())
   };
@@ -160,10 +174,11 @@ class ManageGranularAccessComponent extends React.Component {
     console.log(granularPermission);
   };
 
-  updateOnlyGranularPermissions = (permission, actions = {}) => {
+  updateOnlyGranularPermissions = (permission, actions = {}, allowRoleChange) => {
     console.log(actions);
     const body = {
       actions: actions,
+      allowRoleChange,
     };
     groupPermissionV2Service
       .updateGranularPermission(permission.id, body)
@@ -173,6 +188,20 @@ class ManageGranularAccessComponent extends React.Component {
         toast.success('Permission updated successfully');
       })
       .catch(({ error }) => {
+        console.log('error is');
+        console.log(error);
+        if (error?.type) {
+          this.setState({
+            showAutoRoleChangeModal: true,
+            autoRoleChangeModalMessage: error?.error,
+            autoRoleChangeModalList: error?.data,
+            autoRoleChangeMessageType: error?.type,
+            updateParam: actions,
+            updatingPermission: permission,
+            updateType: 'ONLY_PERMISSIONS',
+          });
+          return;
+        }
         this.props.updateParentState({
           showEditRoleErrorModal: true,
           errorTitle: error?.title ? error?.title : 'Cannot remove last admin',
@@ -183,7 +212,7 @@ class ManageGranularAccessComponent extends React.Component {
       });
   };
 
-  updateGranularPermissions = () => {
+  updateGranularPermissions = (allowRoleChange) => {
     const { currentEditingPermissions, selectedApps, newPermissionName, isAll, initialPermissionState } = this.state;
     const currentResource = currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => {
       return app.app.id;
@@ -207,16 +236,16 @@ class ManageGranularAccessComponent extends React.Component {
         id: id,
       };
     });
-    console.log('resource to add');
-    console.log(resourcesToAdd);
-    console.log(resourcesToDelete);
     const body = {
       name: newPermissionName,
       isAll: isAll,
       actions: initialPermissionState,
       resourcesToAdd,
       resourcesToDelete,
+      allowRoleChange,
     };
+
+    console.log(body);
 
     groupPermissionV2Service
       .updateGranularPermission(currentEditingPermissions.id, body)
@@ -225,8 +254,19 @@ class ManageGranularAccessComponent extends React.Component {
         this.closeAddPermissionModal();
         toast.success('Permission updated successfully');
       })
-      .catch((err) => {
-        toast.error(err.error);
+      .catch(({ error }) => {
+        if (error?.type) {
+          this.setState({
+            showAutoRoleChangeModal: true,
+            autoRoleChangeModalMessage: error?.error,
+            autoRoleChangeModalList: error?.data,
+            autoRoleChangeMessageType: error?.type,
+            updateType: '',
+            showAddPermissionModal: false,
+          });
+          return;
+        }
+        toast.error(error.error);
         this.closeAddPermissionModal();
       });
   };
@@ -282,6 +322,30 @@ class ManageGranularAccessComponent extends React.Component {
     this.setState({ selectedApps: values });
   };
 
+  handleAutoRoleChangeModalClose = () => {
+    this.setState({
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalMessage: '',
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
+      updateParam: {},
+      isLoading: false,
+      updatingPermission: {},
+      updateType: '',
+    });
+  };
+  handleConfirmAutoRoleChangeGroupUpdate = () => {
+    console.log('this is running');
+    this.updateGranularPermissions(true);
+    this.handleAutoRoleChangeModalClose();
+  };
+
+  handleConfirmAutoRoleChangeOnlyGroupUpdate = () => {
+    const { updateParam, updatingPermission } = this.state;
+    this.updateOnlyGranularPermissions(updatingPermission, updateParam, true);
+    this.handleAutoRoleChangeModalClose();
+  };
+
   render() {
     const {
       isEmpty,
@@ -297,32 +361,45 @@ class ManageGranularAccessComponent extends React.Component {
       modalTitle,
       modalType,
       newPermissionName,
+      showAutoRoleChangeModal,
+      autoRoleChangeModalMessage,
+      autoRoleChangeModalList,
+      autoRoleChangeMessageType,
+      updateParam,
+      updatingPermission,
+      updateType,
     } = this.state;
-    const apps = [
-      { name: 'App 1', value: 'App1', label: 'app 1' },
-      { name: 'App Long name 1', value: 'App2', label: 'app long name 1' },
-      { name: 'App very long name', value: 'App3', label: 'app very long name' },
-      { name: 'App 4', value: 'App4', label: 'app 4' },
-      { name: 'App5veryverylongname', value: 'App5veryverylongname', label: 'App5veryverylongname' },
-      { name: 'App 6', value: 'App6', label: '6' },
-      { name: 'App 7', value: 'App 7', label: 'app 7' },
-      { name: 'App 8', value: 'App 8', label: 'app 8' },
-      { name: 'App 9', value: 'App 9', label: 'app 9' },
-      { name: 'App 10', value: 'App 10', label: 'app 10' },
-      { name: 'App 11', value: 'App 11', label: 'app 11' },
-      { name: 'App 12', value: 'App 12', label: 'app 12' },
-    ];
+
     const currentGroupPermission = this.props?.groupPermission;
     const isRoleGroup = currentGroupPermission.name == 'admin';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const disableEditUpdate = currentGroupPermission.name == 'end-user';
     return (
       <div className="row granular-access-container justify-content-center">
+        <ChangeRoleModal
+          showAutoRoleChangeModal={showAutoRoleChangeModal}
+          autoRoleChangeModalList={autoRoleChangeModalList}
+          autoRoleChangeMessageType={autoRoleChangeMessageType}
+          handleAutoRoleChangeModalClose={this.handleAutoRoleChangeModalClose}
+          handleConfirmation={
+            updateType === 'ONLY_PERMISSIONS'
+              ? this.handleConfirmAutoRoleChangeOnlyGroupUpdate
+              : this.handleConfirmAutoRoleChangeGroupUpdate
+          }
+          darkMode={this.props.darkMode}
+          isLoading={isLoading}
+        />
         <ModalBase
           size="md"
           show={showAddPermissionModal}
           handleClose={this.closeAddPermissionModal}
-          handleConfirm={modalType === 'add' ? this.createGranularPermissions : this.updateGranularPermissions}
+          handleConfirm={
+            modalType === 'add'
+              ? this.createGranularPermissions
+              : () => {
+                  this.updateGranularPermissions();
+                }
+          }
           className="permission-manager-modal"
           title={
             <div className="my-3 permission-manager-title" data-cy="modal-title">

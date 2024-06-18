@@ -6,7 +6,6 @@ import {
   USER_ROLE,
   ERROR_HANDLER,
   DEFAULT_GROUP_PERMISSIONS,
-  GROUP_PERMISSIONS_TYPE,
 } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
@@ -72,9 +71,7 @@ export class UserRoleService {
 
   async getRoleGroup(role: USER_ROLE, organizationId: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager) => {
-      return await manager.findOne(GroupPermissions, {
-        where: { name: role, organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT },
-      });
+      return await this.groupPermissionsUtilityService.getRoleGroup(role, organizationId, manager);
     }, manager);
   }
 
@@ -94,7 +91,11 @@ export class UserRoleService {
         throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_ADD_USER_ROLE_EXIST(newRole));
 
       if (userRole.name == USER_ROLE.ADMIN) {
-        const groupUsers = await this.groupPermissionsService.getAllGroupUsers(userRole.id, null, manager);
+        const groupUsers = await this.groupPermissionsService.getAllGroupUsers(
+          { groupId: userRole.id, organizationId },
+          null,
+          manager
+        );
         if (groupUsers.length < 2)
           throw new BadRequestException({
             message: {
@@ -143,9 +144,6 @@ export class UserRoleService {
     const { role, userId } = addUserRoleObject;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const roleGroup = await this.getRoleGroup(role, organizationId, manager);
-      console.log('role group is');
-      console.log(roleGroup);
-
       const newUserRole = manager.create(GroupUsers, { groupId: roleGroup.id, userId });
       await manager.save(newUserRole);
     }, manager);

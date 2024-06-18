@@ -309,14 +309,6 @@ class AppComponent extends React.Component {
                   path="groups"
                   element={
                     <AdminRoute>
-                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="groups-v2"
-                  element={
-                    <AdminRoute>
                       <ManageGroupPermissionsV2 switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AdminRoute>
                   }

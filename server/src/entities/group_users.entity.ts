@@ -16,10 +16,10 @@ export class GroupUsers extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'user_id', nullable: false })
   userId: string;
 
-  @Column({ name: 'group_id' })
+  @Column({ name: 'group_id', nullable: false })
   groupId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })

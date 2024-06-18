@@ -30,11 +30,12 @@ export type GranularPermissionAddResourceItems = AppsPermissionAddResourceItem[]
 export type GranularPermissionDeleteResourceItems = AppsPermissionDeleteResourceItem[];
 
 export interface UpdateResourceGroupPermissionsObject {
-  group?: GroupPermissions;
+  group: GroupPermissions;
   granularPermissions: GranularPermissions;
   actions: ResourceGroupActions;
   resourcesToAdd: GranularPermissionAddResourceItems;
   resourcesToDelete: GranularPermissionDeleteResourceItems;
+  allowRoleChange?: boolean;
 }
 
 export interface GranularPermissionQuerySearchParam {

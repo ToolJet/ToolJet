@@ -100,6 +100,9 @@ export class OrganizationUsersService {
   }
 
   async updateOrgUser(organizationUserId: string, updateUserDto) {
+    console.log(updateUserDto);
+    console.log('logging this');
+
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
     return await this.usersService.update(
       organizationUser.userId,

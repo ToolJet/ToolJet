@@ -18,6 +18,7 @@ import './grpPermissionResc.theme.scss';
 import { EDIT_ROLE_MESSAGE } from './constant';
 import { SearchBox } from '@/_components/SearchBox';
 import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
+import ChangeRoleModal from '@/ManageGroupPermissionResourcesV2/ChangeRoleModal';
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -50,6 +51,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       errorTitle: '',
       showEditRoleErrorModal: false,
       errorIconName: '',
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalMessage: '',
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
+      updateParam: {},
     };
   }
 
@@ -64,13 +70,14 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   }
 
   fetchGroupPermission = (groupPermissionId) => {
-    groupPermissionV2Service.getGroup(groupPermissionId).then((data) => {
+    groupPermissionV2Service.getGroup(groupPermissionId).then(({ group, isBuilderLevel }) => {
       this.setState((prevState) => {
         return {
-          isRoleGroup: data.type === 'default',
-          groupPermission: data,
+          isRoleGroup: group.type === 'default',
+          groupPermission: group,
           currentTab: prevState.currentTab,
           isLoadingGroup: false,
+          isBuilderLevel: isBuilderLevel,
         };
       });
     });
@@ -93,6 +100,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       groupPermissionV2Service
         .getUsersNotInGroup(query, groupPermissionId)
         .then((users) => {
+          console.log('loggimgusers');
+          console.log(users);
           resolve(
             users.map((user) => {
               return {
@@ -101,6 +110,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 first_name: user.firstName,
                 last_name: user.lastName,
                 email: user.email,
+                role: user?.userGroups?.group?.name,
               };
             })
           );
@@ -148,15 +158,24 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     });
   };
 
-  updateGroupPermission = (groupPermissionId, params) => {
+  updateGroupPermission = (groupPermissionId, params, allowRoleChange) => {
     groupPermissionV2Service
-      .update(groupPermissionId, params)
+      .update(groupPermissionId, { ...params, allowRoleChange })
       .then(() => {
         toast.success('Group permissions updated');
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error }) => {
         console.log(error);
+        if (error?.type) {
+          this.setState({
+            showAutoRoleChangeModal: true,
+            autoRoleChangeModalMessage: error?.error,
+            autoRoleChangeModalList: error?.data,
+            autoRoleChangeMessageType: error?.type,
+          });
+          return;
+        }
         this.setState({
           errorMessage: error?.error,
           showEditRoleErrorModal: true,
@@ -274,11 +293,14 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       });
   };
 
-  addSelectedUsersToGroup = (groupPermissionId, selectedUsers) => {
+  addSelectedUsersToGroup = (groupPermissionId, selectedUsers, allowRoleChange) => {
+    console.log('selected users');
+    console.log(selectedUsers);
     this.setState({ isAddingUsers: true });
     const body = {
       userIds: selectedUsers.map((user) => user.value),
       groupId: groupPermissionId,
+      allowRoleChange,
     };
     groupPermissionV2Service
       .addUsersInGroups(body)
@@ -293,6 +315,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchUsersInGroup(groupPermissionId);
       })
       .catch(({ error }) => {
+        if (error?.type) {
+          this.setState({
+            isLoadingUsers: false,
+            showAutoRoleChangeModal: true,
+            autoRoleChangeModalMessage: error?.error,
+            autoRoleChangeModalList: error?.data,
+            autoRoleChangeMessageType: error?.type,
+          });
+          return;
+        }
         this.setState({
           showEditRoleErrorModal: true,
           errorTitle: error?.title,
@@ -366,6 +398,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         this.fetchUsersInGroup(groupPermission.id);
         toast.success('Role updated successfully');
+        if (groupPermission?.name === 'admin') window.location.reload();
       })
       .catch(({ error }) => {
         this.setState({
@@ -422,7 +455,57 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     }));
   };
 
+  toggleAutoRoleChangeModal = () => {
+    this.setState((prevState) => ({
+      showAutoRoleChangeModal: !prevState.showAutoRoleChangeModal,
+    }));
+  };
+  handleAutoRoleChangeModalClose = () => {
+    this.setState({
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalMessage: '',
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
+      updateParam: {},
+      isLoadingGroup: false,
+      isLoadingUsers: false,
+    });
+  };
+
+  renderUserChangeMessage = (type) => {
+    const changePermissionMessage = (
+      <p className="tj-text-sm">
+        Granting this permission to the user group will result in a role change for the following user(s) from{' '}
+        <b>end-users</b> to <b>builders</b>. Are you sure you want to continue?
+      </p>
+    );
+    const addUserMessage = (
+      <p className="tj-text-sm">
+        Adding the following user(s) to this group will change their default group from <b>end-users</b> to{' '}
+        <b>builders</b>. Are you sure you want to continue?
+      </p>
+    );
+    const message = type === 'USER_ROLE_CHANGE_ADD_USERS' ? addUserMessage : changePermissionMessage;
+    return message;
+  };
+
   toggleAddUsersToRoleModal = () => this.setState({ isAddUsersToRoleModalOpen: !this.state.isAddUsersToRoleModalOpen });
+
+  handleConfirmAutoRoleChangeGroupUpdate = () => {
+    console.log('this is running');
+    const { updateParam, groupPermission } = this.state;
+    this.updateGroupPermission(groupPermission.id, updateParam, true);
+    this.setState({
+      updateParam: {},
+    });
+    this.handleAutoRoleChangeModalClose();
+  };
+
+  handleConfirmAutoRoleChangeAddUser = () => {
+    const { groupPermission, selectedUsers } = this.state;
+    this.addSelectedUsersToGroup(groupPermission?.id, selectedUsers, true);
+    this.handleAutoRoleChangeModalClose();
+  };
 
   render() {
     if (!this.props.groupPermissionId) return null;
@@ -448,8 +531,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       errorTitle,
       showEditRoleErrorModal,
       errorIconName,
-      addableApps,
-      granularPermissions,
+      showAutoRoleChangeModal,
+      autoRoleChangeModalMessage,
+      autoRoleChangeModalList,
+      autoRoleChangeMessageType,
     } = this.state;
 
     const isBasicPlan = false;
@@ -526,28 +611,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
             </div>
           )}
         </ModalBase>
-        <ModalBase
-          title={
-            <div className="my-3" data-cy="modal-title">
-              <span className="tj-text-md font-weight-500">Edit user role</span>
-              <div className="tj-text-sm text-muted" data-cy="user-email">
-                {updatingUserRole?.email}
-              </div>
-            </div>
+        <ChangeRoleModal
+          showAutoRoleChangeModal={showAutoRoleChangeModal}
+          autoRoleChangeModalList={autoRoleChangeModalList}
+          autoRoleChangeMessageType={autoRoleChangeMessageType}
+          handleAutoRoleChangeModalClose={this.handleAutoRoleChangeModalClose}
+          handleConfirmation={
+            autoRoleChangeMessageType === 'USER_ROLE_CHANGE_ADD_USERS'
+              ? this.handleConfirmAutoRoleChangeAddUser
+              : this.handleConfirmAutoRoleChangeGroupUpdate
           }
-          show={isAddUsersToRoleModalOpen}
-          handleClose={this.toggleAddUsersToRoleModal}
           darkMode={this.props.darkMode}
-        >
-          <p className="tj-text-sm">
-            Changing user default group from builder to end-user will affect the count of users covered by your plan.
-          </p>
-          <br />
-          <p className="tj-text-sm">
-            This will also remove the user from any custom groups with builder-like permissions. Are you sure you want
-            to continue?
-          </p>
-        </ModalBase>
+          isLoading={isLoadingGroup || isLoadingUsers}
+        />
         <div className="org-users-page animation-fade">
           {isLoadingGroup ? (
             <Loader />
@@ -869,6 +945,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             this.updateGroupPermission(groupPermission.id, {
                                               appCreate: !groupPermission.appCreate,
                                             });
+                                            this.setState({
+                                              updateParam: { appCreate: !groupPermission.appCreate },
+                                            });
                                           }}
                                           checked={groupPermission.appCreate}
                                           disabled={disablePermissionUpdate}
@@ -892,6 +971,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           onChange={() => {
                                             this.updateGroupPermission(groupPermission.id, {
                                               appDelete: !groupPermission.appDelete,
+                                            });
+                                            this.setState({
+                                              updateParam: { appDelete: !groupPermission.appDelete },
                                             });
                                           }}
                                           checked={groupPermission.appDelete}
@@ -930,6 +1012,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             this.updateGroupPermission(groupPermission.id, {
                                               folderCRUD: !groupPermission.folderCRUD,
                                             });
+                                            this.setState({
+                                              updateParam: { folderCRUD: !groupPermission.folderCRUD },
+                                            });
                                           }}
                                           checked={groupPermission.folderCRUD}
                                           disabled={disablePermissionUpdate}
@@ -965,6 +1050,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           onChange={() => {
                                             this.updateGroupPermission(groupPermission.id, {
                                               orgConstantCRUD: !groupPermission.orgConstantCRUD,
+                                            });
+                                            this.setState({
+                                              updateParam: { orgConstantCRUD: !groupPermission.orgConstantCRUD },
                                             });
                                           }}
                                           checked={groupPermission.orgConstantCRUD}
@@ -1003,6 +1091,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       groupPermission={groupPermission}
                       setErrorState={this.setErrorState}
                       updateParentState={this.changeThisComponentState}
+                      fetchGroup={this.fetchGroupPermission}
                     />
                   </aside>
                 </div>

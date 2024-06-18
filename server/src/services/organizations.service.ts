@@ -619,7 +619,6 @@ export class OrganizationsService {
         userParams,
         currentUser.organizationId,
         role,
-        groups,
         user,
         true,
         defaultOrganization?.id,
@@ -648,6 +647,8 @@ export class OrganizationsService {
         true,
         manager
       );
+
+      await this.usersService.attachUserGroup(groups, currentOrganization.id, user.id, manager);
 
       const name = fullName(currentUser.firstName, currentUser.lastName);
       if (shouldSendWelcomeMail) {

@@ -26,7 +26,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       defaultGroups: [],
       creatingGroup: false,
       showNewGroupForm: false,
-      newGroupName: null,
+      newGroupName: '',
       isDeletingGroup: false,
       isUpdatingGroupName: false,
       showGroupDeletionConfirmation: false,
@@ -229,6 +229,7 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   changeNewGroupName = (value) => {
+    if (value.length > 50) return;
     this.setState({
       newGroupName: value,
       isSaveBtnDisabled: false,
@@ -477,7 +478,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                   className="btn btn-primary create-new-group-button"
                   onClick={(e) => {
                     e.preventDefault();
-                    this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
+                    this.setState({ newGroupName: '', showNewGroupForm: true, isSaveBtnDisabled: true });
                   }}
                   data-cy="create-new-group-button"
                   leftIcon="plus"
@@ -505,7 +506,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               title={
                 showGroupNameUpdateForm
                   ? this.props.t('header.organization.menus.manageGroups.permissions.updateGroup', 'Update group')
-                  : this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Add new group')
+                  : this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Create new group')
               }
             >
               <form
@@ -537,6 +538,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                         data-cy="group-name-input"
                         autoFocus
                       />
+                      <span className="tj-text-xxsm">Group name must be unique and max 50 characters</span>
                     </div>
                   </div>
                 </div>

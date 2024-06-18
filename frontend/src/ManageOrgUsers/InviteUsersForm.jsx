@@ -106,7 +106,8 @@ function InviteUsersForm({
     let role = null;
     if (currentEditingUser)
       role = selectedGroups.find(
-        (group) => group.groupType === 'default' && !currentEditingUser.role_group.includes(group.value)
+        (group) =>
+          group.groupType === 'default' && !currentEditingUser.role_group.map((role) => role.name).includes(group.value)
       )?.value;
     const selectedGroupsIds = selectedGroups.filter((group) => group.groupType !== 'default').map((group) => group.id);
     const newGroupsToAdd = selectedGroupsIds.filter((selectedGroupId) => !existingGroups.includes(selectedGroupId));
@@ -115,11 +116,12 @@ function InviteUsersForm({
   };
 
   const isEdited = () => {
-    const { newGroupsToAdd, groupsToRemove } = getEditedGroups();
+    const { newGroupsToAdd, groupsToRemove, role } = getEditedGroups();
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
           groupsToRemove.length ||
+          role !== undefined ||
           newGroupsToAdd.length
       : true;
   };
@@ -301,7 +303,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers || creatingUser || !isEdited() || !containRoleGroup}
+              disabled={uploadingUsers || creatingUser || !isEdited() || (!isEditing && !containRoleGroup)}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

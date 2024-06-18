@@ -6,6 +6,7 @@ import { BadRequestException, MethodNotAllowedException } from '@nestjs/common';
 import { CreateGroupPermissionDto, UpdateGroupPermissionDto } from '@dto/group_permissions.dto';
 import { ERROR_HANDLER } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { GroupUsers } from 'src/entities/group_users.entity';
+import { GetGroupUsersObject } from '../interface/group-permissions.interface';
 
 export function getRoleUsersListQuery(
   role: USER_ROLE,
@@ -38,6 +39,7 @@ export function getRoleUsersListQuery(
     'user.lastName',
     'user.email',
     'userGroups.groupId',
+    'userGroups.id',
     'group.name',
     'group.type',
   ]);
@@ -145,6 +147,13 @@ export function addableUsersToGroupQuery(
     .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.organizationId = :organizationId', {
       organizationId: organizationId,
     })
+    .innerJoinAndSelect('users.userGroups', 'userGroups')
+    .innerJoinAndSelect('userGroups.group', 'group', 'group.organizationId = :organizationId', {
+      organizationId,
+    })
+    .where('group.type = :type', {
+      type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+    })
     .where((qb) => {
       const subQuery = qb
         .subQuery()
@@ -158,6 +167,7 @@ export function addableUsersToGroupQuery(
       return 'users.id NOT IN ' + subQuery;
     })
     .andWhere(addableUserGetOrConditions(searchInput))
+    .select(['users.id', 'users.firstName', 'users.lastName', 'users.email', 'userGroups.id', 'group.name'])
     .orderBy('users.createdAt', 'DESC');
 
   return query;
@@ -180,14 +190,35 @@ const addableUserGetOrConditions = (searchInput) => {
 };
 
 export function getUserInGroupQuery(
-  groupId: string,
+  getGroupUsersObject: GetGroupUsersObject,
   manager: EntityManager,
   searchInput: string
 ): SelectQueryBuilder<GroupUsers> {
+  const { groupId, organizationId } = getGroupUsersObject;
+
   const query = manager
     .createQueryBuilder(GroupUsers, 'groupUsers')
-    .innerJoinAndSelect('groupUsers.user', 'users', 'groupUsers.groupId = :groupId', { groupId })
-    .select(['groupUsers.id', 'groupUsers.groupId', 'users.id', 'users.firstName', 'users.lastName', 'users.email'])
+    .innerJoinAndSelect('groupUsers.user', 'users', 'groupUsers.groupId = :groupId', {
+      groupId,
+    })
+    .innerJoinAndSelect('users.userGroups', 'userRole')
+    .innerJoinAndSelect('userRole.group', 'role', 'role.organizationId = :organizationId', {
+      organizationId,
+    })
+    .andWhere('role.type = :type', {
+      type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+    })
+    .select([
+      'groupUsers.id',
+      'groupUsers.groupId',
+      'users.id',
+      'users.firstName',
+      'users.lastName',
+      'users.email',
+      'userRole.id',
+      'role.name',
+    ])
+    .addSelect('role.name', 'userRole')
     .andWhere(addableUserGetOrConditions(searchInput));
   return query;
 }

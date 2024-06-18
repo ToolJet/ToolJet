@@ -98,7 +98,6 @@ export class UsersService {
     userParams: Partial<User>,
     organizationId: string,
     role: USER_ROLE,
-    groups?: string[],
     existingUser?: User,
     isInvite?: boolean,
     defaultOrganizationId?: string,
@@ -136,8 +135,6 @@ export class UsersService {
         );
       }
       await this.userRoleService.addUserRole({ role, userId: user.id }, organizationId, manager);
-
-      await this.attachUserGroup(groups, organizationId, user.id, manager);
     }, manager);
 
     return user;
@@ -150,10 +147,21 @@ export class UsersService {
     manager?: EntityManager
   ): Promise<void> {
     if (!groups) return;
+    console.log('Adding groups');
+    console.log(groups);
     await dbTransactionWrap(async (manager: EntityManager) => {
+      if (groups?.length)
+        await this.groupPermissionsUtilityService.validateEditUserGroupPermissionsAddition(
+          { userId, groupsToAddIds: groups, organizationId },
+          manager
+        );
       await Promise.all(
         groups.map(async (groupId) => {
-          await this.groupPermissionsService.addGroupUsers({ userIds: [userId], groupId }, organizationId, manager);
+          await this.groupPermissionsService.addGroupUsers(
+            { userIds: [userId], groupId, allowRoleChange: false },
+            organizationId,
+            manager
+          );
         })
       );
     }, manager);
@@ -181,6 +189,8 @@ export class UsersService {
 
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
       if (role) await this.userRoleService.editDefaultGroupUserRole({ userId, newRole: role }, organizationId, manager);
+      console.log('working till here');
+
       await this.attachUserGroup(addGroups, organizationId, userId, manager);
       return user;
     }, manager);
@@ -194,29 +204,6 @@ export class UsersService {
       await manager.update(User, userId, updatableParams);
     }, manager);
   }
-
-  //TODO: Remove this function if not needed
-  // async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
-  //   const orgId = organizationId || user.defaultOrganizationId;
-  //   if (addGroups) {
-  //     const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId);
-
-  //     for (const group of addGroups) {
-  //       const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
-
-  //       if (!orgGroupPermission) {
-  //         throw new BadRequestException(`${group} group does not exist for current organization`);
-  //       }
-  //       await dbTransactionWrap(async (manager: EntityManager) => {
-  //         const userGroupPermission = manager.create(UserGroupPermission, {
-  //           groupPermissionId: orgGroupPermission.id,
-  //           userId: user.id,
-  //         });
-  //         await manager.save(userGroupPermission);
-  //       }, manager);
-  //     }
-  //   }
-  // }
 
   async removeUserGroupPermissionsIfExists(
     manager: EntityManager,

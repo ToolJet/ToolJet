@@ -14,7 +14,7 @@ export class AddGroupPermissionsTable1714015513342 implements MigrationInterface
     CREATE TABLE IF NOT EXISTS permission_groups (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         organization_id UUID,
-        name VARCHAR NOT NULL,
+        name VARCHAR(50) NOT NULL,
         type group_permissions_type NOT NULL DEFAULT 'custom',
         app_create BOOLEAN DEFAULT false,
         app_delete BOOLEAN DEFAULT false,

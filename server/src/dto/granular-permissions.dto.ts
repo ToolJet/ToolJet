@@ -28,6 +28,10 @@ export class CreateGranularPermissionDto {
 
   @IsOptional()
   createAppsPermissionsObject: CreateAppsPermissionsObject;
+
+  // @IsBoolean()
+  // @IsOptional()
+  // allowRoleChange: boolean;
 }
 
 export class UpdateGranularPermissionDto {
@@ -47,4 +51,8 @@ export class UpdateGranularPermissionDto {
 
   @IsOptional()
   resourcesToDelete: GranularPermissionDeleteResourceItems;
+
+  @IsBoolean()
+  @IsOptional()
+  allowRoleChange: boolean;
 }

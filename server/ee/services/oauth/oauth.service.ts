@@ -68,7 +68,6 @@ export class OauthService {
       organization.id,
       //Adding user as END-USER on workspace signup
       USER_ROLE.END_USER,
-      [],
       user,
       true,
       defaultOrganization?.id,
@@ -240,7 +239,6 @@ export class OauthService {
             defaultOrganization.id,
             //Adding as admin since this is instance login
             USER_ROLE.ADMIN,
-            [],
             null,
             true,
             null,

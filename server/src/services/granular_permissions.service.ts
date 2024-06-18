@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, MethodNotAllowedException } from '@nestjs/common';
 import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 import {
   GranularResourcePermissions,
@@ -28,7 +28,7 @@ import {
 } from '@module/user_resource_permissions/utility/granular-permissios.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 import { GroupApps } from 'src/entities/group_apps.entity';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
+import { GroupUsers } from 'src/entities/group_users.entity';
 
 @Injectable()
 export class GranularPermissionsService {
@@ -75,7 +75,7 @@ export class GranularPermissionsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const granularPermissions = await this.get(id, manager);
       const { organizationId, updateGranularPermissionDto, group } = updateGranularPermissionsObj;
-      const { isAll, name, resourcesToAdd, resourcesToDelete, actions } = updateGranularPermissionDto;
+      const { isAll, name, resourcesToAdd, resourcesToDelete, actions, allowRoleChange } = updateGranularPermissionDto;
       const updateGranularPermission = {
         isAll: isAll == true ? true : false,
         ...(name && { name }),
@@ -86,6 +86,7 @@ export class GranularPermissionsService {
         actions,
         resourcesToDelete,
         resourcesToAdd,
+        allowRoleChange,
       };
       await catchDbException(async () => {
         await manager.update(GranularPermissions, id, updateGranularPermission);
@@ -186,41 +187,43 @@ export class GranularPermissionsService {
     manager?: EntityManager
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const {
-        granularPermissions,
-        actions,
-        resourcesToDelete,
-        resourcesToAdd,
-        group: permissionGroup,
-      } = UpdateResourceGroupPermissionsObject;
-      let group: GroupPermissions;
-      if (permissionGroup) {
-        group = permissionGroup;
-      } else {
-        group = await manager.findOne(GroupPermissions, granularPermissions.groupId);
-      }
+      const { granularPermissions, actions, resourcesToDelete, resourcesToAdd, group, allowRoleChange } =
+        UpdateResourceGroupPermissionsObject;
+
       validateAppResourcePermissionUpdateOperation(group, actions);
       const { canEdit } = actions;
-      const groupEditors = await this.groupPermissionsUtilityService.getRoleUsersList(
+      const groupEndUsers = await this.groupPermissionsUtilityService.getRoleUsersList(
         USER_ROLE.END_USER,
         organizationId,
         granularPermissions.groupId,
         manager
       );
-      console.log('logging resource object');
+      if (groupEndUsers.length && canEdit) {
+        if (!allowRoleChange) {
+          throw new MethodNotAllowedException({
+            message: {
+              error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+              data: groupEndUsers?.map((user) => user.email),
+              title: 'Cannot add this permissions to the group',
+              type: 'USER_ROLE_CHANGE',
+            },
+          });
+        }
+        await Promise.all(
+          groupEndUsers.map(async (userItem) => {
+            const currentRoleUser = userItem.userGroups[0].id;
+            const roleGroup = await this.groupPermissionsUtilityService.getRoleGroup(
+              USER_ROLE.BUILDER,
+              group.organizationId,
+              manager
+            );
+            await manager.delete(GroupUsers, currentRoleUser);
+            const newUserRole = manager.create(GroupUsers, { groupId: roleGroup.id, userId: userItem.id });
+            await manager.save(newUserRole);
+          })
+        );
+      }
 
-      console.log(UpdateResourceGroupPermissionsObject);
-
-      //Resource update level
-
-      if (groupEditors.length && canEdit)
-        throw new BadRequestException({
-          message: {
-            error: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
-            data: groupEditors.map((user) => user.email),
-            title: 'Cannot update permissions',
-          },
-        });
       const appsGroupPermissions = await manager.findOne(AppsGroupPermissions, {
         where: {
           granularPermissionId: granularPermissions.id,
