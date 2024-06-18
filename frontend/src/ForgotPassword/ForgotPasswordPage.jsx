@@ -9,6 +9,7 @@ import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -21,6 +22,7 @@ class ForgotPasswordComponent extends React.Component {
     };
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
+  whiteLabelText = retrieveWhiteLabelText();
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
@@ -68,7 +70,7 @@ class ForgotPasswordComponent extends React.Component {
                       Forgot Password
                     </h2>
                     <p className="common-auth-sub-header" data-cy="forgot-password-sub-header">
-                      New to ToolJet? &nbsp;
+                      New to {this.whiteLabelText}? &nbsp;
                       <Link
                         to={'/signup'}
                         tabIndex="-1"

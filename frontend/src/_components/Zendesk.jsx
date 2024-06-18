@@ -4,6 +4,7 @@ import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
 import EncryptedFieldWrapper from './EncyrptedFieldWrapper';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 const Zendesk = ({
   optionchanged,
@@ -15,6 +16,7 @@ const Zendesk = ({
   optionsChanged,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const whiteLabelText = retrieveWhiteLabelText();
 
   function authZendesk() {
     const provider = 'zendesk';
@@ -91,7 +93,10 @@ const Zendesk = ({
           <div className="mb-3">
             <div className="form-label">Scope(s)</div>
             <p>
-              If you want your ToolJet apps to modify your Zendesk resources, make sure to select read and write access
+              {
+                (`If you want your ${whiteLabelText} apps to modify your Zendesk resources, make sure to select read and write access`,
+                { whiteLabelText })
+              }
             </p>
             <div>
               <Radio
@@ -99,14 +104,17 @@ const Zendesk = ({
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
-                helpText="Your ToolJet apps can only read data from resources"
+                helpText={(`Your ${whiteLabelText} apps can only read data from resources`, { whiteLabelText })}
               />
               <Radio
                 checked={options?.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
-                helpText="Your ToolJet apps can read data from resources, modify resources, and more."
+                helpText={
+                  (`Your ${whiteLabelText} apps can read data from resources, modify resources, and more.`,
+                  { whiteLabelText })
+                }
               />
             </div>
           </div>
