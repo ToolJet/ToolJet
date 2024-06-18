@@ -30,17 +30,7 @@ const SelectTableMenu = ({ darkMode }) => {
     joinTableOptions,
     joinTableOptionsChange,
     deleteJoinTableOptions,
-    ...context
   } = useContext(TooljetDatabaseContext);
-  console.log('db :: join', {
-    selectedTableId,
-    joinOptions,
-    setJoinOptions: setJoins,
-    joinTableOptions,
-    joinTableOptionsChange,
-    deleteJoinTableOptions,
-    context,
-  });
 
   const joins = clone(joinOptions);
 
@@ -102,7 +92,6 @@ const SelectTableMenu = ({ darkMode }) => {
     const isGroupByUsed = Object.entries(groupBy).some((condition) => condition.length >= 1);
     return isGroupByUsed ? false : true;
   };
-  console.log('db:joinTable', { joinTableOptions });
   return (
     <div>
       {/* Join Section */}

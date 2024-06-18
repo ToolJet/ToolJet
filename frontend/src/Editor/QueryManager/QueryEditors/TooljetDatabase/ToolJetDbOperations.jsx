@@ -288,15 +288,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     return tables.find((table) => table.table_name == tableName);
   };
 
-  // const getColumnDetailsForTable = async (tableId) => {
-  //   const tableDetails = findTableDetails(tableId);
-
-  //   const { table_name } = tableDetails;
-  //   const { data } = await tooljetDatabaseService.viewTable(organizationId, table_name);
-  //   console.log('data:', { data, tableId, tableDetails });
-  //   return data.result.columns;
-  // };
-
   const value = useMemo(
     () => ({
       organizationId,
@@ -329,7 +320,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       findTableDetailsByName,
       tableForeignKeyInfo,
       setTableForeignKeyInfo,
-      // getColumnDetailsForTable,
     }),
     [
       organizationId,

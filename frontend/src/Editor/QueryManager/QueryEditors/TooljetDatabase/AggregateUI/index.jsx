@@ -1,13 +1,12 @@
 import React, { useContext, useMemo, useState } from 'react';
 import { NoCondition } from './NoConditionUI';
-import './style.scss'; // Ensure the path is correct based on your project structure
+import './style.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
 import { SelectBox } from './Select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
-import { ToolTip } from '@/_components/ToolTip';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 
@@ -50,7 +49,6 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
       ...currentAggregates,
       [key]: aggregateToUpdate,
     };
-    console.log('db :: handleAggregateOptionChange', { key, selecetdValue, optionToUpdate, updatedAggregates });
     handleChange('aggregates', updatedAggregates);
   };
 
@@ -200,7 +198,6 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
           {operationDetails?.aggregates &&
             !isEmpty(operationDetails?.aggregates) &&
             Object.entries(operationDetails.aggregates).map(([aggregateKey, aggregateDetails]) => {
-              console.log('man ::', { aggregateDetails });
               return (
                 <div key={aggregateKey} className="d-flex flex-row ">
                   <div

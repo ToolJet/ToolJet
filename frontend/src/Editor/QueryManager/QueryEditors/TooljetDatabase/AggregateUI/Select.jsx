@@ -12,9 +12,6 @@ export const SelectBox = ({
   darkMode,
   showTooltip = false,
 }) => {
-  // const validOptionStructure = options.map(({ description = '', ...rest }) => {
-  //   return rest;
-  // });
   return (
     <ToolTip
       message="Group by can only be used with aggregate function"
@@ -39,16 +36,3 @@ export const SelectBox = ({
     </ToolTip>
   );
 };
-// <Select
-//   options={validOptionStructure}
-//   value={value}
-//   onChange={handleChange}
-//   height={height}
-//   useMenuPortal={true}
-//   closeMenuOnSelect={true}
-//   width={width}
-//   search={true}
-//   placeholder={placeholder}
-//   isMulti={isMulti}
-//   isDisabled={disabled}
-// />
