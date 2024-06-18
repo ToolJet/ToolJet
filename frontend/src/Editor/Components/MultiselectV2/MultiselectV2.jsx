@@ -85,24 +85,32 @@ export const MultiselectV2 = ({
 
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
-    let _selectOptions = _options
-      .filter((data) => data.visible)
-      .map((value) => ({
-        ...value,
-        isDisabled: value.disable,
-      }));
+    let _selectOptions = Array.isArray(_options)
+      ? _options
+          .filter((data) => data.visible)
+          .map((value) => ({
+            ...value,
+            isDisabled: value.disable,
+          }))
+      : [];
     return _selectOptions;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
-      const foundItem = schema?.filter((item) => item?.visible && item?.default);
+      const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
       return foundItem;
     }
     if (isDefault) {
-      return selectOptions?.filter((item) => value?.find((val) => val === item.value));
-    } else return selectOptions?.filter((item) => selected?.find((val) => val.value === item.value));
+      return Array.isArray(selectOptions)
+        ? selectOptions.filter((item) => value?.find((val) => val === item.value))
+        : [];
+    } else {
+      return Array.isArray(selectOptions)
+        ? selectOptions.filter((item) => selected?.find((val) => val.value === item.value))
+        : [];
+    }
   }
 
   function hasVisibleFalse(value) {
