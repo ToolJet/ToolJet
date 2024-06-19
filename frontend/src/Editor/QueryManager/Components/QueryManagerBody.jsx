@@ -345,10 +345,10 @@ export const QueryManagerBody = ({
         renderDataSourcesList()
       ) : (
         <>
+          {selectedQuery?.data_source_id && activeTab === 1 && renderChangeDataSource()}
           {activeTab === 1 && renderQueryElement()}
           {activeTab === 2 && renderTransformation()}
           {activeTab === 3 && renderQueryOptions()}
-          {selectedQuery.data_source_id && activeTab === 1 && renderChangeDataSource()}
           <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
         </>
       )}
