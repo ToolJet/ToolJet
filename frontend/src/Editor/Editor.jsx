@@ -839,8 +839,6 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = useCallback(async (newDefinition, opts = {}) => {
-    console.log('arpit [appDefinitionChanged]', { opts });
-
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
       return new Promise((resolve) => {
@@ -1225,7 +1223,6 @@ const EditorComponent = (props) => {
   }, [JSON.stringify(undoStack), JSON.stringify(redoStack)]);
 
   const componentDefinitionChanged = (componentDefinition, props) => {
-    console.log('arpit [x]', { props });
     if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
       return;

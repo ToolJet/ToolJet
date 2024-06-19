@@ -292,7 +292,7 @@ export const Container = ({
     }
 
     const shouldUpdate = !_.isEmpty(diff(definition, newDefinition));
-    console.log('---arpit::xxxx', { shouldUpdate });
+
     if (shouldUpdate) {
       appDefinitionChanged(newDefinition, opts);
     }
