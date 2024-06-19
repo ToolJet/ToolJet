@@ -543,12 +543,13 @@ export const Inspector = ({
 };
 const getDocsLink = (componentMeta) => {
   const component = componentMeta?.component ?? '';
-
   switch (component) {
     case 'ToggleSwitchV2':
       return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
     case 'DropdownV2':
       return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'MultiselectV2':
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }
