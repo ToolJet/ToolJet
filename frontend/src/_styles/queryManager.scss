@@ -721,7 +721,6 @@ $border-radius: 4px;
     font-size: 12px;
     padding: 0 !important;
     height: 24px;
-    color: var(--text-disabled) !important;
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -750,7 +749,7 @@ $border-radius: 4px;
     transition-delay: 5ms;
 
     span {
-      background-color: var(--surfaces-surface-01) !important;
+      background-color: #fff !important;
     }
   }
 
@@ -1164,7 +1163,7 @@ $border-radius: 4px;
 
       &.active {
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
-        color: #000 !important;
+        color: var(--indigo9) !important;
       }
     }
   }
