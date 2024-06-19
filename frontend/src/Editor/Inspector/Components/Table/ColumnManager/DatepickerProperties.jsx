@@ -105,7 +105,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 paramMeta={{ type: 'toggle', displayName: 'Enable date' }}
               />
             </div>
-            {resolveReferences(column?.isDateSelectionEnabled, currentState) && (
+            {resolveReferences(column?.isDateSelectionEnabled) && (
               <div
                 data-cy={`input-date-display-format`}
                 className="field mb-2 w-100"
@@ -175,7 +175,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 paramMeta={{ type: 'toggle', displayName: 'Enable time' }}
               />
             </div>
-            {resolveReferences(column?.isTimeChecked, currentState) && (
+            {resolveReferences(column?.isTimeChecked) && (
               <>
                 {!isDateDisplayFormatFxOn && (
                   <div className="field mb-2" onClick={(e) => e.stopPropagation()} style={{ padding: '0px 12px' }}>
@@ -260,7 +260,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
             paramType="properties"
             paramMeta={{ type: 'toggle', displayName: 'Parse in unix timestamp' }}
           />
-          {resolveReferences(column?.parseInUnixTimestamp, currentState) ? (
+          {resolveReferences(column?.parseInUnixTimestamp) ? (
             <div className="mt-2">
               <div className="field mb-2 tj-app-input">
                 <label data-cy={`label-date-parse-format`} className="form-label">
@@ -283,7 +283,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
             </div>
           ) : (
             <div className="mt-2">
-              {resolveReferences(column?.isDateSelectionEnabled, currentState) && (
+              {resolveReferences(column?.isDateSelectionEnabled) && (
                 <div data-cy={`input-parse-timezone`} className="field mb-2">
                   <div className="d-flex justify-content-between">
                     <label data-cy={`label-parse-timezone`} className="form-label">
@@ -331,7 +331,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                   )}
                 </div>
               )}
-              {resolveReferences(column?.isTimeChecked, currentState) && (
+              {resolveReferences(column?.isTimeChecked) && (
                 <>
                   {!isParseDateFormatFxOn && (
                     <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
