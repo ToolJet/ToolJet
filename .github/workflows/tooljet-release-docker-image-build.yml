@@ -79,32 +79,6 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image
-        if: "contains(github.event.release.tag_name, 'CE-LTS')"
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/production.Dockerfile
-          push: true
-          tags: tooljet/tooljet-ce:${{ github.event.inputs.image }},tooljet/tooljet-ce:CE-LTS-latest
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, 'CE-LTS')"
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/production.Dockerfile
-          push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
@@ -147,21 +121,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image LTS tag
-        if: "contains(github.event.inputs.image, 'EE-LTS')"
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/production.Dockerfile
-          push: true
-          tags: tooljet/tooljet-ee:${{ github.event.inputs.image }},tooljet/tooljet-ee:EE-LTS-latest,tooljet/tooljet:${{ github.event.inputs.image }},tooljet/tooljet:EE-LTS-latest
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Docker image non-LTS tag
-        if: "!contains(github.event.inputs.image, 'EE-LTS')"
+      - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -182,4 +142,3 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-          
