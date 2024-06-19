@@ -9,7 +9,7 @@ const switchVariants = cva('tw-flex', {
   variants: {
     align: {
       left: ``,
-      right: `tw-flex-row-reverse tw-space-x-[96px] tw-space-x-reverse`,
+      right: `tw-flex-row-reverse tw-w-full tw-justify-between tw-space-x-reverse`,
     },
   },
   compoundVariants: [
