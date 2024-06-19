@@ -1366,7 +1366,7 @@ export function decodeEntities(encodedString) {
 
 export const convertToDateType = (dateString, timeZone) => {
   const date = new Date(dateString);
-  return new Date(date.toLocaleString('en-US', { timeZone }));
+  return new Date(date.toLocaleString('en-US', { timeZone, hour12: false }));
 };
 
 export const convertDateToTimeZoneFormatted = (
@@ -1375,7 +1375,6 @@ export const convertDateToTimeZoneFormatted = (
   formatString = 'dd/MM/yyyy, hh:mm a'
 ) => {
   try {
-    console.log(dateString, 'Working?');
     const utcDate = new Date(dateString);
     const options = {
       timeZone: targetTimeZone,
@@ -1413,15 +1412,18 @@ const getDateInTimeZone = (timeZone) => new Date().toLocaleString('en-US', { tim
 
 export const formatDate = (date, timeZone) => {
   if (date) {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hour = date.getHours().toString().padStart(2, '0');
-    const minute = date.getMinutes().toString().padStart(2, '0');
-    const second = date.getSeconds().toString().padStart(2, '0');
-    const timeZoneOffset = getUTCOffset(timeZone);
-    const formattedDate = `${year}-${month}-${day}T${hour}:${minute}:${second}${timeZoneOffset}`;
-    return formattedDate;
+    const dateInSeconds = Math.floor(new Date(date).getTime() / 1000);
+
+    const dateInTimeZone = new Date(getDateInTimeZone(timeZone));
+    const dateInTimeZoneInSeconds = Math.floor(dateInTimeZone.getTime() / 1000);
+
+    const dateInUTC = new Date(getDateInTimeZone('UTC'));
+    const dateInUTCInSeconds = Math.floor(dateInUTC.getTime() / 1000);
+
+    const offset = dateInTimeZoneInSeconds - dateInUTCInSeconds;
+    const dateWithRemovedOffset = dateInSeconds - offset - new Date().getTimezoneOffset() * 60;
+
+    return new Date(dateWithRemovedOffset * 1000).toISOString();
   } else {
     return null;
   }
@@ -1435,11 +1437,11 @@ export const getUTCOffset = (timeZone) => {
   const dateInUTC = new Date(getDateInTimeZone('UTC'));
   const dateInUTCInSeconds = dateInUTC.getTime() / 1000;
 
-  const difference = Math.floor(Math.abs(dateInTimeZoneInSeconds - dateInUTCInSeconds) / 60);
+  const difference = Math.floor((dateInTimeZoneInSeconds - dateInUTCInSeconds) / 60);
 
   const offsetHours = Math.floor(difference / 60);
   const offsetMinutes = difference % 60;
-  const offsetSign = offsetMinutes > 0 ? '+' : '-';
+  const offsetSign = offsetMinutes > 0 ? '+' : '';
   const formattedOffset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes
     .toString()
     .padStart(2, '0')}`;

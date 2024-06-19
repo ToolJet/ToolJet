@@ -20,17 +20,6 @@ export const DateTimePicker = ({
   saveFunction = () => {},
   timezone = getLocalTimeZone(),
 }) => {
-  // console.log(timestamp);
-  // const testDate = new Date(timestamp);
-  // console.log(testDate);
-  // console.log(testDate.toLocaleString('en-US', { timeZone: timezone }));
-  // const testDate2 = convertToDateType(timestamp, timezone);
-  // console.log(testDate2);
-  // console.log(testDate2.getTime() + testDate2.getTimezoneOffset() * 60000);
-  // const testDate3 = new Date(testDate2.getTime() - testDate2.getTimezoneOffset() * 60000);
-  // console.log(testDate3.toISOString());
-
-  console.log(timestamp);
   const transformedTimestamp = timestamp ? convertToDateType(timestamp, timezone) : null;
 
   const timestampRef = useRef(timestamp);
