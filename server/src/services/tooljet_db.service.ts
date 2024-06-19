@@ -24,6 +24,11 @@ export type ForeignKeyDetails = {
   on_update: string;
 };
 
+enum AggregateFunctions {
+  sum = 'SUM',
+  count = 'COUNT',
+}
+
 export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
 
 // Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
@@ -696,16 +701,48 @@ export class TooljetDbService {
   private buildJoinQuery(queryJson, internalTableIdToNameMap): SelectQueryBuilder<any> {
     const queryBuilder: SelectQueryBuilder<any> = this.tooljetDbManager.createQueryBuilder();
 
-    // mandatory attributes
-    if (isEmpty(queryJson.fields)) throw new BadRequestException('Select statement is empty');
+    // Mandatory attributes
+    if (isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates))
+      throw new BadRequestException('Select statement is empty');
     if (isEmpty(queryJson.from)) throw new BadRequestException('From table is not selected');
 
-    // select with aliased column names
-    queryJson.fields.forEach((field) => {
-      const fieldName = `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
-      const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
-      queryBuilder.addSelect(fieldName, fieldAlias);
-    });
+    // Building `SELECT` statement with aliased column names
+    if (!isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates)) {
+      queryJson.fields.forEach((field) => {
+        const fieldName = `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
+        const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
+        queryBuilder.addSelect(fieldName, fieldAlias);
+      });
+    }
+
+    // Building `AGGREGATE` statement :
+    if (!isEmpty(queryJson.aggregates)) {
+      Object.entries(queryJson.aggregates).forEach(([_key, aggregateParams]) => {
+        const { aggFx, column, table_id: tableId } = aggregateParams as any;
+        queryBuilder.addSelect(
+          `${AggregateFunctions[aggFx]}(${internalTableIdToNameMap[tableId]}.${column})`,
+          `${internalTableIdToNameMap[tableId]}_${column}_${aggFx}`
+        );
+      });
+    }
+
+    // Building `GROUP_BY` statement :
+    if (!isEmpty(queryJson.group_by)) {
+      Object.entries(queryJson.group_by).forEach(([groupByTableId, groupByColumList]: [string, Array<string>]) => {
+        if (!isEmpty(groupByColumList)) {
+          groupByColumList.forEach((groupByColum) => {
+            // The 'SELECT' statement needs to have 'GROUP_BY' columns added.
+            queryBuilder.addSelect(
+              `${internalTableIdToNameMap[groupByTableId]}.${groupByColum}`,
+              `${internalTableIdToNameMap[groupByTableId]}_${groupByColum}`
+            );
+
+            // Building `GROUP_BY` statement
+            queryBuilder.addGroupBy(`${internalTableIdToNameMap[groupByTableId]}.${groupByColum}`);
+          });
+        }
+      });
+    }
 
     // from table
     queryBuilder.from(queryJson.from.name, internalTableIdToNameMap[queryJson.from.name]);
