@@ -85,23 +85,19 @@ export const MultiselectV2 = ({
 
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
-    if (Array.isArray(_options)) {
-      let _selectOptions = _options
-        .filter((data) => data.visible)
-        .map((value) => ({
-          ...value,
-          isDisabled: value.disable,
-        }));
-      return _selectOptions;
-    } else {
-      return [];
-    }
+    let _selectOptions = _options
+      .filter((data) => data.visible)
+      .map((value) => ({
+        ...value,
+        isDisabled: value.disable,
+      }));
+    return _selectOptions;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
-      const foundItem = Array.isArray(schema) && schema?.filter((item) => item?.visible && item?.default);
+      const foundItem = schema?.filter((item) => item?.visible && item?.default);
       return foundItem;
     }
     if (isDefault) {
