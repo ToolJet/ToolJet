@@ -441,8 +441,6 @@ export const MultiselectV2 = ({
             optionsLoadingState={optionsLoadingState}
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
-            menuPortalTarget={document.body}
-            menuPlacement="auto"
           />
         </div>
       </div>
