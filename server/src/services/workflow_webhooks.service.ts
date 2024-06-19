@@ -15,7 +15,7 @@ export class WorkflowWebhooksService {
     private workflowExecutionsService: WorkflowExecutionsService
   ) {}
 
-  async triggerWorkflow(workflowApps, workflowParams, environment) {
+  async triggerWorkflow(workflowApps, workflowParams, environment, response) {
     // When workflow version is introduced - Query needs to be tweaked
     const appVersion = await this.manager
       .createQueryBuilder(AppVersion, 'av')
@@ -62,7 +62,8 @@ export class WorkflowWebhooksService {
     const result = await this.workflowExecutionsService.execute(
       workflowExecution,
       sanitisedWorkflowParams,
-      webhookEnvironmentId
+      webhookEnvironmentId,
+      response
     );
     return result;
   }

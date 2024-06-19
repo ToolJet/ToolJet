@@ -456,7 +456,7 @@ export const Inspector = ({
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
+                componentMeta: componentMeta.component,
               })}
             </small>
           </span>

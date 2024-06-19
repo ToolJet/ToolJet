@@ -49,7 +49,7 @@ describe("Self host onboarding", () => {
 
         cy.get(commonSelectors.passwordHelperText).verifyVisibleElement(
             "have.text",
-            commonText.passwordHelperText
+            "Password must be at least 5 characters"
         );
 
         cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {

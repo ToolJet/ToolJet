@@ -73,7 +73,7 @@ export const postgreSqlText = {
   yes: "Yes",
 
   guiOptionBulkUpdate: "Bulk update using primary key",
-  buttonTextTestConnection: "Test Connection",
+  buttonTextTestConnection: "Test connection",
 
   tabAdvanced: "Advanced",
   labelNoEventhandler: "No event handlers",

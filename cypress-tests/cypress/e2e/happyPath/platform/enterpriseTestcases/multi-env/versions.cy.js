@@ -17,7 +17,7 @@ import {
     verifyVersionAfterPreview,
 } from "Support/utils/version";
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
 import {
     verifyModal,
@@ -64,6 +64,8 @@ describe("App Version Functionality", () => {
 
     it("Verify all functionality for the app version", () => {
         data.appName = `${fake.companyName}-App`;
+        data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+
         cy.apiCreateApp(data.appName);
         cy.openApp();
         cy.waitForAppLoad();
@@ -114,21 +116,17 @@ describe("App Version Functionality", () => {
         promoteApp();
 
         releasedVersionAndVerify((currentVersion = "v3"));
-        cy.url().then((url) => {
-            const parts = url.split("/");
-            const value = parts[parts.length - 1];
-            cy.log(`Extracted value: ${value}`);
-            cy.backToApps();
-            cy.wait(1000);
 
-            cy.visit(`/applications/${value}`);
-            cy.wait(3000);
-        });
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+        cy.wait(2000);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.wait(2000);
+        cy.visit(`/applications/${data.slug}`);
 
         verifyComponent("button1");
         cy.go("back");
         cy.wait(3000);
-        navigateToAppEditor(data.appName);
         cy.get('[data-cy="list-current-env-name"]').click();
         cy.get(multiEnvSelector.envNameList).eq(0).click();
         navigateToCreateNewVersionModal((currentVersion = "v3"));

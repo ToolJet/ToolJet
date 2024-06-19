@@ -11,17 +11,15 @@ import {
     AddNewconstants,
 } from "Support/utils/workspaceConstants";
 import { buttonText } from "Texts/button";
-import {
-
-    editAndVerifyWidgetName,
-} from "Support/utils/commonWidget";
-import { verifypreview } from "Support/utils/dataSource";
+import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
+import { verifypreview, createDataQuery } from "Support/utils/dataSource";
 
 import {
     selectQueryFromLandingPage,
     query,
     addInputOnQueryField,
 } from "Support/utils/queries";
+import { dataSourceSelector } from "Selectors/dataSource";
 
 const data = {};
 data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -102,7 +100,7 @@ describe("Workspace constants", () => {
         );
         cy.get(commonSelectors.valueInputField)
             .invoke("attr", "placeholder")
-            .should("eq", "Enter Value");
+            .should("eq", "Enter value");
         cy.get(commonSelectors.valueInputField).should("be.visible");
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
             "have.text",
@@ -126,6 +124,7 @@ describe("Workspace constants", () => {
             "Constant name should be between 1 and 32 characters"
         );
 
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, " ");
         cy.get(commonSelectors.valueErrorText).verifyVisibleElement(
             "have.text",
@@ -136,6 +135,7 @@ describe("Workspace constants", () => {
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
 
         cy.clearAndType(commonSelectors.nameInputField, data.constName);
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.constName);
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
         cy.get(commonSelectors.cancelButton).click();
@@ -145,6 +145,7 @@ describe("Workspace constants", () => {
 
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
         cy.clearAndType(commonSelectors.nameInputField, data.constName);
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.constName);
         cy.get(workspaceConstantsSelectors.addConstantButton).click();
         cy.verifyToastMessage(
@@ -172,6 +173,8 @@ describe("Workspace constants", () => {
         cy.get(
             workspaceConstantsSelectors.constantsTableValueHeader
         ).verifyVisibleElement("have.text", "Value");
+        cy.get(workspaceConstantsSelectors.constHideButton(data.constName)).click();
+
         cy.get(
             workspaceConstantsSelectors.constantName(data.constName)
         ).verifyVisibleElement("have.text", data.constName);
@@ -202,6 +205,7 @@ describe("Workspace constants", () => {
             "Value"
         );
         cy.get(commonSelectors.valueInputField)
+            .click()
             .should("be.visible")
             .and("have.value", data.constName);
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
@@ -213,7 +217,7 @@ describe("Workspace constants", () => {
             "Update"
         );
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
         cy.get(commonSelectors.cancelButton).click();
@@ -222,6 +226,7 @@ describe("Workspace constants", () => {
         ).verifyVisibleElement("have.text", data.constName);
 
         cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
         cy.get(workspaceConstantsSelectors.addConstantButton).click();
         cy.verifyToastMessage(
@@ -323,7 +328,7 @@ describe("Workspace constants", () => {
         );
         cy.get(commonSelectors.valueInputField)
             .invoke("attr", "placeholder")
-            .should("eq", "Enter Value");
+            .should("eq", "Enter value");
         cy.get(commonSelectors.valueInputField).should("be.visible");
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
             "have.text",
@@ -347,6 +352,7 @@ describe("Workspace constants", () => {
             "Constant name should be between 1 and 32 characters"
         );
 
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, " ");
         cy.get(commonSelectors.valueErrorText).verifyVisibleElement(
             "have.text",
@@ -357,6 +363,7 @@ describe("Workspace constants", () => {
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
 
         cy.clearAndType(commonSelectors.nameInputField, data.constName);
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.constName);
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
         cy.get(commonSelectors.cancelButton).click();
@@ -366,6 +373,7 @@ describe("Workspace constants", () => {
 
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
         cy.clearAndType(commonSelectors.nameInputField, data.constName);
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.constName);
         cy.get(workspaceConstantsSelectors.addConstantButton).click();
         cy.verifyToastMessage(
@@ -393,6 +401,7 @@ describe("Workspace constants", () => {
         cy.get(
             workspaceConstantsSelectors.constantsTableValueHeader
         ).verifyVisibleElement("have.text", "Value");
+        cy.get(workspaceConstantsSelectors.constHideButton(data.constName)).click();
         cy.get(
             workspaceConstantsSelectors.constantName(data.constName)
         ).verifyVisibleElement("have.text", data.constName);
@@ -423,6 +432,7 @@ describe("Workspace constants", () => {
             "Value"
         );
         cy.get(commonSelectors.valueInputField)
+            .click()
             .should("be.visible")
             .and("have.value", data.constName);
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
@@ -434,6 +444,7 @@ describe("Workspace constants", () => {
             "Update"
         );
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+        cy.get(commonSelectors.valueInputField).click();
 
         cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
@@ -443,6 +454,7 @@ describe("Workspace constants", () => {
         ).verifyVisibleElement("have.text", data.constName);
 
         cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
         cy.get(workspaceConstantsSelectors.addConstantButton).click();
         cy.verifyToastMessage(
@@ -543,7 +555,7 @@ describe("Workspace constants", () => {
         );
         cy.get(commonSelectors.valueInputField)
             .invoke("attr", "placeholder")
-            .should("eq", "Enter Value");
+            .should("eq", "Enter value");
         cy.get(commonSelectors.valueInputField).should("be.visible");
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
             "have.text",
@@ -567,6 +579,7 @@ describe("Workspace constants", () => {
             "Constant name should be between 1 and 32 characters"
         );
 
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, " ");
         cy.get(commonSelectors.valueErrorText).verifyVisibleElement(
             "have.text",
@@ -577,6 +590,7 @@ describe("Workspace constants", () => {
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
 
         cy.clearAndType(commonSelectors.nameInputField, data.constName);
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.constName);
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
         cy.get(commonSelectors.cancelButton).click();
@@ -586,6 +600,7 @@ describe("Workspace constants", () => {
 
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
         cy.clearAndType(commonSelectors.nameInputField, data.constName);
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.constName);
         cy.get(workspaceConstantsSelectors.addConstantButton).click();
         cy.verifyToastMessage(
@@ -613,6 +628,7 @@ describe("Workspace constants", () => {
         cy.get(
             workspaceConstantsSelectors.constantsTableValueHeader
         ).verifyVisibleElement("have.text", "Value");
+        cy.get(workspaceConstantsSelectors.constHideButton(data.constName)).click();
         cy.get(
             workspaceConstantsSelectors.constantName(data.constName)
         ).verifyVisibleElement("have.text", data.constName);
@@ -643,6 +659,7 @@ describe("Workspace constants", () => {
             "Value"
         );
         cy.get(commonSelectors.valueInputField)
+            .click()
             .should("be.visible")
             .and("have.value", data.constName);
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
@@ -655,6 +672,7 @@ describe("Workspace constants", () => {
         );
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
         cy.get(commonSelectors.cancelButton).click();
@@ -663,6 +681,7 @@ describe("Workspace constants", () => {
         ).verifyVisibleElement("have.text", data.constName);
 
         cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
+        cy.get(commonSelectors.valueInputField).click();
         cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
         cy.get(workspaceConstantsSelectors.addConstantButton).click();
         cy.verifyToastMessage(
@@ -728,13 +747,13 @@ describe("Workspace constants", () => {
         query("preview");
         verifypreview("raw", "Development");
 
-        cy.dragAndDropWidget("Text", 550, 350);
+        cy.dragAndDropWidget("Text Input", 550, 350);
         editAndVerifyWidgetName(data.constantsName, []);
         cy.waitForAutoSave();
 
-        cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
-        ).clearAndTypeOnCodeMirror(`{{constants.${data.constantsName}`);
+        cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+            `{{constants.${data.constantsName}`
+        );
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
 
@@ -742,7 +761,7 @@ describe("Workspace constants", () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.get(commonWidgetSelector.inspectorNodeComponents).click();
         cy.get(commonWidgetSelector.nodeComponent(data.constantsName)).click();
-        cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+        cy.get('[data-cy="inspector-node-value"] > .mx-2').verifyVisibleElement(
             "have.text",
             `"Development"`
         );
@@ -762,7 +781,7 @@ describe("Workspace constants", () => {
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.constantsName)
-        ).verifyVisibleElement("have.text", "Development");
+        ).verifyVisibleElement("have.value", "Development");
 
         cy.go("back");
         cy.waitForAppLoad();
@@ -777,7 +796,7 @@ describe("Workspace constants", () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.get(commonWidgetSelector.inspectorNodeComponents).click();
         cy.get(commonWidgetSelector.nodeComponent(data.constantsName)).click();
-        cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+        cy.get('[data-cy="inspector-node-value"] > .mx-2').verifyVisibleElement(
             "have.text",
             `"Staging"`
         );
@@ -797,7 +816,7 @@ describe("Workspace constants", () => {
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.constantsName)
-        ).verifyVisibleElement("have.text", "Staging");
+        ).verifyVisibleElement("have.value", "Staging");
 
         cy.go("back");
         cy.waitForAppLoad();
@@ -812,7 +831,7 @@ describe("Workspace constants", () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.get(commonWidgetSelector.inspectorNodeComponents).click();
         cy.get(commonWidgetSelector.nodeComponent(data.constantsName)).click();
-        cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+        cy.get('[data-cy="inspector-node-value"] > .mx-2').verifyVisibleElement(
             "have.text",
             `"Production"`
         );
@@ -832,17 +851,297 @@ describe("Workspace constants", () => {
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.constantsName)
-        ).verifyVisibleElement("have.text", "Production");
+        ).verifyVisibleElement("have.value", "Production");
 
         cy.go("back");
         cy.waitForAppLoad();
         cy.wait(3000);
 
         releaseApp();
-        launchApp();
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+        cy.wait(2000);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.wait(2000);
+        cy.visit(`/applications/${data.slug}`);
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.constantsName)
-        ).verifyVisibleElement("have.text", "Production");
+        ).verifyVisibleElement("have.value", "Production");
+    });
+
+    it("should verify the REST API with headers defined in constants resolving value on components and query", () => {
+        cy.viewport(1200, 1300);
+
+        data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName}-App`;
+        data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+        data.restapilink = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.restapiHeaderKey = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+        data.restapiHeaderValue = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(
+            data.restapilink,
+            `${Cypress.env("constants_host")}development`
+        );
+        AddNewconstants(data.restapiHeaderKey, "customHeader");
+        AddNewconstants(data.restapiHeaderValue, "key=value");
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
+        AddNewconstants(
+            data.restapilink,
+            `${Cypress.env("constants_host")}staging`
+        );
+        AddNewconstants(data.restapiHeaderKey, "customHeader");
+        AddNewconstants(data.restapiHeaderValue, "key=value");
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click();
+        AddNewconstants(
+            data.restapilink,
+            `${Cypress.env("constants_host")}production`
+        );
+        AddNewconstants(data.restapiHeaderKey, "customHeader");
+        AddNewconstants(data.restapiHeaderValue, "key=value");
+
+        cy.apiCreateApp(data.appName);
+        cy.wait(1000);
+        createDataQuery(
+            data.appName,
+            data.restapilink,
+            data.restapiHeaderKey,
+            data.restapiHeaderValue
+        );
+
+        cy.openApp();
+
+        cy.get(".custom-toggle-switch>.switch>").eq(3).click();
+
+        cy.waitForAutoSave();
+        cy.dragAndDropWidget("Text Input", 550, 650);
+        editAndVerifyWidgetName(data.widgetName, []);
+        cy.waitForAutoSave();
+
+        cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+            `{{queries.restapi1.data.message`
+        );
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Development environment testing");
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(4000);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Development environment testing");
+
+        cy.go("back");
+        cy.waitForAppLoad();
+        cy.wait(3000);
+
+        promoteApp();
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Staging environment testing");
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(4000);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Staging environment testing");
+
+        cy.go("back");
+        cy.waitForAppLoad();
+        cy.wait(3000);
+
+        promoteApp();
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Production environment testing");
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(4000);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Production environment testing");
+
+        cy.go("back");
+        cy.waitForAppLoad();
+        cy.wait(3000);
+
+        releaseApp();
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+        cy.wait(2000);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.wait(2000);
+        cy.visit(`/applications/${data.slug}`);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Production environment testing");
+    });
+
+    it("should verify the constants resolving in datasource connection form", () => {
+        data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+        data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.appName = `${fake.companyName}-App`;
+        data.restapilink = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.restapiHeaderKey = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+        data.restapiHeaderValue = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+
+        cy.get(commonSelectors.workspaceConstantsIcon).click();
+        AddNewconstants(
+            data.restapilink,
+            `${Cypress.env("constants_host")}development`
+        );
+        AddNewconstants(data.restapiHeaderKey, "customHeader");
+        AddNewconstants(data.restapiHeaderValue, "key=value");
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
+        AddNewconstants(
+            data.restapilink,
+            `${Cypress.env("constants_host")}staging`
+        );
+        AddNewconstants(data.restapiHeaderKey, "customHeader");
+        AddNewconstants(data.restapiHeaderValue, "key=value");
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click();
+        AddNewconstants(
+            data.restapilink,
+            `${Cypress.env("constants_host")}production`
+        );
+        AddNewconstants(data.restapiHeaderKey, "customHeader");
+        AddNewconstants(data.restapiHeaderValue, "key=value");
+
+        cy.apiCreateGDS(
+            "http://localhost:3000/api/v2/data_sources",
+            data.ds,
+            "restapi",
+            [
+                { key: "url", value: `{{constants.${data.restapilink}}}` },
+                { key: "auth_type", value: "none" },
+                { key: "grant_type", value: "authorization_code" },
+                { key: "add_token_to", value: "header" },
+                { key: "header_prefix", value: "Bearer " },
+                { key: "access_token_url", value: "" },
+                { key: "client_ide", value: "" },
+                { key: "client_secret", value: "", encrypted: true },
+                { key: "scopes", value: "read, write" },
+                { key: "username", value: "", encrypted: false },
+                { key: "password", value: "", encrypted: true },
+                { key: "bearer_token", value: "", encrypted: true },
+                { key: "auth_url", value: "" },
+                { key: "client_auth", value: "header" },
+                { key: "headers", value: [["", ""]] },
+                { key: "custom_query_params", value: [["", ""]], encrypted: false },
+                { key: "custom_auth_params", value: [["", ""]] },
+                {
+                    key: "access_token_custom_headers",
+                    value: [["", ""]],
+                    encrypted: false,
+                },
+                { key: "multiple_auth_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
+            ]
+        );
+
+        cy.apiCreateApp(data.appName);
+        cy.wait(1000);
+        createDataQuery(
+            data.appName,
+            data.restapilink,
+            data.restapiHeaderKey,
+            data.restapiHeaderValue
+        );
+
+        cy.openApp();
+
+        cy.get(".custom-toggle-switch>.switch>").eq(3).click();
+
+        cy.waitForAutoSave();
+        cy.dragAndDropWidget("Text Input", 550, 650);
+        editAndVerifyWidgetName(data.widgetName, []);
+        cy.waitForAutoSave();
+
+        cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+            `{{queries.restapi1.data.message`
+        );
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Development environment testing");
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(4000);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Development environment testing");
+
+        cy.go("back");
+        cy.waitForAppLoad();
+        cy.wait(3000);
+
+        promoteApp();
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Staging environment testing");
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(4000);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Staging environment testing");
+
+        cy.go("back");
+        cy.waitForAppLoad();
+        cy.wait(3000);
+
+        promoteApp();
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Production environment testing");
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(4000);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Production environment testing");
+
+        cy.go("back");
+        cy.waitForAppLoad();
+        cy.wait(3000);
+
+        releaseApp();
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+        cy.wait(2000);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.wait(2000);
+        cy.visit(`/applications/${data.slug}`);
+
+        cy.get(
+            commonWidgetSelector.draggableWidget(data.widgetName)
+        ).verifyVisibleElement("have.value", "Production environment testing");
     });
 });

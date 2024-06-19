@@ -787,6 +787,7 @@ const EditorComponent = (props) => {
       should_freeze_editor: shouldFreezeEditor,
       editorEnvironment,
     } = appData;
+
     const startingPageHandle = props.params.pageHandle;
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);

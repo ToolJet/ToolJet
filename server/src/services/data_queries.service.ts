@@ -23,6 +23,8 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { RequestContext } from 'src/models/request-context.model';
 import { IUpdatingReferencesOptions } from '@dto/data-query.dto';
 import { DataQueryStatus } from 'src/models/data_query_status.model';
+import { CookieOptions, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DataQueriesService {
@@ -36,7 +38,8 @@ export class DataQueriesService {
     private dataQueriesRepository: Repository<DataQuery>,
     private auditLoggerService: AuditLoggerService,
     @InjectRepository(OrgEnvironmentVariable)
-    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
+    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>,
+    private configService: ConfigService
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
@@ -156,9 +159,16 @@ export class DataQueriesService {
     }
   };
 
-  async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
+  async runQuery(
+    user: User,
+    dataQuery: any,
+    queryOptions: object,
+    response: Response,
+    environmentId?: string
+  ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
+    const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
 
     try {
       const dataSource: DataSource = dataQuery?.dataSource;
@@ -202,6 +212,20 @@ export class DataQueriesService {
             sourceOptions['headers'] = [customXFFHeader];
           } else {
             sourceOptions['headers'].push(customXFFHeader);
+          }
+          if (forwardRestCookies) {
+            // Extract cookies from the client request
+            const cookies = RequestContext?.currentContext?.req?.headers?.cookie || '';
+            if (cookies) {
+              const cookieArray = cookies.split('; ');
+              //Filter out tooljet sensitive tokens
+              const filteredCookies = cookieArray.filter((cookie) => !cookie.startsWith('tj_auth_token='));
+              const filteredCookiesString = filteredCookies.join('; ');
+              if (filteredCookiesString) {
+                const cookieHeader = ['Cookie', filteredCookiesString];
+                sourceOptions['headers'].push(cookieHeader);
+              }
+            }
           }
         }
 
@@ -325,6 +349,11 @@ export class DataQueriesService {
         }
       }
       queryStatus.setSuccess();
+
+      //TODO: support workflow execute method().
+      if (forwardRestCookies && dataQuery.kind === 'restapi' && result.responseHeaders) {
+        this.setCookiesBackToCleint(response, result.responseHeaders);
+      }
       return result;
     } catch (queryError) {
       queryStatus.setFailure({
@@ -348,6 +377,47 @@ export class DataQueriesService {
       }
     }
   }
+
+  setCookiesBackToCleint = (response: Response, responseHeaders: any) => {
+    /* forward set-cookie headers */
+    const setCookieHeaders = responseHeaders['set-cookie'];
+    if (setCookieHeaders) {
+      setCookieHeaders.forEach((cookie) => {
+        const cookieParts = cookie.split(';');
+        const cookieNameValue = cookieParts[0].split('=');
+        const cookieOptions: CookieOptions = {};
+
+        const keyMap: { [key: string]: keyof CookieOptions } = {
+          'max-age': 'maxAge',
+          expires: 'expires',
+          httponly: 'httpOnly',
+          secure: 'secure',
+          domain: 'domain',
+          path: 'path',
+          encode: 'encode',
+          samesite: 'sameSite',
+          signed: 'signed',
+        };
+
+        cookieParts.slice(1).forEach((part) => {
+          const [key, value] = part.trim().split('=');
+          const normalizedKey = key.toLowerCase();
+
+          if (key.toLowerCase() === 'expires') {
+            const expiresTimestamp = new Date(value).getTime() - Date.now();
+            cookieOptions.maxAge = expiresTimestamp;
+          } else {
+            if (keyMap[normalizedKey]) {
+              const optionKey = keyMap[normalizedKey];
+              cookieOptions[optionKey as any] = value || true;
+            }
+          }
+        });
+
+        response.cookie(cookieNameValue[0], cookieNameValue[1], cookieOptions);
+      });
+    }
+  };
 
   checkIfContentTypeIsURLenc(headers: [] = []) {
     const objectHeaders = Object.fromEntries(headers);

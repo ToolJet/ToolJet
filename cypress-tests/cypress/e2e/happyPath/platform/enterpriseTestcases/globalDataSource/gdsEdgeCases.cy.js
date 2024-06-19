@@ -23,6 +23,7 @@ import {
     addDsToGroup,
     createGroupAddAppAndUserToGroup,
 } from "Support/utils/manageGroups";
+import { addNewUser } from "Support/utils/onboarding";
 
 const data = {};
 data.userName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -45,12 +46,12 @@ describe("Global Datasource Manager", () => {
 
     it("Connect Data source and assign to user groups", () => {
         cy.apiCreateApp(data.appName);
-        addNewUserEE(data.userName1, data.userEmail1);
+        addNewUser(data.userName1, data.userEmail1);
         cy.logoutApi();
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
         createGroupAddAppAndUserToGroup(data.userName1, data.userEmail1);
-        addNewUserEE(data.userName2, data.userEmail2);
+        addNewUser(data.userName2, data.userEmail2);
         cy.logoutApi();
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
@@ -116,19 +117,19 @@ describe("Global Datasource Manager", () => {
         );
         cy.wait(500);
 
-        cy.dragAndDropWidget("Text", 100, 250);
+        cy.dragAndDropWidget("Text Input", 100, 250);
         editAndVerifyWidgetName(data.text1, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[1].firstname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "Jane");
+        ).verifyVisibleElement("have.value", "Jane");
 
         cy.intercept("POST", "/api/data_queries/**").as("run");
         cy.get('[data-cy="show-ds-popover-button"]').click();
@@ -137,19 +138,19 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.wait("@run");
 
-        cy.dragAndDropWidget("Text", 200, 150);
+        cy.dragAndDropWidget("Text Input", 200, 150);
         editAndVerifyWidgetName(data.text2, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.restapi1.data.data[0].email`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text2)
-        ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+        ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
 
         cy.backToApps();
 
@@ -195,11 +196,11 @@ describe("Global Datasource Manager", () => {
         );
 
         cy.wait(1000);
-        cy.dragAndDropWidget("Text", 450, 150);
+        cy.dragAndDropWidget("Text Input", 450, 150);
         editAndVerifyWidgetName(data.text3, []);
         cy.waitForAutoSave();
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.user_query.data[1].firstname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
@@ -208,21 +209,21 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text3)
-        ).verifyVisibleElement("have.text", "Jane");
+        ).verifyVisibleElement("have.value", "Jane");
 
         cy.get('[data-cy="list-query-table_preview"]').click();
         cy.wait(500);
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "Jane");
+        ).verifyVisibleElement("have.value", "Jane");
 
         cy.get('[data-cy="list-query-restapi1"]').click();
         cy.wait(500);
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text2)
-        ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+        ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
 
         cy.wait(1000);
         cy.get('[data-cy="show-ds-popover-button"]').click();
@@ -267,11 +268,11 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.wait("@run");
 
-        cy.dragAndDropWidget("Text", 550, 250);
+        cy.dragAndDropWidget("Text Input", 550, 250);
         editAndVerifyWidgetName(data.text4, []);
         cy.waitForAutoSave();
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.restapi2.data.data[1].email`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
@@ -279,19 +280,19 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text4)
-        ).verifyVisibleElement("have.text", "janet.weaver@reqres.in");
+        ).verifyVisibleElement("have.value", "janet.weaver@reqres.in");
 
         cy.get('[data-cy="list-query-table_preview"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text1)
-        ).verifyVisibleElement("have.text", "Jane");
+        ).verifyVisibleElement("have.value", "Jane");
 
         cy.get('[data-cy="list-query-restapi1"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.text2)
-        ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+        ).verifyVisibleElement("have.value", "george.bluth@reqres.in");
 
         cy.get('[data-cy="show-ds-popover-button"]').click();
         cy.get(".css-1rrkggf-Input").type(data.ds1);

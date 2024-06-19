@@ -11,6 +11,7 @@ import {
   ForbiddenException,
   BadRequestException,
   Put,
+  Res,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
@@ -31,6 +32,7 @@ import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/globa
 import { isEmpty } from 'class-validator';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { Response } from 'express';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -263,7 +265,8 @@ export class DataQueriesController {
     @User() user,
     @Param('id') dataQueryId,
     @Param('environmentId') environmentId,
-    @Body() updateDataQueryDto: UpdateDataQueryDto
+    @Body() updateDataQueryDto: UpdateDataQueryDto,
+    @Res({ passthrough: true }) response: Response
   ) {
     const { options, resolvedOptions, data_source_id } = updateDataQueryDto;
 
@@ -285,7 +288,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQuery, resolvedOptions, environmentId);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, resolvedOptions, response, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
@@ -313,7 +316,8 @@ export class DataQueriesController {
   async previewQuery(
     @User() user,
     @Body() updateDataQueryDto: UpdateDataQueryDto,
-    @Param('environmentId') environmentId
+    @Param('environmentId') environmentId,
+    @Res({ passthrough: true }) response: Response
   ) {
     const { options, query, app_version_id: appVersionId } = updateDataQueryDto;
 
@@ -341,7 +345,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQueryEntity, options, environmentId);
+      result = await this.dataQueriesService.runQuery(user, dataQueryEntity, options, response, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
