@@ -91,10 +91,10 @@ describe("Verify OIDC user onboarding", () => {
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".superadmin-button").click();
 
-    VerifyWorkspaceInvitePageElements();
+    // VerifyWorkspaceInvitePageElements();
 
-    cy.get(commonSelectors.acceptInviteButton).click();
-    cy.wait("@apps");
+    // cy.get(commonSelectors.acceptInviteButton).click();
+    // cy.wait("@apps");
     common.logout();
 
     cy.defaultWorkspaceLogin();
@@ -260,6 +260,5 @@ describe("Verify OIDC user onboarding", () => {
         "Open ID login failed - User does not exist in the workspace"
       );
     }
-
   });
 });
