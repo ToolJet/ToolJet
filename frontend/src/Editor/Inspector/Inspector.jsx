@@ -169,6 +169,7 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
+    console.log('arpit [componentDefinitionChanged]', { param });
     let newComponent = JSON.parse(JSON.stringify(component));
     let newDefinition = deepClone(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
