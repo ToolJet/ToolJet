@@ -55,14 +55,7 @@ function deleteDataSource(id) {
   return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 
-function test(kind, options, plugin_id, environment_id) {
-  const body = {
-    kind,
-    options,
-    plugin_id,
-    environment_id,
-  };
-
+function test(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data_sources/test_connection`, requestOptions).then(handleResponse);
 }
