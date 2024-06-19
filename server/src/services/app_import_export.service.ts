@@ -241,7 +241,7 @@ export class AppImportExportService {
 
     const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
 
     const resourceMapping = await this.setupImportedAppAssociations(
       this.entityManager,

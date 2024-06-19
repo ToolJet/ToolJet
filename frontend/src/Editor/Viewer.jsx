@@ -1167,7 +1167,7 @@ const withStore = (Component) => (props) => {
       }
     }, 400);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEnvironment]);
+  }, [currentPageId]);
 
   React.useEffect(() => {
     if (lastUpdatedRef.length > 0) {

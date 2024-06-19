@@ -28,10 +28,6 @@
           "name": "Update Document"
         },
         {
-          "value": "bulk_update",
-          "name": "Bulk update using document id"
-        },
-        {
           "value": "delete_document",
           "name": "Delete Document"
         }
@@ -122,6 +118,22 @@
             "name": ">="
           },
           {
+            "value": "is",
+            "name": "Is"
+          },
+          {
+            "value": "startsWith",
+            "name": "Starts With"
+          },
+          {
+            "value": "endsWith",
+            "name": "Ends With"
+          },
+          {
+            "value": "search",
+            "name": "Search"
+          },
+          {
             "value": "",
             "name": "None"
           }
@@ -177,7 +189,8 @@
         "type": "codehinter",
         "description": "Enter document body",
         "height": "150px",
-        "editorType": "extendedSingleLine"
+        "editorType": "extendedSingleLine",
+        "placeholder": "{'name': 'John', 'age': 30}"
       }
     },
     "update_document": {
@@ -207,7 +220,8 @@
         "type": "codehinter",
         "description": "Enter document body",
         "height": "150px",
-        "editorType": "extendedSingleLine"
+        "editorType": "extendedSingleLine",
+        "placeholder": "{'name': 'John', 'age': 30}"
       }
     },
     "delete_document": {
@@ -230,39 +244,6 @@
         "height": "36px",
         "className": "codehinter-plugins col-6",
         "placeholder": "Enter document id"
-      }
-    },
-    "bulk_update": {
-      "collectionId": {
-        "label": "Collection ID",
-        "key": "collectionId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter collection id"
-      },
-      "document_id_key": {
-        "label": "Key for document Id",
-        "key": "document_id_key",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter key for document Id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter key for document Id"
-      },
-      "records": {
-        "label": "Records",
-        "key": "records",
-        "type": "codehinter",
-        "mode": "javascript",
-        "description": "Enter records",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
       }
     }
   }
