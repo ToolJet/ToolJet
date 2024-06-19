@@ -10,6 +10,7 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   isPDFSupported,
+  calculateMoveableBoxHeight,
 } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
@@ -732,31 +733,13 @@ const SubWidgetWrapper = ({
   let width = (canvasWidth * layoutData.width) / 43;
   width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
 
-  const calculateMoveableBoxHeight = () => {
-    // Early return for non input components
-    if (!['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2'].includes(componentType)) {
-      return layoutData?.height;
-    }
-    const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
-
-    const resolvedLabel = label?.value?.length ?? 0;
-    const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
-    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
-
-    let newHeight = layoutData?.height;
-    if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
-      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += 20;
-      }
-    }
-
-    return newHeight;
-  };
   const { label = { value: null } } = propertiesDefinition ?? {};
 
   const styles = {
     width: width + 'px',
-    height: isComponentVisible() ? calculateMoveableBoxHeight() + 'px' : '10px',
+    height: isComponentVisible()
+      ? calculateMoveableBoxHeight(componentType, layoutData, stylesDefinition, label) + 'px'
+      : '10px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };
