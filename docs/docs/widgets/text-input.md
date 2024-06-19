@@ -66,7 +66,7 @@ Check the **component specific actions** available for this component **[here](/
 | Max length         | Sets the maximum number of characters allowed.                | Integer (e.g., `12` for a maximum of 12 characters).|
 | Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.textinput1.value<5&&"Value needs to be more than 5"}}`).           |
 
-To add regex inside `Custom Validation`, you can use the below format: 
+To add regex inside `Custom validation`, you can use the below format: 
 
 **Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message';}}`
 

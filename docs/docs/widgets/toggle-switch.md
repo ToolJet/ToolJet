@@ -81,7 +81,7 @@ Following actions of Toggle switch component can be controlled using the compone
 | Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 | Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.toggleswitch1.value === false &&"Value needs to be checked"}}`).           |
 
-To add regex inside `Custom Validation`, you can use the below format: 
+To add regex inside `Custom validation`, you can use the below format: 
 
 **Format**: `{{(<regexPattern>.test(<value>)) ? '' : 'Error message';}}`
 
