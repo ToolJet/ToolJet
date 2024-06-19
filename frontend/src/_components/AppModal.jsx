@@ -89,8 +89,8 @@ export function AppModal({
           setInfoText('');
           closeModal();
         }
-      } catch (error) {
-        toast.error(e.error, {
+      } catch (e) {
+        toast.error(e.message, {
           position: 'top-center',
         });
       }
