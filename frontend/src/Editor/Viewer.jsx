@@ -49,6 +49,7 @@ import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import TooljetBanner from './Viewer/TooljetBanner';
 
 class ViewerComponent extends React.Component {
@@ -703,7 +704,7 @@ class ViewerComponent extends React.Component {
     const bgColor =
       (this.props.canvasBackground?.backgroundFxQuery || this.props.canvasBackground?.canvasBackgroundColor) ??
       '#2f3c4c';
-    const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
+    const resolvedBackgroundColor = resolveReferences(bgColor);
     if (['#2f3c4c', '#F2F2F5', '#edeff5'].includes(resolvedBackgroundColor)) {
       return this.props.darkMode ? '#2f3c4c' : '#F2F2F5';
     }
@@ -851,7 +852,7 @@ class ViewerComponent extends React.Component {
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
     const pages =
-      Object.entries(_.cloneDeep(appDefinition)?.pages)
+      Object.entries(deepClone(appDefinition)?.pages)
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [];
 
@@ -1074,14 +1075,18 @@ const withStore = (Component) => (props) => {
   }
 
   React.useEffect(() => {
-    const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
-    const currentComponents = Object.keys(currentComponentsDef);
+    const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
-    setTimeout(() => {
-      if (currentComponents.length > 0) {
-        batchUpdateComponents(currentComponents);
-      }
-    }, 400);
+    if (isPageSwitched) {
+      const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
+      const currentComponents = Object.keys(currentComponentsDef);
+
+      setTimeout(() => {
+        if (currentComponents.length > 0) {
+          batchUpdateComponents(currentComponents);
+        }
+      }, 400);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPageId]);
 
