@@ -43,7 +43,7 @@ export const getInputBackgroundColor = ({ fieldBackgroundColor, darkMode, isLoad
   return 'var(--surfaces-surface-01)';
 };
 
-export const highlightText = (text, highlight) => {
+export const highlightText = (text = '', highlight) => {
   const parts = text?.split(new RegExp(`(${highlight})`, 'gi'));
   return (
     <span>

@@ -10,7 +10,9 @@ const CustomOption = (props) => {
     <Option {...props}>
       <div className="d-flex">
         <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
-        <span style={{ marginLeft: '5px' }}>{highlightText(props.label, props.selectProps.inputValue)}</span>
+        <span style={{ marginLeft: '5px' }}>
+          {highlightText(props.label?.toString(), props.selectProps.inputValue)}
+        </span>
       </div>
     </Option>
   );
