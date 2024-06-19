@@ -15,6 +15,7 @@ import cx from 'classnames';
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/_components/DateTimePicker';
+import { getLocalTimeZone } from '@/_helpers/utils';
 
 const RowForm = ({
   onCreate,
@@ -25,7 +26,8 @@ const RowForm = ({
   shouldResetRowForm,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
+    useContext(TooljetDatabaseContext);
   const inputRefs = useRef({});
   const primaryKeyColumns = [];
   const nonPrimaryKeyColumns = [];
@@ -405,6 +407,7 @@ const RowForm = ({
             timestamp={inputValues[index]?.value}
             setTimestamp={(value) => handleInputChange(index, value, columnName)}
             isOpenOnStart={false}
+            timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
           />
         );
 

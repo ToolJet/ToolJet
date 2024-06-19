@@ -1364,28 +1364,68 @@ export function decodeEntities(encodedString) {
   return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
 }
 
-export function formatTimestampToCustomString(timestamp, targetTimezone = 'UTC', sourceTimezone = 'UTC') {
-  const date = moment.tz(timestamp, sourceTimezone).utc();
-  if (!date.isValid()) {
-    return timestamp;
+export const convertToDateType = (dateString, timeZone) => {
+  const date = new Date(dateString);
+  return new Date(date.toLocaleString('en-US', { timeZone }));
+};
+
+export const convertDateToTimeZoneFormatted = (
+  dateString,
+  targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+  formatString = 'dd/MM/yyyy, hh:mm a'
+) => {
+  try {
+    console.log(dateString, 'Working?');
+    const utcDate = new Date(dateString);
+    const options = {
+      timeZone: targetTimeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    };
+
+    const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(utcDate);
+    const dateComponents = {};
+
+    parts.forEach(({ type, value }) => {
+      dateComponents[type] = value;
+    });
+
+    let formattedDate = formatString
+      .replace('dd', dateComponents.day)
+      .replace('MM', dateComponents.month)
+      .replace('yyyy', dateComponents.year)
+      .replace('hh', dateComponents.hour.padStart(2, '0'))
+      .replace('mm', dateComponents.minute.padStart(2, '0'))
+      .replace('a', dateComponents.dayPeriod.toUpperCase());
+
+    return formattedDate;
+  } catch (e) {
+    return dateString;
   }
-
-  const formattedDate = date.tz(targetTimezone).format('DD/MM/yyyy, h:mm a');
-  return formattedDate;
-}
-
-export function parseCustomStringToTimestamp(customString, targetTimezone = 'UTC', sourceTimezone = 'UTC') {
-  const parsedDate = moment.tz(customString, 'DD/MM/yyyy, h:mm aa', sourceTimezone);
-  if (!parsedDate.isValid()) {
-    return customString;
-  }
-
-  const formattedTimestamp = parsedDate.clone().tz(targetTimezone).format('YYYY-MM-DDTHH:mm:ssZ');
-  return formattedTimestamp;
-}
+};
 
 // Function to get the current date in a specific time zone
 const getDateInTimeZone = (timeZone) => new Date().toLocaleString('en-US', { timeZone });
+
+export const formatDate = (date, timeZone) => {
+  if (date) {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hour = date.getHours().toString().padStart(2, '0');
+    const minute = date.getMinutes().toString().padStart(2, '0');
+    const second = date.getSeconds().toString().padStart(2, '0');
+    const timeZoneOffset = getUTCOffset(timeZone);
+    const formattedDate = `${year}-${month}-${day}T${hour}:${minute}:${second}${timeZoneOffset}`;
+    return formattedDate;
+  } else {
+    return null;
+  }
+};
 
 // Function to get the UTC offset for a given time zone
 export const getUTCOffset = (timeZone) => {
@@ -1399,7 +1439,7 @@ export const getUTCOffset = (timeZone) => {
 
   const offsetHours = Math.floor(difference / 60);
   const offsetMinutes = difference % 60;
-  const offsetSign = offsetMinutes > 0 ? '+ ' : '- ';
+  const offsetSign = offsetMinutes > 0 ? '+' : '-';
   const formattedOffset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes
     .toString()
     .padStart(2, '0')}`;

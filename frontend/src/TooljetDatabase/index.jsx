@@ -93,6 +93,13 @@ export const TooljetDatabase = (props) => {
     setLoadingState,
   });
 
+  const getConfigurationProperty = (header, property, fallback) => {
+    const columnUuid = configurations?.columns?.column_names?.[header];
+    const columnConfig = configurations?.columns?.configurations?.[columnUuid] || {};
+    if (!columnConfig[property]) return fallback;
+    return columnConfig[property];
+  };
+
   const value = useMemo(
     () => ({
       searchParam,
@@ -130,6 +137,7 @@ export const TooljetDatabase = (props) => {
       setForeignKeys,
       configurations,
       setConfigurations,
+      getConfigurationProperty,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [

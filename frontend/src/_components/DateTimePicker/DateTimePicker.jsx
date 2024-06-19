@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './styles.scss';
+import { convertToDateType, formatDate, getLocalTimeZone } from '@/_helpers/utils';
 
 export const DateTimePicker = ({
   enableDate = true,
@@ -17,11 +18,24 @@ export const DateTimePicker = ({
   defaultValue = null,
   isEditCell = false,
   saveFunction = () => {},
+  timezone = getLocalTimeZone(),
 }) => {
-  // States
-  const transformedTimestamp = timestamp ? new Date(timestamp) : null;
-  const timestampRef = useRef(transformedTimestamp);
-  const prevTimestampRef = useRef(transformedTimestamp);
+  // console.log(timestamp);
+  // const testDate = new Date(timestamp);
+  // console.log(testDate);
+  // console.log(testDate.toLocaleString('en-US', { timeZone: timezone }));
+  // const testDate2 = convertToDateType(timestamp, timezone);
+  // console.log(testDate2);
+  // console.log(testDate2.getTime() + testDate2.getTimezoneOffset() * 60000);
+  // const testDate3 = new Date(testDate2.getTime() - testDate2.getTimezoneOffset() * 60000);
+  // console.log(testDate3.toISOString());
+
+  console.log(timestamp);
+  const transformedTimestamp = timestamp ? convertToDateType(timestamp, timezone) : null;
+
+  const timestampRef = useRef(timestamp);
+
+  const prevTimestampRef = useRef(timestamp);
   const [isOpen, setIsOpen] = useState(isOpenOnStart);
 
   const handleKeyDown = (e) => {
@@ -44,21 +58,23 @@ export const DateTimePicker = ({
   };
 
   const handleCellEditChange = (newTimestamp) => {
-    timestampRef.current = newTimestamp;
-    setTimestamp(newTimestamp);
+    const stringifiedTimestamp = formatDate(newTimestamp, timezone);
+    timestampRef.current = stringifiedTimestamp;
+    setTimestamp(stringifiedTimestamp);
   };
 
   const handleDefaultChange = (newTimestamp) => {
-    timestampRef.current = newTimestamp;
-    setTimestamp(newTimestamp);
+    const stringifiedTimestamp = formatDate(newTimestamp, timezone);
+    timestampRef.current = stringifiedTimestamp;
+    setTimestamp(stringifiedTimestamp);
     setIsOpen(false);
   };
 
   useEffect(() => {
-    if (transformedTimestamp !== defaultValue && transformedTimestamp !== null) {
-      prevTimestampRef.current = transformedTimestamp;
+    if (timestampRef.current !== defaultValue && timestampRef.current !== null) {
+      prevTimestampRef.current = timestampRef.current;
     }
-  }, [transformedTimestamp]);
+  }, [timestampRef.current]);
 
   const SaveChangesSection = () => {
     const [isNull, setIsNull] = useState(timestampRef.current === null);
@@ -252,9 +268,19 @@ export const DateTimePicker = ({
           transformedTimestamp ? (
             <input style={{ borderRadius: `${styles.borderRadius}px`, display: isEditCell ? 'block' : 'flex' }} />
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div
+              style={{
+                ...(!isEditCell && { minWidth: '125px' }),
+                display: 'flex',
+                alignItems: 'center',
+                position: 'relative',
+              }}
+            >
               <span
-                style={{ position: 'static', margin: isEditCell ? '0px 0px 0px 0px' : '4px 0px 4px 0px' }}
+                style={{
+                  position: 'static',
+                  margin: isEditCell ? '0px 0px 0px 0px' : '4px 0px 4px 0px',
+                }}
                 className={cx({ 'cell-text-null': isEditCell, 'null-tag': !isEditCell })}
               >
                 Null

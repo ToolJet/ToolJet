@@ -27,7 +27,7 @@ import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { formatTimestampToCustomString, getLocalTimeZone, getUTCOffset } from '@/_helpers/utils';
+import { convertDateToTimeZoneFormatted, getLocalTimeZone, getUTCOffset } from '@/_helpers/utils';
 
 import './styles.scss';
 
@@ -52,6 +52,7 @@ const Table = ({ collapseSidebar }) => {
     foreignKeys,
     configurations,
     setConfigurations,
+    getConfigurationProperty,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -724,6 +725,7 @@ const Table = ({ collapseSidebar }) => {
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
+    console.log(cellValue, 'cellValue Before');
 
     primaryKeyColumns.forEach((primaryKeyColumnName) => {
       if (rows[rIndex]?.values[primaryKeyColumnName]) {
@@ -770,8 +772,10 @@ const Table = ({ collapseSidebar }) => {
 
     // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
     const selectedTableDataCopy = [...selectedTableData];
+    console.log('cellValue', cellValue);
     if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
       selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
+      console.log(selectedTableDataCopy[rIndex][cellKey], 'CellValueasdoijasdlksaj');
       setSelectedTableData([...selectedTableDataCopy]);
     }
 
@@ -934,9 +938,6 @@ const Table = ({ collapseSidebar }) => {
       (obj) => obj.constraints_type.is_primary_key === true
     ).length;
 
-    const columnUuid = configurations?.columns?.column_names?.[column.Header];
-    const columnConfig = configurations?.columns?.configurations?.[columnUuid] || {};
-
     return is_primary_key ? (
       <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
         <div
@@ -1046,7 +1047,7 @@ const Table = ({ collapseSidebar }) => {
               </span>
             ) : dataType === 'timestamp with time zone' ? (
               <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
-                columnConfig?.timezone || getLocalTimeZone()
+                getConfigurationProperty(column.Header, 'timezone', getLocalTimeZone())
               )}`}</span>
             ) : null}
           </div>
@@ -1341,7 +1342,10 @@ const Table = ({ collapseSidebar }) => {
                             <ToolTip
                               message={getTooltipTextForCell(
                                 cell.column.dataType == 'timestamp with time zone'
-                                  ? formatTimestampToCustomString(cell.value)
+                                  ? convertDateToTimeZoneFormatted(
+                                      cell.value,
+                                      getConfigurationProperty(cell.column.Header, 'timezone', getLocalTimeZone())
+                                    )
                                   : cell.value,
                                 index
                               )}
@@ -1559,7 +1563,14 @@ const Table = ({ collapseSidebar }) => {
                                             {isBoolean(cell?.value)
                                               ? cell?.value?.toString()
                                               : cell.column?.dataType === 'timestamp with time zone'
-                                              ? formatTimestampToCustomString(cell?.value)
+                                              ? convertDateToTimeZoneFormatted(
+                                                  cell?.value,
+                                                  getConfigurationProperty(
+                                                    cell.column.Header,
+                                                    'timezone',
+                                                    getLocalTimeZone()
+                                                  )
+                                                )
                                               : cell.render('Cell')}
                                           </div>
                                           {/* <ToolTip

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import DropDownSelect from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -12,6 +12,8 @@ import './styles.scss';
 import styles from './styles.module.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/_components/DateTimePicker';
+import { TooljetDatabaseContext } from '@/TooljetDatabase';
+import { getLocalTimeZone } from '@/_helpers/utils';
 
 export const CellEditMenu = ({
   darkMode = false,
@@ -47,6 +49,8 @@ export const CellEditMenu = ({
     value: previousCellValue === 'Null' ? null : previousCellValue?.toString(),
     label: previousCellValue === 'Null' ? null : previousCellValue?.toString(),
   });
+
+  const { getConfigurationProperty } = useContext(TooljetDatabaseContext);
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
@@ -406,6 +410,7 @@ export const CellEditMenu = ({
           setTimestamp={setSelectedValue}
           saveFunction={saveFunction}
           isEditCell={true}
+          timezone={getConfigurationProperty(columnDetails?.Header, 'timezone', getLocalTimeZone())}
         />
       ) : (
         children
