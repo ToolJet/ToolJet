@@ -1007,36 +1007,6 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
       .then(async (data) => {
         let finalData = data.data;
 
-        if (query.options.enableTransformation) {
-          finalData = await runTransformation(
-            _ref,
-            finalData,
-            query.options.transformation,
-            query.options.transformationLanguage,
-            query,
-            'edit'
-          );
-          if (finalData.status === 'failed') {
-            useCurrentStateStore.getState().actions.setErrors({
-              [query.name]: {
-                type: 'transformations',
-                data: finalData,
-                options: options,
-              },
-            });
-            onEvent(_ref, 'onDataQueryFailure', queryEvents);
-            setPreviewLoading(false);
-            resolve({ status: data.status, data: finalData });
-            return;
-          }
-        }
-
-        if (calledFromQuery) {
-          setPreviewLoading(false);
-        } else {
-          setPreviewLoading(false);
-          setPreviewData(finalData);
-        }
         let queryStatusCode = data?.status ?? null;
         const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
         switch (true) {
@@ -1080,6 +1050,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                 options: options,
               },
             });
+            if (!calledFromQuery) setPreviewData(errorData);
 
             break;
           }
@@ -1093,6 +1064,31 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatus === 'Created' ||
             queryStatus === 'Accepted' ||
             queryStatus === 'No Content': {
+            if (query.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
+                useCurrentStateStore.getState().actions.setErrors({
+                  [query.name]: {
+                    type: 'transformations',
+                    data: finalData,
+                    options: options,
+                  },
+                });
+                onEvent(_ref, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
+                resolve({ status: data.status, data: finalData });
+                if (!calledFromQuery) setPreviewData(finalData);
+                return;
+              }
+            }
+
             useCurrentStateStore.getState().actions.setCurrentState({
               succededQuery: {
                 [query.name]: {
@@ -1101,10 +1097,12 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                 },
               },
             });
+            if (!calledFromQuery) setPreviewData(finalData);
             onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
             break;
           }
         }
+        setPreviewLoading(false);
 
         resolve({ status: data.status, data: finalData });
       })
@@ -1306,7 +1304,6 @@ export function runQuery(
           } else {
             let rawData = data.data;
             let finalData = data.data;
-
             if (dataQuery.options.enableTransformation) {
               finalData = await runTransformation(
                 _ref,
@@ -1337,6 +1334,7 @@ export function runQuery(
                 resolve(finalData);
                 onEvent(_self, 'onDataQueryFailure', queryEvents);
                 setPreviewLoading(false);
+                if (shouldSetPreviewData) setPreviewData(finalData);
                 return;
               }
             }
