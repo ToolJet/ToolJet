@@ -61,6 +61,7 @@ import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 import { diff } from 'deep-object-diff';
 import { isRowInValid } from '../tableUtils';
 import moment from 'moment';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -248,7 +249,7 @@ export function Table({
     setIsCellValueChanged(true);
 
     const dataUpdates = tableDetails.dataUpdates || [];
-    const clonedTableData = _.cloneDeep(tableData);
+    const clonedTableData = deepClone(tableData);
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -280,7 +281,7 @@ export function Table({
 
   const copyOfTableDetails = useRef(tableDetails);
   useEffect(() => {
-    copyOfTableDetails.current = _.cloneDeep(tableDetails);
+    copyOfTableDetails.current = deepClone(tableDetails);
   }, [JSON.stringify(tableDetails)]);
 
   function handleNewRowCellValueChange(index, key, value, rowData) {
@@ -372,13 +373,13 @@ export function Table({
   }
 
   function handleChangesSaved() {
-    const clonedTableData = _.cloneDeep(tableData);
+    const clonedTableData = deepClone(tableData);
     Object.keys(changeSet).forEach((key) => {
       clonedTableData[key] = {
         ..._.merge(clonedTableData[key], changeSet[key]),
       };
     });
-    updatedDataReference.current = _.cloneDeep(clonedTableData);
+    updatedDataReference.current = deepClone(clonedTableData);
 
     setExposedVariables({
       changeSet: {},
@@ -453,7 +454,7 @@ export function Table({
   columnData = useMemo(
     () =>
       columnData.filter((column) => {
-        if (resolveReferences(column?.columnVisibility, currentState)) {
+        if (resolveReferences(column?.columnVisibility)) {
           return column;
         }
       }),
@@ -477,7 +478,7 @@ export function Table({
           // Single-level nested property
           const [nestedKey, subKey] = nestedKeys;
           const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
-          const newValue = resolveReferences(transformation, currentState, row[key], {
+          const newValue = resolveReferences(transformation, row[key], {
             cellValue: row?.[nestedKey]?.[subKey],
             rowData: row,
           });
@@ -489,7 +490,7 @@ export function Table({
           transformedObject[nestedKey] = nestedObject;
         } else {
           // Non-nested property
-          transformedObject[key] = resolveReferences(transformation, currentState, row[key], {
+          transformedObject[key] = resolveReferences(transformation, row[key], {
             cellValue: row[key],
             rowData: row,
           });
@@ -1279,7 +1280,7 @@ export function Table({
                                     },
                                   };
                                 }
-                                const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
+                                const isEditable = resolveReferences(column?.isEditable ?? false);
                                 return (
                                   <th
                                     key={index}
@@ -1414,15 +1415,13 @@ export function Table({
               {page.map((row, index) => {
                 prepareRow(row);
                 let rowProps = { ...row.getRowProps() };
-                const contentWrap = resolveReferences(contentWrapProperty, currentState);
+                const contentWrap = resolveReferences(contentWrapProperty);
                 const isMaxRowHeightAuto = maxRowHeight === 'auto';
                 rowProps.style.minHeight = cellSize === 'condensed' ? '39px' : '45px'; // 1px is removed to accomodate 1px border-bottom
                 let cellMaxHeight;
                 let cellHeight;
                 if (contentWrap) {
-                  cellMaxHeight = isMaxRowHeightAuto
-                    ? 'fit-content'
-                    : resolveReferences(maxRowHeightValue, currentState) + 'px';
+                  cellMaxHeight = isMaxRowHeightAuto ? 'fit-content' : resolveReferences(maxRowHeightValue) + 'px';
                   rowProps.style.maxHeight = cellMaxHeight;
                 } else {
                   cellMaxHeight = cellSize === 'condensed' ? 40 : 46;
@@ -1516,25 +1515,25 @@ export function Table({
                         'multiselect',
                         'toggle',
                       ].includes(cell?.column?.columnType)
-                        ? resolveReferences(cell.column?.cellBackgroundColor, currentState, '', {
+                        ? resolveReferences(cell.column?.cellBackgroundColor, '', {
                             cellValue,
                             rowData,
                           })
                         : '';
-                      const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
+                      const cellTextColor = resolveReferences(cell.column?.textColor, '', {
                         cellValue,
                         rowData,
                       });
                       const actionButtonsArray = actions.map((action) => {
                         return {
                           ...action,
-                          isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
+                          isDisabled: resolveReferences(action?.disableActionButton ?? false, '', {
                             cellValue,
                             rowData,
                           }),
                         };
                       });
-                      const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
+                      const isEditable = resolveReferences(cell.column?.isEditable ?? false, '', {
                         cellValue,
                         rowData,
                       });
