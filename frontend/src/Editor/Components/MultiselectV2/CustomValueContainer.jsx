@@ -6,7 +6,7 @@ import './multiselectV2.scss';
 
 const CustomValueContainer = ({ ...props }) => {
   const selectProps = props.selectProps;
-  const values = selectProps?.value.map((option) => option.label);
+  const values = Array.isArray(selectProps?.value) && selectProps?.value?.map((option) => option.label);
   const isAllOptionsSelected = selectProps?.value.length === selectProps.options.length;
   const valueContainerWidth = selectProps?.containerRef?.current?.offsetWidth;
   // eslint-disable-next-line import/namespace

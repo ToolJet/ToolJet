@@ -64,7 +64,7 @@ export const MultiselectV2 = ({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
-  const validationData = validate(selected.length ? selected.map((option) => option.value) : null);
+  const validationData = validate(selected?.length ? selected?.map((option) => option.value) : null);
   const { isValid, validationError } = validationData;
   const valueContainerRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -85,19 +85,23 @@ export const MultiselectV2 = ({
 
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
-    let _selectOptions = _options
-      .filter((data) => data.visible)
-      .map((value) => ({
-        ...value,
-        isDisabled: value.disable,
-      }));
-    return _selectOptions;
+    if (Array.isArray(_options)) {
+      let _selectOptions = _options
+        .filter((data) => data.visible)
+        .map((value) => ({
+          ...value,
+          isDisabled: value.disable,
+        }));
+      return _selectOptions;
+    } else {
+      return [];
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
-      const foundItem = schema?.filter((item) => item?.visible && item?.default);
+      const foundItem = Array.isArray(schema) && schema?.filter((item) => item?.visible && item?.default);
       return foundItem;
     }
     if (isDefault) {
@@ -134,11 +138,11 @@ export const MultiselectV2 = ({
   useEffect(() => {
     setExposedVariable(
       'selectedOptions',
-      selected.map(({ label, value }) => ({ label, value }))
+      Array.isArray(selected) && selected?.map(({ label, value }) => ({ label, value }))
     );
     setExposedVariable(
       'options',
-      selectOptions?.map(({ label, value }) => ({ label, value }))
+      Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value }))
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selected), selectOptions]);
@@ -234,7 +238,7 @@ export const MultiselectV2 = ({
 
   // Handle Select all logic
   useEffect(() => {
-    if (selectOptions.length === selected.length) {
+    if (selectOptions?.length === selected?.length) {
       setIsSelectAllSelected(true);
     } else {
       setIsSelectAllSelected(false);
