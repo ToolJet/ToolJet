@@ -7,9 +7,10 @@ import useWindowResize from '@/_hooks/useWindowResize';
 import { useQueryPanelActions, useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '@/_ui/Icon/solidIcons/Maximize';
-import { cloneDeep, isEmpty, isEqual } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import cx from 'classnames';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -54,10 +55,10 @@ const QueryPanel = ({
       }
 
       //removing updated_at since this value changes whenever the data is updated in the BE
-      const formattedQuery = cloneDeep(selectedQuery);
+      const formattedQuery = deepClone(selectedQuery);
       delete formattedQuery.updated_at;
 
-      const formattedPrevQuery = cloneDeep(prevState?.selectedQuery || {});
+      const formattedPrevQuery = deepClone(prevState?.selectedQuery || {});
       delete formattedPrevQuery.updated_at;
 
       if (!isEqual(formattedQuery, formattedPrevQuery)) {
