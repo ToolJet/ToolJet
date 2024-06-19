@@ -13,9 +13,11 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'TextInput',
   'NumberInput',
   'PasswordInput',
-  'Button',
   'ToggleSwitchV2',
   'Checkbox',
+  'DropdownV2',
+  'MultiselectV2',
+  'Button',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -108,6 +110,8 @@ export const baseComponentProperties = (
       'Button',
       'ToggleSwitchV2',
       'Checkbox',
+      'DropdownV2',
+      'MultiselectV2',
     ],
     Layout: [],
   };

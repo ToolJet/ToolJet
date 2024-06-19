@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { getComponentToRender } from '@/_helpers/editorHelpers';
 import _ from 'lodash';
-
 import { getComponentsToRenders } from '@/_stores/editorStore';
 
 function deepEqualityCheckusingLoDash(obj1, obj2) {

@@ -14,6 +14,93 @@ import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import ArrowRight from '@/TooljetDatabase/Icons/ArrowRight.svg';
 
+function CustomMenuList({ ...props }) {
+  const { selectProps } = props;
+  const { tjdbMenuListProps } = selectProps;
+
+  const selectedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isSelected) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const focusedOption =
+    props &&
+    props.children &&
+    Array.isArray(props.children) &&
+    props?.children?.reduce((accumulator, reactElement) => {
+      const props = reactElement?.props ?? {};
+      if (props?.isFocused) {
+        accumulator = { ...props?.data };
+      }
+      return accumulator;
+    }, {});
+
+  const handleScrollThrottled = throttle(tjdbMenuListProps.handleInfiniteScroll, 500);
+  return (
+    <React.Fragment>
+      <MenuList
+        {...props}
+        onAdd={tjdbMenuListProps.onAdd}
+        addBtnLabel={tjdbMenuListProps.addBtnLabel}
+        emptyError={tjdbMenuListProps.emptyError}
+        foreignKeyAccess={tjdbMenuListProps.foreignKeyAccess}
+        columnInfoForTable={tjdbMenuListProps.columnInfoForTable}
+        showColumnInfo={tjdbMenuListProps.showColumnInfo}
+        foreignKeyAccessInRowForm={tjdbMenuListProps.foreignKeyAccessInRowForm}
+        scrollEventForColumnValues={tjdbMenuListProps.scrollEventForColumnValues}
+        scrollContainerRef={tjdbMenuListProps.scrollContainerRef}
+        foreignKeys={tjdbMenuListProps.foreignKeys}
+        cellColumnName={tjdbMenuListProps.cellColumnName}
+        isLoadingFKDetails={tjdbMenuListProps.isLoadingFKDetails}
+        handleScrollThrottled={handleScrollThrottled}
+        loader={tjdbMenuListProps.loader}
+        searchValue={tjdbMenuListProps.searchValue}
+        isInitialForeignKeySearchDataLoaded={tjdbMenuListProps.isInitialForeignKeySearchDataLoaded}
+        isInitialForeignKeyDataLoaded={tjdbMenuListProps.isInitialForeignKeyDataLoaded}
+        customChildren={tjdbMenuListProps.customChildren}
+      />
+      {tjdbMenuListProps.foreignKeyAccess && tjdbMenuListProps.showDescription && tjdbMenuListProps.actions && (
+        <>
+          <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+          <div
+            style={{
+              height: 'fit-content',
+              padding: '8px 12px',
+            }}
+          >
+            <div className="tj-header-h8 tj-text">
+              {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+            </div>
+            <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+              {
+                <GenerateActionsDescription
+                  targetTable={
+                    tjdbMenuListProps.targetTable?.value ||
+                    tjdbMenuListProps.targetTable?.label ||
+                    tjdbMenuListProps.targetTable?.name
+                  }
+                  sourceTable={tjdbMenuListProps.tableName}
+                  actionName={tjdbMenuListProps.actionName}
+                  label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+                />
+              }
+            </span>
+          </div>
+        </>
+      )}
+    </React.Fragment>
+  );
+}
+
+const customComponents = { MenuList: CustomMenuList };
+
 function DataSourceSelect({
   darkMode,
   isDisabled,
@@ -34,7 +121,7 @@ function DataSourceSelect({
   showDescription = false,
   foreignKeyAccessInRowForm,
   isCellEdit,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   organizationId,
   foreignKeys,
   setReferencedColumnDetails,
@@ -51,14 +138,38 @@ function DataSourceSelect({
   actions,
   actionName,
   referencedForeignKeyDetails,
+  cachedOptions = {},
+  columnDataType = '',
+  isCreateRow,
+  isEditRow,
+  isEditColumn,
+  isCreateColumn,
+  isEditTable,
+  isCreateTable,
+  customChildren,
+  isForeignKeyInEditCell,
+  closeFKMenu,
+  saveFKValue,
+  loader,
+  isLoading = false,
+  columnDefaultValue,
+  setColumnDefaultValue,
 }) {
-  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(false);
+  const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [isInitialForeignKeSearchDataLoaded, setIsInitialForeignKeSearchDataLoaded] = useState(false);
+  const [searchPageNumber, setSearchPageNumber] = useState(1);
+  const [totalSearchRecords, setTotalSearchRecords] = useState(0);
+  const [isInitialForeignKeySearchDataLoaded, setIsInitialForeignKeySearchDataLoaded] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const handleChangeDataSource = (source) => {
+    if (source.value !== columnDefaultValue) {
+      setColumnDefaultValue(false);
+    } else {
+      setColumnDefaultValue(true);
+    }
+
     onSelect && onSelect(source);
     closePopup && !isMulti && closePopup();
   };
@@ -71,163 +182,199 @@ function DataSourceSelect({
     }
   });
 
-  useEffect(() => {
-    function getForeignKeyDetails(incrementPageBy) {
-      if (isEmpty(searchValue)) {
-        const limit = 15;
-        const offset = (pageNumber - 1) * limit;
+  function setDefaultStateForSearch(makeSearchValueToDefault = false) {
+    setIsInitialForeignKeySearchDataLoaded(false);
+    setTotalSearchRecords(0);
+    setSearchPageNumber(1);
+    makeSearchValueToDefault && setSearchValue('');
+    setSearchResults([]);
+  }
 
-        if (offset >= totalRecords && isInitialForeignKeyDataLoaded) {
+  function fetchForeignKeyDetails(page, totalRecords, isFirstPageLoaded, searchValue, foreignKeys, organizationId) {
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
+    if (isFirstPageLoaded && offset >= totalRecords) return;
+    if (foreignKeys.length < 1) return;
+    setIsLoadingFKDetails(true);
+    const referencedColumns = foreignKeys.find((item) => item.column_names[0] === cellColumnName);
+    if (!referencedColumns?.referenced_column_names?.length) return;
+
+    const selectQuery = new PostgrestQueryBuilder();
+    const filterQuery = new PostgrestQueryBuilder();
+    const orderQuery = new PostgrestQueryBuilder();
+    selectQuery.select(referencedColumns?.referenced_column_names[0]);
+    let query = `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`;
+
+    if (!isEmpty(searchValue)) {
+      columnDataType === 'character varying'
+        ? filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`)
+        : filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
+    }
+
+    // Filtering out null values & bringing empty values to top
+    filterQuery.is(referencedColumns?.referenced_column_names[0], 'notNull');
+    orderQuery.order(referencedColumns?.referenced_column_names[0], 'nullsfirst');
+    query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
+
+    tooljetDatabaseService
+      .findOne(organizationId, referencedColumns?.referenced_table_id, query)
+      .then(({ headers, data = [], error }) => {
+        if (error) {
+          setIsLoadingFKDetails(false);
+          toast.error(
+            error?.message ??
+              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+          );
           return;
         }
 
-        setIsLoadingFKDetails(true);
-        const selectQuery = new PostgrestQueryBuilder();
-        // Checking that the selected column is available in ForeignKey
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-        if (!referencedColumns?.referenced_column_names?.length) return;
-        selectQuery.select(referencedColumns?.referenced_column_names[0]);
+        const totalFKRecords = headers['content-range'].split('/')[1] || 0;
+        if (Array.isArray(data) && data.length > 0) {
+          if (isEmpty(searchValue)) {
+            if (page === 1) setIsInitialForeignKeyDataLoaded(true);
+            setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+            setPageNumber((prevPageNumber) => prevPageNumber + 1);
+            if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
+          }
 
-        tooljetDatabaseService
-          .findOne(
-            organizationId,
-            foreignKeys?.length > 0 && referencedColumns?.referenced_table_id,
-            `${selectQuery.url.toString()}&limit=${limit}&offset=${offset}`
+          if (!isEmpty(searchValue)) {
+            if (page === 1) setIsInitialForeignKeySearchDataLoaded(true);
+            const currentSearchResultList = data.map((item) => ({
+              value: item[referencedColumns?.referenced_column_names[0]],
+              label: item[referencedColumns?.referenced_column_names[0]],
+            }));
+            setSearchResults((prevSearchData) => [...prevSearchData, ...currentSearchResultList]);
+            setSearchPageNumber((prevPageNumber) => prevPageNumber + 1);
+            if (totalFKRecords !== totalSearchRecords) setTotalSearchRecords(totalFKRecords);
+          }
+        }
+        setIsLoadingFKDetails(false);
+      });
+  }
+
+  function handleInfiniteScroll() {
+    const target = scrollContainerRef?.current;
+    let scrollTop = target?.scrollTop;
+    const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+
+    if (scrollPercentage > 90 && !isLoadingFKDetails) {
+      isEmpty(searchValue)
+        ? fetchForeignKeyDetails(
+            pageNumber,
+            totalRecords,
+            isInitialForeignKeyDataLoaded,
+            searchValue,
+            foreignKeys,
+            organizationId
           )
-          .then(({ headers, data = [], error }) => {
-            if (error) {
-              toast.error(
-                error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-              );
-              setIsLoadingFKDetails(false);
-              return;
-            }
-
-            const totalFKRecords = headers['content-range'].split('/')[1] || 0;
-            if (Array.isArray(data) && data?.length > 0) {
-              if (pageNumber === 1) setIsInitialForeignKeyDataLoaded(true);
-              setReferencedColumnDetails((prevData) => [...prevData, ...data]);
-              setPageNumber((prevPageNumber) => prevPageNumber + incrementPageBy);
-              if (totalRecords !== totalFKRecords) setTotalRecords(totalFKRecords);
-            }
-            setIsLoadingFKDetails(false);
-          });
-      }
+        : fetchForeignKeyDetails(
+            searchPageNumber,
+            totalSearchRecords,
+            isInitialForeignKeySearchDataLoaded,
+            searchValue,
+            foreignKeys,
+            organizationId
+          );
     }
+  }
 
-    function handleScroll() {
-      const target = scrollContainerRef?.current;
-      let scrollTop = target?.scrollTop;
-      const scrollPercentage = ((scrollTop + target?.clientHeight) / target?.scrollHeight) * 100;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedHandleChange = useCallback(
+    debounce((value) => {
+      setSearchValue(value);
+    }, 500),
+    []
+  );
 
-      if (scrollPercentage > 90 && !isLoadingFKDetails) {
-        if (isEmpty(searchValue)) getForeignKeyDetails(1);
-      }
-    }
-
-    const handleScrollThrottled = throttle(handleScroll, 500);
-
-    if (scrollEventForColumnValus && !searchValue) {
-      if (!isInitialForeignKeyDataLoaded && !isLoadingFKDetails) getForeignKeyDetails(1);
-      scrollContainerRef?.current?.addEventListener('scroll', handleScrollThrottled);
-    }
-
-    return () => {
-      scrollContainerRef?.current?.removeEventListener('scroll', handleScrollThrottled);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue, pageNumber, totalRecords, isLoadingFKDetails]);
+  const handleChange = (value) => {
+    debouncedHandleChange(value);
+  };
 
   useEffect(() => {
-    function handleSearchInSelectBox() {
-      if (!isEmpty(searchValue)) {
-        const limit = 100;
-        // Only first page will be loaded - for Search
-        const offset = (1 - 1) * limit;
+    return () => {
+      debouncedHandleChange.cancel();
+    };
+  }, [debouncedHandleChange]);
 
-        if (isInitialForeignKeSearchDataLoaded) return;
-        setIsLoadingFKDetails(true);
-        const selectQuery = new PostgrestQueryBuilder();
-        const filterQuery = new PostgrestQueryBuilder();
+  useEffect(() => {
+    const shouldLoadFKDataFirstPage = isEmpty(searchValue) && !isInitialForeignKeyDataLoaded;
+    const shouldLoadFKSearchDataFirstPage = !isEmpty(searchValue);
 
-        const referencedColumns = foreignKeys?.find((item) => item.column_names[0] === cellColumnName);
-        if (!referencedColumns?.referenced_column_names?.length) return;
-        selectQuery.select(referencedColumns?.referenced_column_names[0]);
+    if (scrollEventForColumnValues) {
+      if (shouldLoadFKSearchDataFirstPage) {
+        setDefaultStateForSearch();
+        fetchForeignKeyDetails(1, 0, false, searchValue, foreignKeys, organizationId);
+      }
 
-        if (scrollEventForColumnValus) {
-          filterQuery.eq(referencedColumns?.referenced_column_names[0], searchValue);
-          // filterQuery.ilike(referencedColumns?.referenced_column_names[0], `%${searchValue}%`);
-        }
-
-        const query = `${selectQuery.url.toString()}&${filterQuery.url.toString()}&limit=${limit}&offset=${offset}`;
-
-        tooljetDatabaseService
-          .findOne(organizationId, foreignKeys?.length > 0 && referencedColumns?.referenced_table_id, query)
-          .then(({ _headers, data = [], error }) => {
-            if (error) {
-              toast.error(
-                error?.message ??
-                  `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
-              );
-              setIsLoadingFKDetails(false);
-              return;
-            }
-
-            if (Array.isArray(data) && data?.length > 0) {
-              setIsInitialForeignKeSearchDataLoaded(true);
-              const currentSearchResultList = data.map((item) => ({
-                value: item[referencedColumns?.referenced_column_names[0]],
-                label: item[referencedColumns?.referenced_column_names[0]],
-              }));
-              setSearchResults([...currentSearchResultList]);
-            }
-            setIsLoadingFKDetails(false);
-          });
+      if (shouldLoadFKDataFirstPage && isEmpty(cachedOptions)) {
+        fetchForeignKeyDetails(
+          pageNumber,
+          totalRecords,
+          isInitialForeignKeyDataLoaded,
+          searchValue,
+          foreignKeys,
+          organizationId
+        );
+      } else if (shouldLoadFKDataFirstPage && !isEmpty(cachedOptions)) {
+        setIsLoadingFKDetails(false);
+        setIsInitialForeignKeyDataLoaded(true);
+        const data = cachedOptions.data;
+        setReferencedColumnDetails((prevData) => [...prevData, ...data]);
+        setPageNumber((prevPageNumber) => prevPageNumber + 1);
+        setTotalRecords(cachedOptions.totalFKRecords);
       }
     }
-    let debouncedHandleSearchInSelectBox;
-    if (scrollEventForColumnValus) {
-      debouncedHandleSearchInSelectBox = debounce(() => {
-        // Making the values to default
-        if (searchResults.length) setSearchResults([]);
-        setIsInitialForeignKeSearchDataLoaded(false);
-
-        if (!isLoadingFKDetails) handleSearchInSelectBox(1, true);
-      }, 500);
-
-      debouncedHandleSearchInSelectBox();
-    }
-
-    return debouncedHandleSearchInSelectBox?.cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
   useEffect(() => {
-    // Making the Infinite scroll pagination API to default state
     return () => {
-      if (scrollEventForColumnValus) {
+      if (scrollEventForColumnValues) {
         setIsInitialForeignKeyDataLoaded(false);
-        setIsInitialForeignKeSearchDataLoaded(false);
         setTotalRecords(0);
         setPageNumber(1);
-        setSearchValue('');
-        setSearchResults([]);
         setReferencedColumnDetails([]);
+
+        setDefaultStateForSearch(true);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const customFilterOption = (option, inputValue) => {
+    if (!option.label) return null;
+    return option.label.toString().toLowerCase().includes(inputValue.toString().toLowerCase());
+  };
+
+  const handleFKMenuKeyDown = (e) => {
+    if (isForeignKeyInEditCell) {
+      if (e.key === 'Escape') {
+        closeFKMenu();
+      } else if (e.key === 'Enter') {
+        saveFKValue();
+      }
+    }
+    e.stopPropagation();
+  };
+
+  const modifiedOptions = [...options].sort((a, b) => {
+    if (a.isDisabled && !b.isDisabled) return -1;
+    if (!a.isDisabled && b.isDisabled) return 1;
+    return 0;
+  });
+
   return (
-    <div onKeyDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+    <div onKeyDown={handleFKMenuKeyDown} onClick={(e) => e.stopPropagation()}>
       <Select
         onChange={(option) => {
           handleChangeDataSource(option);
         }}
         classNames={{
           menu: () =>
-            foreignKeyAccess
+            isForeignKeyInEditCell
+              ? 'tj-scrollbar tjdb-mainCellEdit-scrollbar'
+              : foreignKeyAccess
               ? 'tj-scrollbar tjdb-dashboard-scrollbar'
               : foreignKeyAccessInRowForm
               ? 'tj-scrollbar tjdb-rowForm-scrollbar'
@@ -241,207 +388,178 @@ function DataSourceSelect({
         menuIsOpen
         autoFocus
         hideSelectedOptions={false}
+        tjdbMenuListProps={{
+          handleInfiniteScroll: handleInfiniteScroll,
+          onAdd: onAdd,
+          addBtnLabel: addBtnLabel,
+          emptyError: emptyError,
+          foreignKeyAccess: foreignKeyAccess,
+          columnInfoForTable: columnInfoForTable,
+          showColumnInfo: showColumnInfo,
+          foreignKeyAccessInRowForm: foreignKeyAccessInRowForm,
+          scrollEventForColumnValues: scrollEventForColumnValues,
+          scrollContainerRef: scrollContainerRef,
+          foreignKeys: foreignKeys,
+          cellColumnName: cellColumnName,
+          isLoadingFKDetails: isLoadingFKDetails,
+          showDescription: showDescription,
+          actions: actions,
+          targetTable: targetTable,
+          tableName: tableName,
+          actionName: actionName,
+          loader: loader,
+          searchValue: searchValue,
+          isInitialForeignKeySearchDataLoaded: isInitialForeignKeySearchDataLoaded,
+          isInitialForeignKeyDataLoaded: isInitialForeignKeyDataLoaded,
+          customChildren: customChildren,
+        }}
         components={{
-          // ...(isMulti && {
           Option: ({ children, ...props }) => {
             return (
               <components.Option {...props}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: showRedirection || actions ? 'space-between' : 'flex-start',
-                    alignItems: 'center',
-                    cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
-                  }}
-                  className={`dd-select-option ${showDescription && 'h-100'}`}
+                <ToolTip
+                  message={`Foreign key relation cannot be created for ${props?.data?.dataType} type column`}
+                  placement="top"
+                  tooltipClassName="tootip-table"
+                  show={(foreignKeyAccess && props.data.dataType === 'serial') || props.data.dataType === 'boolean'}
                 >
-                  {isMulti && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        // width: '20px',
-                      }}
-                    >
-                      <Form.Check // prettier-ignore
-                        type={'checkbox'}
-                        id={props.value}
-                        className="me-1"
-                        checked={props.isSelected}
-                        // label={`default ${type}`}
-                      />
-                    </div>
-                  )}
-                  {props?.data?.icon &&
-                    (isValidElement(props.data.icon) ? (
-                      props.data.icon
-                    ) : (
-                      <SolidIcon
-                        name={props.data.icon}
-                        style={{ height: 16, width: 16 }}
-                        width={20}
-                        height={17}
-                        viewBox=""
-                      />
-                    ))}
-
-                  <span
-                    className={cx({
-                      'ms-1 ': props?.data?.icon,
-                      'flex-grow-1': !showDescription,
-                    })}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: showRedirection || actions ? 'space-between' : 'flex-start',
+                      alignItems: 'center',
+                      cursor: foreignKeyAccess && props.data.isDisabled && 'not-allowed',
+                    }}
+                    className={`dd-select-option ${showDescription && 'h-100'}`}
                   >
-                    {children}
-                  </span>
-
-                  {foreignKeyAccess && showRedirection && props.isFocused && (
-                    <Maximize
-                      width={16}
-                      style={{
-                        ...(props.isSelected &&
-                          highlightSelected && {
-                            marginRight: '10px',
-                            marginTop: '3px',
-                          }),
-                      }}
-                      onClick={() => {
-                        const data = { id: props.data.id, table_name: props.data.value };
-                        localStorage.setItem('tableDetails', JSON.stringify(data));
-                        window.open(getPrivateRoute('database'), '_blank');
-                      }}
-                    />
-                  )}
-                  {props.isSelected && highlightSelected && (
-                    <SolidIcon
-                      fill="var(--indigo9)"
-                      name="tick"
-                      style={{ height: 16, width: 16, marginTop: '-4px' }}
-                      viewBox="0 0 20 20"
-                      className="mx-1"
-                    />
-                  )}
-
-                  {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
-                    <ToolTip
-                      message={referencedForeignKeyDetails?.map(
-                        (item, index) =>
-                          item?.referenced_table_id === props?.data?.value && (
-                            <div key={item?.referenced_table_id}>
-                              <span>Foreign key relation</span>
-                              <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
-                                <span>{item?.column_names[0]}</span>
-                                <ArrowRight />
-                                <span>{`${item?.referenced_table_name}.${item?.referenced_column_names[0]}`}</span>
-                              </div>
-                            </div>
-                          )
-                      )}
-                      placement="top"
-                      tooltipClassName="tjdb-table-tooltip"
-                    >
-                      <div>
-                        <SolidIcon name="foreignkey" height={'14'} width={'24'} />
+                    {isMulti && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          // width: '20px',
+                        }}
+                      >
+                        <Form.Check // prettier-ignore
+                          type={'checkbox'}
+                          id={props.value}
+                          className="me-1"
+                          checked={props.isSelected}
+                          // label={`default ${type}`}
+                        />
                       </div>
+                    )}
+                    {props?.data?.icon &&
+                      (isValidElement(props.data.icon) ? (
+                        props.data.icon
+                      ) : (
+                        <SolidIcon
+                          name={props.data.icon}
+                          style={{ height: 16, width: 16 }}
+                          width={20}
+                          height={17}
+                          viewBox=""
+                        />
+                      ))}
+
+                    <ToolTip
+                      message={children}
+                      placement="top"
+                      tooltipClassName="tjdb-cell-tooltip"
+                      show={
+                        (isCellEdit ||
+                          isCreateRow ||
+                          isEditRow ||
+                          isCreateColumn ||
+                          isEditColumn ||
+                          isEditTable ||
+                          isCreateTable) &&
+                        children?.length > 30
+                      }
+                    >
+                      <span
+                        className={cx({
+                          'ms-1 ': props?.data?.icon,
+                          'flex-grow-1': !showDescription,
+                        })}
+                        style={{
+                          width: '80%',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {children}
+                      </span>
                     </ToolTip>
-                  )}
-                </div>
-                {foreignKeyAccess && props.data.isDisabled && (
-                  <div style={{ fontSize: '12px', color: '#889096', cursor: 'not-allowed' }}>
-                    Foreign key relation cannot be created for serial type column
+
+                    {foreignKeyAccess && showRedirection && props.isFocused && (
+                      <Maximize
+                        width={16}
+                        style={{
+                          ...(props.isSelected &&
+                            highlightSelected && {
+                              marginRight: '10px',
+                              marginTop: '3px',
+                            }),
+                        }}
+                        onClick={() => {
+                          const data = { id: props.data.id, table_name: props.data.value };
+                          localStorage.setItem('tableDetails', JSON.stringify(data));
+                          window.open(getPrivateRoute('database'), '_blank');
+                        }}
+                      />
+                    )}
+                    {props.isSelected && highlightSelected && (
+                      <SolidIcon
+                        fill="var(--indigo9)"
+                        name="tick"
+                        style={{ height: 16, width: 16, marginTop: '-4px' }}
+                        viewBox="0 0 20 20"
+                        className="mx-1"
+                      />
+                    )}
+
+                    {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
+                      <ToolTip
+                        message={referencedForeignKeyDetails?.map(
+                          (item, _index) =>
+                            item?.referenced_table_id === props?.data?.value && (
+                              <div key={item?.referenced_table_id}>
+                                <span>Foreign key relation</span>
+                                <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
+                                  <span>{item?.column_names[0]}</span>
+                                  <ArrowRight />
+                                  <span>{`${item?.referenced_table_name}.${item?.referenced_column_names[0]}`}</span>
+                                </div>
+                              </div>
+                            )
+                        )}
+                        placement="top"
+                        tooltipClassName="tjdb-table-tooltip"
+                      >
+                        <div>
+                          <SolidIcon name="foreignkey" height={'14'} width={'24'} />
+                        </div>
+                      </ToolTip>
+                    )}
                   </div>
-                )}
+                </ToolTip>
               </components.Option>
             );
           },
-          // }),
-          MenuList: useCallback(
-            (props) => {
-              const selectedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isSelected) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-              const focusedOption =
-                props &&
-                props.children &&
-                Array.isArray(props.children) &&
-                props?.children?.reduce((accumulator, reactElement) => {
-                  const props = reactElement?.props ?? {};
-                  if (props?.isFocused) {
-                    accumulator = { ...props?.data };
-                  }
-                  return accumulator;
-                }, {});
-
-              return (
-                <React.Fragment>
-                  <MenuList
-                    {...props}
-                    onAdd={onAdd}
-                    addBtnLabel={addBtnLabel}
-                    emptyError={emptyError}
-                    foreignKeyAccess={foreignKeyAccess}
-                    columnInfoForTable={columnInfoForTable}
-                    showColumnInfo={showColumnInfo}
-                    foreignKeyAccessInRowForm={foreignKeyAccessInRowForm}
-                    scrollEventForColumnValus={scrollEventForColumnValus}
-                    scrollContainerRef={scrollContainerRef}
-                    foreignKeys={foreignKeys}
-                    cellColumnName={cellColumnName}
-                    isLoadingFKDetails={isLoadingFKDetails}
-                  />
-                  {foreignKeyAccess && showDescription && actions && (
-                    <>
-                      <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
-                      <div
-                        style={{
-                          // minHeight: '140px',
-                          height: 'fit-content',
-                          padding: '8px 12px',
-                        }}
-                      >
-                        <div className="tj-header-h8 tj-text">
-                          {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                        </div>
-                        <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
-                          {
-                            <GenerateActionsDescription
-                              targetTable={targetTable?.value || targetTable?.label || targetTable?.name}
-                              sourceTable={tableName}
-                              actionName={actionName}
-                              label={!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-                            />
-                          }
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </React.Fragment>
-              );
-            },
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            [onAdd, addBtnLabel, emptyError]
-          ),
+          ...customComponents,
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && !scrollEventForColumnValus && { Control: () => '' }),
+          ...(optionsCount < 5 && !scrollEventForColumnValues && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
             ...style,
-            // width: '240px',
             background: 'var(--base)',
             color: 'var(--slate9)',
             borderWidth: '0',
-            // borderBottom: '1px solid var(--slate7)',
-            // marginBottom: '1px',
             boxShadow: 'none',
             borderRadius: '4px 4px 0 0',
             borderBottom: '1px solid var(--slate-05, #E6E8EB)',
@@ -475,23 +593,22 @@ function DataSourceSelect({
             ...style,
             fontSize: '100%',
             color: 'var(--slate-11, #687076)',
-            // font-size: 12px;
-            // font-style: normal;
             fontWeight: 500,
             lineHeight: '20px',
             textTransform: 'uppercase',
           }),
           option: (style, { data: { isNested }, isFocused, isDisabled, isSelected }) => ({
             ...style,
-            cursor: 'pointer',
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
             color: isDisabled ? 'var(--slate8, #c1c8cd)' : 'inherit',
+            minHeight: '33.5px',
             backgroundColor:
               isSelected && highlightSelected
                 ? 'var(--indigo3, #F0F4FF)'
                 : isFocused && !isNested
                 ? 'var(--slate4)'
                 : isDisabled
-                ? 'var(--slate3, #f1f3f5)'
+                ? 'transparent'
                 : isDisabled && isFocused
                 ? 'var(--slate3, #f1f3f5)'
                 : 'transparent',
@@ -527,16 +644,16 @@ function DataSourceSelect({
           }),
         }}
         placeholder="Search"
-        options={scrollEventForColumnValus && searchValue ? searchResults : options}
+        options={scrollEventForColumnValues && searchValue ? searchResults : modifiedOptions}
+        filterOption={scrollEventForColumnValues ? null : customFilterOption}
         isDisabled={isDisabled}
         isClearable={false}
         isMulti={isMulti}
         maxMenuHeight={400}
         minMenuHeight={300}
         value={selected}
-        inputValue={searchValue}
         onInputChange={(value) => {
-          setSearchValue(value);
+          handleChange(value);
         }}
       />
     </div>
@@ -555,11 +672,16 @@ const MenuList = ({
   showColumnInfo,
   options,
   foreignKeyAccessInRowForm,
-  scrollEventForColumnValus,
+  scrollEventForColumnValues,
   scrollContainerRef,
   foreignKeys,
   cellColumnName,
   isLoadingFKDetails = false,
+  customChildren,
+  loader,
+  searchValue,
+  isInitialForeignKeyDataLoaded,
+  isInitialForeignKeySearchDataLoaded,
   ...props
 }) => {
   const menuListStyles = getStyles('menuList', props);
@@ -578,25 +700,36 @@ const MenuList = ({
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 225 - 48;
+    if (scrollEventForColumnValues) menuListStyles.minHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
+  const isInitialDataLoaded = isEmpty(searchValue)
+    ? isInitialForeignKeyDataLoaded
+    : isInitialForeignKeySearchDataLoaded;
 
   return (
     <>
       {!isEmpty(options) && showColumnInfo && columnInfoForTable}
-      {isEmpty(options) && emptyError && !isLoadingFKDetails ? (
+      {isLoadingFKDetails && loader && !isInitialDataLoaded ? (
+        loader
+      ) : isEmpty(options) && emptyError && !isLoadingFKDetails ? (
         emptyError
       ) : (
         <div
-          ref={scrollEventForColumnValus ? scrollContainerRef : innerRef}
+          ref={scrollEventForColumnValues ? scrollContainerRef : innerRef}
           style={menuListStyles}
           id="query-ds-select-menu"
           onClick={(e) => e.stopPropagation()}
+          onScroll={
+            scrollEventForColumnValues && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
+          }
         >
           {children}
+          {isLoadingFKDetails && loader ? loader : null}
         </div>
       )}
-      {onAdd && (
+      {customChildren && customChildren}
+      {!customChildren && onAdd && !(isLoadingFKDetails && loader) && (
         <div
           className={cx('mt-2 border-slate3-top', {
             'tj-foreignKey p-1': foreignKeyAccess || foreignKeyAccessInRowForm,
@@ -607,7 +740,7 @@ const MenuList = ({
             variant="secondary"
             size="md"
             className="w-100"
-            onClick={scrollEventForColumnValus ? handleNavigateToReferencedTable : onAdd}
+            onClick={scrollEventForColumnValues ? handleNavigateToReferencedTable : onAdd}
           >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}

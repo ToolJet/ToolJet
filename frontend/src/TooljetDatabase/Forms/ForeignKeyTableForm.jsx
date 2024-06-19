@@ -31,6 +31,7 @@ const ForeignKeyTableForm = ({
   editForeignKeyInCreateTable,
   selectedForeignkeyIndex,
   setIsForeignKeyDraweOpen,
+  initiator,
 }) => {
   const createForeignKey = () => {
     handleCreateForeignKey();
@@ -123,6 +124,7 @@ const ForeignKeyTableForm = ({
         editForeignKeyInCreateTable={editForeignKeyInCreateTable}
         showToolTipForFkOnReadDocsSection={true}
         foreignKeyDetails={foreignKeyDetails}
+        initiator={initiator}
       />
     </div>
   );

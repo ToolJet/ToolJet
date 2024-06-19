@@ -48,14 +48,6 @@ const Drawer = ({
     updatePageScroll();
   }, [isOpen]);
 
-  const onKeyPress = (e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  };
-
-  useEventListener('keyup', onKeyPress);
-
   if (!isTransitioning && removeWhenClosed && !isOpen) {
     return null;
   }
@@ -94,7 +86,7 @@ const Drawer = ({
           className={cx('drawer-container', {
             open: isOpen,
             in: isTransitioning,
-            className,
+            [className]: true,
             'theme-dark dark-theme': darkMode,
           })}
         >

@@ -1,21 +1,22 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import _ from 'lodash';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, postgresErrorCode } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
-import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
-import { Link } from 'react-router-dom';
-import { getPrivateRoute } from '@/_helpers/routes';
+// import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
+// import { Link } from 'react-router-dom';
+// import { getPrivateRoute } from '@/_helpers/routes';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
+import Skeleton from 'react-loading-skeleton';
 
 const EditRowForm = ({
   onEdit,
@@ -23,13 +24,16 @@ const EditRowForm = ({
   selectedRowObj = null,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  initiator,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const inputRefs = useRef({});
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
   const [inputValues, setInputValues] = useState([]);
+  const [errorMap, setErrorMap] = useState({});
 
   useEffect(() => {
     toast.dismiss();
@@ -87,8 +91,20 @@ const EditRowForm = ({
     return data;
   });
 
+  useEffect(() => {
+    editRowColumns.forEach(({ accessor }) => {
+      if (rowData[accessor] != '') {
+        const inputElement = inputRefs.current[accessor];
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF', 'important');
+        setErrorMap((prev) => {
+          return { ...prev, [accessor]: '' };
+        });
+      }
+    });
+  }, [rowData]);
+
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, value] = Object.entries(item);
+    const [key, _value] = Object.entries(item);
     return {
       label: key[1] === null ? 'Null' : key[1],
       value: key[1] === null ? 'Null' : key[1],
@@ -162,6 +178,15 @@ const EditRowForm = ({
     }
   };
 
+  const handleDisabledInputClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
+    handleTabClick(index, tabData, defaultValue, nullValue, columnName, dataType, currentValue);
+    if (inputRefs.current[columnName]) {
+      setTimeout(() => {
+        inputRefs.current[columnName].focus();
+      }, 0);
+    }
+  };
+
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
     newInputValues[index] = {
@@ -179,6 +204,28 @@ const EditRowForm = ({
 
   const handleSubmit = async () => {
     setFetching(true);
+    let flag = 0;
+
+    const { hasEmptyValue, newErrorMap } = editRowColumns.reduce(
+      (acc, { accessor, dataType }) => {
+        if (['double precision', 'bigint', 'integer'].includes(dataType) && rowData[accessor] === '') {
+          acc.hasEmptyValue = true;
+          acc.newErrorMap[accessor] = 'Cannot be empty';
+
+          const inputElement = inputRefs.current?.[accessor];
+          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+        }
+        return acc;
+      },
+      { hasEmptyValue: false, newErrorMap: {} }
+    );
+
+    if (hasEmptyValue) {
+      setErrorMap((prev) => ({ ...prev, ...newErrorMap }));
+      setFetching(false);
+      return;
+    }
+
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
@@ -192,7 +239,33 @@ const EditRowForm = ({
 
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
+    // TODO: Need all of this logic on the backend should ideally just get list of columns with error messages to map over
     if (error) {
+      if (error?.code === postgresErrorCode.UniqueViolation) {
+        const columnName = error?.message.split('.')?.[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Value already exists' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+      } else if (error?.code === postgresErrorCode.DataTypeMismatch) {
+        const errorMessageSplit = error?.message.split(':');
+        const columnValue = errorMessageSplit[1]?.slice(2, -1);
+        const mainErrorMessageSplit = errorMessageSplit?.[0]?.split('type ');
+        const columnType = mainErrorMessageSplit?.[mainErrorMessageSplit.length - 1];
+        const columnNamesWithSameValue = Object.keys(rowData).filter(
+          (key) => String(rowData[key]).toLowerCase() === columnValue
+        );
+        editRowColumns.forEach(({ accessor, dataType }) => {
+          if (columnNamesWithSameValue.includes(accessor) && dataType === columnType) {
+            setErrorMap((prev) => {
+              return { ...prev, [accessor]: `Data type mismatch` };
+            });
+            const inputElement = inputRefs.current?.[accessor];
+            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+          }
+        });
+      }
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
       setFetching(false);
       return;
@@ -202,7 +275,7 @@ const EditRowForm = ({
     onEdit && onEdit();
   };
 
-  const renderElement = (columnName, dataType, index, shouldInputBeDisabled = false) => {
+  const renderElement = (columnName, dataType, index, isNullable, column_default, shouldInputBeDisabled = false) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -220,9 +293,17 @@ const EditRowForm = ({
                 emptyError={
                   <div className="dd-select-alert-error m-2 d-flex align-items-center">
                     <Information />
-                    No table selected
+                    No data found
                   </div>
                 }
+                loader={
+                  <div className="mx-2">
+                    <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
+                    <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                    <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
+                  </div>
+                }
+                isLoading={true}
                 value={inputValues[index]?.value !== null && inputValues[index]}
                 foreignKeyAccessInRowForm={true}
                 disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
@@ -232,26 +313,69 @@ const EditRowForm = ({
                 addBtnLabel={'Open referenced table'}
                 foreignKeys={foreignKeys}
                 setReferencedColumnDetails={setReferencedColumnDetails}
-                scrollEventForColumnValus={true}
+                scrollEventForColumnValues={true}
                 cellColumnName={columnName}
+                columnDataType={dataType}
+                isEditRow={true}
               />
             ) : (
               <input
                 //defaultValue={currentValue}
                 value={inputValues[index]?.value !== null && inputValues[index]?.value}
                 type="text"
+                ref={(input) => (inputRefs.current[columnName] = input)}
                 disabled={inputValues[index]?.disabled || shouldInputBeDisabled}
                 onChange={(e) => handleInputChange(index, e.target.value, columnName)}
                 placeholder={inputValues[index]?.value !== null ? 'Enter a value' : null}
-                className={!darkMode ? 'form-control' : 'form-control dark-form-row'}
+                className={`${!darkMode ? 'form-control' : 'form-control dark-form-row'} ${
+                  errorMap[columnName] ? 'input-error-border' : ''
+                }`}
                 data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
                 autoComplete="off"
                 // onFocus={onFocused}
               />
             )}
+            {(inputValues[index]?.disabled || shouldInputBeDisabled) && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    currentValue[columnName]
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 1,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
             {inputValues[index]?.value === null ? (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             ) : null}
+
+            {errorMap[columnName] && (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#DB4324',
+                }}
+                data-cy="app-name-error-label"
+              >
+                {errorMap[columnName]}
+              </small>
+            )}
           </div>
         );
 
@@ -306,7 +430,7 @@ const EditRowForm = ({
     ([key, value]) => currentValue[key] == value
   );
 
-  const handleNavigateToReferencedtable = (id, name) => {
+  const _handleNavigateToReferencedtable = (id, name) => {
     const data = { id: id, table_name: name };
     localStorage.setItem('tableDetails', JSON.stringify(data));
   };
@@ -335,7 +459,7 @@ const EditRowForm = ({
             ))} */}
         </div>
       </div>
-      <div className="card-body">
+      <div className="card-body edit-row-body">
         <div>
           {selectedRowObj &&
             Array.isArray(editRowColumns) &&
@@ -500,7 +624,7 @@ const EditRowForm = ({
                     tooltipClassName="tootip-table"
                     show={isSerialDataTypeColumn || constraints_type?.is_primary_key}
                   >
-                    {renderElement(accessor, dataType, index, shouldInputBeDisabled)}
+                    {renderElement(accessor, dataType, index, isNullable, column_default, shouldInputBeDisabled)}
                   </ToolTip>
                 </div>
               );
@@ -514,6 +638,7 @@ const EditRowForm = ({
           onClose={onClose}
           onEdit={handleSubmit}
           shouldDisableCreateBtn={Object.values(matchingObject).includes('') || (isSubset && isSubsetForCharacter)}
+          initiator={initiator}
         />
       )}
     </div>

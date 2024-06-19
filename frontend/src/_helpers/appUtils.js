@@ -11,7 +11,7 @@ import {
   isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isArray, isEmpty } from 'lodash';
+import _, { isArray, isEmpty, set } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -381,9 +381,6 @@ export async function runTransformation(
         currentState.page
       );
     } catch (err) {
-      const $error = err.name;
-      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-      if (mode === 'edit') toast.error($errorMessage);
       result = {
         message: err.stack.split('\n')[0],
         status: 'failed',
@@ -610,7 +607,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex, _ref);
+        setTablePageIndex(event.table, event.pageIndex);
         break;
       }
 
@@ -969,9 +966,12 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
   let parameters = userSuppliedParameters;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
-
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
+  const queryEvents = useAppDataStore
+    .getState()
+    .events.filter((event) => event.target === 'data_query' && event.sourceId === query.id);
   setPreviewLoading(true);
+  setPreviewPanelExpanded(true);
   if (queryPreviewData) {
     setPreviewData('');
   }
@@ -1016,6 +1016,19 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             query,
             'edit'
           );
+          if (finalData.status === 'failed') {
+            useCurrentStateStore.getState().actions.setErrors({
+              [query.name]: {
+                type: 'transformations',
+                data: finalData,
+                options: options,
+              },
+            });
+            onEvent(_ref, 'onDataQueryFailure', queryEvents);
+            setPreviewLoading(false);
+            resolve({ status: data.status, data: finalData });
+            return;
+          }
         }
 
         if (calledFromQuery) {
@@ -1026,7 +1039,6 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
         }
         let queryStatusCode = data?.status ?? null;
         const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
-
         switch (true) {
           // Note: Need to move away from statusText -> statusCode
           case queryStatus === 'Bad Request' ||
@@ -1036,8 +1048,39 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatusCode === 400 ||
             queryStatusCode === 404 ||
             queryStatusCode === 422: {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-            toast.error(`${err.message}`);
+            let errorData = {};
+            switch (query.kind) {
+              case 'runpy':
+                errorData = data.data;
+                break;
+              case 'tooljetdb':
+                if (data?.error) {
+                  errorData = {
+                    message: data?.error?.message || 'Something went wrong',
+                    description: data?.error?.message || 'Something went wrong',
+                    status: data?.statusText || 'Failed',
+                    data: data?.error || {},
+                  };
+                } else {
+                  errorData = data;
+                  errorData.description = data.errorMessage || 'Something went wrong';
+                }
+                break;
+              default:
+                errorData = data;
+                break;
+            }
+
+            onEvent(_ref, 'onDataQueryFailure', queryEvents);
+            useCurrentStateStore.getState().actions.setErrors({
+              [query.name]: {
+                type: 'query',
+                kind: query.kind,
+                data: errorData,
+                options: options,
+              },
+            });
+
             break;
           }
           case queryStatus === 'needs_oauth': {
@@ -1050,16 +1093,23 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatus === 'Created' ||
             queryStatus === 'Accepted' ||
             queryStatus === 'No Content': {
-            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-              icon: '🚀',
+            useCurrentStateStore.getState().actions.setCurrentState({
+              succededQuery: {
+                [query.name]: {
+                  type: 'query',
+                  kind: query.kind,
+                },
+              },
             });
+            onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
             break;
           }
         }
 
         resolve({ status: data.status, data: finalData });
       })
-      .catch(({ error, data }) => {
+      .catch((err) => {
+        const { error, data } = err;
         setPreviewLoading(false);
         setPreviewData(data);
         toast.error(error);
@@ -1089,8 +1139,13 @@ export function runQuery(
   // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
 
+  if (shouldSetPreviewData) {
+    setPreviewPanelExpanded(true);
+    setPreviewLoading(true);
+    queryPreviewData && setPreviewData('');
+  }
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
@@ -1206,6 +1261,7 @@ export function runQuery(
                   };
                 } else {
                   errorData = data;
+                  errorData.description = data.errorMessage || 'Something went wrong';
                 }
                 break;
               default:
@@ -1246,10 +1302,6 @@ export function runQuery(
             });
             resolve(data);
             onEvent(_self, 'onDataQueryFailure', queryEvents);
-            if (mode !== 'view') {
-              const err = query.kind == 'tooljetdb' ? data?.error || data : data;
-              toast.error(err?.message ? err?.message : 'Something went wrong');
-            }
             return;
           } else {
             let rawData = data.data;
@@ -1284,6 +1336,7 @@ export function runQuery(
                 });
                 resolve(finalData);
                 onEvent(_self, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
                 return;
               }
             }
@@ -1363,7 +1416,7 @@ export function runQuery(
   });
 }
 
-export function setTablePageIndex(tableId, index, _ref) {
+export function setTablePageIndex(tableId, index) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
@@ -1607,7 +1660,15 @@ export const cloneComponents = (
   isCloning = true,
   isCut = false
 ) => {
-  if (selectedComponents.length < 1) return getSelectedText();
+  const selectedText = getSelectedText();
+  if (selectedText) {
+    navigator.clipboard.writeText(selectedText);
+    toast.success('Text copied to clipboard');
+    return;
+  }
+  let addedComponent = {};
+
+  if (selectedComponents.length < 1) return;
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
 
@@ -1659,7 +1720,7 @@ export const cloneComponents = (
   if (isCloning) {
     const parentId = allComponents[selectedComponents[0]?.id]?.['component']?.parent ?? undefined;
 
-    addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
+    addedComponent = addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -1674,6 +1735,7 @@ export const cloneComponents = (
   return new Promise((resolve) => {
     useEditorStore.getState().actions.updateEditorState({
       currentSidebarTab: 2,
+      ...(isCloning && { selectedComponents: [{ id: addedComponent.id, component: addedComponent }] }),
     });
     resolve();
   });
@@ -1759,6 +1821,7 @@ export const addComponents = (
 ) => {
   const finalComponents = {};
   const componentMap = {};
+  let newComponent = {};
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
 
@@ -1806,12 +1869,13 @@ export const addComponents = (
       componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
     }
 
-    const newComponent = {
+    newComponent = {
       component: {
         ...componentData,
         name: componentName,
       },
       layouts: component.layouts,
+      id: newComponentId,
     };
 
     finalComponents[newComponentId] = newComponent;
@@ -1824,7 +1888,10 @@ export const addComponents = (
   }
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
-  !isCloning && toast.success('Component pasted succesfully');
+  if (!isCloning) {
+    toast.success('Component pasted succesfully');
+  }
+  return newComponent;
 };
 
 export const addNewWidgetToTheEditor = (
@@ -1959,15 +2026,13 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
 };
 
 const getSelectedText = () => {
+  let selectedText = '';
   if (window.getSelection) {
-    navigator.clipboard.writeText(window.getSelection());
+    selectedText = window.getSelection().toString();
+  } else if (window.document.selection) {
+    selectedText = window.ALLOC_STACKdocument.selection.createRange().text;
   }
-  if (window.document.getSelection) {
-    navigator.clipboard.writeText(window.document.getSelection());
-  }
-  if (window.document.selection) {
-    navigator.clipboard.writeText(window.document.selection.createRange().text);
-  }
+  return selectedText || null;
 };
 
 function convertMapSet(obj) {

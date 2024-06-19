@@ -38,28 +38,27 @@ export default class Salesforce implements QueryService {
         }
         case 'crud': {
           const actiontype = queryOptions.actiontype;
-          const resource_name = queryOptions.resource_name;
           const resource_id = queryOptions.resource_id;
           const resource_body = queryOptions.resource_body;
 
           switch (actiontype) {
             case 'retrieve':
-              response = await conn.sobject(resource_name).retrieve(resource_id);
+              response = await conn.sobject('Account').retrieve(resource_id);
               result = response;
               break;
 
             case 'create':
-              response = await conn.sobject(resource_name).create(resource_body);
+              response = await conn.sobject('Account').create(resource_body);
               result = response;
               break;
 
             case 'update':
-              response = await conn.sobject(resource_name).update({ Id: resource_id, ...resource_body });
+              response = await conn.sobject('Account').update({ Id: resource_id, ...resource_body });
               result = response;
               break;
 
             case 'delete':
-              response = await conn.sobject(resource_name).destroy(resource_id);
+              response = await conn.sobject('Account').destroy(resource_id);
               result = response;
               break;
 

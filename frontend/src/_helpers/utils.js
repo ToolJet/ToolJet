@@ -11,6 +11,7 @@ import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, erase
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 
@@ -273,7 +274,7 @@ export function computeComponentName(componentType, currentComponents) {
   let currentNumber = currentComponentsForKind.length + 1;
   let _componentName = '';
   while (!found) {
-    _componentName = `${componentName.toLowerCase()}${currentNumber}`;
+    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
     if (
       Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
@@ -1324,6 +1325,38 @@ export const computeColor = (styleDefinition, value, meta) => {
       return value;
     }
   }
+};
+
+export const triggerKeyboardShortcut = (keyCallbackFnArray, initiator) => {
+  const pressedKeys = [];
+  const keyboardShortcutStore = useKeyboardShortcutStore.getState();
+  const handleKeydown = (event) => {
+    pressedKeys.push(event.key);
+    const stringPressedKeys = pressedKeys.join(', ');
+    const currentComponent = keyboardShortcutStore.actions.getTopComponent();
+    if (initiator !== currentComponent) return;
+    for (const { key, callbackFn, args = [] } of keyCallbackFnArray) {
+      if (key === stringPressedKeys) {
+        callbackFn(...args);
+        break;
+      }
+    }
+  };
+
+  const handleKeyUp = (event) => {
+    const index = pressedKeys.indexOf(event.key);
+    if (index > -1) {
+      pressedKeys.splice(index, 1);
+    }
+  };
+
+  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('keyup', handleKeyUp);
+
+  return () => {
+    document.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('keyup', handleKeyUp);
+  };
 };
 
 //For <>& UI display issues

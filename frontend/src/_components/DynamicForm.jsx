@@ -195,6 +195,7 @@ const DynamicForm = ({
     encrypted,
     editorType = 'basic',
     placeholders = {},
+    disabled = false,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -339,6 +340,7 @@ const DynamicForm = ({
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          disabled,
           delayOnChange: false,
         };
       case 'react-component-openapi-validator':
@@ -486,10 +488,13 @@ const DynamicForm = ({
                 </div>
               )}
               <div
-                className={cx({
-                  'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
-                  'w-100': isHorizontalLayout && type !== 'codehinter',
-                })}
+                className={cx(
+                  {
+                    'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                    'w-100': isHorizontalLayout && type !== 'codehinter',
+                  },
+                  'dynamic-form-element'
+                )}
                 style={{ width: '100%' }}
               >
                 <Element

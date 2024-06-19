@@ -18,7 +18,7 @@ const CODE_EDITOR_TYPE = {
   extendedSingleLine: SingleLineCodeEditor,
 };
 
-const CodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps }) => {
+const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, ...restProps }) => {
   const { suggestions } = useResolveStore(
     (state) => ({
       suggestions: state.suggestions,
@@ -75,6 +75,7 @@ const CodeHinter = ({ type = 'basic', initialValue, componentName, ...restProps 
         forceUpdate,
       }}
       componentName={componentName}
+      disabled={disabled}
       {...restProps}
     />
   );
@@ -136,6 +137,7 @@ CodeHinter.DepericatedAlert = DepericatedAlertForWorkspaceVariable;
 
 CodeHinter.propTypes = {
   type: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
 };
 
 export default CodeHinter;

@@ -34,19 +34,19 @@ export const customToggles = {
   runOnPageLoad: {
     dataCy: 'run-on-app-load',
     action: 'runOnPageLoad',
-    label: 'Run this query on application load?',
+    label: 'Run this query on application load',
     translatedLabel: 'editor.queryManager.runQueryOnApplicationLoad',
   },
   requestConfirmation: {
     dataCy: 'confirmation-before-run',
     action: 'requestConfirmation',
-    label: 'Request confirmation before running query?',
+    label: 'Request confirmation before running query',
     translatedLabel: 'editor.queryManager.confirmBeforeQueryRun',
   },
   showSuccessNotification: {
     dataCy: 'notification-on-success',
     action: 'showSuccessNotification',
-    label: 'Show notification on success?',
+    label: 'Show notification on success',
     translatedLabel: 'editor.queryManager.notificationOnSuccess',
   },
 };

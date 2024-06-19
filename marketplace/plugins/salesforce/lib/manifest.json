@@ -13,11 +13,31 @@
       "rawData": {}
     },
     "options": {
-      "api_version":{
-        "type":"string"
+      "client_id": {
+        "type": "string"
       },
-      "redirect_url":{
-        "type":"string"
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "code": {
+        "type": "string",
+        "encrypted": true
+      },
+      "redirect_url": {
+        "type": "string"
+      },
+      "api_version": {
+        "type": "string"
+      },
+      "provider": {
+        "type": "string"
+      },
+      "oauth2": {
+        "type": "boolean"
+      },
+      "plugin_id": {
+        "type": "string"
       }
     },
     "customTesting": true,

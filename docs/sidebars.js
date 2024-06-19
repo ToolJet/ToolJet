@@ -328,6 +328,7 @@ const sidebars = {
           "items": [
             "org-management/workspaces/workspace_overview",
             "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace-variables-migration",
             "org-management/workspaces/workspace_constants"
           ]
         },

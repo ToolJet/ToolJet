@@ -71,13 +71,13 @@ describe("App Version Functionality", () => {
     cy.openApp()
     cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
 
-    cy.dragAndDropWidget("Toggle Switch", 50, 50);
-    verifyComponent("toggleswitch1");
+    cy.dragAndDropWidget("Text", 50, 50);
+    verifyComponent("text1");
 
     navigateToCreateNewVersionModal((currentVersion = "v1"));
     createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
-    verifyComponent("toggleswitch1");
-    deleteComponentAndVerify("toggleswitch1");
+    verifyComponent("text1");
+    deleteComponentAndVerify("text1");
 
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     verifyComponent("button1");
@@ -87,7 +87,7 @@ describe("App Version Functionality", () => {
 
     navigateToCreateNewVersionModal((currentVersion = "v3"));
     createNewVersion((newVersion = ["v4"]), (versionFrom = "v1"));
-    verifyComponent("toggleswitch1");
+    verifyComponent("text1");
 
     editVersionAndVerify(
       (currentVersion = "v4"),

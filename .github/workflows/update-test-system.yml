@@ -97,11 +97,11 @@ jobs:
             # Remove the existing tooljet/* images
             sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
 
-            #checking images
+            # Check remaining images
             sudo docker images
 
-            # Update docker-compose.yml with the new image
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+            # Update docker-compose.yml with the new image for tooljet service
+            sed -i '/^[[:space:]]*tooljet:/,/^[[:space:]]*[^:]*$/ { /^[[:space:]]*image:[[:space:]]*tooljet\/tj-osv/s|\(image:[[:space:]]*\).*|\1tooljet/tj-osv:'"${{ env.SAFE_BRANCH_NAME }}"'| }' docker-compose.yml
 
             # Start the Docker containers
             cat docker-compose.yaml

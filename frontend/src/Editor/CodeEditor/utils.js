@@ -101,26 +101,25 @@ const resolveWorkspaceVariables = (query) => {
   let resolvedStr = query;
   let error = null;
   let valid = false;
+
   // Resolve %%object%%
   const serverRegex = /(%%.+?%%)/g;
-  const serverMatch = resolvedStr.match(serverRegex)?.[0];
+  const serverMatches = resolvedStr.match(serverRegex);
 
-  if (serverMatch) {
-    const code = serverMatch.replace(/%%/g, '');
+  if (serverMatches) {
+    serverMatches.forEach((serverMatch) => {
+      const code = serverMatch.replace(/%%/g, '');
 
-    if (code.includes('server.')) {
-      resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
-      error = 'Server variables cannot be resolved in the client.';
-    } else {
-      const [resolvedCode, err] = resolveCode(code);
-
-      if (!resolvedCode) {
-        error = err ? err : `Cannot resolve ${query}`;
+      if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
+        resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
       } else {
+        const resolvedCode = resolveCode(code);
+
         resolvedStr = resolvedStr.replace(serverMatch, resolvedCode);
-        valid = true;
       }
-    }
+    });
+
+    valid = true;
   }
 
   return [valid, error, resolvedStr];
@@ -408,3 +407,19 @@ export const validateComponentProperty = (resolvedValue, validation) => {
 
   return validate(resolvedValue, schema, defaultValue, true);
 };
+
+export function hasDeepChildren(obj, currentDepth = 1, maxDepth = 3) {
+  if (currentDepth > maxDepth) {
+    return true;
+  }
+
+  for (const key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      if (hasDeepChildren(obj[key], currentDepth + 1, maxDepth)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
