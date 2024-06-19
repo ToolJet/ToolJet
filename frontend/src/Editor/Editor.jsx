@@ -1088,7 +1088,7 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
           // toast.error('App could not save.');
-          toast.error(err?.error);
+          toast.error(err?.error ?? 'App could not save.');
         })
         .finally(() => {
           if (appDiffOptions?.cloningComponent) {
