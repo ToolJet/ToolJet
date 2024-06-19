@@ -114,7 +114,7 @@ const QueryPanel = ({
         let height = (clientY / window.innerHeight) * 100,
           maxLimitReached = false;
 
-        if (height > 95) {
+        if (height > 94) {
           height = 30;
           maxLimitReached = true;
         }

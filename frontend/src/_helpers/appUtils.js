@@ -9,6 +9,7 @@ import {
   generateAppActions,
   loadPyodide,
   isQueryRunnable,
+  resolveWidgetFieldValue,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _, { isArray, isEmpty, set } from 'lodash';
@@ -2233,4 +2234,25 @@ function extractVersion(versionStr) {
 // Select multiple components using Selecto via drag
 export const setMultipleComponentsSelected = (components) => {
   useEditorStore.getState().actions.selectMultipleComponents(components);
+};
+
+export const calculateMoveableBoxHeight = (componentType, layoutData, stylesDefinition, label) => {
+  // Early return for non input components
+  if (!['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2'].includes(componentType)) {
+    return layoutData?.height;
+  }
+  const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+
+  const resolvedLabel = label?.value?.length ?? 0;
+  const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
+  const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
+
+  let newHeight = layoutData?.height;
+  if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
+    if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
+      newHeight += 20;
+    }
+  }
+
+  return newHeight;
 };

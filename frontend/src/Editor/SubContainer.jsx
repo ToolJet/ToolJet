@@ -5,18 +5,19 @@ import { ItemTypes } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import _, { isEmpty } from 'lodash';
-import { componentTypes } from './WidgetManager/components';
 import {
   addNewWidgetToTheEditor,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   isPDFSupported,
+  calculateMoveableBoxHeight,
 } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { componentTypes } from './WidgetManager/components';
 
 import { useEditorStore } from '@/_stores/editorStore';
 
@@ -593,6 +594,9 @@ export const SubContainer = ({
                     gridWidth={gridWidth}
                     isGhostComponent={key === 'resizingComponentId'}
                     mode={mode}
+                    propertiesDefinition={box?.component?.definition?.properties}
+                    stylesDefinition={box?.component?.definition?.styles}
+                    componentType={box?.component?.component}
                   >
                     <DraggableBox
                       onComponentClick={onComponentClick}
@@ -700,6 +704,9 @@ const SubWidgetWrapper = ({
   isResizing,
   isGhostComponent,
   mode,
+  stylesDefinition,
+  propertiesDefinition,
+  componentType,
 }) => {
   const { layouts } = widget;
 
@@ -725,9 +732,14 @@ const SubWidgetWrapper = ({
 
   let width = (canvasWidth * layoutData.width) / 43;
   width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
+
+  const { label = { value: null } } = propertiesDefinition ?? {};
+
   const styles = {
     width: width + 'px',
-    height: isComponentVisible() ? layoutData.height + 'px' : '10px',
+    height: isComponentVisible()
+      ? calculateMoveableBoxHeight(componentType, layoutData, stylesDefinition, label) + 'px'
+      : '10px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };

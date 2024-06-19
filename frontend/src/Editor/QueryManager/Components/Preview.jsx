@@ -102,7 +102,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
         const shift = componentTop - clientY;
         const currentHeight = previewPanelRef.current.offsetHeight;
         const newHeight = currentHeight + shift;
-        if (newHeight < 39) {
+        if (newHeight < 50) {
           useQueryPanelStore.getState().actions.setPreviewPanelExpanded(false);
 
           setHeight((queryPanelHeight - 85) * 0.7);
