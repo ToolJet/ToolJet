@@ -259,12 +259,14 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   };
 
   const constructGroupByValue = (value) => {
-    return value?.map((val) => {
-      return {
-        label: val,
-        value: val,
-      };
-    });
+    return (
+      value?.map((val) => {
+        return {
+          label: val,
+          value: val,
+        };
+      }) || []
+    );
   };
 
   return (
