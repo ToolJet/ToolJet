@@ -12,7 +12,7 @@ To construct a Well Known URL refer this link :: https://docs.microsoft.com/en-u
 - Open your organisation page and select `app registration`
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/azuread/azure-app-reg.png" alt="Azure AD: SSO" width="400"/>
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/azuread/azure-app-reg.png" alt="Azure AD: SSO" />
 
   </div>
 

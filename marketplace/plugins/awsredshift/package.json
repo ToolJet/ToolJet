@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
+    "@tooljet-marketplace/common": "^1.0.0",
     "@aws-sdk/client-redshift-data": "^3.511.0"
   },
   "devDependencies": {

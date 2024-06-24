@@ -44,7 +44,7 @@ The loading state can be enabled to show a spinner as the content of the number 
 
 This property determines the number of decimal places displayed in the number input component. It allows you to specify the level of precision for decimal values.
 
-For example, if you set the decimal places to **{{2}}**, any decimal value entered or displayed in the number input will be rounded to two decimal places. This ensures consistent formatting and helps users input and visualize decimal values accurately. It can be set to **{{0}}** for whole numbers or increased to display more precise decimal values.
+For example, if you set the decimal places to `{{2}}`, any decimal value entered or displayed in the number input will be rounded to two decimal places. This ensures consistent formatting and helps users input and visualize decimal values accurately. It can be set to `{{0}}` for whole numbers or increased to display more precise decimal values.
 
 ## Events
 

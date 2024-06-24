@@ -6,11 +6,7 @@ title: Tags
 
 Tags widget can be used to show array of data as tags.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/tags/tags.png" alt="ToolJet - Widget Reference - Tags" />
-
-</div>
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Properties
 
@@ -31,6 +27,26 @@ It can be used to set array of tags. It must be an array of objects like this:
 
 Each object should contain a title, color code of a particular tag, and also a text color.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Component Specific Actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+There are currently no exposed variables for the component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## General
 ### Tooltip
 
@@ -38,32 +54,25 @@ A Tooltip is often used to specify extra information about something when the us
 
 Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Tags" />
-
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Layout
 
-### Show on desktop
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-### Show on mobile
+</div>
 
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Styles
 
-### Visibility
+| <div style={{ width:"100px"}}> Visibility </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
+|:----------- |:----------- |:---------- |
+| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. | By default, it's set to `{{true}}`. |
 
-Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`.
-
-
-## Exposed variables
-
-There are currently no exposed variables for the component.
-
-## Component specific actions (CSA)
-
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+</div>

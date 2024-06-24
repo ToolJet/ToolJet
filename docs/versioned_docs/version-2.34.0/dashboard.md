@@ -9,9 +9,11 @@ Furthermore, the dashboard serves as a gateway to various essential sections, su
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/dashboardoptions-v2.png" alt="App menu options"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/dashboardoptions-v2.png" alt="App menu options"/>
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Workspace Manager
 
@@ -19,11 +21,15 @@ The workspace manager is located on the bottom left corner of the dashboard. Cli
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/workspacemenu-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/workspacemenu-v2.png" alt="Dashboard"/>
 
 </div>
 
-### Add new workspace
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Add New Workspace
 
 On clicking the `Add new workspace` button, a modal will open where you can enter the name of the workspace, enter the unique workspace slug, and can see the preview of the workspace URL. Click on the `+ Create Workspace` button to create a new workspace.
 
@@ -39,15 +45,23 @@ Previously, the workspace slug was an automatically generated workspace ID, like
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/new-workspace-modal-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/new-workspace-modal-v2.png" alt="Dashboard"/>
 
 </div>
 
-### Edit workspace
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Edit Workspace
 
 Similar to the `Add new workspace` button, clicking on the `Edit workspace` button will open a modal where you can edit the name of the workspace and the workspace slug. Click on the `Save` button to update the changes.
 
-## Create a new app
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Create a New App
 
 To create a new app, click on the `Create new app` button on the top left corner of the dashboard. Clicking on this button will open a modal where you can enter the name of the app and then click on the `+ Create app` button to create a new app.
 
@@ -63,15 +77,23 @@ There are three dots on the right side of the `Create new app` button. Clicking 
 - **[Choose from templates](#choose-from-templates)**
 - **[Import](#import)**
 
-### Choose from templates
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Choose from Templates
 
 This option will open a modal with a list of pre-built templates. You can choose any template from this list to create a new app.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/choosefromtemplate-v2.gif" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/choosefromtemplate-v2.gif" alt="Dashboard"/>
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Import
 
@@ -79,11 +101,15 @@ This option will open a file picker to import a JSON file. This JSON file should
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/import-app-v2.gif" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/import-app-v2.gif" alt="Dashboard"/>
 
 </div>
 
-### Importing an app connected to Marketplace plugins
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Importing an App Connected to Marketplace Plugins
 
 When importing an app with Marketplace plugins, the Marketplace plugin should be installed in the ToolJet workspace where the app is being imported. If the Marketplace plugin is not installed, the app will be imported without the queries for that plugin.
 
@@ -95,17 +121,31 @@ If Marketplace plugin is installed in the ToolJet workspace where the app is bei
 
 If you have an app with a query linked to a Marketplace plugin, and you import that app in a ToolJet workspace where the Marketplace plugin is not installed as the data source, the queries will be not be available in the imported application.
 
-### Importing app connected to ToolJet table
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Importing App Connected to ToolJet Table
 
 When the app(JSON file) that includes the table schema is imported, and the table is not present in the ToolJet database of the workspace where the app is being imported, a new table will be created in the ToolJet database with the same name as the table in the imported app.
 
 If the table with the same name is already present in the workspace, the new table will be created with the name `<table name>_<unix timestamp>`. Example: `<tablename>_1627980000`.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Folders
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Create a new folder
 
 Folders can be created to organize your apps. To create a new folder, click on the `+` button on the left drawer of the dashboard. Clicking on this button will open a modal, enter the name of the folder and click on the `Create Folder` button to create a new folder.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Delete or Edit Folder
 
@@ -116,21 +156,29 @@ A folder can be **deleted** or **renamed**. To delete or rename a folder, click 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newfolder-v2.gif" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/newfolder-v2.gif" alt="Dashboard"/>
 
 </div>
 
-### Search folders
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Search Folders
 
 Folders can be searched by clicking on the search icon on the left drawer of the dashboard. Clicking on the search icon will open a search bar, enter the name of the folder to search.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/search-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/search-v2.png" alt="Dashboard"/>
 
 </div>
 
-### Slug for folders
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Slug for Folders
 
 The folder's URL slug is generated automatically from its name, providing direct access to the folder using the slug.
 
@@ -144,17 +192,27 @@ Example: If the name of the folder is `Customer Support`, The folder can be acce
 
 </div>
 
-## App cards
+</div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## App Cards
 
 The dashboard displays all the apps created in the workspace as cards. These cards are displayed in a grid layout. The app cards display the **name of the app**, the **name of the creator**, and the **date of creation**. The app cards also display the app **icon**, which can be changed by clicking on the `Change Icon` option from the app menu.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/appcard-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/appcard-v2.png" alt="Dashboard"/>
 
 </div>
 
-## App menu
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## App Menu
 
 The app menu is located on the top right corner of the app card. Clicking on the app menu will open a dropdown menu containing various options. These options are:
 
@@ -167,19 +225,27 @@ The app menu is located on the top right corner of the app card. Clicking on the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/app-menu-v2.gif" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/app-menu-v2.gif" alt="Dashboard"/>
 
 </div>
 
-### Rename app
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Rename App
 
 This option will open a modal that will allow you to rename your app.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/rename-app.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/rename-app.png" alt="Dashboard"/>
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Change Icon
 
@@ -187,31 +253,43 @@ This option will open a modal with a list of icons. You can choose any icon from
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/change-icon-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/change-icon-v2.png" alt="Dashboard"/>
 
 </div>
 
-### Add to folder
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Add to Folder
 
 This option will open a modal with a list of folders. You can choose any folder from this list to add the app to the folder.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/add-to-folder-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/add-to-folder-v2.png" alt="Dashboard"/>
 
 </div>
 
-### Clone app
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Clone App
 
 Selecting this option will open a modal where you can enter the desired name for the cloned app. After providing the desired name, click on the Clone app button. This will immediately open the cloned app in the app builder with the same configuration as the original app.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/clone-app-v2.gif" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/clone-app-v2.gif" alt="Dashboard"/>
 
 </div>
 
-### Export app
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Export App
 
 This option downloads a JSON file containing the application data. This JSON file can be [imported](#import) to ToolJet to create a new app. The exported app will include all the queries connected to global data sources including the data source created from Marketplace plugins.
 
@@ -225,29 +303,41 @@ This JSON file can be used to [import](#importing-app-connected-to-tooljet-table
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/export-app-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/export-app-v2.png" alt="Dashboard"/>
 
 </div>
 
-### Delete app
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Delete App
 
 This option will open a confirmation modal to delete the app. Click on the `Delete` button to delete the app.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/delete-app-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/delete-app-v2.png" alt="Dashboard"/>
 
 </div>
 
-## App search
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## App Search
 
 Apps can be searched by clicking on the search bar on the center of the dashboard. Click on the search bar and enter the name of the app to search.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/search-app-v2.png" alt="Dashboard"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/dashboard/search-app-v2.png" alt="Dashboard"/>
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Current ToolJet Version
 
@@ -256,5 +346,7 @@ The current version of ToolJet is displayed on the top right corner of the dashb
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/dashboard/current-version-v2.png" alt="Dashboard"/>
+
+</div>
 
 </div>

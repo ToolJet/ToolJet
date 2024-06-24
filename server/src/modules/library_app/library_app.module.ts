@@ -17,12 +17,17 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
 import { ImportExportResourcesModule } from '../import_export_resources/import_export_resources.module';
+import { AppsService } from '@services/apps.service';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { AppUser } from 'src/entities/app_user.entity';
+import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource]),
+    TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource, AppVersion, AppUser]),
     CaslModule,
     ImportExportResourcesModule,
+    TooljetDbModule,
   ],
   providers: [
     EncryptionService,
@@ -34,6 +39,7 @@ import { ImportExportResourcesModule } from '../import_export_resources/import_e
     PluginsService,
     PluginsHelper,
     AppEnvironmentService,
+    AppsService,
   ],
   controllers: [LibraryAppsController],
 })

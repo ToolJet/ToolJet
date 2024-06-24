@@ -111,8 +111,8 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    const path = `${name ? `?folder=${name}` : ''}`;
-    navigate({ pathname: location.pathname, search: path }, { replace: true });
+    const search = `${name ? `?folder=${name}` : ''}`;
+    navigate({ pathname: `/${getWorkspaceId()}`, search }, { replace: true });
   }
 
   function deleteFolder(folder) {

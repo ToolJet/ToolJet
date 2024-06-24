@@ -53,9 +53,9 @@ queries.getSalesData.run()
 
 To immediately access the data returned by a query in **Run Python code**, you can use the below functions: 
 
-#### Retrieve the latest data of a query:
+#### Trigger a query and retrieve its data:
 ```py
-response = await queries.getSalesData.run()
+await queries.getSalesData.run()
 #replace getSalesData with your query name
 
 value = queries.getSalesData.getData()
@@ -64,9 +64,9 @@ value = queries.getSalesData.getData()
 value
 ```
 
-#### Retrieve the latest raw data of a query:
+#### Trigger a query and retrieve its raw data:
 ```py
-response = await queries.getCustomerData.run()
+await queries.getCustomerData.run()
 #replace getCustomerData with your query name
 
 value = queries.getCustomerData.getRawData()
@@ -75,9 +75,9 @@ value = queries.getCustomerData.getRawData()
 value
 ```
 
-#### Retrieve the loading state of a query:
+#### Trigger a query and retrieve its loading state:
 ```py
-response = await queries.getTodos.run()
+await queries.getTodos.run()
 #replace getTodos with your query name
 
 value = queries.getTodos.getLoadingState()
@@ -88,9 +88,15 @@ value
 
 ## Get Variables
 
-To immediately access a variable or page variable after setting it in the **Run Python code**, you can use the below functions.
+To set and access variables or page variables in **Run Python code**, you can use the below functions:
 
-#### Retrieve the current value of a variable: 
+#### Set a variable:
+```py
+actions.setVariable('color','blue')
+#replace color with your desired variable name
+```
+
+#### Immediately retrieve a variable after setting it:
 ```py
 actions.setVariable('mode','dark')
 #replace mode with your desired variable name
@@ -99,7 +105,13 @@ actions.getVariable('mode')
 #replace mode with your desired variable name
 ```
 
-#### Retrieve the current value of a page-specific variable:
+#### Set a page-specific variable:
+```py
+actions.setPageVariable('version',1)
+#replace version with your desired variable name
+```
+
+#### Immediately retrieve a page-specific variable after setting it:
 ```py
 actions.setPageVariable('number',1)
 #replace number with your desired variable name
@@ -153,3 +165,9 @@ return sum(product["price"] for product in data["products"] if product["category
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).
 :::
+
+## Refer Python Query Data in Components
+
+Just like other dynamic values, you can refer the data returned by **Run Python code** queries using double curly braces`{{}}`.
+
+For instance, if you have a **Run Python code** query named *updatedProductInfo*, you can pass `{{queries.updatedProductInfo.data}}` under the `Data` property of a Table component to populate it with the data returned by the *updatedProductInfo* query. 

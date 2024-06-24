@@ -37,27 +37,30 @@ In the screenshot below, we are triggering two different queries using two diffe
 
 In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getLoadingState()` functions:
 
-#### Retrieve the latest data of a query:
+#### Trigger a query and retrieve its data:
 
 ```js
+await queries.getSalesData.run(); 
+// replace getSalesData with your query name
+
 let value = queries.getSalesData.getData(); 
 // replace getSalesData with your query name
 ```
 
-#### Retrieve the latest raw data of a query:
+#### Trigger a query and retrieve its raw data:
 
 ```js
-let response = await queries.getCustomerData.run(); 
+await queries.getCustomerData.run(); 
 //replace getCustomerData with your query name
 
 let value = queries.getCustomerData.getRawData(); 
 // replace getCustomerData your with query name
 ```
 
-#### Retreive the loading state of a query:
+#### Trigger a query and retrieve its loading state:
 
 ```js
-let response = await queries.getTodos.run()
+await queries.getTodos.run()
 //replace getTodos with your query name
 
 let value = queries.getTodos.getLoadingState();
@@ -96,9 +99,9 @@ actions.unSetVariable('<variableName>')
 
 ### Get Variables
 
-To access variables through immediately after setting them in a RunJS query, you can use the below `getVariable` and `getPageVariable` functions:
+To access variables immediately after setting them in a RunJS query, you can use the `getVariable` and `getPageVariable` functions:
 
-#### Retrieve the current value of a variable: 
+#### Set and retrieve a variable: 
 
 ```js
 actions.setVariable('mode','dark');
@@ -107,7 +110,7 @@ actions.setVariable('mode','dark');
 return actions.getVariable('mode');
 ```
 
-#### Retrieve the current value of a page-specific variable:
+#### Set and retrieve a page-specific variable:
 ```js
 actions.setPageVariable('number',1);
 //replace number with your desired variable name

@@ -30,6 +30,8 @@ const Header = ({
   setFilterEnable,
   filterEnable,
   isDirectRowExpand,
+  referencedColumnDetails,
+  setReferencedColumnDetails,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
@@ -38,7 +40,6 @@ const Header = ({
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
   const {
-    columns,
     totalRecords,
     sortFilters,
     setSortFilters,
@@ -81,7 +82,7 @@ const Header = ({
   }, [uploadResult]);
 
   const handleBulkUpload = async (event) => {
-    event.preventDefault();
+    event?.preventDefault();
     setErrors({ client: [], server: [] });
     setIsBulkUploading(true);
 
@@ -101,15 +102,14 @@ const Header = ({
         return;
       }
 
-      const { processed_rows: processedRows, rows_inserted: rowsInserted, rows_updated: rowsUpdated } = data.result;
-      const toastMessage =
-        `${pluralize(rowsInserted, 'new row')} added, ` + `${pluralize(rowsUpdated, 'row')} updated.`;
+      const { processed_rows: processedRows } = data.result;
+      const toastMessage = `${pluralize(processedRows, 'row')} processed`;
 
       toast.success(toastMessage, {
         position: 'top-center',
       });
 
-      setUploadResult({ processedRows, rowsInserted, rowsUpdated });
+      setUploadResult({ processedRows });
     } catch (error) {
       toast.error(error.errors, { position: 'top-center' });
       setIsBulkUploading(false);
@@ -201,6 +201,8 @@ const Header = ({
                       selectedRowIds={selectedRowIds}
                       rows={rows}
                       isDirectRowExpand={isDirectRowExpand}
+                      referencedColumnDetails={referencedColumnDetails}
+                      setReferencedColumnDetails={setReferencedColumnDetails}
                     />
                   ) : null}
                   {!isDirectRowExpand && Object.keys(selectedRowIds).length > 0 && (
@@ -260,10 +262,14 @@ const Header = ({
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
         rows={rows}
+        referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+        referencedColumnDetails={referencedColumnDetails}
+        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <BulkUploadDrawer
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}

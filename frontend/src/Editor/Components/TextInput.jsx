@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
+
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -18,8 +18,6 @@ export const TextInput = function TextInput({
   darkMode,
   dataCy,
   isResizing,
-  adjustHeightBasedOnAlignment,
-  currentLayout,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -47,8 +45,8 @@ export const TextInput = function TextInput({
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
-  const currentState = useCurrentState();
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+
+  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
   const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [loading, setLoading] = useState(loadingState);
@@ -58,18 +56,33 @@ export const TextInput = function TextInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
+    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
     borderColor: isFocused
-      ? accentColor
-      : ['#D7DBDF'].includes(borderColor)
-      ? darkMode
-        ? '#6D757D7A'
-        : '#6A727C47'
-      : borderColor,
+      ? accentColor != '4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : borderColor != '#CCD1D5'
+      ? borderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
+      : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
-    backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
+    backgroundColor:
+      backgroundColor != '#fff'
+        ? backgroundColor
+        : disable || loading
+        ? darkMode
+          ? 'var(--surfaces-app-bg-default)'
+          : 'var(--surfaces-surface-03)'
+        : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles.iconVisibility
+      ? height < 20
+        ? '0px 10px 0px 29px'
+        : '8px 10px 8px 29px'
+      : height < 20
+      ? '0px 10px'
+      : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
@@ -167,11 +180,13 @@ export const TextInput = function TextInput({
     const exposedVariables = {
       setText: async function (text) {
         setValue(text);
-        setExposedVariable('value', text).then(fireEvent('onChange'));
+        setExposedVariable('value', text);
+        fireEvent('onChange');
       },
       clear: async function () {
         setValue('');
-        setExposedVariable('value', '').then(fireEvent('onChange'));
+        setExposedVariable('value', '');
+        fireEvent('onChange');
       },
     };
     setExposedVariables(exposedVariables);
@@ -181,15 +196,6 @@ export const TextInput = function TextInput({
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
-
-  useEffect(() => {
-    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
-      adjustHeightBasedOnAlignment(true);
-    else {
-      adjustHeightBasedOnAlignment(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
@@ -235,19 +241,18 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
-  const renderInput = () => (
+  return (
     <>
       <div
-        data-cy={`label-${String(component.name).toLowerCase()}`}
-        data-disabled={disable || loading}
+        data-cy={`label-${String(component.name).toLowerCase()} `}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center '
         }  ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
-      ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
-      ${visibility || 'invisible'}`}
+    ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
+    ${visibility || 'invisible'}`}
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
@@ -279,7 +284,7 @@ export const TextInput = function TextInput({
                   ? '11px'
                   : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
                   ? `${labelWidth + 11}px`
-                  : '11px', //23 ::  is 10 px inside the input + 1 px border + 12px margin right
+                  : '11px', //11 ::  is 10 px inside the input + 1 px border + 12px margin right
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side'
@@ -289,7 +294,7 @@ export const TextInput = function TextInput({
                   : '50%'
               }`,
               transform: ' translateY(-50%)',
-              color: iconColor,
+              color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
             stroke={1.5}
@@ -300,7 +305,7 @@ export const TextInput = function TextInput({
           ref={textInputRef}
           className={`tj-text-input-widget ${
             !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
+          } validation-without-icon`}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
               setValue(e.target.value);
@@ -338,11 +343,13 @@ export const TextInput = function TextInput({
       </div>
       {showValidationError && visibility && (
         <div
-          className="tj-text-sm"
           data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor,
             textAlign: direction == 'left' && 'end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
           }}
         >
           {showValidationError && validationError}
@@ -350,6 +357,4 @@ export const TextInput = function TextInput({
       )}
     </>
   );
-
-  return <>{renderInput()}</>;
 };

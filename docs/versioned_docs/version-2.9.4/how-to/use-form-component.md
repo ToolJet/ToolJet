@@ -31,7 +31,7 @@ In this how-to guide, we will be building a simple application that will leverag
 
     </div>
 
-- The query will read the data from the database and we will use the returned data to populate the table. Go to the **table** property and in the table data value enter **{{queries.queryname.data}}** where queryname is the name of the query that we created in previous step.
+- The query will read the data from the database and we will use the returned data to populate the table. Go to the **table** property and in the table data value enter `{{queries.queryname.data}}` where queryname is the name of the query that we created in previous step.
     <div style={{textAlign: 'center'}}>
 
     <img className="screenshot-full" src="/img/how-to/use-form/populate.png" alt="how-to use form" />

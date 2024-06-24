@@ -1,6 +1,5 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import 'codemirror/theme/duotone-light.css';
 import { ToolTip } from './Components/ToolTip';
 
 export const Json = ({ param, definition, onChange, paramType, componentMeta }) => {

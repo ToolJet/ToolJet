@@ -2,8 +2,13 @@
 id: use-form-component
 title: Use Form Component
 ---
+<div style={{paddingBottom:'24px'}}>
 
 In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form)** component to add records to a database. We'll use **[ToolJet Database](/docs/tooljet-database)** as our data source. 
+
+</div>
+
+<div style={{paddingBottom:'24px'}}>
 
 ## 1. Create a Table in ToolJet Database 
 - Create a table named *products* in ToolJet Database. 
@@ -11,8 +16,12 @@ In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form
 - Add some sample data to the table.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/use-form/database-table.png" alt="Database Table" width="100%" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/use-form/database-table.png" alt="Database Table" />
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 2. Create the UI
 - Create a new app and drag and drop a **[Table](/docs/widgets/table)** component on the canvas.
@@ -21,9 +30,13 @@ In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form
 - Name the three input fields on the form as - *nameInput*, *quantityInput* and *priceInput*. Name the button as *submitButton*.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/use-form/user-interface.png" alt="User Interface" width="100%" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/use-form/user-interface.png" alt="User Interface" />
 </div>
 <i>Naming the components can help in easily identifying or referring individual components when there are a large number of components in the app</i>. 
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 3. Load the Table Component With Data
 
@@ -37,8 +50,12 @@ In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form
 {{queries.getProducts.data}}
 ```
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/use-form/load-data.png" alt="Table with Data" width="100%" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/use-form/load-data.png" alt="Table with Data" />
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 4. Write Data Using the Form Component 
 - Click on the Add button in the Query Panel, select ToolJet Database
@@ -81,3 +98,5 @@ Now if you enter the product data on the form and click on Submit. The `addProdu
 <br/>
 
 In this how-to guide, we have explored a practical application of the Form component in ToolJet. You can apply the same principles for a variety of use cases that requires data input from the end-user.
+
+</div>

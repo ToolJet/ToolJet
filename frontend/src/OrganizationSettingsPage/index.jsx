@@ -8,6 +8,7 @@ import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { getSubpath } from '@/_helpers/routes';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -33,10 +34,6 @@ export function OrganizationSettings(props) {
     }
   };
 
-  if (!admin) {
-    navigate('/');
-  }
-
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
@@ -47,9 +44,9 @@ export function OrganizationSettings(props) {
     const selectedTabFromRoute = location.pathname.split('/').pop();
     if (selectedTabFromRoute === 'workspace-settings') {
       setSelectedTab(admin ? 'Users' : 'Workspace variables');
-      window.location.href = admin
-        ? `/${workspaceId}/workspace-settings/users`
-        : `/${workspaceId}/workspace-settings/workspace-variables`;
+      const subPath = getSubpath();
+      const path = subPath ? `${subPath}/${workspaceId}/workspace-settings` : `/${workspaceId}/workspace-settings`;
+      window.location.href = admin ? `${path}/users` : `${path}/workspace-variables`;
     } else {
       setSelectedTab(defaultOrgName(selectedTabFromRoute));
     }

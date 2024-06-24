@@ -35,6 +35,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     fontSize,
     inspectorTree,
     renderCurrentNodeInfoIcon,
+    debuggerTree,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -194,7 +195,13 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   let $key = (
     <span
-      onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
+      onClick={() => {
+        const shouldTriggerActions = debuggerTree && currentNode === 'componentId';
+
+        if (toExpandNode || shouldTriggerActions) {
+          handleOnClickLabels(data, currentNode, path);
+        }
+      }}
       style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none', fontSize: fontSize }}
       className={cx('node-key mx-0 badge badge-outline', {
         'color-primary': applySelectedNodeStyles && !showHiddenOptionsForNode,

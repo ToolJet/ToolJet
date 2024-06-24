@@ -7,9 +7,15 @@ title: Versioning and Release
 
 Versioning and Release lets you version control your apps and release app changes to the users. 
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Versioning
 
 Versioning is really useful if multiple developers are working on an app, it allows them to save their own version of the app. This also prevents developers from overwriting the other developer's work. 
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Creating a Version
 
@@ -25,11 +31,15 @@ You can create new versions from **App Version Manager** on the top-right corner
 - Click on **Create new version** button present at the bottom of the dropdown and a modal will pop-up. Enter a **Version Name** and click on **Create version from** dropdown that will include all the versions of the app, choose a version from the dropdown that you want to use for your new version or ToolJet will automatically select the last created version, and then click on `Create new Version` button to add a new version.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/tutorial/versioning-and-release/newpopup.png" alt="modal" width="400"/>
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/versioning-and-release/newpopup.png" alt="modal"/>
 
   </div>
 
-### Renaming a version
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Renaming a Version
 
 If you want to change the name of an app version, navigate to the **version manager** and select the version you wish to rename. From there, you can click on the rename button located beside the version name. This will open a modal where you can modify the version name to your desired choice.
 
@@ -39,7 +49,11 @@ If you want to change the name of an app version, navigate to the **version mana
 
 </div>
 
-### Deleting a version
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Deleting a Version
 
 If you want to remove an app version, go to the **version manager** and locate the version you wish to delete from the dropdown menu. Next to the version, you will find a delete icon. Click on it to initiate the deletion process.
 
@@ -49,18 +63,22 @@ If you want to remove an app version, go to the **version manager** and locate t
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Release
 
 Making a release let's you publish the app and push the changes to production.
 
-### Releasing a version
+### Releasing a Version
 
 To release a version:
 
 - Go to the **App Version Manager** and select the `version` from the dropdown that you want to release.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/tutorial/versioning-and-release/versiondropdownv2.png" alt="version dropdown" width="300" />
+  <img  className="screenshot-full" src="/img/tutorial/versioning-and-release/versiondropdownv2.png" alt="version dropdown" width="300" />
 
   </div>
 
@@ -90,3 +108,5 @@ To release a version:
 
 </div>
 :::
+
+</div>

@@ -10,10 +10,12 @@
         <tr>
           <td class="padding-y-20">
             <p>
-              {{sender}}
-              has invited you to join the workspace -
-              <span class="text-bold">{{organizationName}}</span>. Click the
-              button below to get started!
+            {{#if sender}}
+              {{sender}} has invited you to join the workspace -
+            {{else}}
+              You have been invited to join the workspace -
+            {{/if}}
+            <span class="text-bold">{{organizationName}}</span>. Click the button below to get started!
             </p>
             <p class="padding-y-20">
               Should you have any questions or need assistance, our support team

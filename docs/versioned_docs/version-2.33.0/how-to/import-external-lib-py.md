@@ -2,13 +2,18 @@
 id: import-external-libraries-using-runpy
 title: Import External Libraries Using RunPy
 ---
+<div style={{paddingBottom:'24px'}}>
 
 ToolJet allows you to utilize python packages in your app by importing them using the [RunPy query](/docs/data-sources/run-py). 
 In this how-to guide, we will import a few packages and use them in the application.
 
+</div>
+
 :::caution Unsupported modules
 Modules with C/C++ extensions needing system libraries won't work in Pyodide, as it runs in a web browser without system library access. Pyodide, based on WebAssembly-compiled Python, also doesn't support certain system calls.
 :::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 - Start by creating a new application in ToolJet.
 - From the Query Panel, add a new RunPy query - it will be named *runpy1* by default.
@@ -31,6 +36,10 @@ await micropip.install('numpy')
 
 - Enable `Run this query on application load?` to make these packages available every time the application loads.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Generating Random Numbers with NumPy
 
 - Create a RunPy query using NumPy's random module to generate random numbers.
@@ -46,6 +55,10 @@ print(x)
 </div>
 
 *You can check the output on the browser's console.*
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Parse CSV data
 
@@ -85,3 +98,5 @@ print(df)
     <img className="screenshot-full" src="/img/how-to/import-python/console.gif" alt="Import external libraries using RunPy"/>
 </div>
     
+
+</div>

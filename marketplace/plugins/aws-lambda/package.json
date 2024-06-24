@@ -18,7 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@aws-sdk/client-lambda": "3.461.0",
-    "@tooljet-plugins/common": "file:../common",
+    "@tooljet-marketplace/common": "^1.0.0",
     "aws-sdk": "^2.1507.0",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

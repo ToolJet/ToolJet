@@ -5,16 +5,21 @@ import {
   navigateToAppEditor,
   verifyTooltip,
   releaseApp,
+  navigateToManageGroups,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
+import { setSignupStatus } from "Support/utils/manageSSO";
+import { addAppToGroup } from "Support/utils/manageGroups";
+import { ssoSelector } from "Selectors/manageSSO";
+import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { usersSelector } from "Selectors/manageUsers";
 
 describe(
   "App share functionality",
   {
     retries: {
       runMode: 2,
-      openMode: 1,
     },
   },
   () => {
@@ -186,7 +191,7 @@ describe(
       cy.clearAndType(commonSelectors.passwordInputField, "password");
       cy.get(commonSelectors.signInButton).click();
       cy.wait(1000);
-      cy.get(`[data-cy="workspace-sign-in-sub-header"]`).verifyVisibleElement(
+      cy.get(ssoSelector.workspaceSubHeader).verifyVisibleElement(
         "have.text",
         "Sign in to your workspace - My workspace"
       );
@@ -212,6 +217,87 @@ describe(
       cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
       cy.get(commonSelectors.viewerPageLogo).click();
+    });
+
+    it("hould redirect to the workspace login page, allow signup, proceed to accept invite page, and load the app", () => {
+      let invitationToken,
+        organizationToken,
+        workspaceId,
+        userId,
+        url = "";
+
+      data.firstName = fake.firstName;
+      data.email = fake.email.toLowerCase();
+      data.appName = `${fake.companyName} App`;
+      data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+      data.workspaceName = data.email;
+
+      setSignupStatus(true);
+      cy.apiCreateApp(data.appName);
+      cy.openApp();
+      cy.dragAndDropWidget("Table", 250, 250);
+      releaseApp();
+
+      cy.wait(1000);
+      cy.get(commonWidgetSelector.shareAppButton).click();
+      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+      cy.wait(2000);
+      cy.get(commonWidgetSelector.modalCloseButton).click();
+      cy.backToApps();
+      navigateToManageGroups();
+      addAppToGroup(data.appName);
+
+      cy.logoutApi();
+      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
+
+      cy.get(ssoSelector.workspaceSubHeader).verifyVisibleElement(
+        "have.text",
+        "Sign in to your workspace - My workspace"
+      );
+
+      cy.get(commonSelectors.createAnAccountLink).click();
+
+      cy.clearAndType(commonSelectors.nameInputField, data.firstName);
+      cy.clearAndType(commonSelectors.emailInputField, data.email);
+      cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+      cy.get(commonSelectors.signUpButton).click();
+
+      cy.apiLogin();
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select invitation_token from users where email='${data.email}';`,
+      }).then((resp) => {
+        invitationToken = resp.rows[0].invitation_token;
+
+        cy.task("updateId", {
+          dbconfig: Cypress.env("app_db"),
+          sql: "select id from organizations where name='My workspace';",
+        }).then((resp) => {
+          workspaceId = resp.rows[0].id;
+
+          cy.task("updateId", {
+            dbconfig: Cypress.env("app_db"),
+            sql: `select id from users where email='${data.email}';`,
+          }).then((resp) => {
+            userId = resp.rows[0].id;
+
+            cy.task("updateId", {
+              dbconfig: Cypress.env("app_db"),
+              sql: `select invitation_token from organization_users where user_id='${userId}';`,
+            }).then((resp) => {
+              organizationToken = resp.rows[1].invitation_token;
+
+              url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug}`;
+              cy.logoutApi();
+              cy.wait(1000);
+              cy.visit(url);
+            });
+          });
+        });
+      });
+
+      cy.get(usersSelector.acceptInvite).click();
+      cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
     });
   }
 );

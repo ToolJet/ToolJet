@@ -5,13 +5,17 @@ title: Managing Users and Groups
 
 # Managing Users and Groups
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Managing Users
 
 Admins of a workspace can invite users to the workspace or archive/unarchive the existing users of a workspace. To manage users in a workspace, go to the **Workspace Settings** from the left sidebar on the dashboard and select **Users**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/users3.png" alt="Manage Users" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/users3-v2.png" alt="Manage Users" />
+
+</div>
 
 </div>
 
@@ -22,7 +26,7 @@ Admins can invite anyone to a workspace using the email address. To invite a use
 - Click on the `Add users` button on the top right corner of the **Users** page.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/addusers.png" alt="Manage Users" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/addusers-v2.png" alt="Manage Users" />
     
   </div>
 
@@ -32,7 +36,7 @@ Admins can invite anyone to a workspace using the email address. To invite a use
 
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/invitemodal.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/invitemodal-v2.png" alt="add new user" />
     
   </div>
 
@@ -42,16 +46,18 @@ Admins can invite anyone to a workspace using the email address. To invite a use
 
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/copylink.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/copylink-v2.png" alt="add new user" />
     
   </div>
 
 - You can also **Bulk Invite Users** by editing and uploading the sample CSV file including all the users details. Click on the `Add users` button and select the **Bulk Invite** tab.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/bulkinviten.png" alt="add new user" />
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/bulkinviten-v2.png" alt="add new user" />
     
   </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Edit User Details
 
@@ -63,11 +69,15 @@ Admins of a workspace can edit the details of any user in their workspace. The d
 
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/edituserdetails.png" alt="edit user" />
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/edituserdetails-v2.png" alt="edit user" />
     
   </div>
 
-### Archive User from a workspace
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Archive User from a Workspace
 
 Admins of a workspace can archive any user from their workspace. Archiving a user will disable their access to the workspace. 
 
@@ -81,11 +91,15 @@ To archive a user:
 
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/archiveuser.png" alt="archive user" />
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/archiveuser-v2.png" alt="archive user" />
     
   </div>
 
-### Unarchive User from a workspace
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Unarchive User from a Workspace
 
 Admins of a workspace can unarchive any user from their workspace. Unarchiving a user will enable their access to the workspace. 
 
@@ -99,9 +113,13 @@ To unarchive a user:
 
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/unarchiveuser.png" alt="unarchive user" />
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/unarchiveuser-v2.png" alt="unarchive user" />
     
   </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Managing Groups
 
@@ -109,9 +127,13 @@ On ToolJet, Admins and Super Admins can create groups for users added in a works
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/groupsnew.png" alt="Manage Groups" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/groupsnew-v2.png" alt="Manage Groups" />
     
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Group properties
 
@@ -128,7 +150,7 @@ Admins and Super Admins can add or remove any number of apps for a group of user
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/appsnew.png" alt="apps"/>
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/appsnew-v2.png" alt="apps"/>
     
 </div>
 
@@ -138,7 +160,7 @@ Admins and Super Admins can add or remove any numbers of users in a group. Just 
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/newusers.png" alt="users" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/newusers-v2.png" alt="users" />
     
 </div>
 
@@ -152,7 +174,7 @@ Admins and Super Admins can set granular permission for the users added in that 
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/dspermission.png" alt="permissions" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/dspermission-v2.png" alt="permissions" />
     
 </div>
 
@@ -162,13 +184,17 @@ Only Admins and Super Admins can define what data sources can be **viewed** or *
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/gdspermission.png" alt="permissions" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/gdspermission-v2.png" alt="permissions" />
     
 </div>
 
 :::tip
 All the activities performed by any Admin, Super Admin or any user in a workspace is logged in [Audit logs](/docs/Enterprise/audit_logs) - including any activity related with managing users and groups.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Predefined Groups
 
@@ -184,7 +210,7 @@ This group contains all the users and admins.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/allusersnew.png" alt="all users" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/allusersnew-v2.png" alt="all users" />
     
 </div>
 
@@ -198,9 +224,13 @@ This group contains admins by default. Admins can add more admins or remove the 
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/adminnew.png" alt="admin" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/adminnew-v2.png" alt="admin" />
     
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Creating new group (Paid plans only)
 
@@ -209,7 +239,7 @@ Option to create a new group is available in the **paid plans** only. To create 
 - Click on `Create new group` button in the **Groups** page.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgrp2.png" alt="new group" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgrp2-v2.png" alt="new group" />
     
   </div>
 
@@ -223,16 +253,22 @@ Option to create a new group is available in the **paid plans** only. To create 
 - Once the group is created, you can add **Apps**, **Users** and set their **Permissions** for that group.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgrpadd.png" alt="new group 2"/>
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/newgrpadd-v2.png" alt="new group 2"/>
     
   </div>
 
-### Deleting a group
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Deleting a Group
 
 To delete a group, click on `Delete` next to it. It will confirm whether you want to delete it or not, Click on `Yes` to delete the group.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/grpdelnew.png" alt="delete group"/>
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/grpdelnew-v2.png" alt="delete group"/>
     
+</div>
+
 </div>

@@ -10,9 +10,11 @@ The audit log is the report of all the activities done in your ToolJet account. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/enterprise/audit_logs/logsnew.png" alt="Audit logs" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/audit_logs/logsnew-v2.png" alt="Audit logs" />
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Date Range
 
@@ -24,9 +26,13 @@ Pagination at the bottom allows navigation through the pages, with each page dis
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/enterprise/audit_logs/filtersnew.png" alt="Audit logs" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/audit_logs/filtersnew-v2.png" alt="Audit logs" />
 
 </div>
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Filter Audit Logs
 
@@ -42,7 +48,7 @@ The dropdown will display all the apps associated with your account. Select an a
 
 #### Select Resources
 
-| Resources  | description |
+| <div style={{ width:"100px"}}> Resources </div> | <div style={{ width:"100px"}}> Description </div> |
 | ----------- | ----------- |
 | User | Filter all the User events like `USER_LOGIN`, `USER_SIGNUP`, `USER_INVITE`, AND `USER_INVITE_REDEEM`. |
 | App | Filter all the App events like `APP_CREATE`, `APP_UPDATE`,`APP_VIEW`,`APP_DELETE`,`APP_IMPORT`,`APP_EXPORT`,`APP_CLONE`. |
@@ -52,7 +58,7 @@ The dropdown will display all the apps associated with your account. Select an a
 
 #### Select Actions
 
-| Actions  | description |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
 | USER_LOGIN | This event is recorded everytime a user logins. |
 | USER_SIGNUP | This event is recorded everytime a new signup is made. |
@@ -71,6 +77,10 @@ The dropdown will display all the apps associated with your account. Select an a
 | GROUP_PERMISSION_DELETE | This event is recorded whenever a user group is deleted from an account. |
 | APP_GROUP_PERMISSION_UPDATE | For every app added in to user group, you can set privileges like `View` or `Edit` and whenever these privileges are updated this event is recorded. By default, the permission of an app for a user group is set to `View`. |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Understanding Log Information
 
 <div style={{textAlign: 'center'}}>
@@ -79,7 +89,7 @@ The dropdown will display all the apps associated with your account. Select an a
 
 </div>
 
-| Property  | Description |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
 | action_type | This indicates the type of action that was logged in the event. Refer to [this](#select-actions) for more information on actions. |
 | created_at | Shows the date and time when the event was logged.  |
@@ -92,7 +102,11 @@ The dropdown will display all the apps associated with your account. Select an a
 | resource_type | Indicates the type of the [resources](#select-resources) involved in the logged event. |
 | user_id | Each user account in ToolJet has a unique ID associated with it, which is recorded when an event occurs. |
 
-### Log file
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Log File
 
 The file will contain all the data from audit logs. The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars). The log file is rotated on a daily basis and is updated dynamically every time a new audit log is generated.
 
@@ -110,7 +124,7 @@ homepath/hsbc/dashboard/log/tooljet_log/{process_id}-{date}/audit.log
 ```
 Here, `{process_id}` is a placeholder for the unique process identifier, and `{date}` represents the current date. This structured path ensures that audit logs are organized by both process and date, facilitating easy traceability and analysis.
 
-| Variable | Description                                                                 |
+| <div style={{ width:"100px"}}> Variable </div>| <div style={{ width:"100px"}}> Description </div>                                                                |
 | -------- | --------------------------------------------------------------------------- |
 | LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
 
@@ -140,4 +154,6 @@ Here, `{process_id}` is a placeholder for the unique process identifier, and `{d
 ```
 
 </details>
+
+</div>
 

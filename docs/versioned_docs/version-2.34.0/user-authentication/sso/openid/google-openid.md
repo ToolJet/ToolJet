@@ -6,14 +6,14 @@ title: Google (Open ID)
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="Google Open ID" width="500"/>
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="Google Open ID" width="500"/>
 
   </div>
 
 - Select `SSO` from workspace options
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/okta/sso2-new.png" alt="Google Open ID" width="500"/> 
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/okta/sso2-new.png" alt="Google Open ID" width="500"/> 
 
   </div>
 
@@ -33,7 +33,7 @@ title: Google (Open ID)
 - Go to [Google cloud console](https://console.cloud.google.com/) and create a project.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/google/create-project.png" alt="Google Open ID" width="500"/> 
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/google/create-project.png" alt="Google Open ID" width="500"/> 
 
   </div>
 

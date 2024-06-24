@@ -172,7 +172,7 @@ export function Filter(props) {
   }
 
   return (
-    <div className={`table-filters card ${darkMode && 'dark-theme'}`}>
+    <div className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`}>
       <div className="card-header row">
         <div className="col">
           <h4 data-cy={`header-filters`} className="font-weight-normal">
@@ -207,6 +207,7 @@ export function Filter(props) {
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
                 styles={selectStyles('100%')}
                 useCustomStyles={true}
+                darkMode={darkMode}
               />
             </div>
             <div data-cy={`select-operation-dropdown-${index ?? ''}`} className="col" style={{ maxWidth: '180px' }}>
@@ -222,6 +223,7 @@ export function Filter(props) {
                 styles={selectStyles('100%')}
                 dataCy={`select-coloumn-dropdown-${index ?? ''}`}
                 useCustomStyles={true}
+                darkMode={darkMode}
               />
             </div>
             <div className="col">

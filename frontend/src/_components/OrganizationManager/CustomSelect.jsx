@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
+import { decodeEntities } from '@/_helpers/utils';
 
 const Menu = (props) => {
   const { t } = useTranslation();
@@ -56,7 +57,7 @@ const SingleValue = ({ selectProps }) => {
     <ToolTip message={selectProps?.value?.name}>
       <div className="d-inline-flex align-items-center">
         <div data-cy="workspace-name" className="tj-text-xsm">
-          {selectProps.value.name}
+          {decodeEntities(selectProps.value.name)}
         </div>
       </div>
     </ToolTip>

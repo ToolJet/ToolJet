@@ -40,17 +40,23 @@ To enable GitHub Single Sign-on (SSO) for your ToolJet instance, follow these st
 
 7. Obtain the Login URL from the **[General Settings](/docs/user-authentication/general-settings#login-url)** of the SSO page.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ### Setting Default SSO
 
 To set GitHub as the default SSO for the instance, use the following environment variables:
 
-| Variable                     | Description                                     |
+|  <div style={{ width:"100px"}}> Variable   </div>                  |  <div style={{ width:"100px"}}> Description    </div>                                 |
 | ---------------------------- | ----------------------------------------------- |
 | SSO_GIT_OAUTH2_CLIENT_ID     | GitHub OAuth client ID                          |
 | SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret                      |
 | SSO_GIT_OAUTH2_HOST          | GitHub OAuth host name if GitHub is self-hosted |
 
 **Redirect URL should be `<host>/sso/git`**
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Exposed ssoUserInfo
 
@@ -60,7 +66,7 @@ The exposed user info can be dynamically accessed throughout the apps using JS *
 
 The following is an example of the user info returned by GitHub:
 
-| Key                     | Description                                                          | Syntax to access                                          |
+| <div style={{ width:"100px"}}> Key        </div>             | <div style={{ width:"100px"}}>Description    </div>                                                      | <div style={{ width:"135px"}}> Syntax to Access          </div>                                |
 | :---------------------- | :------------------------------------------------------------------- | :-------------------------------------------------------- |
 | **login**               | GitHub username                                                      | `{{globals.currentUser.ssoUserInfo.login}}`               |
 | **id**                  | GitHub user ID                                                       | `{{globals.currentUser.ssoUserInfo.id}}`                  |
@@ -100,7 +106,11 @@ The following is an example of the user info returned by GitHub:
   <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/ssogithub.png" alt="GitHub SSO" />
 </div>
 
-### Example: Getting user information using the access_token
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Example: Getting User Information Using the access_token
 
 Once a user is logged in to ToolJet using GitHub SSO, the access token of the user becomes available. This access token can be utilized within ToolJet apps to retrieve detailed user information from the GitHub API.
 
@@ -114,4 +124,6 @@ Once a user is logged in to ToolJet using GitHub SSO, the access token of the us
 
 <div style={{textAlign: 'center'}}>
   <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/queryresults.png" alt="GitHub SSO" />
+</div>
+
 </div>

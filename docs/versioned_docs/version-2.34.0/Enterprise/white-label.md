@@ -25,6 +25,8 @@ Example, we have set a favicon image and page title as `Bon Ton` in the below im
     <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/title-and-favicon.png" alt="ToolJet - Enterprise - White label" />
   </div>
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Configuration
 
 To enable white labelling, click on the gear icon on the bottom left of the dashboard and select `Settings`. From the settings page, click on the `White labelling` tab. On the White labelling page, you'll be able to configure the following:
@@ -35,6 +37,8 @@ To enable white labelling, click on the gear icon on the bottom left of the dash
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/settings.png" alt="ToolJet - Enterprise - White label" />
+</div>
+
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

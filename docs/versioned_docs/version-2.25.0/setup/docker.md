@@ -134,13 +134,22 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 </Tabs>
 
 ## Docker Backup
-The is a Docker-specific feature that assists in backing up the database during an upgrade process. If you plan to utilize this feature, uncomment the backup service in the docker-compose file. Additionally, you need to set an environment variable: `DATABASE_BACKUP=true`. This enables the creation of a `pg_dump` file, which will be stored in the backup folder.
 
-To restore the database from this dump, execute the following command:
+The below bash script will help with taking back-up and as well as restoring:
 
+1. Download the script:
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
 ```
-cat your_dump.sql | docker exec -i --user postgres <postgres-db-container-name> psql -U postgres
+
+2. Run the script with the following command:
+```bash
+./backup-restore.sh 
 ```
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
+</div>
 
 ## Upgrading to the Latest Version
 
@@ -152,9 +161,9 @@ If this is a new installation of the application, you may start directly with th
 
 - It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
 

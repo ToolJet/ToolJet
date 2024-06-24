@@ -11,25 +11,27 @@ title: OpenID Setup
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="General Settings: SSO" width="500"/>
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="General Settings: SSO" />
 
   </div>
 
 - Select `SSO` from workspace options
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/okta/sso2-new.png" alt="Okta: SSO" width="500"/> 
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/okta/sso2-new.png" alt="Okta: SSO" width="500"/> 
 
   </div>
 
 - Select `OpenId Connect`.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/openid/openid.png" alt="Okta: SSO" /> 
+  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/openid/openid.png" alt="Okta: SSO" /> 
 
   </div>
 
 - Find and set **Name**, **Client Id**, **Client Secret**, and **Well Known URL** from your Open Id provider.
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Exposed ssoUserInfo
 
@@ -39,7 +41,7 @@ The exposed user info can be dynamically accessed throughout the apps using JS *
 
 The following is an example of the user info returned by Google OpenID provider:
 
-| Key | Description | Syntax to access |
+| <div style={{ width:"100px"}}> Key </div>| <div style={{ width:"100px"}}> Description </div>| <div style={{ width:"135px"}}> Syntax to access </div>|
 |:--- |:----------- |:------- |
 | **sub** | Subject - Identifier for the End-User at the Issuer. | `{{globals.currentUser.ssoUserInfo.sub}}` |
 | **name** | End-User's full name in displayable form including all name parts, possibly including titles and suffixes, ordered according to the End-User's locale and preferences. | `{{globals.currentUser.ssoUserInfo.name}}` |
@@ -56,6 +58,8 @@ The following is an example of the user info returned by Google OpenID provider:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/sso/openid/ssouserinfon.png" alt="ssouserinfo" /> 
+<img className="screenshot-full" src="/img/sso/openid/ssouserinfon-v2.png" alt="ssouserinfo" /> 
+
+</div>
 
 </div>

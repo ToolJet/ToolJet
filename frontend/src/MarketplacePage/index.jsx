@@ -4,7 +4,6 @@ import { InstalledPlugins } from './InstalledPlugins';
 import { MarketplacePlugins } from './MarketplacePlugins';
 import { marketplaceService, pluginsService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
 import config from 'config';
 import { BreadCrumbContext } from '@/App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
@@ -19,14 +18,8 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const { admin } = authenticationService.currentSessionValue;
   const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
 
-  const navigate = useNavigate();
-
   React.useEffect(() => {
     updateSidebarNAV('');
-
-    if (!admin) {
-      navigate('/');
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 

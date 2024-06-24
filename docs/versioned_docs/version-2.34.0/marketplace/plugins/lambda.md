@@ -5,6 +5,8 @@ title: AWS Lambda
 
 ToolJet can connect to AWS Lambda to run serverless functions.
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Connection
 
 To connect to AWS Lambda plugin, you need to provide the following details:
@@ -17,7 +19,11 @@ To connect to AWS Lambda plugin, you need to provide the following details:
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/lambda/awslambdaconfig.png" alt="ToolJet database" />
 </div>
 
-## Supported queries
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Supported Queries
 
 ### Invoke Lambda Function
 
@@ -30,3 +36,4 @@ This query is used to invoke a Lambda function. The following parameters are req
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/lambda/lambdaquery.png" alt="ToolJet database" />
 </div>
 
+</div>

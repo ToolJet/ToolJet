@@ -1,13 +1,16 @@
 ---
 id: access-users-location
-title: Accessing User Location with RunJS Query (Geolocation API)
+title: Accessing User Location with RunJS Query
 ---
+<div style={{paddingBottom:'24px'}}>
 
 In this step-by-step guide we will build a ToolJet application that harnesses the power of the **JavaScript Geolocation API** to retrieve the user's location. The Geolocation API offers access to various geographical data associated with a user's device, utilizing methods such as GPS, WIFI, IP Geolocation, and more.
 
 :::info
 To uphold user privacy, the Geolocation API requests permission before locating the device. Upon permission, you gain access to data like latitude, longitude, altitude, and speed.
 :::
+
+</div>
 
 1. Begin by creating a new application:
   <div style={{textAlign: 'center'}}>

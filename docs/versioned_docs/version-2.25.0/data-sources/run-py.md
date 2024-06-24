@@ -92,3 +92,9 @@ return sum(product["price"] for product in data["products"] if product["category
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).
 :::
+
+## Refer Python Query Data in Components
+
+Just like other dynamic values, you can refer the data returned by **Run Python code** queries using double curly braces`{{}}`.
+
+For instance, if you have a **Run Python code** query named *updatedProductInfo*, you can pass `{{queries.updatedProductInfo.data}}` under the `Data` property of a Table component to populate it with the data returned by the *updatedProductInfo* query. 

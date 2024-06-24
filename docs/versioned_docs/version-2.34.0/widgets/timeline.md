@@ -6,9 +6,7 @@ title: Timeline
 
 The Timeline component can be used to do a visual representation of a sequence of events.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/widgets/timeline/timeline.png" alt="ToolJet - Widget Reference - Timeline" />
-</div>
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Properties
 
@@ -38,6 +36,26 @@ The Timeline component can be used to do a visual representation of a sequence o
 
 Hide date can be used to hide the date time of the timeline component.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Component Specific Actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Exposed Variables
+
+There are currently no exposed variables for the component.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## General
 ### Tooltip
 
@@ -45,34 +63,29 @@ A Tooltip is often used to specify extra information when the user hovers the mo
 
 Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Component Reference - Timeline" />
-
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Layout
 
-| Layout| description| Expected value|
-| ----- | ---------  | ------------- |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
 | Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 | Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 ## Styles
 
-| Style      | Description |
-| ----------- | ----------- | 
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| <div style={{ width:"100px"}}> Style </div>     | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> How To Access </div> |
+|:----------- |:----------- |:--------|
+| Visibility | Toggle on or off to control the visibility of the component. | Programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
-
-## Exposed variables
-
-There are currently no exposed variables for the component.
-
-## Component specific actions (CSA)
-
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+</div>

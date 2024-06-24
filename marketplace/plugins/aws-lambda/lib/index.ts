@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService } from '@tooljet-marketplace/common';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import { SourceOptions, QueryOptions } from './types';
 
