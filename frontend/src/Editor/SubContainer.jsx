@@ -190,22 +190,24 @@ export const SubContainer = ({
   }, [containerWidth]);
 
   useEffect(() => {
-    if (appDefinitionChanged) {
+    const definition = useEditorStore.getState().appDefinition;
+
+    if (definition) {
       const newDefinition = {
-        ...appDefinition,
+        ...definition,
         pages: {
-          ...appDefinition.pages,
+          ...definition.pages,
           [currentPageId]: {
-            ...appDefinition.pages[currentPageId],
+            ...definition.pages[currentPageId],
             components: {
-              ...appDefinition.pages[currentPageId].components,
+              ...definition.pages[currentPageId].components,
               ...childWidgets,
             },
           },
         },
       };
 
-      const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+      const oldComponents = definition.pages[currentPageId]?.components ?? {};
       const newComponents = newDefinition.pages[currentPageId]?.components ?? {};
 
       const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
@@ -216,7 +218,7 @@ export const SubContainer = ({
         opts.componentAdded = true;
       }
 
-      const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+      const shouldUpdate = !_.isEmpty(diff(definition, newDefinition));
 
       if (shouldUpdate) {
         appDefinitionChanged(newDefinition, opts);
