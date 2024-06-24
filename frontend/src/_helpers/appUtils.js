@@ -1228,6 +1228,16 @@ export function runQuery(
             });
             resolve(data);
             onEvent(_self, 'onDataQueryFailure', queryEvents);
+
+            const toUpdateRefs = [
+              { hint: `queries.${queryName}.isLoading`, newRef: false },
+              {
+                hint: `queries.${queryName}.data`,
+                newRef: [],
+              },
+            ];
+
+            useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
             if (mode !== 'view') {
               const err = query.kind == 'tooljetdb' ? data?.error || data : data;
               toast.error(err?.message ? err?.message : 'Something went wrong');
