@@ -140,7 +140,7 @@ const WidgetIcon = (props) => {
       return <Pdf {...props} />;
     case 'qrscanner':
       return <Qrscanner {...props} />;
-    case 'radio-button':
+    case 'radiobutton':
       return <RadioButton {...props} />;
     case 'rangeslider':
       return <Rangeslider {...props} />;
