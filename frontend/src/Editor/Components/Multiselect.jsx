@@ -173,6 +173,7 @@ export const Multiselect = function Multiselect({
           ItemRenderer={ItemRenderer}
           filterOptions={filterOptions}
           debounceDuration={0}
+          isOpen={true}
         />
       </div>
     </div>

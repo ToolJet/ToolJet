@@ -94,6 +94,8 @@ setAutoFreeze(false);
 enablePatches();
 
 const EditorComponent = (props) => {
+  console.log('here--- Editor');
+
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
@@ -188,9 +190,7 @@ const EditorComponent = (props) => {
     shallow
   );
 
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
-  const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false); //!check where this is used
+  const [zoomLevel, setZoomLevel] = useState(1); //!check where this is used
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
   const noOfGrids = useNoOfGrid();
 
@@ -592,9 +592,6 @@ const EditorComponent = (props) => {
     // 85 = (the height of the query panel header when minimised) + (height of header)
     return `calc(${100}% - ${Math.max(useQueryPanelStore.getState().queryPanelHeight + 45, 85)}px)`;
   };
-
-  const handleQueryPaneDragging = (bool) => setIsQueryPaneDragging(bool);
-  const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
   const changeDarkMode = (newMode) => {
     if (appMode === 'auto') {
@@ -2092,10 +2089,7 @@ const EditorComponent = (props) => {
                   currentPageId={currentPageId}
                 />
               )}
-              <div
-                className={`main main-editor-canvas ${isQueryPaneDragging || isDragging ? 'hide-scrollbar' : ''}`}
-                id="main-editor-canvas"
-              >
+              <div className={`main main-editor-canvas ${isDragging ? 'hide-scrollbar' : ''}`} id="main-editor-canvas">
                 <div
                   className={cx(
                     'canvas-container align-items-center',
@@ -2129,9 +2123,9 @@ const EditorComponent = (props) => {
                         transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                       }}
                     >
-                      {config.ENABLE_MULTIPLAYER_EDITING && (
+                      {/* {config.ENABLE_MULTIPLAYER_EDITING && (
                         <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
-                      )}
+                      )} */}
                       {isLoading && (
                         <div className="apploader">
                           <div className="col col-* editor-center-wrapper">
@@ -2193,8 +2187,6 @@ const EditorComponent = (props) => {
                   />
                 </div>
                 <QueryPanel
-                  onQueryPaneDragging={handleQueryPaneDragging}
-                  handleQueryPaneExpanding={handleQueryPaneExpanding}
                   dataQueriesChanged={dataQueriesChanged}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={props.darkMode}
@@ -2203,6 +2195,7 @@ const EditorComponent = (props) => {
                   appDefinition={appDefinition}
                   dataSourceModalHandler={dataSourceModalHandler}
                   editorRef={getEditorRef()}
+                  canvasContainerRef={canvasContainerRef}
                 />
                 <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>

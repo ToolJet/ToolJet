@@ -92,15 +92,26 @@
     outline: 1px solid #4af;
 } */
 
-.active-target, .resizing-target {
-    outline: 1px solid #4af;
-    /* z-index: 1000000 !important; */
-} 
 
-.main-editor-canvas .hovered-target {
+.main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {  
     outline: 1px solid #4af;
     z-index: 4 !important;
 }
+
+.main-editor-canvas .widget-target:has(.nested-target:hover):hover {  
+    outline: 0px solid #4af;
+}
+
+
+.main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {  
+    outline: 1px solid #4af;
+    z-index: 4 !important;
+}
+
+.active-target, .resizing-target {
+    outline: 1px solid #4af !important;
+    /* z-index: 1000000 !important; */
+} 
 
 .moveable-control-box:not([data-able-groupable]) .moveable-control-box:not(:hover) {
     opacity: 0;
