@@ -685,6 +685,10 @@ export default function generateColumnsData({
           }
           case 'link': {
             const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}', currentState);
+            const displayText = resolveReferences(column?.displayText ?? '{{}}', currentState, '', {
+              cellValue,
+              rowData,
+            });
             column = {
               ...column,
               linkColor: column?.linkColor ?? '#1B1F24',
@@ -698,7 +702,7 @@ export default function generateColumnsData({
                   linkColor={column.linkColor}
                   underlineColor={column.underlineColor}
                   underline={column.underline}
-                  displayText={column.displayText}
+                  displayText={displayText}
                   darkMode={darkMode}
                 />
               </div>
