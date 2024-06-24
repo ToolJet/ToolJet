@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { Brackets, createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, EntityManager, getManager, In, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -436,22 +436,23 @@ export class UsersService {
   async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
     const orgId = organizationId || user.defaultOrganizationId;
     if (addGroups) {
-      const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId);
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId, manager);
 
-      for (const group of addGroups) {
-        const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
+        for (const group of addGroups) {
+          const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
 
-        if (!orgGroupPermission) {
-          throw new BadRequestException(`${group} group does not exist for current organization`);
-        }
-        await dbTransactionWrap(async (manager: EntityManager) => {
+          if (!orgGroupPermission) {
+            throw new BadRequestException(`${group} group does not exist for current organization`);
+          }
+
           const userGroupPermission = manager.create(UserGroupPermission, {
             groupPermissionId: orgGroupPermission.id,
             userId: user.id,
           });
           await manager.save(userGroupPermission);
-        }, manager);
-      }
+        }
+      }, manager);
     }
   }
 
@@ -777,10 +778,10 @@ export class UsersService {
     }, manager);
   }
 
-  async groupPermissionsForOrganization(organizationId: string) {
-    const groupPermissionRepository = getRepository(GroupPermission);
-
-    return await groupPermissionRepository.find({ organizationId });
+  async groupPermissionsForOrganization(organizationId: string, manager?: EntityManager) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(GroupPermission, { organizationId });
+    }, manager);
   }
 
   async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {

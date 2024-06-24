@@ -44,4 +44,16 @@ export class LicenseCountsService {
         .getCount();
     }, manager);
   }
+
+  async fetchSuperAdminIds(manager: EntityManager): Promise<string[]> {
+    const userIdsOfSuperAdmins = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .select('users.id')
+        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .getMany()
+    ).map((record) => record.id);
+    return userIdsOfSuperAdmins;
+  }
 }

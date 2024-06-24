@@ -615,19 +615,19 @@ describe("", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
         cy.waitForAutoSave();
-        cy.dragAndDropWidget("Text", 550, 650);
+        cy.dragAndDropWidget("Text Input", 550, 650);
         editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[0].envname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         appPromote("development", "release");
 
@@ -643,13 +643,13 @@ describe("", () => {
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         updateLicense(Cypress.env("license-key"));
         cy.reload();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "production");
+        ).verifyVisibleElement("have.value", "production");
     });
 
     it("Should verify happy-path flow for a basic to valid license", () => {
@@ -721,19 +721,19 @@ describe("", () => {
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
         cy.waitForAutoSave();
-        cy.dragAndDropWidget("Text", 550, 650);
+        cy.dragAndDropWidget("Text Input", 550, 650);
         editAndVerifyWidgetName(data.widgetName, []);
         cy.waitForAutoSave();
 
         cy.get(
-            '[data-cy="textcomponenttextinput-input-field"]'
+            '[data-cy="default-value-input-field"]'
         ).clearAndTypeOnCodeMirror(`{{queries.table_preview.data[0].envname`);
         cy.forceClickOnCanvas();
         cy.waitForAutoSave();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         releaseApp();
 
@@ -749,7 +749,7 @@ describe("", () => {
 
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         cy.go("back");
         cy.waitForAppLoad();
@@ -761,7 +761,7 @@ describe("", () => {
         );
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         cy.get(multiEnvSelector.currentEnvName).click();
         cy.get(multiEnvSelector.envNameList).eq(1).click();
@@ -769,7 +769,7 @@ describe("", () => {
         cy.wait(2000);
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
 
         cy.get(multiEnvSelector.currentEnvName).click();
         cy.get(multiEnvSelector.envNameList).eq(0).click();
@@ -777,7 +777,7 @@ describe("", () => {
         cy.wait(2000);
         cy.get(
             commonWidgetSelector.draggableWidget(data.widgetName)
-        ).verifyVisibleElement("have.text", "development");
+        ).verifyVisibleElement("have.value", "development");
     });
 
     it("Should verify free trial license banners and tooltips for super-admin user", () => {
@@ -987,7 +987,6 @@ describe("", () => {
 
         cy.skipWalkthrough();
         cy.createApp(data.appName);
-        cy.waitForAppLoad();
         cy.get('[data-cy="list-current-env-name"]').click();
         cy.get('[data-cy="enterprise-gradient-sm-icon"]')
             .eq(0)

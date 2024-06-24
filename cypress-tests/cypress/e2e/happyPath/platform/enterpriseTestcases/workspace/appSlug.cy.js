@@ -1,30 +1,27 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { logout, verifyTooltip } from "Support/utils/common";
+import {
+    logout,
+    verifyTooltip,
+    navigateToAppEditor,
+} from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
-import {
-    promoteApp, appPromote, releaseApp
-} from "Support/utils/multiEnv";
+import { promoteApp, appPromote, releaseApp } from "Support/utils/multiEnv";
 
 describe("App slug", () => {
     const data = {};
     data.appName = `${fake.companyName} App`;
     data.slug = `${fake.companyName.toLowerCase()}-app`;
 
-    beforeEach(() => {
-        cy.defaultWorkspaceLogin();
-    });
     before(() => {
-        cy.apiLogin();
+        cy.defaultWorkspaceLogin();
         cy.apiCreateApp(data.appName);
-        cy.wait(1000);
-        cy.logoutApi();
     });
 
     it("Verify app slug cases in global settings", () => {
-        cy.wait(2000);
-        cy.openApp("my-workspace");
+        cy.reload();
+        navigateToAppEditor(data.appName);
         cy.waitForAppLoad();
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
@@ -44,6 +41,8 @@ describe("App slug", () => {
             "have.text",
             "App link"
         );
+        cy.reload();
+        cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appLinkField).verifyVisibleElement(
             "have.text",
             `http://localhost:8082/my-workspace/apps/${Cypress.env("appId")}`
@@ -151,8 +150,10 @@ describe("App slug", () => {
         data.slug = `${fake.companyName.toLowerCase()}-app`;
         data.appName = `${fake.companyName} App`;
 
+        cy.defaultWorkspaceLogin();
         cy.apiCreateApp(data.appName);
-        cy.openApp("my-workspace");
+        cy.reload();
+        navigateToAppEditor(data.appName);
         cy.waitForAppLoad();
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
@@ -161,7 +162,6 @@ describe("App slug", () => {
         cy.wait(1000);
 
         appPromote("development", "release");
-
 
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.get(commonWidgetSelector.appNameSlugInput).should(

@@ -159,36 +159,52 @@ export const selectDatasource = (datasourceName) => {
   cy.get(`[data-cy="${cyParamName(datasourceName)}-button"]`).click();
 };
 
-export const createDataQuery = (versionId, url, key, value) => {
-  cy.getCookie("tj_auth_token").then((cookie) => {
-    const headers = {
-      "Tj-Workspace-Id": Cypress.env("workspaceId"),
-      Cookie: `tj_auth_token=${cookie.value}`,
-    };
-    cy.request({
-      method: "POST",
-      url: "http://localhost:3000/api/data_queries",
-      headers: headers,
-      body: {
-        app_id: Cypress.env("appId"),
-        app_version_id: versionId,
-        name: "restapi1",
-        kind: "restapi",
-        options: {
-          method: "get",
-          url: `{{constants.${url}}}`,
-          url_params: [["", ""]],
-          headers: [[`{{constants.${key}}}`, `{{constants.${value}}}`]],
-          body: [["", ""]],
-          json_body: null,
-          body_toggle: false,
-          transformationLanguage: "javascript",
-          enableTransformation: false,
-        },
-        data_source_id: null,
-      },
-    }).then((response) => {
-      expect(response.status).to.equal(201);
+export const createDataQuery = (appName, url, key, value) => {
+  let appId, versionId;
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from apps where name='${appName}';`,
+  }).then((resp) => {
+    appId = resp.rows[0].id;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `select id from app_versions where app_id='${appId}';`,
+    }).then((resp) => {
+      versionId = resp.rows[0].id;
+
+      cy.getCookie("tj_auth_token").then((cookie) => {
+        const headers = {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        };
+
+        cy.request({
+          method: "POST",
+          url: "http://localhost:3000/api/data_queries",
+          headers: headers,
+          body: {
+            app_id: appId,
+            app_version_id: versionId,
+            name: "restapi1",
+            kind: "restapi",
+            options: {
+              method: "get",
+              url: `{{constants.${url}}}`,
+              url_params: [["", ""]],
+              headers: [[`{{constants.${key}}}`, `{{constants.${value}}}`], ["Content-Type", "application/json"]],
+              body: [["", ""]],
+              json_body: null,
+              body_toggle: false,
+              transformationLanguage: "javascript",
+              enableTransformation: false,
+            },
+            data_source_id: null,
+          },
+        }).then((response) => {
+          expect(response.status).to.equal(201);
+        });
+      });
     });
   });
 };

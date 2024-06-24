@@ -90,7 +90,7 @@ export const commonText = {
   companyProfileCheckPoint: "Company profile",
   setUpAdminHeader: "Set up your admin account",
   onboardingPageSubHeader: "This information will help us improve ToolJet.",
-  passwordHelperText: "Password must be at least 5 characters",
+  passwordHelperText: "Password should be at least 5 characters",
   continueButton: "Continue",
   resetPasswordButton: "Reset password",
   setUpWorkspaceHeader: "Set up your workspace",

@@ -151,7 +151,7 @@ export const verifyAndModifyToggleFx = (
     .click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
-      .find("pre.CodeMirror-line")
+      .find(".cm-line")
       .should("have.text", `${helper}${defaultValue}`);
   cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   if (toggleModification == true)

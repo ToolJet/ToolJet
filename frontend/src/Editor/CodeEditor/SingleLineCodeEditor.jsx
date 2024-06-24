@@ -136,6 +136,7 @@ const EditorInput = ({
   type,
   delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   paramLabel = '',
+  disabled = false,
 }) => {
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/);
@@ -225,6 +226,7 @@ const EditorInput = ({
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
     'widget-code-editor': componentId,
+    'disabled-pointerevents': disabled,
   });
 
   const currentEditorHeightRef = useRef(null);
@@ -242,7 +244,7 @@ const EditorInput = ({
   return (
     <div
       ref={currentEditorHeightRef}
-      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'}`}
+      className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
       data-cy={`${cyLabel}-input-field`}
     >
       {usePortalEditor && (
@@ -293,6 +295,7 @@ const EditorInput = ({
             className={customClassNames}
             theme={theme}
             indentWithTab={true}
+            readOnly={disabled}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>
@@ -312,7 +315,6 @@ const DynamicEditorBridge = (props) => {
     darkMode,
     className,
     onFxPress,
-    cyLabel = '',
     onChange,
     styleDefinition,
     onVisibilityChange,
@@ -325,6 +327,7 @@ const DynamicEditorBridge = (props) => {
   const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
 

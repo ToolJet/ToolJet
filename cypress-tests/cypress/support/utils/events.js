@@ -9,7 +9,7 @@ export const selectEvent = (
   cy.get(addEventhandlerSelector).eq(index).click();
   cy.get('[data-cy="event-handler"]').eq(eventIndex).click();
   cy.get('[data-cy="event-selection"]')
-    .click()
+    .click({force:true})
     .find("input")
     .type(`{selectAll}{backspace}${event}{enter}`);
     cy.get('[data-cy="event-label"]').click({force:true})
@@ -19,7 +19,8 @@ export const selectEvent = (
     .find("input")
     .type(`{selectAll}{backspace}${action}{enter}`);
     cy.get('[data-cy="event-label"]').click({force:true})
-  cy.wait("@events");
+    if(action==!"Show Alert"){
+  cy.wait("@events");}
 };
 
 export const selectCSA = (

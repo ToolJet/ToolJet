@@ -452,13 +452,12 @@ export class GroupPermissionsService {
     let newName = `${groupToDuplicate.group}_copy`;
     const number = getMaxCopyNumber(existNameList.map((group) => group.group));
     if (number) newName = `${groupToDuplicate.group}_copy_${number}`;
-    await dbTransactionWrap(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       newGroup = manager.create(GroupPermission, {
         organizationId: user.organizationId,
         group: newName,
       });
       await manager.save(GroupPermission, newGroup);
-      await this.usersService.validateLicense(manager);
       if (addPermission) {
         const {
           appCreate,
@@ -539,19 +538,18 @@ export class GroupPermissionsService {
             );
         }
       }
-    }, manager);
-
-    if (addUsers) {
-      const usersGroup = await groupToDuplicate.users;
-      for (const userAdd of usersGroup) {
-        const params = {
-          addGroups: [newGroup.group],
-        };
-        await this.usersService.update(userAdd.id, params, manager, user.organizationId);
+      if (addUsers) {
+        const usersGroup = await groupToDuplicate.users;
+        for (const userAdd of usersGroup) {
+          const params = {
+            addGroups: [newGroup.group],
+          };
+          await this.usersService.update(userAdd.id, params, manager, user.organizationId);
+        }
       }
-    }
-
-    return newGroup;
+      await this.usersService.validateLicense(manager);
+      return newGroup;
+    }, manager);
   }
 
   async findAll(user: User): Promise<GroupPermission[]> {

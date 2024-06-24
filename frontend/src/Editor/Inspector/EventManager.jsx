@@ -476,13 +476,14 @@ export const EventManager = ({
             <div className="col-3 p-2" data-cy="alert-type-label">
               {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
             </div>
-            <div className="col-9" data-cy="alert-message-type">
+            <div className="col-9">
               <CodeHinter
                 type="basic"
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
                 usePortalEditor={false}
                 component={component}
+                cyLabel={`run-only-if`}
               />
             </div>
           </div>
@@ -956,6 +957,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'debounce', value)}
                   usePortalEditor={false}
                   component={component}
+                  cyLabel={'debounce'}
                 />
               </div>
             </div>

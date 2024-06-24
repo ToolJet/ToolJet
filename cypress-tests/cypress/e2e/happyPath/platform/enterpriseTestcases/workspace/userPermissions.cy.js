@@ -26,7 +26,7 @@ describe("User permissions", () => {
     cy.defaultWorkspaceLogin();
     resetDsPermissions();
     deleteAssignedDatasources();
-    cy.viewport(1200, 1300);
+    cy.viewport(1200, 1600);
   });
   before(() => {
     cy.defaultWorkspaceLogin();

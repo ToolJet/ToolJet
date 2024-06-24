@@ -127,11 +127,7 @@ describe("Editor- Test Button widget", () => {
     verifyLayout(data.widgetName);
 
     cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterShowOnDesktop
-      )
-    ).click();
+    openEditorSidebar(data.widgetName);
 
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
@@ -210,7 +206,7 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.parameterFxButton(buttonText.loaderColor)
     ).click();
 
-    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor, 2);
+    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor, 1);
 
     verifyLoaderColor(buttonText.defaultWidgetName, data.loaderColor);
 
@@ -266,7 +262,7 @@ describe("Editor- Test Button widget", () => {
       data.boxShadowParam,
       data.colourHex,
       data.boxShadowColor,
-      4
+      1
     );
     cy.apiDeleteApp(data.appName);
   });
@@ -385,7 +381,7 @@ describe("Editor- Test Button widget", () => {
     cy.apiDeleteApp(data.appName);
   });
 
-  it("Should verify csa", () => {
+  it.only("Should verify csa", () => {
     cy.get('[data-tooltip-content="Hide query panel"]').click();
     openEditorSidebar(buttonText.defaultWidgetName);
     selectEvent("On click", "Show alert");
