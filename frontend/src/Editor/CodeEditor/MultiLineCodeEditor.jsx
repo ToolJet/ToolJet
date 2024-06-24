@@ -176,7 +176,7 @@ const MultiLineCodeEditor = (props) => {
   const customKeyMaps = [...defaultKeymap, ...completionKeymap];
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = (context) => autoCompleteExtensionConfig(context);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [hints]);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
