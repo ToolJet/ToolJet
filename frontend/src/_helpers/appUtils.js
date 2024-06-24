@@ -412,7 +412,7 @@ export async function executeActionsForEventId(_ref, eventId, events = [], mode,
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
+    await executeActionWithDebounce(_ref, event.event, mode, customVariables);
   }
 }
 

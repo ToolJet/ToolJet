@@ -190,7 +190,7 @@ export const Form = function Form(props) {
   const fireSubmissionEvent = () => {
     if (isValid) {
       onEvent('onSubmit', formEvents).then(() => {
-        debounce(() => resetComponent(), 0);
+        resetComponent();
       });
     } else {
       fireEvent('onInvalid');
