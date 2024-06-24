@@ -105,6 +105,7 @@
 
 .datasource-modal-container {
     position: relative;
+    background: var(--page-default);
     // background: var(--slate2);
 
     .modal-header {
@@ -177,7 +178,6 @@
 }
 
 .datasource-list-container {
-    background-color: var(--page-default);
     overflow-y: auto;
     max-height: calc(100vh - 64px);
 

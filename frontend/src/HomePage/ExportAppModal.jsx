@@ -20,8 +20,11 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       setLoading(true);
       try {
         const fetchVersions = await appsService.getVersions(app.id);
+        const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
         const { versions } = fetchVersions;
+        const { tables } = fetchTables;
         setVersions(versions);
+        setAllTables(tables);
         const currentEditingVersion = versions?.filter((version) => version?.isCurrentEditingVersion)[0];
         if (currentEditingVersion) {
           setCurrentVersion(currentEditingVersion);
@@ -43,8 +46,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       setVersionSelectLoading(true);
       try {
         if (!versionId) return;
-        const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
-        const { tables } = fetchTables;
         const tbl = await appsService.getAppByVersion(app.id, versionId); // this is used to get particular App by version
         const { dataQueries } = tbl;
         const extractedIdData = [];
@@ -69,7 +70,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const uniqueSet = new Set(extractedIdData);
         const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));
         setTables(selectedVersiontable);
-        setAllTables(tables);
       } catch (error) {
         toast.error('Could not fetch the tables.', {
           position: 'top-center',

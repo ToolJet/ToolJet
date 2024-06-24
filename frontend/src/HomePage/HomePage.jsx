@@ -721,7 +721,7 @@ class HomePageComponent extends React.Component {
               </div>
             </div>
             <div className="row">
-              <div className="col d-flex modal-footer-btn">
+              <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
                   variant="tertiary"
                   onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
@@ -751,7 +751,7 @@ class HomePageComponent extends React.Component {
               </div>
             </div>
             <div className="row">
-              <div className="col d-flex modal-footer-btn">
+              <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
                   onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
                   data-cy="cancel-button"

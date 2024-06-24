@@ -1453,6 +1453,16 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon style={{ height, width }} />;
   if (key === 'runpy') return <RunPyIcon style={{ height, width }} />;
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  //Add darkMode icons in allSvgs if needed ending with Dark
+  if (darkMode) {
+    const darkSrc = `${key}Dark`;
+    if (allSvgs[darkSrc]) {
+      key = darkSrc;
+    }
+  }
+
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;
