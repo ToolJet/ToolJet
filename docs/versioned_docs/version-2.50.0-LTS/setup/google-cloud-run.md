@@ -20,9 +20,9 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 ```bash
 gcloud auth configure-docker
-docker pull tooljet/tooljet:EE-LTS-latest
-docker tag tooljet/tooljet:EE-LTS-latest gcr.io/<replace-your-project-id>/tooljet/tooljet:EE-LTS-latest
-docker push gcr.io/<replace-your-project-id>/tooljet/tooljet:EE-LTS-latest
+docker pull tooljet/tooljet/tooljet:EE-LTS-latest
+docker tag tooljet/tooljet/tooljet:EE-LTS-latest gcr.io/<replace-your-project-id>/tooljet/tooljet/tooljet:EE-LTS-latest
+docker push gcr.io/<replace-your-project-id>/tooljet/tooljet/tooljet:EE-LTS-latest
 ```
 
   Please run the above command by launching GoogleCLI which will help to push the ToolJet application image to Google container registry. 
@@ -167,7 +167,7 @@ Once the Service is created and live, to make the  Cloud Service URL public. Ple
 
 ## Upgrading to the Latest LTS Version
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet:EE-LTS-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:EE-LTS-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
