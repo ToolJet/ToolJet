@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
@@ -20,9 +19,9 @@ const QueryPanel = ({
   appId,
   appDefinition,
   editorRef,
-  onQueryPaneDragging,
-  handleQueryPaneExpanding,
+  canvasContainerRef,
 }) => {
+  console.log('here--- QueryPanel rendered');
   const { updateQueryPanelHeight } = useQueryPanelActions();
   const dataQueries = useDataQueries();
   const queryManagerPreferences = useRef(
@@ -33,15 +32,14 @@ const QueryPanel = ({
       },
     }
   );
-  const queryPaneRef = useRef(null);
-  const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
-  const [isDragging, setDragging] = useState(false);
-  const [height, setHeight] = useState(
+
+  const height =
     queryManagerPreferences.current?.queryPanelHeight > 95
       ? 50
-      : queryManagerPreferences.current?.queryPanelHeight ?? 70
-  );
-  const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
+      : queryManagerPreferences.current?.queryPanelHeight ?? 70;
+
+  const queryPaneRef = useRef(null);
+  const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
   const [windowSize, isWindowResizing] = useWindowResize();
 
   useEffect(() => {
@@ -70,90 +68,69 @@ const QueryPanel = ({
   }, []);
 
   useEffect(() => {
-    handleQueryPaneExpanding(isExpanded);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded]);
-
-  useEffect(() => {
-    onQueryPaneDragging(isDragging);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDragging]);
-
-  useEffect(() => {
-    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-    if (isWindowResizing) {
-      onQueryPaneDragging(true);
-    } else {
-      onQueryPaneDragging(false);
-    }
+    updateHeightOnStoreAndCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize.height, isExpanded, isWindowResizing]);
 
-  const onMouseUp = () => {
-    setDragging(false);
-
-    /* Updated queryPanelHeight here instead of using a useEffect on height to avoid continuous rerendering during window dragging which causes screen to act sluggish */
-    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-  };
-
-  const onMouseDown = () => {
-    isTopOfQueryPanel && setDragging(true);
-  };
-
-  const onMouseMove = (e) => {
-    if (queryPaneRef.current) {
-      const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
-      const clientY = e.clientY;
-
-      if ((clientY >= componentTop) & (clientY <= componentTop + 5)) {
-        setTopOfQueryPanel(true);
-      } else if (isTopOfQueryPanel) {
-        setTopOfQueryPanel(false);
-      }
-
-      if (isDragging) {
-        let height = (clientY / window.innerHeight) * 100,
-          maxLimitReached = false;
-
-        if (height > 95) {
-          height = 30;
-          maxLimitReached = true;
-        }
-        if (height < 4.5) height = 4.5;
-        queryManagerPreferences.current = {
-          ...queryManagerPreferences.current,
-          queryPanelHeight: height,
-          isExpanded: !maxLimitReached,
-        };
-        localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
-        setExpanded(!maxLimitReached);
-        setHeight(height);
-      }
+  const updateHeightOnStoreAndCanvas = () => {
+    if (isExpanded) {
+      canvasContainerRef.current.style.height = `calc(${100}% - ${Math.max(
+        queryPaneRef?.current?.offsetHeight + 45,
+        85
+      )}px)`;
+      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+    } else {
+      canvasContainerRef.current.style.height = `calc(${100}% - 85px)`;
+      updateQueryPanelHeight(1);
     }
   };
-
-  useEventListener('mousemove', onMouseMove);
-  useEventListener('mouseup', onMouseUp);
 
   const toggleQueryEditor = useCallback(() => {
     queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
     localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
-    if (isExpanded) {
-      updateQueryPanelHeight(95);
-    } else {
-      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-    }
     setExpanded(!isExpanded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded]);
+  }, [isExpanded, queryManagerPreferences.current]);
 
   const updateDataQueries = useCallback(() => {
     dataQueriesChanged();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const initResize = () => {
+    window.addEventListener('mousemove', handleResize);
+    window.addEventListener('mouseup', stopResize);
+  };
+
+  const handleResize = (e) => {
+    let heightInPercentage = (e.clientY / window.innerHeight) * 100;
+    let maxLimitReached = false;
+
+    if (heightInPercentage > 95) {
+      heightInPercentage = 30;
+      maxLimitReached = true;
+    }
+    if (heightInPercentage < 4.5) heightInPercentage = 4.5;
+
+    queryPaneRef.current.style.height = `calc(100% - ${!maxLimitReached ? heightInPercentage : 100}%)`;
+    queryManagerPreferences.current = {
+      ...queryManagerPreferences.current,
+      queryPanelHeight: heightInPercentage,
+      isExpanded: !maxLimitReached,
+    };
+    setExpanded(!maxLimitReached);
+    e.stopPropagation();
+  };
+
+  const stopResize = () => {
+    updateHeightOnStoreAndCanvas();
+    localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
+    window.removeEventListener('mousemove', handleResize);
+    window.removeEventListener('mouseup', stopResize);
+  };
+
   return (
-    <div className={cx({ 'dark-theme theme-dark': darkMode })}>
+    <div className={cx({ 'dark-theme query-panel-wrapper theme-dark': darkMode })}>
       <div
         className="query-pane"
         style={{
@@ -183,42 +160,43 @@ const QueryPanel = ({
           </h5>
         </div>
       </div>
-      <div
-        ref={queryPaneRef}
-        onMouseDown={onMouseDown}
-        className="query-pane"
-        id="query-manager"
-        style={{
-          height: `calc(100% - ${isExpanded ? height : 100}%)`,
-          cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
-        }}
-      >
-        <div className="row main-row">
-          <QueryDataPane
-            fetchDataQueries={fetchDataQueries}
-            darkMode={darkMode}
-            editorRef={editorRef}
-            appId={appId}
-            toggleQueryEditor={toggleQueryEditor}
-          />
-          <div className="query-definition-pane-wrapper">
-            <div className="query-definition-pane">
-              <div>
-                <QueryManager
-                  toggleQueryEditor={toggleQueryEditor}
-                  dataQueries={dataQueries}
-                  dataQueriesChanged={updateDataQueries}
-                  appId={appId}
-                  darkMode={darkMode}
-                  allComponents={allComponents}
-                  appDefinition={appDefinition}
-                  editorRef={editorRef}
-                />
+      {isExpanded ? (
+        <div
+          ref={queryPaneRef}
+          className="query-pane"
+          id="query-manager"
+          style={{
+            height: `calc(100% - ${isExpanded ? height : 100}%)`,
+          }}
+        >
+          <div id="query-panel-drag-handle" onMouseDown={initResize}></div>
+          <div className="row main-row">
+            <QueryDataPane
+              fetchDataQueries={fetchDataQueries}
+              darkMode={darkMode}
+              editorRef={editorRef}
+              appId={appId}
+              toggleQueryEditor={toggleQueryEditor}
+            />
+            <div className="query-definition-pane-wrapper">
+              <div className="query-definition-pane">
+                <div>
+                  <QueryManager
+                    toggleQueryEditor={toggleQueryEditor}
+                    dataQueries={dataQueries}
+                    dataQueriesChanged={updateDataQueries}
+                    appId={appId}
+                    darkMode={darkMode}
+                    allComponents={allComponents}
+                    appDefinition={appDefinition}
+                    editorRef={editorRef}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : null}
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />
     </div>
   );
