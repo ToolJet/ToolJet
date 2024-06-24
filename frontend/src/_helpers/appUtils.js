@@ -752,9 +752,8 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    return _.debounce(async () => {
-      await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
-    }, 10);
+    // for onPageLoad events, we need to execute the actions after the page is loaded
+    handleLowPriorityWork(() => executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables));
   }
 
   if (eventName === 'onTrigger') {
