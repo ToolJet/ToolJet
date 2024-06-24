@@ -105,15 +105,22 @@ export function onComponentOptionsChanged(component, options, id) {
     componentData = deepClone(componentData) || {};
 
     const shouldUpdateResolvedRefsOfHints = [];
-
+    const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
+    const isFromComponent = component.component === 'Form';
     for (const option of options) {
       componentData[option[0]] = option[1];
-
-      const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
 
       let path = null;
       if (isListviewOrKanbaComponent) {
         path = `components.${componentName}`;
+      } else if (isFromComponent) {
+        const basePath = `components.${componentName}.${option[0]}`;
+
+        useResolveStore.getState().actions.addAppSuggestions({
+          [basePath]: option[1],
+        });
+
+        shouldUpdateResolvedRefsOfHints.push({ hint: basePath, newRef: componentData[option[1]] });
       } else {
         path = `components.${componentName}.${option[0]}`;
       }
@@ -1652,7 +1659,7 @@ export const cloneComponents = (
   });
 };
 
-const getAllChildComponents = (allComponents, parentId) => {
+export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {
@@ -1660,7 +1667,8 @@ const getAllChildComponents = (allComponents, parentId) => {
 
     const isParentTabORCalendar =
       allComponents[parentId]?.component?.component === 'Tabs' ||
-      allComponents[parentId]?.component?.component === 'Calendar';
+      allComponents[parentId]?.component?.component === 'Calendar' ||
+      allComponents[parentId]?.component?.component === 'Kanban';
 
     if (componentParentId && isParentTabORCalendar) {
       const childComponent = allComponents[componentId];
