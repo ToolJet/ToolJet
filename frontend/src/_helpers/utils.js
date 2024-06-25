@@ -622,6 +622,16 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
     result = { status: 'failed', data: { message: error, description: error } };
   }
 
+  if (hasCircularDependency(result)) {
+    return {
+      status: 'failed',
+      data: {
+        message: 'Circular dependency detected',
+        description: 'Cannot resolve circular dependency',
+      },
+    };
+  }
+
   return result;
 }
 
