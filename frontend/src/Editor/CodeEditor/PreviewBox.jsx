@@ -134,6 +134,7 @@ export const PreviewBox = ({
 
   useEffect(() => {
     const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
+
     if (isWorkspaceVariable || !validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
     }
