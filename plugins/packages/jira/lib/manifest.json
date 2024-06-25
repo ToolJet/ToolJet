@@ -1,0 +1,42 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Jira datasource",
+  "description": "A schema defining Jira datasource",
+  "type": "api",
+  "source": {
+    "name": "Jira",
+    "kind": "jira",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "A single select dropdown to choose credentials",
+      "list": [
+        {
+          "value": "personal_access_token",
+          "name": "Use API Token"
+        }
+      ]
+    },
+    "personal_access_token": {
+      "token": {
+        "label": "Token",
+        "key": "personal_token",
+        "type": "password",
+        "description": "Enter your api token",
+        "hint": "You can generate a personal access token from your Jira account 'Manage account'."
+      }
+    }
+  },
+  "required": []
+}
