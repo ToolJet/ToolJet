@@ -19,8 +19,6 @@ export function validateMultilineCode(code, isMultiLine = false) {
       return keywordRegex.test(code);
     });
 
-    console.log('--arpit::', code, codeHasExactMatch);
-
     if (codeHasExactMatch) {
       return {
         status: 'failed',
