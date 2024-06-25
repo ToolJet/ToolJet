@@ -349,6 +349,11 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, mounted]);
 
+  useEffect(() => {
+    updateEntityReferences(appDefinition, currentPageId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.length]);
+
   const handleYmapEventUpdates = () => {
     props.ymap?.set('eventHandlersUpdated', {
       currentVersionId: currentVersionId,
@@ -1077,12 +1082,13 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
         })
-        .catch(() => {
+        .catch((err) => {
           updateEditorState({
             saveError: true,
             isUpdatingEditorStateInProcess: false,
           });
-          toast.error('App could not save.');
+          // toast.error('App could not save.');
+          toast.error(err?.error ?? 'App could not save.');
         })
         .finally(() => {
           if (appDiffOptions?.cloningComponent) {

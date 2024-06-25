@@ -102,18 +102,25 @@ export function onComponentOptionsChanged(component, options, id) {
 
     const components = getCurrentState().components;
     let componentData = components[componentName];
-    componentData = componentData || {};
+    componentData = deepClone(componentData) || {};
 
     const shouldUpdateResolvedRefsOfHints = [];
-
+    const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
+    const isFromComponent = component.component === 'Form';
     for (const option of options) {
       componentData[option[0]] = option[1];
-
-      const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
 
       let path = null;
       if (isListviewOrKanbaComponent) {
         path = `components.${componentName}`;
+      } else if (isFromComponent) {
+        const basePath = `components.${componentName}.${option[0]}`;
+
+        useResolveStore.getState().actions.addAppSuggestions({
+          [basePath]: option[1],
+        });
+
+        shouldUpdateResolvedRefsOfHints.push({ hint: basePath, newRef: componentData[option[1]] });
       } else {
         path = `components.${componentName}.${option[0]}`;
       }
@@ -163,6 +170,8 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
+
   let componentName = component.name;
 
   if (id) {
@@ -176,8 +185,10 @@ export function onComponentOptionChanged(component, option_name, value, id) {
 
   const { isEditorReady, components: currentComponents } = getCurrentState();
 
+  if (!currentComponents) return;
+
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
-  let componentData = components[componentName] || {};
+  let componentData = deepClone(components[componentName]) || {};
   componentData[option_name] = value;
 
   const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
@@ -401,7 +412,7 @@ export async function executeActionsForEventId(_ref, eventId, events = [], mode,
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
+    await executeActionWithDebounce(_ref, event.event, mode, customVariables);
   }
 }
 
@@ -741,9 +752,8 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    return _.debounce(async () => {
-      await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
-    }, 10);
+    // for onPageLoad events, we need to execute the actions after the page is loaded
+    handleLowPriorityWork(() => executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables));
   }
 
   if (eventName === 'onTrigger') {
@@ -1217,6 +1227,16 @@ export function runQuery(
             });
             resolve(data);
             onEvent(_self, 'onDataQueryFailure', queryEvents);
+
+            const toUpdateRefs = [
+              { hint: `queries.${queryName}.isLoading`, newRef: false },
+              {
+                hint: `queries.${queryName}.data`,
+                newRef: [],
+              },
+            ];
+
+            useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
             if (mode !== 'view') {
               const err = query.kind == 'tooljetdb' ? data?.error || data : data;
               toast.error(err?.message ? err?.message : 'Something went wrong');
@@ -1298,16 +1318,14 @@ export function runQuery(
               },
             });
 
-            if (mode === 'edit') {
-              useResolveStore.getState().actions.addAppSuggestions({
-                queries: {
-                  [queryName]: {
-                    data: finalData,
-                    isLoading: false,
-                  },
+            useResolveStore.getState().actions.addAppSuggestions({
+              queries: {
+                [queryName]: {
+                  data: finalData,
+                  isLoading: false,
                 },
-              });
-            }
+              },
+            });
 
             const basePath = `queries.${queryName}`;
 
@@ -1650,7 +1668,7 @@ export const cloneComponents = (
   });
 };
 
-const getAllChildComponents = (allComponents, parentId) => {
+export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {
@@ -1658,7 +1676,8 @@ const getAllChildComponents = (allComponents, parentId) => {
 
     const isParentTabORCalendar =
       allComponents[parentId]?.component?.component === 'Tabs' ||
-      allComponents[parentId]?.component?.component === 'Calendar';
+      allComponents[parentId]?.component?.component === 'Calendar' ||
+      allComponents[parentId]?.component?.component === 'Kanban';
 
     if (componentParentId && isParentTabORCalendar) {
       const childComponent = allComponents[componentId];
@@ -1925,6 +1944,29 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
     delete newDefinition.pages[pageId].components[componentId];
   });
 
+  const appDefinition = useEditorStore.getState().appDefinition;
+
+  const deleteFromMap = [...toDeleteComponents];
+  const deletedComponentNames = deleteFromMap.map((id) => {
+    return appDefinition.pages[pageId].components[id].component.name;
+  });
+
+  const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+  const allHintsAssociatedWithQuery = [];
+
+  if (allAppHints.length > 0) {
+    deletedComponentNames.forEach((componentName) => {
+      return allAppHints.forEach((suggestion) => {
+        if (suggestion?.hint.includes(componentName)) {
+          allHintsAssociatedWithQuery.push(suggestion.hint);
+        }
+      });
+    });
+  }
+
+  useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
+  useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
+
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
 };
 
@@ -1968,7 +2010,7 @@ export const checkExistingQueryName = (newName) =>
 export const runQueries = async (queries, _ref, isOnLoad = false) => {
   try {
     for (const query of queries) {
-      if (query.options.runOnPageLoad && isQueryRunnable(query)) {
+      if (query.options.runOnPageLoad && isQueryRunnable(query) && !query.options?.requestConfirmation) {
         await runQuery(_ref, query.id, query.name, isOnLoad);
       }
     }
