@@ -93,10 +93,7 @@ const Zendesk = ({
           <div className="mb-3">
             <div className="form-label">Scope(s)</div>
             <p>
-              {
-                (`If you want your ${whiteLabelText} apps to modify your Zendesk resources, make sure to select read and write access`,
-                { whiteLabelText })
-              }
+              {`If you want your ${whiteLabelText} apps to modify your Zendesk resources, make sure to select read and write access`}
             </p>
             <div>
               <Radio
@@ -104,17 +101,14 @@ const Zendesk = ({
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
-                helpText={(`Your ${whiteLabelText} apps can only read data from resources`, { whiteLabelText })}
+                helpText={`Your ${whiteLabelText} apps can only read data from resources`}
               />
               <Radio
                 checked={options?.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
-                helpText={
-                  (`Your ${whiteLabelText} apps can read data from resources, modify resources, and more.`,
-                  { whiteLabelText })
-                }
+                helpText={`Your ${whiteLabelText} apps can read data from resources, modify resources, and more.`}
               />
             </div>
           </div>
