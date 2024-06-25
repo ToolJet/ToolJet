@@ -239,7 +239,13 @@ class HomePageComponent extends React.Component {
       };
       event.target.value = null;
     } catch (error) {
-      toast.error(error.message);
+      let errorMessage = 'Some Error Occured';
+      if (error?.error) {
+        errorMessage = error.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -272,7 +278,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
-      toast.error(error?.error || 'App import failed');
+      toast.error(error?.error || error?.message || 'App import failed');
     }
   };
 
@@ -429,7 +435,13 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        toast.error(error);
+        let errorMessage = 'Some Error Occured';
+        if (error?.error) {
+          errorMessage = error.error;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage);
       });
   };
 
@@ -449,7 +461,13 @@ class HomePageComponent extends React.Component {
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        toast.error(error);
+        let errorMessage = 'Some Error Occured';
+        if (error?.error) {
+          errorMessage = error.error;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage);
       })
       .finally(() => {
         this.setState({
@@ -535,7 +553,13 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        toast.error(error);
+        let errorMessage = 'Some Error Occured';
+        if (error?.error) {
+          errorMessage = error.error;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage);
       });
   };
 
