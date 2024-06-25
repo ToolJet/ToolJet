@@ -2,7 +2,7 @@ import { EntityManager } from 'typeorm';
 
 export async function reconfigurePostgrest(
   tooljetDbManager: EntityManager,
-  options: { user: string; enableAggregates: boolean }
+  options: { user: string; enableAggregates: boolean; statementTimeoutInSecs: number }
 ) {
   await tooljetDbManager.query('CREATE SCHEMA IF NOT EXISTS postgrest');
   await tooljetDbManager.query(`GRANT USAGE ON SCHEMA postgrest to ${options.user}`);
@@ -12,4 +12,7 @@ export async function reconfigurePostgrest(
       set_config('pgrst.db_aggregates_enabled', '${options.enableAggregates}', false)
   $$ language sql;
   `);
+  await tooljetDbManager.query(
+    `ALTER ROLE ${options.user} SET statement_timeout TO '${options.statementTimeoutInSecs}s'`
+  );
 }

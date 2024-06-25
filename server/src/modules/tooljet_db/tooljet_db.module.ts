@@ -38,10 +38,13 @@ export class TooljetDbModule implements OnModuleInit {
     if (hasTooljetDbReconfig) {
       const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
       const enableAggregatesInPostgrest = this.configService.get('PGRST_DB_ENABLE_AGGREGATE') === 'true';
+      const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
+      const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
 
       await reconfigurePostgrest(this.tooljetDbManager, {
         user: tooljtDbUser,
         enableAggregates: enableAggregatesInPostgrest,
+        statementTimeoutInSecs: statementTimeoutInSecs,
       });
     }
 
