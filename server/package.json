@@ -45,7 +45,7 @@
     "@nestjs/platform-ws": "^8.0.10",
     "@nestjs/schedule": "^2.2.0",
     "@nestjs/serve-static": "^2.2.2",
-    "@nestjs/typeorm": "8.0.0",
+    "@nestjs/typeorm": "9.0.0",
     "@nestjs/websockets": "^8.0.10",
     "@sentry/node": "6.17.6",
     "@sentry/tracing": "6.17.6",
@@ -84,7 +84,7 @@
     "semver": "^7.5.4",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
-    "typeorm": "^0.2.38",
+    "typeorm": "^0.3.0",
     "ws": "^7.5.5",
     "y-websocket": "^1.4.0"
   },
