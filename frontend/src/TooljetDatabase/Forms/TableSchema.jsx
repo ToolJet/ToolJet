@@ -15,7 +15,7 @@ import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/_components/DateTimePicker';
-import { timeZonesWithOffsets } from '@/_helpers/utils';
+import { getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
 
 function TableSchema({
   columns,
@@ -374,6 +374,7 @@ function TableSchema({
                   {columnDetails[index].data_type === 'timestamp with time zone' ? (
                     <DateTimePicker
                       timestamp={columnDetails[index].column_default}
+                      timezone={columnDetails[index]?.configurations?.timezone || getLocalTimeZone()}
                       setTimestamp={(value) => {
                         const prevColumns = { ...columnDetails };
                         prevColumns[index].column_default = value;

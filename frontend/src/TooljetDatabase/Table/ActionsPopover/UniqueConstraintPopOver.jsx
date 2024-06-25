@@ -8,6 +8,7 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import Select, { components } from 'react-select';
 import { formatOptionLabel } from '@/TooljetDatabase/constants';
 import { getLocalTimeZone } from '@/_helpers/utils';
+import './styles.scss';
 // eslint-disable-next-line no-unused-vars
 export const UniqueConstraintPopOver = ({
   disabled,

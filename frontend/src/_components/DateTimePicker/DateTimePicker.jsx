@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import cx from 'classnames';
@@ -21,10 +21,8 @@ export const DateTimePicker = ({
   timezone = getLocalTimeZone(),
 }) => {
   const transformedTimestamp = timestamp ? convertToDateType(timestamp, timezone) : null;
-
   const timestampRef = useRef(timestamp);
-
-  const prevTimestampRef = useRef(timestamp);
+  const prevTimestampRef = useRef(timestamp || new Date().toISOString());
   const [isOpen, setIsOpen] = useState(isOpenOnStart);
 
   const handleKeyDown = (e) => {
@@ -32,8 +30,8 @@ export const DateTimePicker = ({
       handleCancel();
     } else if (e.key === 'Enter') {
       handleSave();
+      setIsOpen(false);
     }
-
     e.stopPropagation();
   };
 
@@ -60,7 +58,9 @@ export const DateTimePicker = ({
   };
 
   useEffect(() => {
-    if (timestampRef.current !== defaultValue && timestampRef.current !== null) {
+    const currentTimeInMilliseconds = new Date(timestampRef.current).getTime();
+    const defaultValueInMilliseconds = new Date(defaultValue).getTime();
+    if (currentTimeInMilliseconds !== defaultValueInMilliseconds && timestampRef.current !== null) {
       prevTimestampRef.current = timestampRef.current;
     }
   }, [timestampRef.current]);
@@ -70,8 +70,6 @@ export const DateTimePicker = ({
     const [isDefault, setIsDefault] = useState(timestampRef.current === defaultValue);
 
     const handleNullToggle = () => {
-      setIsNull((prev) => !prev);
-      setIsDefault(false);
       if (!isNull) {
         timestampRef.current = null;
         setTimestamp(null);
@@ -82,8 +80,6 @@ export const DateTimePicker = ({
     };
 
     const handleDefaultToggle = () => {
-      setIsDefault((prev) => !prev);
-      setIsNull(false);
       if (!isDefault) {
         timestampRef.current = defaultValue;
         setTimestamp(defaultValue);
@@ -94,14 +90,20 @@ export const DateTimePicker = ({
     };
 
     useEffect(() => {
-      if (timestampRef.current === null && timestampRef.current === defaultValue) {
+      const currentTimeInMilliseconds = new Date(timestampRef.current).getTime();
+      const defaultValueInMilliseconds = new Date(defaultValue).getTime();
+
+      if (timestampRef.current === null && currentTimeInMilliseconds === defaultValueInMilliseconds) {
         setIsNull(true);
         setIsDefault(true);
-      } else if (timestampRef.current === defaultValue) {
+      } else if (currentTimeInMilliseconds === defaultValueInMilliseconds) {
         setIsNull(false);
         setIsDefault(true);
       } else if (timestampRef.current === null) {
         setIsNull(true);
+        setIsDefault(false);
+      } else {
+        setIsNull(false);
         setIsDefault(false);
       }
     }, [timestampRef.current]);
@@ -182,6 +184,7 @@ export const DateTimePicker = ({
   };
 
   const CustomCalendarContainer = ({ children }) => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
     return (
       <div
         style={{
@@ -192,6 +195,7 @@ export const DateTimePicker = ({
           width: '280px',
           borderRadius: '6px',
           boxShadow: '0px 8px 16px 0px #3032331A',
+          backgroundColor: darkMode ? '#232e3c' : '#FFFFFF',
         }}
       >
         <div style={{ width: '100%' }}>{children}</div>
@@ -211,7 +215,7 @@ export const DateTimePicker = ({
     );
   };
 
-  const memoizedCustomCalendarContainer = useCallback(CustomCalendarContainer, [isOpen]);
+  const memoizedCustomCalendarContainer = useMemo(() => CustomCalendarContainer, [isOpen]);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -232,26 +236,28 @@ export const DateTimePicker = ({
       style={{
         display: styles.visibility ? '' : 'none',
         background: 'none',
+        width: '100%',
       }}
     >
       <DatePickerComponent
         className={`input-field form-control validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
-        }`}
-        shouldCloseOnSelect={!isEditCell}
+        } `}
         onInputClick={() => setIsOpen(true)}
         onClickOutside={() => setIsOpen(false)}
         placeholderText="DD/MM/YYYY, 12:00pm"
-        value={transformedTimestamp}
         selected={transformedTimestamp}
         onChange={(newTimestamp) => {
           isEditCell ? handleCellEditChange(newTimestamp) : handleDefaultChange(newTimestamp);
         }}
+        autoFocus={true}
         open={isOpen}
+        onClick={() => setIsOpen(true)}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}
         showMonthDropdown
         showYearDropdown
+        fixedHeight
         dropdownMode="select"
         customInput={
           transformedTimestamp ? (

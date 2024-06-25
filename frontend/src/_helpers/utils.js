@@ -1366,6 +1366,7 @@ export function decodeEntities(encodedString) {
 
 export const convertToDateType = (dateString, timeZone) => {
   const date = new Date(dateString);
+  if (date.toString() === 'Invalid Date') return null;
   return new Date(date.toLocaleString('en-US', { timeZone, hour12: false }));
 };
 
@@ -1408,7 +1409,7 @@ export const convertDateToTimeZoneFormatted = (
 };
 
 // Function to get the current date in a specific time zone
-const getDateInTimeZone = (timeZone) => new Date().toLocaleString('en-US', { timeZone });
+const getDateInTimeZone = (timeZone) => new Date().toLocaleString('en-US', { timeZone, hour12: false });
 
 export const formatDate = (date, timeZone) => {
   if (date) {
@@ -1421,8 +1422,8 @@ export const formatDate = (date, timeZone) => {
     const dateInUTCInSeconds = Math.floor(dateInUTC.getTime() / 1000);
 
     const offset = dateInTimeZoneInSeconds - dateInUTCInSeconds;
-    const dateWithRemovedOffset = dateInSeconds - offset - new Date().getTimezoneOffset() * 60;
 
+    const dateWithRemovedOffset = dateInSeconds - offset - new Date().getTimezoneOffset() * 60;
     return new Date(dateWithRemovedOffset * 1000).toISOString();
   } else {
     return null;

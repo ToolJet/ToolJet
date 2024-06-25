@@ -140,6 +140,8 @@ const RowForm = ({
       newInputValues[index] = { value: null, checkboxValue: null, disabled: true, label: null };
     } else if (tabData === 'Custom' && dataType === 'character varying') {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
+    } else if (tabData === 'Custom' && dataType === 'timestamp with time zone') {
+      newInputValues[index] = { value: new Date().toISOString(), checkboxValue: false, disabled: false, label: '' };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     }

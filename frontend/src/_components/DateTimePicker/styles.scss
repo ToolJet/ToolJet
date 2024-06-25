@@ -33,7 +33,7 @@
         width:100%;
       }
     .react-datepicker__tab-loop {
-   
+
       .react-datepicker__month-container{
         float:none;
       }
@@ -61,8 +61,14 @@
       width:100%;
     }
     .react-datepicker__tab-loop {
+     
       .react-datepicker__month-container{
+        background-color: #232e3c;
         float:none;
       } 
+    
+    }
+    .react-datepicker__triangle{
+      display: none;
     }
 }

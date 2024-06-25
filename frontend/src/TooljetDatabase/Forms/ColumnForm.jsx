@@ -318,7 +318,7 @@ const ColumnForm = ({
           >
             <div>
               {isTimestamp ? (
-                <DateTimePicker timestamp={defaultValue} setTimestamp={setDefaultValue} />
+                <DateTimePicker timestamp={defaultValue} setTimestamp={setDefaultValue} timezone={timezone} />
               ) : !foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input
                   value={defaultValue}
