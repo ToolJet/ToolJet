@@ -1211,6 +1211,7 @@ export function runQuery(
       queryExecutionPromise
         .then(async (data) => {
           if (data.status === 'needs_oauth') {
+            localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }

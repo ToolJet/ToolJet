@@ -203,9 +203,13 @@ export class OrganizationPaymentService {
       manager,
       organizationId
     );
-    if (checkParam?.NumberOfEditor && checkParam?.NumberOfEditor < editorsViewersCount.editor) return false;
-    if (checkParam?.NumberOfViewers && checkParam?.NumberOfViewers < editorsViewersCount.viewer) return false;
-    return true;
+    if (checkParam?.NumberOfEditor && checkParam?.NumberOfEditor < editorsViewersCount.editor) {
+      throw new BadRequestException(`Builder count should be minimum ${editorsViewersCount.editor}`);
+    }
+    if (checkParam?.NumberOfViewers && checkParam?.NumberOfViewers < editorsViewersCount.viewer) {
+      throw new BadRequestException(`End user count should be minimum ${editorsViewersCount.viewer}`);
+    }
+    return;
   }
 
   async UpdateOrInsertCloudLicense(organizationSubscription: OrganizationSubscription, manager?: EntityManager) {
@@ -644,8 +648,7 @@ export class OrganizationPaymentService {
       NumberOfEditor: paymentRedirectDto.NumberOfEditor,
     };
     const manager = getManager();
-    const validUpgrade = await this.licenseUpgradeValidation(paymentRedirectDto.workspaceId, checkParam, manager);
-    if (!validUpgrade) throw new BadRequestException('This is not valid license upgrade request');
+    await this.licenseUpgradeValidation(paymentRedirectDto.workspaceId, checkParam, manager);
 
     const line_items = [];
     if (paymentRedirectDto.subscriptionType == 'monthly') {
