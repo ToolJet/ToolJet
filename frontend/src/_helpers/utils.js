@@ -174,15 +174,17 @@ export function resolveReferences(
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
-          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+          //Will be remove in next release
 
-          if (code.match(keywordRegex)) {
-            error = `${code} is a reserved keyword`;
-            return [{}, error];
+          const { status, data } = validateMultilineCode(code);
+
+          if (status === 'failed') {
+            const errMessage = `${data.message} -  ${data.description}`;
+
+            return [{}, errMessage];
           }
 
-          return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+          return resolveCode(code, state, customObjects, withError, [], true);
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
@@ -529,7 +531,7 @@ export function constructSearchParams(params = {}) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  const isValidCode = validateMultilineCode(code);
+  const isValidCode = validateMultilineCode(code, true);
 
   if (isValidCode.status === 'failed') {
     return isValidCode;
@@ -639,6 +641,16 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
     console.log('JS execution failed: ', err);
     error = err.stack.split('\n')[0];
     result = { status: 'failed', data: { message: error, description: error } };
+  }
+
+  if (hasCircularDependency(result)) {
+    return {
+      status: 'failed',
+      data: {
+        message: 'Circular dependency detected',
+        description: 'Cannot resolve circular dependency',
+      },
+    };
   }
 
   return result;
