@@ -72,7 +72,7 @@ jobs:
               {
                 "key": "TOOLJET_DB_USER",
                 "value": "${{ secrets.RENDER_PG_USER }}"
-              },              
+              },
               {
                 "key": "TOOLJET_DB_PASS",
                 "value": "${{ secrets.RENDER_PG_PASS }}"
@@ -92,6 +92,10 @@ jobs:
               {
                 "key": "PGRST_DB_ENABLE_AGGREGATE",
                 "value": "true"
+              },
+              {
+                "key": "PGRST_DB_PRE_CONFIG",
+                "value": "postgrest.pre_config"
               },
               {
                 "key": "PGRST_DB_URI",
