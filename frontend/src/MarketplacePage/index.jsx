@@ -84,17 +84,19 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
                   ))}
                 </div>
               </div>
-              {active === 'installed' ? (
-                <InstalledPlugins
-                  allPlugins={marketplacePlugins}
-                  installedPlugins={installedPlugins}
-                  fetching={fetchingInstalledPlugins}
-                  fetchPlugins={fetchPlugins}
-                  ENABLE_MARKETPLACE_DEV_MODE={ENABLE_MARKETPLACE_DEV_MODE}
-                />
-              ) : (
-                <MarketplacePlugins allPlugins={marketplacePlugins} />
-              )}
+              <div className="marketplace-page-plugins">
+                {active === 'installed' ? (
+                  <InstalledPlugins
+                    allPlugins={marketplacePlugins}
+                    installedPlugins={installedPlugins}
+                    fetching={fetchingInstalledPlugins}
+                    fetchPlugins={fetchPlugins}
+                    ENABLE_MARKETPLACE_DEV_MODE={ENABLE_MARKETPLACE_DEV_MODE}
+                  />
+                ) : (
+                  <MarketplacePlugins allPlugins={marketplacePlugins} />
+                )}
+              </div>
             </div>
           </div>
         </div>
