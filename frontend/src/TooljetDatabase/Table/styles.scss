@@ -170,15 +170,15 @@
       div {
         padding-bottom: 0px !important;
 
-        span {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          width: 85%;
+        .cell-menu-text {
+          white-space: nowrap ;
+          overflow: hidden ;
+          text-overflow: ellipsis ;
+          width: 85% ;
           color: var(--slate11) !important;
           cursor: default;
           border-radius: 6px;
-          height: 20px;
+          // height: 20px;
           font-size: 12px;
         }
       }
@@ -189,7 +189,7 @@
     .tjdb-td-wrapper {
       div {
         padding-bottom: 0px !important;
-        span {
+        .cell-menu-text {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -197,7 +197,7 @@
           color: var(--slate11) !important;
           cursor: default;
           border-radius: 6px;
-          height: 20px;
+          // height: 20px;
           font-size: 12px;
         }
       }
