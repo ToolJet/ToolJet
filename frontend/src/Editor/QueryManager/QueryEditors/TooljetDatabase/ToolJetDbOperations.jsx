@@ -486,7 +486,15 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       <div className={cx({ row: !isHorizontalLayout })}>
         <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
           <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
+          <div
+            className={cx(
+              { 'flex-grow-1': isHorizontalLayout },
+              'border',
+              'rounded',
+              'overflow-hidden',
+              'minw-400px-maxw-45perc'
+            )}
+          >
             <DropDownSelect
               customBorder={false}
               showPlaceHolder
@@ -510,7 +518,15 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
         >
           <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
+          <div
+            className={cx(
+              { 'flex-grow-1': isHorizontalLayout },
+              'border',
+              'rounded',
+              'overflow-hidden',
+              'minw-400px-maxw-45perc'
+            )}
+          >
             <DropDownSelect
               showPlaceHolder
               options={tooljetDbOperationList}

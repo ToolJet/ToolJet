@@ -281,7 +281,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
             !isEmpty(operationDetails?.aggregates) &&
             Object.entries(operationDetails.aggregates).map(([aggregateKey, aggregateDetails]) => {
               return (
-                <div key={aggregateKey} className="d-flex flex-row ">
+                <div key={aggregateKey} className="d-flex flex-row minw-400px-maxw-45perc">
                   <div
                     style={{ minWidth: '25%', borderRadius: '4px 0 0 4px' }}
                     className="border overflow-hidden border-width-except-right"
@@ -296,7 +296,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       darkMode={darkMode}
                     />
                   </div>
-                  <div style={{ flex: '1', borderRadius: '0 4px 4px 0' }} className="border border-width-except-right">
+                  <div style={{ flex: '1' }} className="border border-width-except-right">
                     <SelectBox
                       height="32"
                       width="100%"
@@ -359,7 +359,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
         <label className="form-label" data-cy="label-column-filter">
           Group by
         </label>
-        <div className="field-container col ">
+        <div className="field-container col minw-400px-maxw-45perc">
           {/* tooltip is not working */}
           {operation === 'listRows' && (
             <div className="border rounded">
