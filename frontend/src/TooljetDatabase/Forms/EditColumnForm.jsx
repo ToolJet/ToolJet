@@ -156,6 +156,17 @@ const ColumnForm = ({
   const currentReferencedTableName = targetTable?.value;
   const currentReferencedColumnName = targetColumn?.value;
 
+  const checkIfButtonShouldBeDisabled = () => {
+    if (isTimestamp) {
+      return ![
+        timezone === columnConfigurations?.timezone,
+        defaultValue === selectedColumn?.column_default,
+        columnName === selectedColumn?.Header,
+      ].some((item) => item === false);
+    }
+    return true;
+  };
+
   const handleCreateForeignKeyinEditMode = async () => {
     const data = [
       {
@@ -896,6 +907,7 @@ const ColumnForm = ({
           shouldDisableCreateBtn={columnName === ''}
           showToolTipForFkOnReadDocsSection={true}
           initiator={initiator}
+          isButtonDisabledForTimestamp={checkIfButtonShouldBeDisabled()}
         />
       </div>
       <ConfirmDialog

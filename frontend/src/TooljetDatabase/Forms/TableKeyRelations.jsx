@@ -79,7 +79,12 @@ function SourceKeyRelation({
             icon: item?.dataTypeDetails?.icon ?? item?.dataTypeDetails?.[0]?.icon,
             value: item?.column_name,
             dataType: item?.data_type,
-            isDisabled: item?.data_type === 'serial' || item?.data_type === 'boolean' ? true : false,
+            isDisabled:
+              item?.data_type === 'serial' ||
+              item?.data_type === 'boolean' ||
+              item?.data_type === 'timestamp with time zone'
+                ? true
+                : false,
           };
         });
 

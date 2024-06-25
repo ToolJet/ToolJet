@@ -1442,8 +1442,8 @@ export const getUTCOffset = (timeZone) => {
 
   const offsetHours = Math.floor(difference / 60);
   const offsetMinutes = difference % 60;
-  const offsetSign = offsetMinutes > 0 ? '+' : '';
-  const formattedOffset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes
+  const offsetSign = difference >= 0 ? '+ ' : '- ';
+  const formattedOffset = `${offsetSign}${Math.abs(offsetHours).toString()}:${Math.abs(offsetMinutes)
     .toString()
     .padStart(2, '0')}`;
   return formattedOffset;

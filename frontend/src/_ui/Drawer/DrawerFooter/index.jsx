@@ -29,6 +29,7 @@ function DrawerFooter({
   showToolTipForFkOnReadDocsSection = false,
   foreignKeyDetails = [],
   initiator,
+  isButtonDisabledForTimestamp = false,
 }) {
   useEffect(() => {
     const keyboardShortcutStore = useKeyboardShortcutStore.getState();
@@ -221,14 +222,15 @@ function DrawerFooter({
             <>
               {isEditMode && (
                 <ButtonSolid
-                  disabled={shouldDisableCreateBtn || fetching}
+                  disabled={shouldDisableCreateBtn || fetching || isButtonDisabledForTimestamp}
                   data-cy={`save-changes-button`}
                   onClick={onEdit}
                   fill="#fff"
                   leftIcon="floppydisk"
                   size="md"
                 >
-                  Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                  Save changes
+                  <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
               )}
               {!isEditMode && (

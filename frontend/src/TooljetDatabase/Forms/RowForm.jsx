@@ -289,7 +289,7 @@ const RowForm = ({
     onCreate && onCreate(shouldKeepDrawerOpen);
   };
 
-  const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
+  const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index, isNullable) => {
     const isSerialDataTypeColumn = dataType === 'serial';
     switch (dataType) {
       case 'character varying':
@@ -405,12 +405,14 @@ const RowForm = ({
 
       case 'timestamp with time zone':
         return (
-          <DateTimePicker
-            timestamp={inputValues[index]?.value}
-            setTimestamp={(value) => handleInputChange(index, value, columnName)}
-            isOpenOnStart={false}
-            timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
-          />
+          <div onClick={() => handleTabClick(index, 'Custom', defaultValue, isNullable, columnName, dataType)}>
+            <DateTimePicker
+              timestamp={inputValues[index]?.value}
+              setTimestamp={(value) => handleInputChange(index, value, columnName)}
+              isOpenOnStart={false}
+              timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
+            />
+          </div>
         );
 
       default:
@@ -566,7 +568,7 @@ const RowForm = ({
                   tooltipClassName="tootip-table"
                   show={dataType === 'serial'}
                 >
-                  {renderElement(accessor, dataType, isPrimaryKey, column_default, index)}
+                  {renderElement(accessor, dataType, isPrimaryKey, column_default, index, isNullable)}
                 </ToolTip>
               </div>
             );

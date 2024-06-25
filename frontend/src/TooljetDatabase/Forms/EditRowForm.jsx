@@ -397,11 +397,13 @@ const EditRowForm = ({
 
       case 'timestamp with time zone':
         return (
-          <DateTimePicker
-            timestamp={inputValues[index]?.value}
-            setTimestamp={(value) => handleInputChange(index, value, columnName)}
-            isOpenOnStart={false}
-          />
+          <div onClick={() => handleTabClick(index, 'Custom', column_default, isNullable, columnName, dataType)}>
+            <DateTimePicker
+              timestamp={inputValues[index]?.value}
+              setTimestamp={(value) => handleInputChange(index, value, columnName)}
+              isOpenOnStart={false}
+            />
+          </div>
         );
 
       default:

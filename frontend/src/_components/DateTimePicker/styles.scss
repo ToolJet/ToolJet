@@ -9,6 +9,10 @@
     color: #889096;
 }
 
+#enterbutton, #escbutton {
+  padding-bottom: 4px !important;
+}
+
 .tjdbCellMenuShortcutsText {
     font-size: 10px;
     color: #7E868C;
@@ -28,18 +32,27 @@
 }
 
 
+
+
+
+
 .datepicker-widget.theme-tjdb {
       .react-datepicker-wrapper{ 
         width:100%;
+        
       }
     .react-datepicker__tab-loop {
 
       .react-datepicker__month-container{
         float:none;
+        
       }
       .react-datepicker__header {
         background-color: #F0F4FF;
-  
+        padding-top: 20px;
+        border:#AEC0F5 1px solid;
+        padding-bottom: 10px !important;
+
         .react-datepicker__current-month{
           color:#4662d5;
         }
@@ -48,12 +61,24 @@
     }
     .react-datepicker__navigation-icon::before{
       border-color: #4662d5;
+      top:20px; 
+    }
+
+    .react-datepicker__navigation-icon--next::before {
+      left:-17px;
+      top:15px;
+    }
+
+    .react-datepicker__navigation-icon--previous::before {
+      right:-17px;
+      top:15px;
     }
 
     .react-datepicker__triangle{
       display: none;
     }
   }
+  
 
 
   .datepicker-widget.theme-dark {
@@ -66,9 +91,57 @@
         background-color: #232e3c;
         float:none;
       } 
+
+      .react-datepicker__header {
+        padding-top: 20px;
+        padding-bottom: 10px !important;
+      }
     
+    }
+
+    .react-datepicker__navigation-icon::before{
+      top:20px; 
+    }
+
+    .react-datepicker__navigation-icon--next::before {
+      left:-17px;
+      top:20px;
+    }
+
+    .react-datepicker__navigation-icon--previous::before {
+      right:-17px;
+      top:20px;
     }
     .react-datepicker__triangle{
       display: none;
     }
 }
+
+.null-container:focus {
+  border:#4662d5 1.2px solid;
+}
+
+.react-datepicker-popper[data-placement^=bottom] {
+  margin-top: 4px;
+  box-shadow: 0px 8px 16px 0px #3032331A;
+}
+
+.react-datepicker-time__caption{
+  margin-left:20px
+}
+
+.react-datepicker-wrapper {
+ position: relative;
+ padding-left: 8px;
+ margin-left:8px;
+ right:16px;
+}
+
+.tjdb-datepicker-reset {
+  inset: 0px auto 0px auto;
+  transform: none;
+  margin-top: 0px;
+  margin-left:14px;
+}
+
+

@@ -15,7 +15,7 @@ import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/_components/DateTimePicker';
-import { getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
+import { convertDateToTimeZoneFormatted, getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
 
 function TableSchema({
   columns,
@@ -363,24 +363,33 @@ function TableSchema({
             ) : (
               <ToolTip
                 message={
-                  columnDetails[index]?.data_type === 'serial' ? 'Serial data type values cannot be modified' : null
+                  columnDetails[index]?.data_type === 'serial'
+                    ? 'Serial data type values cannot be modified'
+                    : columnDetails[index]?.data_type === 'timestamp with time zone'
+                    ? convertDateToTimeZoneFormatted(
+                        columnDetails[index].column_default,
+                        columnDetails[index]?.configurations?.timezone || getLocalTimeZone()
+                      )
+                    : null
                 }
                 placement="top"
                 tooltipClassName="tootip-table"
                 style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
-                show={columnDetails[index]?.data_type === 'serial'}
+                show={['serial', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)}
               >
                 <div className="m-0" data-cy="column-default-input-field">
                   {columnDetails[index].data_type === 'timestamp with time zone' ? (
-                    <DateTimePicker
-                      timestamp={columnDetails[index].column_default}
-                      timezone={columnDetails[index]?.configurations?.timezone || getLocalTimeZone()}
-                      setTimestamp={(value) => {
-                        const prevColumns = { ...columnDetails };
-                        prevColumns[index].column_default = value;
-                        setColumns(prevColumns);
-                      }}
-                    />
+                    <div style={{ width: '125px' }}>
+                      <DateTimePicker
+                        timestamp={columnDetails[index].column_default}
+                        timezone={columnDetails[index]?.configurations?.timezone || getLocalTimeZone()}
+                        setTimestamp={(value) => {
+                          const prevColumns = { ...columnDetails };
+                          prevColumns[index].column_default = value;
+                          setColumns(prevColumns);
+                        }}
+                      />
+                    </div>
                   ) : (
                     <input
                       onChange={(e) => {

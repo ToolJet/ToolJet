@@ -112,13 +112,15 @@ export const DateTimePicker = ({
       <div className="d-flex justify-content-between align-items-center">
         <div className="d-flex flex-column align-items-start gap-1">
           <div className="d-flex align-items-center gap-1">
-            <div className={`fw-500 tjdbCellMenuShortcutsInfo`}>
+            <div className={`fw-500 tjdbCellMenuShortcutsInfo`} id="enterbutton">
               <SolidIcon name="enterbutton" />
             </div>
             <div className={`fw-400 tjdbCellMenuShortcutsText`}>Save Changes</div>
           </div>
           <div className="d-flex align-items-center gap-1">
-            <div className={`fw-500 tjdbCellMenuShortcutsInfo`}>Esc</div>
+            <div className={`fw-500 tjdbCellMenuShortcutsInfo`} id="escbutton">
+              Esc
+            </div>
             <div className={`fw-400 tjdbCellMenuShortcutsText`}>Discard Changes</div>
           </div>
         </div>
@@ -171,7 +173,7 @@ export const DateTimePicker = ({
           </ButtonSolid>
           <ButtonSolid
             onClick={handleSave}
-            // disabled={cellValue == previousCellValue ? true : false}
+            disabled={timestamp == timestampRef.current ? true : false}
             variant="primary"
             size="sm"
             className="fs-12 p-2"
@@ -182,6 +184,30 @@ export const DateTimePicker = ({
       </div>
     );
   };
+
+  const defaultCalendarContainer = ({ children }) => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '240px',
+          fontSize: '12px',
+          borderRadius: '6px',
+          boxShadow: '0px 8px 16px 0px #3032331A',
+          backgroundColor: darkMode ? '#232e3c' : '#FFFFFF',
+          marginTop: '-4px',
+        }}
+      >
+        <div style={{ width: '100%' }}>{children}</div>
+      </div>
+    );
+  };
+
+  const memoizedDefaultCalendarContainer = useMemo(() => defaultCalendarContainer, []);
 
   const CustomCalendarContainer = ({ children }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -243,6 +269,8 @@ export const DateTimePicker = ({
         className={`input-field form-control validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
         } `}
+        popperPlacement={'bottom-start'}
+        popperClassName={`${!isEditCell && 'tjdb-datepicker-reset'}`}
         onInputClick={() => setIsOpen(true)}
         onClickOutside={() => setIsOpen(false)}
         placeholderText="DD/MM/YYYY, 12:00pm"
@@ -252,7 +280,9 @@ export const DateTimePicker = ({
         }}
         autoFocus={true}
         open={isOpen}
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true);
+        }}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}
         showMonthDropdown
@@ -270,6 +300,8 @@ export const DateTimePicker = ({
                 alignItems: 'center',
                 position: 'relative',
               }}
+              tabindex="0"
+              className="null-container"
             >
               <span
                 style={{
@@ -286,6 +318,7 @@ export const DateTimePicker = ({
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
         dateFormat={format}
         {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer, onKeyDown: handleKeyDown })}
+        {...(!isEditCell && { calendarContainer: memoizedDefaultCalendarContainer })}
       />
     </div>
   );
