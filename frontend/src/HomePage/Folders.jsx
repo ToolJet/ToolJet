@@ -353,7 +353,7 @@ export const Folders = function Folders({
           </div>
         </div>
         <div className="row">
-          <div className="col d-flex modal-footer-btn">
+          <div className="col d-flex modal-footer-btn justify-content-end">
             <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
