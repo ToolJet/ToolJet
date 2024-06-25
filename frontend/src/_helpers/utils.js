@@ -511,7 +511,7 @@ export function validateEmail(email) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  const isValidCode = validateMultilineCode(code);
+  const isValidCode = validateMultilineCode(code, true);
 
   if (isValidCode.status === 'failed') {
     return isValidCode;
