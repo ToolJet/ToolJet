@@ -11,6 +11,7 @@ export const SelectBox = ({
   disabled = false,
   darkMode,
   showTooltip = false,
+  showDescription = false,
 }) => {
   return (
     <ToolTip
@@ -31,6 +32,7 @@ export const SelectBox = ({
           showControlComponent={true}
           placeholder={placeholder}
           disabled={disabled}
+          showDescription={showDescription}
         />
       </div>
     </ToolTip>

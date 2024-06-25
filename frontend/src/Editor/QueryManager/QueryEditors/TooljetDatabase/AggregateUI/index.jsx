@@ -294,6 +294,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                       placeholder="Select..."
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'aggFx')}
                       darkMode={darkMode}
+                      showDescription={true}
                     />
                   </div>
                   <div style={{ flex: '1' }} className="border border-width-except-right">

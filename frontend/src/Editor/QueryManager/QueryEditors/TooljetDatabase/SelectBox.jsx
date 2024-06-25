@@ -416,6 +416,7 @@ function DataSourceSelect({
         }}
         components={{
           Option: ({ children, ...props }) => {
+            const description = props?.data?.description || '';
             return (
               <components.Option {...props}>
                 <ToolTip
@@ -484,7 +485,8 @@ function DataSourceSelect({
                           'flex-grow-1': !showDescription,
                         })}
                         style={{
-                          width: '80%',
+                          maxWidth: '80%',
+                          minWidth: '20%',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
@@ -493,7 +495,27 @@ function DataSourceSelect({
                         {children}
                       </span>
                     </ToolTip>
-
+                    <ToolTip
+                      message={description}
+                      placement="top"
+                      tooltipClassName="tjdb-cell-tooltip"
+                      show={showDescription && description && description?.length > 30}
+                    >
+                      <span
+                        className={cx({
+                          'ms-1 ': props?.data?.icon,
+                          'flex-grow-1': !showDescription,
+                        })}
+                        style={{
+                          width: '80%',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {description}
+                      </span>
+                    </ToolTip>
                     {foreignKeyAccess && showRedirection && props.isFocused && (
                       <Maximize
                         width={16}
@@ -511,7 +533,7 @@ function DataSourceSelect({
                         }}
                       />
                     )}
-                    {props.isSelected && highlightSelected && (
+                    <div style={{ visibility: props.isSelected && highlightSelected ? 'visible' : 'hidden' }}>
                       <SolidIcon
                         fill="var(--indigo9)"
                         name="tick"
@@ -519,7 +541,7 @@ function DataSourceSelect({
                         viewBox="0 0 20 20"
                         className="mx-1"
                       />
-                    )}
+                    </div>
 
                     {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
                       <ToolTip
