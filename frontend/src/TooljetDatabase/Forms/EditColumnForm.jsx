@@ -542,7 +542,7 @@ const ColumnForm = ({
                       </div>
                     }
                     loader={
-                      <div className="mx-2">
+                      <>
                         <Skeleton
                           height={22}
                           width={396}
@@ -556,7 +556,7 @@ const ColumnForm = ({
                           className="skeleton"
                           style={{ margin: '7px 50px 15px 7px' }}
                         />
-                      </div>
+                      </>
                     }
                     isLoading={true}
                     value={foreignKeyDefaultValue}

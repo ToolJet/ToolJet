@@ -302,11 +302,11 @@ function TableSchema({
                   </div>
                 }
                 loader={
-                  <div className="mx-2">
+                  <>
                     <Skeleton height={18} width={176} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
                     <Skeleton height={18} width={212} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
                     <Skeleton height={18} width={176} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-                  </div>
+                  </>
                 }
                 isLoading={true}
                 value={
