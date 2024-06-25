@@ -412,7 +412,7 @@ export async function executeActionsForEventId(_ref, eventId, events = [], mode,
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
+    await executeActionWithDebounce(_ref, event.event, mode, customVariables);
   }
 }
 
@@ -752,9 +752,8 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    return _.debounce(async () => {
-      await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
-    }, 10);
+    // for onPageLoad events, we need to execute the actions after the page is loaded
+    handleLowPriorityWork(() => executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables));
   }
 
   if (eventName === 'onTrigger') {
