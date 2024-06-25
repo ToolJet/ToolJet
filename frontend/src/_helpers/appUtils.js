@@ -476,7 +476,7 @@ function logoutAction() {
   return Promise.resolve();
 }
 
-export const executeAction = _.debounce(executeActionWithDebounce);
+export const executeAction = executeActionWithDebounce;
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
