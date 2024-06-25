@@ -490,6 +490,7 @@ function DataSourceSelect({
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
+                          ...(!showDescription && !description && { width: '80%' }),
                         }}
                       >
                         {children}
