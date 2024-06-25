@@ -1,5 +1,6 @@
 import React, { isValidElement, useCallback, useState, useRef, useEffect } from 'react';
 import Select, { components } from 'react-select';
+// eslint-disable-next-line import/no-unresolved
 import { isEmpty, debounce, throttle } from 'lodash';
 import { authenticationService, tooljetDatabaseService } from '@/_services';
 import { toast } from 'react-hot-toast';

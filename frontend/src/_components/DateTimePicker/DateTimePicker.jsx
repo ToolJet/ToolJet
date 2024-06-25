@@ -275,8 +275,13 @@ export const DateTimePicker = ({
         onClickOutside={() => setIsOpen(false)}
         placeholderText="DD/MM/YYYY, 12:00pm"
         selected={transformedTimestamp}
-        onChange={(newTimestamp) => {
-          isEditCell ? handleCellEditChange(newTimestamp) : handleDefaultChange(newTimestamp);
+        onChange={(newTimestamp, event) => {
+          if (isEditCell) {
+            event.stopPropagation();
+            handleCellEditChange(newTimestamp);
+          } else {
+            handleDefaultChange(newTimestamp);
+          }
         }}
         autoFocus={true}
         open={isOpen}
