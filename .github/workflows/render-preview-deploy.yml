@@ -91,7 +91,7 @@ jobs:
               },
               {
                 "key": "PGRST_DB_ENABLE_AGGREGATE",
-                "value": "info"
+                "value": "true"
               },
               {
                 "key": "PGRST_DB_URI",
