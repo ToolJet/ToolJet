@@ -327,7 +327,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
                   <Confirm
                     show={showDeleteConfirmation}
                     message={
-                      'Deleting the aggregate function will alo delete the  group by conditions. Are you sure, you want to continue?'
+                      'Deleting the aggregate function will also delete the  group by conditions. Are you sure, you want to continue?'
                     }
                     // confirmButtonLoading={isDeletingQueryInProcess}
                     onConfirm={() => executeAggregateDeletion(aggregateKey)}
