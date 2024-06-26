@@ -15,7 +15,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
  - [Create User](#create-user)
  - [Update User](#update-user)
  - [Replace User Workspace](#replace-user-workspace)
- - [Replace User Workspaces](#replace-user-workspaces)
+ - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
  - [Get All Workspaces](#get-all-workspaces)
 
 ## API Endpoints
@@ -239,7 +239,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
   {"status": 200}
   ```
  
-### **Replace User Workspaces**
+### **Replace User Workspaces Relations**
 
     - **Description:** Replaces all workspaces relations associated with a user.
     - **URL:** `/api/ext/users/:id/workspaces`
