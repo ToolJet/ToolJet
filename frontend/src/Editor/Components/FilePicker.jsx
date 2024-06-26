@@ -247,8 +247,6 @@ export const FilePicker = ({
           }
         });
       });
-      setSelectedFiles(fileData);
-      onComponentOptionChanged(component, 'file', fileData, id);
 
       onEvent('onFileSelected', filePickerEvents, { component })
         .then(() => {
@@ -263,7 +261,11 @@ export const FilePicker = ({
             }, 600);
           });
         })
-        .then(() => onEvent('onFileLoaded', filePickerEvents, { component }));
+        .then(() => onEvent('onFileLoaded', filePickerEvents, { component }))
+        .then(() => {
+          setSelectedFiles(fileData);
+          onComponentOptionChanged(component, 'file', fileData, id);
+        });
     }
 
     if (fileRejections.length > 0) {

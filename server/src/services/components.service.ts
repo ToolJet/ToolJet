@@ -108,13 +108,12 @@ export class ComponentsService {
             return acc;
           }, {});
 
+          // Update the component with merged data
           await manager.update(Component, componentId, newComponentsData);
-          return;
+        } else {
+          // Update the component directly if definition is not changed
+          await manager.update(Component, componentId, component);
         }
-
-        await manager.update(Component, componentId, component);
-
-        return;
       }
     }, appVersionId);
   }
