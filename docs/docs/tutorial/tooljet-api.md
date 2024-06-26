@@ -24,6 +24,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Description:** Retrieves a list of all the users.
     - **URL:** `/api/ext/users`
     - **Method:** GET
+    - **Authorization**: `Basic <access_token>`
+    - **Content-Type**: `application/json`
     - **Response:** Array of User objects.
   <details>
   <summary>**Response Example**</summary>
@@ -98,6 +100,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Description:** Returns a user by their ID.
     - **URL:** `/api/ext/users/:id`
     - **Method:** GET
+    - **Authorization**: `Basic <access_token>`
+    - **Content-Type**: `application/json`
     - **Params:**
         - id (string): The ID of the user.
     - **Response:** User object.
@@ -150,6 +154,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Description:** Creates a new user.
     - **URL:** `/api/ext/users`
     - **Method:** POST
+    - **Authorization**: `Basic <access_token>`
+    - **Content-Type**: `application/json`
     - **The body object may contain the following fields:**
         - `name` (string, required): The name of the user.
         - `email` (string, required): The email address of the user.
@@ -194,6 +200,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Description:** Finds and updates a user by their ID.
     - **URL:** `/api/ext/users/:id`
     - **Method:** PATCH
+    - **Authorization**: `Basic <access_token>`
+    - **Content-Type**: `application/json`
     - **Params:**
         - id (string): The ID of the user.
     - **Body:** The body object may contain the following fields:
@@ -236,6 +244,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Description:** Replaces all workspaces relations associated with a user.
     - **URL:** `/api/ext/users/:id/workspaces`
     - **Method:** PUT
+    - **Authorization**: `Basic <access_token>`
+    - **Content-Type**: `application/json`
     - **Params:**
         - id (string): The ID of the user.
     - **Body:** Array of workspace data transfer objects. It may contain the following fields:
@@ -257,6 +267,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Description:** Updates a specific workspace relation associated with a user.
     - **URL:** `/api/ext/users/:id/workspaces/:workspaceId`
     - **Method:** PATCH
+    - **Authorization**: `Basic <access_token>`
+    - **Content-Type**: `application/json`
     - **Params:**
         - id (string): The ID of the user.
         - workspaceId (string): The ID of the workspace.
@@ -285,9 +297,11 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 
 ### **Get All Workspaces**
 
-    - **Method:** GET
-    - **URL:** `/api/ext/workspaces`
     - **Description:** Retrieves a list of all workspaces.
+    - **URL:** `/api/ext/workspaces`
+    - **Method:** GET
+    - **Authorization**: `Basic <access_token>`
+    - **Content-Type**: `application/json`
     - **Response:** Array of Workspace objects
 
 <details>
