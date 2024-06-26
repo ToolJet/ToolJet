@@ -59,7 +59,6 @@ const DropDownSelect = ({
   shouldCloseFkMenu,
   closeFKMenu,
   saveFKValue,
-  loader,
   isLoading = false,
   columnDefaultValue = '',
   setColumnDefaultValue = () => {},
