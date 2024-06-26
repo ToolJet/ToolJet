@@ -96,8 +96,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     ...draggableStyle,
   });
 
-  const updateAllOptionsParams = (options) => {
-    paramUpdated({ name: 'options' }, 'value', options, 'properties');
+  const updateAllOptionsParams = (options, props) => {
+    paramUpdated({ name: 'options' }, 'value', options, 'properties', false, props);
   };
 
   const generateNewOptions = () => {
@@ -132,7 +132,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const handleDeleteOption = (index) => {
     const _items = options.filter((option, i) => i !== index);
     setOptions(_items);
-    updateAllOptionsParams(_items);
+    updateAllOptionsParams(_items, { isParamFromDropdownOptions: true });
   };
 
   const handleLabelChange = (label, index) => {

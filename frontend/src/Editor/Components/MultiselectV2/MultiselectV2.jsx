@@ -224,12 +224,18 @@ export const MultiselectV2 = ({
     }
   };
   const handleClickOutside = (event) => {
-    if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
+    let menu = document.getElementById(`dropdown-multiselect-widget-custom-menu-list-${id}`);
+    if (
+      multiselectRef.current &&
+      !multiselectRef.current.contains(event.target) &&
+      menu &&
+      !menu.contains(event.target)
+    ) {
       if (isMultiselectOpen) {
         fireEvent('onBlur');
+        setIsMultiselectOpen(false);
+        setSearchInputValue('');
       }
-      setIsMultiselectOpen(false);
-      setSearchInputValue('');
     }
   };
 
@@ -360,6 +366,7 @@ export const MultiselectV2 = ({
   return (
     <>
       <div
+        ref={multiselectRef}
         data-cy={`label-${String(component.name).toLowerCase()} `}
         className={cx('multiselect-widget', 'd-flex', {
           [alignment === 'top' &&
@@ -400,8 +407,9 @@ export const MultiselectV2 = ({
           isMandatory={isMandatory}
           _width={_width}
         />
-        <div className="w-100 px-0 h-100" ref={multiselectRef}>
+        <div className="w-100 px-0 h-100">
           <Select
+            menuId={id}
             isDisabled={isMultiSelectDisabled}
             value={selected}
             onChange={onChangeHandler}
@@ -442,6 +450,7 @@ export const MultiselectV2 = ({
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
+            menuPortalTarget={document.body}
           />
         </div>
       </div>
