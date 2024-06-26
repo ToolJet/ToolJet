@@ -219,10 +219,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 }
 ```
 </details>
-    - **Response:**
-        ```json
-        {"status": 201}
-        ```
+    - **Response:** `201 Created`
 
 ### **Update User**
     - **Description:** Finds and updates a user by their ID.
@@ -260,12 +257,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 </details>
 
-    - **Response:**
-
-
-  ```json
-  {"status": 200}
-  ```
+    - **Response:** `200 OK`
  
 ### **Replace User Workspaces Relations**
 
@@ -285,10 +277,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
           - `name` (string, optional): The name of the group.
           - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
     - **Note:** If the array is empty, it will remove all existing workspace relations.
-    - **Response:**
-        ```json
-        {"status": 200}
-        ```
+    - **Response:** `200 OK`
+ 
 
 ### **Replace User Workspace**
 
@@ -326,10 +316,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 </details>
     - **Note:** If no body is given or body is an empty object, it will not do anything.
-    - **Response:**
-        ```json
-        {"status": 200}
-        ```
+    - **Response:** `200 OK`
 
 ### **Get All Workspaces**
 
