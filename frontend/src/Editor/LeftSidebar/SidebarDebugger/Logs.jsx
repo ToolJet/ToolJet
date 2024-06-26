@@ -78,12 +78,17 @@ function Logs({ logProps, idx }) {
     );
   };
 
+  console.log('logProps---', logProps);
   return (
     <div className="tab-content debugger-content" key={`${logProps?.key}-${idx}`}>
       <p
         className="m-0 d-flex"
-        onClick={(e) => {
+        onClick={() => {
           setOpen((prev) => !prev);
+          // const shouldTriggerActions = props.treeType === 'debugger' && currentNode === 'componentId';
+          // if (toExpandNode || shouldTriggerActions) {
+          // handleOnClickLabels(data, currentNode, path);
+          // }
         }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
       >
@@ -111,7 +116,6 @@ function Logs({ logProps, idx }) {
           )}
         </span>
       </p>
-
       {open && (
         <JSONTreeViewer
           data={logProps.error}
