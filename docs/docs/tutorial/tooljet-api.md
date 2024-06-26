@@ -156,7 +156,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Method:** POST
     - **Authorization**: `Basic <access_token>`
     - **Content-Type**: `application/json`
-    - **The body object may contain the following fields:**
+    - **The body object can contain the following fields:**
         - `name` (string, required): The name of the user.
         - `email` (string, required): The email address of the user.
         - `password` (string, optional): The user's password. Must be between 5 and 100 characters.
@@ -204,7 +204,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Content-Type**: `application/json`
     - **Params:**
         - id (string): The ID of the user.
-    - **Body:** The body object may contain the following fields:
+    - **Body:** The body object can contain the following fields:
         - `name` (string, optional): The updated name of the user.
         - `email` (string, optional): The updated email address of the user.
         - `password` (string, optional): The updated password for the user. Must be between 5 and 100 characters.
@@ -272,7 +272,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Params:**
         - id (string): The ID of the user.
         - workspaceId (string): The ID of the workspace.
-    - **Body:** The body object may contain the following fields:
+    - **Body:** The body object can contain the following fields:
         - `name` (string, optional): The updated name of the workspace.
         - `status` (string, optional): The updated status of the workspace. Can be either 'active' or 'archived'.
 <details>
