@@ -138,13 +138,7 @@ export const Folders = function Folders({
         handleFolderChange({});
       })
       .catch(({ error }) => {
-        let errorMessage = 'Some Error Occured';
-        if (error?.error) {
-          errorMessage = error.error;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        }
-        toast.error(errorMessage);
+        toast.error(error);
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
       });
