@@ -8,7 +8,7 @@ title: ToolJet API
 ToolJet API is currently in beta and not recommended for production use.
 :::
 
-ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the API to manage users and workspaces operations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
+ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
  - [Get All Users](#get-all-users)
  - [Get User by ID](#get-user-by-id)
@@ -30,7 +30,21 @@ By default, the ToolJet API is disabled. To enable the API, add these variables 
 
 ## Security
 
-The ToolJet API is secured with an access token defined in your `.env` file. You need to pass the access token in the `Authorization` header to authenticate your requests. The access token should be in the format `Basic <access_token>`.
+The ToolJet API is secured with an access token created by you in your `.env` file. You need to pass the access token in the `Authorization` header to authenticate your requests. The access token should be sent in the format `Basic <access_token>`.
+
+<details>
+
+<summary>cURL Request Example</summary>
+
+```bash
+
+curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
+-H 'Authorization: Basic <access_token>' \
+-H 'Content-Type: application/json'
+
+```
+
+</details>
 
 ## API Endpoints
 
