@@ -644,7 +644,6 @@ export const Container = ({
       if (id === 'resizingComponentId') {
         return;
       }
-      console.trace('id, param, value,---', id, param, value);
       if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) => {
           // Ensure boxes[id] exists
