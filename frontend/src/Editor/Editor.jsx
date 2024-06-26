@@ -90,6 +90,7 @@ import { decimalToHex, EditorConstants } from './editorConstants';
 import { handleLowPriorityWork, updateCanvasBackground, clearAllQueuedTasks } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
+import { resolveReferences } from './CodeEditor/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1461,6 +1462,7 @@ const EditorComponent = (props) => {
           newGlobalSettings = dfs(newGlobalSettings, entity, value);
         }
       });
+      const [_, error, resolvedCanvasBackgroundColor] = resolveReferences(newGlobalSettings?.backgroundFxQuery, {});
 
       const newAppDefinition = produce(appJson, (draft) => {
         draft.globalSettings = newGlobalSettings;
@@ -1469,7 +1471,7 @@ const EditorComponent = (props) => {
       // Setting the canvas background to the editor store
       setCanvasBackground({
         backgroundFxQuery: newGlobalSettings?.backgroundFxQuery,
-        canvasBackgroundColor: newGlobalSettings?.canvasBackgroundColor,
+        canvasBackgroundColor: resolvedCanvasBackgroundColor || '',
       });
 
       updateEditorState({
