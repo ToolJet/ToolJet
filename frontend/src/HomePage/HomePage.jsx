@@ -435,13 +435,7 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        let errorMessage = 'Some Error Occured';
-        if (error?.error) {
-          errorMessage = error.error;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        }
-        toast.error(errorMessage);
+        toast.error(error);
       });
   };
 
@@ -461,13 +455,7 @@ class HomePageComponent extends React.Component {
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        let errorMessage = 'Some Error Occured';
-        if (error?.error) {
-          errorMessage = error.error;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        }
-        toast.error(errorMessage);
+        toast.error(error);
       })
       .finally(() => {
         this.setState({
@@ -553,13 +541,7 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        let errorMessage = 'Some Error Occured';
-        if (error?.error) {
-          errorMessage = error.error;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        }
-        toast.error(errorMessage);
+        toast.error(error);
       });
   };
 
