@@ -44,15 +44,15 @@ export class ThreadService {
     return await query.getMany();
   }
 
-  public async getOrganizationThreads(orgId: string): Promise<Thread[]> {
+  public async getOrganizationThreads(organizationId: string): Promise<Thread[]> {
     return await this.threadRepository.find({
       where: {
-        orgId,
+        organizationId,
       },
     });
   }
 
-  public async getThread(threadId: number): Promise<Thread> {
+  public async getThread(threadId: string): Promise<Thread> {
     const foundThread = await this.threadRepository.findOne({ where: { id: threadId } });
     if (!foundThread) {
       throw new NotFoundException('Thread not found');

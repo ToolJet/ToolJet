@@ -47,7 +47,7 @@ export class ThreadController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:threadId')
-  public async getThread(@Param('threadId') threadId: number, @User() user) {
+  public async getThread(@Param('threadId') threadId: string, @User() user) {
     const _response = await Thread.findOne({
       where: { id: threadId },
     });

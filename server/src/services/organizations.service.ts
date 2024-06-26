@@ -428,7 +428,7 @@ export class OrganizationsService {
           configs: {
             clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
           },
-        });
+        } as any);
       }
       if (
         this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID') &&
@@ -449,7 +449,7 @@ export class OrganizationsService {
             ),
             hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
           },
-        });
+        } as any);
       }
     }
 
@@ -842,9 +842,11 @@ export class OrganizationsService {
     if (!(slug || name)) {
       throw new NotAcceptableException('Request should contain the slug or name');
     }
-    const result = await getManager().findOne(Organization, {
+    const result = await this.organizationsRepository.findOne({
+      where: {
       ...(name && { name }),
       ...(slug && { slug }),
+      }
     });
     if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
     return;

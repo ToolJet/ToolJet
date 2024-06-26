@@ -212,8 +212,10 @@ export class UsersService {
       }
       await dbTransactionWrap(async (manager: EntityManager) => {
         const groupPermissions = await manager.find(GroupPermission, {
-          group: In(removeGroups),
+          where: 
+{          group: In(removeGroups),
           organizationId: orgId,
+}
         });
         const groupIdsToMaybeRemove = groupPermissions.map((permission) => permission.id);
 
@@ -404,19 +406,23 @@ export class UsersService {
   async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
     let app: App;
     try {
-      app = await this.appsRepository.findOneOrFail(slug);
+      app = await this.appsRepository.findOneOrFail({
+        where: {slug}
+      });
     } catch (error) {
       app = await this.appsRepository.findOne({
-        slug,
+        where: {
+          slug,
+        }
       });
     }
 
     return { organizationId: app?.organizationId, isPublic: app?.isPublic };
   }
 
-  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+  async addAvatar(userId: string, imageBuffer: Buffer, filename: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user = await manager.findOne(User, userId);
+      const user = await manager.findOne(User, { where: { id: userId } });
       const currentAvatarId = user.avatarId;
       const createFileDto = new CreateFileDto();
       createFileDto.filename = filename;
@@ -450,7 +456,7 @@ export class UsersService {
   async groupPermissionsForOrganization(organizationId: string) {
     const groupPermissionRepository = getRepository(GroupPermission);
 
-    return await groupPermissionRepository.find({ organizationId });
+    return await groupPermissionRepository.find({ where: {organizationId} });
   }
 
   async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {

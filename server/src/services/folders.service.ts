@@ -76,7 +76,7 @@ export class FoldersService {
   }
 
   async findOne(folderId: string): Promise<Folder> {
-    return await this.foldersRepository.findOneOrFail(folderId);
+    return await this.foldersRepository.findOneOrFail({ where: { id: folderId }});
   }
 
   async userAppCount(user: User, folder: Folder, searchKey: string) {
@@ -156,7 +156,7 @@ export class FoldersService {
   }
 
   async delete(user: User, id: string) {
-    const folder = await this.foldersRepository.findOneOrFail({ id, organizationId: user.organizationId });
+    const folder = await this.foldersRepository.findOneOrFail({  where: { id, organizationId: user.organizationId } });
     const allViewableApps = await createQueryBuilder(App, 'apps')
       .select('apps.id')
       .innerJoin('apps.groupPermissions', 'group_permissions')

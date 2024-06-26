@@ -463,7 +463,7 @@ export class AppImportExportService {
 
       if (!isNormalizedAppDefinitionSchema) {
         for (const importingAppVersion of importingAppVersions) {
-          const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
+          const updatedDefinition:any = this.replaceDataQueryIdWithinDefinitions(
             importingAppVersion.definition,
             appResourceMappings.dataQueryMapping
           );
@@ -1421,7 +1421,7 @@ export class AppImportExportService {
   }
 
   replaceDataQueryIdWithinDefinitions(
-    definition: QueryDeepPartialEntity<any>,
+    definition: any,
     dataQueryMapping: Record<string, string>
   ): QueryDeepPartialEntity<any> {
     if (definition?.pages) {

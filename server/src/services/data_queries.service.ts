@@ -506,9 +506,10 @@ export class DataQueriesService {
       const variableName = splitArray[splitArray.length - 1];
 
       const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
-        variableType: variableType,
+        where: {        variableType,
         organizationId: organization_id,
         variableName: variableName,
+        }
       });
 
       if (isClientVariable && variableResult) {

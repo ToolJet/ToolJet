@@ -283,7 +283,7 @@ export class DataSourcesService {
     environmentId?: string
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
+      const dataSource = await manager.findOneOrFail(DataSource, { where: {id: dataSourceId},  relations: ['dataSourceOptions'] });
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
       const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
@@ -565,9 +565,11 @@ export class DataSourcesService {
       const variableName = splitArray[splitArray.length - 1];
 
       const variableResult = await OrgEnvironmentVariable.findOne({
-        variableType: variableType,
+        where: {
+        variableType,
         organizationId: organization_id,
         variableName: variableName,
+        }
       });
 
       if (isClientVariable && variableResult) {

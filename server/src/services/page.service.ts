@@ -24,7 +24,7 @@ export class PageService {
   ) {}
 
   async findPagesForVersion(appVersionId: string): Promise<Page[]> {
-    const allPages = await this.pageRepository.find({ appVersionId });
+    const allPages = await this.pageRepository.find({ where: {appVersionId} });
 
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
@@ -37,7 +37,7 @@ export class PageService {
   }
 
   async findOne(id: string): Promise<Page> {
-    return this.pageRepository.findOne(id);
+    return this.pageRepository.findOne({ where: { id } });
   }
 
   async createPage(page: CreatePageDto, appVersionId: string): Promise<Page> {
@@ -65,7 +65,7 @@ export class PageService {
       let pageName = `${pageToClone.name} (copy)`;
       let pageHandle = `${pageToClone.handle}-copy`;
 
-      const allPages = await this.pageRepository.find({ appVersionId });
+      const allPages = await this.pageRepository.find({ where: {appVersionId} });
 
       const pageNameORHandleExists = allPages.filter((page) => {
         return page.name.includes(pageName) || page.handle.includes(pageHandle);
@@ -96,7 +96,7 @@ export class PageService {
 
   async clonePageEventsAndComponents(pageId: string, clonePageId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const pageComponents = await manager.find(Component, { pageId });
+      const pageComponents = await manager.find(Component, { where: {pageId} });
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
 
@@ -134,7 +134,7 @@ export class PageService {
           const newComponent = await manager.save(manager.create(Component, clonedComponent));
 
           componentsIdMap[component.id] = newComponent.id;
-          const componentLayouts = await manager.find(Layout, { componentId: component.id });
+          const componentLayouts = await manager.find(Layout, { where: { componentId: component.id } });
           const clonedLayouts = componentLayouts.map((layout) => ({
             ...layout,
             id: undefined,
@@ -219,7 +219,9 @@ export class PageService {
       return this.updatePagesOrder(pageUpdates.diff, appVersionId);
     }
 
-    const currentPage = await this.pageRepository.findOne(pageUpdates.pageId);
+    const currentPage = await this.pageRepository.findOne({
+      where: { id: pageUpdates.pageId },
+    });
 
     if (!currentPage) {
       throw new Error('Page not found');
@@ -247,7 +249,9 @@ export class PageService {
   async deletePage(pageId: string, appVersionId: string) {
     const { editingVersion } = await this.appService.findAppFromVersion(appVersionId);
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const pageExists = await manager.findOne(Page, pageId);
+      const pageExists = await manager.findOne(Page, {
+        where: { id: pageId }
+      });
 
       if (!pageExists) {
         throw new Error('Page not found');
@@ -264,7 +268,7 @@ export class PageService {
         throw new Error('Page not deleted');
       }
 
-      const pages = await this.pageRepository.find({ appVersionId: pageExists.appVersionId });
+      const pages = await this.pageRepository.find({ where:{ appVersionId: pageExists.appVersionId} });
 
       const rearrangedPages = this.rearrangePagesOnDelete(pages, pageDeletedIndex);
 

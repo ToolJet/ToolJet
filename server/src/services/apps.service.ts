@@ -26,7 +26,7 @@ import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
 import { Component } from 'src/entities/component.entity';
-import { EventHandler } from 'src/entities/event_handler.entity';
+import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -757,7 +757,7 @@ export class AppsService {
       const dataSourceMapping = {};
       const newDataQueries = [];
       const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId: versionFrom?.id, target: 'data_query' },
+        where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
       });
 
       if (dataSources?.length > 0 || globalDataSources?.length > 0) {

@@ -171,7 +171,9 @@ export class AppEnvironmentService {
             /* Add extra things to respons */
           } else if (isUserDeletedTheCurrentVersion) {
             const selectedEnvironment = await manager.findOneOrFail(AppEnvironment, {
+              where:  {
               id: editorEnvironmentId,
+              },
             });
             /* User deleted current editor version. Client needs new editor version */
             if (selectedEnvironment) {

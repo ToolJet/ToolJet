@@ -22,7 +22,7 @@ export class ComponentsService {
   ) {}
 
   async findOne(id: string): Promise<Component> {
-    return this.componentsRepository.findOne(id);
+    return this.componentsRepository.findOne({ where: { id } });
   }
 
   async create(componentDiff: object, pageId: string, appVersionId: string) {
@@ -147,7 +147,7 @@ export class ComponentsService {
   ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
-        const doesComponentExist = await manager.findAndCount(Component, { id: componentId });
+        const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
 
         if (!doesComponentExist[1]) {
           return {
@@ -160,7 +160,7 @@ export class ComponentsService {
         const { layouts, component } = componenstLayoutDiff[componentId];
 
         for (const type in layouts) {
-          const componentLayout = await manager.findOne(Layout, { componentId, type });
+          const componentLayout = await manager.findOne(Layout, { where: {componentId, type} });
 
           if (componentLayout) {
             const layout = {
