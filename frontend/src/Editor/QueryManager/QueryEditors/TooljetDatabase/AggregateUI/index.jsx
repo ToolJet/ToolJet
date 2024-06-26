@@ -23,8 +23,27 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
     tableInfo,
     findTableDetails,
   } = useContext(TooljetDatabaseContext);
-  const operationDetails = operation === 'listRows' ? listRowsOptions : joinTableOptions;
-  const handleChange = operation === 'listRows' ? handleOptionsChange : joinTableOptionsChange;
+  const operationDetails = useMemo(() => {
+    switch (operation) {
+      case 'listRows':
+        return listRowsOptions;
+      case 'joinTable':
+        return joinTableOptions;
+      default:
+        return {};
+    }
+  }, [operation, listRowsOptions, joinTableOptions]);
+
+  const handleChange = useMemo(() => {
+    switch (operation) {
+      case 'listRows':
+        return handleOptionsChange;
+      case 'joinTable':
+        return joinTableOptionsChange;
+      default:
+        return () => {};
+    }
+  }, [operation, handleOptionsChange, joinTableOptionsChange]);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -228,7 +247,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
   const constructAggregateValue = (value, operation, option, tableId = '') => {
     if (option === 'aggFx') {
       const option = aggFxOptions.find((option) => option?.value === value);
-      return option;
+      return option || {};
     }
     if (option === 'column') {
       switch (operation) {
@@ -250,7 +269,7 @@ export const AggregateUi = ({ darkMode, operation = '' }) => {
         }
         case 'listRows': {
           const option = columnAccessorsOptions?.find((option) => option?.value === value);
-          return option;
+          return option || {};
         }
         default:
           break;
