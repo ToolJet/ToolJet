@@ -324,6 +324,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
+                isFxNotRequired: true,
               }}
               paramType={'toggle'}
             />
