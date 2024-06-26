@@ -138,7 +138,13 @@ export const Folders = function Folders({
         handleFolderChange({});
       })
       .catch(({ error }) => {
-        toast.error(error);
+        let errorMessage = 'Some Error Occured';
+        if (error?.error) {
+          errorMessage = error.error;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage);
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
       });
@@ -353,7 +359,7 @@ export const Folders = function Folders({
           </div>
         </div>
         <div className="row">
-          <div className="col d-flex modal-footer-btn">
+          <div className="col d-flex modal-footer-btn justify-content-end">
             <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>

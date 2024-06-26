@@ -43,11 +43,11 @@ const Pagination = ({
         <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
       </Button.UnstyledButton>
 
-      <div className="d-flex align-items-center">
+      <div className="d-flex align-items-center mx-1">
         <input
           disabled={isDisabled || disableInput}
           type="text"
-          className="form-control mx-1"
+          className="form-control-pagination"
           data-cy={`current-page-number-${currentPageNumber}`}
           value={currentPageNumber}
           onKeyDown={(event) => {

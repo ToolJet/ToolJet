@@ -38,6 +38,7 @@ import { InvitedUser } from 'src/decorators/invited-user.decorator';
 import { InvitedUserSessionDto } from '@dto/invited-user-session.dto';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { OrganizationInviteAuthGuard } from 'src/modules/auth/organization-invite-auth.guard';
+import { ResendInviteDto } from '@dto/resend-invite.dto';
 
 @Controller()
 export class AppController {
@@ -162,14 +163,19 @@ export class AppController {
   @UseGuards(SignupDisableGuard)
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('resend-invite')
-  async resendInvite(@Body('email') email: string) {
-    return this.authService.resendEmail(email);
+  async resendInvite(@Body() body: ResendInviteDto) {
+    return this.authService.resendEmail(body);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)
   @Get('verify-invite-token')
   async verifyInviteToken(@Query('token') token, @Query('organizationToken') organizationToken) {
     return await this.authService.verifyInviteToken(token, organizationToken);
+  }
+
+  @Get('invitee-details')
+  async getInviteeDetails(@Query('token') token) {
+    return await this.authService.getInviteeDetails(token);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)
