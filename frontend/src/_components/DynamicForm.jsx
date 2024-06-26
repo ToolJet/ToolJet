@@ -201,7 +201,6 @@ const DynamicForm = ({
     disabled = false,
     text,
     subtext,
-    checked = false,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -237,8 +236,8 @@ const DynamicForm = ({
         };
       case 'rest-api-toggle':
         return {
-          defaultChecked: options?.[key] ?? checked,
-          checked: options?.[key]?.value ?? checked,
+          defaultChecked: options?.[key],
+          checked: options?.[key]?.value,
           onChange: (e) => optionchanged(key, e.target.checked),
           text,
           subtext,
