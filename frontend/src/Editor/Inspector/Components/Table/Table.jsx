@@ -18,8 +18,6 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import CodeHinter from '@/Editor/CodeEditor';
-
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
@@ -80,17 +78,23 @@ class TableComponent extends React.Component {
   }
 
   checkIfAllColumnsAreEditable = (component) => {
-    const isAllColumnsEditable = component.component?.definition?.properties?.columns?.value
-      ?.filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
-      .every((column) => resolveReferences(column.isEditable, this.props.currentState));
+    const columns = component?.component?.definition?.properties?.columns?.value || [];
+
+    const filteredColumns = columns.filter((column) => column && !NON_EDITABLE_COLUMNS.includes(column.columnType));
+
+    const isAllColumnsEditable = filteredColumns.every((column) =>
+      resolveReferences(column.isEditable, this.props.currentState)
+    );
+
     return isAllColumnsEditable;
   };
 
   componentDidUpdate(prevProps) {
-    const prevPropsColumns = prevProps?.component?.component.definition.properties.columns?.value;
-    const currentPropsColumns = this.props.component.component.definition.properties.columns?.value;
+    const prevPropsColumns = prevProps?.component?.component?.definition?.properties?.columns?.value || [];
+    const currentPropsColumns = this.props?.component?.component?.definition?.properties?.columns?.value || [];
     if (prevPropsColumns !== currentPropsColumns) {
-      const isAllColumnsEditable = currentPropsColumns
+      const filteredColumns = currentPropsColumns.filter((column) => column);
+      const isAllColumnsEditable = filteredColumns
         .filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
         .every((column) => resolveReferences(column.isEditable, this.props.currentState));
       this.setState({ isAllColumnsEditable });
@@ -470,19 +474,19 @@ class TableComponent extends React.Component {
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   handleMakeAllColumnsEditable = (value) => {
-    const columns = resolveReferences(
-      this.props.component.component.definition.properties.columns,
-      this.props.currentState
-    );
+    const columns =
+      resolveReferences(this.props.component.component.definition.properties.columns, this.props.currentState) || {};
+    const columnValues = columns.value || [];
 
-    this.setState({ isAllColumnsEditable: resolveReferences(value) });
-
-    const newValue = columns.value.map((column) => ({
-      ...column,
-      isEditable: !NON_EDITABLE_COLUMNS.includes(column.columnType) ? value : '{{false}}',
-    }));
+    const newValue = columnValues
+      .filter((column) => column)
+      .map((column) => ({
+        ...column,
+        isEditable: !NON_EDITABLE_COLUMNS.includes(column.columnType) ? value : '{{false}}',
+      }));
 
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
+    this.setState({ isAllColumnsEditable: resolveReferences(value) });
   };
 
   duplicateColumn = (index) => {
@@ -497,6 +501,9 @@ class TableComponent extends React.Component {
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
     const columns = component.component.definition.properties.columns;
+
+    // Filter out null or undefined values before mapping
+    const filteredColumns = (columns.value || []).filter((column) => column);
     const actions = component.component.definition.properties.actions || { value: [] };
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
@@ -568,7 +575,7 @@ class TableComponent extends React.Component {
                 <Droppable droppableId="droppable">
                   {({ innerRef, droppableProps, placeholder }) => (
                     <div className="w-100 d-flex custom-gap-4 flex-column" {...droppableProps} ref={innerRef}>
-                      {columns.value.map((item, index) => {
+                      {filteredColumns.map((item, index) => {
                         const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                         const isEditable = resolveReferences(item.isEditable, this.state.currentState);
                         const columnVisibility = item?.columnVisibility ?? true;
