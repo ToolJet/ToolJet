@@ -328,6 +328,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
           {datasources.map((item) => (
             <Card
               key={item.key}
+              darkMode={darkMode}
               title={item.title}
               src={item?.src}
               usePluginIcon={isEmpty(item?.iconFile?.data)}

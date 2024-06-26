@@ -4638,10 +4638,11 @@ input[type="text"] {
   }
 
   .modal-footer-btn {
-    justify-content: flex-end button {
+
+    & > *:nth-child(2) {
       margin-left: 16px;
-    }
   }
+}
 }
 
 .home-modal-component-editor.dark {
@@ -6313,7 +6314,7 @@ a.step-item-disabled {
   }
 
   .spinner {
-    min-height: 220px;
+    min-height: 100px;
   }
 }
 
@@ -8153,6 +8154,61 @@ tbody {
     text-align: center;
   }
 
+  .form-control-pagination {
+    padding: 0 4px;
+    width: fit-content;
+    width: 30px !important;
+    height: 20px !important;
+    text-align: center;
+    margin-bottom: 0px;
+    gap: 16px !important;
+    background: var(--base) !important;
+    border: 1px solid var(--slate7) !important;
+    border-radius: 6px;
+    color: var(--slate12) !important;
+    transition: none;
+    padding-left: 0.4375rem;
+    padding-right: 0.4375rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    overflow-x: auto;
+    white-space: nowrap;
+
+
+    &:hover {
+      background: var(--slate1) !important;
+      border: 1px solid var(--slate8) !important;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+      outline: none;
+    }
+
+    &:focus-visible {
+      background: var(--indigo2) !important;
+      border: 1px solid var(--indigo9) !important;
+      box-shadow: none !important;
+    }
+
+    &.input-error-border {
+      border-color: #DB4324 !important;
+    }
+
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px var(--base) inset !important;
+      -webkit-text-fill-color: var(--slate12) !important;
+
+      &:hover {
+        box-shadow: 0 0 0 1000px var(--slate1) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 1000px var(--indigo2) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;
+      }
+    }
+  }
+
   @media only screen and (max-width: 768px) {
     .unstyled-button {
       height: unset;
@@ -8312,19 +8368,19 @@ tbody {
 
 .toojet-db-table-footer {
   height: 52px;
-  background: var(--base) !important;
+  background: var(--page-default) !important;
   width: calc(100vw - 336px);
 }
 
 .toojet-db-table-footer-collapse {
   height: 52px;
-  background: var(--base) !important;
+  background: var(--page-default) !important;
   width: calc(100vw - 48px);
 }
 
 .toojet-db-table-footer-collapse {
   height: 52px;
-  background: var(--base) !important;
+  background: var(--page-default) !important;
   width: calc(100vw - 48px);
 }
 
@@ -12350,6 +12406,7 @@ tbody {
     .header>.navbar {
       background-color: var(--base) !important;
       border-bottom: 1px solid var(--slate5);
+      z-index: 10;
     }
   }
 }
