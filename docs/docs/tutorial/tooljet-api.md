@@ -160,15 +160,15 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
         - `name` (string, required): The name of the user.
         - `email` (string, required): The email address of the user.
         - `password` (string, optional): The user's password. Must be between 5 and 100 characters.
-        - `status` (string, optional): The status of the user. Can be either 'active' or 'archived'. Defaults to 'archived' if not provided.
+        - `status` (string, optional): The status of the user. Can be either `active` or `archived`. Defaults to `archived` if not provided.
         - `workspaces` (array, required): An array of workspace objects associated with the user. Each workspace object should contain:
           - `id` (string, required): The unique identifier of the workspace.
           - `name` (string, required): The name of the workspace.
-          - `status` (string, optional): The status of the workspace. Can be either 'active' or 'archived'.
+          - `status` (string, optional): The status of the workspace. Can be either `active` or `archived`.
           - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
             - `id` (string, optional): The unique identifier of the group.
             - `name` (string, optional): The name of the group.
-            - `status` (string, optional): The status of the group. Can be either 'active' or 'archived'.
+            - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
   <details>
   <summary>**Request Body Example**</summary>
 ```json
@@ -208,15 +208,15 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
         - `name` (string, optional): The updated name of the user.
         - `email` (string, optional): The updated email address of the user.
         - `password` (string, optional): The updated password for the user. Must be between 5 and 100 characters.
-        - `status` (string, optional): The updated status of the user. Can be either 'active' or 'archived'.
+        - `status` (string, optional): The updated status of the user. Can be either `active` or `archived`.
         - `workspaces` (array, optional): An updated array of workspace objects associated with the user. Each workspace object should contain:
           - `id` (string, required): The unique identifier of the workspace.
           - `name` (string, required): The name of the workspace.
-          - `status` (string, optional): The status of the workspace. Can be either 'active' or 'archived'.
+          - `status` (string, optional): The status of the workspace. Can be either `active` or `archived`.
           - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
             - `id` (string, optional): The unique identifier of the group.
             - `name` (string, optional): The name of the group.
-            - `status` (string, optional): The status of the group. Can be either 'active' or 'archived'.
+            - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
 <details>
 
 <summary>Request Body Example</summary>
@@ -251,11 +251,11 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Body:** Array of workspace data transfer objects. It may contain the following fields:
         - `id` (string, required): The unique identifier of the workspace.
         - `name` (string, required): The name of the workspace.
-        - `status` (string, optional): The status of the workspace. Can be either 'active' or 'archived'.
+        - `status` (string, optional): The status of the workspace. Can be either `active` or `archived`.
         - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
           - `id` (string, optional): The unique identifier of the group.
           - `name` (string, optional): The name of the group.
-          - `status` (string, optional): The status of the group. Can be either 'active' or 'archived'.
+          - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
     - **Note:** If the array is empty, it will remove all existing workspace relations.
     - **Response:**
         ```json
@@ -273,8 +273,12 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
         - id (string): The ID of the user.
         - workspaceId (string): The ID of the workspace.
     - **Body:** The body object can contain the following fields:
+        - `id` (string, optional): The ID of the workspace.
         - `name` (string, optional): The updated name of the workspace.
-        - `status` (string, optional): The updated status of the workspace. Can be either 'active' or 'archived'.
+        - `status` (string, optional): The updated status of the workspace. Can be either `active` or `archived`.
+        - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
+          - `id` (string, optional): The ID of the group.
+          - `name` (string, optional): The name of the group.
 <details>
 
 <summary>Request Body Example</summary>
@@ -282,8 +286,12 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 ```json
 
 {
-  "name": "Allen Johnson",
-  "email": "allen@example.com"
+  "status": "archived",
+  "groups": [
+    {
+      "name": "all_users"
+    }
+  ]
 }
 
 ```
@@ -302,7 +310,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
     - **Method:** GET
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
-    - **Response:** Array of Workspace objects
+    - **Response:** Array of Workspace objects.
 
 <details>
 <summary>Response Example</summary>
