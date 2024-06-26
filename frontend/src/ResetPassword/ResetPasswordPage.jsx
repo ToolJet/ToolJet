@@ -38,6 +38,7 @@ class ResetPasswordComponent extends React.Component {
     this.setState({ [event.target.name]: event.target.value?.trim() });
   };
 
+
   handleClick = (event) => {
     event.preventDefault();
     const { token } = this.props.params;
@@ -128,11 +129,6 @@ class ResetPasswordComponent extends React.Component {
                             />
                           )}
                         </div>
-                        <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characters
-                        </span>
-
-                        <span></span>
                       </div>
                     </div>
                     <div className="reset-password-input-container">
@@ -181,7 +177,7 @@ class ResetPasswordComponent extends React.Component {
                           )}
                         </div>
                         <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characters
+                          Password should be at least 5 characters
                         </span>
 
                         <span></span>
