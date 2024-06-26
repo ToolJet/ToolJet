@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { capitalize, startCase } from 'lodash';
 import moment from 'moment';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
@@ -7,9 +7,10 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import useDebugger from './useDebugger'; // Import the useDebugger hook
 
-function Logs({ logProps, idx }) {
+function Logs({ logProps, idx, switchPage }) {
   const [open, setOpen] = React.useState(false);
   const { handleErrorClick, selectedError } = useDebugger({}); // Initialize the useDebugger hook and extract handleErrorClick
+  const childRef = useRef(null);
 
   let titleLogType = logProps?.type;
   // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
@@ -30,6 +31,7 @@ function Logs({ logProps, idx }) {
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
           logProps?.error?.message
         }`;
+  const currentPageId = useEditorStore.getState().currentPageId;
 
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -64,9 +66,22 @@ function Logs({ logProps, idx }) {
       enableFor1stLevelChildren: true,
     },
   ];
+
   React.useEffect(() => {
-    console.log('Selected Error:', selectedError);
-  }, [selectedError]);
+    if (childRef.current) {
+      onSelect(logProps.error.componentId, 'componentId', ['componentId']); // Update the selected error when the error log is clicked
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, childRef.current]);
+
+  const onSelect = (data, currentNode, path) => {
+    if (childRef.current) {
+      const actions = childRef.current
+        .getOnSelectLabelDispatchActions(currentNode, path)
+        ?.filter((action) => action.onSelect);
+      actions.forEach((action) => action.dispatchAction(data, currentNode));
+    }
+  };
 
   const renderNavToDisabledPageMessage = () => {
     const text = message.split(logProps.page);
@@ -84,14 +99,26 @@ function Logs({ logProps, idx }) {
     );
   };
 
-  console.log('logProps---');
+  console.log('logProps---', logProps);
+
+  const handleClick = async () => {
+    setOpen((prev) => !prev);
+    handleErrorClick(logProps);
+
+    // Call switchPage and wait for it to complete
+    if (logProps.page.id !== currentPageId) await switchPage(logProps.page.id);
+
+    // After switchPage completes, call onSelect if childRef.current is defined
+    if (childRef.current) {
+      onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+    }
+  };
   return (
     <div className="tab-content debugger-content" key={`${logProps?.key}-${idx}`}>
       <p
         className="m-0 d-flex"
         onClick={() => {
-          setOpen((prev) => !prev);
-          handleErrorClick(logProps); // Update the selected error when the error log is clicked
+          handleClick();
         }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
       >
@@ -131,6 +158,7 @@ function Logs({ logProps, idx }) {
           fontSize={'10px'}
           actionsList={callbackActions}
           treeType="debugger"
+          ref={childRef}
         />
       )}
       <hr className="border-1 border-bottom bg-grey" />
