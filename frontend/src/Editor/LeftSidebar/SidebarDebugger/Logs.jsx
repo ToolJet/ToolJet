@@ -5,9 +5,12 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import useDebugger from './useDebugger'; // Import the useDebugger hook
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
+  const { handleErrorClick, selectedError } = useDebugger({}); // Initialize the useDebugger hook and extract handleErrorClick
+
   let titleLogType = logProps?.type;
   // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
   if (titleLogType === 'transformations') {
@@ -61,6 +64,9 @@ function Logs({ logProps, idx }) {
       enableFor1stLevelChildren: true,
     },
   ];
+  React.useEffect(() => {
+    console.log('Selected Error:', selectedError);
+  }, [selectedError]);
 
   const renderNavToDisabledPageMessage = () => {
     const text = message.split(logProps.page);
@@ -78,17 +84,14 @@ function Logs({ logProps, idx }) {
     );
   };
 
-  console.log('logProps---', logProps);
+  console.log('logProps---');
   return (
     <div className="tab-content debugger-content" key={`${logProps?.key}-${idx}`}>
       <p
         className="m-0 d-flex"
         onClick={() => {
           setOpen((prev) => !prev);
-          // const shouldTriggerActions = props.treeType === 'debugger' && currentNode === 'componentId';
-          // if (toExpandNode || shouldTriggerActions) {
-          // handleOnClickLabels(data, currentNode, path);
-          // }
+          handleErrorClick(logProps); // Update the selected error when the error log is clicked
         }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
       >
