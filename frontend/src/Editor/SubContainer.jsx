@@ -799,6 +799,45 @@ const SubWidgetWrapper = ({
       parent: box?.component?.parent,
     }));
 
+  const getWidgetType = (id) => {
+    const allWidgets =
+      useEditorStore.getState().appDefinition.pages[useEditorStore.getState().currentPageId].components;
+
+    return allWidgets[id]?.component?.component;
+  };
+
+  const DimensionViewable = {
+    name: 'dimensionViewable',
+    props: [],
+    events: [],
+    // render() {
+    //   return configHandleForMultiple('multiple-components-config-handle');
+    // },
+  };
+
+  const MouseCustomAble = {
+    name: 'mouseTest',
+    props: {},
+    events: {},
+    mouseEnter(e) {
+      const controlBoxes = document.getElementsByClassName('moveable-control-box');
+      for (const element of controlBoxes) {
+        element.classList.remove('moveable-control-box-d-block');
+      }
+      e.props.target.classList.add('hovered');
+      e.controlBox.classList.add('moveable-control-box-d-block');
+    },
+    mouseLeave(e) {
+      e.props.target.classList.remove('hovered');
+      e.controlBox.classList.remove('moveable-control-box-d-block');
+    },
+  };
+
+  const RESIZABLE_CONFIG = {
+    edge: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
+    renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
+  };
+
   return (
     <div
       className={
@@ -808,7 +847,7 @@ const SubWidgetWrapper = ({
           ? `moveable-box position-absolute`
           : `target-${parent} target1-${parent} ele-${id} nested-target moveable-box target  ${
               isResizing ? 'resizing-target' : ''
-            } ${isWidgetActive ? 'active-target' : ''} ${isDragging ? 'opacity-0' : ''}`
+            } ${isWidgetActive ? 'hovered-target' : ''} ${isDragging ? 'opacity-0' : ''}`
       }
       key={id}
       id={id}
@@ -822,10 +861,13 @@ const SubWidgetWrapper = ({
         target={widgetRef}
         draggable={true}
         resizable={true}
+        renderDirections={['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']}
         throttleDrag={1}
         edgeDraggable={false}
         startDragRotate={0}
         throttleDragRotate={0}
+        ables={[MouseCustomAble, DimensionViewable]}
+        // resizable={RESIZABLE_CONFIG}
         onDrag={(e) => {
           if (!isDraggingRef.current) {
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
@@ -955,8 +997,8 @@ const SubWidgetWrapper = ({
                 if (isDroppable) {
                   // debugger;
                   let widgetId = ele?.getAttribute('component-id') || ele.id;
-                  let widgetType = widgets[widgetId]?.component?.component;
-                  // console.log('--arpit:: dnd ', { isDroppable, widgetId, widgetType });
+                  let widgetType = getWidgetType(widgetId);
+
                   if (!widgetType) {
                     widgetId = widgetId.split('-').slice(0, -1).join('-');
 
@@ -973,7 +1015,7 @@ const SubWidgetWrapper = ({
 
                 return isDroppable;
               });
-              // console.log('--arpit:: dnd ', { draggedOverElem });
+
               draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
               draggedOverElemIdType = draggedOverElem?.getAttribute('data-parent-type');
             }
@@ -1021,7 +1063,6 @@ const SubWidgetWrapper = ({
               Math.round(top / 10) * 10
             }px)`;
 
-            console.log('--arpit:: dnd1', { draggedOverElemId, currentParentId });
             if (draggedOverElemId === currentParentId || isParentChangeAllowed) {
               onDragInSubContainer([
                 {

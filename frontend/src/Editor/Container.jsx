@@ -38,6 +38,7 @@ import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { flushSync } from 'react-dom';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
+import './DragContainer.css';
 
 export const Container = ({
   widthOfCanvas,
@@ -1056,6 +1057,8 @@ const WidgetWrapper = ({
     return { isSelected, isHovered };
   }, shallow);
 
+  const selectedComponents = useEditorStore((state) => state.selectedComponents, shallow);
+
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
 
   let layoutData = layouts?.[currentLayout];
@@ -1086,8 +1089,6 @@ const WidgetWrapper = ({
     return newHeight;
   };
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
-
-  console.log('---kiran ==>', { isWidgetActive });
 
   const { label = { value: null } } = propertiesDefinition ?? {};
   const visibility = propertiesDefinition?.visibility?.value ?? stylesDefinition?.visibility?.value ?? null;
@@ -1143,6 +1144,49 @@ const WidgetWrapper = ({
 
   const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, bottom: 0, position: 'css' };
 
+  const reloadGrid = useCallback(async () => {
+    if (targetRef.current) {
+      targetRef.current.updateRect();
+      targetRef.current.updateTarget();
+      targetRef.current.updateSelectors();
+    }
+    Array.isArray(targetRef.current?.moveable?.moveables) &&
+      targetRef.current?.moveable?.moveables.forEach((moveable) => {
+        const {
+          props: { target },
+          controlBox,
+        } = moveable;
+        controlBox.setAttribute('target-id', target.id);
+      });
+
+    const selectedComponentsId = new Set(
+      selectedComponents.map((component) => {
+        return component.id;
+      })
+    );
+
+    // Get all elements with the old class name
+    var elements = document.getElementsByClassName('selected-component');
+    // Iterate through the elements and replace the old class with the new one
+    for (var i = 0; i < elements.length; i++) {
+      elements[i].className = 'moveable-control-box modal-moveable rCS1w3zcxh';
+    }
+
+    const controlBoxes = targetRef?.current?.moveable?.getMoveables();
+    console.log('--arpit:: =>', { controlBoxes });
+    if (controlBoxes) {
+      for (const element of controlBoxes) {
+        if (selectedComponentsId.has(element?.props?.target?.id)) {
+          element?.controlBox?.classList.add('selected-component', `sc-${element?.props?.target?.id}`);
+        }
+      }
+    }
+  }, [selectedComponents]);
+
+  useEffect(() => {
+    reloadGrid();
+  }, [selectedComponents, widgets]);
+
   return (
     <>
       <div
@@ -1170,9 +1214,10 @@ const WidgetWrapper = ({
           target={targetRef}
           ables={[MouseCustomAble, DimensionViewable]}
           // resizable={RESIZABLE_CONFIG}
+          resizable={true}
           draggable={true}
+          renderDirections={['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']}
           flushSync={flushSync}
-          resizable={RESIZABLE_CONFIG}
           throttleDrag={1}
           edgeDraggable={false}
           startDragRotate={0}
@@ -1312,7 +1357,7 @@ const WidgetWrapper = ({
                     // debugger;
                     let widgetId = ele?.getAttribute('component-id') || ele.id;
                     let widgetType = widgets[widgetId]?.component?.component;
-                    // console.log('--arpit:: dnd ', { isDroppable, widgetId, widgetType });
+
                     if (!widgetType) {
                       widgetId = widgetId.split('-').slice(0, -1).join('-');
 
@@ -1329,7 +1374,7 @@ const WidgetWrapper = ({
 
                   return isDroppable;
                 });
-                // console.log('--arpit:: dnd ', { draggedOverElem });
+
                 draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
                 draggedOverElemIdType = draggedOverElem?.getAttribute('data-parent-type');
               }
@@ -1377,7 +1422,6 @@ const WidgetWrapper = ({
                 Math.round(top / 10) * 10
               }px)`;
 
-              console.log('--arpit:: dnd1', { draggedOverElemId, currentParentId });
               if (draggedOverElemId === currentParentId || isParentChangeAllowed) {
                 onDrag([
                   {
