@@ -572,7 +572,6 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto?.groups;
     const role = inviteNewUserDto.role;
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
       if (user?.status === USER_STATUS.ARCHIVED) {
@@ -617,6 +616,7 @@ export class OrganizationsService {
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
+
         await this.userRoleService.addUserRole(
           { userId: user.id, role: USER_ROLE.END_USER },
           defaultOrganization.id,
@@ -636,7 +636,6 @@ export class OrganizationsService {
       );
 
       await this.usersService.attachUserGroup(groups, currentOrganization.id, user.id, manager);
-
       const name = fullName(currentUser.firstName, currentUser.lastName);
       if (shouldSendWelcomeMail) {
         this.emailService

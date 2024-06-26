@@ -9,7 +9,6 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { AbilityService } from '@services/permissions-ability.service';
-// import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
 @Controller('app-environments')
@@ -68,7 +67,6 @@ export class AppEnvironmentsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id/versions')
   async getVersionsByEnvironment(@User() user, @Param('id') environmentId: string, @Query('app_id') appId: string) {
-    // const abilities = await this.service.getResourcePermission(user,{organizationId:user.organizationId,resources:[{resource:TOOLJET_RESOURCE.APP}]})
     const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(
       user?.organizationId,
       appId,

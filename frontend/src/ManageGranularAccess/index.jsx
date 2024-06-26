@@ -10,8 +10,9 @@ import { groupPermissionV2Service } from '@/_services';
 import { toast } from 'react-hot-toast';
 import GroupChipTD from '@/ManageGroupPermissionsV2/ResourceChip';
 import '../ManageGroupPermissionsV2/groupPermissions.theme.scss';
-import { Action } from 'rxjs/internal/scheduler/Action';
 import ChangeRoleModal from '@/ManageGroupPermissionResourcesV2/ChangeRoleModal';
+import AppResourcePermissions from '@/ManageGranularAccess/AppResourcePermission';
+import AddResourcePermissionsMenu from '@/ManageGranularAccess/AddResourcePermissionsMenu';
 
 class ManageGranularAccessComponent extends React.Component {
   constructor(props) {
@@ -82,8 +83,6 @@ class ManageGranularAccessComponent extends React.Component {
       isLoading: true,
     });
     groupPermissionV2Service.fetchGranularPermissions(groupPermissionId).then((data) => {
-      console.log('loggin permissions');
-      console.log(data);
       this.setState({
         granularPermissions: data,
         isLoading: false,
@@ -276,7 +275,7 @@ class ManageGranularAccessComponent extends React.Component {
         ? 'Admin has edit access to all apps. These are not editable'
         : 'End-user can only have permission to view apps';
     return (
-      <div className="manage-group-users-info">
+      <div className="manage-granular-permissions-info">
         <p
           className="tj-text-xsm"
           style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
@@ -290,7 +289,14 @@ class ManageGranularAccessComponent extends React.Component {
     );
   };
 
-  openAddPermissionModal = () => this.setState({ showAddPermissionModal: true });
+  openAddPermissionModal = () => {
+    const currentGroupPermission = this.props?.groupPermission;
+    const isEndUser = currentGroupPermission?.name === 'end-user';
+    this.setState((prevState) => ({
+      showAddPermissionModal: true,
+      ...(isEndUser && { initialPermissionState: { ...prevState.initialPermissionState, canView: true } }),
+    }));
+  };
 
   closeAddPermissionModal = () => {
     this.setState({
@@ -370,7 +376,9 @@ class ManageGranularAccessComponent extends React.Component {
       updateType,
     } = this.state;
 
+    const resourcesOptions = ['Apps'];
     const currentGroupPermission = this.props?.groupPermission;
+    const isEndUserGroup = currentGroupPermission?.name == 'end-user';
     const isRoleGroup = currentGroupPermission.name == 'admin';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const disableEditUpdate = currentGroupPermission.name == 'end-user';
@@ -482,6 +490,7 @@ class ManageGranularAccessComponent extends React.Component {
                   <input
                     className="form-check-input"
                     type="radio"
+                    disabled={disableEditUpdate}
                     checked={initialPermissionState.canView}
                     onClick={() => {
                       this.setState((prevState) => ({
@@ -574,48 +583,16 @@ class ManageGranularAccessComponent extends React.Component {
             <p className="tj-text-xsm mb-2">
               Add assets to configure granular, asset-level permissions for this user group
             </p>
-            <OverlayTrigger
-              //   onToggle={handleOverlayToggle}
-              rootClose={true}
-              trigger="click"
-              placement={'bottom'}
-              overlay={
-                <div className={`settings-card tj-text card ${this.props.darkMode && 'dark-theme'}`}>
-                  <ButtonSolid
-                    variant="tertiary"
-                    iconWidth="17"
-                    fill="var(--slate9)"
-                    className="apps-remove-btn permission-type remove-decoration tj-text-xsm font-weight-600"
-                    leftIcon="dashboard"
-                    onClick={() => {
-                      this.openAddPermissionModal();
-                    }}
-                  >
-                    Apps
-                  </ButtonSolid>
-                </div>
-              }
-            >
-              <div className={'cursor-pointer'}>
-                <ButtonSolid
-                  variant="tertiary"
-                  iconWidth="17"
-                  fill="var(--slate9)"
-                  className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600 add-permission-btn"
-                  leftIcon="plus"
-                  onClick={() => {
-                    // this.openChangeRoleModal(user);
-                  }}
-                >
-                  Add permission
-                </ButtonSolid>
-              </div>
-            </OverlayTrigger>
+            <AddResourcePermissionsMenu
+              openAddPermissionModal={this.openAddPermissionModal}
+              resourcesOptions={resourcesOptions}
+              currentGroupPermission={currentGroupPermission}
+            />
           </div>
         ) : (
-          <div>
+          <>
             {showPermissionInfo && this.showPermissionText(currentGroupPermission)}
-            <div className="manage-group-permision-header">
+            <div className="manage-granular-permission-header">
               <p data-cy="resource-header" className="tj-text-xsm">
                 {'Name'}
               </p>
@@ -626,7 +603,7 @@ class ManageGranularAccessComponent extends React.Component {
                 {'Resources'}
               </p>
             </div>
-            <div className="permission-body">
+            <div className={showPermissionInfo ? 'permission-body-one' : 'permission-body-two'}>
               {isLoading ? (
                 <tr>
                   <td className="col-auto">
@@ -643,139 +620,26 @@ class ManageGranularAccessComponent extends React.Component {
                 </tr>
               ) : (
                 <>
-                  {granularPermissions.map((permissions, index) => {
-                    const appsPermissions = permissions.appsGroupPermissions;
-                    let apps = appsPermissions?.groupApps?.map((app) => {
-                      return app?.app?.name;
-                    });
-                    if (apps.length == 0 || permissions.isAll) apps = ['All apps'];
-                    return (
-                      <div className="manage-groups-permission-apps" key={index}>
-                        <SolidIcon name="app" width="20px" />
-                        <div data-cy="resource-apps">{permissions.name}</div>
-                        <div className="text-muted">
-                          <div className="d-flex apps-permission-wrap flex-column">
-                            <label className="form-check form-check-inline">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                onClick={() => {
-                                  this.updateOnlyGranularPermissions(permissions, {
-                                    canEdit: !appsPermissions.canEdit,
-                                  });
-                                }}
-                                checked={appsPermissions.canEdit}
-                                disabled={isRoleGroup || disableEditUpdate}
-                                data-cy="app-create-checkbox"
-                              />
-                              <span className="form-check-label" data-cy="app-create-label">
-                                {'Edit'}
-                              </span>
-                              {/* <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>Create apps in this workspace</span> */}
-                              <span class={`text-muted tj-text-xxsm`}>Access to app builder</span>
-                            </label>
-                            <label className="form-check form-check-inline">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                onClick={() => {
-                                  this.updateOnlyGranularPermissions(permissions, {
-                                    canView: !appsPermissions.canView,
-                                  });
-                                }}
-                                checked={appsPermissions.canView}
-                                disabled={isRoleGroup}
-                                data-cy="app-delete-checkbox"
-                              />
-                              <span className="form-check-label" data-cy="app-delete-label">
-                                {'View'}
-                              </span>
-                              <span class={`text-muted tj-text-xxsm`}>Only view released version of app</span>
-                            </label>
-                            <label className="form-check form-check-inline">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                onChange={() => {
-                                  this.updateOnlyGranularPermissions(permissions, {
-                                    hideFromDashboard: !appsPermissions.hideFromDashboard,
-                                  });
-                                }}
-                                checked={appsPermissions.hideFromDashboard}
-                                disabled={isRoleGroup}
-                                data-cy="app-delete-checkbox"
-                              />
-                              <span className="form-check-label" data-cy="app-delete-label">
-                                {'Hide from dashbaord'}
-                              </span>
-                              <span class={`text-muted tj-text-xxsm`}>App will be accessible by URL only</span>
-                            </label>
-                          </div>
-                        </div>
-                        {/* for tiles */}
-                        <div>
-                          <GroupChipTD groups={apps} />
-                        </div>
-                        <div className="edit-icon-container">
-                          <ButtonSolid
-                            leftIcon="editrectangle"
-                            className="edit-permission-custom"
-                            iconWidth="14"
-                            onClick={() => {
-                              this.openEditPermissionModal(permissions);
-                            }}
-                            disabled={isRoleGroup}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {granularPermissions.map((permissions, index) => (
+                    <AppResourcePermissions
+                      updateOnlyGranularPermissions={this.updateOnlyGranularPermissions}
+                      permissions={permissions}
+                      currentGroupPermission={currentGroupPermission}
+                      key={index}
+                      openEditPermissionModal={this.openEditPermissionModal}
+                    />
+                  ))}
                 </>
               )}
             </div>
-          </div>
-        )}
-        {granularPermissions.length > 0 && (
-          <div className="side-button-cont">
-            <OverlayTrigger
-              //   onToggle={handleOverlayToggle}
-              rootClose={true}
-              trigger="click"
-              placement={'bottom'}
-              overlay={
-                <div className={`settings-card tj-text card ${this.props.darkMode && 'dark-theme'}`}>
-                  <ButtonSolid
-                    variant="tertiary"
-                    iconWidth="17"
-                    fill="var(--slate9)"
-                    className="apps-remove-btn permission-type remove-decoration tj-text-xsm font-weight-600"
-                    leftIcon="dashboard"
-                    onClick={() => {
-                      this.openAddPermissionModal();
-                    }}
-                  >
-                    Apps
-                  </ButtonSolid>
-                </div>
-              }
-            >
-              <div className={'cursor-pointer'}>
-                <ButtonSolid
-                  variant="tertiary"
-                  iconWidth="17"
-                  fill="var(--slate9)"
-                  className="add-icon tj-text-xsm font-weight-600"
-                  leftIcon="plus"
-                  disabled={currentGroupPermission.name === 'admin'}
-                  onClick={() => {
-                    // this.openChangeRoleModal(user);
-                  }}
-                >
-                  Add permission
-                </ButtonSolid>
-              </div>
-            </OverlayTrigger>
-          </div>
+            <div className="side-button-cont">
+              <AddResourcePermissionsMenu
+                openAddPermissionModal={this.openAddPermissionModal}
+                resourcesOptions={resourcesOptions}
+                currentGroupPermission={currentGroupPermission}
+              />
+            </div>
+          </>
         )}
       </div>
     );

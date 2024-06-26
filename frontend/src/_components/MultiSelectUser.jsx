@@ -73,7 +73,7 @@ function MultiSelectUser({
   );
   return (
     <div className="tj-ms tj-ms-count">
-      {/* <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} /> */}
+      <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
       <Select
         className={className}
         getOptions={onSearch ? searchFunction : undefined}

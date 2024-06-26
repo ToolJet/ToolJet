@@ -8,6 +8,8 @@ import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { UserGroupsSelect } from './UserGroupsSelect';
+import { EDIT_ROLE_MESSAGE } from '@/ManageGroupPermissionResourcesV2/constant';
+import ModalBase from '@/_ui/Modal';
 
 function InviteUsersForm({
   onClose,
@@ -29,8 +31,10 @@ function InviteUsersForm({
   const [activeTab, setActiveTab] = useState(1);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [existingGroups, setExistingGroups] = useState([]);
+  const [newRole, setNewRole] = useState(null);
   const customGroups = groups.filter((group) => group.groupType === 'custom');
   const roleGroups = groups.filter((group) => group.groupType === 'default');
+  const [isChangeRoleModalOpen, setIsChangeRoleModalOpen] = useState(false);
   const groupedOptions = [
     {
       label: 'default',
@@ -86,6 +90,13 @@ function InviteUsersForm({
     if (roleGroups.length == 2) {
       finalGroup = items.filter((group) => group.value !== currentRole.value);
     }
+    if (currentEditingUser) {
+      const role = finalGroup.find(
+        (group) =>
+          group.groupType === 'default' && !currentEditingUser.role_group.map((role) => role.name).includes(group.value)
+      );
+      setNewRole(role);
+    }
     setSelectedGroups(finalGroup);
   };
 
@@ -97,31 +108,34 @@ function InviteUsersForm({
   };
 
   const handleEditUser = (e) => {
+    console.log(currentEditingUser);
+    console.log(newRole);
     e.preventDefault();
+    if (newRole) setIsChangeRoleModalOpen(true);
+    else {
+      editUser();
+    }
+  };
+
+  const editUser = () => {
     const { newGroupsToAdd, groupsToRemove, selectedGroupsIds, role } = getEditedGroups();
     manageUser(currentEditingUser.id, selectedGroupsIds, role, newGroupsToAdd, groupsToRemove);
   };
 
   const getEditedGroups = () => {
-    let role = null;
-    if (currentEditingUser)
-      role = selectedGroups.find(
-        (group) =>
-          group.groupType === 'default' && !currentEditingUser.role_group.map((role) => role.name).includes(group.value)
-      )?.value;
     const selectedGroupsIds = selectedGroups.filter((group) => group.groupType !== 'default').map((group) => group.id);
     const newGroupsToAdd = selectedGroupsIds.filter((selectedGroupId) => !existingGroups.includes(selectedGroupId));
     const groupsToRemove = existingGroups.filter((existingGroup) => !selectedGroupsIds.includes(existingGroup));
-    return { newGroupsToAdd, groupsToRemove, selectedGroupsIds, role };
+    return { newGroupsToAdd, groupsToRemove, selectedGroupsIds };
   };
 
   const isEdited = () => {
-    const { newGroupsToAdd, groupsToRemove, role } = getEditedGroups();
+    const { newGroupsToAdd, groupsToRemove } = getEditedGroups();
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
           groupsToRemove.length ||
-          role !== undefined ||
+          newRole ||
           newGroupsToAdd.length
       : true;
   };
@@ -132,6 +146,28 @@ function InviteUsersForm({
 
   return (
     <div>
+      {isChangeRoleModalOpen && (
+        <ModalBase
+          title={
+            <div className="my-3" data-cy="modal-title">
+              <span className="tj-text-md font-weight-500">Edit user role</span>
+              <div className="tj-text-sm text-muted" data-cy="user-email">
+                {currentEditingUser?.email}
+              </div>
+            </div>
+          }
+          handleConfirm={editUser}
+          show={isChangeRoleModalOpen}
+          handleClose={() => {
+            setIsChangeRoleModalOpen(false);
+            onCancel();
+            onClose();
+          }}
+          confirmBtnProps={{ title: 'Continue' }}
+        >
+          <div>{EDIT_ROLE_MESSAGE?.[currentEditingUser?.role_group?.[0]?.name]?.[newRole?.value]()}</div>
+        </ModalBase>
+      )}
       <div className="animation-fade invite-user-drawer-wrap">
         <div className="drawer-card-wrap invite-user-drawer-wrap">
           <div className="card-header">

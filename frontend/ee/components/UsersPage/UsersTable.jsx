@@ -34,11 +34,8 @@ const UsersTable = ({
                 <th data-cy="users-table-name-column-header">
                   {translator('header.organization.menus.manageUsers.name', 'Name')}
                 </th>
-                <th data-cy="users-table-email-column-header">
-                  {translator('header.organization.menus.manageUsers.email', 'Email')}
-                </th>
                 <th data-cy="users-table-groups-column-header">User role</th>
-                <th data-cy="users-table-groups-column-header">Groups</th>
+                <th data-cy="users-table-groups-column-header">Custom groups</th>
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
                     {translator('header.organization.menus.manageUsers.status', 'Status')}
@@ -91,20 +88,15 @@ const UsersTable = ({
                             user.last_name ? user.last_name[0] : ''
                           }`}
                         />
+                        <div className='user-detail'>
                         <span
                           className="mx-3 tj-text tj-text-sm"
                           data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
                         >
                           {decodeEntities(user.name)}
                         </span>
-                      </td>
-                      <td className="text-muted">
-                        <a
-                          className="text-reset user-email tj-text-sm"
-                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-email`}
-                        >
-                          {user.email}
-                        </a>
+                        <span style={{color:'#687076'}} className="user-email mx-3 tj-text tj-text-xsm">{user.email}</span>
+                        </div>
                       </td>
                       <GroupChipTD groups={user.role_group.map((group) => group.name)} />
                       <GroupChipTD groups={user.groups.map((group) => group.name)} />
@@ -238,7 +230,10 @@ const GroupChipTD = ({ groups = [] }) => {
     >
       <div className="groups-name-container tj-text-sm font-weight-500">
         {orderedArray.length === 0
-          ? renderGroupChip('-', null)
+          ? 
+          <div className='empty-text'>
+            -
+          </div>
           : orderedArray.slice(0, 2).map((group, index) => {
               if (orderedArray.length <= 2) {
                 return renderGroupChip(group, index);

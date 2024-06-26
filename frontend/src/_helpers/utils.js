@@ -1225,12 +1225,12 @@ export const USER_DRAWER_MODES = {
 export const humanizeifDefaultGroupName = (groupName) => {
   switch (groupName) {
     case 'end-user':
-      return 'End users';
+      return 'End user';
 
     case 'admin':
       return 'Admin';
     case 'builder':
-      return 'Builders';
+      return 'Builder';
 
     default:
       return groupName;

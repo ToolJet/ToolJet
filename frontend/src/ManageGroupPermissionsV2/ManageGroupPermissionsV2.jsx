@@ -42,6 +42,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       groupToDuplicate: '',
       showGroupSearchBar: false,
       filteredGroup: [],
+      groupNameMessage: 'Group name must be unique and max 50 characters',
     };
   }
 
@@ -229,10 +230,16 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   changeNewGroupName = (value) => {
-    if (value.length > 50) return;
+    if (value.length > 50) {
+      this.setState({
+        groupNameMessage: 'Max length has been reached',
+      });
+      return;
+    }
     this.setState({
       newGroupName: value,
       isSaveBtnDisabled: false,
+      groupNameMessage: 'Group name must be unique and max 50 characters',
     });
     if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.name === value) || !value) {
       this.setState({
@@ -244,11 +251,11 @@ class ManageGroupPermissionsComponent extends React.Component {
   humanizeifDefaultGroupName = (groupName) => {
     switch (groupName) {
       case 'end-user':
-        return 'End users';
+        return 'End user';
       case 'admin':
         return 'Admin';
       case 'builder':
-        return 'Builders';
+        return 'Builder';
       default:
         return groupName;
     }
@@ -368,6 +375,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       showGroupSearchBar,
     } = this.state;
 
+    const grounNameErrorStyle = this.state.newGroupName?.length >= 50 ? { color: '#ff0000' } : {};
     const { addPermission, addApps, addUsers } = groupDuplicateOption;
     const allFalse = [addPermission, addApps, addUsers].every((value) => !value);
 
@@ -538,7 +546,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                         data-cy="group-name-input"
                         autoFocus
                       />
-                      <span className="tj-text-xxsm">Group name must be unique and max 50 characters</span>
+                      <span className="tj-text-xxsm" style={grounNameErrorStyle}>
+                        {this.state.groupNameMessage}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -618,7 +628,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                   <div>
                     {!showGroupSearchBar ? (
                       <div className="mb-2 d-flex align-items-center">
-                        <SolidIcon name="usergroup" />
+                        <SolidIcon name="usergroup" width="18px" fill="#889096" />
                         <span className="ml-1 group-title">CUSTOM GROUPS</span>
                         <div className="create-group-cont">
                           <ButtonSolid
@@ -629,6 +639,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                             size="xsm"
                             rightIcon="search"
                             iconWidth="15"
+                            fill="#889096"
                             className="create-group-custom"
                           />
                           <ButtonSolid
@@ -637,6 +648,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                               this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
                             }}
                             size="sm"
+                            fill="#889096"
                             rightIcon="plus"
                             iconWidth="20"
                             className="create-group-custom"
@@ -692,8 +704,8 @@ class ManageGroupPermissionsComponent extends React.Component {
                       })
                     ) : (
                       <div className="empty-custom-group-info">
-                        <SolidIcon name="information" width="18px" />
-                        <span className="tj-text-xxsm text-center info-label">No custom groups added</span>
+                        <SolidIcon className="info-icon" name="information" width="18px" />
+                        <span className="tj-text-xsm text-center info-label">No custom groups added</span>
                       </div>
                     )}
                   </div>

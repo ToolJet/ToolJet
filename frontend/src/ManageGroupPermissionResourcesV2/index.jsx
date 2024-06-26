@@ -19,6 +19,7 @@ import { EDIT_ROLE_MESSAGE } from './constant';
 import { SearchBox } from '@/_components/SearchBox';
 import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
 import ChangeRoleModal from '@/ManageGroupPermissionResourcesV2/ChangeRoleModal';
+import { ToolTip } from '@/_components/ToolTip';
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -365,8 +366,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           data-cy="helper-text-admin-app-access"
         >
           <SolidIcon name="information" fill="#3E63DD" /> {text}
-          <a style={{ margin: '0', padding: '0', textDecoration: 'none', color: '#3E63DD' }}>Read Documentation</a> to
-          know more
+          <a style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}>
+            read documentation
+          </a>{' '}
+          to know more
         </p>
       </div>
     );
@@ -637,12 +640,14 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   {this.props.selectedGroup}
                 </p>
                 {groupPermission.type === 'default' && (
-                  <div className="default-group-wrap">
-                    <SolidIcon name="information" fill="#46A758" width="13" />
-                    <p className="font-weight-500 tj-text-xsm" data-cy="text-default-group">
-                      Default group
-                    </p>
-                  </div>
+                  <ToolTip message={'Every user must be part of one default group'}>
+                    <div className="default-group-wrap">
+                      <SolidIcon name="information" fill="#46A758" width="15" />
+                      <p className="font-weight-500 tj-text-sm" data-cy="text-default-group">
+                        Default group
+                      </p>
+                    </div>
+                  </ToolTip>
                 )}
                 {groupPermission.type === 'custom' && (
                   <div className="user-group-actions">
@@ -704,7 +709,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     name="granularaccess"
                     width="16"
                   ></SolidIcon>
-                  Granular Access
+                  Granular access
                 </a>
               </nav>
 
@@ -746,7 +751,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             onClick={() => this.addSelectedUsersToGroup(groupPermission?.id, selectedUsers)}
                             disabled={selectedUsers.length === 0}
                             leftIcon="plus"
-                            fill={selectedUsers.length !== 0 ? '#3E63DD' : this.props.darkMode ? '#131620' : '#C1C8CD'}
+                            fill={selectedUsers.length !== 0 ? '#ffffff' : this.props.darkMode ? '#131620' : '#C1C8CD'}
                             iconWidth="16"
                             className="add-users-button"
                             isLoading={isAddingUsers}
@@ -757,7 +762,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             Add users
                           </ButtonSolid>
                         </div>
-                        {selectedUsers.length && (
+                        {selectedUsers.length > 0 && (
                           <div className="row mt-2">
                             <div className="selected-section">
                               <div className="selected-text">Selected Users:</div>
@@ -791,6 +796,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             size="xsm"
                             rightIcon="search"
                             iconWidth="15"
+                            fill="#889096"
                             className="search-user-group-btn"
                           />
                           <p className="tj-text-xsm" data-cy="name-header">
@@ -835,7 +841,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                   </div>
                                   <span>{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
                                 </p>
-                                <p className="tj-text-sm" style={{ paddingLeft: '8px' }}>
+                                <p className="tj-text-sm d-flex align-items-center" style={{ paddingLeft: '12px' }}>
                                   <span> {user.email}</span>
                                 </p>
                                 <div className="edit-role-btn">
@@ -847,8 +853,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         onClick={() => {
                                           this.removeUserFromGroup(groupUserId);
                                         }}
+                                        leftIcon="remove"
+                                        fill="#F3B0A2"
+                                        iconWidth="18"
                                       >
-                                        {this.props.t('globals.delete', 'Delete')}
+                                        {this.props.t('globals.remove', 'Remove')}
                                       </ButtonSolid>
                                     </Link>
                                   )}

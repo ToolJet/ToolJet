@@ -11,12 +11,16 @@
     width: 100%;
     height: 32px;
     
-    padding: 6px 15px;
+    padding: 3px 12px;
     display: flex;
     flex-direction: row;
 
+    .info-icon{
+      margin-top: 3px;
+    }
+
     .info-label{
-        margin-left: 8px;
+        margin-left: 4px;
         color: var(--slate9);
     }
 }
@@ -215,12 +219,11 @@
 .resource-name-cell {
   transition: 0.3s all;
   border-radius: 6px;
-  max-width: 180px;
+  max-width: 170px;
   position: relative !important;
   overflow: visible !important;
 
   .groups-name-container {
-    padding-left: 10px;
     display: flex;
     flex-direction: column; 
     row-gap: 8px;
@@ -228,7 +231,14 @@
     overflow: hidden;
     white-space: nowrap;
     max-height: 200px;
+    max-width: 170px;
+
     
+    .empty-text{
+      display: flex;
+      justify-content: center;
+      margin-left: 20px;
+    }
 
     .groups-name-row {
       display: flex;
@@ -236,7 +246,7 @@
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-      max-width: 200px;
+      max-width: 170px;
     }
   }
 
@@ -245,7 +255,7 @@
     margin: 0;
     border-radius: 6px;
     background-color: var(--slate3);
-    color: var(--slate11);
+    color: black;
     min-height: 24px;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -313,13 +323,50 @@
 
 
 .edit-permission-custom {
-            width: 20px;
-            margin-left: 2px;
-            margin-right: 2px;
-            height: 20px;
-            padding: 0 0;
-            background: none !important;
-            background-color: none !important;
-            box-shadow: none;
+  width: 20px;
+  margin-left: 2px;
+  margin-right: 2px;
+  height: 20px;
+  padding: 0 0;
+  background: none !important;
+  background-color: none !important;
+  box-shadow: none;
+}
 
-        }
+.manage-resource-permission{
+  border-bottom: 1px solid var(--slate5);
+  display: flex;
+  align-items:baseline;
+  padding: 12px;
+  gap: 10px;
+
+  div {
+    width: 206px;
+
+
+    .resource-name {
+      display: flex;
+      flex-direction: column !important;
+      gap: 10px;
+      
+
+      .resource-icon {
+        margin-right: 200px;
+      }
+      .resource-text {
+        margin-left: 10px;
+      }
+    }
+  }
+  
+
+  
+}
+
+.manage-resource-body {
+  padding: 24px;
+  font-size: 12px;
+  overflow-y: auto;
+  height: calc(100vh - 300px);
+
+}
