@@ -87,10 +87,10 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data.visible)
+          .filter((data) => data.visible.value)
           .map((value) => ({
             ...value,
-            isDisabled: value.disable,
+            isDisabled: value.disable.value,
           }))
       : [];
     return _selectOptions;
@@ -441,7 +441,6 @@ export const MultiselectV2 = ({
             optionsLoadingState={optionsLoadingState}
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
-            menuPortalTarget={document.body}
             menuPlacement="auto"
           />
         </div>
