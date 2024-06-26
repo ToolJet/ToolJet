@@ -96,29 +96,27 @@ function CustomMenuList({ ...props }) {
         </>
       )}
       {/* Below part is hack for now to show description for aggregate function dropdown */}
-      {!tjdbMenuListProps.foreignKeyAccess &&
-        !tjdbMenuListProps.actions &&
-        tjdbMenuListProps.showDescription &&
-        focusedOption.hasOwnProperty('description') &&
-        focusedOption.description && (
-          <>
-            <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
-            <div
-              style={{
-                height: 'fit-content',
-                padding: '8px 12px',
-                minHeight: '76px',
-              }}
-            >
-              <div className="tj-header-h8 tj-text">
-                {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
-              </div>
-              <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
-                {!isEmpty(focusedOption) ? focusedOption?.description : selectedOption?.description || ''}
-              </span>
+      {!tjdbMenuListProps.foreignKeyAccess && !tjdbMenuListProps.actions && tjdbMenuListProps.showDescription && (
+        <>
+          <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+          <div
+            style={{
+              height: 'fit-content',
+              padding: '8px 12px',
+              minHeight: '76px',
+            }}
+          >
+            <div className="tj-header-h8 tj-text">
+              {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label || ''}
             </div>
-          </>
-        )}
+            <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+              {!isEmpty(focusedOption)
+                ? focusedOption?.description
+                : selectedOption?.description || 'Select an option to view its description'}
+            </span>
+          </div>
+        </>
+      )}
     </React.Fragment>
   );
 }
