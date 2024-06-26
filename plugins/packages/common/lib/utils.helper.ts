@@ -1,5 +1,5 @@
 import { QueryError } from './query.error';
-import { Headers, Cookies } from 'got';
+import { Headers } from 'got';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
 
@@ -92,7 +92,7 @@ export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSo
   return headers;
 };
 
-export const sanitizeCookies = (sourceOptions: any, queryOptions: any, hasDataSource = true): Cookies => {
+export const sanitizeCookies = (sourceOptions: any, queryOptions: any, hasDataSource = true): object => {
   const _cookies = (queryOptions.cookies || []).filter((o) => {
     return o.some((e) => !isEmpty(e));
   });
@@ -106,7 +106,7 @@ export const sanitizeCookies = (sourceOptions: any, queryOptions: any, hasDataSo
   return cookies;
 };
 
-export const cookiesToString = (cookies: Cookies): string => {
+export const cookiesToString = (cookies: object): string => {
   return Object.entries(cookies)
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
     .join('; ');
