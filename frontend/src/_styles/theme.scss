@@ -8146,6 +8146,14 @@ tbody {
   padding: 0px;
   height: 20px !important;
 
+  .form-control {
+    padding: 0 4px;
+    width: fit-content;
+    width: 30px !important;
+    height: 20px !important;
+    text-align: center;
+  }
+
   .form-control-pagination {
     padding: 0 4px;
     width: fit-content;
