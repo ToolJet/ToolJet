@@ -95,6 +95,30 @@ function CustomMenuList({ ...props }) {
           </div>
         </>
       )}
+      {/* Below part is hack for now to show description for aggregate function dropdown */}
+      {!tjdbMenuListProps.foreignKeyAccess &&
+        !tjdbMenuListProps.actions &&
+        tjdbMenuListProps.showDescription &&
+        focusedOption.hasOwnProperty('description') &&
+        focusedOption.description && (
+          <>
+            <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+            <div
+              style={{
+                height: 'fit-content',
+                padding: '8px 12px',
+                minHeight: '76px',
+              }}
+            >
+              <div className="tj-header-h8 tj-text">
+                {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label}
+              </div>
+              <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+                {!isEmpty(focusedOption) ? focusedOption?.description : selectedOption?.description || ''}
+              </span>
+            </div>
+          </>
+        )}
     </React.Fragment>
   );
 }
@@ -416,7 +440,6 @@ function DataSourceSelect({
         }}
         components={{
           Option: ({ children, ...props }) => {
-            const description = props?.data?.description || '';
             return (
               <components.Option {...props}>
                 <ToolTip
@@ -485,36 +508,13 @@ function DataSourceSelect({
                           'flex-grow-1': !showDescription,
                         })}
                         style={{
-                          maxWidth: '80%',
-                          minWidth: '20%',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          ...(!showDescription && !description && { width: '80%' }),
-                        }}
-                      >
-                        {children}
-                      </span>
-                    </ToolTip>
-                    <ToolTip
-                      message={description}
-                      placement="top"
-                      tooltipClassName="tjdb-cell-tooltip"
-                      show={showDescription && description && description?.length > 30}
-                    >
-                      <span
-                        className={cx({
-                          'ms-1 ': props?.data?.icon,
-                          'flex-grow-1': !showDescription,
-                        })}
-                        style={{
                           width: '80%',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                         }}
                       >
-                        {description}
+                        {children}
                       </span>
                     </ToolTip>
                     {foreignKeyAccess && showRedirection && props.isFocused && (
