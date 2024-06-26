@@ -27,4 +27,7 @@ export const workspaceConstantsSelectors = {
     constDeleteButton: (constName) => {
         return `[data-cy="${cyParamName(constName)}-delete-button"]`;
     },
+    constHideButton: (constName) => {
+        return `[data-cy="${cyParamName(constName)}-constant-visibility"]`;
+    },
 };

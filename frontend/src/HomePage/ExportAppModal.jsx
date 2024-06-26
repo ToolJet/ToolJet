@@ -12,9 +12,11 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   const [versionId, setVersionId] = useState(undefined);
   const [exportTjDb, setExportTjDb] = useState(true);
   const [currentVersion, setCurrentVersion] = useState(undefined);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchAppVersions() {
+      setLoading(true);
       try {
         const fetchVersions = await appsService.getVersions(app.id);
         const { versions } = fetchVersions;
@@ -30,12 +32,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         });
         closeModal();
       }
+      setLoading(false);
     }
     fetchAppVersions();
   }, [app, closeModal]);
 
   useEffect(() => {
     async function fetchAppTables() {
+      setLoading(true);
       try {
         if (!versionId) return;
         const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
@@ -71,6 +75,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         });
         closeModal();
       }
+      setLoading(false);
     }
     fetchAppTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,7 +148,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
           data-cy="modal-close-button"
         ></button>
       </BootstrapModal.Header>
-      {Array.isArray(versions) ? (
+      {Array.isArray(versions) && !loading ? (
         <>
           <BootstrapModal.Body>
             <div>
