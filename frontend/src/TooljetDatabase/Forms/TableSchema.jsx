@@ -148,8 +148,6 @@ function TableSchema({
     };
   });
 
-  console.log(columnDetails[1]?.data_type, columnDetails[1]?.column_default);
-  console.log(columnDetails[1]?.data_type && columnDetails[1]?.column_default);
   return (
     <div className="column-schema-container">
       {Object.keys(columnDetails).map((index) => (
