@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Jira datasource",
@@ -13,148 +12,82 @@
       "description": "Single select dropdown for operation",
       "list": [
         {
-          "value": "get_user_info",
-          "name": "Get user info"
+          "value": "create_issue",
+          "name": "Create an issue"
         },
         {
-          "value": "get_repo",
-          "name": "Get repository"
+          "value": "delete_issue",
+          "name": "Delete an issue"
         },
         {
-          "value": "get_repo_issues",
-          "name": "Get repository issues"
+          "value": "assign_issue",
+          "name": "Assign an issue"
         },
         {
-          "value": "get_repo_pull_requests",
-          "name": "Get repository pull requests"
+          "value": "get_issue",
+          "name": "Find an issue"
         }
       ]
     },
-    "get_user_info": {
-      "username": {
-        "label": "Username",
-        "key": "username",
+    "create_issue": {
+      "properties": {
+        "label": "Properties",
+        "key": "properties",
         "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter username",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter username"
+        "mode": "javascript",
+        "placeholder": "{\n\"fields\": {\n   \"project\":\n   { \n      \"key\": \"KFTT\"\n   },\n   \"summary\": \"REST EXAMPLE\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Story\"\n   ...",
+        "description": "Enter filter object",
+        "height": "200px"
       }
     },
-    "get_repo": {
-      "owner": {
-        "label": "Owner",
-        "key": "owner",
+    "delete_issue": {
+      "issue_key": {
+        "label": "Issue Key",
+        "key": "issue_key",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter owner name",
+        "description": "Enter Issue Key",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "developer"
-      },
-      "repo": {
-        "label": "Repository",
-        "key": "repo",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter repository name",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "tooljet"
+        "placeholder": "YourKey"
       }
     },
-    "get_repo_issues": {
-      "owner": {
-        "label": "Owner",
-        "key": "owner",
+    "assign_issue": {
+      "issue_key": {
+        "label": "Issue Key",
+        "key": "issue_key",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter owner name",
+        "description": "Enter Issue Key",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "developer"
+        "placeholder": "YourKey"
       },
-      "repo": {
-        "label": "Repository",
-        "key": "repo",
+      "account_id": {
+        "label": "Issue user uniquie id",
+        "key": "account_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter repository name",
+        "description": "Enter user uniquie id",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "tooljet"
-      },
-      "state": {
-        "label": "State",
-        "key": "state",
-        "className": "codehinter-plugins col-4",
-        "type": "dropdown",
-        "description": "Single select dropdown for choosing state",
-        "list": [
-          {
-            "value": "open",
-            "name": "Open"
-          },
-          {
-            "value": "closed",
-            "name": "Closed"
-          },
-          {
-            "value": "all",
-            "name": "All"
-          }
-        ]
+        "placeholder": "5b10ac8d82e05b22cc7d4ef5"
       }
     },
-    "get_repo_pull_requests": {
-      "owner": {
-        "label": "Owner",
-        "key": "owner",
+    "get_issue": {
+      "issue_key": {
+        "label": "Issue Key",
+        "key": "issue_key",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter owner name",
+        "description": "Enter Issue Key",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "developer"
-      },
-      "repo": {
-        "label": "Repository",
-        "key": "repo",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter repository name",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "tooljet"
-      },
-      "state": {
-        "label": "State",
-        "key": "state",
-        "type": "dropdown",
-        "className": "codehinter-plugins col-4",
-        "description": "Single select dropdown for choosing state",
-        "list": [
-          {
-            "value": "open",
-            "name": "Open"
-          },
-          {
-            "value": "closed",
-            "name": "Closed"
-          },
-          {
-            "value": "all",
-            "name": "All"
-          }
-        ]
+        "placeholder": "YourKey"
       }
     }
   }

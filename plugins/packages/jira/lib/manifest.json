@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Jira datasource",
@@ -12,7 +11,12 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "customTesting": true,
+    "options": {
+      "url": {
+        "type": "string"
+      }
+    }
   },
   "defaults": {},
   "properties": {
@@ -24,11 +28,26 @@
       "list": [
         {
           "value": "personal_access_token",
-          "name": "Use API Token"
+          "name": "Basic"
         }
-      ]
+      ],
+      "commonFields": {
+        "url": {
+          "label": "URL",
+          "key": "url",
+          "type": "text",
+          "description": "https://your-domain.atlassian.net"
+        }
+      }
     },
     "personal_access_token": {
+      "email": {
+        "label": "Email",
+        "key": "email",
+        "type": "text",
+        "description": "Enter email",
+        "hint": ""
+      },
       "token": {
         "label": "Token",
         "key": "personal_token",
@@ -38,5 +57,7 @@
       }
     }
   },
-  "required": []
+  "required": [
+    "url"
+  ]
 }
