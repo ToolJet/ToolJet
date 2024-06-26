@@ -13,5 +13,7 @@ export class AddConfigurationColumnToInternalTables1718529294184 implements Migr
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropColumn('internal_tables', 'configurations');
+  }
 }

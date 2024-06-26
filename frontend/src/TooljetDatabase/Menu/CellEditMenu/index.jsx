@@ -11,9 +11,9 @@ import cx from 'classnames';
 import './styles.scss';
 import styles from './styles.module.scss';
 import Skeleton from 'react-loading-skeleton';
-import DateTimePicker from '@/_components/DateTimePicker';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
-import { getLocalTimeZone } from '@/_helpers/utils';
+import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 export const CellEditMenu = ({
   darkMode = false,

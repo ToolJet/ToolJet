@@ -70,12 +70,7 @@ export function sanitizeInput(value: string) {
 export function formatTimestamp(value: any, params: any) {
   const { data_type } = params;
   if (data_type === 'timestamp with time zone' && value) {
-    if (!value?.includes('T')) {
-      return `'${value}'`;
-    }
-    let formattedTimestamp = value.split('.')[0].split('T').join(' ') + '+00';
-    formattedTimestamp = `'${formattedTimestamp}'`;
-    return formattedTimestamp;
+    return `'${value}'`;
   }
   return value;
 }

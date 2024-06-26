@@ -14,8 +14,12 @@ import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDataba
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
-import DateTimePicker from '@/_components/DateTimePicker';
-import { convertDateToTimeZoneFormatted, getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import {
+  convertDateToTimeZoneFormatted,
+  getLocalTimeZone,
+  timeZonesWithOffsets,
+} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 function TableSchema({
   columns,
@@ -144,6 +148,8 @@ function TableSchema({
     };
   });
 
+  console.log(columnDetails[1]?.data_type, columnDetails[1]?.column_default);
+  console.log(columnDetails[1]?.data_type && columnDetails[1]?.column_default);
   return (
     <div className="column-schema-container">
       {Object.keys(columnDetails).map((index) => (
@@ -365,7 +371,8 @@ function TableSchema({
                 message={
                   columnDetails[index]?.data_type === 'serial'
                     ? 'Serial data type values cannot be modified'
-                    : columnDetails[index]?.data_type === 'timestamp with time zone'
+                    : columnDetails[index]?.data_type === 'timestamp with time zone' &&
+                      columnDetails[index]?.column_default
                     ? convertDateToTimeZoneFormatted(
                         columnDetails[index].column_default,
                         columnDetails[index]?.configurations?.timezone || getLocalTimeZone()
@@ -375,7 +382,11 @@ function TableSchema({
                 placement="top"
                 tooltipClassName="tootip-table"
                 style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
-                show={['serial', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)}
+                show={
+                  columnDetails[index]?.data_type === 'serial' ||
+                  (columnDetails[index]?.data_type === 'timestamp with time zone' &&
+                    !!columnDetails[index]?.column_default)
+                }
               >
                 <div className="m-0" data-cy="column-default-input-field">
                   {columnDetails[index].data_type === 'timestamp with time zone' ? (

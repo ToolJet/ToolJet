@@ -7,7 +7,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import Select, { components } from 'react-select';
 import { formatOptionLabel } from '@/TooljetDatabase/constants';
-import { getLocalTimeZone } from '@/_helpers/utils';
+import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 // eslint-disable-next-line no-unused-vars
 export const UniqueConstraintPopOver = ({

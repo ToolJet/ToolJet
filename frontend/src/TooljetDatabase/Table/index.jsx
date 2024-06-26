@@ -27,8 +27,11 @@ import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { convertDateToTimeZoneFormatted, getLocalTimeZone, getUTCOffset } from '@/_helpers/utils';
-
+import {
+  convertDateToTimeZoneFormatted,
+  getLocalTimeZone,
+  getUTCOffset,
+} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -775,7 +778,6 @@ const Table = ({ collapseSidebar }) => {
     console.log('cellValue', cellValue);
     if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
       selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
-      console.log(selectedTableDataCopy[rIndex][cellKey], 'CellValueasdoijasdlksaj');
       setSelectedTableData([...selectedTableDataCopy]);
     }
 

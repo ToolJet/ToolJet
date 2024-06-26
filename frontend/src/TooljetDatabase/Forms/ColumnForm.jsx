@@ -18,8 +18,8 @@ import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
-import DateTimePicker from '@/_components/DateTimePicker';
-import { getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const ColumnForm = ({
   onCreate,

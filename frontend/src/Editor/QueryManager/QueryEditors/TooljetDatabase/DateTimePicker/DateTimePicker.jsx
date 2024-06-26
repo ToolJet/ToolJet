@@ -5,8 +5,7 @@ import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './styles.scss';
-import { convertToDateType, formatDate, getLocalTimeZone } from '@/_helpers/utils';
-
+import { getLocalTimeZone, convertToDateType, formatDate } from '../util';
 export const DateTimePicker = ({
   enableDate = true,
   enableTime = true,
@@ -268,7 +267,7 @@ export const DateTimePicker = ({
       <DatePickerComponent
         className={`input-field form-control validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
-        } `}
+        } ${!isEditCell && 'tjdb-datepicker-wrapper '}`}
         popperPlacement={'bottom-start'}
         popperClassName={`${!isEditCell && 'tjdb-datepicker-reset'}`}
         onInputClick={() => setIsOpen(true)}

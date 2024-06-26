@@ -14,8 +14,8 @@ import cx from 'classnames';
 
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
-import DateTimePicker from '@/_components/DateTimePicker';
-import { getLocalTimeZone } from '@/_helpers/utils';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const RowForm = ({
   onCreate,

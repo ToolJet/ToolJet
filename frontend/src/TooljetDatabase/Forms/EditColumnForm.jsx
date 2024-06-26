@@ -26,8 +26,8 @@ import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Skeleton from 'react-loading-skeleton';
 import Tick from '@/_ui/Icon/bulkIcons/Tick';
-import DateTimePicker from '@/_components/DateTimePicker';
-import { getLocalTimeZone, timeZonesWithOffsets } from '@/_helpers/utils';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const ColumnForm = ({
   onClose,
