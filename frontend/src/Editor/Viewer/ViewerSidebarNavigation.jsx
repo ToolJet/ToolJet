@@ -5,7 +5,6 @@ import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import FolderList from '@/_ui/FolderList/FolderList';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import classNames from 'classnames';
 import { getCurrentState } from '@/_stores/currentStateStore';
 
 const APP_HEADER_HEIGHT = 47;
@@ -90,7 +89,7 @@ export const ViewerSidebarNavigation = ({
   };
   return (
     <div
-      className={classNames('navigation-area', {
+      className={cx('navigation-area', {
         close: !isSidebarPinned && properties?.collapsable,
         'sidebar-overlay': !isSidebarPinned && properties?.collapsable,
         'icon-only': labelStyle?.label?.hidden,

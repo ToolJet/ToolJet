@@ -28,7 +28,6 @@ const LeftSidebarPageSelector = ({
   updateHomePage,
   updatePageHandle,
   homePageId,
-  showHideViewerNavigationControls,
   updateOnSortingPages,
 
   apps,
