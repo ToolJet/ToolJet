@@ -534,7 +534,9 @@ function DataSourceSelect({
                         }}
                       />
                     )}
-                    <div style={{ visibility: props.isSelected && highlightSelected ? 'visible' : 'hidden' }}>
+                    <div
+                      style={{ visibility: !isMulti && props.isSelected && highlightSelected ? 'visible' : 'hidden' }}
+                    >
                       <SolidIcon
                         fill="var(--indigo9)"
                         name="tick"
