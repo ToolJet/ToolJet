@@ -244,6 +244,11 @@ export class TooljetDbService {
     return value;
   }
 
+  private addQuotesIfMissing(value) {
+    if (!value.includes("'")) return `'${value}'`;
+    return value;
+  }
+
   private async createTable(
     organizationId: string,
     params,
@@ -996,9 +1001,11 @@ export class TooljetDbService {
         const { data_type, column_default = undefined } = column;
         const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
         const isCharacterVarying = () => data_type === 'character varying';
+        const isTimestampWithTimeZone = () => data_type === 'timestamp with time zone';
 
         if (isSerial()) return { data_type: 'serial', column_default: undefined };
         if (isCharacterVarying()) return { data_type, column_default: this.addQuotesIfString(column_default) };
+        if (isTimestampWithTimeZone) return { data_type, column_default: this.addQuotesIfMissing(column_default) };
 
         return { data_type, column_default };
       };
