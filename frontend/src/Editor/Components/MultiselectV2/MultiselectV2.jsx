@@ -442,6 +442,7 @@ export const MultiselectV2 = ({
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
+            menuPortalTarget={document.body}
           />
         </div>
       </div>
