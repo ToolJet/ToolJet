@@ -87,10 +87,10 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data.visible.value)
+          .filter((data) => data?.visible?.value)
           .map((value) => ({
             ...value,
-            isDisabled: value.disable.value,
+            isDisabled: value?.disable?.value,
           }))
       : [];
     return _selectOptions;

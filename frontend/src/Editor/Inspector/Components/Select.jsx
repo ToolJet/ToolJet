@@ -284,7 +284,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             <CodeHinter
               currentState={currentState}
               type={'basic'}
-              initialValue={item.label}
+              initialValue={item?.label}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -299,7 +299,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             <CodeHinter
               currentState={currentState}
               type={'basic'}
-              initialValue={item.value}
+              initialValue={item?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -310,7 +310,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.default?.value}
+              initialValue={item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -320,7 +320,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramName={'isEditable'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
               onFxPress={(active) => handleOnFxPress(active, index, 'default')}
-              fxActive={item.default?.fxActive}
+              fxActive={item?.default?.fxActive}
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
@@ -332,7 +332,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.visible?.value}
+              initialValue={item?.visible?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -342,7 +342,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleVisibilityChange(value, index)}
               paramName={'visible'}
               onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
-              fxActive={item.visible?.fxActive}
+              fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
@@ -353,7 +353,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.disable?.value}
+              initialValue={item?.disable?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -363,7 +363,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramName={'disable'}
               onChange={(value) => handleDisableChange(value, index)}
               onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
-              fxActive={item.disable?.fxActive}
+              fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
