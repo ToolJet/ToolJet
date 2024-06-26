@@ -18,6 +18,20 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
  - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
  - [Get All Workspaces](#get-all-workspaces)
 
+## Enabling ToolJet API
+
+By default, the ToolJet API is disabled. To enable the API, add these variables to your `.env` file:
+
+| variable                | description                                         |
+| :-----------------------: | :------------------------------------------------:|
+| ENABLE_EXTERNAL_API | `true` or `false`                                       |
+| EXTERNAL_API_ACCESS_TOKEN |  `<access_token>` (To authenticate API requests) |
+
+
+## Security
+
+The ToolJet API is secured with an access token defined in your `.env` file. You need to pass the access token in the `Authorization` header to authenticate your requests. The access token should be in the format `Basic <access_token>`.
+
 ## API Endpoints
 
 ### **Get All Users**
