@@ -93,7 +93,12 @@ export class ComponentsService {
               componentData[column === 'others' ? 'displayPreferences' : column],
               updatedDefinition[column],
               (objValue, srcValue) => {
-                if (componentData.type === 'Table' && _.isArray(objValue)) {
+                if (
+                  (componentData.type === 'Table' ||
+                    componentData.type === 'DropdownV2' ||
+                    componentData.type === 'MultiselectV2') &&
+                  _.isArray(objValue)
+                ) {
                   return srcValue;
                 }
               }
