@@ -367,6 +367,7 @@ const sidebars = {
         },
         'org-management/permissions',
         'tutorial/manage-users-groups',
+        'tutorial/tooljet-api',
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
