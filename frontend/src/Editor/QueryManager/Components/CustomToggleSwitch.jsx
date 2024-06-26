@@ -40,7 +40,7 @@ export const CustomToggleSwitch = ({
       className={`custom-toggle-switch d-flex col gap-2 align-items-top ${isScopeStatic ? 'staticToggle' : ''}`}
     >
       {isScopeStatic ? (
-        <ToolTip message="Use global data source to disable" placement="top" tooltipClassName="tootip-app-builder">
+        <ToolTip message="Use global data source to disable" placement="top" tooltipClassName="restapi-tooltip">
           {switchToggle}
         </ToolTip>
       ) : (
