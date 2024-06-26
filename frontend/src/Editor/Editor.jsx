@@ -282,10 +282,6 @@ const EditorComponent = (props) => {
 
   const lastKeyPressTimestamp = useDebouncedArrowKeyPress(500); // 500 milliseconds delay
 
-  const debounceAutoSave = debounce(() => {
-    autoSave();
-  }, 100);
-
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
 
@@ -299,7 +295,7 @@ const EditorComponent = (props) => {
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      debounceAutoSave();
+      handleLowPriorityWork(() => autoSave(), 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
