@@ -1,12 +1,11 @@
 import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
-
 import { cn } from '@/lib/utils';
-import CheckIcon from './Checkbox Utils/CheckIcon';
-import RadioIcon from './Checkbox Utils/RadioIcon';
 import { cva } from 'class-variance-authority';
-import { Label } from '../Label/label';
-import IntermediateIcon from './Checkbox Utils/IntermediateIcon';
+import CheckIcon from './CheckboxUtils/CheckIcon';
+import RadioIcon from './CheckboxUtils/RadioIcon';
+import IntermediateIcon from './CheckboxUtils/IntermediateIcon';
+import { CheckboxLabel, HelperText } from './CheckboxUtils/CheckboxUtils';
 
 const checkVariants = cva('', {
   variants: {
@@ -37,7 +36,7 @@ const checkPositionVariants = cva('tw-flex', {
   variants: {
     align: {
       left: ``,
-      right: `tw-flex-row-reverse tw-space-x-[96px] tw-space-x-reverse`,
+      right: `tw-w-full tw-flex-row-reverse tw-justify-between`,
     },
   },
   compoundVariants: [
@@ -59,7 +58,7 @@ const checkPositionVariants = cva('tw-flex', {
 });
 
 const Checkbox = React.forwardRef(({ className, type, size, intermediate, align, ...props }, ref) => (
-  <div className={cn(checkPositionVariants({ align, size }), `${props.helper ? '' : 'tw-items-center'}`)}>
+  <div className={cn(checkPositionVariants({ align, size }), `${!props.helper && 'tw-items-center'}`, className)}>
     <CheckboxPrimitive.Root
       ref={ref}
       className={cn(
@@ -68,8 +67,7 @@ const Checkbox = React.forwardRef(({ className, type, size, intermediate, align,
           props.disabled
             ? 'tw-cursor-not-allowed tw-bg-[#CCD1D5]/30 tw-border-border-weak'
             : 'tw-bg-background-surface-layer-01 tw-border-border-default'
-        }`,
-        className
+        }`
       )}
       {...props}
     >
@@ -89,24 +87,9 @@ const Checkbox = React.forwardRef(({ className, type, size, intermediate, align,
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
     {props.label && (
-      <div className={`tw-flex tw-flex-col ${props.helper ? (props.size === 'large' ? 'tw-space-y-[2px]' : '') : ''}`}>
-        <Label
-          htmlFor="label"
-          type="label"
-          size={size || 'default'}
-          className={`tw-font-normal ${props.disabled ? '!tw-text-text-disabled' : ''}`}
-        >
-          {props.label}
-        </Label>
-        <Label
-          htmlFor="helper"
-          type="helper"
-          size={size || 'default'}
-          disabled={props.disabled}
-          className={`tw-font-normal ${props.disabled ? '!tw-text-text-disabled' : ''}`}
-        >
-          {props.helper}
-        </Label>
+      <div className={`tw-flex tw-flex-col ${props.helper && props.size === 'large' && 'tw-space-y-[2px]'}`}>
+        <CheckboxLabel label={props.label} size={size} disabled={props.disabled} />
+        <HelperText helper={props.helper} size={size} disabled={props.disabled} />
       </div>
     )}
   </div>

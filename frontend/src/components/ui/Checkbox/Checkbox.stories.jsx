@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Checkbox } from './checkbox';
+import CheckboxComponent from './Index';
 
 export default {
   title: 'Components/Checkbox',
-  component: Checkbox,
+  component: CheckboxComponent,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -36,23 +36,29 @@ export default {
       options: ['left', 'right'],
       control: 'radio',
     },
+    required: {
+      control: 'boolean',
+    },
+    className: {
+      control: 'text',
+    },
   },
 };
 
-const Template = (args) => <Checkbox {...args} />;
+const Template = (args) => <CheckboxComponent {...args} />;
 
 export const RocketCheckbox = Template.bind({});
 RocketCheckbox.args = {};
 
 export const RocketRadio = (args) => {
-  return <Checkbox {...args} type="radio" />;
+  return <CheckboxComponent {...args} type="radio" />;
 };
 RocketRadio.args = {
   ...RocketCheckbox.args,
 };
 
 export const RocketCheckmark = (args) => {
-  return <Checkbox {...args} type="checkmark" />;
+  return <CheckboxComponent {...args} type="checkmark" />;
 };
 RocketCheckmark.args = {
   ...RocketCheckbox.args,
@@ -60,7 +66,7 @@ RocketCheckmark.args = {
 
 export const RocketCheckboxWithLabelAndHelper = (args) => {
   return (
-    <Checkbox
+    <CheckboxComponent
       {...args}
       type="checkbox"
       label="Remember me"
@@ -75,7 +81,7 @@ RocketCheckboxWithLabelAndHelper.args = {
 
 export const RocketCheckboxWithLeadingLabelAndHelper = (args) => {
   return (
-    <Checkbox
+    <CheckboxComponent
       {...args}
       type="checkbox"
       label="Remember me"
@@ -90,7 +96,13 @@ RocketCheckboxWithLeadingLabelAndHelper.args = {
 
 export const RocketRadioWithLabelAndHelper = (args) => {
   return (
-    <Checkbox {...args} type="radio" label="Remember me" helper="Save my login details for next time." align="left" />
+    <CheckboxComponent
+      {...args}
+      type="radio"
+      label="Remember me"
+      helper="Save my login details for next time."
+      align="left"
+    />
   );
 };
 RocketRadioWithLabelAndHelper.args = {
@@ -99,7 +111,13 @@ RocketRadioWithLabelAndHelper.args = {
 
 export const RocketRadioWithLeadingLabelAndHelper = (args) => {
   return (
-    <Checkbox {...args} type="radio" label="Remember me" helper="Save my login details for next time." align="right" />
+    <CheckboxComponent
+      {...args}
+      type="radio"
+      label="Remember me"
+      helper="Save my login details for next time."
+      align="right"
+    />
   );
 };
 RocketRadioWithLeadingLabelAndHelper.args = {
@@ -108,7 +126,7 @@ RocketRadioWithLeadingLabelAndHelper.args = {
 
 export const RocketCheckmarkWithLabelAndHelper = (args) => {
   return (
-    <Checkbox
+    <CheckboxComponent
       {...args}
       type="checkmark"
       label="Remember me"
@@ -123,7 +141,7 @@ RocketCheckmarkWithLabelAndHelper.args = {
 
 export const RocketCheckmarkWithLeadingLabelAndHelper = (args) => {
   return (
-    <Checkbox
+    <CheckboxComponent
       {...args}
       type="checkmark"
       label="Remember me"

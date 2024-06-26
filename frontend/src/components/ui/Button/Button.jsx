@@ -8,7 +8,7 @@ import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 import './Button.scss';
-import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize } from './buttonUtils.js';
+import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize } from './ButtonUtils.jsx';
 
 const buttonVariants = cva('tw-flex tw-justify-center tw-items-center tw-font-medium', {
   variants: {

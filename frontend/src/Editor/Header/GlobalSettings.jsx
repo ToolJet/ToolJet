@@ -13,12 +13,11 @@ import { replaceEditorURL, getHostURL } from '@/_helpers/routes';
 import ExportAppModal from '../../HomePage/ExportAppModal';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-// import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import AppModeToggle from './AppModeToggle';
-import Input from '@/components/ui/Input/Index';
-import { Switch } from '@/components/ui/Switch/switch';
 import { Button } from '@/components/ui/Button/Button';
+import SwitchComponent from '@/components/ui/Switch/Index';
+import InputComponent from '@/components/ui/Input/Index';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -159,11 +158,9 @@ export const GlobalSettings = ({
             <div className="app-slug-container">
               <div className="row">
                 <div className="col">
-                  <Input
+                  <InputComponent
                     helperText="URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
-                    id="#id"
                     label="Unique app slug"
-                    name="name"
                     placeholder={t('editor.appSlug', 'Unique app slug')}
                     maxLength={50}
                     onChange={(e) => {
@@ -183,35 +180,6 @@ export const GlobalSettings = ({
                     <div></div>
                   )}
                 </div>
-                {/* <div className="col tj-app-input input-with-icon">
-                  <label className="field-name" data-cy="app-slug-label">
-                    Unique app slug
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'} slug-input`}
-                    placeholder={t('editor.appSlug', 'Unique app slug')}
-                    maxLength={50}
-                    onChange={(e) => {
-                      e.persist();
-                      delayedSlugChange(e.target.value, 'slug');
-                    }}
-                    data-cy="app-slug-input-field"
-                    defaultValue={oldSlug}
-                  />
-                  {isSlugUpdated && (
-                  <div className="icon-container">
-                    <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M14.256 0.244078C14.5814 0.569515 14.5814 1.09715 14.256 1.42259L5.92263 9.75592C5.59719 10.0814 5.06956 10.0814 4.74412 9.75592L0.577452 5.58926C0.252015 5.26382 0.252015 4.73618 0.577452 4.41074C0.902889 4.08531 1.43053 4.08531 1.75596 4.41074L5.33337 7.98816L13.0775 0.244078C13.4029 -0.0813592 13.9305 -0.0813592 14.256 0.244078Z"
-                        fill="#46A758"
-                      />
-                    </svg>
-                  </div>
-                  )}
-                </div> */}
               </div>
               <div className="col modal-main tj-app-input">
                 <label className="field-name" data-cy="app-link-label">
@@ -237,22 +205,8 @@ export const GlobalSettings = ({
           </div>
           <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased })}>
             <div className="tj-text-xsm color-slate12 ">
-              {/* <div className="d-flex mb-3">
-                <span data-cy={`label-hide-header-for-launched-apps`}>
-                  {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
-                </span>
-                <div className="ms-auto form-check form-switch position-relative">
-                  <input
-                    data-cy={`toggle-hide-header-for-launched-apps`}
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={hideHeader}
-                    onChange={(e) => globalSettingsChanged({ hideHeader: e.target.checked })}
-                  />
-                </div>
-              </div> */}
               <div className="tw-flex tw-mb-3">
-                <Switch
+                <SwitchComponent
                   align="right"
                   label="Hide header for launched apps"
                   size="default"
@@ -262,7 +216,7 @@ export const GlobalSettings = ({
                 />
               </div>
               <div className="tw-flex tw-mb-3">
-                <Switch
+                <SwitchComponent
                   align="right"
                   label="Maintenance mode"
                   size="default"
@@ -271,20 +225,6 @@ export const GlobalSettings = ({
                   data-cy={`toggle-maintenance-mode`}
                 />
               </div>
-              {/* <div className="d-flex mb-3">
-                <span data-cy={`label-maintenance-mode`}>
-                  {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
-                </span>
-                <div className="ms-auto form-check form-switch position-relative">
-                  <input
-                    data-cy={`toggle-maintenance-mode`}
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={isMaintenanceOn}
-                    onChange={() => setConfirmationShow(true)}
-                  />
-                </div>
-              </div> */}
               <div className="d-flex mb-3">
                 <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
                   {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
@@ -418,21 +358,6 @@ export const GlobalSettings = ({
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
                 <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
                 <div>
-                  {/* <ButtonSolid
-                    variant="secondary"
-                    style={{ width: '158px' }}
-                    size="md"
-                    onClick={() => {
-                      setIsExportingApp(true);
-                      document.getElementById('maintenance-app-modal').click();
-                    }}
-                    fill={`var(--indigo9)`}
-                    leftIcon="fileupload"
-                    iconWidth="16"
-                    data-cy="button-user-status-change"
-                  >
-                    Export this app
-                  </ButtonSolid> */}
                   <Button
                     fill="var(--indigo9)"
                     leadingIcon="fileupload"

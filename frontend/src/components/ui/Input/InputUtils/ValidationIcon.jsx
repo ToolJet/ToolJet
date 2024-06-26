@@ -1,7 +1,7 @@
 import React from 'react';
 
 const ValidationIcon = ({ result }) => {
-  return result === 'true' ? <ValidationSuccessIcon /> : <ValidationWarningIcon />;
+  return result === true ? <ValidationSuccessIcon /> : <ValidationWarningIcon />;
 };
 
 export default ValidationIcon;

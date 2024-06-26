@@ -1,37 +1,29 @@
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Input } from '../input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../Tooltip/tooltip';
+import { Input } from '../Input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../Tooltip/Tooltip';
 import { HelperMessage, ValidationMessage } from '../InputUtils/InputUtils';
 
 const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps }) => {
   const inputRef = useRef(null);
   const [tooltipWidth, setTooltipWidth] = useState('auto');
-  const [isValid, setIsValid] = useState('');
+  const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
-    onChange(e);
+    let validateObj;
     if (restProps.validation) {
-      if (e.target.value === '') {
-        setIsValid('');
-        setMessage('');
-        return;
-      }
-      const { valid, message } = restProps.validation(e.target.value);
-      setIsValid(valid);
-      setMessage(message);
+      validateObj = restProps.validation(e);
+      setIsValid(validateObj.valid);
+      setMessage(validateObj.message);
     }
+    onChange(e, validateObj);
   };
 
   const inputStyle = `tw-border-transparent hover:tw-border-border-default tw-font-medium tw-pl-[12px] tw-pr-[12px] ${
     disabled ? 'placeholder:tw-text-text-placeholder' : 'placeholder:tw-text-text-default'
   } ${
-    isValid === 'true'
-      ? '!tw-border-border-success-strong'
-      : isValid === 'false'
-      ? '!tw-border-border-danger-strong'
-      : ''
+    isValid === true ? '!tw-border-border-success-strong' : isValid === false ? '!tw-border-border-danger-strong' : ''
   }`;
 
   useEffect(() => {
@@ -42,7 +34,7 @@ const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps
 
   return (
     <TooltipProvider>
-      <Tooltip open={!helperText && isValid === '' ? false : restProps.open}>
+      <Tooltip open={!helperText && isValid === null ? false : restProps.open}>
         <TooltipTrigger className="tw-border-none tw-bg-transparent">
           <div className="tw-relative" ref={inputRef}>
             <Input size={size} disabled={disabled} onChange={handleChange} {...restProps} className={inputStyle} />
@@ -61,7 +53,7 @@ const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps
           {helperText && (
             <HelperMessage helperText={helperText} className="tw-gap-[4px]" labelStyle="tw-text-text-on-solid" />
           )}
-          {(isValid === 'true' || isValid === 'false') && !disabled && (
+          {(isValid === true || isValid === false) && !disabled && message !== '' && (
             <ValidationMessage response={isValid} validationMessage={message} className="tw-gap-[4px]" />
           )}
         </TooltipContent>

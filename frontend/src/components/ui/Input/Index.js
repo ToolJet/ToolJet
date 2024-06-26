@@ -3,20 +3,13 @@ import PropTypes from 'prop-types';
 import CommonInput from './CommonInput/Index';
 import EditableTitleInput from './EditableTitleInput/Index';
 
-const Input = (props) => {
-  //Format of Validation Function
-  // const validation = (x) => {
-  //   // Validation logic
-  //   console.log(x);
-  //   return { valid: 'true', message: 'Validation message' };
-  // };
-
+const InputComponent = (props) => {
   return props.type === 'editable title' ? <EditableTitleInput {...props} /> : <CommonInput {...props} />;
 };
 
-export default Input;
+export default InputComponent;
 
-Input.propTypes = {
+InputComponent.propTypes = {
   type: PropTypes.oneOf(['text', 'number', 'editable title', 'password', 'email']),
   value: PropTypes.string,
   onChange: PropTypes.func,
@@ -36,17 +29,17 @@ Input.propTypes = {
   helperText: PropTypes.string,
 };
 
-Input.defaultProps = {
+InputComponent.defaultProps = {
   type: 'text',
   value: '',
-  onChange: () => {},
+  onChange: (e, validateObj) => {},
   placeholder: '',
   name: '',
   id: '',
   size: 'medium',
   disabled: false,
   readOnly: '',
-  validation: () => {},
+  validation: (e) => {},
   label: '',
   'aria-label': '',
   required: false,

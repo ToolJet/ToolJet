@@ -74,50 +74,50 @@ export default {
   },
 };
 
-const Template = (args) => <Input {...args} />;
+// const Template = (args) => <Input {...args} />;
 
-export const RocketInput = Template.bind({});
-RocketInput.args = {
-  type: 'text',
-  placeholder: 'Placeholder',
-  name: 'name',
-  id: '#id',
-  size: 'medium',
-  label: 'Label text',
-  'aria-label': 'aria-label',
-};
+export const RocketInput = {};
+// RocketInput.args = {
+//   type: 'text',
+//   placeholder: 'Placeholder',
+//   name: 'name',
+//   id: '#id',
+//   size: 'medium',
+//   label: 'Label text',
+//   'aria-label': 'aria-label',
+// };
 
-export const RocketInputWithLeadingVisual = (args) => {
-  return <Input {...args} leadingIcon="search" />;
-};
-RocketInputWithLeadingVisual.args = {
-  ...RocketInput.args,
-};
+// export const RocketInputWithLeadingVisual = (args) => {
+//   return <Input {...args} leadingIcon="search" />;
+// };
+// RocketInputWithLeadingVisual.args = {
+//   ...RocketInput.args,
+// };
 
-export const RocketInputWithTrailingAction = (args) => {
-  return <Input {...args} trailingAction="clear" />;
-};
-RocketInputWithTrailingAction.args = {
-  ...RocketInput.args,
-};
+// export const RocketInputWithTrailingAction = (args) => {
+//   return <Input {...args} trailingAction="clear" />;
+// };
+// RocketInputWithTrailingAction.args = {
+//   ...RocketInput.args,
+// };
 
-export const RocketInputWithHelperText = (args) => {
-  return <Input {...args} helperText="Helper text" />;
-};
-RocketInputWithHelperText.args = {
-  ...RocketInput.args,
-};
+// export const RocketInputWithHelperText = (args) => {
+//   return <Input {...args} helperText="Helper text" />;
+// };
+// RocketInputWithHelperText.args = {
+//   ...RocketInput.args,
+// };
 
-export const RocketNumberInput = (args) => {
-  return <Input {...args} type="number" placeholder={'00.00'} />;
-};
-RocketNumberInput.args = {
-  ...RocketInput.args,
-};
+// export const RocketNumberInput = (args) => {
+//   return <Input {...args} type="number" placeholder={'00.00'} />;
+// };
+// RocketNumberInput.args = {
+//   ...RocketInput.args,
+// };
 
-export const RocketEditableTitleInput = (args) => {
-  return <Input {...args} type="editable title" placeholder="Editable title" />;
-};
-RocketEditableTitleInput.args = {
-  ...RocketInput.args,
-};
+// export const RocketEditableTitleInput = (args) => {
+//   return <Input {...args} type="editable title" placeholder="Editable title" />;
+// };
+// RocketEditableTitleInput.args = {
+//   ...RocketInput.args,
+// };

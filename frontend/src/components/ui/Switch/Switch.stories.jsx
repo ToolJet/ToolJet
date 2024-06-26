@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { Switch } from './switch';
+import SwitchComponent from './Index';
 
 // Storybook configuration
 export default {
   title: 'Components/Switch',
-  component: Switch,
+  component: SwitchComponent,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -33,37 +33,40 @@ export default {
     required: {
       control: 'boolean',
     },
+    className: {
+      control: 'text',
+    },
   },
 };
 
-const Template = (args) => <Switch {...args} />;
+const Template = (args) => <SwitchComponent {...args} />;
 
 export const RocketSwitch = Template.bind({});
 RocketSwitch.args = {};
 
 export const RocketSwitchWithLabel = (args) => {
-  return <Switch {...args} label="Remember me" />;
+  return <SwitchComponent {...args} label="Remember me" />;
 };
 RocketSwitchWithLabel.args = {
   ...RocketSwitch.args,
 };
 
 export const RocketSwitchWithLeadingLabel = (args) => {
-  return <Switch {...args} label="Remember me" align="right" />;
+  return <SwitchComponent {...args} label="Remember me" align="right" />;
 };
 RocketSwitchWithLeadingLabel.args = {
   ...RocketSwitch.args,
 };
 
 export const RocketSwitchWithLabelAndHelper = (args) => {
-  return <Switch {...args} label="Remember me" helper="Save my login details for next time." />;
+  return <SwitchComponent {...args} label="Remember me" helper="Save my login details for next time." />;
 };
 RocketSwitchWithLabelAndHelper.args = {
   ...RocketSwitch.args,
 };
 
 export const RocketSwitchWithLeadingLabelAndHelper = (args) => {
-  return <Switch {...args} label="Remember me" helper="Save my login details for next time." align="right" />;
+  return <SwitchComponent {...args} label="Remember me" helper="Save my login details for next time." align="right" />;
 };
 RocketSwitchWithLeadingLabelAndHelper.args = {
   ...RocketSwitch.args,
