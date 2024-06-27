@@ -82,8 +82,8 @@ function FolderList({
           {CustomIcon && (
             <div className="custom-icon">
               <CustomIcon
-                fill={`${darkMode ? 'var(--slate12)' : computedStyles?.icon?.color}`}
                 color={`${darkMode ? 'var(--slate12)' : computedStyles?.icon?.color}`}
+                style={{ width: '18px', height: '18px' }}
               />
             </div>
           )}
