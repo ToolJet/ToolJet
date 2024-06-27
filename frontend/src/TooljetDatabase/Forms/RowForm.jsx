@@ -411,6 +411,7 @@ const RowForm = ({
               setTimestamp={(value) => handleInputChange(index, value, columnName)}
               isOpenOnStart={false}
               timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
+              isClearable={activeTab[index] === 'Custom'}
             />
           </div>
         );

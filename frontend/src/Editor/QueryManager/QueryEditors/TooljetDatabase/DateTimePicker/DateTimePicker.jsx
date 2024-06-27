@@ -18,6 +18,7 @@ export const DateTimePicker = ({
   isEditCell = false,
   saveFunction = () => {},
   timezone = getLocalTimeZone(),
+  isClearable = false,
 }) => {
   const transformedTimestamp = timestamp ? convertToDateType(timestamp, timezone) : null;
   const timestampRef = useRef(timestamp);
@@ -49,11 +50,10 @@ export const DateTimePicker = ({
     setTimestamp(stringifiedTimestamp);
   };
 
-  const handleDefaultChange = (newTimestamp) => {
+  const handleDefaultChange = (newTimestamp, isTimeSelect = false) => {
     const stringifiedTimestamp = formatDate(newTimestamp, timezone);
     timestampRef.current = stringifiedTimestamp;
-    setTimestamp(stringifiedTimestamp);
-    setIsOpen(false);
+    setTimestamp(stringifiedTimestamp, isTimeSelect);
   };
 
   useEffect(() => {
@@ -106,6 +106,24 @@ export const DateTimePicker = ({
         setIsDefault(false);
       }
     }, [timestampRef.current]);
+
+    useEffect(() => {
+      if (isEditCell) {
+        const style = document.createElement('style');
+        style.innerHTML = `
+          .react-datepicker__navigation-icon--next::before {
+            top: 21px !important; 
+          }
+          .react-datepicker__navigation-icon--previous::before {
+            top: 21px !important; 
+          }
+        `;
+        document.head.appendChild(style);
+        return () => {
+          document.head.removeChild(style);
+        };
+      }
+    }, [isEditCell]);
 
     return (
       <div className="d-flex justify-content-between align-items-center">
@@ -198,7 +216,7 @@ export const DateTimePicker = ({
           borderRadius: '6px',
           boxShadow: '0px 8px 16px 0px #3032331A',
           backgroundColor: darkMode ? '#232e3c' : '#FFFFFF',
-          marginTop: '-4px',
+          marginTop: '-2px',
         }}
       >
         <div style={{ width: '100%' }}>{children}</div>
@@ -240,7 +258,7 @@ export const DateTimePicker = ({
     );
   };
 
-  const memoizedCustomCalendarContainer = useMemo(() => CustomCalendarContainer, [isOpen]);
+  const memoizedCustomCalendarContainer = useMemo(() => CustomCalendarContainer, []);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -270,23 +288,28 @@ export const DateTimePicker = ({
         } ${!isEditCell && 'tjdb-datepicker-wrapper '}`}
         popperPlacement={'bottom-start'}
         popperClassName={`${!isEditCell && 'tjdb-datepicker-reset'}`}
-        onInputClick={() => setIsOpen(true)}
+        onInputClick={() => {
+          setIsOpen(true);
+        }}
+        isClearable={isClearable}
         onClickOutside={() => setIsOpen(false)}
         placeholderText="DD/MM/YYYY, 12:00pm"
         selected={transformedTimestamp}
         onChange={(newTimestamp, event) => {
           if (isEditCell) {
-            event.stopPropagation();
             handleCellEditChange(newTimestamp);
           } else {
-            handleDefaultChange(newTimestamp);
+            if (event) {
+              handleDefaultChange(newTimestamp);
+              setIsOpen(false);
+            } else {
+              handleDefaultChange(newTimestamp, true);
+            }
           }
+          event?.stopPropagation();
         }}
         autoFocus={true}
         open={isOpen}
-        onClick={() => {
-          setIsOpen(true);
-        }}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}
         showMonthDropdown
@@ -295,7 +318,15 @@ export const DateTimePicker = ({
         dropdownMode="select"
         customInput={
           transformedTimestamp ? (
-            <input style={{ borderRadius: `${styles.borderRadius}px`, display: isEditCell ? 'block' : 'flex' }} />
+            <input
+              onFocus={'auto'}
+              style={{
+                borderRadius: `${styles.borderRadius}px`,
+                display: isEditCell ? 'block' : 'flex',
+                alignItems: 'center',
+                overflow: 'hidden',
+              }}
+            />
           ) : (
             <div
               style={{
@@ -310,7 +341,7 @@ export const DateTimePicker = ({
               <span
                 style={{
                   position: 'static',
-                  margin: isEditCell ? '0px 0px 0px 0px' : '4px 0px 4px 0px',
+                  margin: isEditCell ? '8px 0px 8px 0px' : '6px 0px 6px 0px',
                 }}
                 className={cx({ 'cell-text-null': isEditCell, 'null-tag': !isEditCell })}
               >

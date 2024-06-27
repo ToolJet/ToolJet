@@ -402,6 +402,7 @@ const EditRowForm = ({
               timestamp={inputValues[index]?.value}
               setTimestamp={(value) => handleInputChange(index, value, columnName)}
               isOpenOnStart={false}
+              isClearable={activeTab[index] === 'Custom'}
             />
           </div>
         );

@@ -392,11 +392,15 @@ function TableSchema({
                       <DateTimePicker
                         timestamp={columnDetails[index].column_default}
                         timezone={columnDetails[index]?.configurations?.timezone || getLocalTimeZone()}
-                        setTimestamp={(value) => {
+                        setTimestamp={(value, isTimeSelect = false) => {
                           const prevColumns = { ...columnDetails };
+                          columnDetails[index].isOpenOnStart =
+                            isTimeSelect && !!prevColumns[index]?.column_default === false && !!value === true;
                           prevColumns[index].column_default = value;
                           setColumns(prevColumns);
                         }}
+                        isOpenOnStart={columnDetails[index]?.isOpenOnStart}
+                        isClearable={true}
                       />
                     </div>
                   ) : (

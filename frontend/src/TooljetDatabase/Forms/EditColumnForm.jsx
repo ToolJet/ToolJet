@@ -597,7 +597,12 @@ const ColumnForm = ({
             >
               <div>
                 {isTimestamp ? (
-                  <DateTimePicker timestamp={defaultValue} setTimestamp={setDefaultValue} timezone={timezone} />
+                  <DateTimePicker
+                    timestamp={defaultValue}
+                    setTimestamp={setDefaultValue}
+                    timezone={timezone}
+                    isClearable={true}
+                  />
                 ) : !isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
                   <input
                     value={selectedColumn?.dataType !== 'serial' ? defaultValue : null}
