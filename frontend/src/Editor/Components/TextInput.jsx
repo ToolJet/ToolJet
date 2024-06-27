@@ -76,7 +76,7 @@ export const TextInput = function TextInput({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
+    padding: component?.definition?.styles?.iconVisibility?.value
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
