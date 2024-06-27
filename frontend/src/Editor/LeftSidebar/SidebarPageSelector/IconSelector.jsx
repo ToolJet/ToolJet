@@ -88,7 +88,7 @@ export default function IconSelector({ iconName, iconColor, updatePageIcon, page
         <div className="">
           <IconElement
             color={`${darkMode ? '#fff' : iconColor}`}
-            style={{ width: '16px', height: '16px', color: iconColor }}
+            style={{ width: '18px', height: '18px', color: iconColor }}
           />
         </div>
       </div>

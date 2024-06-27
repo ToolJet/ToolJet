@@ -131,7 +131,7 @@ export const ViewerSidebarNavigation = ({
                 darkMode={darkMode}
               >
                 {!labelStyle?.label?.hidden && (
-                  <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-3 text-wrap page-name">
+                  <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-2 text-wrap page-name">
                     {_.truncate(page?.name, { length: 18 })}
                   </span>
                 )}

@@ -71,10 +71,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
-  const { showComments, appMode } = useEditorStore(
+  const { showComments, appMode, pageSettingSelected } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       appMode: state?.appMode,
+      pageSettingSelected: state?.pageSettingSelected,
     }),
     shallow
   );
@@ -127,6 +128,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
     const isBtnClicked = Object.values(sideBarBtnRefs.current).some((btnRef) => {
       return btnRef.contains(ev.target);
     });
+
+    if (pageSettingSelected) {
+      return;
+    }
 
     if (!isBtnClicked && !pinned) {
       setSelectedSidebarItem(null);

@@ -191,8 +191,8 @@ export default function PageSettings({ settings, pageSettingsChanged }) {
               </div>
             </Tab>
             <Tab eventKey="styles" title="Styles">
-              <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased })}>
-                <div className="tj-text-xsm color-slate12 ">
+              <div className={cx({ disabled: isVersionReleased })}>
+                <div className="tj-text-xsm color-slate12 settings-tab ">
                   <RenderStyles />
                 </div>
               </div>

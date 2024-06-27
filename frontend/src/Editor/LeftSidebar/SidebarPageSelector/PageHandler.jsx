@@ -11,7 +11,6 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import FileRemove from '@/_ui/Icon/solidIcons/FIleRemove';
-import Home from '@/_ui/Icon/solidIcons/Home';
 import IconSelector from './IconSelector';
 import { getCurrentState } from '@/_stores/currentStateStore';
 
@@ -212,8 +211,8 @@ export const PageHandler = ({
     >
       <div>
         <div className="row" role="button">
-          <div className="col-auto d-flex align-items-center">
-            {!isDisabled && !isHidden && !labelStyle.icon.hidden && (
+          <div className="col-auto d-flex align-items-center px-1">
+            {!isDisabled && !isHidden && (
               <IconSelector
                 iconColor={computedStyles?.icon?.color ?? 'var(--slate11)'}
                 iconName={page.icon}
@@ -230,14 +229,9 @@ export const PageHandler = ({
             {isHovered && isDisabled && (
               <FileRemove fill={computedStyles?.icon?.fill} width={16} height={16} viewBox={'0 0 16 16'} />
             )}
-            {!isDisabled && (
-              <div style={{ paddingRight: '4px', paddingTop: '5px' }}>
-                <SortableList.DragHandle show />
-              </div>
-            )}
           </div>
           <div
-            className={`col text-truncate font-weight-400 page-name tj-text-sm ${labelStyle.label.hidden && 'd-none'}`}
+            className={`col text-truncate font-weight-400 page-name tj-text-sm`}
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
           >
             <span style={{ ...computedStyles?.text }} className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
@@ -255,7 +249,7 @@ export const PageHandler = ({
             )}
           </div>
           <div
-            className={cx('col-auto', { 'option-icon mx-1': isHovered || isSelected })}
+            className={cx('col-auto', { 'option-icon mx-2': isHovered || isSelected })}
             data-cy="page-menu-option-icon"
           >
             {(isHovered || isSelected) && !isVersionReleased && (
