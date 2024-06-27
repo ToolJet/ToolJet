@@ -90,7 +90,7 @@
         "placeholder": "[\"column1\",\"column2\",\"column3\"]"
       },
       "filter_by_formula": {
-        "label": "Filter By Formula",
+        "label": "Filter by formula",
         "key": "filter_by_formula",
         "type": "codehinter",
         "lineNumbers": false,
