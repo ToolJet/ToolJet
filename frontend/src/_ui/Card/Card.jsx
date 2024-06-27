@@ -12,11 +12,20 @@ const Card = ({
   className,
   titleClassName,
   actionButton,
+  darkMode,
 }) => {
   const DisplayIcon = ({ src }) => {
     if (typeof src !== 'string') return;
 
     if (usePluginIcon) {
+      //Fetch darkMode svgs
+
+      if (darkMode) {
+        const darkSrc = `${src}Dark`;
+        if (allSvgs[darkSrc]) {
+          src = darkSrc;
+        }
+      }
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} className="card-icon" />;
     }
