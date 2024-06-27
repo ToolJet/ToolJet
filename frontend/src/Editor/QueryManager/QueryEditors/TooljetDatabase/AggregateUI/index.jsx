@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 
-export const AggregateUi = ({ darkMode, operation = '' }) => {
+export const AggregateFilter = ({ darkMode, operation = '' }) => {
   const {
     columns,
     listRowsOptions,

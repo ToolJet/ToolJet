@@ -12,7 +12,7 @@ import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/Editor/CodeEditor';
-import { AggregateUi } from './AggregateUI';
+import { AggregateFilter } from './AggregateUI';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -137,7 +137,7 @@ const SelectTableMenu = ({ darkMode }) => {
           </Row>
         </div>
       </div>
-      <AggregateUi darkMode={darkMode} operation="joinTable" />
+      <AggregateFilter darkMode={darkMode} operation="joinTable" />
 
       {/* Filter Section */}
       <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
