@@ -18,8 +18,8 @@ export type QueryOptions = {
 
   delete_subtasks?: boolean;
 
-  // query_parameters?:any,
-  // request_body?:any
+  started_after?: any;
+  started_before?: any;
 };
 
 export type SourceOptions = {

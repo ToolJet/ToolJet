@@ -19,6 +19,10 @@
         {
           "value": "user",
           "name": "User"
+        },
+        {
+          "value": "worklog",
+          "name": "Worklog"
         }
       ]
     },
@@ -26,6 +30,7 @@
       "operation": {
         "label": "Operation",
         "key": "operation",
+        "className": "col-md-4",
         "type": "dropdown-component-flip",
         "description": "Operation select",
         "list": [
@@ -165,11 +170,11 @@
         }
       }
     },
-
     "user": {
       "operation": {
         "label": "Operation",
         "key": "operation",
+        "className": "col-md-4",
         "type": "dropdown-component-flip",
         "description": "Operation select",
         "list": [
@@ -217,7 +222,7 @@
           "key": "query",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder":"is assignee of PROJ AND [propertyKey].entity.property.path is \"property value\"",
+          "placeholder": "is assignee of PROJ AND [propertyKey].entity.property.path is \"property value\"",
           "description": "Enter Query",
           "height": "200px"
         },
@@ -250,7 +255,7 @@
           "key": "query",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder":"John",
+          "placeholder": "John",
           "description": "A query string that is matched against user attributes, such as displayName, and emailAddress",
           "height": "200px"
         },
@@ -259,7 +264,7 @@
           "key": "session_id",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder":"session_id",
+          "placeholder": "session_id",
           "description": "The sessionId of this request",
           "height": "200px"
         },
@@ -349,6 +354,115 @@
               "name": "Un recommend"
             }
           ]
+        }
+      }
+    },
+    "worklog": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className": "col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "issue_worklogs",
+            "name": "Get issue worklogs"
+          },
+          {
+            "value": "add_worklog",
+            "name": "Add worklog"
+          }
+        ]
+      },
+      "issue_worklogs": {
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "start_at": {
+          "label": "Start At",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max Results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "started_after": {
+          "label": "Started After",
+          "key": "started_after",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "The worklog start date and time, as a UNIX timestamp in milliseconds",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "started_before": {
+          "label": "Started before",
+          "key": "started_before",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "The worklog start date and time, as a UNIX timestamp in milliseconds",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "expand": {
+          "label": "expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        }
+      },
+      "add_worklog": {
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "properties": {
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder":"{\n  \"comment\": {\n    \"content\": [\n      {\n        \"content\": [\n          {\n            \"text\": \"I did some work here.\",\n            \"type\": \"text\"\n          }\n        ],\n        \"type\": \"paragraph\"\n      }\n    ],\n    \"type\": \"doc\",\n    \"version\": 1\n  },...",
+          "description": "Enter properties",
+          "height": "200px"
         }
       }
     }

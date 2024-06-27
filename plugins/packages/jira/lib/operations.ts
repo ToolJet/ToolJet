@@ -203,3 +203,62 @@ async function editIssue(queryOptions: QueryOptions, client: Version3Client) {
 
   return returnValue;
 }
+
+// issue worklog
+export async function worklogResource(queryOptions: QueryOptions, client: Version3Client) {
+  const { operation } = queryOptions;
+  let res;
+  switch (operation) {
+    case 'issue_worklogs': {
+      res = await issueWorklogs(queryOptions, client);
+      break;
+    }
+    case 'add_worklog': {
+      res = await addWorklog(queryOptions, client);
+      break;
+    }
+    default: {
+      throw new Error('Select an operation');
+    }
+  }
+  return res;
+}
+
+async function issueWorklogs(queryOptions: QueryOptions, client: Version3Client) {
+  let returnValue = {};
+  await client.issueWorklogs
+    .getIssueWorklog({
+      issueIdOrKey: queryOptions.issue_key,
+      startAt: returnNumber(queryOptions.start_at),
+      maxResults: returnNumber(queryOptions.max_results),
+      startedAfter: returnNumber(queryOptions.started_after),
+      startedBefore: returnNumber(queryOptions.started_before),
+      expand: queryOptions.expand,
+    })
+    .then((res) => {
+      returnValue = res;
+    })
+    .catch((err) => {
+      returnValue = { statusCode: err.response?.status, response: err?.response?.data };
+    });
+
+  return returnValue;
+}
+
+async function addWorklog(queryOptions: QueryOptions, client: Version3Client) {
+  let returnValue = {};
+
+  await client.issueWorklogs
+    .addWorklog({
+      issueIdOrKey: queryOptions.issue_key,
+      ...returnObject(queryOptions.properties),
+    })
+    .then((res) => {
+      returnValue = res;
+    })
+    .catch((err) => {
+      returnValue = { statusCode: err.response?.status, response: err?.response?.data };
+    });
+
+  return returnValue;
+}
