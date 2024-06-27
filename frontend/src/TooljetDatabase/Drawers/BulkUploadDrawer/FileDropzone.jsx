@@ -70,13 +70,13 @@ export function FileDropzone({
     <>
       {fileData?.name ? (
         <div className="bulkUpload-file">
-          <ul>
+          {/* <ul>
             {acceptedFiles.map((file) => (
               <li key={file.path}>{file.path}</li>
             ))}
-          </ul>
+          </ul> */}
 
-          <div className="fileName" ref={divRef}>
+          <div className="fileName mt-3" ref={divRef}>
             {fileData?.name && (
               <ul className="m-0 p-0" data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>
             )}
