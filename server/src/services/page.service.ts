@@ -55,8 +55,10 @@ export class PageService {
   }
 
   async clonePage(pageId: string, appVersionId: string) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
-      const pageToClone = await manager.findOne(Page, pageId);
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager:EntityManager) => {
+      const pageToClone = await manager.findOne(Page, {
+        where: {id:pageId}
+      });
 
       if (!pageToClone) {
         throw new Error('Page not found');

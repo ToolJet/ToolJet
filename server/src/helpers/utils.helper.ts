@@ -72,7 +72,9 @@ export function lowercaseString(value: string) {
 }
 
 export const updateTimestampForAppVersion = async (manager, appVersionId) => {
-  const appVersion = await manager.findOne('app_versions', appVersionId);
+  const appVersion = await manager.findOne('app_versions', {
+    where: { id: appVersionId },
+  });
   if (appVersion) {
     await manager.update('app_versions', appVersionId, { updatedAt: new Date() });
   }

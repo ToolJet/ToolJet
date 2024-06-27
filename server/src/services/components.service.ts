@@ -68,11 +68,13 @@ export class ComponentsService {
   }
 
   async update(componentDiff: object, appVersionId: string) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager:EntityManager) => {
       for (const componentId in componentDiff) {
         const { component } = componentDiff[componentId];
 
-        const componentData: Component = await manager.findOne(Component, componentId);
+        const componentData: Component = await manager.findOne(Component, {
+          where: { id: componentId }
+        });
 
         if (!componentData) {
           return {
