@@ -85,7 +85,9 @@ const debouncedChange = _.debounce(() => {
 
 export function onComponentOptionsChanged(component, options, id) {
   let componentName = component.name;
-  const { isEditorReady, page } = getCurrentState();
+  const { isEditorReady, page } = useCurrentStateStore.getState();
+
+  if (!isEditorReady || !useEditorStore.getState().appDefinition.pages[page.id]) return;
 
   if (id) {
     const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
