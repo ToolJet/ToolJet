@@ -106,6 +106,7 @@ export class UserRoleService {
         const userCreatedApps = await manager.find(App, {
           where: {
             userId: userId,
+            organizationId: organizationId,
           },
         });
         if (userCreatedApps.length > 0) {

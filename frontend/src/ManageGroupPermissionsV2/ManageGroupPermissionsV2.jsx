@@ -58,38 +58,39 @@ class ManageGroupPermissionsComponent extends React.Component {
     return currentUpdatedGroup.id;
   };
 
-  // duplicateGroup = () => {
-  //   const { groupDuplicateOption, groupToDuplicate } = this.state;
-  //   this.setState({ isDuplicatingGroup: true, creatingGroup: true });
-  //   groupPermissionService
-  //     .duplicate(groupToDuplicate, groupDuplicateOption)
-  //     .then((data) => {
-  //       this.setState({
-  //         newGroupName: data?.group,
-  //       });
-  //       this.fetchGroups('current', () => {
-  //         this.setState({
-  //           newGroupName: '',
-  //           creatingGroup: false,
-  //           selectedGroupPermissionId: data?.id,
-  //           selectedGroup: data?.group,
-  //           isDuplicatingGroup: false,
-  //           showDuplicateGroupModal: false,
-  //           groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
-  //         });
-  //       });
+  duplicateGroup = () => {
+    const { groupDuplicateOption, groupToDuplicate } = this.state;
+    this.setState({ isDuplicatingGroup: true, creatingGroup: true });
+    groupPermissionV2Service
+      .duplicate(groupToDuplicate, groupDuplicateOption)
+      .then((data) => {
+        this.setState({
+          newGroupName: data?.name,
+        });
 
-  //       toast.success('Group duplicated successfully!');
-  //     })
-  //     .catch((err) => {
-  //       this.setState({
-  //         isDuplicatingGroup: false,
-  //         groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
-  //       });
-  //       console.error('Error occured in duplicating: ', err);
-  //       toast.error('Could not duplicate group.\nPlease try again!');
-  //     });
-  // };
+        this.fetchGroups('current', () => {
+          this.setState({
+            newGroupName: '',
+            creatingGroup: false,
+            selectedGroupPermissionId: data?.id,
+            selectedGroup: data?.name,
+            isDuplicatingGroup: false,
+            showDuplicateGroupModal: false,
+            groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+          });
+        });
+
+        toast.success('Group duplicated successfully!');
+      })
+      .catch((err) => {
+        this.setState({
+          isDuplicatingGroup: false,
+          groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
+        });
+        console.error('Error occured in duplicating: ', err);
+        toast.error('Could not duplicate group.\nPlease try again!');
+      });
+  };
 
   toggleShowDuplicateModal = () => {
     this.setState((prevState) => ({
@@ -375,7 +376,8 @@ class ManageGroupPermissionsComponent extends React.Component {
       showGroupSearchBar,
     } = this.state;
 
-    const grounNameErrorStyle = this.state.newGroupName?.length >= 50 ? { color: '#ff0000' } : {};
+    const grounNameErrorStyle =
+      this.state.newGroupName?.length >= 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
     const { addPermission, addApps, addUsers } = groupDuplicateOption;
     const allFalse = [addPermission, addApps, addUsers].every((value) => !value);
 
@@ -534,7 +536,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                       <input
                         type="text"
                         required
-                        className="form-control"
+                        className={`form-control ${this.state.newGroupName?.length >= 50 ? 'custom-input-error' : ''}`}
                         placeholder={this.props.t(
                           'header.organization.menus.manageGroups.permissions.enterName',
                           'Enter group name'

@@ -117,7 +117,7 @@ class ManageGranularAccessComponent extends React.Component {
       isAll: isAll,
       createAppsPermissionsObject: {
         ...initialPermissionState,
-        resourcesToAdd: selectedApps.map((option) => ({ appId: option.value })),
+        resourcesToAdd: selectedApps.filter((apps) => !apps?.isAllField)?.map((option) => ({ appId: option.value })),
       },
     };
     groupPermissionV2Service
@@ -140,8 +140,6 @@ class ManageGranularAccessComponent extends React.Component {
   };
 
   openEditPermissionModal = (granularPermission) => {
-    console.log('logging granular permissions');
-    console.log(granularPermission);
     const currentApps = granularPermission?.appsGroupPermissions?.groupApps;
     const appsGroupPermission = granularPermission?.appsGroupPermissions;
     this.setState({
@@ -169,12 +167,9 @@ class ManageGranularAccessComponent extends React.Component {
             })
           : [],
     });
-    console.log('Logging granular permissions');
-    console.log(granularPermission);
   };
 
   updateOnlyGranularPermissions = (permission, actions = {}, allowRoleChange) => {
-    console.log(actions);
     const body = {
       actions: actions,
       allowRoleChange,
@@ -187,8 +182,6 @@ class ManageGranularAccessComponent extends React.Component {
         toast.success('Permission updated successfully');
       })
       .catch(({ error }) => {
-        console.log('error is');
-        console.log(error);
         if (error?.type) {
           this.setState({
             showAutoRoleChangeModal: true,
@@ -216,7 +209,7 @@ class ManageGranularAccessComponent extends React.Component {
     const currentResource = currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => {
       return app.app.id;
     });
-    const selectedResource = selectedApps?.map((resource) => resource.value);
+    const selectedResource = selectedApps.filter((apps) => !apps?.isAllField)?.map((resource) => resource.value);
     const resourcesToAdd = selectedResource
       ?.filter((item) => !currentResource.includes(item))
       .map((id) => {
@@ -290,11 +283,10 @@ class ManageGranularAccessComponent extends React.Component {
   };
 
   openAddPermissionModal = () => {
-    const currentGroupPermission = this.props?.groupPermission;
-    const isEndUser = currentGroupPermission?.name === 'end-user';
     this.setState((prevState) => ({
       showAddPermissionModal: true,
-      ...(isEndUser && { initialPermissionState: { ...prevState.initialPermissionState, canView: true } }),
+      initialPermissionState: { ...prevState.initialPermissionState, canView: true },
+      isAll: true,
     }));
   };
 
@@ -313,12 +305,6 @@ class ManageGranularAccessComponent extends React.Component {
         hideFromDashboard: false,
       },
       selectedApps: [],
-      // selectedApps:currentApps?.length > 0 ? currentApps?.map(({app})=>{
-      //   return {
-      //     name:app.name,
-      //     value:app.id,
-      //   }
-      // }) : []
     });
   };
 
@@ -378,10 +364,14 @@ class ManageGranularAccessComponent extends React.Component {
 
     const resourcesOptions = ['Apps'];
     const currentGroupPermission = this.props?.groupPermission;
-    const isEndUserGroup = currentGroupPermission?.name == 'end-user';
     const isRoleGroup = currentGroupPermission.name == 'admin';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const disableEditUpdate = currentGroupPermission.name == 'end-user';
+    const addPermissionTooltipMessage = !newPermissionName
+      ? 'Please input permissions name'
+      : isCustom && selectedApps.length === 0
+      ? 'Please select apps or select all apps option'
+      : '';
     return (
       <div className="row granular-access-container justify-content-center">
         <ChangeRoleModal
@@ -433,7 +423,8 @@ class ManageGranularAccessComponent extends React.Component {
           confirmBtnProps={{
             title: `${modalType === 'edit' ? 'Update' : 'Add'}`,
             iconLeft: 'plus',
-            disabled: modalType === 'add' && !newPermissionName,
+            disabled: (modalType === 'add' && !newPermissionName) || (isCustom && selectedApps.length === 0),
+            tooltipMessage: addPermissionTooltipMessage,
           }}
           darkMode={this.props.darkMode}
         >
@@ -510,7 +501,7 @@ class ManageGranularAccessComponent extends React.Component {
                 <label className="form-check form-check-inline">
                   <input
                     className="form-check-input"
-                    type="radio"
+                    type="checkbox"
                     checked={initialPermissionState.hideFromDashboard}
                     onClick={() => {
                       this.setState((prevState) => ({
@@ -538,7 +529,7 @@ class ManageGranularAccessComponent extends React.Component {
                   type="radio"
                   checked={isAll}
                   onClick={() => {
-                    this.setState((prevState) => ({ isAll: !prevState.isAll, isCustom: false }));
+                    this.setState((prevState) => ({ isAll: !prevState.isAll, isCustom: prevState.isAll }));
                   }}
                 />
                 <div>
@@ -552,9 +543,10 @@ class ManageGranularAccessComponent extends React.Component {
                 <input
                   className="form-check-input"
                   type="radio"
+                  disabled={addableApps.length === 0}
                   checked={isCustom}
                   onClick={() => {
-                    this.setState((prevState) => ({ isCustom: !prevState.isCustom, isAll: false }));
+                    this.setState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
                   }}
                 />
                 <div>

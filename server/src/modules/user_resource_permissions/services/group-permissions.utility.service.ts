@@ -11,11 +11,15 @@ import {
   getUserRoleQuery,
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from '@helpers/utils.helper';
+import { dbTransactionWrap, getMaxCopyNumber } from '@helpers/utils.helper';
 import { App } from 'src/entities/app.entity';
 import { getAllGranularPermissionQuery } from '../utility/granular-permissios.utility';
 import { ResourceType } from '../constants/granular-permissions.constant';
 import { ValidateEditUserGroupAdditionObject } from '../interface/group-permissions.interface';
+import { instanceToPlain } from 'class-transformer';
+import { GranularPermissions } from 'src/entities/granular_permissions.entity';
+import { AppsGroupPermissions } from 'src/entities/apps_group_permissions.entity';
+import { GroupApps } from 'src/entities/group_apps.entity';
 
 @Injectable()
 export class GroupPermissionsUtilityService {
@@ -121,5 +125,104 @@ export class GroupPermissionsUtilityService {
         );
       }
     }, manager);
+  }
+
+  async getDuplicateGroupName(groupToDuplicate: GroupPermissions, manager: EntityManager): Promise<string> {
+    const existNameList = await manager
+      .createQueryBuilder()
+      .select(['groupPermissions.name', 'groupPermissions.id'])
+      .from(GroupPermissions, 'groupPermissions')
+      .where('groupPermissions.name ~* :pattern', { pattern: `^${groupToDuplicate.name}_copy_[0-9]+$` })
+      .orWhere('groupPermissions.name = :groupToDuplicateGroup', {
+        groupToDuplicateGroup: `${groupToDuplicate.name}_copy`,
+      })
+      .andWhere('groupPermissions.id != :groupPermissionId', { groupPermissionId: groupToDuplicate.id })
+      .andWhere('groupPermissions.organizationId = :organizationId', {
+        organizationId: groupToDuplicate.organizationId,
+      })
+      .getMany();
+
+    let newName = `${groupToDuplicate.name}_copy`;
+    const number = getMaxCopyNumber(existNameList.map((group) => group.name));
+    if (number) newName = `${groupToDuplicate.name}_copy_${number}`;
+    return newName;
+  }
+
+  async duplicateGroup(
+    group: GroupPermissions,
+    addPermission: boolean,
+    manager?: EntityManager
+  ): Promise<GroupPermissions> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const newName = await this.getDuplicateGroupName(group, manager);
+      const keysToDelete = ['id', 'createdAt', 'updatedAt', 'name', 'type'];
+      if (addPermission)
+        keysToDelete.forEach((key) => {
+          delete group[key];
+        });
+      return await manager.save(
+        manager.create(GroupPermissions, {
+          name: newName,
+          type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+          ...(addPermission ? instanceToPlain(group) : {}),
+        })
+      );
+    }, manager);
+  }
+
+  async duplicateGranularPermissions(
+    granularPermissions: GranularPermissions,
+    groupId: string,
+    manager?: EntityManager
+  ): Promise<GranularPermissions> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const keysToDelete = ['id', 'createdAt', 'updatedAt', 'groupId', 'appsGroupPermissions'];
+      keysToDelete.forEach((key) => {
+        delete granularPermissions[key];
+      });
+      return await manager.save(
+        manager.create(GranularPermissions, { groupId, ...instanceToPlain(granularPermissions) })
+      );
+    }, manager);
+  }
+
+  async duplicateResourcePermissions(
+    granularPermissionsToDuplicate: GranularPermissions,
+    newGranularPermissionsId: string,
+    manager?: EntityManager
+  ): Promise<void> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      switch (granularPermissionsToDuplicate.type) {
+        case ResourceType.APP:
+          await this.duplicationAppsPermissions(
+            granularPermissionsToDuplicate.appsGroupPermissions,
+            newGranularPermissionsId,
+            manager
+          );
+          break;
+        default:
+          break;
+      }
+    }, manager);
+  }
+
+  async duplicationAppsPermissions(
+    appsPermissions: AppsGroupPermissions,
+    granularPermissionId: string,
+    manager: EntityManager
+  ) {
+    const groupApps = appsPermissions.groupApps;
+    const keysToDelete = ['id', 'createdAt', 'updatedAt', 'granularPermissionId', 'groupApps'];
+    keysToDelete.forEach((key) => {
+      delete appsPermissions[key];
+    });
+    const newAppsPermissions = await manager.save(
+      manager.create(AppsGroupPermissions, { granularPermissionId, ...instanceToPlain(appsPermissions) })
+    );
+    groupApps.map(async (groupApp) => {
+      await manager.save(
+        manager.create(GroupApps, { appsGroupPermissionsId: newAppsPermissions.id, appId: groupApp.appId })
+      );
+    });
   }
 }

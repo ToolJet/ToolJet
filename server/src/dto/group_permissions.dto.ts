@@ -68,3 +68,14 @@ export class AddGroupUserDto {
   @IsOptional()
   allowRoleChange: boolean;
 }
+
+export class DuplicateGroupDto {
+  @IsBoolean()
+  addPermission: boolean;
+
+  @IsBoolean()
+  addApps: boolean;
+
+  @IsBoolean()
+  addUsers: boolean;
+}

@@ -299,10 +299,13 @@
 }
 
 .groups-name-cell[data-active="true"] {
+  display: flex;
   background: var(--gray5) !important;
+  justify-content: center;
 
   .groups-name-container {
     padding-left: 6px;
+    justify-content: center;
   }
 
   .group-chip {
@@ -369,4 +372,8 @@
   overflow-y: auto;
   height: calc(100vh - 300px);
 
+}
+
+.custom-input-error:focus {
+  border-color: red !important; /* Change border color when input is focused */
 }

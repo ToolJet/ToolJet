@@ -1,6 +1,11 @@
 import { Injectable, BadRequestException, MethodNotAllowedException } from '@nestjs/common';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { UpdateGroupPermissionDto, CreateGroupPermissionDto, AddGroupUserDto } from '@dto/group_permissions.dto';
+import {
+  UpdateGroupPermissionDto,
+  CreateGroupPermissionDto,
+  AddGroupUserDto,
+  DuplicateGroupDto,
+} from '@dto/group_permissions.dto';
 import { User } from 'src/entities/user.entity';
 import {
   USER_ROLE,
@@ -24,6 +29,8 @@ import {
   validateUpdateGroupOperation,
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
+import { getAllGranularPermissionQuery } from '@module/user_resource_permissions/utility/granular-permissios.utility';
+const _ = require('lodash');
 
 @Injectable()
 export class GroupPermissionsServiceV2 {
@@ -221,6 +228,51 @@ export class GroupPermissionsServiceV2 {
           return await this.createGroupUser(user, group, manager);
         })
       );
+    }, manager);
+  }
+
+  async duplicateGroup(
+    groupId: string,
+    duplicateGroupDto: DuplicateGroupDto,
+    manager?: EntityManager
+  ): Promise<GroupPermissions> {
+    const { addApps, addPermission, addUsers } = duplicateGroupDto;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { group } = await this.getGroup(groupId, manager);
+      if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
+      const newGroup = await this.groupPermissionsUtilityService.duplicateGroup(group, addPermission, manager);
+      if (addUsers) {
+        const groupUsers = await this.getAllGroupUsers(
+          { groupId, organizationId: group.organizationId },
+          null,
+          manager
+        );
+        await Promise.all(
+          groupUsers.map(async (groupUser) => {
+            await this.createGroupUser(groupUser.user, newGroup, manager);
+          })
+        );
+      }
+      if (addApps) {
+        const allGranularPermissions = await getAllGranularPermissionQuery({ groupId }, manager).getMany();
+        await Promise.all(
+          allGranularPermissions.map(async (permissions) => {
+            //Deep cloning here cause the object will be updated in the function
+            const permissionsToDuplicate = _.cloneDeep(permissions);
+            const granularPermission = await this.groupPermissionsUtilityService.duplicateGranularPermissions(
+              permissionsToDuplicate,
+              newGroup.id,
+              manager
+            );
+            await this.groupPermissionsUtilityService.duplicateResourcePermissions(
+              permissions,
+              granularPermission.id,
+              manager
+            );
+          })
+        );
+      }
+      return newGroup;
     }, manager);
   }
 }

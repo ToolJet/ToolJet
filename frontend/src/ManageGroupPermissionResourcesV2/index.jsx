@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { groupPermissionService, groupPermissionV2Service } from '@/_services';
+import { groupPermissionV2Service, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
@@ -8,8 +8,8 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { Loader } from '../ManageSSO/Loader';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { FilterPreview, MultiSelectUser } from '@/_components';
+
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ModalBase from '@/_ui/Modal';
 import Select from '@/_ui/Select';
@@ -88,8 +88,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.setState({ isLoadingGroup: true });
     this.fetchGroupPermission(groupPermissionId);
     this.fetchUsersInGroup(groupPermissionId);
-    // this.fetchAppsNotInGroup(groupPermissionId);
-    // this.fetchAppsInGroup(groupPermissionId);
   };
 
   userFullName = (user) => {
@@ -129,23 +127,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     });
   };
 
-  fetchAppsNotInGroup = (groupPermissionId) => {
-    groupPermissionService.getAppsNotInGroup(groupPermissionId).then((data) => {
-      this.setState({
-        appsNotInGroup: data.apps,
-      });
-    });
-  };
-
-  fetchAppsInGroup = (groupPermissionId) => {
-    groupPermissionService.getAppsInGroup(groupPermissionId).then((data) => {
-      this.setState({
-        appsInGroup: data.apps,
-        isLoadingApps: false,
-      });
-    });
-  };
-
   clearErrorState = () => {
     this.setState({
       errorMessage: '',
@@ -160,6 +141,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   updateGroupPermission = (groupPermissionId, params, allowRoleChange) => {
+    const currentSession = authenticationService.currentSessionValue;
     groupPermissionV2Service
       .update(groupPermissionId, { ...params, allowRoleChange })
       .then(() => {
@@ -187,52 +169,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       });
   };
 
-  updateAppGroupPermission = (app, groupPermissionId, action) => {
-    const appGroupPermission = app.app_group_permissions.find(
-      (permission) => permission.group_permission_id === groupPermissionId
-    );
-
-    let actionParams = {
-      read: true,
-      update: action === 'edit',
-    };
-
-    if (action === 'hideFromDashboard') {
-      actionParams['hideFromDashboard'] = !this.canAppGroupPermission(app, groupPermissionId, 'hideFromDashboard');
-    }
-
-    if (action === 'edit') actionParams['hideFromDashboard'] = false;
-
-    groupPermissionService
-      .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
-      .then(() => {
-        toast.success('App permissions updated');
-
-        this.fetchAppsInGroup(groupPermissionId);
-      })
-      .catch(({ error }) => {
-        toast.error(error);
-      });
-  };
-
-  canAppGroupPermission = (app, groupPermissionId, action) => {
-    let appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
-    switch (action) {
-      case 'edit':
-        return appGroupPermission?.read && appGroupPermission?.update;
-      case 'view':
-        return appGroupPermission?.read && !appGroupPermission?.update;
-      case 'hideFromDashboard':
-        return appGroupPermission?.read && appGroupPermission?.read_on_dashboard;
-      default:
-        return false;
-    }
-  };
-
-  findAppGroupPermission = (app, groupPermissionId) => {
-    return app.app_group_permissions.find((permission) => permission.group_permission_id === groupPermissionId);
-  };
-
   setSelectedUsers = (value) => {
     console.log('user value');
     console.log(value);
@@ -245,53 +181,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.setState({
       selectedAppIds: value,
     });
-  };
-
-  addSelectedAppsToGroup = (groupPermissionId) => {
-    this.setState({ isAddingApps: true });
-    const updateParams = {
-      add_apps: this.state.selectedAppIds.map((app) => app.value),
-    };
-    groupPermissionService
-      .update(groupPermissionId, updateParams)
-      .then(() => {
-        this.setState({
-          selectedAppIds: [],
-          isLoadingApps: true,
-          isAddingApps: false,
-        });
-        this.fetchAppsNotInGroup(groupPermissionId);
-        this.fetchAppsInGroup(groupPermissionId);
-      })
-      .then(() => {
-        toast.success('Apps added to the group');
-        this.setState({
-          selectedApps: [],
-        });
-      })
-      .catch(({ error }) => {
-        toast.error(error);
-      });
-  };
-
-  removeAppFromGroup = (groupPermissionId, appId, appName) => {
-    if (window.confirm(`Are you sure you want to delete this app - ${appName}?`) === false) return;
-    const updateParams = {
-      remove_apps: [appId],
-    };
-    groupPermissionService
-      .update(groupPermissionId, updateParams)
-      .then(() => {
-        this.setState({ removeAppIds: [], isLoadingApps: true });
-        this.fetchAppsNotInGroup(groupPermissionId);
-        this.fetchAppsInGroup(groupPermissionId);
-      })
-      .then(() => {
-        toast.success('App removed from the group');
-      })
-      .catch(({ error }) => {
-        toast.error(error);
-      });
   };
 
   addSelectedUsersToGroup = (groupPermissionId, selectedUsers, allowRoleChange) => {
@@ -387,8 +276,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   updateUserRole = () => {
-    console.log('logging update user');
     const { updatingUserRole, groupPermission, selectedNewRole } = this.state;
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
     this.setState({
       isLoadingUsers: true,
     });
@@ -402,6 +292,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchUsersInGroup(groupPermission.id);
         toast.success('Role updated successfully');
         if (groupPermission?.name === 'admin') window.location.reload();
+        if (currentUser.id === updatingUserRole.id) window.location.reload(true);
       })
       .catch(({ error }) => {
         this.setState({
@@ -541,15 +432,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     } = this.state;
 
     const isBasicPlan = false;
+    const isPaidPlan = false;
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
       isRoleGroup && (groupPermission?.name === 'admin' || groupPermission?.name === 'end-user');
     const disablePermissionUpdate =
       isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
-    const appSelectOptions = appsNotInGroup.map((app) => {
-      return { name: app.name, value: app.id };
-    });
 
     return (
       <ErrorBoundary showFallback={false}>
@@ -579,11 +468,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           show={isChangeRoleModalOpen}
           isLoading={isLoadingUsers}
           handleClose={this.closeChangeRoleModal}
-          confirmBtnProps={{ title: 'Continue' }}
+          confirmBtnProps={{ title: 'Continue', disabled: !selectedNewRole }}
           darkMode={this.props.darkMode}
+          className="edit-role-confirm"
         >
           {selectedNewRole && showRoleEditMessage ? (
-            <div>{EDIT_ROLE_MESSAGE?.[groupPermission?.name]?.[selectedNewRole]()}</div>
+            <div>{EDIT_ROLE_MESSAGE?.[groupPermission?.name]?.[selectedNewRole](isPaidPlan)}</div>
           ) : (
             <div>
               <label className="form-label text-muted">User role</label>
@@ -601,11 +491,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
               />
               <div className="info-container">
                 <div className="col-md-1 info-btn">
-                  <SolidIcon name="information" fill="#3E63DD" />
+                  <SolidIcon name="informationcircle" fill="#3E63DD" />
                 </div>
                 <div className="col-md-11">
                   <div className="message" data-cy="warning-text">
-                    <p>
+                    <p style={{ lineHeight: '18px' }}>
                       Users must be always be part of one default group. This will define the user count in your plan.
                     </p>
                   </div>
@@ -805,7 +695,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           <p className="tj-text-xsm" data-cy="email-header">
                             Email id
                           </p>
-                          <div className="edit-role-btn"></div> {/* DO NOT REMOVE FOR TABLE ALIGNMENT  */}
+                          <p className="tj-text-xsm"></p> {/* DO NOT REMOVE FOR TABLE ALIGNMENT  */}
                         </div>
                       )}
 
@@ -844,40 +734,42 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 <p className="tj-text-sm d-flex align-items-center" style={{ paddingLeft: '12px' }}>
                                   <span> {user.email}</span>
                                 </p>
-                                <div className="edit-role-btn">
-                                  {!isRoleGroup && (
-                                    <Link to="#" className="remove-decoration">
-                                      <ButtonSolid
-                                        variant="dangerSecondary"
-                                        className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
-                                        onClick={() => {
-                                          this.removeUserFromGroup(groupUserId);
-                                        }}
-                                        leftIcon="remove"
-                                        fill="#F3B0A2"
-                                        iconWidth="18"
-                                      >
-                                        {this.props.t('globals.remove', 'Remove')}
-                                      </ButtonSolid>
-                                    </Link>
-                                  )}
-                                </div>
-                                {isRoleGroup && (
-                                  <div className="edit-role-btn">
-                                    <ButtonSolid
-                                      variant="tertiary"
-                                      iconWidth="17"
-                                      fill="var(--slate9)"
-                                      className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
-                                      leftIcon="editable"
-                                      onClick={() => {
-                                        this.openChangeRoleModal(user);
-                                      }}
-                                    >
-                                      Edit role
-                                    </ButtonSolid>
+                                <p className="tj-text-sm d-flex align-items-center">
+                                  <div className="d-flex align-items-center edit-role-btn">
+                                    {!isRoleGroup && (
+                                      <Link to="#" className="remove-decoration">
+                                        <ButtonSolid
+                                          variant="dangerSecondary"
+                                          className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
+                                          onClick={() => {
+                                            this.removeUserFromGroup(groupUserId);
+                                          }}
+                                          leftIcon="remove"
+                                          fill="#F3B0A2"
+                                          iconWidth="18"
+                                        >
+                                          {this.props.t('globals.remove', 'Remove')}
+                                        </ButtonSolid>
+                                      </Link>
+                                    )}
                                   </div>
-                                )}
+                                  {isRoleGroup && (
+                                    <div className="edit-role-btn">
+                                      <ButtonSolid
+                                        variant="tertiary"
+                                        iconWidth="17"
+                                        fill="var(--slate9)"
+                                        className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
+                                        leftIcon="editable"
+                                        onClick={() => {
+                                          this.openChangeRoleModal(user);
+                                        }}
+                                      >
+                                        Edit role
+                                      </ButtonSolid>
+                                    </div>
+                                  )}
+                                </p>
                               </div>
                             );
                           })

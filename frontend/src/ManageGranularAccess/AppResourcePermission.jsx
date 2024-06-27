@@ -35,6 +35,7 @@ function AppResourcePermissions({
               onClick={() => {
                 updateOnlyGranularPermissions(permissions, {
                   canEdit: !appsPermissions.canEdit,
+                  canView: appsPermissions.canEdit,
                 });
               }}
               checked={appsPermissions.canEdit}
@@ -54,6 +55,7 @@ function AppResourcePermissions({
               onClick={() => {
                 updateOnlyGranularPermissions(permissions, {
                   canView: !appsPermissions.canView,
+                  canEdit: appsPermissions.canView,
                 });
               }}
               checked={appsPermissions.canView}

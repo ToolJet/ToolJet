@@ -43,6 +43,7 @@ import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.const
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@module/organizations/constant/constants';
 
 const MAX_ROW_COUNT = 500;
 
@@ -581,7 +582,12 @@ export class OrganizationsService {
         shouldSendWelcomeMail = false;
 
       if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
-        throw new BadRequestException('Duplicate email found. Please provide a unique email address.');
+        throw new BadRequestException({
+          message: {
+            error: ERROR_HANDLER.DUPLICATE_EMAIL_PRESENT,
+            title: ERROR_HANDLER_TITLE.DUPLICATE_EMAIL_PRESENT,
+          },
+        });
       }
 
       if (user?.invitationToken) {

@@ -3,6 +3,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select, { components } from 'react-select';
+import { FilterPreview } from '@/_components';
+import './appSelect.theme.scss';
 
 export function AppsSelect(props) {
   const navigate = useNavigate();
@@ -76,11 +78,16 @@ export function AppsSelect(props) {
     );
   };
 
-  const MultiValue = (props) => (
-    <components.MultiValue {...props}>
-      <div className="selected-value">{props.data.name}</div>
-    </components.MultiValue>
-  );
+  const MultiValue = (props) => {
+    // Check if props.data exists and is not "all"
+    if (!props.data?.isAllField) {
+      return (
+        <components.MultiValue {...props}>
+          <div className="selected-value">{props.data.name}</div>
+        </components.MultiValue>
+      );
+    }
+  };
 
   const selectStyles = {
     indicatorSeparator: (base) => ({
@@ -166,21 +173,30 @@ export function AppsSelect(props) {
       components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
       {...props}
       onChange={(selected) => {
+        const isCurrentSelectAll = props.value.find((app) => app?.isAllField)?.isAllField;
+        const isSelectAllPresentInSelection = selected.find((app) => app?.isAllField)?.isAllField;
         if (
           props.allowSelectAll &&
           selected !== null &&
           selected.length > 0 &&
-          selected[selected.length - 1].value === props.allOption.value
+          isSelectAllPresentInSelection &&
+          !isCurrentSelectAll
         ) {
-          return props.onChange(props.options);
+          console.log('value');
+          console.log(props.value);
+          if (props.value.find((app) => app?.isAllField)?.isAllField)
+            props.onChange(selected.filter((app) => !app?.isAllField));
+          return props.onChange([...props.options, props.allOption]);
         }
-        return props.onChange(selected);
+        if (isCurrentSelectAll && !isSelectAllPresentInSelection) return props.onChange([]);
+        return props.onChange(selected.filter((app) => !app?.isAllField));
       }}
       options={[props.allowSelectAll ? props.allOption : null, ...props.options]}
       styles={selectStyles}
       placeholder="Select apps.."
       noOptionsMessage={() => 'No apps found'}
     />
+    // </div>
   );
 }
 
@@ -188,5 +204,6 @@ AppsSelect.defaultProps = {
   allOption: {
     label: 'Select all',
     value: '*',
+    isAllField: true,
   },
 };

@@ -26,6 +26,7 @@ import { UserRoleService } from '@services/user-role.service';
 import { ORGANIZATION_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 import { User } from 'src/decorators/user.decorator';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
+import { DuplucateGroupDto } from '@dto/group-permission.dto';
 
 @Controller({
   path: 'group_permissions',
@@ -87,6 +88,13 @@ export class GroupPermissionsControllerV2 {
   @Delete(':id')
   async delete(@User() user, @Param('id') id: string) {
     return await this.groupPermissionsService.deleteGroup(id);
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
+  @Post(':id/duplicate')
+  async duplicateGroup(@User() user, @Param('id') groupId: string, @Body() duplicateGroupDto: DuplucateGroupDto) {
+    return await this.groupPermissionsService.duplicateGroup(groupId, duplicateGroupDto);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

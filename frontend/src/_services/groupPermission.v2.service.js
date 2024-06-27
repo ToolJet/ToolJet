@@ -8,8 +8,6 @@ export const groupPermissionV2Service = {
   getGroup,
   getGroups,
   fetchAddableApps,
-  //   getAppsInGroup,
-  //   getAppsNotInGroup,
   getUsersInGroup,
   getUsersNotInGroup,
   updateUserRole,
@@ -19,8 +17,7 @@ export const groupPermissionV2Service = {
   fetchGranularPermissions,
   deleteGranularPermission,
   updateGranularPermission,
-  //   updateAppGroupPermission,
-  //   duplicate,
+  duplicate,
 };
 
 function create(name) {
@@ -146,15 +143,6 @@ function fetchGranularPermissions(groupPermissionId) {
   );
 }
 
-function getAppsInGroup(groupPermissionId) {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader(),
-    credentials: 'include',
-  };
-  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/apps`, requestOptions).then(handleResponse);
-}
-
 function updateUserRole(body) {
   const requestOptions = {
     method: 'PUT',
@@ -163,17 +151,6 @@ function updateUserRole(body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/v2/group_permissions/user-role/edit`, requestOptions).then(handleResponse);
-}
-
-function getAppsNotInGroup(groupPermissionId) {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader(),
-    credentials: 'include',
-  };
-  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/addable_apps`, requestOptions).then(
-    handleResponse
-  );
 }
 
 function getUsersInGroup(groupPermissionId, searchInput = '') {
@@ -200,23 +177,6 @@ function getUsersNotInGroup(searchInput, groupPermissionId) {
   ).then(handleResponse);
 }
 
-function updateAppGroupPermission(groupPermissionId, appGroupPermissionId, actions) {
-  const body = {
-    actions,
-  };
-
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify(body),
-  };
-  return fetch(
-    `${config.apiUrl}/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`,
-    requestOptions
-  ).then(handleResponse);
-}
-
 function duplicate(groupPermissionId, body) {
   const requestOptions = {
     method: 'POST',
@@ -224,7 +184,7 @@ function duplicate(groupPermissionId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/duplicate`, requestOptions).then(
+  return fetch(`${config.apiUrl}/v2/group_permissions/${groupPermissionId}/duplicate`, requestOptions).then(
     handleResponse
   );
 }

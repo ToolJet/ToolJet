@@ -15,21 +15,21 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
   [USER_ROLE.ADMIN]: {
     [ResourceType.APP]: {
       canEdit: true,
-      canView: true,
+      canView: false,
       hideFromDashboard: false,
     },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
       canEdit: false,
-      canView: false,
+      canView: true,
       hideFromDashboard: false,
     },
   },
   [USER_ROLE.BUILDER]: {
     [ResourceType.APP]: {
       canEdit: true,
-      canView: true,
+      canView: false,
       hideFromDashboard: false,
     },
   },

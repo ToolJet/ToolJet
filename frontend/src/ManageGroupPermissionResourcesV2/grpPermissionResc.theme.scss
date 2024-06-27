@@ -17,7 +17,8 @@
 
 
   .info-btn {
-    padding: 0px;
+    padding: 6px 0px 0px 0px;
+    margin-right: 5px;
     flex: 0 0 24px;
   }
 
@@ -122,4 +123,13 @@
     }
     }
 
+}
+
+
+.edit-role-confirm {
+  width: 350px;
+
+  .modal-footer {
+    border-top: 1px solid var(--slate6);;
+  }
 }

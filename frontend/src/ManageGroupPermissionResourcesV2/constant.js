@@ -12,12 +12,12 @@ export const EDIT_ROLE_MESSAGE = {
         </div>
       );
     },
-    'end-user': () => {
+    'end-user': (isPaidPlan) => {
       return (
         <div>
           <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-            Changing your user group from admin to end-user will revoke your access to settings. This will also affect
-            the count of users covered by your plan.
+            Changing your user group from admin to end-user will revoke your access to settings.
+            {isPaidPlan && 'This will also affect the count of users covered by your plan.'}
           </p>
           <p className="tj-text-sm">Are you sure you want to continue?</p>
         </div>
@@ -25,12 +25,14 @@ export const EDIT_ROLE_MESSAGE = {
     },
   },
   builder: {
-    'end-user': () => {
+    'end-user': (isPaidPlan) => {
       return (
         <div>
-          <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-            Changing user default group from builder to end-user will affect the count of users covered by your plan.
-          </p>
+          {isPaidPlan && (
+            <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
+              Changing user default group from builder to end-user will affect the count of users covered by your plan.
+            </p>
+          )}
           <p className="tj-text-sm">
             This will also remove the user from any custom groups with builder-like permissions.
           </p>
@@ -40,22 +42,26 @@ export const EDIT_ROLE_MESSAGE = {
     },
   },
   'end-user': {
-    builder: () => {
+    builder: (isPaidPlan) => {
       return (
         <div>
-          <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-            CChanging user default group from end-user to builder will affect the count of users covered by your plan.
-          </p>
+          {isPaidPlan && (
+            <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
+              Changing user default group from end-user to builder will affect the count of users covered by your plan.
+            </p>
+          )}
           <p className="tj-text-sm">Are you sure you want to continue?</p>
         </div>
       );
     },
-    admin: () => {
+    admin: (isPaidPlan) => {
       return (
         <div>
-          <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-            CChanging user default group from end-user to admin will affect the count of users covered by your plan.
-          </p>
+          {isPaidPlan && (
+            <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
+              Changing user default group from end-user to admin will affect the count of users covered by your plan.
+            </p>
+          )}
           <p className="tj-text-sm">Are you sure you want to continue?</p>
         </div>
       );

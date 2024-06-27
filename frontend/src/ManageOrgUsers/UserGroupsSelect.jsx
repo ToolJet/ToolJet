@@ -47,8 +47,6 @@ export function UserGroupsSelect(props) {
     const onMouseDown = () => setIsActive(true);
     const onMouseUp = () => setIsActive(false);
     const onMouseLeave = () => setIsActive(false);
-    console.log(data);
-    console.log('logginf value');
     const style = {
       alignItems: 'center',
       backgroundColor: 'transparent',
@@ -74,7 +72,11 @@ export function UserGroupsSelect(props) {
         className={isDisabled && 'disabled'}
       >
         <input
-          style={{ width: '1.2rem', height: '1.2rem', borderRadius: '6px !important' }}
+          style={
+            data.groupType === 'default'
+              ? { height: '1.3rem' }
+              : { width: '1.2rem', height: '1.2rem', borderRadius: '6px !important' }
+          }
           type={data.groupType === 'default' ? 'radio' : 'checkbox'}
           className="form-check-input"
           checked={isSelected}
@@ -84,6 +86,13 @@ export function UserGroupsSelect(props) {
       </components.Option>
     );
   };
+  const MultiValueRemove = (props) => {
+    // Conditionally render the close icon
+    if (props.data.groupType === 'default') {
+      return null; // Do not render the close icon
+    }
+    return <components.MultiValueRemove {...props} />;
+  };
 
   const MultiValue = (props) => (
     <components.MultiValue {...props}>
@@ -92,6 +101,11 @@ export function UserGroupsSelect(props) {
   );
 
   const selectStyles = {
+    placeholder: (base) => ({
+      ...base,
+      fontSize: '12px',
+      color: '#A0A0A0',
+    }),
     indicatorSeparator: (base) => ({
       ...base,
       display: 'none',
@@ -105,6 +119,7 @@ export function UserGroupsSelect(props) {
     multiValue: (base) => ({
       ...base,
       borderRadius: '6px',
+      height: '16px',
       backgroundColor: 'var(--slate3)',
       color: 'var(--slate11)',
       '.selected-value': {
@@ -121,6 +136,12 @@ export function UserGroupsSelect(props) {
       paddingLeft: '0px',
       ...(state.data.isFixed && { display: 'none' }),
     }),
+    valueContainer: (base) => ({
+      ...base,
+      minHeight: '32px !important',
+      maxHeight: '32px !important',
+      padding: '0px 5px 0px 5px !important',
+    }),
     input: (base) => ({
       ...base,
       input: {
@@ -130,10 +151,13 @@ export function UserGroupsSelect(props) {
     }),
     control: (base) => ({
       ...base,
+      height: '32px !important',
+      minHeight: '32px !important',
       outline: 'none',
       border: '1px solid var(--slate7)',
       boxShadow: 'none',
       borderRadius: '6px',
+
       background: 'unset',
       '&:hover': {
         border: '1px solid var(--slate8)',
@@ -168,10 +192,10 @@ export function UserGroupsSelect(props) {
       hideSelectedOptions={false}
       className={darkMode && 'theme-dark dark-theme'}
       formatGroupLabel={formatGroupLabel}
-      components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
+      components={{ Option: InputOption, MultiValue, MultiValueRemove, IndicatorSeparator: null }}
       {...props}
       styles={selectStyles}
-      placeholder="Select groups to add for this user"
+      placeholder="Select user groups and role .."
       noOptionsMessage={() => 'No groups found'}
     />
   );

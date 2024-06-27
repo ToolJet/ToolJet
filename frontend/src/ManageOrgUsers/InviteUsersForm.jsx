@@ -29,11 +29,19 @@ function InviteUsersForm({
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
-  const [selectedGroups, setSelectedGroups] = useState([]);
   const [existingGroups, setExistingGroups] = useState([]);
   const [newRole, setNewRole] = useState(null);
+
   const customGroups = groups.filter((group) => group.groupType === 'custom');
-  const roleGroups = groups.filter((group) => group.groupType === 'default');
+  const roleGroups = groups
+    .filter((group) => group.groupType === 'default')
+    .sort((a, b) => {
+      const sortOrder = ['admin', 'builder', 'end-user'];
+      const indexA = sortOrder.indexOf(a.value);
+      const indexB = sortOrder.indexOf(b.value);
+
+      return indexA - indexB;
+    });
   const [isChangeRoleModalOpen, setIsChangeRoleModalOpen] = useState(false);
   const groupedOptions = [
     {
@@ -45,6 +53,7 @@ function InviteUsersForm({
       options: customGroups,
     },
   ];
+  const [selectedGroups, setSelectedGroups] = useState([]);
 
   const hiddenFileInput = useRef(null);
 
@@ -66,6 +75,8 @@ function InviteUsersForm({
         groups.filter((group) => addedToCustomGroups.map((gp) => gp.name).includes(group.value)).map((g) => g.id)
       );
       onChangeHandler(preSelectedGroups);
+    } else {
+      onChangeHandler(roleGroups.filter((group) => group.value === 'end-user'));
     }
   }, [currentEditingUser, groups]);
 
@@ -90,6 +101,7 @@ function InviteUsersForm({
     if (roleGroups.length == 2) {
       finalGroup = items.filter((group) => group.value !== currentRole.value);
     }
+    if (roleGroups.length === 0) return;
     if (currentEditingUser) {
       const role = finalGroup.find(
         (group) =>

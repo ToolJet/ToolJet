@@ -88,14 +88,16 @@ const UsersTable = ({
                             user.last_name ? user.last_name[0] : ''
                           }`}
                         />
-                        <div className='user-detail'>
-                        <span
-                          className="mx-3 tj-text tj-text-sm"
-                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
-                        >
-                          {decodeEntities(user.name)}
-                        </span>
-                        <span style={{color:'#687076'}} className="user-email mx-3 tj-text tj-text-xsm">{user.email}</span>
+                        <div className="user-detail">
+                          <span
+                            className="mx-3 tj-text tj-text-sm"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
+                          >
+                            {decodeEntities(user.name)}
+                          </span>
+                          <span style={{ color: '#687076' }} className="user-email mx-3 tj-text tj-text-xsm">
+                            {user.email}
+                          </span>
                         </div>
                       </td>
                       <GroupChipTD groups={user.role_group.map((group) => group.name)} />
@@ -229,32 +231,31 @@ const GroupChipTD = ({ groups = [] }) => {
       className={cx('text-muted groups-name-cell', { 'groups-hover': orderedArray.length > 2 })}
     >
       <div className="groups-name-container tj-text-sm font-weight-500">
-        {orderedArray.length === 0
-          ? 
-          <div className='empty-text'>
-            -
-          </div>
-          : orderedArray.slice(0, 2).map((group, index) => {
-              if (orderedArray.length <= 2) {
-                return renderGroupChip(group, index);
-              }
-
-              if (orderedArray.length > 2 && index === 1) {
-                return (
-                  <React.Fragment key={index}>
-                    {renderGroupChip(group, index)}
-                    <span className="group-chip">+{orderedArray.length - 2} more</span>
-                    {showAllGroups && (
-                      <div className="all-groups-list">
-                        {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
-                      </div>
-                    )}
-                  </React.Fragment>
-                );
-              }
-
+        {orderedArray.length === 0 ? (
+          <div className="empty-text">-</div>
+        ) : (
+          orderedArray.slice(0, 2).map((group, index) => {
+            if (orderedArray.length <= 2) {
               return renderGroupChip(group, index);
-            })}
+            }
+
+            if (orderedArray.length > 2 && index === 1) {
+              return (
+                <React.Fragment key={index}>
+                  {renderGroupChip(group, index)}
+                  <span className="group-chip">+{orderedArray.length - 2} more</span>
+                  {showAllGroups && (
+                    <div className="all-groups-list">
+                      {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            }
+
+            return renderGroupChip(group, index);
+          })
+        )}
       </div>
     </td>
   );

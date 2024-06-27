@@ -31,19 +31,31 @@ function ChangeRoleModal({
     return message;
   };
 
+  const renderUserChangeTitle = (type) => {
+    const addUserTitle = (
+      <div className="my-3" data-cy="modal-title">
+        <span className="tj-text-md font-weight-500">Change in user role</span>
+      </div>
+    );
+    const updatePermissionTitile = (
+      <div className="my-3" data-cy="modal-title">
+        <span className="tj-text-md font-weight-500">Add user(s)</span>
+      </div>
+    );
+    const message = type === 'USER_ROLE_CHANGE_ADD_USERS' ? addUserTitle : updatePermissionTitile;
+    return message;
+  };
+
   return (
     <ModalBase
-      title={
-        <div className="my-3" data-cy="modal-title">
-          <span className="tj-text-md font-weight-500">Change in user role</span>
-        </div>
-      }
+      title={renderUserChangeTitle(autoRoleChangeMessageType)}
       handleConfirm={handleConfirmation}
       confirmBtnProps={{ title: 'Continue' }}
       show={showAutoRoleChangeModal}
       handleClose={handleAutoRoleChangeModalClose}
       darkMode={darkMode}
       isLoading={isLoading}
+      className="edit-role-confirm"
     >
       <>
         {renderUserChangeMessage(autoRoleChangeMessageType)}
