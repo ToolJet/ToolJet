@@ -6,7 +6,7 @@ import { Page } from 'src/entities/page.entity';
 import { ComponentsService } from './components.service';
 import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
 import { AppsService } from './apps.service';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
 import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';

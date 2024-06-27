@@ -13,7 +13,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
 import { EncryptionService } from './encryption.service';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironmentService } from './app_environments.service';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { EventHandler } from 'src/entities/event_handler.entity';

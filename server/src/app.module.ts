@@ -1,6 +1,5 @@
 import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
-import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
 import { getEnvVars } from '../scripts/database-config-utils';
@@ -47,6 +46,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { GetConnection } from './helpers/getconnection';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -172,10 +172,10 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
 @Module({
   imports,
   controllers: [AppController],
-  providers: [EmailService, SeedsService],
+  providers: [EmailService, SeedsService, GetConnection],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private connection: Connection) {}
+  constructor() {}
 
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({

@@ -1,8 +1,7 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Thread } from '../entities/thread.entity';
 import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 
-@EntityRepository(Thread)
 export class ThreadRepository extends Repository<Thread> {
   public async createThread(createThreadDto: CreateThreadDto, userId: string, organizationId: string): Promise<Thread> {
     const { x, y, appId, appVersionsId, pageId } = createThreadDto;

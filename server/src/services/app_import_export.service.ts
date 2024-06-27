@@ -12,7 +12,6 @@ import { User } from 'src/entities/user.entity';
 import { EntityManager, In } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
 import {
-  dbTransactionWrap,
   defaultAppEnvironments,
   catchDbException,
   extractMajorVersion,
@@ -33,6 +32,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;

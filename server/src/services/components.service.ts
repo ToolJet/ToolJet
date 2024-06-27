@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
 import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 
 import { EventsService } from './events_handler.service';
@@ -121,7 +121,7 @@ export class ComponentsService {
 
   async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const components = await manager.findByIds(Component, componentIds);
+      const components = await manager.find(Component, { where: In(componentIds)});
 
       if (!components.length) {
         return {

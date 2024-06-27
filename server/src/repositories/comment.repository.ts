@@ -1,8 +1,7 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Comment } from '../entities/comment.entity';
 import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 
-@EntityRepository(Comment)
 export class CommentRepository extends Repository<Comment> {
   public async createComment(
     createCommentDto: CreateCommentDto,

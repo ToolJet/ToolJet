@@ -23,7 +23,6 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
-  dbTransactionWrap,
   fullName,
   generateInviteURL,
   generateNextNameAndSlug,
@@ -48,6 +47,7 @@ import * as requestIp from 'request-ip';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { AppAuthenticationDto, AppSignupDto } from '@dto/app-authentication.dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 

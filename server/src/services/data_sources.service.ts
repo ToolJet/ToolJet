@@ -1,15 +1,16 @@
 import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { EntityManager, Repository, DataSource as TypeORMDatasource } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { EncryptionService } from './encryption.service';
 import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 
 @Injectable()
 export class DataSourcesService {
@@ -20,7 +21,8 @@ export class DataSourcesService {
     private appEnvironmentService: AppEnvironmentService,
 
     @InjectRepository(DataSource)
-    private dataSourcesRepository: Repository<DataSource>
+    private dataSourcesRepository: Repository<DataSource>,
+    private readonly _dataSource: TypeORMDatasource
   ) {}
 
   async all(
@@ -385,7 +387,7 @@ export class DataSourcesService {
     return options;
   }
 
-  async parseOptionsForCreate(options: Array<object>, resetSecureData = false, entityManager = getManager()) {
+  async parseOptionsForCreate(options: Array<object>, resetSecureData = false, entityManager = this._dataSource.manager) {
     if (!options) return {};
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
@@ -413,7 +415,7 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, entityManager = getManager()) {
+  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, entityManager = this._dataSource.manager) {
     if (!options) return {};
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);

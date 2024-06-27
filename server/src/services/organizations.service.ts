@@ -8,12 +8,11 @@ import { User } from 'src/entities/user.entity';
 import {
   catchDbException,
   cleanObject,
-  dbTransactionWrap,
   isPlural,
   fullName,
   generateNextNameAndSlug,
 } from 'src/helpers/utils.helper';
-import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
+import { Brackets, DeepPartial, EntityManager, Repository, DataSource as TypeORMDatasource } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -39,6 +38,7 @@ import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.const
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 
 const MAX_ROW_COUNT = 500;
 
@@ -87,7 +87,8 @@ export class OrganizationsService {
     private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private readonly _dataSource: TypeORMDatasource
   ) {}
 
   async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
@@ -175,7 +176,8 @@ export class OrganizationsService {
   }
 
   async getSingleOrganization(): Promise<Organization> {
-    return await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
+    const responses = await this.organizationsRepository.find({ take: 1, relations: ['ssoConfigs'] });
+    return responses[0];
   }
 
   async createDefaultGroupPermissionsForOrganization(organization: Organization, manager?: EntityManager) {
@@ -263,7 +265,7 @@ export class OrganizationsService {
           });
       });
     };
-    const query = createQueryBuilder(OrganizationUser, 'organization_user')
+    const query = this._dataSource.createQueryBuilder(OrganizationUser, 'organization_user')
       .innerJoinAndSelect('organization_user.user', 'user')
       .innerJoinAndSelect(
         'user.groupPermissions',
@@ -315,7 +317,7 @@ export class OrganizationsService {
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
-    return await createQueryBuilder(Organization, 'organization')
+    return await this._dataSource.createQueryBuilder(Organization, 'organization')
       .innerJoin(
         'organization.organizationUsers',
         'organization_users',
@@ -338,7 +340,7 @@ export class OrganizationsService {
   ): Promise<Organization[]> {
     const statusList = status ? (typeof status === 'object' ? status : [status]) : [WORKSPACE_USER_STATUS.ACTIVE];
 
-    const query = createQueryBuilder(Organization, 'organization')
+    const query = this._dataSource.createQueryBuilder(Organization, 'organization')
       .innerJoin('organization.ssoConfigs', 'organization_sso', 'organization_sso.sso = :form', {
         form: 'form',
       })
@@ -372,7 +374,7 @@ export class OrganizationsService {
   }
 
   async getSSOConfigs(organizationId: string, sso: string): Promise<Organization> {
-    return await createQueryBuilder(Organization, 'organization')
+    return await this._dataSource.createQueryBuilder(Organization, 'organization')
       .leftJoinAndSelect('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :sso', {
         sso,
       })
@@ -383,7 +385,7 @@ export class OrganizationsService {
   }
 
   constructOrgFindQuery(slug: string, id: string, statusList?: Array<boolean>) {
-    const query = createQueryBuilder(Organization, 'organization').leftJoinAndSelect(
+    const query = this._dataSource.createQueryBuilder(Organization, 'organization').leftJoinAndSelect(
       'organization.ssoConfigs',
       'organisation_sso',
       'organisation_sso.enabled IN (:...statusList)',
@@ -713,7 +715,7 @@ export class OrganizationsService {
     const invalidGroups = [];
     let isUserInOtherGroupsAndAdmin = false;
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-    const manager = getManager();
+    const manager = this._dataSource.manager;
 
     const groupPermissions = await this.groupPermissionService.findAll(currentUser);
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.group);

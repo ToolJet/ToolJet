@@ -6,7 +6,7 @@ import { CommentRepository } from '../repositories/comment.repository';
 import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { groupBy, head } from 'lodash';
 import { EmailService } from './email.service';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { User } from 'src/entities/user.entity';
 import { CommentUsers } from 'src/entities/comment_user.entity';
@@ -22,7 +22,8 @@ export class CommentService {
     private usersRepository: Repository<User>,
     @InjectRepository(CommentUsers)
     private commentUsersRepository: Repository<CommentUsers>,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private readonly _dataSource: DataSource
   ) {}
 
   public async createComment(createCommentDto: CreateCommentDto, user: User): Promise<Comment> {
@@ -64,7 +65,9 @@ export class CommentService {
   }
 
   public async getComments(threadId: string, appVersionsId: string): Promise<Comment[]> {
-    return await createQueryBuilder(Comment, 'comment')
+    return await 
+    this._dataSource.
+    createQueryBuilder(Comment, 'comment')
       .innerJoin('comment.user', 'user')
       .addSelect(['user.id', 'user.firstName', 'user.lastName'])
       .andWhere('comment.threadId = :threadId', {
@@ -96,7 +99,9 @@ export class CommentService {
     appVersionsId: string,
     pageId: string
   ): Promise<Comment[]> {
-    const comments = await createQueryBuilder(Comment, 'comment')
+    const comments = await 
+    this._dataSource.
+    createQueryBuilder(Comment, 'comment')
       .innerJoin('comment.user', 'user')
       .addSelect(['user.id', 'user.firstName', 'user.lastName'])
       .innerJoin('comment.thread', 'thread')

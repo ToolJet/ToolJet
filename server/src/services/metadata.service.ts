@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createQueryBuilder, EntityManager, getManager, In, Repository } from 'typeorm';
+import { EntityManager, In, Repository, DataSource as TypeORMDatasource } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
 import got from 'got';
@@ -15,7 +15,9 @@ export class MetadataService {
   constructor(
     @InjectRepository(Metadata)
     private metadataRepository: Repository<Metadata>,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private readonly _dataSource: TypeORMDatasource
+
   ) {}
 
   async getMetaData() {
@@ -80,7 +82,7 @@ export class MetadataService {
   }
 
   async sendTelemetryData(metadata: Metadata) {
-    const manager = getManager();
+    const manager = this._dataSource.manager;
     const totalUserCount = await manager.count(User);
     const totalAppCount = await manager.count(App);
     const totalInternalTableCount = await manager.count(InternalTable);
@@ -148,7 +150,7 @@ export class MetadataService {
     ).map((record) => record.id);
 
     const userIdsOfAppOwners = (
-      await createQueryBuilder(User, 'users').innerJoin('users.apps', 'apps').select('users.id').distinct().getMany()
+      await this._dataSource.createQueryBuilder(User, 'users').innerJoin('users.apps', 'apps').select('users.id').distinct().getMany()
     ).map((record) => record.id);
 
     const totalEditorCount = await manager.count(User, {

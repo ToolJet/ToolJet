@@ -3,12 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
@@ -24,7 +25,8 @@ export class UsersService {
     @InjectRepository(App)
     private appsRepository: Repository<App>,
     @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>
+    private organizationsRepository: Repository<Organization>,
+    private readonly _dataSource: DataSource
   ) {}
 
   async getCount(): Promise<number> {
@@ -231,7 +233,7 @@ export class UsersService {
     const removingAdmin = removeGroups.includes('admin');
     if (!removingAdmin) return;
 
-    const result = await createQueryBuilder(User, 'users')
+    const result = await this._dataSource.createQueryBuilder(User, 'users')
       .innerJoin('users.groupPermissions', 'group_permissions')
       .innerJoin('users.organizationUsers', 'organization_users')
       .where('organization_users.user_id != :userId', { userId: user.id })
@@ -449,12 +451,12 @@ export class UsersService {
       const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
       const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
 
-      return await manager.findByIds(GroupPermission, groupIds);
+      return await manager.find(GroupPermission, { where: { id: In(groupIds) }});
     }, manager);
   }
 
   async groupPermissionsForOrganization(organizationId: string) {
-    const groupPermissionRepository = getRepository(GroupPermission);
+    const groupPermissionRepository = this._dataSource.getRepository(GroupPermission);
 
     return await groupPermissionRepository.find({ where: {organizationId} });
   }

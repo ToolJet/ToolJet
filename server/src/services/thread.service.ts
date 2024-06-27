@@ -3,13 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Thread } from '../entities/thread.entity';
 import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 import { ThreadRepository } from '../repositories/thread.repository';
-import { createQueryBuilder } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class ThreadService {
   constructor(
     @InjectRepository(ThreadRepository)
-    private threadRepository: ThreadRepository
+    private threadRepository: ThreadRepository,
+    private readonly _dataSource: DataSource
   ) {}
 
   public async createThread(createThreadDto: CreateThreadDto, userId: string, orgId: string): Promise<Thread> {
@@ -23,7 +24,7 @@ export class ThreadService {
     appVersionsId: string,
     threadId?: string
   ): Promise<Thread[]> {
-    const query = createQueryBuilder(Thread, 'thread')
+    const query = this._dataSource.createQueryBuilder(Thread, 'thread')
       .innerJoin('thread.user', 'user')
       .addSelect(['user.id', 'user.firstName', 'user.lastName'])
       .andWhere('thread.appId = :appId', {
