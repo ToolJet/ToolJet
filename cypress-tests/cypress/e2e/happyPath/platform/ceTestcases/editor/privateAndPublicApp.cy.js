@@ -296,7 +296,6 @@ describe(
         });
       });
 
-      cy.get(usersSelector.acceptInvite).click();
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
     });
   }

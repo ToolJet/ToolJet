@@ -552,21 +552,25 @@ export const defaultSSO = (enable) => {
   });
 };
 
-export const setSignupStatus = (enable) => {
-  cy.getCookie("tj_auth_token").then((cookie) => {
-    cy.request(
-      {
+export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
+  }).then((resp) => {
+    const workspaceId = resp.rows[0].id;
+
+    cy.getCookie("tj_auth_token").then((cookie) => {
+      cy.request({
         method: "PATCH",
         url: "http://localhost:3000/api/organizations",
         headers: {
-          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          "Tj-Workspace-Id": workspaceId,
           Cookie: `tj_auth_token=${cookie.value}`,
         },
         body: { enableSignUp: enable },
-      },
-      { log: false }
-    ).then((response) => {
-      expect(response.status).to.equal(200);
+      }).then((response) => {
+        expect(response.status).to.equal(200);
+      });
     });
   });
 };
