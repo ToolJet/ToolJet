@@ -818,6 +818,8 @@ export const Container = ({
     ? 'Connect to your data source or use our sample data source to start playing around!'
     : 'Connect to a data source to be able to create a query';
 
+  const showEmptyContainer = !appLoading && !isDragging && mode !== 'view';
+
   return (
     <ContainerWrapper
       showComments={showComments}
@@ -930,7 +932,7 @@ export const Container = ({
           />
         </div>
       </div>
-      {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
+      {Object.keys(boxes).length === 0 && showEmptyContainer && (
         <div style={{ paddingTop: '10%' }}>
           <div className="row empty-box-cont">
             <div className="col-md-4 dotted-cont">

@@ -17,6 +17,7 @@ import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import cx from 'classnames';
 import SSOLoginModule from './SSOLoginModule';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -31,6 +32,7 @@ class LoginPageComponent extends React.Component {
     this.paramOrganizationSlug = props?.params?.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
+  whiteLabelText = retrieveWhiteLabelText();
 
   componentDidMount() {
     /* remove login oranization's id and slug from the cookie */
@@ -130,7 +132,9 @@ class LoginPageComponent extends React.Component {
     const signUpCTA = workspaceSignUpEnabled ? 'Sign up' : 'Create an account';
     const signupText = workspaceSignUpEnabled
       ? this.props.t('loginSignupPage.newToWorkspace', `New to this workspace?`)
-      : this.props.t('loginSignupPage.newToTooljet', `New to Tooljet?`);
+      : this.props.t('loginSignupPage.newToTooljet', ` New to ${this.whiteLabelText}?`, {
+          whiteLabelText: this.whiteLabelText,
+        });
     const signUpUrl = `/signup${this.paramOrganizationSlug ? `/${this.paramOrganizationSlug}` : ''}${
       redirectTo ? `?redirectTo=${redirectTo}` : ''
     }`;
