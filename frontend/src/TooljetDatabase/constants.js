@@ -27,8 +27,8 @@ export const dataTypes = [
     value: 'serial',
   },
   {
-    name: 'Date and time',
-    label: 'timestamp',
+    name: 'Timestamp in ISO8601 format',
+    label: 'Date with time',
     icon: <Datetime width="16" height="16" />,
     value: 'timestamp with time zone',
   },
