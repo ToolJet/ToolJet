@@ -5,89 +5,351 @@
   "type": "api",
   "defaults": {},
   "properties": {
-    "operation": {
-      "label": "Operation",
-      "key": "operation",
+    "resource": {
+      "label": "Resource",
+      "key": "resource",
+      "className": "col-md-4",
       "type": "dropdown-component-flip",
-      "description": "Single select dropdown for operation",
+      "description": "Resource select",
       "list": [
         {
-          "value": "create_issue",
-          "name": "Create an issue"
+          "value": "issue",
+          "name": "Issue"
         },
         {
-          "value": "delete_issue",
-          "name": "Delete an issue"
-        },
-        {
-          "value": "assign_issue",
-          "name": "Assign an issue"
-        },
-        {
-          "value": "get_issue",
-          "name": "Find an issue"
+          "value": "user",
+          "name": "User"
         }
       ]
     },
-    "create_issue": {
-      "properties": {
-        "label": "Properties",
-        "key": "properties",
-        "type": "codehinter",
-        "mode": "javascript",
-        "placeholder": "{\n\"fields\": {\n   \"project\":\n   { \n      \"key\": \"KFTT\"\n   },\n   \"summary\": \"REST EXAMPLE\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Story\"\n   ...",
-        "description": "Enter filter object",
-        "height": "200px"
-      }
-    },
-    "delete_issue": {
-      "issue_key": {
-        "label": "Issue Key",
-        "key": "issue_key",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter Issue Key",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "YourKey"
-      }
-    },
-    "assign_issue": {
-      "issue_key": {
-        "label": "Issue Key",
-        "key": "issue_key",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter Issue Key",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "YourKey"
+    "issue": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_issue",
+            "name": "Find issue"
+          },
+          {
+            "value": "create_issue",
+            "name": "Create issue"
+          },
+          {
+            "value": "delete_issue",
+            "name": "Delete issue"
+          },
+          {
+            "value": "assign_issue",
+            "name": "Assign issue"
+          },
+          {
+            "value": "edit_issue",
+            "name": "Edit issue"
+          }
+        ]
       },
-      "account_id": {
-        "label": "Issue user uniquie id",
-        "key": "account_id",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter user uniquie id",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "5b10ac8d82e05b22cc7d4ef5"
+      "get_issue": {
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "properties": {
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\n\"fields\": {\n   \"summary\": \"REST EXAMPeeeeeeeee3\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   }\n  }\n}",
+          "description": "Enter query properties",
+          "height": "200px"
+        }
+      },
+      "create_issue": {
+        "properties": {
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\n\"fields\": {\n   \"project\":\n   { \n      \"key\": \"KFTT\"\n   },\n   \"summary\": \"REST EXAMPLE\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Story\"\n   ...",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      },
+      "delete_issue": {
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "delete_subtasks": {
+          "label": "Delete subtasks",
+          "key": "delete_subtasks",
+          "className": "col-4",
+          "type": "dropdown",
+          "description": "Single select dropdown for delete subtasks",
+          "list": [
+            {
+              "value": null,
+              "name": "None"
+            },
+            {
+              "value": true,
+              "name": "yes"
+            },
+            {
+              "value": false,
+              "name": "no"
+            }
+          ]
+        }
+      },
+      "assign_issue": {
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "account_id": {
+          "label": "Account Id",
+          "key": "account_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter user uniquie id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "5b10ac8d82e05b22cc7d4ef5"
+        }
+      },
+      "edit_issue": {
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "properties": {
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\n\"fields\": {\n   \"summary\": \"REST EXAMPeeeeeeeee3\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   }\n  }\n}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
       }
     },
-    "get_issue": {
-      "issue_key": {
-        "label": "Issue Key",
-        "key": "issue_key",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter Issue Key",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "YourKey"
+
+    "user": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_user",
+            "name": "Get user"
+          },
+          {
+            "value": "find_users_by_query",
+            "name": "Find users by query"
+          },
+          {
+            "value": "find_assignable_users",
+            "name": "Assignable users"
+          }
+        ]
+      },
+      "get_user": {
+        "account_id": {
+          "label": "Account Id",
+          "key": "account_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter user uniquie id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "5b10ac8d82e05b22cc7d4ef5"
+        },
+        "expand": {
+          "label": "expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        }
+      },
+      "find_users_by_query": {
+        "query": {
+          "label": "Query",
+          "key": "query",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder":"is assignee of PROJ AND [propertyKey].entity.property.path is \"property value\"",
+          "description": "Enter Query",
+          "height": "200px"
+        },
+        "start_at": {
+          "label": "Start At",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max Results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        }
+      },
+      "find_assignable_users": {
+        "query": {
+          "label": "Query",
+          "key": "query",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder":"John",
+          "description": "A query string that is matched against user attributes, such as displayName, and emailAddress",
+          "height": "200px"
+        },
+        "session_id": {
+          "label": "Session Id",
+          "key": "session_id",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder":"session_id",
+          "description": "The sessionId of this request",
+          "height": "200px"
+        },
+        "account_id": {
+          "label": "Account Id",
+          "key": "account_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter user uniquie id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "5b10ac8d82e05b22cc7d4ef5"
+        },
+        "project_key": {
+          "label": "Project Key",
+          "key": "project_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter project Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ"
+        },
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "start_at": {
+          "label": "Start At",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max Results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "action_descriptor_id": {
+          "label": "ActionDescriptor Id",
+          "key": "action_descriptor_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "The ID of the transition",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "ID of the transition"
+        },
+        "recommend": {
+          "label": "Recommended",
+          "key": "recommend",
+          "className": "col-4",
+          "type": "dropdown",
+          "description": "Single select dropdown for recommend",
+          "list": [
+            {
+              "value": null,
+              "name": "None"
+            },
+            {
+              "value": true,
+              "name": "recommend"
+            },
+            {
+              "value": false,
+              "name": "Un recommend"
+            }
+          ]
+        }
       }
     }
   }

@@ -1,12 +1,12 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 import { Version3Client } from 'jira.js';
-import { assignIssue, createIssue, deleteIssue, getIssue } from './operations';
+import { issueResource, userResource } from './operations';
 
 export default class Jira implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const { url } = sourceOptions;
-    const { operation } = queryOptions;
+    const { resource } = queryOptions;
 
     let res: any;
 
@@ -22,28 +22,14 @@ export default class Jira implements QueryService {
 
     console.log('queryOptions', queryOptions);
 
-    // switch (auth_type) {
-    //     case 'personal_access_token':
-    //
-    //         break
-    // }
-
     try {
-      switch (operation) {
-        case 'create_issue': {
-          res = await createIssue(queryOptions, client);
+      switch (resource) {
+        case 'issue': {
+          res = await issueResource(queryOptions, client);
           break;
         }
-        case 'delete_issue': {
-          res = await deleteIssue(queryOptions, client);
-          break;
-        }
-        case 'assign_issue': {
-          res = await assignIssue(queryOptions, client);
-          break;
-        }
-        case 'get_issue': {
-          res = await getIssue(queryOptions, client);
+        case 'user': {
+          res = await userResource(queryOptions, client);
           break;
         }
         default: {
