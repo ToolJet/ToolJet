@@ -283,7 +283,6 @@ const EditorComponent = (props) => {
     if (didAppDefinitionChanged) {
       prevAppDefinition.current = appDefinition;
     }
-
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
@@ -291,7 +290,7 @@ const EditorComponent = (props) => {
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      handleLowPriorityWork(() => autoSave());
+      handleLowPriorityWork(() => autoSave(), 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
