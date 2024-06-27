@@ -11,7 +11,7 @@
       "data": {},
       "rawData": {}
     },
-    "customTesting": true,
+    "customTesting": false,
     "options": {
       "url": {
         "type": "string"
