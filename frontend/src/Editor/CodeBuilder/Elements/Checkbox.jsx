@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 function Checkbox({ value, onChange }) {
   const [isChecked, setIsChecked] = useState(value); // Initial state of the checkbox
-
   useEffect(() => {
     setIsChecked(value);
   }, [value]);
@@ -15,7 +14,7 @@ function Checkbox({ value, onChange }) {
         checked={isChecked}
         onChange={() => {
           setIsChecked(!isChecked); // Toggle the checkbox state
-          onChange(!isChecked);
+          onChange(`{{${!isChecked}}}`);
         }}
         value={isChecked}
         style={{ height: '16px', width: '16px' }}

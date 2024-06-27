@@ -12,7 +12,7 @@ export function ToolTip({
   delay = { show: 50, hide: 100 },
   show = true,
   tooltipClassName = '',
-  style = {},
+  ...rest
 }) {
   if (!show) {
     return children;
@@ -23,7 +23,7 @@ export function ToolTip({
       placement={placement}
       delay={delay}
       overlay={
-        <Tooltip style={style} className={tooltipClassName}>
+        <Tooltip className={tooltipClassName} style={{ width: rest?.width ? rest?.width : 'auto' }}>
           {message}
         </Tooltip>
       }
