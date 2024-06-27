@@ -12,15 +12,13 @@ export const whiteLabellingOptions = {
   WHITE_LABEL_FAVICON: 'Favicon',
 };
 
-export async function fetchWhiteLabelDetails(organizationId = null) {
-}
+export async function fetchWhiteLabelDetails() {}
 
-export async function checkWhiteLabelsDefaultState(organizationId = null) {
+export async function checkWhiteLabelsDefaultState() {
   return true;
 }
 
-export async function resetToDefaultWhiteLabels() {
-}
+export async function resetToDefaultWhiteLabels() {}
 
 export function retrieveWhiteLabelText() {
   return window.public_config?.WHITE_LABEL_TEXT || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
