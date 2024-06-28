@@ -89,8 +89,14 @@ export function AppModal({
           setInfoText('');
           closeModal();
         }
-      } catch (e) {
-        toast.error(e.error, {
+      } catch (error) {
+        let errorMessage = 'Some Error Occured';
+        if (error?.error) {
+          errorMessage = error.error;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage, {
           position: 'top-center',
         });
       }
