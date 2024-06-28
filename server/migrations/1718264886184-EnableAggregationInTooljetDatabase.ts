@@ -1,7 +1,6 @@
-import { tooljetDbOrmconfig } from 'ormconfig';
 import { getEnvVars } from 'scripts/database-config-utils';
+import { createMigrationConnectionForToolJetDatabase } from 'src/helpers/tjdb.migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { createConnection } from 'typeorm';
 
 export class EnableAggregationInTooljetDatabase1718264886184 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,14 +9,11 @@ export class EnableAggregationInTooljetDatabase1718264886184 implements Migratio
 
     if (isToolJetDBEnabled !== 'true') return;
     console.log('Entering Migration --- EnableAggregationInTooljetDatabase');
-    const tooljetDbConnection = await createConnection({
-      ...tooljetDbOrmconfig,
-      name: 'tooljetDbAggregateMigration',
-    } as any);
 
-    const tooljetDbManager = tooljetDbConnection.createEntityManager();
     const tooljetDbUser = envData.TOOLJET_DB_USER;
-
+    const { tooljetDbConnection, tooljetDbManager } = await createMigrationConnectionForToolJetDatabase(
+      'tooljetDbAggregateMigration'
+    );
     try {
       await tooljetDbManager.transaction(async (transactionalEntityManager) => {
         await transactionalEntityManager.queryRunner.query('CREATE SCHEMA IF NOT EXISTS postgrest');
