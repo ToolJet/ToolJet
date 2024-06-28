@@ -713,6 +713,7 @@ $border-radius: 4px;
   display: flex;
   flex-direction: row;
   gap: 4px;
+  background-color: var(--controls-switch-tag) !important;
 
   .list-group-item {
     border: none !important;
@@ -749,7 +750,7 @@ $border-radius: 4px;
     transition-delay: 5ms;
 
     span {
-      background-color: #fff !important;
+      background-color: var(--controls-switch-tab);
     }
   }
 
