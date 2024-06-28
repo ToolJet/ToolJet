@@ -8,7 +8,6 @@ const ParameterList = ({
   handleAddParameter,
   handleParameterChange,
   handleParameterRemove,
-  currentState,
   darkMode,
   containerRef,
 }) => {
@@ -68,7 +67,7 @@ const ParameterList = ({
               name={parameter.name}
               otherParams={formattedParameters.filter((p) => p.name !== parameter.name)}
               defaultValue={parameter.defaultValue}
-              currentState={currentState}
+              // currentState={currentState}
               darkMode={darkMode}
             />
           );
@@ -97,7 +96,6 @@ const ParameterList = ({
                   handleParameterChange(selectedParameter.index, param);
                   setSelectedParameter();
                 }}
-                currentState={currentState}
                 showModal={showMore}
               />
             ) : (
@@ -136,12 +134,7 @@ const ParameterList = ({
           )}
         </span>
       </OverlayTrigger>
-      <ParameterDetails
-        onSubmit={handleAddParameter}
-        currentState={currentState}
-        darkMode={darkMode}
-        otherParams={formattedParameters}
-      />
+      <ParameterDetails onSubmit={handleAddParameter} darkMode={darkMode} otherParams={formattedParameters} />
     </div>
   );
 };
