@@ -36,7 +36,7 @@
         "list": [
           {
             "value": "get_issue",
-            "name": "Find issue"
+            "name": "Get issue"
           },
           {
             "value": "create_issue",
@@ -69,18 +69,18 @@
           "placeholder": "PROJ-1"
         },
         "properties": {
-          "label": "Properties",
+          "label": "Params/Body",
           "key": "properties",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "{\n\"fields\": {\n   \"summary\": \"REST EXAMPeeeeeeeee3\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   }\n  }\n}",
+          "placeholder": "{\n\"fields\": {\n   \"summary\": \"REST EXAMPLE\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   }\n  }\n}",
           "description": "Enter query properties",
           "height": "200px"
         }
       },
       "create_issue": {
         "properties": {
-          "label": "Properties",
+          "label": "Params/Body",
           "key": "properties",
           "type": "codehinter",
           "mode": "javascript",
@@ -160,11 +160,11 @@
           "placeholder": "PROJ-1"
         },
         "properties": {
-          "label": "Properties",
+          "label": "Params/Body",
           "key": "properties",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "{\n\"fields\": {\n   \"summary\": \"REST EXAMPeeeeeeeee3\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   }\n  }\n}",
+          "placeholder": "{\n\"fields\": {\n   \"summary\": \"REST EXAMPLE\",\n   \"description\": \"Creating an issue via REST API\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   }\n  }\n}",
           "description": "Enter properties",
           "height": "200px"
         }
@@ -372,6 +372,10 @@
           {
             "value": "add_worklog",
             "name": "Add worklog"
+          },
+          {
+            "value": "delete_worklog",
+            "name": "Delete worklog"
           }
         ]
       },
@@ -456,11 +460,44 @@
           "placeholder": "PROJ-1"
         },
         "properties": {
-          "label": "Properties",
+          "label": "Params/Body",
           "key": "properties",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder":"{\n  \"comment\": {\n    \"content\": [\n      {\n        \"content\": [\n          {\n            \"text\": \"I did some work here.\",\n            \"type\": \"text\"\n          }\n        ],\n        \"type\": \"paragraph\"\n      }\n    ],\n    \"type\": \"doc\",\n    \"version\": 1\n  },...",
+          "placeholder": "{\n  \"comment\": {\n    \"content\": [\n      {\n        \"content\": [\n          {\n            \"text\": \"I did some work here.\",\n            \"type\": \"text\"\n          }\n        ],\n        \"type\": \"paragraph\"\n      }\n    ],\n    \"type\": \"doc\",\n    \"version\": 1\n  },...",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      },
+      "delete_worklog": {
+        "issue_key": {
+          "label": "Issue Key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Issue Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "worklog_id": {
+          "label": "Worklog ID ",
+          "key": "worklog_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter worklog id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "10000"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{notifyUsers:true, ...}",
           "description": "Enter properties",
           "height": "200px"
         }

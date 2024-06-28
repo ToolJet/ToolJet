@@ -20,8 +20,6 @@ export default class Jira implements QueryService {
       },
     });
 
-    // console.log('queryOptions', queryOptions);
-
     try {
       switch (resource) {
         case 'issue': {

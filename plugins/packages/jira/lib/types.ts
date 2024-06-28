@@ -20,6 +20,8 @@ export type QueryOptions = {
 
   started_after?: any;
   started_before?: any;
+
+  worklog_id?: any;
 };
 
 export type SourceOptions = {

@@ -217,6 +217,10 @@ export async function worklogResource(queryOptions: QueryOptions, client: Versio
       res = await addWorklog(queryOptions, client);
       break;
     }
+    case 'delete_worklog': {
+      res = await deleteWorklog(queryOptions, client);
+      break;
+    }
     default: {
       throw new Error('Select an operation');
     }
@@ -255,6 +259,25 @@ async function addWorklog(queryOptions: QueryOptions, client: Version3Client) {
     })
     .then((res) => {
       returnValue = res;
+    })
+    .catch((err) => {
+      returnValue = { statusCode: err.response?.status, response: err?.response?.data };
+    });
+
+  return returnValue;
+}
+
+async function deleteWorklog(queryOptions: QueryOptions, client: Version3Client) {
+  let returnValue = {};
+
+  await client.issueWorklogs
+    .deleteWorklog({
+      issueIdOrKey: queryOptions.issue_key,
+      id: queryOptions.worklog_id,
+      ...returnObject(queryOptions.properties),
+    })
+    .then(() => {
+      returnValue = 'worklog deleted';
     })
     .catch((err) => {
       returnValue = { statusCode: err.response?.status, response: err?.response?.data };
