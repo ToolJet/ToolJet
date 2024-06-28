@@ -725,6 +725,7 @@ $border-radius: 4px;
     border-radius: 6px;
     display: flex;
     align-items: center;
+    background: none !important;
 
     span {
       padding: 2px 0px;
@@ -733,7 +734,6 @@ $border-radius: 4px;
 
   .list-group-item:hover {
     color: var(--slate12) !important;
-    background-color: var(--slate3) !important;
     border-radius: 6px;
   }
 
@@ -755,7 +755,6 @@ $border-radius: 4px;
   }
 
   .list-group-item.active:hover {
-    background-color: var(--indigo3) !important;
     border-radius: 6px 6px 0 0;
   }
 }
