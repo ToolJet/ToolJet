@@ -82,6 +82,7 @@ To remove a plugin, follow these steps:
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
+- **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
