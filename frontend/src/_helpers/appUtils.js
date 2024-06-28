@@ -87,6 +87,8 @@ export function onComponentOptionsChanged(component, options, id) {
   let componentName = component.name;
   const { isEditorReady, page } = getCurrentState();
 
+  if (!isEditorReady || !useEditorStore.getState().appDefinition.pages[page.id]) return;
+
   if (id) {
     const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
     const _componentName = _component?.component?.name || componentName;
@@ -163,6 +165,8 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
+
   let componentName = component.name;
 
   if (id) {
