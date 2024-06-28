@@ -549,6 +549,8 @@ const getDocsLink = (componentMeta) => {
       return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
     case 'DropdownV2':
       return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'DropDown':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'MultiselectV2':
       return 'https://docs.tooljet.com/docs/widgets/multiselect';
     default:
