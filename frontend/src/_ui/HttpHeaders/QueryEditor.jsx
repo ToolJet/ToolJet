@@ -1,7 +1,7 @@
 import React from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import CodeHinter from '@/Editor/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 
@@ -22,7 +22,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
               <div className="w-100">
                 <CodeHinter
                   initialValue={option[0]}
-                  height="32px"
+                  type={'basic'}
                   placeholder="Key"
                   onChange={(value) => keyValuePairValueChanged(value, 0, index)}
                   componentName={`HttpHeaders::key::${index}`}
@@ -31,7 +31,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
               <div className="w-100">
                 <CodeHinter
                   initialValue={option[1]}
-                  height="32px"
+                  type={'basic'}
                   placeholder="Value"
                   onChange={(value) => keyValuePairValueChanged(value, 1, index)}
                   componentName={`HttpHeaders::value::${index}`}

@@ -24,6 +24,9 @@ export class CreatePageDto {
 
   @IsOptional()
   hidden: boolean;
+
+  @IsOptional()
+  autoComputeLayout: boolean;
 }
 
 export class DeletePageDto {

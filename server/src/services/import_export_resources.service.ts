@@ -50,24 +50,17 @@ export class ImportExportResourcesService {
   }
 
   async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false) {
-    const tableNameMapping = {};
+    let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
+    const importingVersion = importResourcesDto.tooljet_version;
 
-    if (importResourcesDto.tooljet_database) {
-      for (const tjdbImportDto of importResourcesDto.tooljet_database) {
-        const createdTable = await this.tooljetDbImportExportService.import(
-          importResourcesDto.organization_id,
-          tjdbImportDto,
-          cloning
-        );
-        tableNameMapping[tjdbImportDto.id] = createdTable;
-        imports.tooljet_database.push(createdTable);
-      }
-
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    if (!isEmpty(importResourcesDto.tooljet_database)) {
+      const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
+      tableNameMapping = res.tableNameMapping;
+      imports.tooljet_database = res.tooljet_database;
     }
 
-    if (importResourcesDto.app) {
+    if (!isEmpty(importResourcesDto.app)) {
       for (const appImportDto of importResourcesDto.app) {
         user.organizationId = importResourcesDto.organization_id;
         const createdApp = await this.appImportExportService.import(

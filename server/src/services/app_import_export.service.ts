@@ -19,6 +19,7 @@ import {
   isTooljetVersionWithNormalizedAppDefinitionSchem,
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
+import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
@@ -31,7 +32,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
-
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -50,7 +51,7 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table';
+type NewRevampedComponent = 'Text' | 'TextInput' | 'PasswordInput' | 'NumberInput' | 'Table' | 'Button' | 'Checkbox';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -60,7 +61,15 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'workflowsdefault',
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
-const NewRevampedComponents: NewRevampedComponent[] = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
+const NewRevampedComponents: NewRevampedComponent[] = [
+  'Text',
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'Table',
+  'Checkbox',
+  'Button',
+];
 
 @Injectable()
 export class AppImportExportService {
@@ -240,7 +249,7 @@ export class AppImportExportService {
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
     const currentTooljetVersion = !cloning ? tooljetVersion : null;
 
-    await this.setupImportedAppAssociations(
+    const resourceMapping = await this.setupImportedAppAssociations(
       this.entityManager,
       importedApp,
       schemaUnifiedAppParams,
@@ -250,6 +259,7 @@ export class AppImportExportService {
       currentTooljetVersion
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
+    await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
 
     // NOTE: App slug updation callback doesn't work while wrapped in transaction
     // hence updating slug explicitly
@@ -258,6 +268,64 @@ export class AppImportExportService {
     await this.entityManager.save(importedApp);
 
     return importedApp;
+  }
+
+  async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
+    const mappings = { ...resourceMapping.componentsMapping, ...resourceMapping.dataQueryMapping };
+    const newComponentIds = Object.values(resourceMapping.componentsMapping);
+    const newQueriesIds = Object.values(resourceMapping.dataQueryMapping);
+
+    if (newComponentIds.length > 0) {
+      const components = await manager
+        .createQueryBuilder(Component, 'components')
+        .where('components.id IN(:...componentIds)', { componentIds: newComponentIds })
+        .select([
+          'components.id',
+          'components.properties',
+          'components.styles',
+          'components.general',
+          'components.validation',
+          'components.generalStyles',
+          'components.displayPreferences',
+        ])
+        .getMany();
+
+      const toUpdateComponents = components.filter((component) => {
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, mappings);
+        }
+      });
+
+      if (!isEmpty(toUpdateComponents)) {
+        await manager.save(toUpdateComponents);
+      }
+    }
+
+    if (newQueriesIds.length > 0) {
+      const dataQueries = await manager
+        .createQueryBuilder(DataQuery, 'dataQueries')
+        .where('dataQueries.id IN(:...dataQueryIds)', { dataQueryIds: newQueriesIds })
+        .select(['dataQueries.id', 'dataQueries.options'])
+        .getMany();
+
+      const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
+        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInQueryOptions.length > 0) {
+          return updateEntityReferences(dataQuery, mappings);
+        }
+      });
+
+      if (!isEmpty(toUpdateDataQueries)) {
+        await manager.save(toUpdateDataQueries);
+      }
+    }
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
@@ -432,6 +500,7 @@ export class AppImportExportService {
                 index: pagePostionIntheList,
                 disabled: page.disabled || false,
                 hidden: page.hidden || false,
+                autoComputeLayout: page.autoComputeLayout || false,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -452,7 +521,11 @@ export class AppImportExportService {
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
-                    newLayout.left = layout.left;
+                    newLayout.left =
+                      layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                        ? resolveGridPositionForComponent(layout.left, type)
+                        : layout.left;
+                    newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];
@@ -694,6 +767,7 @@ export class AppImportExportService {
           index: page.index,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
+          autoComputeLayout: page.autoComputeLayout || false,
         });
 
         const pageCreated = await manager.save(newPage);
@@ -769,7 +843,11 @@ export class AppImportExportService {
               const newLayout = new Layout();
               newLayout.type = layout.type;
               newLayout.top = layout.top;
-              newLayout.left = layout.left;
+              newLayout.left =
+                layout.dimensionUnit !== LayoutDimensionUnits.COUNT
+                  ? resolveGridPositionForComponent(layout.left, layout.type)
+                  : layout.left;
+              newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
               newLayout.component = savedComponent;
@@ -1556,12 +1634,21 @@ export class AppImportExportService {
 
   // Entire function should be santised for Undefined values
   replaceTooljetDbTableIds(queryOptions, tooljetDatabaseMapping, organizationId: string) {
-    if (queryOptions?.operation === 'join_tables')
-      return this.replaceTooljetDbTableIdOnJoin(queryOptions, tooljetDatabaseMapping, organizationId);
+    let transformedQueryOptions;
+    if (Object.keys(queryOptions).includes('join_table')) {
+      transformedQueryOptions = this.replaceTooljetDbTableIdOnJoin(
+        queryOptions,
+        tooljetDatabaseMapping,
+        organizationId
+      );
+    }
+    if (queryOptions?.operation === 'join_tables') {
+      return transformedQueryOptions;
+    }
 
-    const mappedTableId = tooljetDatabaseMapping[queryOptions.table_id]?.id;
+    const mappedTableId = tooljetDatabaseMapping[transformedQueryOptions.table_id]?.id;
     return {
-      ...queryOptions,
+      ...transformedQueryOptions,
       ...(mappedTableId && { table_id: mappedTableId }),
       ...(organizationId && { organization_id: organizationId }),
     };
@@ -1651,10 +1738,8 @@ export class AppImportExportService {
         return this.updateNewTableIdForFilter(condition.conditions, tooljetDatabaseMapping);
       } else {
         const { operator = '=', leftField = {}, rightField = {} } = { ...condition };
-        if (leftField?.type && leftField.type === 'Column')
-          leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
-        if (rightField?.type && rightField.type === 'Column')
-          rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
+        if (leftField?.table) leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
+        if (rightField?.table) rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
         return { operator, leftField, rightField };
       }
     });
@@ -1672,9 +1757,10 @@ export class AppImportExportService {
       .createQueryBuilder(EventHandler, 'event')
       .where('event.appVersionId = :versionId', { versionId })
       .getMany();
+    const mappings = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping } as Record<string, string>;
 
     for (const event of allEvents) {
-      const eventDefinition = event.event;
+      const eventDefinition = updateEntityReferences(event.event, mappings);
 
       if (eventDefinition?.actionId === 'run-query' && oldDataQueryToNewMapping[eventDefinition.queryId]) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
