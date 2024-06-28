@@ -1,5 +1,6 @@
 import { versions } from './versions';
 import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import { Logger } from '@nestjs/common';
 import Ajv from 'ajv';
 const path = require('path');
 const fs = require('fs');
@@ -44,7 +45,7 @@ const getSchemaBasedOnAppVersion = async (version: string, schemaVersions: strin
 };
 
 const jsonValidator = (schema: Record<string, any>, data: Record<string, any>) => {
-  const ajv = new Ajv({ allErrors: true });
+  const ajv = new Ajv({ allErrors: true, coerceTypes: true });
   const validate = ajv.compile(schema);
   validate(data);
   return validate.errors;
@@ -75,11 +76,12 @@ export class JsonSchemaValidator implements ValidatorConstraintInterface {
 
   defaultMessage(args: ValidationArguments) {
     const errors: any[] = args.constraints[2];
-    const errorMessage = errors.map((error) => {
-      return `Path: ${error.instancePath}\n Error:${error.message}\n`;
+    const logger = new Logger('SchemaValidator');
+    errors.forEach((error) => {
+      logger.error(error);
     });
     if (errors.length > 0) {
-      return errorMessage.join('\n');
+      return 'File not recognized. Please ensure it matches the expected format.';
     }
     return `Validation Failed`;
   }
