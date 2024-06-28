@@ -26,6 +26,7 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
     ...restResponse,
     authentication_status: null,
     noWorkspaceAttachedInTheSession,
+    isOrgSwitchingFailed: null,
   });
   const redirectPath = redirectTo || getCookie('redirectPath');
   const path = getRedirectURL(redirectPath);
