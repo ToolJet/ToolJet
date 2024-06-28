@@ -3,6 +3,7 @@ import { SubContainer } from '../SubContainer';
 import { Pagination } from '@/_components/Pagination';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import _ from 'lodash';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const Listview = function Listview({
   id,
@@ -79,7 +80,7 @@ export const Listview = function Listview({
   }, [columns]);
 
   useEffect(() => {
-    const childrenDataClone = _.cloneDeep(childrenData);
+    const childrenDataClone = deepClone(childrenData);
     const exposedVariables = {
       data: removeFunctionObjects(childrenDataClone),
       children: childrenData,
@@ -103,7 +104,7 @@ export const Listview = function Listview({
     const componentNamesSet = new Set(
       Object.values(childComponents ?? {}).map((component) => component.component.name)
     );
-    const filteredData = _.cloneDeep(childrenData);
+    const filteredData = deepClone(childrenData);
     if (filteredData?.[0]) {
       Object.keys(filteredData?.[0]).forEach((item) => {
         if (!componentNamesSet?.has(item)) {
