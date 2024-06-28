@@ -102,18 +102,24 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
   const { t } = useTranslation();
 
   useEffect(() => {
-    changeOption('transformationLanguage', lang);
-    changeOption('transformation', state[lang]);
+    if (lang !== (options.transformationLanguage ?? 'javascript')) {
+      changeOption('transformationLanguage', lang);
+      changeOption('transformation', state[lang]);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
   useEffect(() => {
-    setState((prevState) => ({ ...prevState, [lang]: options.transformation ?? defaultValue[lang] }));
+    if (options.enableTransformation) {
+      lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
+      setState({ ...state, [lang]: options.transformation ?? defaultValue[lang] });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options.transformation]);
+  }, [JSON.stringify(options.transformation)]);
 
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
+
     if (selectedQueryId !== queryId) {
       const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
       const finalState = _.merge(
@@ -121,9 +127,11 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
         { [options?.transformationLanguage ?? lang]: options.transformation ?? defaultValue[lang] },
         nonLangdefaultCode
       );
+
       setState(finalState);
-      localStorage.setItem('selectedQuery', queryId);
+      return localStorage.setItem('selectedQuery', queryId);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryId]);
 
