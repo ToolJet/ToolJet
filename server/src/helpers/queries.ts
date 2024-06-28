@@ -87,7 +87,8 @@ export function viewableAppsQueryUsingPermissions(
     ),
   ];
 
-  const viewableAppsQb = createQueryBuilder(AppBase, 'viewable_apps')
+  const viewableAppsQb = manager
+    .createQueryBuilder(AppBase, 'viewable_apps')
     .innerJoin('viewable_apps.user', 'user')
     .addSelect(['user.firstName', 'user.lastName'])
     .where('viewable_apps.organization_id = :organizationId', { organizationId: user.organizationId });
@@ -97,7 +98,7 @@ export function viewableAppsQueryUsingPermissions(
   }
 
   if (!userAppPermissions.hideAll && !(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
-    viewableAppsQb.where('viewable_apps IN (:...viewableApps)', {
+    viewableAppsQb.where('viewable_apps.id IN (:...viewableApps)', {
       viewableApps,
     });
   }

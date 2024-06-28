@@ -67,6 +67,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   componentDidUpdate(prevProps) {
     if (this.props.groupPermissionId && this.props.groupPermissionId !== prevProps.groupPermissionId) {
       this.fetchGroupAndResources(this.props.groupPermissionId);
+      this.setState({
+        showUserSearchBox: false,
+      });
     }
   }
 
@@ -363,6 +366,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       updateParam: {},
       isLoadingGroup: false,
       isLoadingUsers: false,
+      isAddingUsers: false,
     });
   };
 
@@ -518,7 +522,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           isLoading={isLoadingGroup || isLoadingUsers}
         />
         <div className="org-users-page animation-fade">
-          {isLoadingGroup ? (
+          {isLoadingGroup || isLoadingUsers ? (
             <Loader />
           ) : (
             <div>
@@ -527,7 +531,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   className="font-weight-500 tj-text-md"
                   // data-cy={`${this.props.selectedGroup.toLowerCase().replace(/\s+/g, '-')}-title`}
                 >
-                  {this.props.selectedGroup}
+                  {`${this.props.selectedGroup} (${usersInGroup.length})`}
                 </p>
                 {groupPermission.type === 'default' && (
                   <ToolTip message={'Every user must be part of one default group'}>
@@ -557,7 +561,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
               <nav className="nav nav-tabs groups-sub-header-wrap">
                 <a
-                  onClick={() => this.setState({ currentTab: 'users' })}
+                  onClick={() => this.setState({ currentTab: 'users', showUserSearchBox: false })}
                   className={cx('nav-item nav-link', { active: currentTab === 'users' })}
                   data-cy="users-link"
                 >
@@ -572,7 +576,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 </a>
 
                 <a
-                  onClick={() => this.setState({ currentTab: 'permissions' })}
+                  onClick={() => this.setState({ currentTab: 'permissions', showUserSearchBox: false })}
                   className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
                   data-cy="permissions-link"
                 >
@@ -589,7 +593,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   )}
                 </a>
                 <a
-                  onClick={() => this.setState({ currentTab: 'granularAccess' })}
+                  onClick={() => this.setState({ currentTab: 'granularAccess', showUserSearchBox: false })}
                   className={cx('nav-item nav-link', { active: currentTab === 'granularAccess' })}
                   data-cy="granular-access-link"
                 >

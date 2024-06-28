@@ -52,7 +52,7 @@ function AddResourcePermissionsMenu({ openAddPermissionModal, resourcesOptions, 
           openAddPermissionModal();
         }}
       >
-        App
+        Add apps
       </ButtonSolid>
     </div>
   );

@@ -119,7 +119,6 @@ export function UserGroupsSelect(props) {
     multiValue: (base) => ({
       ...base,
       borderRadius: '6px',
-      height: '16px',
       backgroundColor: 'var(--slate3)',
       color: 'var(--slate11)',
       '.selected-value': {
@@ -136,12 +135,6 @@ export function UserGroupsSelect(props) {
       paddingLeft: '0px',
       ...(state.data.isFixed && { display: 'none' }),
     }),
-    valueContainer: (base) => ({
-      ...base,
-      minHeight: '32px !important',
-      maxHeight: '32px !important',
-      padding: '0px 5px 0px 5px !important',
-    }),
     input: (base) => ({
       ...base,
       input: {
@@ -151,8 +144,6 @@ export function UserGroupsSelect(props) {
     }),
     control: (base) => ({
       ...base,
-      height: '32px !important',
-      minHeight: '32px !important',
       outline: 'none',
       border: '1px solid var(--slate7)',
       boxShadow: 'none',

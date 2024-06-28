@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import GroupChipTD from '@/ManageGroupPermissionsV2/ResourceChip';
 import '../ManageGroupPermissionsV2/groupPermissions.theme.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -10,8 +10,7 @@ function AppResourcePermissions({
   currentGroupPermission,
   openEditPermissionModal,
 }) {
-  console.log('Logging permissions');
-  console.log(permissions);
+  const [onHover, setHover] = useState(false);
   const isRoleGroup = currentGroupPermission.name == 'admin';
   const disableEditUpdate = currentGroupPermission.name == 'end-user';
   const appsPermissions = permissions.appsGroupPermissions;
@@ -21,7 +20,18 @@ function AppResourcePermissions({
   if (apps.length == 0 || permissions.isAll) apps = ['All apps'];
 
   return (
-    <div className="manage-resource-permission">
+    <div
+      className="manage-resource-permission"
+      onMouseOver={() => {
+        setHover(true);
+      }}
+      onMouseOut={() => {
+        setHover(false);
+      }}
+      onClick={() => {
+        !isRoleGroup && openEditPermissionModal(permissions);
+      }}
+    >
       <div className="resource-name">
         <SolidIcon name="app" width="20px" className="resource-icon" />
         <div className="resource-text">{permissions.name}</div>
@@ -36,6 +46,7 @@ function AppResourcePermissions({
                 updateOnlyGranularPermissions(permissions, {
                   canEdit: !appsPermissions.canEdit,
                   canView: appsPermissions.canEdit,
+                  ...(!appsPermissions.canEdit && { hideFromDashboard: false }),
                 });
               }}
               checked={appsPermissions.canEdit}
@@ -77,7 +88,7 @@ function AppResourcePermissions({
                 });
               }}
               checked={appsPermissions.hideFromDashboard}
-              disabled={isRoleGroup}
+              disabled={isRoleGroup || !appsPermissions.canView}
               data-cy="app-delete-checkbox"
             />
             <span className="form-check-label" data-cy="app-delete-label">
@@ -91,15 +102,17 @@ function AppResourcePermissions({
         <GroupChipTD groups={apps} />
       </div>
       <div className="edit-icon-container">
-        <ButtonSolid
-          leftIcon="editrectangle"
-          className="edit-permission-custom"
-          iconWidth="14"
-          onClick={() => {
-            openEditPermissionModal(permissions);
-          }}
-          disabled={isRoleGroup}
-        />
+        {onHover && (
+          <ButtonSolid
+            leftIcon="editrectangle"
+            className="edit-permission-custom"
+            iconWidth="14"
+            onClick={() => {
+              openEditPermissionModal(permissions);
+            }}
+            disabled={isRoleGroup}
+          />
+        )}
       </div>
     </div>
   );

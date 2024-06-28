@@ -13,6 +13,8 @@ import '../ManageGroupPermissionsV2/groupPermissions.theme.scss';
 import ChangeRoleModal from '@/ManageGroupPermissionResourcesV2/ChangeRoleModal';
 import AppResourcePermissions from '@/ManageGranularAccess/AppResourcePermission';
 import AddResourcePermissionsMenu from '@/ManageGranularAccess/AddResourcePermissionsMenu';
+import { ConfirmDialog } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 
 class ManageGranularAccessComponent extends React.Component {
   constructor(props) {
@@ -46,6 +48,8 @@ class ManageGranularAccessComponent extends React.Component {
       updateParam: {},
       updatingPermission: {},
       updateType: '',
+      deleteConfirmationModal: false,
+      deletingPermissions: false,
     };
   }
 
@@ -92,6 +96,9 @@ class ManageGranularAccessComponent extends React.Component {
 
   deleteGranularPermissions = () => {
     const { currentEditingPermissions } = this.state;
+    this.setState({
+      deleteGranularPermissions: true,
+    });
     groupPermissionV2Service
       .deleteGranularPermission(currentEditingPermissions.id)
       .then(() => {
@@ -101,6 +108,12 @@ class ManageGranularAccessComponent extends React.Component {
       })
       .catch((err) => {
         toast.error(err.error);
+      })
+      .finally(() => {
+        this.setState({
+          deleteConfirmationModal: false,
+          deleteGranularPermissions: false,
+        });
       });
   };
 
@@ -128,13 +141,16 @@ class ManageGranularAccessComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.closeAddPermissionModal();
-        this.props.updateParentState({
-          showEditRoleErrorModal: true,
-          errorTitle: error?.title ? error?.title : 'Cannot remove last admin',
-          errorMessage: error.error,
-          errorIconName: 'usergear',
-          errorListItems: error.data,
-        });
+        if (error?.error) {
+          this.props.updateParentState({
+            showEditRoleErrorModal: true,
+            errorTitle: error?.title ? error?.title : 'Cannot add granular permissions',
+            errorMessage: error.error,
+            errorIconName: 'usergear',
+            errorListItems: error.data,
+          });
+        }
+        toast.error(error);
       });
     // .then(())
   };
@@ -236,8 +252,6 @@ class ManageGranularAccessComponent extends React.Component {
       resourcesToDelete,
       allowRoleChange,
     };
-
-    console.log(body);
 
     groupPermissionV2Service
       .updateGranularPermission(currentEditingPermissions.id, body)
@@ -360,11 +374,14 @@ class ManageGranularAccessComponent extends React.Component {
       updateParam,
       updatingPermission,
       updateType,
+      deleteConfirmationModal,
+      deletingPermissions,
     } = this.state;
 
     const resourcesOptions = ['Apps'];
     const currentGroupPermission = this.props?.groupPermission;
     const isRoleGroup = currentGroupPermission.name == 'admin';
+    const defaultGroup = currentGroupPermission.type === 'default';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const disableEditUpdate = currentGroupPermission.name == 'end-user';
     const addPermissionTooltipMessage = !newPermissionName
@@ -374,6 +391,16 @@ class ManageGranularAccessComponent extends React.Component {
       : '';
     return (
       <div className="row granular-access-container justify-content-center">
+        <ConfirmDialog
+          show={deleteConfirmationModal}
+          message={'This permissions will be permanently deleted. Do you want to continue?'}
+          confirmButtonLoading={deletingPermissions}
+          onConfirm={() => this.deleteGranularPermissions()}
+          onCancel={() => {
+            this.setState({ deleteConfirmationModal: false, deletingPermissions: false });
+          }}
+          darkMode={this.props.darkMode}
+        />
         <ChangeRoleModal
           showAutoRoleChangeModal={showAutoRoleChangeModal}
           autoRoleChangeModalList={autoRoleChangeModalList}
@@ -414,7 +441,12 @@ class ManageGranularAccessComponent extends React.Component {
                     iconWidth="15px"
                     className="icon-class"
                     variant="tertiary"
-                    onClick={this.deleteGranularPermissions}
+                    onClick={() => {
+                      this.setState({
+                        deleteConfirmationModal: true,
+                        showAddPermissionModal: false,
+                      });
+                    }}
                   />
                 </div>
               )}
@@ -464,7 +496,8 @@ class ManageGranularAccessComponent extends React.Component {
                         initialPermissionState: {
                           ...prevState.initialPermissionState,
                           canEdit: !prevState.initialPermissionState.canEdit,
-                          ...(!prevState.initialPermissionState.canEdit && { canView: false }),
+                          canView: prevState.initialPermissionState.canEdit,
+                          ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
                         },
                       }));
                     }}
@@ -488,7 +521,8 @@ class ManageGranularAccessComponent extends React.Component {
                         initialPermissionState: {
                           ...prevState.initialPermissionState,
                           canView: !prevState.initialPermissionState.canView,
-                          ...(!prevState.initialPermissionState.canView && { canEdit: false }),
+                          canEdit: prevState.initialPermissionState.canView,
+                          ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
                         },
                       }));
                     }}
@@ -502,6 +536,7 @@ class ManageGranularAccessComponent extends React.Component {
                   <input
                     className="form-check-input"
                     type="checkbox"
+                    disabled={!initialPermissionState.canView}
                     checked={initialPermissionState.hideFromDashboard}
                     onClick={() => {
                       this.setState((prevState) => ({
@@ -617,8 +652,8 @@ class ManageGranularAccessComponent extends React.Component {
                       updateOnlyGranularPermissions={this.updateOnlyGranularPermissions}
                       permissions={permissions}
                       currentGroupPermission={currentGroupPermission}
-                      key={index}
                       openEditPermissionModal={this.openEditPermissionModal}
+                      key={index}
                     />
                   ))}
                 </>

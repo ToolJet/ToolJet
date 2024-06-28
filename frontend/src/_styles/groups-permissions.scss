@@ -77,8 +77,8 @@
         border-bottom: 1px solid var(--slate5);
         margin: 0; /* Ensure no margin */
         padding: 0; /* Ensure no padding */
-        min-height: calc(100% - 48px - 16px - 55px - 50px);
-        max-height: calc(100% - 48px - 16px - 55px - 50px);
+        min-height: calc(100% - 48px - 16px - 55px - 70px);
+        max-height: calc(100% - 48px - 16px - 55px - 70px);
     }
 
     .permission-body-two {
@@ -87,8 +87,8 @@
         border-bottom: 1px solid var(--slate5);
         margin: 0; /* Ensure no margin */
         padding: 0; /* Ensure no padding */
-        min-height: calc(100% - 16px - 55px - 34px);
-        max-height: calc(100% - 16px - 55px - 34px);
+        min-height: calc(100% - 16px - 55px - 54px);
+        max-height: calc(100% - 16px - 55px - 54px);
     }
 
     .side-button-cont {
@@ -99,6 +99,7 @@
         flex-shrink: 0; /* Prevent shrinking */
         margin: 0; /* Ensure no margin */
         padding: 12px; /* Ensure no padding */
+        margin-bottom: 15px;
 
         .add-icon {
             width: 135px;

@@ -16,6 +16,7 @@ import {
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { getUserPermissionsQuery } from '@module/permissions/utility/permission-ability.utility';
+import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class AbilityService {
@@ -50,12 +51,15 @@ export class AbilityService {
     }, DEFAULT_USER_PERMISSIONS);
     const { resources } = resourcePermissionsObject;
     if (resources && resources.some((item) => item.resource === TOOLJET_RESOURCE.APP)) {
-      userPermissions[TOOLJET_RESOURCE.APP] = this.createUserAppsPermissions(appsGranularPermissions);
+      userPermissions[TOOLJET_RESOURCE.APP] = await this.createUserAppsPermissions(appsGranularPermissions, user);
     }
     return userPermissions;
   }
 
-  private createUserAppsPermissions(appsGranularPermissions: GranularPermissions[]): UserAppsPermissions {
+  private async createUserAppsPermissions(
+    appsGranularPermissions: GranularPermissions[],
+    user: User
+  ): Promise<UserAppsPermissions> {
     const userAppsPermissions: UserAppsPermissions = appsGranularPermissions.reduce((acc, permission) => {
       const appsPermission = permission?.appsGroupPermissions;
       const groupApps = appsPermission?.groupApps ? appsPermission.groupApps.map((item) => item.appId) : [];
@@ -70,6 +74,16 @@ export class AbilityService {
         hideAll: acc.hideAll || (appsPermission.hideFromDashboard && permission.isAll),
       };
     }, DEFAULT_USER_APPS_PERMISSIONS);
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const appsOwnedByUser = await manager.find(App, {
+        where: { userId: user.id, organizationId: user.organizationId },
+      });
+      const appsIdOwnedByUser = appsOwnedByUser.map((app) => app.id);
+      userAppsPermissions.editableAppsId = Array.from(
+        new Set([...userAppsPermissions.editableAppsId, ...appsIdOwnedByUser])
+      );
+    });
+
     return userAppsPermissions;
   }
 }

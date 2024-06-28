@@ -277,7 +277,11 @@ class ManageGroupPermissionsComponent extends React.Component {
         this.fetchGroups('new');
       })
       .catch(({ error }) => {
-        toast.error(error);
+        toast.error(error, {
+          style: {
+            maxWidth: '500px  !important',
+          },
+        });
         this.setState({
           creatingGroup: false,
           showNewGroupForm: true,
