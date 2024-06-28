@@ -529,7 +529,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'run-query': {
-        const { queryId, queryName } = event;
+        const { queryId, queryName, eventId, component } = event;
         const params = event['parameters'];
         const resolvedParams = {};
         if (params) {
@@ -537,7 +537,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
-        return runQuery(_ref, queryId, name, undefined, mode, resolvedParams);
+        return runQuery(_ref, queryId, name, undefined, mode, resolvedParams, component, eventId);
       }
       case 'logout': {
         return logoutAction();
@@ -1129,6 +1129,8 @@ export function runQuery(
   confirmed = undefined,
   mode = 'edit',
   userSuppliedParameters = {},
+  component,
+  eventId,
   shouldSetPreviewData = false,
   isOnLoad = false
 ) {
@@ -1144,6 +1146,9 @@ export function runQuery(
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
+  const componentName = component ? `${component}: ` : '';
+  const eventMessage = eventId ? `${eventId} - ` : '';
+  const errorMessage = `${componentName}${eventMessage}No query has been associated with the action.`;
 
   if (shouldSetPreviewData) {
     setPreviewPanelExpanded(true);
@@ -1153,7 +1158,7 @@ export function runQuery(
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
-    toast.error('No query has been associated with the action.');
+    toast.error(errorMessage);
     return;
   }
 
@@ -2245,9 +2250,6 @@ export function isPDFSupported() {
   const isEdge = browser.name === 'Edge' && browser.major >= 92;
   const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
   const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
-
-  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
-
   return isChrome || isEdge || isSafari || isFirefox;
 }
 
