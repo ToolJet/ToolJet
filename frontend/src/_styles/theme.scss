@@ -12,6 +12,7 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import './pages-sidebar.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -841,8 +842,8 @@ button {
 
     &:hover {
       background: none !important;
-      border: none !important;      
-      color: var(--slate12);       
+      border: none !important;
+      color: var(--slate12);
     }
   }
 }
@@ -2899,9 +2900,32 @@ input:focus-visible {
   }
 }
 
-.jet-button {
+.jet-outline-button {
+  outline: none;
+  border: 1px solid;
+
+
   &.btn-custom:hover {
     background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
+
+  }
+
+}
+
+.jet-button {
+  outline: none;
+  border: 1px solid;
+
+  &.btn-custom:hover {
+    background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
   }
 }
 
@@ -8707,7 +8731,7 @@ tbody {
   align-items: center;
   color: var(--slate11);
 
-  .with-border{
+  .with-border {
     border-bottom: 1px solid var(--slate5) !important;
   }
 
@@ -10189,6 +10213,8 @@ tbody {
 
 
 .manage-users-drawer-content-bulk {
+  margin: 24px 15px;
+
   form {
     display: flex;
     flex-direction: column;
@@ -10624,19 +10650,23 @@ tbody {
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
-  padding: 24px 32px;
+  padding: 16px 24px;
   gap: 8px;
-  height: 88px;
+  height: 72px;
   border-top: 1px solid var(--slate5);
   background: var(--base);
 }
 
 .drawer-card-title {
-  padding: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--slate5);
+  height: 64px;
 
   h3 {
     margin-bottom: 0px !important;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
   }
 }
 
@@ -10756,7 +10786,7 @@ tbody {
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
     transition: none;
-
+    font-weight: 400;
 
     &:hover {
       background: var(--slate1) !important;
@@ -10791,6 +10821,10 @@ tbody {
       }
     }
 
+    &::placeholder {
+      font-size: 12px;
+      line-height: 20px;
+    }
 
   }
 
@@ -10805,6 +10839,7 @@ tbody {
     top: 5px;
     cursor: pointer;
   }
+
   .copy-icon {
     position: absolute;
     right: 8px;
@@ -12082,6 +12117,38 @@ tbody {
   }
 }
 
+
+.tjdb-mainCellEdit-scrollbar {
+  width: 300px !important;
+
+  .tjdb-cellmenu-error,
+  .tjdb-cellmenu-loader {
+    height: 177px;
+  }
+
+  .action-description {
+    color: var(--slate9);
+    font-size: 12px;
+    margin-left: 20px;
+  }
+
+  .tj-foreignKey {
+    .tj-secondary-btn {
+      svg {
+        path {
+          fill: #3e63dd !important
+        }
+      }
+
+      font-size: 12px;
+      background: transparent !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+
 .tjdb-cellEdit-scrollbar {
   width: 266px !important;
 
@@ -12920,6 +12987,7 @@ tbody {
 .wrapper-div-code-editor:hover .fx-button-container {
   opacity: 1;
 }
+
 .action-description-highlighter {
   color: var(--indigo9) !important;
 }
@@ -12927,7 +12995,7 @@ tbody {
 .read-docs-fk {
 
   .tooltip-inner {
-    padding: 8px 12px 8px 12px !important;
+    padding: 8px 10px 8px 10px !important;
     font-size: 12px;
     line-height: 20px;
     font-weight: 400;
@@ -13031,6 +13099,28 @@ tbody {
   }
 }
 
+.widget-version-identifier {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  border-radius: 0px 8px 0px 8px;
+  height: 16px;
+  width: 35px;
+  font-size: 10px;
+  color: var(--text-on-solid) !important;
+  font-weight: 500;
+}
+
+.widget-version-old-identifier {
+  background-color: #BF4F03;
+  @extend .widget-version-identifier
+}
+
+.widget-version-new-identifier {
+  background-color: #1E823B;
+  @extend .widget-version-identifier
+}
+
 .tjdb-table-tooltip {
   width: max-content !important;
 
@@ -13044,6 +13134,14 @@ tbody {
       }
     }
 
+  }
+}
+
+.tjdb-cell-tooltip {
+  max-width: 420px !important;
+
+  .tooltip-inner {
+    max-width: 100% !important;
   }
 }
 

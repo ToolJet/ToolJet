@@ -1046,15 +1046,16 @@ const WidgetWrapper = ({
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   const { label = { value: null } } = propertiesDefinition ?? {};
+  const visibility = propertiesDefinition?.visibility?.value ?? stylesDefinition?.visibility?.value ?? null;
+  const resolvedVisibility = resolveWidgetFieldValue(visibility);
 
   const styles = {
     width: width + 'px',
-    height: calculateMoveableBoxHeight() + 'px',
+    height: resolvedVisibility ? calculateMoveableBoxHeight() + 'px' : '10px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
-
   return (
     <>
       <div
@@ -1070,6 +1071,7 @@ const WidgetWrapper = ({
         widgetid={id}
         style={{
           transform: `translate(332px, -134px)`,
+          zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
           ...styles,
         }}
       >

@@ -6,7 +6,7 @@ title: System Requirements
 This document covers all the system requirements for self-hosting ToolJet. 
 
 :::info
-The official Docker tag for the Enterprise Edition is tooljet/tooljet:EE-LTS-latest.
+The official Docker tag for the Enterprise Edition is tooljet/tooljet/tooljet:EE-LTS-latest.
 :::
 
 ## Operating Systems
@@ -32,6 +32,10 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 - When employing container orchestration frameworks like Kubernetes, it's imperative to ensure that your cluster hosts at least one node equipped with the above specifications for seamlessly executing ToolJet deployments.
 
 Note: Adjustments can be made based on specific needs and the expected load on the server.
+
+:::info
+To enable multiplayer editing and background jobs in ToolJet, you need to configure Redis. It is recommended to use Redis version 6.x.
+:::
 
 ## Database software:
 

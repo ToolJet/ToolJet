@@ -36,6 +36,7 @@ const Runjs = (props) => {
         }}
         componentName="Runjs"
         cyLabel={`runjs`}
+        delayOnChange={false}
       />
     </Card>
   );
