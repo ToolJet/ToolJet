@@ -48,8 +48,8 @@ class Restapi extends React.Component {
   }
 
   initizalizeRetryNetworkErrorsToggle = () => {
-    const isQueryRetryNetworkErrorToggleUsed = this.props.options.retry_network_errors === null;
-    if (isQueryRetryNetworkErrorToggleUsed) {
+    const isRetryNetworkErrorToggleUnused = this.props.options.retry_network_errors === null;
+    if (isRetryNetworkErrorToggleUnused) {
       const isStaticRestapi = this.props.selectedDataSource.id == 'null';
       const retryNetworkErrors = isStaticRestapi
         ? true
