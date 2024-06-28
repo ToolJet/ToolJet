@@ -14,6 +14,7 @@ const {
   never,
 } = require('superstruct');
 
+import { validateMultilineCode } from '@/_helpers/utility';
 import _ from 'lodash';
 
 export const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) => {
@@ -129,17 +130,17 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
         ? any()
         : generateSchemaFromValidationDefinition(validationDefinition);
 
-      const reservedKeyword = ['app', 'window']; // Case-sensitive reserved keywords
-      const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')})\\b`, 'i');
-      const hasReservedkeyword = keywordRegex.test(value);
+      if (typeof value === string && value.startsWith('{{') && value.endsWith('}}')) {
+        const { status, data } = validateMultilineCode(value);
 
-      if (hasReservedkeyword) {
-        allErrors.push({
-          property: propertyDefinitions[propertyName]?.displayName,
-          message: 'Code contains reserved keywords',
-        });
+        if (status === 'failed') {
+          allErrors.push({
+            property: propertyDefinitions[propertyName]?.displayName,
+            message: data,
+          });
 
-        return [propertyName, defaultValue];
+          return [propertyName, defaultValue];
+        }
       }
 
       const [_valid, errors, newValue] = propertyName ? validate(value, schema, defaultValue) : [true, []];

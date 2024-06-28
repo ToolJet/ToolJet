@@ -11,6 +11,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -36,7 +37,7 @@ const LeftSidebarPageSelector = ({
 }) => {
   const pages = useMemo(
     () =>
-      Object.entries(_.cloneDeep(appDefinition.pages))
+      Object.entries(deepClone(appDefinition.pages))
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [],
     [JSON.stringify(appDefinition.pages)]
