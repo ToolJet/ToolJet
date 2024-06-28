@@ -76,7 +76,7 @@ const MultiLineCodeEditor = (props) => {
   useEffect(() => {
     setCurrentValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang, initialValue]);
+  }, [initialValue]);
 
   const heightInPx = typeof height === 'string' && height?.includes('px') ? height : `${height}px`;
 
