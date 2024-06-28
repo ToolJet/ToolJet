@@ -90,7 +90,7 @@ export default class RestapiQueryService implements QueryService {
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
-    const retryOnNetworkError = queryOptions['retryOnNetworkError'] === true;
+    const retryOnNetworkError = queryOptions['retry_network_errors'] === true;
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
     const searchParams = new URLSearchParams();

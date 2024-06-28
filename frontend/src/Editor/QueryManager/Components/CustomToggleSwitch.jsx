@@ -11,7 +11,6 @@ export const CustomToggleSwitch = ({
   dataCy = '',
   disabled = false,
   subLabel = '',
-  isScopeStatic,
 }) => {
   const switchToggle = (
     <label className="switch">
@@ -27,7 +26,7 @@ export const CustomToggleSwitch = ({
           }
         }}
         data-cy={`${dataCy}-toggle-switch`}
-        disabled={isScopeStatic || disabled}
+        disabled={disabled}
       />
       <label htmlFor={action} className="slider round"></label>
     </label>
@@ -37,15 +36,9 @@ export const CustomToggleSwitch = ({
     <div
       data-tooltip-id={dataCy === 'copilot' ? 'tooltip-for-active-copilot' : ''}
       data-tooltip-content="Only workspace admins can enable or disable Copilot."
-      className={`custom-toggle-switch d-flex col gap-2 align-items-top ${isScopeStatic ? 'staticToggle' : ''}`}
+      className={`custom-toggle-switch d-flex col gap-2 align-items-top`}
     >
-      {isScopeStatic ? (
-        <ToolTip message="Use global data source to disable" placement="top" tooltipClassName="restapi-tooltip">
-          {switchToggle}
-        </ToolTip>
-      ) : (
-        switchToggle
-      )}
+      {switchToggle}
       <div className="d-flex flex-column">
         {label && (
           <span className={`${darkMode ? 'color-white' : 'color-light-slate-12'}`} data-cy={`${dataCy}-toggle-label`}>
