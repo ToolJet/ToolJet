@@ -245,7 +245,7 @@ export class TooljetDbService {
   }
 
   private addQuotesIfMissing(value) {
-    if (!value.includes("'")) return `'${value}'`;
+    if (!!value && !value.includes("'")) return `'${value}'`;
     return value;
   }
 
