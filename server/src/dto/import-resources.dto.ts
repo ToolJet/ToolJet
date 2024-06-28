@@ -18,7 +18,7 @@ export class ImportResourcesDto {
   @Transform(transformTJDB)
   tooljet_database: ImportTooljetDatabaseDto[];
 
-  @Validate(JsonSchemaValidator, ['resource_import', '2.43.0'])
+  @Validate(JsonSchemaValidator, ['tooljet_database', '2.43.0'])
   validate: any;
 }
 

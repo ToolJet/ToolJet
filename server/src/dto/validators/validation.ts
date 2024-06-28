@@ -1,10 +1,8 @@
-import { versions as resourceImportVersions } from '@dto/validators/resource_import/versions';
+import { versions } from './versions';
 import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import Ajv from 'ajv';
-
-const jsonSchemas = {
-  resource_import: resourceImportVersions,
-};
+const path = require('path');
+const fs = require('fs');
 
 const compareVersions = (version1: string, version2: string) => {
   const v1 = version1.split('.').map(Number);
@@ -20,10 +18,27 @@ const compareVersions = (version1: string, version2: string) => {
   return true;
 };
 
-const getSchemaBasedOnAppVersion = async (version: string, schemaVersions: Record<string, any>[]) => {
+const getSchemaFilePath = (version: string, schemaName: string) => {
+  const schemaPath = path.resolve(__dirname, `schemas/${version}/${schemaName}.json`);
+  const transformedSchemaPath = schemaPath.replace('/dist/', '/');
+  if (fs.existsSync(transformedSchemaPath)) {
+    return transformedSchemaPath;
+  }
+  return null;
+};
+
+const loadSchema = (filePath: string) => {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+};
+
+const getSchemaBasedOnAppVersion = async (version: string, schemaVersions: string[], schemaName: string) => {
   for (const schemaVersion of schemaVersions) {
-    if (compareVersions(version, schemaVersion.value)) {
-      return await schemaVersion.schema;
+    if (compareVersions(version, schemaVersion)) {
+      const schemaFilePath = getSchemaFilePath(version, schemaName);
+      if (schemaFilePath) {
+        return loadSchema(schemaFilePath);
+      }
+      return null;
     }
   }
 };
@@ -40,8 +55,8 @@ export const customValidator = async (
   schemaName: string,
   version: string
 ): Promise<Record<string, any>[]> => {
-  const schemaVersions = jsonSchemas[schemaName];
-  const schema = await getSchemaBasedOnAppVersion(version, schemaVersions);
+  const schemaVersions = versions[schemaName];
+  const schema = await getSchemaBasedOnAppVersion(version, schemaVersions, schemaName);
   if (!schema) return [];
   const errors = jsonValidator(schema, data);
   return errors || [];
