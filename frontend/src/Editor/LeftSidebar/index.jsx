@@ -20,6 +20,7 @@ import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
 import cx from 'classnames';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -159,7 +160,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
             updatePageHandle={updatePageHandle}
             clonePage={clonePage}
             pages={
-              Object.entries(_.cloneDeep(appDefinition).pages)
+              Object.entries(deepClone(appDefinition).pages)
                 .map(([id, page]) => ({ id, ...page }))
                 .sort((a, b) => a.index - b.index) || []
             }
