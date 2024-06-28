@@ -1005,7 +1005,7 @@ export class TooljetDbService {
 
         if (isSerial()) return { data_type: 'serial', column_default: undefined };
         if (isCharacterVarying()) return { data_type, column_default: this.addQuotesIfString(column_default) };
-        if (isTimestampWithTimeZone) return { data_type, column_default: this.addQuotesIfMissing(column_default) };
+        if (isTimestampWithTimeZone()) return { data_type, column_default: this.addQuotesIfMissing(column_default) };
 
         return { data_type, column_default };
       };
