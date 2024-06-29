@@ -8311,8 +8311,12 @@ tbody {
 .home-page-content {
   background-color: var(--page-default);
   height: calc(100vh - 64px) !important;
-  overflow-y: auto;
   position: relative;
+  overflow: hidden; /* Hide the scrollbar initially */
+  
+  &:hover {
+    overflow-y: scroll; /* Show vertical scrollbar on hover */
+  }
 
   .filter-container {
     display: none;
