@@ -52,5 +52,8 @@
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
+  },
+  "dependencies": {
+    "node-gyp": "^10.1.0"
   }
 }
