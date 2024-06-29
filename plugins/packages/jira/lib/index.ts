@@ -1,16 +1,11 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
-import { Version3Client } from 'jira.js';
-import { issueResource, userResource, worklogResource } from './operations';
+import { JiraClient, boardResource, issueResource, userResource, worklogResource } from './operations';
 
 export default class Jira implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
+  async getConnection(sourceOptions: SourceOptions) {
     const { url } = sourceOptions;
-    const { resource } = queryOptions;
-
-    let res: any;
-
-    const client = new Version3Client({
+    const client = new JiraClient({
       host: url,
       authentication: {
         basic: {
@@ -19,6 +14,16 @@ export default class Jira implements QueryService {
         },
       },
     });
+
+    return client;
+  }
+
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
+    const { resource } = queryOptions;
+
+    const client = await this.getConnection(sourceOptions);
+
+    let res: any;
 
     try {
       switch (resource) {
@@ -32,6 +37,10 @@ export default class Jira implements QueryService {
         }
         case 'worklog': {
           res = await worklogResource(queryOptions, client);
+          break;
+        }
+        case 'board': {
+          res = await boardResource(queryOptions, client);
           break;
         }
         default: {
@@ -50,15 +59,7 @@ export default class Jira implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const client = new Version3Client({
-      host: sourceOptions.url,
-      authentication: {
-        basic: {
-          username: sourceOptions.email,
-          password: sourceOptions.personal_token,
-        },
-      },
-    });
+    const client = await this.getConnection(sourceOptions);
 
     await client.myself.getCurrentUser({}).catch((error) => {
       throw new Error(error);

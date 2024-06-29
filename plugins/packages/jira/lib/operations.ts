@@ -1,7 +1,70 @@
 import { QueryOptions } from './types';
-import { Version3Client } from 'jira.js';
+import { BaseClient } from 'jira.js';
 import JSON5 from 'json5';
+import { Board } from 'jira.js/out/agile';
+import { IssueWorklogs, IssueSearch, Issues, UserSearch, Users, Myself } from 'jira.js/out/version3';
 
+// Lazy Initialization
+export class JiraClient extends BaseClient {
+  private _board?: Board;
+  private _issues?: Issues;
+  private _issueSearch?: IssueSearch;
+  private _issueWorklogs?: IssueWorklogs;
+  private _userSearch?: UserSearch;
+  private _users?: Users;
+  private _myself?: Myself;
+
+  get board(): Board {
+    if (!this._board) {
+      this._board = new Board(this);
+    }
+    return this._board;
+  }
+
+  get issues(): Issues {
+    if (!this._issues) {
+      this._issues = new Issues(this);
+    }
+    return this._issues;
+  }
+
+  get issueSearch(): IssueSearch {
+    if (!this._issueSearch) {
+      this._issueSearch = new IssueSearch(this);
+    }
+    return this._issueSearch;
+  }
+
+  get issueWorklogs(): IssueWorklogs {
+    if (!this._issueWorklogs) {
+      this._issueWorklogs = new IssueWorklogs(this);
+    }
+    return this._issueWorklogs;
+  }
+
+  get userSearch(): UserSearch {
+    if (!this._userSearch) {
+      this._userSearch = new UserSearch(this);
+    }
+    return this._userSearch;
+  }
+
+  get users(): Users {
+    if (!this._users) {
+      this._users = new Users(this);
+    }
+    return this._users;
+  }
+
+  get myself(): Myself {
+    if (!this._myself) {
+      this._myself = new Myself(this);
+    }
+    return this._myself;
+  }
+}
+
+// convert string to json
 function returnObject(data: any) {
   if (!data) {
     return undefined;
@@ -9,6 +72,7 @@ function returnObject(data: any) {
   return typeof data === 'string' ? JSON5.parse(data) : data;
 }
 
+// convert string to number
 function returnNumber(data: any) {
   if (!data) {
     return undefined;
@@ -17,7 +81,7 @@ function returnNumber(data: any) {
 }
 
 //users
-export async function userResource(queryOptions: QueryOptions, client: Version3Client) {
+export async function userResource(queryOptions: QueryOptions, client: JiraClient) {
   const { operation } = queryOptions;
   let res;
   switch (operation) {
@@ -40,7 +104,7 @@ export async function userResource(queryOptions: QueryOptions, client: Version3C
   return res;
 }
 
-async function getUser(queryOptions: QueryOptions, client: Version3Client) {
+async function getUser(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
 
   await client.users
@@ -55,7 +119,7 @@ async function getUser(queryOptions: QueryOptions, client: Version3Client) {
   return returnValue;
 }
 
-async function findUsersByQuery(queryOptions: QueryOptions, client: Version3Client) {
+async function findUsersByQuery(queryOptions: QueryOptions, client: JiraClient) {
   const { query, start_at, max_results } = queryOptions;
   let returnValue = {};
 
@@ -72,7 +136,7 @@ async function findUsersByQuery(queryOptions: QueryOptions, client: Version3Clie
 }
 
 // GET all users
-async function findAssignableUsers(queryOptions: QueryOptions, client: Version3Client) {
+async function findAssignableUsers(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
 
   await client.userSearch
@@ -98,7 +162,7 @@ async function findAssignableUsers(queryOptions: QueryOptions, client: Version3C
 }
 
 //issues
-export async function issueResource(queryOptions: QueryOptions, client: Version3Client) {
+export async function issueResource(queryOptions: QueryOptions, client: JiraClient) {
   const { operation } = queryOptions;
   let res;
   switch (operation) {
@@ -129,7 +193,7 @@ export async function issueResource(queryOptions: QueryOptions, client: Version3
   return res;
 }
 
-async function createIssue(queryOptions: QueryOptions, client: Version3Client) {
+async function createIssue(queryOptions: QueryOptions, client: JiraClient) {
   const { properties } = queryOptions;
   let returnValue = {};
 
@@ -145,7 +209,7 @@ async function createIssue(queryOptions: QueryOptions, client: Version3Client) {
   return returnValue;
 }
 
-async function getIssue(queryOptions: QueryOptions, client: Version3Client) {
+async function getIssue(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
 
   await client.issues
@@ -160,7 +224,7 @@ async function getIssue(queryOptions: QueryOptions, client: Version3Client) {
   return returnValue;
 }
 
-async function deleteIssue(queryOptions: QueryOptions, client: Version3Client) {
+async function deleteIssue(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
 
   await client.issues
@@ -175,7 +239,7 @@ async function deleteIssue(queryOptions: QueryOptions, client: Version3Client) {
   return returnValue;
 }
 
-async function assignIssue(queryOptions: QueryOptions, client: Version3Client) {
+async function assignIssue(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
   await client.issues
     .assignIssue({ issueIdOrKey: queryOptions.issue_key, accountId: queryOptions.account_id })
@@ -189,7 +253,7 @@ async function assignIssue(queryOptions: QueryOptions, client: Version3Client) {
   return returnValue;
 }
 
-async function editIssue(queryOptions: QueryOptions, client: Version3Client) {
+async function editIssue(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
   const { properties } = queryOptions;
   await client.issues
@@ -205,7 +269,7 @@ async function editIssue(queryOptions: QueryOptions, client: Version3Client) {
 }
 
 // issue worklog
-export async function worklogResource(queryOptions: QueryOptions, client: Version3Client) {
+export async function worklogResource(queryOptions: QueryOptions, client: JiraClient) {
   const { operation } = queryOptions;
   let res;
   switch (operation) {
@@ -228,7 +292,7 @@ export async function worklogResource(queryOptions: QueryOptions, client: Versio
   return res;
 }
 
-async function issueWorklogs(queryOptions: QueryOptions, client: Version3Client) {
+async function issueWorklogs(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
   await client.issueWorklogs
     .getIssueWorklog({
@@ -249,7 +313,7 @@ async function issueWorklogs(queryOptions: QueryOptions, client: Version3Client)
   return returnValue;
 }
 
-async function addWorklog(queryOptions: QueryOptions, client: Version3Client) {
+async function addWorklog(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
 
   await client.issueWorklogs
@@ -267,7 +331,7 @@ async function addWorklog(queryOptions: QueryOptions, client: Version3Client) {
   return returnValue;
 }
 
-async function deleteWorklog(queryOptions: QueryOptions, client: Version3Client) {
+async function deleteWorklog(queryOptions: QueryOptions, client: JiraClient) {
   let returnValue = {};
 
   await client.issueWorklogs
@@ -278,6 +342,93 @@ async function deleteWorklog(queryOptions: QueryOptions, client: Version3Client)
     })
     .then(() => {
       returnValue = 'worklog deleted';
+    })
+    .catch((err) => {
+      returnValue = { statusCode: err.response?.status, response: err?.response?.data };
+    });
+
+  return returnValue;
+}
+
+// board
+export async function boardResource(queryOptions: QueryOptions, client: JiraClient) {
+  const { operation } = queryOptions;
+  let res;
+  switch (operation) {
+    case 'get_issues_for_backlog': {
+      res = await getIssuesForBacklog(queryOptions, client);
+      break;
+    }
+    case 'get_all_boards': {
+      res = await getAllBoards(queryOptions, client);
+      break;
+    }
+    case 'get_issues_for_board': {
+      res = await getIssuesForBoard(queryOptions, client);
+      break;
+    }
+    default: {
+      throw new Error('Select an operation');
+    }
+  }
+  return res;
+}
+
+async function getAllBoards(queryOptions: QueryOptions, client: JiraClient) {
+  let returnValue = {};
+
+  await client.board
+    .getAllBoards({
+      projectKeyOrId: queryOptions.project_key,
+      startAt: queryOptions.start_at,
+      maxResults: queryOptions.max_results,
+      expand: queryOptions.expand,
+      ...returnObject(queryOptions.properties),
+    })
+    .then((res) => {
+      returnValue = res;
+    })
+    .catch((err) => {
+      returnValue = { statusCode: err.response?.status, response: err?.response?.data };
+    });
+
+  return returnValue;
+}
+
+async function getIssuesForBacklog(queryOptions: QueryOptions, client: JiraClient) {
+  let returnValue = {};
+
+  await client.board
+    .getIssuesForBacklog({
+      boardId: queryOptions.board_id,
+      startAt: queryOptions.start_at,
+      maxResults: queryOptions.max_results,
+      expand: queryOptions.expand,
+      id: queryOptions.worklog_id,
+      ...returnObject(queryOptions.properties),
+    })
+    .then((res) => {
+      returnValue = res;
+    })
+    .catch((err) => {
+      returnValue = { statusCode: err.response?.status, response: err?.response?.data };
+    });
+
+  return returnValue;
+}
+
+async function getIssuesForBoard(queryOptions: QueryOptions, client: JiraClient) {
+  let returnValue = {};
+
+  await client.board
+    .getIssuesForBoard({
+      boardId: queryOptions.board_id,
+      startAt: queryOptions.start_at,
+      maxResults: queryOptions.max_results,
+      ...returnObject(queryOptions.properties),
+    })
+    .then((res) => {
+      returnValue = res;
     })
     .catch((err) => {
       returnValue = { statusCode: err.response?.status, response: err?.response?.data };

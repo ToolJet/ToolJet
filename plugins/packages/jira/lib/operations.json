@@ -23,6 +23,10 @@
         {
           "value": "worklog",
           "name": "Worklog"
+        },
+        {
+          "value": "board",
+          "name": "Board"
         }
       ]
     },
@@ -498,6 +502,194 @@
           "type": "codehinter",
           "mode": "javascript",
           "placeholder": "{notifyUsers:true, ...}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      }
+    },
+    "board": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className": "col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_issues_for_backlog",
+            "name": "Get issues for backlog"
+          },
+          {
+            "value": "get_all_boards",
+            "name": "Get all boards"
+          },
+          {
+            "value": "get_issues_for_board",
+            "name": "Get issues for board"
+          }
+        ]
+      },
+      "get_issues_for_backlog": {
+        "board_id": {
+          "label": "Board id",
+          "key": "board_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter board id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1"
+        },
+        "start_at": {
+          "label": "Start At",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max Results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "expand": {
+          "label": "expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{fields:[...] ...}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      },
+      "get_all_boards": {
+        "project_key": {
+          "label": "Project Key",
+          "key": "project_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter project Key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ"
+        },
+        "start_at": {
+          "label": "Start At",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max Results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "expand": {
+          "label": "expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{fields:[...] ...}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      },
+      "get_issues_for_board": {
+        "board_id": {
+          "label": "Board id",
+          "key": "board_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter board id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1"
+        },
+        "start_at": {
+          "label": "Start At",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max Results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "expand": {
+          "label": "expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{fields:[...] ...}",
           "description": "Enter properties",
           "height": "200px"
         }

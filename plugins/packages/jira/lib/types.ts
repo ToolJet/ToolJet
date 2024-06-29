@@ -21,7 +21,12 @@ export type QueryOptions = {
   started_after?: any;
   started_before?: any;
 
+  // worklog
   worklog_id?: any;
+
+  // board
+  board_id?: any;
+  done?: string;
 };
 
 export type SourceOptions = {
