@@ -1,18 +1,26 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
-import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
-import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { Tab, ListGroup, Row, Col, Table } from 'react-bootstrap';
+import {
+  usePreviewLoading,
+  usePreviewData,
+  useQueryPanelActions,
+  useSelectedDataSource,
+} from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 import RemoveRectangle from '@/_ui/Icon/solidIcons/RemoveRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const Preview = ({ darkMode }) => {
   const [key, setKey] = useState('raw');
+  const [columns, setColumns] = useState(null);
   const [isJson, setIsJson] = useState(false);
   const [theme, setTheme] = useState(() => getTheme(darkMode));
   const queryPreviewData = usePreviewData();
   const previewLoading = usePreviewLoading();
   const { setPreviewData } = useQueryPanelActions();
+  const { kind } = useSelectedDataSource();
+  //console.log("jhgfcdxzcfghjmhgdxsdfghjmkmjhgfcdx", kind)
   const previewPanelRef = useRef();
   useEffect(() => {
     setTheme(() => getTheme(darkMode));
@@ -31,6 +39,7 @@ const Preview = ({ darkMode }) => {
   useEffect(() => {
     if (queryPreviewData !== null && typeof queryPreviewData === 'object') {
       setKey('json');
+      setColumns(Object.keys(queryPreviewData[0]));
     } else {
       setKey('raw');
     }
@@ -67,7 +76,9 @@ const Preview = ({ darkMode }) => {
                     <ListGroup.Item
                       key={tab}
                       eventKey={tab.toLowerCase()}
-                      disabled={!queryPreviewData || (tab == 'JSON' && !isJson)}
+                      disabled={
+                        !queryPreviewData || (tab == 'JSON' && !isJson) || (tab == 'Table' && kind != 'tooljetdb')
+                      }
                       style={{ minWidth: '74px', textAlign: 'center' }}
                       className="rounded"
                     >
@@ -93,6 +104,7 @@ const Preview = ({ darkMode }) => {
             <Row className="m-0">
               <Tab.Content
                 style={{
+                  overflow: 'hidden',
                   overflowWrap: 'anywhere',
                   padding: 0,
                   border: '1px solid var(--slate5)',
@@ -116,6 +128,43 @@ const Preview = ({ darkMode }) => {
                     {renderRawData()}
                   </div>
                 </Tab.Pane>
+                {queryPreviewData !== '' && kind === 'tooljetdb' && (
+                  <Tab.Pane eventKey="table" transition={false}>
+                    <div
+                      className={` raw-container preview-data-container overflow-x-scroll`}
+                      data-cy="preview-raw-data-container"
+                    >
+                      <Table stripped hover variant={darkMode && 'dark'} size="lg" className="py-2">
+                        <thead>
+                          <tr>
+                            {columns?.map((columnName, i) => (
+                              <th key={i} className=" p-2 text-nowrap ">
+                                {columnName}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {console.log('cdfvdcsxadfvgbrdfvcsxcfvgrdfcsxcfvdcxsdfvc', queryPreviewData)}
+                          {queryPreviewData?.map((rowData, index) => {
+                            if (index < 100) {
+                              return (
+                                <tr key={index} p-2>
+                                  {columns?.map((columnName, i) => (
+                                    <td key={i} className=" p-2 text-nowrap">
+                                      {rowData[columnName] ? rowData[columnName] : 'NULL'}
+                                    </td>
+                                  ))}
+                                </tr>
+                              );
+                            }
+                          })}
+                        </tbody>
+                      </Table>
+                      {queryPreviewData.length > 100 && <p className="p-2">Showing first 100 rows</p>}
+                    </div>
+                  </Tab.Pane>
+                )}
               </Tab.Content>
             </Row>
           </div>
