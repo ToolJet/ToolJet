@@ -1,14 +1,20 @@
 name: Cypress App-Builder
 
 on:
+  push:
+    branches: [develop, main]
   pull_request_target:
-    types: [labeled, unlabeled, closed]
+    types: [labeled, unlabeled, closed, opened, synchronize,]
 
   workflow_dispatch:
 
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/checkout-')) && github.run_number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   Cypress-App-Builder:
@@ -104,6 +110,7 @@ jobs:
           dir: "./cypress-tests"
 
       - name: App builder
+        id: cypress
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
@@ -116,6 +123,38 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
+      # - name: Get Job Summary
+      #   id: exp
+      #   uses: pl-strflt/job-summary-url-action@v1
+      # - run: |
+      #     echo '${{ steps.exp.outputs.job_summary_url }}'
+      #     echo '${{ steps.exp.outputs.job_summary_raw_url}}'
+      #   shell: bash
+
+      - name: testing summary
+        uses: LouisBrunner/checks-action@v2.0.0
+        if: always()
+        id: summary
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Test XYZ
+          conclusion: ${{ job.status }}
+          output: |
+            {"summary":"${{ steps.test.outputs.summary }}"}
+
+      - name: Adding comment to PR 
+        if: always()
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '`Summary: ${summary}'
+            })
 
   Cypress-App-builder-Subpath:
     runs-on: ubuntu-22.04
