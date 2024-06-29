@@ -704,11 +704,16 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Email address not found');
     }
+
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
-    this.emailService
-      .sendPasswordResetEmail(email, forgotPasswordToken, user.firstName)
-      .catch((err) => console.error('Error while sending password reset mail', err));
+    try {
+      await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken, user.firstName);
+      
+    } catch (err) {
+      console.error('Error while sending password reset mail', err);
+    }
+    
   }
 
   async resetPassword(token: string, password: string) {

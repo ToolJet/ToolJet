@@ -83,7 +83,9 @@ describe('UsersService', () => {
       await service.update(defaultUser.id, { addGroups: ['new-group'] });
       await defaultUser.reload();
 
-      const userGroups = (await defaultUser.groupPermissions).map((groupPermission) => groupPermission.group);
+      const userGroups = (await service.groupPermissions(defaultUser)).map((groupPermission) => groupPermission.group);
+      // const userGroups = (await defaultUser.groupPermissions).map((groupPermission) => groupPermission.group);
+      //Defaultuser.groupPermissions doesn't exist..
 
       expect(userGroups.includes('new-group')).toBeTruthy;
     });
@@ -98,7 +100,8 @@ describe('UsersService', () => {
       await service.update(defaultUser.id, { addGroups: ['new-group', 'new-group'] });
       await defaultUser.reload();
 
-      const allUserGroups = (await defaultUser.groupPermissions).map((x) => x.group);
+      // Added await service.groupPermissions(defaultUser)
+      const allUserGroups = (await service.groupPermissions(defaultUser)).map((x) => x.group);
       expect(new Set(allUserGroups)).toEqual(new Set(['all_users', 'new-group']));
     });
 
@@ -108,11 +111,14 @@ describe('UsersService', () => {
 
       await service.update(defaultUser.id, { addGroups: ['new-group'] });
       await defaultUser.reload();
-      expect(await defaultUser.groupPermissions).toHaveLength(2);
+      const groupPermissions = await service.groupPermissions(defaultUser);
+      expect(groupPermissions).toHaveLength(2);
 
       await service.update(defaultUser.id, { removeGroups: ['new-group'] });
       await defaultUser.reload();
-      const allUserGroups = (await defaultUser.groupPermissions).map((x) => x.group);
+
+      // Added await service.groupPermissions(defaultUser)
+      const allUserGroups = (await service.groupPermissions(defaultUser)).map((x) => x.group);
       expect(new Set(allUserGroups)).toEqual(new Set(['all_users']));
     });
 
@@ -122,11 +128,18 @@ describe('UsersService', () => {
 
       await service.update(defaultUser.id, { addGroups: ['new-group'] });
       await defaultUser.reload();
-      expect(await defaultUser.groupPermissions).toHaveLength(2);
+
+      // Check if defaultUser.groupPermissions is undefined
+      const groupPermissions = await service.groupPermissions(defaultUser);
+      expect(groupPermissions).toHaveLength(2);
+
+      //Removed
+      // expect(await defaultUser.groupPermissions).toHaveLength(2);
 
       await service.update(defaultUser.id, { removeGroups: ['new-group', 'new-group', 'non-existent'] });
       await defaultUser.reload();
-      const allUserGroups = (await defaultUser.groupPermissions).map((x) => x.group);
+      // Added await service.groupPermissions(defaultUser)
+      const allUserGroups = (await service.groupPermissions(defaultUser)).map((x) => x.group);
       expect(new Set(allUserGroups)).toEqual(new Set(['all_users']));
     });
 

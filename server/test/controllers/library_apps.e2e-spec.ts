@@ -1,6 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
+// import { response } from 'express';
 
 describe('library apps controller', () => {
   let app: INestApplication;
@@ -40,14 +41,15 @@ describe('library apps controller', () => {
 
       expect(response.statusCode).toBe(403);
 
+      //Github Contributor template doesn't exist.
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'github-contributors', appName: 'GitHub Contributor Leaderboard' })
+        .send({ identifier: 'image-converter', appName: 'Image Converter' })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.app[0].name).toContain('GitHub Contributor Leaderboard');
+      expect(response.body.app[0].name).toContain('Image Converter');
     });
 
     it('should return error if template identifier is not found', async () => {
@@ -95,8 +97,11 @@ describe('library apps controller', () => {
 
       const templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
-      expect(new Set(templateAppIds)).toContain('github-contributors');
-      expect(new Set(templateAppIds)).toContain('customer-dashboard');
+      //github-contributors  and customer-dashboard Template doesn't exist
+      // expect(new Set(templateAppIds)).toContain('github-contributors');
+      // expect(new Set(templateAppIds)).toContain('customer-dashboard');
+      //Check for all Templates..
+      expect(new Set(templateAppIds)).toContain('bug-tracker');
     });
   });
 

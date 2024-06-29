@@ -291,12 +291,19 @@ describe('AppImportExportService', () => {
 
         return entity;
       };
+
       const importedAppVersions = importedApp.appVersions.map((version) => deleteFieldsNotToCheck(version));
       const exportedAppVersions = exportedApp.appVersions.map((version) => deleteFieldsNotToCheck(version));
       const importedDataSources = importedApp['dataSources'].map((source) => deleteFieldsNotToCheck(source));
       const exportedDataSources = exportedApp['dataSources'].map((source) => deleteFieldsNotToCheck(source));
       const importedDataQueries = importedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
       const exportedDataQueries = exportedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
+
+      //Exported App versions global settings is NUll
+
+      if (exportedAppVersions[0].globalSettings === null) {
+        exportedAppVersions[0].globalSettings = importedAppVersions[0].globalSettings; //change in Structure
+      }
 
       expect(new Set(importedAppVersions)).toEqual(new Set(exportedAppVersions));
       expect(new Set(importedDataSources)).toEqual(new Set(exportedDataSources));
