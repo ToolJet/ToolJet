@@ -38,6 +38,7 @@ The App (which credentials are provided) needs to be installed in the workspace 
 1. **List members**
 2. **Send message**
 3. **List messages from a channel**
+4. **Get Conversation Details**
 
 ### List members
 
@@ -79,3 +80,35 @@ This operation will get the messages from a specified channel.
 <img className="screenshot-full" src="/img/datasource-reference/slack/listmessages.png" alt="Slack datasource: ToolJet"/>
 
 </div>
+
+### Get Conversation Details:
+
+This operation retrieves detailed information about a specific conversation in Slack.
+
+| Property | Description |
+| :------- | :---------- |
+| `conversationId` | The unique ID of the conversation to retrieve details for. |
+
+**Response:**
+
+| Property | Description |
+| :------- | :---------- |
+| `id` | The unique ID of the conversation. |
+| `name` | The name of the conversation. |
+| `type` | The type of conversation (Channel or Group). |
+| `num_members` | The number of members in the conversation. |
+| `created` | The timestamp when the conversation was created (formatted as a date string). |
+| `is_archived` | Indicates whether the conversation is archived (true) or not (false). |
+| `is_general` | Indicates whether the conversation is the general channel (true) or not (false). |
+| `purpose` | The purpose of the conversation, if specified, or "Not specified" if not available. |
+| `topic` | The topic of the conversation, if specified, or "Not specified" if not available. |
+| `last_read` | The timestamp of the last read message in the conversation. |
+| `unlinked` | The number of unlinked members in the conversation. |
+| `parent_conversation` | The ID of the parent conversation, if any, or "None" if not applicable. |
+| `creator` | The user ID of the conversation creator. |
+| `is_shared` | Indicates whether the conversation is shared (true) or not (false). |
+| `is_org_shared` | Indicates whether the conversation is shared within the organization (true) or not (false). |
+| `shared_team_ids` | An array of team IDs with which the conversation is shared. |
+| `pending_shared` | An array of pending shared members. |
+| `context_team_id` | The ID of the context team. |
+
