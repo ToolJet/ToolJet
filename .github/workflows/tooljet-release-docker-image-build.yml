@@ -17,35 +17,39 @@ on:
 jobs:
   build-tooljet-ce-image:
     runs-on: ubuntu-latest
-    if: "${{ github.event.release }}"
+    # if: "${{ github.event.release }}"
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'testing-docker-cloud' }}
+
 
     steps:
       - name: Checkout code
-        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
 
-      - name: Checkout code
-        if: "contains(github.event.release.tag_name, 'CE-LTS')"
-        uses: actions/checkout@v2
-        with:
-          ref: refs/heads/lts-2.50
+      # - name: Checkout code
+      #   if: "!contains(github.event.release.tag_name, 'CE-LTS')"
+      #   uses: actions/checkout@v2
+      #   with:
+      #     ref: refs/heads/main
 
-      # Create Docker Buildx builder with platform configuration
+      # - name: Checkout code
+      #   if: "contains(github.event.release.tag_name, 'CE-LTS')"
+      #   uses: actions/checkout@v2
+      #   with:
+      #     ref: refs/heads/lts-2.50
+
+      # Create Docker Buildx builder with cloud driver
       - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
-          docker buildx use mybuilder
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: "lab:latest"
+          driver: cloud
+          endpoint: "tooljet/default"
+          install: true
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
-      - name: use mybuilder buildx
-        run: docker buildx use mybuilder
 
       - name: Docker Login
         uses: docker/login-action@v2
@@ -54,30 +58,42 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for non-LTS tag
-        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:latest
+          tags: tooljet/tj-osv:testing-cloud-build
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, 'CE-LTS')"
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/production.Dockerfile
-          push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: Build and Push Docker image for non-LTS tag
+      #   if: "!contains(github.event.release.tag_name, 'CE-LTS')"
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     file: docker/production.Dockerfile
+      #     push: true
+      #     tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:latest
+      #     platforms: linux/amd64
+      #   env:
+      #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      # - name: Build and Push Docker image for LTS tag
+      #   if: "contains(github.event.release.tag_name, 'CE-LTS')"
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     file: docker/production.Dockerfile
+      #     push: true
+      #     tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
+      #     platforms: linux/amd64
+      #   env:
+      #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Send Slack Notification
         run: |
@@ -88,6 +104,7 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
   #   #Below code helps to trigger the workflow separately
 
