@@ -203,6 +203,12 @@
           "key": "auth_type",
           "type": "react-component-oauth-authentication",
           "description": "key-value pair headers for rest api"
+        },
+        "cookies": {
+          "label": "Cookies",
+          "key": "cookies",
+          "type": "react-component-headers",
+          "description": "key-value pair headers for rest api"
         }
       }
     },
