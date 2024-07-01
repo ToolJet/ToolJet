@@ -14,7 +14,7 @@ class Restapi extends React.Component {
     super(props);
     const options = defaults(
       { ...props.options },
-      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false }
+      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false, cookies: [['', '']] }
     );
     this.state = {
       options,
@@ -37,6 +37,11 @@ class Restapi extends React.Component {
       setTimeout(() => {
         if (isEmpty(this.state.options['body'])) {
           this.addNewKeyValuePair('body');
+        }
+      }, 1000);
+      setTimeout(() => {
+        if (isEmpty(this.state.options['cookies'])) {
+          this.addNewKeyValuePair('cookies');
         }
       }, 1000);
     } catch (error) {

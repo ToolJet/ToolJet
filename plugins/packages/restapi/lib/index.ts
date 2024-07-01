@@ -15,6 +15,8 @@ import {
   isEmpty,
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
+  sanitizeCookies,
+  cookiesToString,
   sanitizeSearchParams,
   getAuthUrl,
 } from '@tooljet-plugins/common';
@@ -112,6 +114,12 @@ export default class RestapiQueryService implements QueryService {
       headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
       searchParams,
     };
+
+    const sanitizedCookies = sanitizeCookies(sourceOptions, queryOptions, hasDataSource);
+    const cookieString = cookiesToString(sanitizedCookies);
+    if (cookieString) {
+      _requestOptions.headers['Cookie'] = cookieString;
+    }
 
     const hasFiles = (json) => {
       return Object.values(json || {}).some((item) => {
