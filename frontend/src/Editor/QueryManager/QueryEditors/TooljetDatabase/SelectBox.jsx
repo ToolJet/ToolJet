@@ -95,6 +95,28 @@ function CustomMenuList({ ...props }) {
           </div>
         </>
       )}
+      {/* Below part is hack for now to show description for aggregate function dropdown */}
+      {!tjdbMenuListProps.foreignKeyAccess && !tjdbMenuListProps.actions && tjdbMenuListProps.showDescription && (
+        <>
+          <div style={{ borderTop: '1px solid var(--slate5)' }}></div>
+          <div
+            style={{
+              height: 'fit-content',
+              padding: '8px 12px',
+              minHeight: '76px',
+            }}
+          >
+            <div className="tj-header-h8 tj-text">
+              {!isEmpty(focusedOption) ? focusedOption?.label : selectedOption?.label || ''}
+            </div>
+            <span className="tj-text-xsm" style={{ color: 'var(--slate9)' }}>
+              {!isEmpty(focusedOption)
+                ? focusedOption?.description
+                : selectedOption?.description || 'Select an option to view its description'}
+            </span>
+          </div>
+        </>
+      )}
     </React.Fragment>
   );
 }
@@ -154,6 +176,7 @@ function DataSourceSelect({
   isLoading = false,
   columnDefaultValue,
   setColumnDefaultValue,
+  showControlComponent = false,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
@@ -492,7 +515,6 @@ function DataSourceSelect({
                         {children}
                       </span>
                     </ToolTip>
-
                     {foreignKeyAccess && showRedirection && props.isFocused && (
                       <Maximize
                         width={16}
@@ -510,7 +532,9 @@ function DataSourceSelect({
                         }}
                       />
                     )}
-                    {props.isSelected && highlightSelected && (
+                    <div
+                      style={{ visibility: !isMulti && props.isSelected && highlightSelected ? 'visible' : 'hidden' }}
+                    >
                       <SolidIcon
                         fill="var(--indigo9)"
                         name="tick"
@@ -518,7 +542,7 @@ function DataSourceSelect({
                         viewBox="0 0 20 20"
                         className="mx-1"
                       />
-                    )}
+                    </div>
 
                     {shouldShowForeignKeyIcon && props?.data?.isTargetTable && (
                       <ToolTip
@@ -552,7 +576,8 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(optionsCount < 5 && !scrollEventForColumnValues && { Control: () => '' }),
+          ...((showControlComponent ? false : optionsCount < 5) &&
+            !scrollEventForColumnValues && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
