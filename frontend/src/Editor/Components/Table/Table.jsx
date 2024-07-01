@@ -570,6 +570,8 @@ export function Table({
       highlightSelectedRow,
       JSON.stringify(tableActionEvents),
       JSON.stringify(tableColumnEvents),
+      maxRowHeightValue,
+      isMaxRowHeightAuto,
     ] // Hack: need to fix
   );
 
