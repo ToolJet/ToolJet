@@ -1,5 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException, Optional, ConflictException } from '@nestjs/common';
-import { EntityManager, In, ObjectLiteral, SelectQueryBuilder, Table, TableColumn, TableForeignKey } from 'typeorm';
+import {
+  EntityManager,
+  In,
+  ObjectLiteral,
+  QueryFailedError,
+  SelectQueryBuilder,
+  Table,
+  TableColumn,
+  TableForeignKey,
+} from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty, camelCase } from 'lodash';
@@ -687,13 +696,14 @@ export class TooljetDbService {
       const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap);
       return await queryBuilder.getRawMany();
     } catch (error) {
+      const errorObj = new QueryFailedError(error, [], error);
       throw new TooljetDatabaseError(
         error.message,
         {
           origin: 'join_tables',
           internalTables: internalTables,
         },
-        error
+        errorObj
       );
     }
   }
@@ -719,6 +729,10 @@ export class TooljetDbService {
     if (!isEmpty(queryJson.aggregates)) {
       Object.entries(queryJson.aggregates).forEach(([_key, aggregateParams]) => {
         const { aggFx, column, table_id: tableId } = aggregateParams as any;
+        const allowedAggFunctions = ['sums', 'count'];
+        if (!allowedAggFunctions.includes(aggFx)) {
+          throw new BadRequestException('Invalid aggregate function');
+        }
         queryBuilder.addSelect(
           `${AggregateFunctions[aggFx]}(${internalTableIdToNameMap[tableId]}.${column})`,
           `${internalTableIdToNameMap[tableId]}_${column}_${aggFx}`

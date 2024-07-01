@@ -4,15 +4,22 @@ export async function reconfigurePostgrest(
   tooljetDbManager: EntityManager,
   options: { user: string; enableAggregates: boolean; statementTimeoutInSecs: number }
 ) {
-  await tooljetDbManager.query('CREATE SCHEMA IF NOT EXISTS postgrest');
-  await tooljetDbManager.query(`GRANT USAGE ON SCHEMA postgrest to ${options.user}`);
-  await tooljetDbManager.query(`create or replace function postgrest.pre_config()
-  returns void as $$
-    select
-      set_config('pgrst.db_aggregates_enabled', '${options.enableAggregates}', false)
-  $$ language sql;
-  `);
-  await tooljetDbManager.query(
-    `ALTER ROLE ${options.user} SET statement_timeout TO '${options.statementTimeoutInSecs}s'`
-  );
+  try {
+    await tooljetDbManager.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.queryRunner.query('CREATE SCHEMA IF NOT EXISTS postgrest');
+      await transactionalEntityManager.queryRunner.query(`GRANT USAGE ON SCHEMA postgrest to ${options.user}`);
+      await transactionalEntityManager.queryRunner.query(`create or replace function postgrest.pre_config()
+      returns void as $$
+        select
+          set_config('pgrst.db_aggregates_enabled', '${options.enableAggregates}', false)
+      $$ language sql;
+      `);
+      await transactionalEntityManager.queryRunner.query(
+        `ALTER ROLE ${options.user} SET statement_timeout TO '${options.statementTimeoutInSecs}s'`
+      );
+    });
+  } catch (error) {
+    console.error('The tooljet database reconfiguration process encountered an error.', error);
+    throw error;
+  }
 }

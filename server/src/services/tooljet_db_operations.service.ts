@@ -90,12 +90,14 @@ export class TooljetDbOperationsService implements QueryService {
 
       const whereQuery = buildPostgrestQuery(whereFilters);
       const orderQuery = buildPostgrestQuery(orderFilters);
-      const groupByAndAggregateQueryList = this.buildAggregateAndGroupByQuery(
-        internalTable.tableName,
-        aggregates,
-        groupBy
-      );
-      if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
+      if (!isEmpty(aggregates) || !isEmpty(groupBy)) {
+        const groupByAndAggregateQueryList = this.buildAggregateAndGroupByQuery(
+          internalTable.tableName,
+          aggregates,
+          groupBy
+        );
+        if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
+      }
       !isEmpty(whereQuery) && query.push(whereQuery);
       !isEmpty(orderQuery) && query.push(orderQuery);
       !isEmpty(limit) && query.push(`limit=${limit}`);
