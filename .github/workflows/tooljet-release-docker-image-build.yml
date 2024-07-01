@@ -20,6 +20,7 @@ jobs:
     # if: "${{ github.event.release }}"
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'testing-docker-cloud' }}
 
+# testing
 
     steps:
       - name: Checkout code
