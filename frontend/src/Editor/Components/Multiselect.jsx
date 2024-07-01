@@ -173,6 +173,13 @@ export const Multiselect = function Multiselect({
           ItemRenderer={ItemRenderer}
           filterOptions={filterOptions}
           debounceDuration={0}
+          onMenuToggle={(isOpen) => {
+            if (isOpen) {
+              document.querySelector(`.ele-${id}`).style.zIndex = 3;
+            } else {
+              document.querySelector(`.ele-${id}`).style.zIndex = '';
+            }
+          }}
         />
       </div>
     </div>
