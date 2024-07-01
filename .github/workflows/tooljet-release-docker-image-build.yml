@@ -42,6 +42,12 @@ jobs:
       #   with:
       #     ref: refs/heads/lts-2.50
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_PASSWORD }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       # Create Docker Buildx builder with cloud driver
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -57,7 +63,7 @@ jobs:
       - name: Docker Login
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
+          username: ${{ secrets.DOCKER_PASSWORD }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for non-LTS tag
