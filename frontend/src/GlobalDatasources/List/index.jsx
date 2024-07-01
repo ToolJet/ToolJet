@@ -140,6 +140,7 @@ export const List = ({ updateSelectedDatasource }) => {
                     onClearCallback={handleClose}
                     autoFocus={true}
                     dataCy={'added-ds'}
+                    setShowInput ={setShowInput}
                   />
                 )}
               </div>
