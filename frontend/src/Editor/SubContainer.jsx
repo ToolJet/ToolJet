@@ -45,8 +45,6 @@ export const SubContainer = ({
   readOnly,
   customResolvables,
   parentComponent,
-  onComponentHover,
-  hoveredComponent,
   sideBarDebugger,
   onOptionChange,
   exposedVariables,
@@ -549,8 +547,6 @@ export const SubContainer = ({
       selectedComponents,
       darkMode,
       readOnly,
-      onComponentHover,
-      hoveredComponent,
       sideBarDebugger,
       currentPageId,
       childComponents,
@@ -641,8 +637,6 @@ export const SubContainer = ({
                       readOnly={readOnly}
                       darkMode={darkMode}
                       customResolvables={customResolvables}
-                      onComponentHover={onComponentHover}
-                      hoveredComponent={hoveredComponent}
                       parentId={parent}
                       isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                       exposedVariables={exposedVariables ?? {}}
@@ -713,7 +707,7 @@ const SubWidgetWrapper = ({
   const layoutData = layouts[currentLayout] || layouts['desktop'] || {};
   const isSelected = useEditorStore((state) => {
     const isSelected = (state.selectedComponents || []).length === 1 && state?.selectedComponents?.[0]?.id === id;
-    return state?.hoveredComponent == id || isSelected;
+    return isSelected;
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);

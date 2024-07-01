@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
@@ -16,7 +16,6 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
-import { debounce } from 'lodash';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
