@@ -87,6 +87,7 @@ const Table = ({ collapseSidebar }) => {
   const [nullValue, setNullValue] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCellUpdateInProgress, setIsCellUpdateInProgress] = useState(false);
+  const [isDirectRowExpand, setIsDirectRowExpand] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   const [cachedOptions, setCahedOptions] = useState({});
@@ -225,6 +226,7 @@ const Table = ({ collapseSidebar }) => {
     const newSelectedIdRef = {};
     if (rowIdSelected) newSelectedIdRef[`${rowIdSelected}`] = true;
     setSelectedRowIds(newSelectedIdRef);
+    setIsDirectRowExpand(true);
     return;
   };
 
@@ -400,6 +402,14 @@ const Table = ({ collapseSidebar }) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
+
+  useEffect(() => {
+    if (!isEditRowDrawerOpen && isDirectRowExpand) {
+      setSelectedRowIds({});
+      setIsDirectRowExpand(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditRowDrawerOpen]);
 
   const tableData = React.useMemo(
     () => (loading ? Array(10).fill({}) : selectedTableData),
@@ -1083,6 +1093,8 @@ const Table = ({ collapseSidebar }) => {
         setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
         setFilterEnable={setFilterEnable}
         filterEnable={filterEnable}
+        isDirectRowExpand={isDirectRowExpand}
+        setIsDirectRowExpand={setIsDirectRowExpand}
         referencedColumnDetails={referencedColumnDetails}
         setReferencedColumnDetails={setReferencedColumnDetails}
         // getForeignKeyDetails={getForeignKeyDetails}
@@ -1156,15 +1168,20 @@ const Table = ({ collapseSidebar }) => {
                     <div>
                       <IndeterminateCheckbox
                         indeterminate={
-                          Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length
+                          isDirectRowExpand
+                            ? false
+                            : Object.keys(selectedRowIds).length > 0 && Object.keys(selectedRowIds).length < rows.length
                         }
-                        checked={Object.keys(selectedRowIds).length === rows.length && rows.length}
+                        checked={
+                          isDirectRowExpand ? false : Object.keys(selectedRowIds).length === rows.length && rows.length
+                        }
                         onChange={() => toggleSelectOrDeSelectAllRows(rows.length)}
                         style={{
                           backgroundColor: `${
-                            (Object.keys(selectedRowIds).length > 0 &&
+                            (!isDirectRowExpand &&
+                              Object.keys(selectedRowIds).length > 0 &&
                               Object.keys(selectedRowIds).length < rows.length) ||
-                            (Object.keys(selectedRowIds).length === rows.length && rows.length)
+                            (!isDirectRowExpand && Object.keys(selectedRowIds).length === rows.length && rows.length)
                               ? '#3E63DD'
                               : 'var(--base)'
                           }`,
@@ -1263,7 +1280,7 @@ const Table = ({ collapseSidebar }) => {
                           }}
                         >
                           <IndeterminateCheckbox
-                            checked={selectedRowIds[row.id] ?? false}
+                            checked={!isDirectRowExpand ? selectedRowIds[row.id] ?? false : false}
                             onChange={() => toggleRowSelection(row.id)}
                           />
 
