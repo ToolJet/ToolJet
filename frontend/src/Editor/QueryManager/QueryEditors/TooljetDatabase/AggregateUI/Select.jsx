@@ -3,7 +3,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import DropDownSelect from '../DropDownSelect';
 
 export const SelectBox = ({
-  options,
+  options = [],
   handleChange,
   value = '',
   placeholder = '',

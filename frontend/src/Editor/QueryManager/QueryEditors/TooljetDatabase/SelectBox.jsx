@@ -197,11 +197,11 @@ function DataSourceSelect({
     closePopup && !isMulti && closePopup();
   };
 
-  let optionsCount = options.length;
+  let optionsCount = options?.length;
 
-  options.forEach((item) => {
-    if (item.options && item.options.length > 0) {
-      optionsCount += item.options.length;
+  options?.forEach((item) => {
+    if (item?.options && item?.options?.length > 0) {
+      optionsCount += item.options?.length;
     }
   });
 
