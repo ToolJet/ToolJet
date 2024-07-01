@@ -713,8 +713,8 @@ export class TooljetDbService {
 
     // Mandatory attributes
     if (isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates))
-      throw new BadRequestException('Select statement is empty');
-    if (isEmpty(queryJson.from)) throw new BadRequestException('From table is not selected');
+      throw new BadRequestException('The Select and Aggregate statement is not present.');
+    if (isEmpty(queryJson.from)) throw new BadRequestException('From table is not selected.');
 
     // Building `SELECT` statement with aliased column names
     if (!isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates)) {

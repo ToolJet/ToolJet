@@ -203,7 +203,8 @@ export class TooljetDbOperationsService implements QueryService {
     const sanitizedJoinTableJson = { ...join_table };
     // If mandatory fields ( Select, Join & From section ), are empty throw error
     const mandatoryFieldsButEmpty = [];
-    if (!sanitizedJoinTableJson?.fields.length) mandatoryFieldsButEmpty.push('Select');
+    if (!sanitizedJoinTableJson?.fields.length && isEmpty(sanitizedJoinTableJson.aggregates))
+      mandatoryFieldsButEmpty.push('Select and Aggregate');
     if (sanitizedJoinTableJson?.from && !Object.keys(sanitizedJoinTableJson?.from).length)
       mandatoryFieldsButEmpty.push('From');
 
