@@ -26,9 +26,11 @@ function TableSchema({
   indexHover,
   editColumns,
   foreignKeyDetails,
+  setForeignKeyDetails,
   existingForeignKeyDetails,
 }) {
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+  const [previousColumnNames, setPreviousColumnNames] = useState([]);
 
   const { Option } = components;
 
@@ -60,6 +62,10 @@ function TableSchema({
       value: columnDetails[index]?.column_default || '',
     }));
     setDefaultValue(newDefaultValue);
+  }, [columnDetails]);
+
+  useEffect(() => {
+    setPreviousColumnNames(Object.keys(columnDetails).map((key, index) => columnDetails[index]?.column_name));
   }, [columnDetails]);
 
   const CustomSelectOption = (props) => {
@@ -148,6 +154,16 @@ function TableSchema({
                 onChange={(e) => {
                   e.persist();
                   const prevColumns = { ...columnDetails };
+                  setForeignKeyDetails((prevState) => {
+                    return prevState.map((item) => {
+                      return {
+                        ...item,
+                        column_names: item.column_names.map((col) => {
+                          return col === previousColumnNames[index] ? e.target.value : col;
+                        }),
+                      };
+                    });
+                  });
                   prevColumns[index].column_name = e.target.value;
                   setColumns(prevColumns);
                 }}
