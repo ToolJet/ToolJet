@@ -30,17 +30,7 @@ export const useQueryPanelStore = create(
               return { selectedQuery: null };
             }
             const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
-            const globalDataSources = useDataSourcesStore.getState().globalDataSources;
-            if (query && query.options) {
-              let retryToggleOption = true;
-              if (globalDataSources) {
-                const matchingSource = globalDataSources.find((source) => source.id === query.data_source_id);
-                if (matchingSource) {
-                  retryToggleOption = matchingSource.options.retry_toggle.value;
-                }
-              }
-              query.options = { retryOnNetworkError: retryToggleOption, ...query.options };
-            }
+
             return { selectedQuery: query };
           });
         },

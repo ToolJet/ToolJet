@@ -154,7 +154,7 @@
     "ssl_certificate": {
       "value": "none"
     },
-    "retry_toggle": {
+    "retry_network_errors": {
       "value": true
     }
   },
@@ -191,10 +191,10 @@
           "type": "react-component-headers",
           "description": "key-value pair headers for rest api"
         },
-        "retry_toggle": {
+        "retry_network_errors": {
           "text": "Retry on network errors",
           "subtext": "By default, ToolJet tries to hit API endpoint 3 times before declaring query failed as server did not respond",
-          "key": "retry_toggle",
+          "key": "retry_network_errors",
           "type": "rest-api-toggle",
           "description": "key-value pair headers for rest api"
         },

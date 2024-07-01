@@ -255,7 +255,6 @@ export const QueryManagerBody = ({
   };
 
   const renderQueryOptions = () => {
-    const isScopeStatic = selectedDataSource?.id === 'null';
     return (
       <div>
         <div
@@ -275,7 +274,7 @@ export const QueryManagerBody = ({
                 darkMode={darkMode}
               />
             ))}
-            {selectedDataSource?.kind === 'restapi' &&
+            {selectedQuery?.kind === 'restapi' &&
               Object.keys(RestAPIToggles).map((toggle, index) => (
                 <CustomToggleFlag
                   {...RestAPIToggles[toggle]}
@@ -284,7 +283,6 @@ export const QueryManagerBody = ({
                   index={index}
                   key={toggle}
                   darkMode={darkMode}
-                  isScopeStatic={isScopeStatic}
                 />
               ))}
           </div>
@@ -380,7 +378,6 @@ const CustomToggleFlag = ({
   toggleOption,
   darkMode,
   index,
-  isScopeStatic,
 }) => {
   const [flag, setFlag] = useState(false);
 
@@ -403,7 +400,6 @@ const CustomToggleFlag = ({
         darkMode={darkMode}
         label={t(translatedLabel, label)}
         subLabel={subLabel}
-        isScopeStatic={isScopeStatic}
       />
     </div>
   );
