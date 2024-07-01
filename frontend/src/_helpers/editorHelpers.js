@@ -9,10 +9,12 @@ import { Container } from '@/Editor/Components/Container';
 import { Tabs } from '@/Editor/Components/Tabs';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
 import { DropDown } from '@/Editor/Components/DropDown';
+import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
+import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
 import { Modal } from '@/Editor/Components/Modal';
 import { Chart } from '@/Editor/Components/Chart';
 import { Map as MapComponent } from '@/Editor/Components/Map/Map';
@@ -84,10 +86,12 @@ export const AllComponents = {
   Tabs,
   RichTextEditor,
   DropDown,
+  DropdownV2,
   Checkbox,
   Datepicker,
   DaterangePicker,
   Multiselect,
+  MultiselectV2,
   Modal,
   Chart,
   Map: MapComponent,
@@ -191,6 +195,7 @@ export function findComponentsWithReferences(components, changedCurrentState) {
 
 //* TaskManager to track and manage scheduled tasks
 //Todo: Move this to a separate file
+
 class TaskManager {
   constructor() {
     this.tasks = new Set();
@@ -220,7 +225,14 @@ export function handleLowPriorityWork(callback, timeout = null, immediate = fals
     callback();
   } else {
     const options = timeout ? { timeout } : {};
-    const taskId = window.requestIdleCallback(callback, options);
+    const taskId = window.requestIdleCallback((deadline) => {
+      if (deadline.timeRemaining() > 0 || deadline.didTimeout) {
+        callback();
+      } else {
+        // Yield back to the browser and reschedule the task
+        handleLowPriorityWork(callback, timeout);
+      }
+    }, options);
     taskManager.addTask(taskId);
   }
 }

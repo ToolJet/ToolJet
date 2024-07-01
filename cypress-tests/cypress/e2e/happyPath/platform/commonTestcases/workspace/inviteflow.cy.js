@@ -131,7 +131,8 @@ describe("user invite flow cases", () => {
         cy.apiLogin();
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceName);
         cy.visit(`${data.workspaceName}`);
-        enableSignUp();
+        cy.wait(3000)
+        setSignupStatus(true, data.workspaceName);
         logout();
 
         cy.get(commonSelectors.createAnAccountLink).click();
@@ -142,11 +143,6 @@ describe("user invite flow cases", () => {
 
         cy.defaultWorkspaceLogin();
         visitWorkspaceInvitation(data.email, data.workspaceName);
-
-        cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-        cy.clearAndType(commonSelectors.passwordInputField, "password");
-        cy.get(commonSelectors.signInButton).click();
-        cy.get(usersSelector.acceptInvite).click();
         cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
         logout();
     });

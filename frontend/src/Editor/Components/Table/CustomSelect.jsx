@@ -190,7 +190,7 @@ export const CustomSelect = ({
   );
 };
 
-const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
+export const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (

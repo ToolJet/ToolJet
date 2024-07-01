@@ -11,6 +11,7 @@ import WarningInfo from '../Icons/Edit-information.svg';
 import { ConfirmDialog } from '@/_components';
 import { serialDataType } from '../constants';
 import cx from 'classnames';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const TableForm = ({
   selectedTable = {},
@@ -38,8 +39,24 @@ const TableForm = ({
   const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
-  const { organizationId, foreignKeys, setForeignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, foreignKeys, setForeignKeys, configurations } = useContext(TooljetDatabaseContext);
+
+  const [columns, setColumns] = useState(
+    (() => {
+      const clonedColumns = _.cloneDeep(selectedTableColumns) || {};
+      const transformedColumns = Object.values(clonedColumns).map((column) => {
+        const columnUuid = configurations?.columns?.column_names?.[column.column_name];
+        const columnConfigurations = configurations?.columns?.configurations?.[columnUuid] || {};
+        return {
+          ...column,
+          configurations: {
+            ...columnConfigurations,
+          },
+        };
+      });
+      return transformedColumns;
+    })()
+  );
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const [foreignKeyDetails, setForeignKeyDetails] = useState([]);

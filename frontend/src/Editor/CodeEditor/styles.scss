@@ -78,7 +78,7 @@
             max-width: 100% !important;
             width: 100% !important;
             display: flex !important;
-            align-items: start !important;
+            align-items: flex-start !important;
             justify-content: space-between !important;
             padding: 0.35rem !important;
             font-size: 11px !important;
@@ -351,6 +351,17 @@
     }
 }
 
+.rest-api-tab-content {
+    .fields-container {
+        .rest-api-codehinter-key-field {
+            .cm-editor {
+                border-radius: 4px 0px 0px 4px !important;
+                box-shadow: none !important;
+            }
+        }
+    }
+}
+
 .border-danger {
     .cm-editor {
         border: 1px solid red !important;
@@ -533,9 +544,10 @@
     }
 }
 
-.disabled-cursor{
+.disabled-cursor {
     cursor: not-allowed;
 }
-.disabled-pointerevents{
+
+.disabled-pointerevents {
     pointer-events: none;
 }

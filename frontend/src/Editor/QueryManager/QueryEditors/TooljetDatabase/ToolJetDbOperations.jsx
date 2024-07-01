@@ -9,18 +9,17 @@ import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
-import { cloneDeep, difference } from 'lodash';
+import { difference } from 'lodash';
 import DropDownSelect from './DropDownSelect';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
-  const currentState = useCurrentState();
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
@@ -64,7 +63,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
     setJoinTableOptions((prevJoinOptions) => {
       const { conditions, order_by = [], joins: currJoins, fields: currFields = [] } = prevJoinOptions;
-      const conditionsList = cloneDeep(conditions?.conditionsList || []);
+      const conditionsList = deepClone(conditions?.conditionsList || []);
       const newConditionsList = conditionsList.filter((condition) => {
         const { leftField } = condition || {};
         if (tableSet.has(leftField?.table)) {
@@ -244,7 +243,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       if (isNewTableAdded) {
         setJoinTableOptions((joinOptions) => {
           const { fields } = joinOptions;
-          const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
+          const newFields = deepClone(fields).filter((field) => field.table !== tableId);
           newFields.push(
             ...(data?.result?.columns
               ? data.result.columns.map((col) => ({
@@ -337,9 +336,20 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     ]
   );
 
+  const triggerTooljetDBStatus = (key) => {
+    if (window.public_config?.ENABLE_TOOLJET_DB !== 'true') {
+      toast('Tooljet database is not enabled.', {
+        icon: '⚠️',
+      });
+    } else if (key === 'addTJDBTable') {
+      navigate(getPrivateRoute('database'));
+    }
+  };
+
   const fetchTables = async () => {
     const { error, data } = await tooljetDatabaseService.findAll(organizationId);
 
+    triggerTooljetDBStatus();
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
       return;
@@ -393,7 +403,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         if (isNewTableAdded) {
           setJoinTableOptions((joinOptions) => {
             const { fields } = joinOptions;
-            const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
+            const newFields = deepClone(fields).filter((field) => field.table !== tableId);
             newFields.push(
               ...(data?.result?.columns
                 ? data.result.columns.map((col) => ({
@@ -486,7 +496,15 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       <div className={cx({ row: !isHorizontalLayout })}>
         <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
           <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
+          <div
+            className={cx(
+              { 'flex-grow-1': isHorizontalLayout },
+              'border',
+              'rounded',
+              'overflow-hidden',
+              'minw-400px-maxw-45perc'
+            )}
+          >
             <DropDownSelect
               customBorder={false}
               showPlaceHolder
@@ -495,7 +513,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
               onChange={(value) => {
                 value?.value && handleTableNameSelect(value?.value);
               }}
-              onAdd={() => navigate(getPrivateRoute('database'))}
+              onAdd={() => triggerTooljetDBStatus('addTJDBTable')}
               addBtnLabel={'Add new table'}
               value={generateListForDropdown(tables).find((val) => val?.value === selectedTableId)}
             />
@@ -510,7 +528,15 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
         >
           <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
+          <div
+            className={cx(
+              { 'flex-grow-1': isHorizontalLayout },
+              'border',
+              'rounded',
+              'overflow-hidden',
+              'minw-400px-maxw-45perc'
+            )}
+          >
             <DropDownSelect
               showPlaceHolder
               options={tooljetDbOperationList}
@@ -525,14 +551,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       </div>
 
       {/* component to render based on the operation */}
-      {ComponentToRender && (
-        <ComponentToRender
-          currentState={currentState}
-          options={options}
-          optionchanged={optionchanged}
-          darkMode={darkMode}
-        />
-      )}
+      {ComponentToRender && <ComponentToRender options={options} optionchanged={optionchanged} darkMode={darkMode} />}
     </TooljetDatabaseContext.Provider>
   );
 };

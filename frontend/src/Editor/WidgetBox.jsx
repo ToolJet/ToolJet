@@ -2,6 +2,9 @@ import React from 'react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { useTranslation } from 'react-i18next';
 
+const LEGACY_WIDGETS = ['ToggleSwitch', 'DropDown', 'Multiselect'];
+const NEW_WIDGETS = ['ToggleSwitchV2', 'DropdownV2', 'MultiselectV2'];
+
 const WidgetBox = ({ component, darkMode }) => {
   const { t } = useTranslation();
   return (
@@ -12,8 +15,8 @@ const WidgetBox = ({ component, darkMode }) => {
           style={{ height: '100%' }}
           data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
         >
-          {component.component == 'ToggleSwitch' && <p className="widget-version-old-identifier">Lgcy</p>}
-          {component.component == 'ToggleSwitchV2' && <p className="widget-version-new-identifier">New</p>}
+          {LEGACY_WIDGETS.includes(component.component) && <p className="widget-version-old-identifier">Lgcy</p>}
+          {NEW_WIDGETS.includes(component.component) && <p className="widget-version-new-identifier">New</p>}
           <center>
             <div
               className="widget-svg-container"

@@ -1,4 +1,5 @@
 import HttpClient from '@/_helpers/http-client';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import _ from 'lodash';
 
 const tooljetAdapter = new HttpClient();
@@ -42,7 +43,8 @@ function createColumn(
   isUniqueConstraint,
   isCheckSerialType = false,
   checkingValues = false,
-  foreignKeyArray
+  foreignKeyArray,
+  configurations = {}
 ) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
@@ -53,6 +55,7 @@ function createColumn(
         is_not_null: isNotNull,
         is_unique: isUniqueConstraint,
       },
+      configurations,
     },
     ...(checkingValues && { foreign_keys: foreignKeyArray }),
   });
@@ -67,7 +70,7 @@ function updateTable(organizationId, tableName, columns) {
 }
 
 function renameTable(organizationId, tableName, newTableName, data = []) {
-  let bodyData = _.cloneDeep(data);
+  let bodyData = deepClone(data);
   bodyData.forEach((obj) => {
     ['new_column', 'old_column'].forEach(function (key) {
       if (obj[key]?.data_type === 'serial') delete obj[key]?.column_default;

@@ -29,6 +29,7 @@ function DrawerFooter({
   showToolTipForFkOnReadDocsSection = false,
   foreignKeyDetails = [],
   initiator,
+  isButtonDisabledForTimestamp = false,
 }) {
   useEffect(() => {
     const keyboardShortcutStore = useKeyboardShortcutStore.getState();
@@ -95,7 +96,7 @@ function DrawerFooter({
   const documentationLink = drawerDocumentationsLinks[initiator];
 
   return (
-    <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
+    <div className="position-sticky bottom-0 right-0 w-100  mt-auto ">
       <div
         className={cx(
           { 'd-flex justify-content-end drawer-footer-btn-wrap': !isDrawerWithDocumentation },
@@ -221,14 +222,15 @@ function DrawerFooter({
             <>
               {isEditMode && (
                 <ButtonSolid
-                  disabled={shouldDisableCreateBtn || fetching}
+                  disabled={shouldDisableCreateBtn || fetching || isButtonDisabledForTimestamp}
                   data-cy={`save-changes-button`}
                   onClick={onEdit}
                   fill="#fff"
                   leftIcon="floppydisk"
                   size="md"
                 >
-                  Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                  Save changes
+                  <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
               )}
               {!isEditMode && (
