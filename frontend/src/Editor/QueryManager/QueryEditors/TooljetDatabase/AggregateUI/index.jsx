@@ -132,8 +132,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     try {
       const currentAggregates = { ...(operationDetails?.aggregates || {}) };
       delete currentAggregates[aggregateKey];
-      const currentGroupBy = { ...(operationDetails?.group_by || {}) };
-      delete currentGroupBy?.[selectedTableId];
+      const currentGroupBy = {};
 
       handleChange('group_by', currentGroupBy);
       handleChange('aggregates', currentAggregates);

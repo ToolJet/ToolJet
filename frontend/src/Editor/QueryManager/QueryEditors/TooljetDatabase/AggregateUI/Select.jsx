@@ -3,7 +3,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import DropDownSelect from '../DropDownSelect';
 
 export const SelectBox = ({
-  options = [],
+  options,
   handleChange,
   value = '',
   placeholder = '',
@@ -24,7 +24,7 @@ export const SelectBox = ({
         <DropDownSelect
           customBorder={false}
           showPlaceHolder
-          options={options}
+          options={options || []}
           darkMode={darkMode}
           onChange={handleChange}
           value={value}
