@@ -729,7 +729,7 @@ export class TooljetDbService {
     if (!isEmpty(queryJson.aggregates)) {
       Object.entries(queryJson.aggregates).forEach(([_key, aggregateParams]) => {
         const { aggFx, column, table_id: tableId } = aggregateParams as any;
-        const allowedAggFunctions = ['sums', 'count'];
+        const allowedAggFunctions = ['sum', 'count'];
         if (!allowedAggFunctions.includes(aggFx)) {
           throw new BadRequestException('Invalid aggregate function');
         }
