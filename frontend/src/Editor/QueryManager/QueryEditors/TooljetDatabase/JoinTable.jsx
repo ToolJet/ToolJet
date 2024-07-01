@@ -12,6 +12,7 @@ import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/Editor/CodeEditor';
+import { AggregateFilter } from './AggregateUI';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -86,6 +87,11 @@ const SelectTableMenu = ({ darkMode }) => {
     return cleanedJoin;
   };
 
+  const showSelectSection = () => {
+    const groupBy = joinTableOptions?.group_by || {};
+    const isGroupByUsed = Object?.values(groupBy)?.some((condition) => condition?.length >= 1);
+    return isGroupByUsed ? false : true;
+  };
   return (
     <div>
       {/* Join Section */}
@@ -131,6 +137,8 @@ const SelectTableMenu = ({ darkMode }) => {
           </Row>
         </div>
       </div>
+      <AggregateFilter darkMode={darkMode} operation="joinTable" />
+
       {/* Filter Section */}
       <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Filter</label>
@@ -185,12 +193,14 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Select Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label flex-shrink-0">Select</label>
-        <div className="field flex-grow-1">
-          <JoinSelect darkMode={darkMode} />
+      {showSelectSection() && (
+        <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+          <label className="form-label flex-shrink-0">Select</label>
+          <div className="field flex-grow-1">
+            <JoinSelect darkMode={darkMode} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
