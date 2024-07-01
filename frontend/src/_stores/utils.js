@@ -4,6 +4,7 @@ import { devtools } from 'zustand/middleware';
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -110,14 +111,15 @@ export function isParamFromTableColumn(appDiff, definition) {
 }
 
 export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
-  if (!opts?.isParamFromTableColumn) {
+  if (!opts?.isParamFromTableColumn && !opts?.isParamFromDropdownOptions) {
     return appDiff;
   }
   const columnsPath = generatePath(appDiff, 'columns');
   const actionsPath = generatePath(appDiff, 'actions');
   const deletionHistoryPath = generatePath(appDiff, 'columnDeletionHistory');
+  const optionsPath = generatePath(appDiff, 'options');
 
-  let _diff = _.cloneDeep(appDiff);
+  let _diff = deepClone(appDiff);
 
   if (columnsPath) {
     const columnsValue = getValueFromJson(definition, columnsPath);
@@ -134,6 +136,10 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
     _diff = updateValueInJson(_diff, deletionHistoryPath, deletionHistoryValue);
   }
 
+  if (optionsPath) {
+    const optionsValue = getValueFromJson(definition, optionsPath);
+    _diff = updateValueInJson(_diff, optionsPath, optionsValue);
+  }
   return _diff;
 };
 
@@ -174,6 +180,7 @@ const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
       try {
         return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
       } catch (error) {
+        console.error('Error processing diff for update type: ', updateTypes, appDiff, error);
         return { error, updateDiff: {}, type: null, operation: null };
       }
     }
@@ -241,9 +248,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
         return result;
       }
 
-      const componentMeta = _.cloneDeep(
-        componentTypes.find((comp) => comp.component === component.component.component)
-      );
+      const componentMeta = deepClone(componentTypes.find((comp) => comp.component === component.component.component));
 
       if (!componentMeta) {
         return result;
@@ -319,7 +324,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
 };
 
 function toRemoveExposedvariablesFromComponentDiff(object) {
-  const copy = _.cloneDeep(object);
+  const copy = deepClone(object);
   const componentIds = _.keys(copy);
 
   componentIds.forEach((componentId) => {
@@ -340,7 +345,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
 
   const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
-  const state = _.cloneDeep(refState);
+  const state = deepClone(refState);
   const queries = forQueryParams ? {} : state['queries'];
   const actions = initalLoad
     ? [

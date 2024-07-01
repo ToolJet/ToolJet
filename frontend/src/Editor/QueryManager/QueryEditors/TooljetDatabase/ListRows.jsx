@@ -300,7 +300,7 @@ const RenderFilterFields = ({
   return (
     <div className="mt-1 row-container">
       <div className="d-flex fields-container ">
-        <div className="field col-4">
+        <div className="field" style={{ width: '32%' }}>
           <Select
             useMenuPortal={true}
             placeholder="Select column"
@@ -312,7 +312,7 @@ const RenderFilterFields = ({
             width={'auto'}
           />
         </div>
-        <div className="field col-4 mx-1">
+        <div className="field  mx-1" style={{ width: '32%' }}>
           <Select
             useMenuPortal={true}
             placeholder="Select operation"
@@ -322,7 +322,7 @@ const RenderFilterFields = ({
             width={'auto'}
           />
         </div>
-        <div className="field col-4">
+        <div className="field" style={{ width: '32%' }}>
           {operator === 'is' ? (
             <Select
               useMenuPortal={true}
@@ -342,7 +342,10 @@ const RenderFilterFields = ({
             />
           )}
         </div>
-        <div className="col-1 cursor-pointer m-1 mr-2">
+        <div
+          className="col-1 cursor-pointer m-1 d-flex align-item-center justify-content-center"
+          style={{ width: '4%' }}
+        >
           <svg
             onClick={() => removeFilterConditionPair(id)}
             width="12"

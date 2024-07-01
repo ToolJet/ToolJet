@@ -100,7 +100,7 @@ export const List = ({ updateSelectedDatasource }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
-          No datasources added
+          {filteredData?.length === 0 && dataSources?.length !== 0 ? 'No results found' : 'No datasources added'}
         </div>
       </div>
     );

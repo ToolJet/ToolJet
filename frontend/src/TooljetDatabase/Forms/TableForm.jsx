@@ -11,6 +11,7 @@ import WarningInfo from '../Icons/Edit-information.svg';
 import { ConfirmDialog } from '@/_components';
 import { serialDataType } from '../constants';
 import cx from 'classnames';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const TableForm = ({
   selectedTable = {},

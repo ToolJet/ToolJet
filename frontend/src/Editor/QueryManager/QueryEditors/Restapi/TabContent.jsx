@@ -83,7 +83,7 @@ export default ({
           />
         </div>
       ) : (
-        <div className="d-flex" style={{ maxHeight: '32px' }}>
+        <div className="d-flex mb-2" style={{ maxHeight: '32px', marginTop: '4px' }}>
           <ButtonSolid
             variant="ghostBlue"
             size="sm"
@@ -91,7 +91,7 @@ export default ({
             style={{ gap: '0px', fontSize: '12px', fontWeight: '500', padding: '0px 9px' }}
           >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp;{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
+            {t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
           </ButtonSolid>
         </div>
       )}
