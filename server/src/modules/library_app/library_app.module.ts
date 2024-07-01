@@ -20,14 +20,12 @@ import { ImportExportResourcesModule } from '../import_export_resources/import_e
 import { AppsService } from '@services/apps.service';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
-import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource, AppVersion, AppUser]),
     CaslModule,
     ImportExportResourcesModule,
-    TooljetDbModule,
   ],
   providers: [
     EncryptionService,
