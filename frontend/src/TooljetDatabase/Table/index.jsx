@@ -27,7 +27,11 @@ import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-
+import {
+  convertDateToTimeZoneFormatted,
+  getLocalTimeZone,
+  getUTCOffset,
+} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -49,6 +53,9 @@ const Table = ({ collapseSidebar }) => {
     loadingState,
     setForeignKeys,
     foreignKeys,
+    configurations,
+    setConfigurations,
+    getConfigurationProperty,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -364,7 +371,8 @@ const Table = ({ collapseSidebar }) => {
           return;
         }
 
-        const { foreign_keys = [] } = data?.result || {};
+        const { foreign_keys = [], configurations = {} } = data?.result || {};
+        setConfigurations(configurations);
         if (data?.result?.columns?.length > 0) {
           setColumns(
             data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
@@ -730,6 +738,7 @@ const Table = ({ collapseSidebar }) => {
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
+    console.log(cellValue, 'cellValue Before');
 
     primaryKeyColumns.forEach((primaryKeyColumnName) => {
       if (rows[rIndex]?.values[primaryKeyColumnName]) {
@@ -740,9 +749,9 @@ const Table = ({ collapseSidebar }) => {
 
     setIsCellUpdateInProgress(true);
     const cellKey = headerGroups[0].headers[index].id;
+    const dataType = headerGroups[0].headers[index].dataType;
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
-    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellVal };
-
+    const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellValue };
     const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
 
     if (error) {
@@ -776,8 +785,9 @@ const Table = ({ collapseSidebar }) => {
 
     // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
     const selectedTableDataCopy = [...selectedTableData];
+    console.log('cellValue', cellValue);
     if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
-      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellVal;
+      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
       setSelectedTableData([...selectedTableDataCopy]);
     }
 
@@ -792,6 +802,7 @@ const Table = ({ collapseSidebar }) => {
     }));
     cellValue === null ? setNullValue(true) : setNullValue(false);
     handleProgressAnimation('Column edited successfully', true);
+    if (dataType === 'timestamp with time zone') return;
     document.getElementById('edit-input-blur').blur();
   };
 
@@ -1013,7 +1024,7 @@ const Table = ({ collapseSidebar }) => {
           <span className="tj-text-xsm tj-db-dataype text-lowercase">
             {renderDatatypeIcon(dataType === 'serial' ? 'serial' : column?.dataType)}
           </span>
-          <span style={{ width: '100px' }}>{column.render('Header')}</span>
+          <span style={{ width: '100px' }}>{column.render('Header')} </span>
         </div>
 
         <ToolTip
@@ -1029,6 +1040,8 @@ const Table = ({ collapseSidebar }) => {
                   }`}</span>
                 </div>
               </div>
+            ) : dataType === 'timestamp with time zone' ? (
+              <span>Display time</span>
             ) : null
           }
           placement="top"
@@ -1036,7 +1049,7 @@ const Table = ({ collapseSidebar }) => {
           show={true}
         >
           <div>
-            {isMatchingForeignKeyColumn(column.Header) && (
+            {isMatchingForeignKeyColumn(column.Header) ? (
               <span
                 style={{
                   marginRight: isMatchingForeignKeyColumn(column.Header) ? '3px' : '',
@@ -1044,7 +1057,11 @@ const Table = ({ collapseSidebar }) => {
               >
                 <ForeignKeyIndicator />
               </span>
-            )}
+            ) : dataType === 'timestamp with time zone' ? (
+              <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                getConfigurationProperty(column.Header, 'timezone', getLocalTimeZone())
+              )}`}</span>
+            ) : null}
           </div>
         </ToolTip>
       </div>
@@ -1342,7 +1359,15 @@ const Table = ({ collapseSidebar }) => {
                             onClick={(e) => handleCellClick(e, index, rIndex, cell.value)}
                           >
                             <ToolTip
-                              message={getTooltipTextForCell(cell.value, index)}
+                              message={getTooltipTextForCell(
+                                cell.column.dataType == 'timestamp with time zone'
+                                  ? convertDateToTimeZoneFormatted(
+                                      cell.value,
+                                      getConfigurationProperty(cell.column.Header, 'timezone', getLocalTimeZone())
+                                    )
+                                  : cell.value,
+                                index
+                              )}
                               placement="bottom"
                               delay={{ show: 200, hide: 0 }}
                               show={
@@ -1391,6 +1416,7 @@ const Table = ({ collapseSidebar }) => {
                                       setNullValue={setNullValue}
                                       nullValue={nullValue}
                                       isBoolean={cell.column?.dataType === 'boolean' ? true : false}
+                                      isTimestamp={cell.column?.dataType === 'timestamp with time zone' ? true : false}
                                       referencedColumnDetails={referencedColumnDetails}
                                       referenceColumnName={
                                         foreignKeys.length > 0 &&
@@ -1553,7 +1579,18 @@ const Table = ({ collapseSidebar }) => {
                                           })}
                                         >
                                           <div className="cell-text">
-                                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                                            {isBoolean(cell?.value)
+                                              ? cell?.value?.toString()
+                                              : cell.column?.dataType === 'timestamp with time zone'
+                                              ? convertDateToTimeZoneFormatted(
+                                                  cell?.value,
+                                                  getConfigurationProperty(
+                                                    cell.column.Header,
+                                                    'timezone',
+                                                    getLocalTimeZone()
+                                                  )
+                                                )
+                                              : cell.render('Cell')}
                                           </div>
                                           {/* <ToolTip
                                             message={'Open referenced table'}

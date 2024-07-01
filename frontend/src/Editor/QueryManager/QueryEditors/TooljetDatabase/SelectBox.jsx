@@ -444,7 +444,11 @@ function DataSourceSelect({
                   message={`Foreign key relation cannot be created for ${props?.data?.dataType} type column`}
                   placement="top"
                   tooltipClassName="tootip-table"
-                  show={(foreignKeyAccess && props.data.dataType === 'serial') || props.data.dataType === 'boolean'}
+                  show={
+                    (foreignKeyAccess && props.data.dataType === 'serial') ||
+                    props.data.dataType === 'boolean' ||
+                    props.data.dataType === 'timestamp with time zone'
+                  }
                 >
                   <div
                     style={{
