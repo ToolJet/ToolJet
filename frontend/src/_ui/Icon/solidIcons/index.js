@@ -167,6 +167,7 @@ import Open from './Open.jsx';
 import TooljetIcon from './TooljetIcon.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
+import Search01 from './Search01.jsx';
 import ShiftButtonIcon from './ShiftButtonIcon.jsx';
 import Unpin01 from './Unpin01.jsx';
 
@@ -392,6 +393,8 @@ const Icon = (props) => {
       return <SadRectangle {...props} />;
     case 'search':
       return <Search {...props} />;
+    case 'search01':
+      return <Search01 {...props} />;
     case 'searchminus':
       return <SearchMinus {...props} />;
     case 'searchplus':
