@@ -1,4 +1,8 @@
 import { IsUUID, IsOptional, IsString, IsDefined } from 'class-validator';
+import { JsonSchemaValidator } from '@dto/validators/validation';
+import { Validate } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { transformTJDB } from './transformers/resource_import';
 
 export class ImportResourcesDto {
   @IsUUID()
@@ -11,7 +15,11 @@ export class ImportResourcesDto {
   app: ImportAppDto[];
 
   @IsOptional()
+  @Transform(transformTJDB)
   tooljet_database: ImportTooljetDatabaseDto[];
+
+  @Validate(JsonSchemaValidator, ['tooljet_database', '2.43.0'])
+  validate: any;
 }
 
 export class ImportAppDto {
