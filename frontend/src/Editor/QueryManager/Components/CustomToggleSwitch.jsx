@@ -1,6 +1,5 @@
 import React from 'react';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
-import { ToolTip } from '@/_components/ToolTip';
 
 export const CustomToggleSwitch = ({
   isChecked,

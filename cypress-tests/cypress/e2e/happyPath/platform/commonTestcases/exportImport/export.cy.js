@@ -21,7 +21,6 @@ import { buttonText } from "Texts/button";
 
 describe("App Export Functionality", () => {
   var data = {};
-  data.appName1 = `${fake.companyName}-App`;
   let currentVersion = "";
   let otherVersions = [];
   beforeEach(() => {
@@ -29,6 +28,7 @@ describe("App Export Functionality", () => {
   });
 
   it("Verify the elements of export dialog box", () => {
+    data.appName1 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName1);
     cy.openApp();
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
@@ -56,6 +56,9 @@ describe("App Export Functionality", () => {
   });
 
   it("Verify 'Export app' functionality of an application", () => {
+    data.appName1 = `${fake.companyName}-App`;
+    cy.apiCreateApp(data.appName1);
+
     cy.visit("/");
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
 
@@ -96,7 +99,7 @@ describe("App Export Functionality", () => {
       .click();
     createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
     cy.wait(500);
-    cy.dragAndDropWidget("Toggle Switch", 50, 50);
+    cy.dragAndDropWidget("Text Input", 50, 50);
     cy.waitForAutoSave();
     cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
       .should("be.visible")

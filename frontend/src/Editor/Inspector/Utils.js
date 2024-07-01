@@ -45,15 +45,17 @@ export function renderCustomStyles(
     componentConfig.component == 'PasswordInput' ||
     componentConfig.component == 'ToggleSwitchV2' ||
     componentConfig.component == 'Checkbox' ||
-    componentConfig.component == 'Button' ||
-    componentConfig.component == 'Table'
+    componentConfig.component == 'Table' ||
+    componentConfig.component == 'DropdownV2' ||
+    componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'Button'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
     const getResolvedValue = (key) => {
-      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
@@ -139,7 +141,7 @@ export function renderElement(
     if (conditionallyRender) {
       const { key, value } = conditionallyRender;
       if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
         if (resolvedValue?.value !== value) return;
       }
     }

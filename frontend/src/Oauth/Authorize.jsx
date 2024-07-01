@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useRouter from '@/_hooks/use-router';
-import { authenticationService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
@@ -85,7 +85,22 @@ export function Authorize({ navigate }) {
         const inviteeEmail = details?.inviteeEmail;
         if (inviteeEmail) setInviteeEmail(inviteeEmail);
         const errMessage = details?.message || err?.error || 'something went wrong';
-        setError(`${configs.name} login failed - ${errMessage}`);
+        if (!inviteeEmail && inviteFlowIdentifier) {
+          /* Some unexpected error happened from the provider side. Need to retreive email to continue */
+          appService
+            .getInviteeDetails(inviteFlowIdentifier)
+            .then((response) => {
+              setInviteeEmail(response.email);
+            })
+            .catch(() => {
+              console.error('Error while fetching invitee details');
+            })
+            .finally(() => {
+              setError(`${configs.name} login failed - ${errMessage}`);
+            });
+        } else {
+          setError(`${configs.name} login failed - ${errMessage}`);
+        }
       });
   };
 
