@@ -195,7 +195,7 @@
           "text": "Retry on network errors",
           "subtext": "By default, ToolJet tries to hit API endpoint 3 times before declaring query failed as server did not respond",
           "key": "retry_network_errors",
-          "type": "rest-api-toggle",
+          "type": "toggle",
           "description": "key-value pair headers for rest api"
         },
         "auth_type": {

@@ -6,7 +6,6 @@ import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
-import RestAPIToggle from '@/_ui/RestAPIToggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
 import CodeHinter from '@/Editor/CodeEditor';
@@ -125,8 +124,6 @@ const DynamicForm = ({
         return Select;
       case 'toggle':
         return Toggle;
-      case 'rest-api-toggle':
-        return RestAPIToggle;
       case 'checkbox':
         return Checkbox;
       case 'checkbox-group':
@@ -218,12 +215,6 @@ const DynamicForm = ({
         };
       }
       case 'toggle':
-        return {
-          defaultChecked: options?.[key],
-          checked: options?.[key]?.value,
-          onChange: (e) => optionchanged(key, e.target.checked),
-        };
-      case 'rest-api-toggle':
         return {
           defaultChecked: options?.[key],
           checked: options?.[key]?.value,
