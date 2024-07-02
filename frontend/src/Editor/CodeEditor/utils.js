@@ -230,7 +230,10 @@ const queryHasStringOtherThanVariable = (query) => {
   return false;
 };
 
-export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
+export const resolveReferences = (query, validationSchema, customResolvers = {}, paramName) => {
+  if (typeof query === 'number') {
+    return [true, null, query];
+  }
   if (query !== '' && (!query || typeof query !== 'string')) return [false, null, null];
   let resolvedValue = query;
   let error = null;
