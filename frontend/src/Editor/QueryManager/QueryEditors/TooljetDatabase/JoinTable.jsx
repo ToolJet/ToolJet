@@ -90,9 +90,9 @@ const SelectTableMenu = ({ darkMode }) => {
   const showSelectSection = useCallback(() => {
     const groupBy = joinTableOptions?.group_by || {};
     const aggregates = joinTableOptions?.aggregates || {};
-    const columnList = Object?.values(groupBy)?.some((condition) => condition?.length >= 1);
+    const isGroupByUsed = Object?.values(groupBy)?.some((columnList) => columnList?.length >= 1);
     //checking if isGroupby is valid or aggregates is not empty then hide select or else show select options
-    return columnList || !isEmpty(aggregates) ? false : true;
+    return isGroupByUsed || !isEmpty(aggregates) ? false : true;
   }, [joinTableOptions]);
 
   return (
