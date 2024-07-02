@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Label from '@/_ui/Label';
+import { useEditorStore } from '@/_stores/editorStore';
 
 export const PasswordInput = function PasswordInput({
   height,
@@ -17,6 +17,7 @@ export const PasswordInput = function PasswordInput({
   darkMode,
   dataCy,
   isResizing,
+  id,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -228,6 +229,23 @@ export const PasswordInput = function PasswordInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
+  const currentPageId = useEditorStore.getState().currentPageId;
+  const components = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+
+  const isChildOfForm = Object.keys(components).some((key) => {
+    if (key == id) {
+      const { parent } = components[key].component;
+      if (parent) {
+        const parentComponentTypes = {};
+        Object.keys(components).forEach((key) => {
+          const { component } = components[key];
+          parentComponentTypes[key] = component.component;
+        });
+        if (parentComponentTypes[parent] == 'Form') return true;
+      }
+    }
+    return false;
+  });
   const renderInput = () => (
     <>
       <div
@@ -381,6 +399,9 @@ export const PasswordInput = function PasswordInput({
       )}
     </>
   );
+  const renderContainer = (children) => {
+    return !isChildOfForm ? <form autoComplete="off">{children}</form> : <div>{children}</div>;
+  };
 
-  return <div>{renderInput()}</div>;
+  return renderContainer(renderInput());
 };

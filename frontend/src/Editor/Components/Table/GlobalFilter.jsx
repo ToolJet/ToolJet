@@ -28,7 +28,7 @@ export const GlobalFilter = ({
       style={{ padding: '0.4rem 0.6rem', borderRadius: '6px' }}
     >
       <div className="d-flex">
-        <SolidIcon name="search" width="16" height="16" fill={'var(--icons-default)'} />
+        <SolidIcon name="search" style={{ marginTop: '3px' }} width="16" height="16" fill={'var(--icons-default)'} />
         <input
           type="text"
           className={`align-self-center bg-transparent tj-text tj-text-sm mx-lg-1`}

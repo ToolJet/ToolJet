@@ -111,12 +111,13 @@ export function isParamFromTableColumn(appDiff, definition) {
 }
 
 export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
-  if (!opts?.isParamFromTableColumn) {
+  if (!opts?.isParamFromTableColumn && !opts?.isParamFromDropdownOptions) {
     return appDiff;
   }
   const columnsPath = generatePath(appDiff, 'columns');
   const actionsPath = generatePath(appDiff, 'actions');
   const deletionHistoryPath = generatePath(appDiff, 'columnDeletionHistory');
+  const optionsPath = generatePath(appDiff, 'options');
 
   let _diff = deepClone(appDiff);
 
@@ -135,6 +136,10 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
     _diff = updateValueInJson(_diff, deletionHistoryPath, deletionHistoryValue);
   }
 
+  if (optionsPath) {
+    const optionsValue = getValueFromJson(definition, optionsPath);
+    _diff = updateValueInJson(_diff, optionsPath, optionsValue);
+  }
   return _diff;
 };
 
@@ -175,6 +180,7 @@ const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
       try {
         return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
       } catch (error) {
+        console.error('Error processing diff for update type: ', updateTypes, appDiff, error);
         return { error, updateDiff: {}, type: null, operation: null };
       }
     }

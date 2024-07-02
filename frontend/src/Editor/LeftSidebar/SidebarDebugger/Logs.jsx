@@ -8,8 +8,12 @@ import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
-
-  const title = ` [${capitalize(logProps?.type)} ${logProps?.key}]`;
+  let titleLogType = logProps?.type;
+  // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
+  if (titleLogType === 'transformations') {
+    titleLogType = 'query';
+  }
+  const title = ` [${capitalize(titleLogType)} ${logProps?.key}]`;
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
@@ -17,7 +21,12 @@ function Logs({ logProps, idx }) {
       ? 'Completed'
       : logProps?.type === 'component'
       ? `Invalid property detected: ${logProps?.message}.`
-      : `${startCase(logProps?.type)} failed: ${logProps?.message ? logProps?.message : logProps?.error?.message}`;
+      : `${startCase(logProps?.type)} failed: ${
+          logProps?.description ||
+          logProps?.message ||
+          (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
+          logProps?.error?.message
+        }`;
 
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -121,5 +130,7 @@ function Logs({ logProps, idx }) {
     </div>
   );
 }
+
+let isString = (value) => typeof value === 'string' || value instanceof String;
 
 export default Logs;

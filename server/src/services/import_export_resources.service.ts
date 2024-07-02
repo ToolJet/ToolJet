@@ -53,8 +53,9 @@ export class ImportExportResourcesService {
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
     const importingVersion = importResourcesDto.tooljet_version;
+    const isTJDBEnabled = process.env.ENABLE_TOOLJET_DB === 'true';
 
-    if (!isEmpty(importResourcesDto.tooljet_database)) {
+    if (isTJDBEnabled && !isEmpty(importResourcesDto.tooljet_database)) {
       const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
       tableNameMapping = res.tableNameMapping;
       imports.tooljet_database = res.tooljet_database;

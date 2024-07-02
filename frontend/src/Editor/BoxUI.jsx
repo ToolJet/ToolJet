@@ -18,6 +18,8 @@ const shouldAddBoxShadowAndVisibility = [
   'Checkbox',
   'Button',
   'ToggleSwitchV2',
+  'DropdownV2',
+  'MultiselectV2',
 ];
 
 const BoxUI = (props) => {

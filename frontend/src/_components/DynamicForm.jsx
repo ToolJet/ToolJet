@@ -474,10 +474,13 @@ const DynamicForm = ({
                 </div>
               )}
               <div
-                className={cx({
-                  'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
-                  'w-100': isHorizontalLayout && type !== 'codehinter',
-                })}
+                className={cx(
+                  {
+                    'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                    'w-100': isHorizontalLayout && type !== 'codehinter',
+                  },
+                  'dynamic-form-element'
+                )}
                 style={{ width: '100%' }}
               >
                 <Element

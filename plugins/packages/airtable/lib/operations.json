@@ -77,6 +77,28 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "recAOzdIHaRpvRaGE"
+      },
+      "fields": {
+        "label": "Fields",
+        "key": "fields",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter fields name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "[\"column1\",\"column2\",\"column3\"]"
+      },
+      "filter_by_formula": {
+        "label": "Filter by formula",
+        "key": "filter_by_formula",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter formula",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "column1 * column2 > 100"
       }
     },
     "retrieve_record": {

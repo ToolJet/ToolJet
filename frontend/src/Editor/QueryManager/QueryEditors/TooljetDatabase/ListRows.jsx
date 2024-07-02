@@ -7,6 +7,7 @@ import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CodeHinter from '@/Editor/CodeEditor';
+import { AggregateFilter } from './AggregateUI';
 
 export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
@@ -84,6 +85,7 @@ export const ListRows = React.memo(({ darkMode }) => {
     <div>
       <div className="row my-2 tj-db-field-wrapper">
         <div className="tab-content-wrapper">
+          <AggregateFilter darkMode={darkMode} operation="listRows" />
           <div className="d-flex mb-2">
             <label className="form-label" data-cy="label-column-filter">
               Filter
@@ -298,7 +300,7 @@ const RenderFilterFields = ({
   return (
     <div className="mt-1 row-container">
       <div className="d-flex fields-container ">
-        <div className="field col-4">
+        <div className="field" style={{ width: '32%' }}>
           <Select
             useMenuPortal={true}
             placeholder="Select column"
@@ -310,7 +312,7 @@ const RenderFilterFields = ({
             width={'auto'}
           />
         </div>
-        <div className="field col-4 mx-1">
+        <div className="field  mx-1" style={{ width: '32%' }}>
           <Select
             useMenuPortal={true}
             placeholder="Select operation"
@@ -320,7 +322,7 @@ const RenderFilterFields = ({
             width={'auto'}
           />
         </div>
-        <div className="field col-4">
+        <div className="field" style={{ width: '32%' }}>
           {operator === 'is' ? (
             <Select
               useMenuPortal={true}
@@ -340,7 +342,10 @@ const RenderFilterFields = ({
             />
           )}
         </div>
-        <div className="col-1 cursor-pointer m-1 mr-2">
+        <div
+          className="col-1 cursor-pointer m-1 d-flex align-item-center justify-content-center"
+          style={{ width: '4%' }}
+        >
           <svg
             onClick={() => removeFilterConditionPair(id)}
             width="12"

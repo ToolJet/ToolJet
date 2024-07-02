@@ -13,7 +13,7 @@ export const VerticalDivider = function Divider({ styles, height, width, dataCy,
     >
       <div className="col-6"></div>
       <div
-        className="col-6 border-right"
+        className="col-6"
         style={{ height, width: '1px', backgroundColor: color, padding: '0rem', marginLeft: '0.5rem', boxShadow }}
       ></div>
     </div>

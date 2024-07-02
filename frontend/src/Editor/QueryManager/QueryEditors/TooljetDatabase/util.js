@@ -63,3 +63,117 @@ export const nullOperatorOptions = [
   { label: 'null', value: 'NULL' },
   { label: 'not null', value: 'NOT NULL' },
 ];
+
+export const convertToDateType = (dateString, timeZone) => {
+  const date = new Date(dateString);
+  if (date.toString() === 'Invalid Date') return null;
+  return new Date(date.toLocaleString('en-US', { timeZone, hour12: false }));
+};
+
+export const convertDateToTimeZoneFormatted = (
+  dateString,
+  targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+  formatString = 'dd/MM/yyyy, hh:mm a'
+) => {
+  try {
+    const utcDate = new Date(dateString);
+    const options = {
+      timeZone: targetTimeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    };
+
+    const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(utcDate);
+    const dateComponents = {};
+
+    parts.forEach(({ type, value }) => {
+      dateComponents[type] = value;
+    });
+
+    let formattedDate = formatString
+      .replace('dd', dateComponents.day)
+      .replace('MM', dateComponents.month)
+      .replace('yyyy', dateComponents.year)
+      .replace('hh', dateComponents.hour.padStart(2, '0'))
+      .replace('mm', dateComponents.minute.padStart(2, '0'))
+      .replace('a', dateComponents.dayPeriod.toUpperCase());
+
+    return formattedDate;
+  } catch (e) {
+    return dateString;
+  }
+};
+
+// Function to get the current date in a specific time zone
+const getDateInTimeZone = (timeZone) => new Date().toLocaleString('en-US', { timeZone, hour12: false });
+
+export const formatDate = (date, timeZone) => {
+  if (date) {
+    const dateInSeconds = Math.floor(new Date(date).getTime() / 1000);
+
+    const dateInTimeZone = new Date(getDateInTimeZone(timeZone));
+    const dateInTimeZoneInSeconds = Math.floor(dateInTimeZone.getTime() / 1000);
+
+    const dateInUTC = new Date(getDateInTimeZone('UTC'));
+    const dateInUTCInSeconds = Math.floor(dateInUTC.getTime() / 1000);
+
+    const offset = dateInTimeZoneInSeconds - dateInUTCInSeconds;
+
+    const dateWithRemovedOffset = dateInSeconds - offset - new Date().getTimezoneOffset() * 60;
+    return new Date(dateWithRemovedOffset * 1000).toISOString();
+  } else {
+    return null;
+  }
+};
+
+// Function to get the UTC offset for a given time zone
+export const getUTCOffset = (timeZone) => {
+  const dateInTimeZone = new Date(getDateInTimeZone(timeZone));
+  const dateInTimeZoneInSeconds = dateInTimeZone.getTime() / 1000;
+
+  const dateInUTC = new Date(getDateInTimeZone('UTC'));
+  const dateInUTCInSeconds = dateInUTC.getTime() / 1000;
+
+  const difference = Math.floor((dateInTimeZoneInSeconds - dateInUTCInSeconds) / 60);
+
+  const offsetHours = Math.floor(difference / 60);
+  const offsetMinutes = difference % 60;
+  const offsetSign = difference >= 0 ? '+ ' : '- ';
+  const formattedOffset = `${offsetSign}${Math.abs(offsetHours).toString()}:${Math.abs(offsetMinutes)
+    .toString()
+    .padStart(2, '0')}`;
+  return formattedOffset;
+};
+
+// Function to format the time zone display name
+const formatTimeZoneLabel = (timeZone, offset) => `${timeZone} (UTC ${offset})`;
+
+// Function to get the local time zone with its UTC offset
+const getLocalTimeZoneWithOffset = () => {
+  const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const localOffset = getUTCOffset(localTimeZone);
+  return {
+    label: `Local time (UTC ${localOffset})`,
+    value: localTimeZone,
+  };
+};
+
+// Main function to get and log the list of time zones with UTC offsets
+export const timeZonesWithOffsets = () => {
+  const timeZones = Intl.supportedValuesOf('timeZone');
+  const localTimeZone = getLocalTimeZoneWithOffset();
+  const formattedTimeZones = timeZones.map((tz) => ({
+    label: formatTimeZoneLabel(tz, getUTCOffset(tz)),
+    value: tz,
+  }));
+  const timeZonesWithLocal = [localTimeZone, ...formattedTimeZones];
+  return timeZonesWithLocal;
+};
+
+export const getLocalTimeZone = () => {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+};

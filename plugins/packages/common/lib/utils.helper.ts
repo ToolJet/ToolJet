@@ -92,6 +92,26 @@ export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSo
   return headers;
 };
 
+export const sanitizeCookies = (sourceOptions: any, queryOptions: any, hasDataSource = true): object => {
+  const _cookies = (queryOptions.cookies || []).filter((o) => {
+    return o.some((e) => !isEmpty(e));
+  });
+
+  if (!hasDataSource) return Object.fromEntries(_cookies);
+
+  const cookieData = _cookies.concat(sourceOptions.cookies || []);
+  const cookies = Object.fromEntries(cookieData);
+  Object.keys(cookies).forEach((key) => (cookies[key] === '' ? delete cookies[key] : {}));
+
+  return cookies;
+};
+
+export const cookiesToString = (cookies: object): string => {
+  return Object.entries(cookies)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
+    .join('; ');
+};
+
 export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasDataSource = true): Array<string> => {
   const _urlParams = (queryOptions.url_params || []).filter((o) => {
     return o.some((e) => !isEmpty(e));

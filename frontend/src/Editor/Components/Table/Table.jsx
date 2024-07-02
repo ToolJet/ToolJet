@@ -428,7 +428,11 @@ export function Table({
 
   const tableRef = useRef();
 
-  const columnProperties = useDynamicColumn ? generatedColumn : component.definition.properties.columns.value;
+  const removeNullValues = (arr) => arr.filter((element) => element !== null);
+
+  const columnProperties = useDynamicColumn
+    ? generatedColumn
+    : removeNullValues(component.definition.properties.columns.value);
 
   let columnData = generateColumnsData({
     columnProperties,

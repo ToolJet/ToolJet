@@ -115,7 +115,7 @@ const QueryPanel = ({
         let height = (clientY / window.innerHeight) * 100,
           maxLimitReached = false;
 
-        if (height > 95) {
+        if (height > 94) {
           height = 30;
           maxLimitReached = true;
         }
@@ -155,32 +155,29 @@ const QueryPanel = ({
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
-        className="query-pane"
+        className={`query-pane ${isExpanded ? 'expanded' : 'collapsed'}`}
         style={{
           height: 40,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          zIndex: 1,
         }}
       >
-        <div
-          style={{ width: '288px', padding: '5px 12px' }}
-          className="d-flex justify-content- border-end align-items-center"
-          role="button"
-          onClick={toggleQueryEditor}
-        >
-          <ButtonSolid
-            variant="ghostBlack"
-            size="sm"
-            className="gap-0 p-2 me-2"
-            data-tooltip-id="tooltip-for-query-panel-footer-btn"
-            data-tooltip-content="Show query panel"
+        <div style={{ width: '288px', padding: '5px 12px' }} className="d-flex justify-content align-items-center">
+          <button
+            className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
+            onClick={toggleQueryEditor}
           >
-            <Maximize stroke="var(--slate9)" style={{ height: '14px', width: '14px' }} viewBox={null} />
-          </ButtonSolid>
-          <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
-            Query Manager
-          </h5>
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </button>
+          <div className="vr" />
+          <button
+            onClick={toggleQueryEditor}
+            className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
+          >
+            Queries
+          </button>
         </div>
       </div>
       <div
@@ -191,6 +188,9 @@ const QueryPanel = ({
         style={{
           height: `calc(100% - ${isExpanded ? height : 100}%)`,
           cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
+          ...(!isExpanded && {
+            border: 'none',
+          }),
         }}
       >
         <div className="row main-row">
@@ -203,18 +203,16 @@ const QueryPanel = ({
           />
           <div className="query-definition-pane-wrapper">
             <div className="query-definition-pane">
-              <div>
-                <QueryManager
-                  toggleQueryEditor={toggleQueryEditor}
-                  dataQueries={dataQueries}
-                  dataQueriesChanged={updateDataQueries}
-                  appId={appId}
-                  darkMode={darkMode}
-                  allComponents={allComponents}
-                  appDefinition={appDefinition}
-                  editorRef={editorRef}
-                />
-              </div>
+              <QueryManager
+                toggleQueryEditor={toggleQueryEditor}
+                dataQueries={dataQueries}
+                dataQueriesChanged={updateDataQueries}
+                appId={appId}
+                darkMode={darkMode}
+                allComponents={allComponents}
+                appDefinition={appDefinition}
+                editorRef={editorRef}
+              />
             </div>
           </div>
         </div>

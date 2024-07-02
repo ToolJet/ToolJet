@@ -9,6 +9,7 @@ enum PostgresErrorCode {
   ForeignKeyViolation = '23503',
   DuplicateColumn = '42701',
   UndefinedTable = '42P01',
+  UndefinedFunction = '42883',
 }
 
 export type TooljetDbActions =
@@ -45,6 +46,10 @@ const errorCodeMapping: Partial<ErrorCodeMapping> = {
   },
   [PostgresErrorCode.ForeignKeyViolation]: {
     proxy_postgrest: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
+  },
+  [PostgresErrorCode.UndefinedFunction]: {
+    proxy_postgrest: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
+    join_tables: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
   },
 };
 
@@ -160,6 +165,13 @@ export class TooljetDatabaseError extends QueryFailedError {
         const matches = regex.exec(errorMessage);
         const table = this.context.internalTables[0].tableName;
         return { table, column: matches[1], value: matches[2], referencedTables: [matches[2]] };
+      },
+      [PostgresErrorCode.UndefinedFunction]: () => {
+        const errorMessage = this.queryError.driverError.message;
+        const regex = /function (\w+)\(([\w\s]+)\) does not exist/;
+        const matches = regex.exec(errorMessage);
+        const table = this.context.internalTables[0].tableName;
+        return { table, fxName: matches[1] };
       },
     };
     return parsers[this.code]?.() || null;

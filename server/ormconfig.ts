@@ -82,6 +82,7 @@ function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
     logging: data.ORM_LOGGING || false,
     extra: {
       max: 25,
+      statement_timeout: data.TOOLJET_DB_STATEMENT_TIMEOUT || 60000,
     },
     ...tooljetDbSslConfig(data),
   };
