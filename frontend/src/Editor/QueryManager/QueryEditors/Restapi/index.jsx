@@ -14,7 +14,7 @@ class Restapi extends React.Component {
     super(props);
     const options = defaults(
       { ...props.options },
-      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false }
+      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false, cookies: [['', '']] }
     );
     this.state = {
       options,
@@ -39,10 +39,30 @@ class Restapi extends React.Component {
           this.addNewKeyValuePair('body');
         }
       }, 1000);
+      setTimeout(() => {
+        this.initizalizeRetryNetworkErrorsToggle();
+      }, 1000);
+      setTimeout(() => {
+        if (isEmpty(this.state.options['cookies'])) {
+          this.addNewKeyValuePair('cookies');
+        }
+      }, 1000);
     } catch (error) {
       console.log(error);
     }
   }
+
+  initizalizeRetryNetworkErrorsToggle = () => {
+    const isRetryNetworkErrorToggleUnused = this.props.options.retry_network_errors === null;
+    if (isRetryNetworkErrorToggleUnused) {
+      const isStaticRestapi = this.props.selectedDataSource.id == 'null';
+      const retryNetworkErrors = isStaticRestapi
+        ? true
+        : this.props.selectedDataSource.options.retry_network_errors.value;
+
+      changeOption(this, 'retry_network_errors', retryNetworkErrors);
+    }
+  };
 
   onBodyToggleChanged = (value) => {
     const { options } = this.state;

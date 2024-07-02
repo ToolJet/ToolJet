@@ -11,6 +11,8 @@ import {
   cleanSensitiveData,
   getCurrentToken,
   sanitizeHeaders,
+  sanitizeCookies,
+  cookiesToString,
   sanitizeSearchParams,
   fetchHttpsCertsForCustomCA,
 } from './utils.helper';
@@ -42,9 +44,11 @@ export {
   getAuthUrl,
   sanitizeCustomParams,
   sanitizeHeaders,
+  sanitizeCookies,
   sanitizeSearchParams,
   checkIfContentTypeIsURLenc,
   checkIfContentTypeIsMultipartFormData,
   validateAndSetRequestOptionsBasedOnAuthType,
   fetchHttpsCertsForCustomCA,
+  cookiesToString,
 };

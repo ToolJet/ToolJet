@@ -185,6 +185,8 @@ const DynamicForm = ({
     editorType = 'basic',
     placeholders = {},
     disabled = false,
+    text,
+    subtext,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -217,6 +219,8 @@ const DynamicForm = ({
           defaultChecked: options?.[key],
           checked: options?.[key]?.value,
           onChange: (e) => optionchanged(key, e.target.checked),
+          text,
+          subtext,
         };
       case 'dropdown':
       case 'dropdown-component-flip':

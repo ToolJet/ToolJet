@@ -68,6 +68,7 @@ jobs:
           echo "PG_HOST=postgres" >> .env
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env

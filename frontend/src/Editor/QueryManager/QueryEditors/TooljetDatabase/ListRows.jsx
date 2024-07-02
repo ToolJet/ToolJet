@@ -7,6 +7,7 @@ import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CodeHinter from '@/Editor/CodeEditor';
+import { AggregateFilter } from './AggregateUI';
 
 export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
@@ -84,6 +85,7 @@ export const ListRows = React.memo(({ darkMode }) => {
     <div>
       <div className="row my-2 tj-db-field-wrapper">
         <div className="tab-content-wrapper">
+          <AggregateFilter darkMode={darkMode} operation="listRows" />
           <div className="d-flex mb-2">
             <label className="form-label" data-cy="label-column-filter">
               Filter
