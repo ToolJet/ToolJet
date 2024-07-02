@@ -819,16 +819,11 @@ function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  const type = widgets.find(({ id }) => id === parentId)?.component?.component;
-  let pid = parentId;
-  if (type === 'Kanban') {
-    pid = pid + '-modal';
-  }
-  const children = widgets.filter((widget) => widget?.component?.parent === pid);
+  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
   let result = [];
   for (const child of children) {
     result.push(child.id);
-    result = result.concat(...findChildrenAndGrandchildren(child.id));
+    result = result.concat(...findChildrenAndGrandchildren(child.id, widgets));
   }
   return result;
 }
