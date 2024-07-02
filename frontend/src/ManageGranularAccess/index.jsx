@@ -4,7 +4,7 @@ import ModalBase from '@/_ui/Modal';
 import { AppsSelect } from '@/_ui/Modal/AppsSelect';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 import React from 'react';
-import { OverlayTrigger } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { withTranslation } from 'react-i18next';
 import { groupPermissionV2Service } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -15,7 +15,6 @@ import AppResourcePermissions from '@/ManageGranularAccess/AppResourcePermission
 import AddResourcePermissionsMenu from '@/ManageGranularAccess/AddResourcePermissionsMenu';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
-
 class ManageGranularAccessComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -485,29 +484,40 @@ class ManageGranularAccessComponent extends React.Component {
             <label className="form-label bold-text">Permission</label>
             <div className="type-container">
               <div className="left-container">
-                <label className="form-check form-check-inline">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    disabled={disableEditUpdate}
-                    checked={initialPermissionState.canEdit}
-                    onClick={() => {
-                      this.setState((prevState) => ({
-                        initialPermissionState: {
-                          ...prevState.initialPermissionState,
-                          canEdit: !prevState.initialPermissionState.canEdit,
-                          canView: prevState.initialPermissionState.canEdit,
-                          ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
-                        },
-                      }));
-                    }}
-                  />
+                <OverlayTrigger
+                  overlay={
+                    this.props.groupPermission?.name == 'end-user' ? (
+                      <Tooltip id="tooltip-disable-edit-update">End-user cannot have edit permission</Tooltip>
+                    ) : (
+                      <span></span>
+                    )
+                  }
+                  placement="left"
+                >
+                  <label className="form-check form-check-inline">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      disabled={disableEditUpdate}
+                      checked={initialPermissionState.canEdit}
+                      onClick={() => {
+                        this.setState((prevState) => ({
+                          initialPermissionState: {
+                            ...prevState.initialPermissionState,
+                            canEdit: !prevState.initialPermissionState.canEdit,
+                            canView: prevState.initialPermissionState.canEdit,
+                            ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                          },
+                        }));
+                      }}
+                    />
 
-                  <div>
-                    <span className="form-check-label text-muted">Edit</span>
-                    <span className="text-muted tj-text-xsm">Access to app builder</span>
-                  </div>
-                </label>
+                    <div>
+                      <span className="form-check-label ">Edit</span>
+                      <span className="tj-text-xsm">Access to app builder</span>
+                    </div>
+                  </label>
+                </OverlayTrigger>
               </div>
               <div className="right-container">
                 <label className="form-check form-check-inline">
@@ -528,8 +538,8 @@ class ManageGranularAccessComponent extends React.Component {
                     }}
                   />
                   <div>
-                    <span className="form-check-label text-muted">View</span>
-                    <span className="text-muted tj-text-xsm">Only view deployed version of app</span>
+                    <span className="form-check-label ">View</span>
+                    <span className=" tj-text-xsm">Only view deployed version of app</span>
                   </div>
                 </label>
                 <label className="form-check form-check-inline">
@@ -549,7 +559,7 @@ class ManageGranularAccessComponent extends React.Component {
                   />
                   <div>
                     <span className={`form-check-label faded-text`}>Hide from dashboard</span>
-                    <span className="text-muted tj-text-xsm">App will be accessible by URL only</span>
+                    <span className=" tj-text-xsm">App will be accessible by URL only</span>
                   </div>
                 </label>
               </div>
@@ -568,29 +578,38 @@ class ManageGranularAccessComponent extends React.Component {
                   }}
                 />
                 <div>
-                  <span className="form-check-label text-muted">All apps</span>
-                  <span className="text-muted tj-text-xsm">
+                  <span className="form-check-label ">All apps</span>
+                  <span className=" tj-text-xsm">
                     This will select all apps in the workspace including any new apps created
                   </span>
                 </div>
               </label>
-              <label className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  disabled={addableApps.length === 0}
-                  checked={isCustom}
-                  onClick={() => {
-                    this.setState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
-                  }}
-                />
-                <div>
-                  <span className="form-check-label text-muted">Custom</span>
-                  <span className="text-muted tj-text-xsm">
-                    Select specific applications you want to add to the group
-                  </span>
-                </div>
-              </label>
+              <OverlayTrigger
+                overlay={
+                  this.props.groupPermission?.name == 'end-user' ? (
+                    <Tooltip id="tooltip-disable-edit-update">Use custom groups to select custom resources</Tooltip>
+                  ) : (
+                    <span></span>
+                  )
+                }
+                placement="left"
+              >
+                <label className="form-check form-check-inline">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    disabled={addableApps.length === 0}
+                    checked={isCustom}
+                    onClick={() => {
+                      this.setState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
+                    }}
+                  />
+                  <div>
+                    <span className="form-check-label ">Custom</span>
+                    <span className=" tj-text-xsm">Select specific applications you want to add to the group</span>
+                  </div>
+                </label>
+              </OverlayTrigger>
               <AppsSelect
                 disabled={!isCustom}
                 allowSelectAll={true}

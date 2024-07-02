@@ -151,7 +151,7 @@ class ManageGroupPermissionsComponent extends React.Component {
             </div>
           </Popover.Body>
         </Popover>
-        {(groupName == 'all_users' || groupName == 'admin') && (
+        {(groupName == 'all_users' || groupName == 'admin' || groupName == 'builder' || groupName == 'end-user') && (
           <Tooltip
             id="tooltip-for-delete"
             className="tooltip"
