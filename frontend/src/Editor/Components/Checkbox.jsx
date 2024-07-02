@@ -102,7 +102,6 @@ export const Checkbox = ({
     setExposedVariable('isLoading', loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
-
   useEffect(() => {
     setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,12 +111,10 @@ export const Checkbox = ({
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
-
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
-
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
       setLoading(loading);
@@ -255,7 +252,6 @@ export const Checkbox = ({
       )}
     </>
   );
-
   const checkmarkStyle = {
     position: 'absolute',
     top: '1px',

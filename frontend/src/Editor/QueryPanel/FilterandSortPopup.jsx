@@ -209,7 +209,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           data-tooltip-content="Show sort/filter"
           data-cy={`query-filter-button`}
         >
-          <Filter width="13" height="13" fill="var(--slate12)" />
+          <Filter width="14" height="14" fill="var(--icons-default)" />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
         <Tooltip id="tooltip-for-open-filter" className="tooltip" />
@@ -311,7 +311,11 @@ const MenuButton = ({
 
   return (
     <div className={`field ${noMargin ? '' : 'mx-1'} tj-list-btn`}>
-      <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between p-2">
+      <Button.UnstyledButton
+        onClick={handleOnClick}
+        disabled={disabled}
+        classNames="d-flex justify-content-between p-2"
+      >
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
       </Button.UnstyledButton>
