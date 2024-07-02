@@ -243,35 +243,40 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     },
   ];
 
+  const getJoinTableOption = (value, tableId) => {
+    const valueToFilter = '${value}-${tableId}';
+    const option = tableListOptions?.reduce((acc, singleOption) => {
+      singleOption?.options?.find((option) => {
+        if (option.value === valueToFilter) {
+          acc = {
+            value: valueToFilter.split('-')[0],
+            label: option.tableName + '.' + option.label,
+            table: tableId,
+          };
+        }
+      });
+      return acc;
+    }, {});
+    return option || {};
+  };
+
+  const getListRowsOption = (value) => {
+    const option = columnAccessorsOptions?.find((option) => option?.value === value);
+    return option || {};
+  };
+
   const constructAggregateValue = (value, operation, option, tableId = '') => {
     if (option === 'aggFx') {
       const option = aggFxOptions.find((option) => option?.value === value);
       return option || {};
     }
     if (option === 'column') {
-      switch (operation) {
-        case 'joinTable': {
-          const option = tableListOptions?.reduce((acc, singleOption) => {
-            const valueToFilter = `${value}-${tableId}`;
-            singleOption?.options?.find((option) => {
-              if (option.value === valueToFilter) {
-                acc = {
-                  value: valueToFilter.split('-')[0],
-                  label: option.tableName + '.' + option.label,
-                  table: tableId,
-                };
-              }
-            });
-            return acc;
-          }, {});
-          return option || {};
+      if (option === 'column') {
+        if (operation === 'joinTable') {
+          return getJoinTableOption(value, tableId);
+        } else if (operation === 'listRows') {
+          return getListRowsOption(value);
         }
-        case 'listRows': {
-          const option = columnAccessorsOptions?.find((option) => option?.value === value);
-          return option || {};
-        }
-        default:
-          break;
       }
     }
   };
