@@ -450,14 +450,16 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
               {joinTableOptions?.joins?.map((table) => {
                 const tableName = getTableName(table.table); // Replace with your dynamic text
                 const isTextTruncated = isGroupByTableNameTruncated(tableName);
-
+                const tableNameEmpty = !tableName;
+                const showTooltip = tableNameEmpty || isTextTruncated;
+                const toolTipMessage = tableNameEmpty ? 'Please select joining table to see its name' : tableName;
                 return (
                   <div key={table.table} className="border rounded d-flex">
                     <ToolTip
-                      message={tableName}
+                      message={toolTipMessage}
                       placement="top"
                       tooltipClassName="tjdb-cell-tooltip"
-                      show={isTextTruncated}
+                      show={showTooltip}
                     >
                       <div
                         style={{ width: '15%', padding: '4px 8px' }}
@@ -475,7 +477,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                         placeholder={`Select column(s) to group by`}
                         isMulti={true}
                         handleChange={(value) => handleGroupByChange(table.table, value)}
-                        disabled={disableGroupBy()}
+                        disabled={disableGroupBy() || tableNameEmpty}
                         darkMode={darkMode}
                         showTooltip={disableGroupBy()}
                       />
