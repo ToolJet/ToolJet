@@ -166,7 +166,7 @@ const Header = ({
                             disabled={false}
                             onClick={() => toggleAddNewDataMenu(true)}
                             size="sm"
-                            className="px-1 pe-3 ps-2 gap-0"
+                            className="px-1 pe-3 ps-2 gap-1"
                           >
                             <Plus fill="#697177" style={{ height: '16px' }} />
                             Add new data

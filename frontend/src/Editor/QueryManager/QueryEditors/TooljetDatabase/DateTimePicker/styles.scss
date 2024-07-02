@@ -32,10 +32,6 @@
 }
 
 
-
-
-
-
 .datepicker-widget.theme-tjdb {
       .react-datepicker-wrapper{ 
         width:100%;
@@ -126,19 +122,25 @@
   margin-left:20px
 }
 
-.react-datepicker-wrapper {
- position: relative;
- padding-left: 8px;
- margin-left:8px;
- right:16px;
+
+.tjdb-datepicker-celledit-input{
+  padding:0px !important;
+  font-size: 12px;
 }
 
 .tjdb-datepicker-reset {
   inset: 0px auto 0px auto;
   transform: none;
   margin-top: 0px;
-  margin-left:14px;
 }
+
+.tjdb-datepicker-celledit-reset {
+  inset: 0px auto 0px auto;
+  transform: none;
+  margin-top: 0px;
+  margin-left:-10px;
+}
+
 
 .tjdb-datepicker-wrapper  {
   width: 101.7%;

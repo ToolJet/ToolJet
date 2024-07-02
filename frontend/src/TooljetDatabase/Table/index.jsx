@@ -587,7 +587,7 @@ const Table = ({ collapseSidebar }) => {
         cellValue === null ? setNullValue(true) : setNullValue(false);
         setDefaultValue(isCellValueDefault);
         setEditPopover(true);
-        document.getElementById('edit-input-blur').focus();
+        document?.getElementById('edit-input-blur').focus();
       } else if (e.key === 'Backspace' && !editPopover && shouldOpenCellEditMenu(selectedCellRef.current.columnIndex)) {
         const cellValue = rows[selectedCellRef.current.rowIndex].cells[selectedCellRef.current.columnIndex]?.value;
         const cellDataType =
@@ -616,7 +616,8 @@ const Table = ({ collapseSidebar }) => {
   };
 
   useEffect(() => {
-    if (!editPopover) {
+    const selectedDatatype = headerGroups[0]?.headers?.[selectedCellRef.current.columnIndex]?.dataType;
+    if (!editPopover && selectedDatatype !== 'timestamp with time zone') {
       document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
@@ -1630,21 +1631,22 @@ const Table = ({ collapseSidebar }) => {
                   </>
                 );
               })}
-              {rows.length > 0 && (
-                <div
-                  onClick={() => {
-                    resetCellAndRowSelection();
-                    setIsCreateRowDrawerOpen(true);
-                  }}
-                  className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
-                  style={{
-                    zIndex: 3,
-                  }}
-                >
-                  +
-                </div>
-              )}
+              <div />
             </tbody>
+            {rows.length > 0 && (
+              <div
+                onClick={() => {
+                  resetCellAndRowSelection();
+                  setIsCreateRowDrawerOpen(true);
+                }}
+                className={darkMode ? 'add-icon-row-dark' : 'add-icon-row'}
+                style={{
+                  zIndex: 3,
+                }}
+              >
+                +
+              </div>
+            )}
           </table>
         )}
         {rows.length === 0 && !loadingState && (

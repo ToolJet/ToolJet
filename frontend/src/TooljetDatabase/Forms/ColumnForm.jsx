@@ -20,6 +20,7 @@ import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import defaultStyles from '@/_ui/Select/styles';
 
 const ColumnForm = ({
   onCreate,
@@ -302,7 +303,7 @@ const ColumnForm = ({
                 setTimezone(option.value);
               }}
               components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
-              styles={customStyles}
+              styles={defaultStyles(darkMode, '100%')}
             />
           </div>
         )}
