@@ -244,20 +244,25 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
   ];
 
   const getJoinTableOption = (value, tableId) => {
-    const valueToFilter = '${value}-${tableId}';
-    const option = tableListOptions?.reduce((acc, singleOption) => {
-      singleOption?.options?.find((option) => {
+    const valueToFilter = `${value}-${tableId}`;
+    let foundOption = null; // Use a variable to store the found option
+
+    tableListOptions?.forEach((singleOption) => {
+      if (foundOption) return; // Exit early if foundOption is set
+      singleOption?.options?.some((option) => {
         if (option.value === valueToFilter) {
-          acc = {
+          foundOption = {
             value: valueToFilter.split('-')[0],
             label: option.tableName + '.' + option.label,
             table: tableId,
           };
+          return true; // Exit the some loop early
         }
+        return false; // Continue the some loop
       });
-      return acc;
-    }, {});
-    return option || {};
+    });
+
+    return foundOption || {};
   };
 
   const getListRowsOption = (value) => {
