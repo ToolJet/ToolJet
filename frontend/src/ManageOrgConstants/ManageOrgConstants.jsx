@@ -13,6 +13,7 @@ import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { BreadCrumbContext } from '@/App';
+import { useTranslation } from 'react-i18next';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -39,6 +40,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const { t } = useTranslation();
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
@@ -330,7 +332,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     }}
                   >
                     <div className="text-muted" data-cy="workspace-constant-helper-text">
-                      To resolve a Workspace constant use{' '}
+                      {t('resolveWorkspaceConstantText', 'To resolve a Workspace constant use')}{' '}
                       <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
                     </div>
                     <div>
@@ -350,7 +352,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                           fontWeight: 500,
                         }}
                       >
-                        <Button.Content title={'Read Documentation'} iconSrc="assets/images/icons/student.svg" />
+                        <Button.Content
+                          title={t('globals.readDocumentation', 'Read Documentation')}
+                          iconSrc="assets/images/icons/student.svg"
+                        />
                       </Button>
                     </div>
                   </div>

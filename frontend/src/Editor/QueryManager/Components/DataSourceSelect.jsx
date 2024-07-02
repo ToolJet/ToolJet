@@ -16,6 +16,7 @@ import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataS
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { useTranslation } from 'react-i18next';
 
 function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
@@ -33,7 +34,6 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
     setPreviewData(null);
     closePopup();
   };
-
   useEffect(() => {
     const shouldAddSampleDataSource = !!sampleDataSource;
     const allDataSources = [...dataSources, ...globalDataSources, shouldAddSampleDataSource && sampleDataSource].filter(
@@ -134,7 +134,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
       closePopup();
     }
   };
-
+  const { t } = useTranslation();
   return (
     <div>
       <Select
@@ -221,7 +221,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
             paddingLeft: 0,
           }),
         }}
-        placeholder="Search"
+        placeholder={t('globals.search', 'Search')}
         options={DataSourceOptions}
         isDisabled={isDisabled}
         menuIsOpen
@@ -277,7 +277,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
   menuListStyles.padding = '4px';
 
   const handleAddClick = () => navigate(`/${workspaceId}/data-sources`);
-
+  const { t } = useTranslation();
   return (
     <>
       <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
@@ -286,7 +286,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       {admin && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new Data source
+            {t('dataSourceSelect.addNewDataSource', 'Add new Data source')}
           </ButtonSolid>
         </div>
       )}

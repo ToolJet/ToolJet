@@ -34,7 +34,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
               className="dropdown-item tj-text-xsm"
               data-cy="marketplace-option"
             >
-              <span>Marketplace</span>
+              <span>{t('header.marketplace', 'Marketplace')}</span>
             </Link>
             <div className="divider"></div>
           </>
@@ -46,7 +46,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
             className="dropdown-item tj-text-xsm"
             data-cy="workspace-settings"
           >
-            <span>Workspace settings</span>
+            <span>{t('header.workspaceSettings', 'Workspace settings')}</span>
           </Link>
         )}
 
@@ -56,7 +56,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
           className="dropdown-item tj-text-xsm"
           data-cy="profile-settings"
         >
-          <span>Profile settings</span>
+          <span>{t('header.profileSettings', 'Profile settings')}</span>
         </Link>
         <div className="divider"></div>
         <Link

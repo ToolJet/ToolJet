@@ -110,7 +110,10 @@ export const NotificationCenter = ({ darkMode }) => {
   return (
     <OverlayTrigger onEntering={fetchData} rootClose trigger="click" placement="right" overlay={overlay}>
       <div>
-        <ToolTip message="Comment notifications" placement="right">
+        <ToolTip
+          message={t('header.notificationCenter.commentNotifications', 'Comment notifications')}
+          placement="right"
+        >
           <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
             <SolidIcon data-cy="notifications-icon" name="notification" fill="var(--slate8)" />
             {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}

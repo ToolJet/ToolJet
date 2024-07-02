@@ -12,6 +12,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import Settings from '@/_components/Settings';
+import { useTranslation } from 'react-i18next';
 
 function Layout({
   children,
@@ -50,6 +51,7 @@ function Layout({
     );
   };
 
+  const { t } = useTranslation();
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
@@ -66,7 +68,7 @@ function Layout({
             <div>
               <ul className="sidebar-inner nav nav-vertical">
                 <li className="text-center cursor-pointer">
-                  <ToolTip message="Apps" placement="right">
+                  <ToolTip message={t('globals.apps', 'Apps')} placement="right">
                     <Link
                       to="/"
                       onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
@@ -114,7 +116,7 @@ function Layout({
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Data sources" placement="right">
+                    <ToolTip message={t('leftSidebar.Sources.dataSources', 'Data sources')} placement="right">
                       <Link
                         to={getPrivateRoute('data_sources')}
                         onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
@@ -133,7 +135,7 @@ function Layout({
                 )}
                 {canCreateVariableOrConstant() && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Workspace constants" placement="right">
+                    <ToolTip message={t('header.workspaceConstants', 'Workspace constants')} placement="right">
                       <Link
                         to={getPrivateRoute('workspace_constants')}
                         onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
@@ -157,7 +159,11 @@ function Layout({
 
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
-                  <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
+                  <ToolTip
+                    delay={{ show: 0, hide: 0 }}
+                    message={t('header.darkModeToggle.mode', 'Mode')}
+                    placement="right"
+                  >
                     <Link
                       className="cursor-pointer tj-leftsidebar-icon-items"
                       onClick={() => switchDarkMode(!darkMode)}

@@ -4,11 +4,12 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { pluginsService } from '@/_services';
 import { capitalizeFirstLetter } from './utils';
+import { useTranslation } from 'react-i18next';
 
 export const MarketplaceCard = ({ id, name, repo, description, version, isInstalled = false }) => {
   const [installed, setInstalled] = React.useState(isInstalled);
   const [installing, setInstalling] = React.useState(false);
-
+  const { t } = useTranslation();
   React.useEffect(() => {
     setInstalled(isInstalled);
   }, [isInstalled]);
@@ -63,7 +64,10 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
                 <sub>v{version}</sub>
               </div>
               <div className={cx('col-auto', { disabled: installing || installed })} onClick={installPlugin}>
-                <div className="marketplace-install cursor-pointer">Install{installed && 'ed'}</div>
+                <div className="marketplace-install cursor-pointer">
+                  {t('globals.install', 'Install')}
+                  {installed && 'ed'}
+                </div>
               </div>
             </div>
           </div>

@@ -4,10 +4,12 @@ import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
+import { useTranslation } from 'react-i18next';
 
 function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, toggleCollapsibleSidebar = () => {} }) {
   const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const { t } = useTranslation();
 
   const routes = (path) => {
     switch (path) {
@@ -44,7 +46,7 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
             <div className="row">
               <div className="col-9">
                 <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
-                  {pathname}
+                  {t('globals.applications', pathname)}
                 </p>
               </div>
               {enableCollapsibleSidebar && !collapseSidebar && (

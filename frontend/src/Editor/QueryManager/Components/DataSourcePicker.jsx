@@ -50,14 +50,17 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
     const workspaceId = getWorkspaceId();
     navigate(`/${workspaceId}/data-sources`);
   };
-
+  const { t } = useTranslation();
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-        Connect to a Data source
+        {t('dataSourcePicker.headlineText', 'Connect to a Data source')}
       </h4>
       <p className="mb-3" style={{ textAlign: 'center' }}>
-        Select a Data source to start creating a new query. To know more about queries in ToolJet, you can read our
+        {t(
+          'dataSourcePicker.subText',
+          'Select a Data source to start creating a new query. To know more about queries in ToolJet, you can read our'
+        )}
         &nbsp;
         <a
           data-cy="querymanager-doc-link"
@@ -65,12 +68,12 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
           href="https://docs.tooljet.com/docs/app-builder/query-panel"
           rel="noreferrer"
         >
-          documentation
+          {t('dataSourcePicker.documentation', 'documentation')}
         </a>
       </p>
       <div>
         <label className="form-label" data-cy={`landing-page-label-default`}>
-          Default
+          {t('globals.default', 'Default')}
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {staticDataSources.map((source) => {
@@ -136,7 +139,9 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
 
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
-            {`Available Data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
+            {`${t('dataSourcePicker.availableDataSources', 'Available Data sources')} ${
+              !isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0
+            }`}
           </label>
           {admin && (
             <ButtonSolid
@@ -146,7 +151,7 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
               data-cy={`landing-page-add-new-ds-button`}
             >
               <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
-              Add new
+              {t('dataSourcePicker.addNew', 'Add new')}
             </ButtonSolid>
           )}
         </div>
@@ -191,14 +196,17 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
   );
 }
 
-const EmptyDataSourceBanner = () => (
-  <div className="bg-slate3 p-3 d-flex align-items-center lh-lg mt-2" style={{ borderRadius: '6px' }}>
-    <div className="me-2">
-      <Information fill="var(--slate9)" />
+const EmptyDataSourceBanner = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-slate3 p-3 d-flex align-items-center lh-lg mt-2" style={{ borderRadius: '6px' }}>
+      <div className="me-2">
+        <Information fill="var(--slate9)" />
+      </div>
+      <div>{t('dataSourcePicker.noDataSourcesAdded', 'No Data sources have been added yet.')}</div>
     </div>
-    <div>No Data sources have been added yet.</div>
-  </div>
-);
+  );
+};
 
 const SearchBox = ({ onSearch, darkMode, searchTerm, dataCy }) => {
   const { t } = useTranslation();
