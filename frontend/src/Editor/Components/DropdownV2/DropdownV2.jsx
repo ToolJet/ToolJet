@@ -59,16 +59,7 @@ export const DropdownV2 = ({
   exposedVariables,
   dataCy,
 }) => {
-  const {
-    label,
-    value,
-    advanced,
-    schema,
-    placeholder,
-    loadingState: dropdownLoadingState,
-    disabledState,
-    options,
-  } = properties;
+  const { label, value, advanced, schema, placeholder, loadingState: dropdownLoadingState, disabledState } = properties;
   const {
     selectedTextColor,
     fieldBorderRadius,
@@ -92,6 +83,7 @@ export const DropdownV2 = ({
   const { value: exposedValue } = exposedVariables;
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const options = component?.definition?.properties?.options?.value;
   const validationData = validate(currentValue);
   const { isValid, validationError } = validationData;
   const ref = React.useRef(null);
@@ -102,7 +94,6 @@ export const DropdownV2 = ({
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
-
   function findDefaultItem(schema) {
     let _schema = schema;
     if (!Array.isArray(schema)) {
@@ -116,10 +107,10 @@ export const DropdownV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => data?.visible?.value)
+        .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
         .map((value) => ({
           ...value,
-          isDisabled: value?.disable?.value,
+          isDisabled: resolveReferences(advanced ? value?.disable : value?.disable?.value, currentState),
         }));
       return _selectOptions;
     } else {
