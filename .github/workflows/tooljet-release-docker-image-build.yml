@@ -187,7 +187,7 @@ jobs:
             sudo docker images
 
             # Update docker-compose.yml with the new image for tooljet service
-            sed -i '/^[[:space:]]*tooljet:/,/^[[:space:]]*[^:]*$/ { /^[[:space:]]*image:[[:space:]]*tooljet\/tooljet-ce/s|\(image:[[:space:]]*\).*|\1tooljet/tooljet-ce:'"${{ github.event.inputs.image }}"'| }' docker-compose.yml
+            sed -i '/^[[:space:]]*tooljet:/,/^[[:space:]]*[^:]*$/ { /^[[:space:]]*image:[[:space:]]*tooljet\/tooljet-ce/s|\(image:[[:space:]]*\).*|\1tooljet/tooljet-ce:'"${{ github.event.release.tag_name }}"'| }' docker-compose.yml
 
             # check the updated docker-compose.yml file
             cat docker-compose.yaml
@@ -201,7 +201,7 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="CE-LTS test system with updated the image: `tooljet/tooljet-ce:${{ github.event.inputs.image }}`"
+            message="CE-LTS test system with updated the image: `tooljet/tooljet-ce:${{ github.event.release.tag_name }}`"
           else
             message="Failed to update the CE LTS test system"
           fi
