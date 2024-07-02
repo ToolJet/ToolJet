@@ -286,11 +286,32 @@ export const dropdownV2Config = {
       advanced: { value: `{{false}}` },
       schema: {
         value:
-          "{{[\t{label: 'option1',value: '1',disable: {value: false },visible: {value:true  },default: {value: false} },{label: 'option2',value: '2',disable: {value: false },visible:{value: true},default: {value: true}  },{label: 'option3',value: '3',disable: {value: false },visible: {value:true  },default: {value: false}  }\t]}}",
+          "{{[\t{label: 'option1',value: 1,disable: false,visible: true,default: true},{label: 'option2',value: 2,disable: false,visible: true},{label: 'option3',value: 3,disable: false,visible: true}\t]}}",
       },
       options: {
-        value:
-          "{{[\t{label: 'option1',value: '1',disable: {value: false },visible: {value:true  },default: {value: false} },{label: 'option2',value: '2',disable: {value: false },visible:{value: true},default: {value: true}  },{label: 'option3',value: '3',disable: {value: false },visible: {value:true  },default: {value: false}  }\t]}}",
+        value: [
+          {
+            label: 'option1',
+            value: '1',
+            disable: { value: false },
+            visible: { value: true },
+            default: { value: false },
+          },
+          {
+            label: 'option2',
+            value: '2',
+            disable: { value: false },
+            visible: { value: true },
+            default: { value: true },
+          },
+          {
+            label: 'option3',
+            value: '3',
+            disable: { value: false },
+            visible: { value: true },
+            default: { value: false },
+          },
+        ],
       },
       label: { value: 'Select' },
       value: { value: '{{"2"}}' },
@@ -299,8 +320,6 @@ export const dropdownV2Config = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
-      optionVisibility: { value: '{{[true, true, true]}}' },
-      optionDisable: { value: '{{[false, false, false]}}' },
       tooltip: { value: '' },
     },
     events: [],

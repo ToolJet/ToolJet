@@ -31,8 +31,6 @@ export const MultiselectV2 = ({
 }) => {
   let {
     label,
-    values,
-    options,
     showAllOption,
     disabledState,
     advanced,
@@ -62,6 +60,8 @@ export const MultiselectV2 = ({
   const [selected, setSelected] = useState([]);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const options = component?.definition?.properties?.options?.value;
+  const values = component?.definition?.properties?.values?.value;
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
   const validationData = validate(selected?.length ? selected?.map((option) => option.value) : null);
@@ -87,10 +87,10 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible?.value)
+          .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
           .map((value) => ({
             ...value,
-            isDisabled: value?.disable?.value,
+            isDisabled: resolveReferences(advanced ? value?.disable : value?.disable?.value, currentState),
           }))
       : [];
     return _selectOptions;
@@ -363,6 +363,7 @@ export const MultiselectV2 = ({
     }),
   };
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+
   return (
     <>
       <div
