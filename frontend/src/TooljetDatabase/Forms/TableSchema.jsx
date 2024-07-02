@@ -401,6 +401,7 @@ function TableSchema({
                         }}
                         isOpenOnStart={columnDetails[index]?.isOpenOnStart}
                         isClearable={true}
+                        createEditTable={true}
                       />
                     </div>
                   ) : (

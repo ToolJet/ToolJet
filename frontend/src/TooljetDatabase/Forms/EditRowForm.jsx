@@ -249,6 +249,13 @@ const EditRowForm = ({
         });
         const inputElement = inputRefs.current?.[columnName];
         inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+      } else if (error?.code === postgresErrorCode.NotNullViolation) {
+        const columnName = error?.message.split('.')[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Cannot be Null' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       } else if (error?.code === postgresErrorCode.DataTypeMismatch) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
@@ -403,6 +410,7 @@ const EditRowForm = ({
               setTimestamp={(value) => handleInputChange(index, value, columnName)}
               isOpenOnStart={false}
               isClearable={activeTab[index] === 'Custom'}
+              errorMessage={errorMap[columnName]}
             />
           </div>
         );

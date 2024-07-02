@@ -19,6 +19,8 @@ export const DateTimePicker = ({
   saveFunction = () => {},
   timezone = getLocalTimeZone(),
   isClearable = false,
+  createEditTable = false,
+  errorMessage,
 }) => {
   const startValue = useRef(timestamp);
   const timestampRef = useRef(timestamp);
@@ -314,7 +316,7 @@ export const DateTimePicker = ({
         isClearable={isClearable}
         value={transformedTimestamp}
         onClickOutside={() => setIsOpen(false)}
-        placeholderText="DD/MM/YYYY, 12:00pm"
+        placeholderText="dd/mm/yyyy, 12:00am/pm"
         selected={transformedTimestamp}
         minDate={minDate}
         maxDate={maxDate}
@@ -340,7 +342,7 @@ export const DateTimePicker = ({
         fixedHeight
         dropdownMode="select"
         customInput={
-          transformedTimestamp ? (
+          transformedTimestamp || createEditTable ? (
             <input
               onFocus={'auto'}
               style={{
@@ -349,7 +351,7 @@ export const DateTimePicker = ({
                 alignItems: 'center',
                 overflow: 'hidden',
               }}
-              className={cx({ 'tjdb-datepicker-celledit-input': isEditCell })}
+              className={cx({ 'tjdb-datepicker-celledit-input': isEditCell, 'input-error-border': errorMessage })}
             />
           ) : (
             <div
@@ -365,6 +367,7 @@ export const DateTimePicker = ({
                 'tjdb-datepicker-celledit-input': isEditCell,
                 'bg-dark color-white': darkMode,
                 'bg-white': !darkMode,
+                'input-error-border': errorMessage,
               })}
               tabindex="0"
             >
@@ -386,6 +389,18 @@ export const DateTimePicker = ({
         {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer })}
         {...(!isEditCell && { calendarContainer: memoizedDefaultCalendarContainer })}
       />
+      {errorMessage && (
+        <small
+          className="tj-input-error"
+          style={{
+            fontSize: '10px',
+            color: '#DB4324',
+          }}
+          data-cy="app-name-error-label"
+        >
+          {errorMessage}
+        </small>
+      )}
     </div>
   );
 };

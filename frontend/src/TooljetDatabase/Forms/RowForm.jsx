@@ -56,6 +56,9 @@ const RowForm = ({
   const inputValuesDefaultValues = () => {
     return Array.isArray(rowColumns)
       ? rowColumns.map((item, _index) => {
+          if (item.dataType === 'timestamp with time zone' && !item.column_default) {
+            return { value: new Date().toISOString(), checkboxValue: false, disabled: false, label: '' };
+          }
           if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
@@ -121,6 +124,7 @@ const RowForm = ({
 
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType) => {
     const newActiveTabs = [...activeTab];
+    const oldActiveTab = [...activeTab];
     newActiveTabs[index] = tabData;
     setActiveTab(newActiveTabs);
     const newInputValues = [...inputValues];
@@ -141,6 +145,7 @@ const RowForm = ({
     } else if (tabData === 'Custom' && dataType === 'character varying') {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     } else if (tabData === 'Custom' && dataType === 'timestamp with time zone') {
+      if (oldActiveTab[index] === 'Custom') return;
       newInputValues[index] = { value: new Date().toISOString(), checkboxValue: false, disabled: false, label: '' };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
@@ -204,6 +209,11 @@ const RowForm = ({
         return result;
       }
 
+      if (column.dataType === 'timestamp with time zone') {
+        result[column.accessor] = column_default ? column_default : new Date().toISOString();
+        return result;
+      }
+
       result[column.accessor] = column_default ? column_default : '';
       return result;
     }, {});
@@ -260,6 +270,13 @@ const RowForm = ({
         const columnName = error?.message.split('.')?.[1];
         setErrorMap((prev) => {
           return { ...prev, [columnName]: 'Value already exists' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
+      } else if (error?.code === postgresErrorCode.NotNullViolation) {
+        const columnName = error?.message.split('.')[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Cannot be Null' };
         });
         const inputElement = inputRefs.current?.[columnName];
         inputElement?.style?.setProperty('background-color', '#FFF8F7');
@@ -412,6 +429,7 @@ const RowForm = ({
               isOpenOnStart={false}
               timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
               isClearable={activeTab[index] === 'Custom'}
+              errorMessage={errorMap[columnName]}
             />
           </div>
         );
