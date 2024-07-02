@@ -201,7 +201,7 @@ function DataSourceSelect({
 
   options?.forEach((item) => {
     if (item?.options && item?.options?.length > 0) {
-      optionsCount += item.options?.length;
+      optionsCount += item.options.length;
     }
   });
 
