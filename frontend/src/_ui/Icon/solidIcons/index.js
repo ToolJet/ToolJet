@@ -167,6 +167,8 @@ import Open from './Open.jsx';
 import TooljetIcon from './TooljetIcon.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
+import ShiftButtonIcon from './ShiftButtonIcon.jsx';
+import Unpin01 from './Unpin01.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -356,6 +358,8 @@ const Icon = (props) => {
       return <PageAdd {...props} />;
     case 'pin':
       return <Pin {...props} />;
+    case 'unpin01':
+      return <Unpin01 {...props} />;
     case 'unpin':
       return <Unpin {...props} />;
     case 'play':
@@ -400,6 +404,8 @@ const Icon = (props) => {
       return <Server {...props} />;
     case 'settings':
       return <Settings {...props} />;
+    case 'shiftbutton':
+      return <ShiftButtonIcon {...props} />;
     case 'comments':
       return <Comments {...props} />;
     case 'share':

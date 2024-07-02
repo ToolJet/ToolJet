@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Form, Popover, Row, Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import React, { useEffect, useState } from 'react';
+import { Form, Popover, Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import CodeHinter from '@/Editor/CodeEditor';
 
 const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
 
@@ -17,12 +17,6 @@ const ParameterForm = ({
   const [name, setName] = useState();
   const [defaultValue, setDefaultValue] = useState();
   const [error, setError] = useState();
-
-  /**
-   * Storing {} in a ref to make sure its not a object instance whenever component reload.
-   * passing currentState={{}} to CodeHinter will consider it as a new value whenver this component rerenders
-   */
-  const emptyObj = useRef({});
 
   useEffect(() => {
     setName(_name);
@@ -112,11 +106,10 @@ const ParameterForm = ({
                   <CodeHinter
                     onChange={(value) => setDefaultValue(value)}
                     theme={darkMode ? 'monokai' : 'default'}
-                    currentState={emptyObj.current}
                     usePortalEditor={false}
                     style={{ height: '32px', width: '177px', marginBotto: '16px' }}
                     initialValue={defaultValue}
-                    enablePreview={false}
+                    delayOnChange={false}
                   />
                 </div>
               </div>

@@ -57,15 +57,18 @@ You can deploy ToolJet on DigitalOcean using one-click-deployment.
 ### Try using Docker
 Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
 
+
 ```bash
-docker run -d \
+docker run \
   --name tooljet \
   --restart unless-stopped \
   -p 80:80 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
-  tooljet/try:latest
+  tooljet/try:EE-LTS-latest
 ```
+
+*For users upgrading their ToolJet version, we recommend choosing the LTS version over the latest version. The LTS version ensures stability with production bug fixes, security patches, and performance enhancements.*
 
 ## Tutorials and examples
 

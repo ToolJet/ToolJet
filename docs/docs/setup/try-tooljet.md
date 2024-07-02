@@ -10,7 +10,7 @@ title: Try ToolJet
 You can run the command below to have ToolJet up and running right away.
 
 ```bash
-docker run -d \
+docker run \
   --name tooljet \
   --restart unless-stopped \
   -p 80:80 \
@@ -28,4 +28,21 @@ docker run -d \
 - You can make use of `--env` or `--env-file` flag to test against various env configurables mentioned [here](https://docs.tooljet.com/docs/setup/env-vars).
 - Use `docker stop tooljet` to stop the container and `docker start tooljet` to start the container thereafter.
 
+#### Dynamic Port Setup
+To run the ToolJet server on a different port, such as 8080 or any other port of your choice, use the following command:
 
+```sh
+docker run \
+  --name tooljet \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -e PORT=8080 \
+  --platform linux/amd64 \
+  -v tooljet_data:/var/lib/postgresql/13/main \
+  tooljet/try:EE-LTS-latest
+```
+
+- This command will start the ToolJet server on port 8080.
+- The `-e PORT=8080` flag sets the `PORT` environment variable to 8080, allowing the ToolJet server to listen on port 8080.
+
+By following these instructions, you can easily run the ToolJet server on the port of your choice, ensuring flexibility in your setup.

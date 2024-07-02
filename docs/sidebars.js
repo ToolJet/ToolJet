@@ -65,7 +65,8 @@ const sidebars = {
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',
-        'setup/v2-migration-guide'
+        'setup/v2-migration-guide',
+        'setup/upgrade-to-lts'
       ]
     },
     {
@@ -73,9 +74,15 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
+        'app-builder/walkthrough/create-ui',
+        'app-builder/walkthrough/create-queries',
+        'app-builder/walkthrough/using-code',
+        'app-builder/walkthrough/accessing-values',
+        'app-builder/walkthrough/variables',
+        'app-builder/importing-exporting-applications',
         {
           'type': 'category',
-          'label': 'App-Builder UI',
+          'label': 'Layout Guide',
           'items': [
            'app-builder/components-library',
            'app-builder/query-panel',
@@ -86,19 +93,6 @@ const sidebars = {
            'app-builder/preview',
            'app-builder/share',
            'app-builder/customstyles',
-           'app-builder/importing-exporting-applications',
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Examples',
-          'items': [
-            'app-builder/examples/create-ui',
-            'app-builder/examples/create-queries',
-            'app-builder/examples/using-code',
-            'app-builder/examples/accessing-values',
-            'app-builder/examples/variables',
-            //'app-builder/examples/sharing-apps',
           ],
         },
         {
@@ -173,7 +167,7 @@ const sidebars = {
                 'widgets/rich-text-editor',
                 'widgets/timeline',
                 'widgets/timer',
-                'widgets/toggle-switch',
+                'widgets/toggle-switch-v2',
                 'widgets/tree-select',
                 'widgets/vertical-divider',
               ],
@@ -373,6 +367,7 @@ const sidebars = {
         },
         'org-management/permissions',
         'tutorial/manage-users-groups',
+        'tutorial/tooljet-api',
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
@@ -425,6 +420,7 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
+            'marketplace/plugins/marketplace-plugin-salesforce',
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
           ],

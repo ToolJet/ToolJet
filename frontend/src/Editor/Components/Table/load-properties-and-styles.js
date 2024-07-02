@@ -7,7 +7,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const enableNextButton = properties.enableNextButton ?? true;
   const enablePrevButton = properties.enablePrevButton ?? true;
 
-  const totalRecords = properties.totalRecords ?? '';
+  const totalRecords = properties.totalRecords ?? 10;
   const enabledSort = properties?.enabledSort ?? true;
   const hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
 
@@ -82,6 +82,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
   const contentWrapProperty = styles?.contentWrap ?? true;
   const borderColor = styles?.borderColor ?? 'var(--borders-weak-disabled)';
+  const columnHeaderWrap = styles?.columnHeaderWrap ?? 'fixed';
 
   return {
     color,
@@ -120,5 +121,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     contentWrapProperty,
     boxShadow,
     borderColor,
+    columnHeaderWrap,
   };
 }

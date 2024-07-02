@@ -28,7 +28,6 @@ export function renderCustomStyles(
   components = {},
   accordian,
   darkMode = false,
-  verticalLine = true,
   placeholder = ''
 ) {
   const componentConfig = component.component;
@@ -44,6 +43,9 @@ export function renderCustomStyles(
     componentConfig.component == 'TextInput' ||
     componentConfig.component == 'NumberInput' ||
     componentConfig.component == 'PasswordInput' ||
+    componentConfig.component == 'ToggleSwitchV2' ||
+    componentConfig.component == 'Checkbox' ||
+    componentConfig.component == 'Button' ||
     componentConfig.component == 'Table'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
@@ -51,7 +53,7 @@ export function renderCustomStyles(
     const { conditionallyRender = null } = paramConfig;
 
     const getResolvedValue = (key) => {
-      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
@@ -100,7 +102,6 @@ export function renderCustomStyles(
           paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
         }}
         component={component}
-        verticalLine={verticalLine}
         accordian={accordian}
         placeholder={placeholder}
       />
@@ -118,8 +119,7 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
-  placeholder = '',
-  verticalLine = true
+  placeholder = ''
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -139,7 +139,7 @@ export function renderElement(
     if (conditionallyRender) {
       const { key, value } = conditionallyRender;
       if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
         if (resolvedValue?.value !== value) return;
       }
     }
@@ -162,7 +162,6 @@ export function renderElement(
         paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
       }}
       component={component}
-      verticalLine={verticalLine}
       placeholder={placeholder}
     />
   );

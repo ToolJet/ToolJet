@@ -104,9 +104,8 @@ const List = () => {
         )}
       </div>
       <div className="list-group mb-3">
-        {loading && loadingState && <Skeleton count={3} height={22} />}
+        {loading && <Skeleton count={3} height={22} />}
         {!loading &&
-          !loadingState &&
           filteredTables?.map(({ id, table_name }, index) => (
             <ListItem
               key={index}
