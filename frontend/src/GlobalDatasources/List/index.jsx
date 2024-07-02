@@ -101,7 +101,7 @@ export const List = ({ updateSelectedDatasource }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
-          {t('dataSources.noDataSourcesAdded', 'No datasources added')}
+          {filteredData?.length === 0 && dataSources?.length !== 0 ? t('widgetManager.noResults', 'No results found') : `${t('dataSources.noDataSourcesAdded', 'No datasources added')}`}
         </div>
       </div>
     );

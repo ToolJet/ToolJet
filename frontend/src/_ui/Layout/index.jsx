@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import Settings from '@/_components/Settings';
 import { useTranslation } from 'react-i18next';
+import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
 function Layout({
   children,
@@ -26,6 +27,8 @@ function Layout({
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  fetchWhiteLabelDetails();
+  const whiteLabelLogo = retrieveWhiteLabelLogo();
 
   const {
     checkForUnsavedChanges,
@@ -62,7 +65,7 @@ function Layout({
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                <Logo />
+                {whiteLabelLogo ? <img src={whiteLabelLogo} /> : <Logo />}
               </Link>
             </div>
             <div>

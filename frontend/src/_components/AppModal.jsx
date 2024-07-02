@@ -93,7 +93,13 @@ export function AppModal({
           closeModal();
         }
       } catch (error) {
-        toast.error(e.error, {
+        let errorMessage = 'Some Error Occured';
+        if (error?.error) {
+          errorMessage = error.error;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage, {
           position: 'top-center',
         });
       }

@@ -41,6 +41,7 @@ module.exports = {
             singleQuote: true,
             arrowParens: 'always',
             proseWrap: 'preserve',
+            endOfLine: 'auto',
           },
         ],
         'react/prop-types': 0,
@@ -62,7 +63,13 @@ module.exports = {
         'import/no-unresolved': [
           'error',
           {
-            ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring'],
+            ignore: [
+              '^@/',
+              'react-hot-toast',
+              'react-i18next',
+              'react-loading-skeleton',
+              'react-spring',
+            ],
           },
         ],
         'react/no-unknown-property': 'off',

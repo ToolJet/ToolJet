@@ -43,7 +43,7 @@ describe("Password reset functionality", () => {
     );
     cy.get(commonSelectors.forgotPasswordPageSubHeader).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq(
-        commonText.newToTooljetText
+        "New to"
       );
     });
     cy.get(commonSelectors.createAnAccountLink).verifyVisibleElement(

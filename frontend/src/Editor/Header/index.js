@@ -74,7 +74,7 @@ export default function EditorHeader({
       : '';
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, currentVersionId, editingVersion]);
+  }, [slug, currentVersionId, editingVersion, pageHandle]);
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>

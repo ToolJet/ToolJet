@@ -30,7 +30,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 3. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
  <div style={{textAlign: 'center'}}>
  
- <img className="screenshot-full" src="/img/setup/azure-container/step3.png" alt="Deploying ToolJet on Azure container apps" />
+ <img className="screenshot-full" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
  
  </div>
  
@@ -41,7 +41,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
   
    <div style={{textAlign: 'center'}}>
  
-   <img className="screenshot-full" src="/img/setup/azure-container/3-a.png" alt="Deploying ToolJet on Azure container apps" />
+   <img className="screenshot-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
    </div>
 
@@ -55,7 +55,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 5. Click on "Review + create" and wait for the template to be verified and passed, as shown in the screenshot below.
  <div style={{textAlign: 'center'}}>
 
- <img className="screenshot-full" src="/img/setup/azure-container/5a.png" alt="Deploying ToolJet on Azure container apps" />
+ <img className="screenshot-full" src="/img/setup/azure-container/step5a-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
  </div>
 
