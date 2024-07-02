@@ -271,12 +271,10 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
       return option || {};
     }
     if (option === 'column') {
-      if (option === 'column') {
-        if (operation === 'joinTable') {
-          return getJoinTableOption(value, tableId);
-        } else if (operation === 'listRows') {
-          return getListRowsOption(value);
-        }
+      if (operation === 'joinTable') {
+        return getJoinTableOption(value, tableId);
+      } else if (operation === 'listRows') {
+        return getListRowsOption(value);
       }
     }
   };
