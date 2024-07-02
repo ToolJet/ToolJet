@@ -9,7 +9,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-
+import { ToolTip } from '@/_components';
 export const AggregateFilter = ({ darkMode, operation = '' }) => {
   const {
     columns,
@@ -132,8 +132,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     try {
       const currentAggregates = { ...(operationDetails?.aggregates || {}) };
       delete currentAggregates[aggregateKey];
-      const currentGroupBy = { ...(operationDetails?.group_by || {}) };
-      delete currentGroupBy?.[selectedTableId];
+      const currentGroupBy = {};
 
       handleChange('group_by', currentGroupBy);
       handleChange('aggregates', currentAggregates);
@@ -244,35 +243,43 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     },
   ];
 
+  const getJoinTableOption = (value, tableId) => {
+    const valueToFilter = `${value}-${tableId}`;
+    let foundOption = null; // Use a variable to store the found option
+
+    tableListOptions?.forEach((singleOption) => {
+      if (foundOption) return; // Exit early if foundOption is set
+      singleOption?.options?.some((option) => {
+        if (option.value === valueToFilter) {
+          foundOption = {
+            value: valueToFilter.split('-')[0],
+            label: option.tableName + '.' + option.label,
+            table: tableId,
+          };
+          return true; // Exit the some loop early
+        }
+        return false; // Continue the some loop
+      });
+    });
+
+    return foundOption || {};
+  };
+
+  const getListRowsOption = (value) => {
+    const option = columnAccessorsOptions?.find((option) => option?.value === value);
+    return option || {};
+  };
+
   const constructAggregateValue = (value, operation, option, tableId = '') => {
     if (option === 'aggFx') {
       const option = aggFxOptions.find((option) => option?.value === value);
       return option || {};
     }
     if (option === 'column') {
-      switch (operation) {
-        case 'joinTable': {
-          const option = tableListOptions?.reduce((acc, singleOption) => {
-            const valueToFilter = `${value}-${tableId}`;
-            singleOption?.options?.find((option) => {
-              if (option.value === valueToFilter) {
-                acc = {
-                  value: valueToFilter.split('-')[0],
-                  label: option.tableName + '.' + option.label,
-                  table: tableId,
-                };
-              }
-            });
-            return acc;
-          }, {});
-          return option || {};
-        }
-        case 'listRows': {
-          const option = columnAccessorsOptions?.find((option) => option?.value === value);
-          return option || {};
-        }
-        default:
-          break;
+      if (operation === 'joinTable') {
+        return getJoinTableOption(value, tableId);
+      } else if (operation === 'listRows') {
+        return getListRowsOption(value);
       }
     }
   };
@@ -286,6 +293,18 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
         };
       }) || []
     );
+  };
+
+  const selectedTableName = getTableName(selectedTableId);
+
+  const isGroupByTableNameTruncated = (text) => {
+    const container = document.querySelector('.truncate-container');
+    const textElement = document.createElement('span');
+    textElement.innerText = text;
+    document.body.append(textElement);
+    const isTruncated = textElement?.offsetWidth > container?.offsetWidth;
+    document.body.removeChild(textElement);
+    return isTruncated;
   };
 
   return (
@@ -398,14 +417,21 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
             </div>
           )}
           {operation === 'joinTable' && (
-            <div className="d-flex flex-column custom-gap-8">
+            <div className="d-flex flex-column custom-gap-8 join-group-bys">
               <div className="border rounded d-flex">
-                <div
-                  style={{ width: '15%', padding: '4px 8px' }}
-                  className="border border-only-right d-flex align-items-center"
+                <ToolTip
+                  message={selectedTableName}
+                  placement="top"
+                  tooltipClassName="tjdb-cell-tooltip"
+                  show={isGroupByTableNameTruncated(selectedTableName)}
                 >
-                  {getTableName(selectedTableId)}
-                </div>
+                  <div
+                    style={{ width: '15%', padding: '4px 8px' }}
+                    className="border border-only-right d-block align-items-center text-truncate truncate-container"
+                  >
+                    {selectedTableName}
+                  </div>
+                </ToolTip>
                 <div style={{ width: '85%' }}>
                   <SelectBox
                     width="100%"
@@ -422,14 +448,26 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                 </div>
               </div>
               {joinTableOptions?.joins?.map((table) => {
+                const tableName = getTableName(table.table); // Replace with your dynamic text
+                const isTextTruncated = isGroupByTableNameTruncated(tableName);
+                const tableNameEmpty = !tableName;
+                const showTooltip = tableNameEmpty || isTextTruncated;
+                const toolTipMessage = tableNameEmpty ? 'Please select joining table to see its name' : tableName;
                 return (
                   <div key={table.table} className="border rounded d-flex">
-                    <div
-                      style={{ width: '15%', padding: '4px 8px' }}
-                      className="border border-only-right d-flex align-items-center"
+                    <ToolTip
+                      message={toolTipMessage}
+                      placement="top"
+                      tooltipClassName="tjdb-cell-tooltip"
+                      show={showTooltip}
                     >
-                      {getTableName(table.table)}
-                    </div>
+                      <div
+                        style={{ width: '15%', padding: '4px 8px' }}
+                        className="border border-only-right d-block align-items-center text-truncate group-by-trunate"
+                      >
+                        {tableName}
+                      </div>
+                    </ToolTip>
                     <div style={{ width: '85%' }}>
                       <SelectBox
                         width="100%"
@@ -439,7 +477,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                         placeholder={`Select column(s) to group by`}
                         isMulti={true}
                         handleChange={(value) => handleGroupByChange(table.table, value)}
-                        disabled={disableGroupBy()}
+                        disabled={disableGroupBy() || tableNameEmpty}
                         darkMode={darkMode}
                         showTooltip={disableGroupBy()}
                       />
