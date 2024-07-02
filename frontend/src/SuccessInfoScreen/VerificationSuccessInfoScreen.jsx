@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
-import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -15,7 +13,9 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery } from '@/_helpers/utils';
+import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { redirectToDashboard } from '@/_helpers/routes';
+import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -29,6 +29,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
   const { t } = useTranslation();
+  const [defaultState, setDefaultState] = useState(false);
 
   const location = useLocation();
   const params = useParams();
@@ -39,6 +40,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const source = searchParams.get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const redirectTo = searchParams.get('redirectTo');
+  const navigate = useNavigate();
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const getUserDetails = () => {
     setIsLoading(true);
@@ -81,6 +84,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
+            setFaviconAndTitle(null, null, location);
           },
           () => {
             setIsGettingConfigs(false);
@@ -89,6 +93,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     } else {
       setIsGettingConfigs(false);
     }
+    checkWhiteLabelsDefaultState(organizationId).then((res) => {
+      setDefaultState(res);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -121,7 +128,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       .then((user) => {
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        redirectToDashboard(user, redirectTo);
+        onLoginSuccess(user, navigate, redirectTo);
       })
       .catch((res) => {
         setIsLoading(false);
@@ -157,6 +164,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
+      {isGettingConfigs && (
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <div className="loader-wrapper">
+              <ShowLoading />
+            </div>
+          </div>
+        </div>
+      )}
+
       {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
@@ -164,18 +181,20 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
-                  <ShowLoading />
+                  <div className="loader-wrapper">
+                    <ShowLoading />
+                  </div>
                 ) : (
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {configs?.name ? configs?.name : 'ToolJet'}
+                      Join {configs?.name ? configs?.name : whiteLabelText}
                     </h2>
 
                     <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         configs?.name
                           ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
-                          : 'ToolJet.'
+                          : `${whiteLabelText}.`
                       }`}
                     </div>
 
@@ -276,20 +295,22 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="verification-terms" data-cy="signup-terms-helper">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                          Terms of Service{' '}
-                        </a>
-                        &
-                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                          {' '}
-                          Privacy Policy
-                        </a>
-                      </span>
-                    </p>
+                    {defaultState && (
+                      <p className="verification-terms" data-cy="signup-terms-helper">
+                        By signing up you are agreeing to the
+                        <br />
+                        <span>
+                          <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                            Terms of Service{' '}
+                          </a>
+                          &
+                          <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                            {' '}
+                            Privacy Policy
+                          </a>
+                        </span>
+                      </p>
+                    )}
                   </div>
                 )}
               </form>
@@ -319,7 +340,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
                 <p className="info-screen-description" data-cy="onboarding-page-description">
-                  Continue to set up your workspace to start using ToolJet.
+                  Continue to set up your workspace to start using {whiteLabelText}.
                 </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
@@ -335,7 +356,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     </div>
                   ) : (
                     <>
-                      {t('verificationSuccessPage.setupTooljet', 'Set up ToolJet')}
+                      {t('verificationSuccessPage.setupTooljet', `Set up ${whiteLabelText}`, {
+                        whiteLabelText,
+                      })}
+
                       <EnterIcon fill={'#fff'}></EnterIcon>
                     </>
                   )}

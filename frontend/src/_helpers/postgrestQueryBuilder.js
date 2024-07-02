@@ -332,4 +332,15 @@ export default class PostgrestQueryBuilder {
     this.url.set(`offset`, offset);
     return this;
   }
+
+  select(colunm_name) {
+    if (this.url.has('select')) {
+      let values = this.url.get('select');
+      values = values.split(',');
+      values.push(colunm_name);
+      this.url.set('select', values.join(','));
+    } else {
+      this.url.set('select', colunm_name);
+    }
+  }
 }

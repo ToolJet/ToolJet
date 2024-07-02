@@ -146,7 +146,7 @@ const Button = forwardRef(
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, iconOnly }), className)}
+        className={cn(buttonVariants({ variant, size, iconOnly, className }))}
         ref={ref}
         disabled={disabled}
         {...props}

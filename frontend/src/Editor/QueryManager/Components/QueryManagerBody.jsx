@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { cloneDeep, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -19,6 +19,8 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import ParameterList from './ParameterList';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -28,11 +30,13 @@ export const QueryManagerBody = ({
   apps,
   appDefinition,
   setOptions,
+  activeTab,
 }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const sampleDataSource = useSampleDataSource();
+  const paramListContainerRef = useRef(null);
 
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
@@ -87,7 +91,7 @@ export const QueryManagerBody = ({
     const updatedOptions = cleanFocusedFields(newOptions);
     setOptions((options) => ({ ...options, ...updatedOptions }));
 
-    updateDataQuery(cloneDeep({ ...options, ...updatedOptions }));
+    updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };
 
   const optionchanged = (option, value) => {
@@ -103,7 +107,43 @@ export const QueryManagerBody = ({
     const currentValue = selectedQuery?.options?.[option] ?? false;
     optionchanged(option, !currentValue);
   };
+  const optionsChangedforParams = (newOptions) => {
+    setOptions(newOptions);
+    updateDataQuery(deepClone(newOptions));
+  };
 
+  const handleAddParameter = (newParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
+      const newOptions = {
+        ...prevOptions,
+        parameters: [...(prevOptions?.parameters ?? []), newParameter],
+      };
+      optionsChangedforParams(newOptions);
+    }
+  };
+
+  const handleParameterChange = (index, updatedParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
+      const updatedParameters = [...prevOptions.parameters];
+      updatedParameters[index] = updatedParameter;
+      optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
+    }
+  };
+
+  const handleParameterRemove = (index) => {
+    const prevOptions = { ...options };
+    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
+    optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
+  };
+  const [previewHeight, setPreviewHeight] = useState(40); //preview non expanded height
+
+  const calculatePreviewHeight = (height, previewPanelExpanded) => {
+    setPreviewHeight(previewPanelExpanded ? height : 40);
+  };
   const renderDataSourcesList = () => {
     return (
       <div
@@ -146,29 +186,41 @@ export const QueryManagerBody = ({
 
   const renderQueryElement = () => {
     return (
-      <div style={{ padding: '0 32px' }}>
-        <div>
-          <div
-            className={cx({
-              'disabled ': isVersionReleased,
-            })}
-          >
-            <ElementToRender
-              key={selectedQuery?.id}
-              pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
-              selectedDataSource={selectedDataSource}
-              options={selectedQuery?.options}
-              optionsChanged={optionsChanged}
-              optionchanged={optionchanged}
-              currentState={currentState}
-              darkMode={darkMode}
-              isEditMode={true} // Made TRUE always to avoid setting default options again
-              queryName={queryName}
-              onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
-            />
-            {renderTransformation()}
-          </div>
+      <div
+        className={cx({
+          'disabled ': isVersionReleased,
+        })}
+      >
+        <div ref={paramListContainerRef} style={{ marginBottom: '16px' }}>
+          {selectedQuery &&
+            (selectedDataSource?.kind === 'runjs' ||
+              selectedDataSource?.kind === 'runpy' ||
+              selectedDataSource?.kind === 'tooljetdb' ||
+              (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
+              <ParameterList
+                parameters={options.parameters}
+                handleAddParameter={handleAddParameter}
+                handleParameterChange={handleParameterChange}
+                handleParameterRemove={handleParameterRemove}
+                currentState={currentState}
+                darkMode={darkMode}
+                containerRef={paramListContainerRef}
+              />
+            )}
         </div>
+        <ElementToRender
+          key={selectedQuery?.id}
+          pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
+          selectedDataSource={selectedDataSource}
+          options={selectedQuery?.options}
+          optionsChanged={optionsChanged}
+          optionchanged={optionchanged}
+          currentState={currentState}
+          darkMode={darkMode}
+          isEditMode={true} // Made TRUE always to avoid setting default options again
+          queryName={queryName}
+          onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
+        />
       </div>
     );
   };
@@ -178,7 +230,7 @@ export const QueryManagerBody = ({
     return (
       <div className="d-flex">
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
-        <div className="query-manager-events pb-4 flex-grow-1">
+        <div className="query-manager-events pb-4">
           <EventManager
             sourceId={selectedQuery?.id}
             eventSourceType="data_query" //check
@@ -187,7 +239,7 @@ export const QueryManagerBody = ({
             components={allComponents}
             callerQueryId={selectedQueryId}
             apps={apps}
-            popoverPlacement="top"
+            popoverPlacement="auto"
             pages={
               appDefinition?.pages
                 ? Object.entries(appDefinition?.pages).map(([id, page]) => ({
@@ -204,13 +256,13 @@ export const QueryManagerBody = ({
 
   const renderQueryOptions = () => {
     return (
-      <div style={{ padding: '0 32px' }}>
+      <div>
         <div
           className={cx(`d-flex pb-1`, {
             'disabled ': isVersionReleased,
           })}
         >
-          <div className="form-label">{t('editor.queryManager.settings', 'Settings')}</div>
+          <div className="form-label">{t('editor.queryManager.settings', 'Triggers')}</div>
           <div className="flex-grow-1">
             {Object.keys(customToggles).map((toggle, index) => (
               <CustomToggleFlag
@@ -224,14 +276,16 @@ export const QueryManagerBody = ({
             ))}
           </div>
         </div>
-        <SuccessNotificationInputs
-          currentState={currentState}
-          options={options}
-          darkMode={darkMode}
-          optionchanged={optionchanged}
-        />
+        <div className="d-flex">
+          <div className="form-label">{}</div>
+          <SuccessNotificationInputs
+            currentState={currentState}
+            options={options}
+            darkMode={darkMode}
+            optionchanged={optionchanged}
+          />
+        </div>
         {renderEventManager()}
-        <Preview darkMode={darkMode} />
       </div>
     );
   };
@@ -244,22 +298,40 @@ export const QueryManagerBody = ({
       return '';
     }
     return (
-      <div className={cx('mt-2 d-flex px-4 mb-3', { 'disabled ': isVersionReleased })}>
+      <>
+        <div className="" ref={paramListContainerRef}>
+          {selectedQuery && (
+            <ParameterList
+              parameters={options.parameters}
+              handleAddParameter={handleAddParameter}
+              handleParameterChange={handleParameterChange}
+              handleParameterRemove={handleParameterRemove}
+              currentState={currentState}
+              darkMode={darkMode}
+              containerRef={paramListContainerRef}
+            />
+          )}
+        </div>
         <div
-          className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+          className={cx('d-flex', { 'disabled ': isVersionReleased })}
+          style={{ marginBottom: '16px', marginTop: '12px' }}
         >
-          Data Source
+          <div
+            className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+          >
+            Source
+          </div>
+          <div className="d-flex align-items-end" style={{ width: '364px' }}>
+            <ChangeDataSource
+              dataSources={selectableDataSources}
+              value={selectedDataSource}
+              onChange={(newDataSource) => {
+                changeDataQuery(newDataSource);
+              }}
+            />
+          </div>
         </div>
-        <div className="d-flex flex-grow-1">
-          <ChangeDataSource
-            dataSources={selectableDataSources}
-            value={selectedDataSource}
-            onChange={(newDataSource) => {
-              changeDataQuery(newDataSource);
-            }}
-          />
-        </div>
-      </div>
+      </>
     );
   };
 
@@ -267,13 +339,20 @@ export const QueryManagerBody = ({
 
   return (
     <div
-      className={`row row-deck px-2 mt-0 query-details ${
-        selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
-      }`}
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''}`}
+      style={{ height: `calc(100% - ${previewHeight + 40}px)`, overflowY: 'auto' }} // 40px for preview header height
     >
-      {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
-      {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : renderQueryElement()}
-      {selectedDataSource !== null ? renderQueryOptions() : null}
+      {selectedDataSource === null || !selectedQuery ? (
+        renderDataSourcesList()
+      ) : (
+        <>
+          {selectedQuery?.data_source_id && activeTab === 1 && renderChangeDataSource()}
+          {activeTab === 1 && renderQueryElement()}
+          {activeTab === 2 && renderTransformation()}
+          {activeTab === 3 && renderQueryOptions()}
+          <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
+        </>
+      )}
     </div>
   );
 };

@@ -3,19 +3,24 @@ import { SubCustomDragLayer } from '@/Editor/SubCustomDragLayer';
 import { SubContainer } from '@/Editor/SubContainer';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import _, { omit } from 'lodash';
+import _, { debounce, omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { removeFunctionObjects } from '@/_helpers/appUtils';
+import {
+  onComponentClick,
+  onComponentOptionChanged,
+  onComponentOptionsChanged,
+  removeFunctionObjects,
+} from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 export const Form = function Form(props) {
   const {
     id,
     component,
     width,
     height,
-    containerProps,
     removeComponent,
     styles,
     setExposedVariable,
@@ -25,11 +30,14 @@ export const Form = function Form(props) {
     fireEvent,
     properties,
     resetComponent,
-    childComponents,
     onEvent,
     dataCy,
     paramUpdated,
-    adjustHeightBasedOnAlignment,
+    currentLayout,
+    mode,
+    getContainerProps,
+    containerProps,
+    childComponents,
   } = props;
 
   const { events: allAppEvents } = useAppInfo();
@@ -59,21 +67,19 @@ export const Form = function Form(props) {
   const mounted = useMounted();
 
   useEffect(() => {
-    const exposedVariables = {
-      resetForm: async function () {
-        resetComponent();
-      },
-      submitForm: async function () {
-        if (isValid) {
-          onEvent('onSubmit', formEvents).then(() => resetComponent());
-        } else {
-          fireEvent('onInvalid');
-        }
-      },
-    };
-    setExposedVariables(exposedVariables);
+    setExposedVariable('resetForm', async function () {
+      resetComponent();
+    });
+    setExposedVariable('submitForm', async function () {
+      if (isValid) {
+        onEvent('onSubmit', formEvents).then(() => resetComponent());
+      } else {
+        fireEvent('onInvalid');
+      }
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, []);
 
   const extractData = (data) => {
     const result = {};
@@ -119,7 +125,7 @@ export const Form = function Form(props) {
     let formattedChildData = {};
     let childValidation = true;
 
-    if (childComponents === null) {
+    if (!childComponents) {
       const exposedVariables = {
         data: formattedChildData,
         isValid: childValidation,
@@ -134,7 +140,7 @@ export const Form = function Form(props) {
       formattedChildData = extractData(childrenData);
       childValidation = checkJsonChildrenValidtion();
     } else {
-      Object.keys(childComponents).forEach((childId) => {
+      Object.keys(childComponents ?? {}).forEach((childId) => {
         if (childrenData[childId]?.name) {
           formattedChildData[childrenData[childId].name] = { ...omit(childrenData[childId], 'name'), id: childId };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
@@ -145,7 +151,7 @@ export const Form = function Form(props) {
       // eslint-disable-next-line no-unused-vars
       Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
     );
-    const formattedChildDataClone = _.cloneDeep(formattedChildData);
+    const formattedChildDataClone = deepClone(formattedChildData);
     const exposedVariables = {
       ...(!advanced && { children: formattedChildDataClone }),
       data: removeFunctionObjects(formattedChildData),
@@ -176,14 +182,16 @@ export const Form = function Form(props) {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents)]);
+  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), formEvents]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
   };
   const fireSubmissionEvent = () => {
     if (isValid) {
-      onEvent('onSubmit', formEvents).then(() => resetComponent());
+      onEvent('onSubmit', formEvents).then(() => {
+        debounce(() => resetComponent(), 100)();
+      });
     } else {
       fireEvent('onInvalid');
     }
@@ -204,7 +212,7 @@ export const Form = function Form(props) {
       return Promise.resolve();
     }
     onOptionChange({ component, optionName, value, componentId });
-    return containerProps.onComponentOptionChanged(component, optionName, value);
+    return onComponentOptionChanged(component, optionName, value);
   }
 
   const onOptionChange = ({ component, optionName, value, componentId }) => {
@@ -227,7 +235,7 @@ export const Form = function Form(props) {
       style={computedStyles}
       onSubmit={handleSubmit}
       onClick={(e) => {
-        if (e.target.className === 'real-canvas') containerProps.onComponentClick(id, component);
+        if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
       {loadingState ? (
@@ -244,7 +252,6 @@ export const Form = function Form(props) {
                 parentComponent={component}
                 containerCanvasWidth={width}
                 parent={id}
-                {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
                 onOptionChange={function ({ component, optionName, value, componentId }) {
@@ -252,12 +259,15 @@ export const Form = function Form(props) {
                     onOptionChange({ component, optionName, value, componentId });
                   }
                 }}
+                currentPageId={props.currentPageId}
+                {...props}
+                {...containerProps}
               />
               <SubCustomDragLayer
                 containerCanvasWidth={width}
                 parent={id}
                 parentRef={parentRef}
-                currentLayout={containerProps.currentLayout}
+                currentLayout={currentLayout}
               />
             </>
           )}
@@ -267,35 +277,41 @@ export const Form = function Form(props) {
                 <div
                   //check to avoid labels for these widgets as label is already present for them
                   className={
-                    !['Checkbox', 'StarRating', 'Multiselect', 'DropDown', 'RadioButton', 'ToggleSwitch'].includes(
-                      uiComponents?.[index + 1]?.component
-                    )
+                    ![
+                      'Checkbox',
+                      'StarRating',
+                      'Multiselect',
+                      'DropDown',
+                      'RadioButton',
+                      'ToggleSwitch',
+                      'ToggleSwitchV2',
+                    ].includes(uiComponents?.[index + 1]?.component)
                       ? `json-form-wrapper`
                       : `json-form-wrapper  form-label-restricted`
                   }
                   key={index}
                 >
                   <Box
+                    {...props}
                     component={item}
                     id={index}
                     width={width}
-                    mode={containerProps.mode}
+                    height={item.defaultSize.height}
+                    mode={mode}
                     inCanvas={true}
                     paramUpdated={paramUpdated}
                     onEvent={onEvent}
-                    onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
-                    onComponentOptionsChanged={containerProps.onComponentOptionsChanged}
-                    onComponentClick={containerProps.onComponentClick}
-                    currentState={currentState}
-                    containerProps={containerProps}
+                    onComponentClick={onComponentClick}
                     darkMode={darkMode}
                     removeComponent={removeComponent}
+                    // canvasWidth={width}
+                    // readOnly={readOnly}
+                    // customResolvables={customResolvables}
                     parentId={id}
-                    allComponents={containerProps.allComponents}
-                    sideBarDebugger={containerProps.sideBarDebugger}
-                    childComponents={childComponents}
-                    adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
-                    height={item.defaultSize.height}
+                    getContainerProps={getContainerProps}
+                    onOptionChanged={onComponentOptionChangedForSubcontainer}
+                    onOptionsChanged={onComponentOptionsChanged}
+                    isFromSubContainer={true}
                   />
                 </div>
               );

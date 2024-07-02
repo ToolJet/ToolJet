@@ -9,6 +9,12 @@ import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import {
+  retrieveWhiteLabelText,
+  setFaviconAndTitle,
+  retrieveWhiteLabelFavicon,
+  checkWhiteLabelsDefaultState,
+} from '@white-label/whiteLabelling';
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -21,41 +27,18 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
     this.organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
     this.source = new URLSearchParams(props?.location?.search).get('source');
+    this.whiteLabelText = retrieveWhiteLabelText();
+    this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
   }
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
-
-    if (this.organizationId) {
-      authenticationService.saveLoginOrganizationId(this.organizationId);
-      this.organizationId &&
-        authenticationService.getOrganizationConfigs(this.organizationId).then(
-          (configs) => {
-            this.setState({ isGettingConfigs: false, configs });
-          },
-          () => {
-            this.setState({ isGettingConfigs: false });
-          }
-        );
-    } else {
-      this.setState({ isGettingConfigs: false });
-    }
-
-    /* Workspace signup organization token */
-    authenticationService
-      .verifyOrganizationToken(this.organizationToken)
-      .then((data) => {
-        this.setState({ userDetails: data });
-        if (data?.email !== '') {
-          this.setState({ verifiedToken: true });
-        }
-      })
-      .catch((err) => {
-        if (err?.data.statusCode == 400) {
-          this.setState({ fallBack: true });
-        }
-      });
-
+    setFaviconAndTitle(this.whiteLabelText, this.whiteLabelFavicon, this.props?.location);
+    checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
+      this.setState({ defaultState: res });
+      this.whiteLabelText = retrieveWhiteLabelText();
+      this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
+    });
     document.addEventListener('keydown', this.handleEnterKey);
   }
 
@@ -105,14 +88,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                 <form action="." method="get" autoComplete="off">
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {organizationName ? organizationName : 'ToolJet'}
+                      Join {organizationName ? organizationName : this.whiteLabelText}
                     </h2>
 
                     <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         organizationName
                           ? `a workspace ${organizationName}. Accept the invite to join the workspace.`
-                          : 'ToolJet.'
+                          : this.whiteLabelText
                       }`}
                     </div>
 

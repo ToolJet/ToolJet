@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
-const String = ({
+const StringColumn = ({
   isEditable,
   darkMode,
   handleCellValueChange,
@@ -83,6 +83,7 @@ const String = ({
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
+          ref.current.blur();
           if (cellValue !== e.target.textContent) {
             handleCellValueChange(cell.row.index, column.key || column.name, e.target.textContent, cell.row.original);
           }
@@ -93,7 +94,7 @@ const String = ({
         e.stopPropagation();
       }}
     >
-      <span>{cellValue}</span>
+      {String(cellValue)}
     </div>
   );
 
@@ -110,7 +111,7 @@ const String = ({
             width: `${containerWidth}px`,
           }}
         >
-          {cellValue}
+          {String(cellValue)}
         </span>
       </div>
     );
@@ -120,7 +121,6 @@ const String = ({
     ref?.current &&
     (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
-
   return (
     <>
       <OverlayTrigger
@@ -155,7 +155,7 @@ const String = ({
                   : '45px',
               }}
             >
-              {cellValue}
+              {String(cellValue)}
             </span>
           </div>
         ) : (
@@ -177,4 +177,4 @@ const String = ({
   );
 };
 
-export default String;
+export default StringColumn;

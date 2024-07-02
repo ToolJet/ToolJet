@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import Select from '@/_ui/Select';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import CodeHinter from '@/Editor/CodeEditor';
 
 export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
   const mounted = useMounted();
@@ -46,12 +46,12 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
 
   return (
     <div className="row tj-db-field-wrapper">
-      <div className="tab-content-wrapper mt-2 d-flex">
+      <div className="tab-content-wrapper d-flex" style={{ marginTop: '16px' }}>
         <label className="form-label" data-cy="label-column-filter">
           Columns
         </label>
 
-        <div className="field-container flex-grow-1">
+        <div className="field-container flex-grow-1 col">
           {Object.entries(columnOptions).map(([key, value]) => (
             <RenderColumnOptions
               key={key}
@@ -98,7 +98,7 @@ const RenderColumnOptions = ({
   darkMode,
   removeColumnOptionsPair,
 }) => {
-  const filteredColumns = columns.filter(({ isPrimaryKey }) => !isPrimaryKey);
+  const filteredColumns = columns.filter(({ column_default }) => !column_default?.startsWith('nextval('));
   const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
   let displayColumns = filteredColumns.map(({ accessor }) => ({
     value: accessor,
@@ -148,10 +148,9 @@ const RenderColumnOptions = ({
 
         <div className="field col-6 mx-1">
           <CodeHinter
+            type="basic"
             initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
             className="codehinter-plugins"
-            theme={darkMode ? 'monokai' : 'default'}
-            height={'32px'}
             placeholder="key"
             onChange={(newValue) => handleValueChange(newValue)}
           />

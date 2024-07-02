@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Label from '@/_ui/Label';
+import { useEditorStore } from '@/_stores/editorStore';
 
 export const PasswordInput = function PasswordInput({
   height,
@@ -17,8 +17,7 @@ export const PasswordInput = function PasswordInput({
   darkMode,
   dataCy,
   isResizing,
-  adjustHeightBasedOnAlignment,
-  currentLayout,
+  id,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -46,8 +45,8 @@ export const PasswordInput = function PasswordInput({
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(passwordValue);
   const [showValidationError, setShowValidationError] = useState(false);
-  const currentState = useCurrentState();
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+
+  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
   const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [iconVisibility, setIconVisibility] = useState(false);
@@ -170,11 +169,13 @@ export const PasswordInput = function PasswordInput({
   useEffect(() => {
     setExposedVariable('setText', async function (text) {
       setPasswordValue(text);
-      setExposedVariable('value', text).then(fireEvent('onChange'));
+      setExposedVariable('value', text);
+      fireEvent('onChange');
     });
     setExposedVariable('clear', async function () {
       setPasswordValue('');
-      setExposedVariable('value', '').then(fireEvent('onChange'));
+      setExposedVariable('value', '');
+      fireEvent('onChange');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setPasswordValue]);
@@ -183,13 +184,6 @@ export const PasswordInput = function PasswordInput({
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
-
-  useEffect(() => {
-    if (alignment == 'top' && ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)))
-      adjustHeightBasedOnAlignment(true);
-    else adjustHeightBasedOnAlignment(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment, label?.length, currentLayout, width, auto]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
@@ -235,6 +229,23 @@ export const PasswordInput = function PasswordInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
+  const currentPageId = useEditorStore.getState().currentPageId;
+  const components = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+
+  const isChildOfForm = Object.keys(components).some((key) => {
+    if (key == id) {
+      const { parent } = components[key].component;
+      if (parent) {
+        const parentComponentTypes = {};
+        Object.keys(components).forEach((key) => {
+          const { component } = components[key];
+          parentComponentTypes[key] = component.component;
+        });
+        if (parentComponentTypes[parent] == 'Form') return true;
+      }
+    }
+    return false;
+  });
   const renderInput = () => (
     <>
       <div
@@ -388,6 +399,9 @@ export const PasswordInput = function PasswordInput({
       )}
     </>
   );
+  const renderContainer = (children) => {
+    return !isChildOfForm ? <form autoComplete="off">{children}</form> : <div>{children}</div>;
+  };
 
-  return <div>{renderInput()}</div>;
+  return renderContainer(renderInput());
 };

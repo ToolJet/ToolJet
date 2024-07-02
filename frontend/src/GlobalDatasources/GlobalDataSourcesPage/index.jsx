@@ -7,7 +7,12 @@ import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceManager } from '@/Editor/DataSourceManager';
-import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
+import {
+  DataBaseSources,
+  ApiSources,
+  CloudStorageSources,
+  CommonlyUsedDataSources,
+} from '@/Editor/DataSourceManager/SourceComponents';
 import { pluginsService, globalDatasourceService, authenticationService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
@@ -15,7 +20,7 @@ import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
-import { pageTitles, setWindowTitle } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -64,7 +69,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   }, []);
 
   useEffect(() => {
-    setWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
+    fetchAndSetWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
     }
@@ -108,6 +113,14 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     let arr = [];
 
     const filtered = datasourcesGroups().map((datasourceGroup) => {
+      if (datasourceGroup.type === 'Commonly used') {
+        return {
+          ...datasourceGroup,
+          list: [],
+          renderDatasources: () => renderCardGroup([], datasourceGroup.type),
+        };
+      }
+
       datasourceGroup.list.map((dataSource) => {
         if (dataSource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
           arr.push({ ...dataSource, type: datasourceGroup.type });
@@ -189,7 +202,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               dataCy={`home-page`}
               className="border-0 homepage-search"
               darkMode={darkMode}
-              placeholder={`Search  data sources`}
+              placeholder={`Search data sources`}
               initialValue={queryString}
               width={'100%'}
               callBack={handleSearch}
@@ -315,6 +328,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
           {datasources.map((item) => (
             <Card
               key={item.key}
+              darkMode={darkMode}
               title={item.title}
               src={item?.src}
               usePluginIcon={isEmpty(item?.iconFile?.data)}
@@ -332,6 +346,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
 
   const datasourcesGroups = () => {
     const allDataSourcesList = {
+      common: CommonlyUsedDataSources,
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
@@ -339,6 +354,13 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       filteredDatasources: filteredDataSources,
     };
     const dataSourceList = [
+      {
+        type: 'Commonly used',
+        key: '#commonlyused',
+        list: allDataSourcesList.common,
+        renderDatasources: () => renderCardGroup(allDataSourcesList.common, 'Commonly used'),
+      },
+
       {
         type: 'Databases',
         key: '#databases',

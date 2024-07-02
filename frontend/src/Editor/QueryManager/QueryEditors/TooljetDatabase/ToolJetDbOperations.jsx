@@ -9,18 +9,17 @@ import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
-import { cloneDeep, difference } from 'lodash';
+import { difference } from 'lodash';
 import DropDownSelect from './DropDownSelect';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
-  const currentState = useCurrentState();
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
@@ -39,6 +38,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
   );
   const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
+  const [tableForeignKeyInfo, setTableForeignKeyInfo] = useState({});
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
@@ -63,7 +63,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
     setJoinTableOptions((prevJoinOptions) => {
       const { conditions, order_by = [], joins: currJoins, fields: currFields = [] } = prevJoinOptions;
-      const conditionsList = cloneDeep(conditions?.conditionsList || []);
+      const conditionsList = deepClone(conditions?.conditionsList || []);
       const newConditionsList = conditionsList.filter((condition) => {
         const { leftField } = condition || {};
         if (tableSet.has(leftField?.table)) {
@@ -226,7 +226,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
       setTableInfo((info) => ({
         ...info,
-        [table_name]: data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+        [table_name]: data?.result?.columns.map(({ column_name, data_type, keytype, ...rest }) => ({
           Header: column_name,
           accessor: column_name,
           dataType: data_type,
@@ -235,13 +235,18 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         })),
       }));
 
+      setTableForeignKeyInfo((fk_info) => ({
+        ...fk_info,
+        [table_name]: data?.result?.foreign_keys || [],
+      }));
+
       if (isNewTableAdded) {
         setJoinTableOptions((joinOptions) => {
           const { fields } = joinOptions;
-          const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
+          const newFields = deepClone(fields).filter((field) => field.table !== tableId);
           newFields.push(
-            ...(data?.result
-              ? data.result.map((col) => ({
+            ...(data?.result?.columns
+              ? data.result.columns.map((col) => ({
                   name: col.column_name,
                   table: tableId,
                   // alias: `${tableId}_${col.column_name}`,
@@ -312,6 +317,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       deleteJoinTableOptions,
       findTableDetails,
       findTableDetailsByName,
+      tableForeignKeyInfo,
+      setTableForeignKeyInfo,
     }),
     [
       organizationId,
@@ -366,8 +373,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         return;
       }
 
-      if (data?.result?.length > 0) {
-        const columnList = data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+      if (data?.result?.columns?.length > 0) {
+        const columnList = data?.result?.columns.map(({ column_name, data_type, keytype, ...rest }) => ({
           Header: column_name,
           accessor: column_name,
           dataType: data_type,
@@ -377,13 +384,18 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         setColumns(columnList);
         setTableInfo((prevTableInfo) => ({ ...prevTableInfo, [table_name]: columnList }));
 
+        setTableForeignKeyInfo((fk_info) => ({
+          ...fk_info,
+          [table_name]: data?.result?.foreign_keys || [],
+        }));
+
         if (isNewTableAdded) {
           setJoinTableOptions((joinOptions) => {
             const { fields } = joinOptions;
-            const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
+            const newFields = deepClone(fields).filter((field) => field.table !== tableId);
             newFields.push(
-              ...(data?.result
-                ? data.result.map((col) => ({
+              ...(data?.result?.columns
+                ? data.result.columns.map((col) => ({
                     name: col.column_name,
                     table: tableId,
                     // alias: `${tableId}_${col.column_name}`,
@@ -512,14 +524,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       </div>
 
       {/* component to render based on the operation */}
-      {ComponentToRender && (
-        <ComponentToRender
-          currentState={currentState}
-          options={options}
-          optionchanged={optionchanged}
-          darkMode={darkMode}
-        />
-      )}
+      {ComponentToRender && <ComponentToRender options={options} optionchanged={optionchanged} darkMode={darkMode} />}
     </TooljetDatabaseContext.Provider>
   );
 };

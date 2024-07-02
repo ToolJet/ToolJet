@@ -10,6 +10,7 @@ import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
+import { useDataSources } from '@/_stores/dataSourcesStore';
 import FilterandSortPopup from './FilterandSortPopup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -24,11 +25,16 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
+  const dataSources = useDataSources();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
   const [showSearchBox, setShowSearchBox] = useState(false);
   const searchBoxRef = useRef(null);
   const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
   const [searchTermForFilters, setSearchTermForFilters] = useState();
+
+  function isDataSourceLocal(dataQuery) {
+    return dataSources.some((dataSource) => dataSource.id === dataQuery.data_source_id);
+  }
 
   useEffect(() => {
     // Create a copy of the dataQueries array to perform filtering without modifying the original data.
@@ -87,35 +93,27 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
     <div className="data-pane">
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
         <div className="queries-header row d-flex align-items-center justify-content-between">
-          <div className="col-auto d-flex">
-            <button
-              onClick={toggleQueryEditor}
-              className="btn-query-panel-header"
-              data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Hide query panel"
-            >
-              <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
-            </button>
-            <button
-              onClick={() => {
-                showSearchBox && setSearchTermForFilters('');
-                setShowSearchBox((showSearchBox) => !showSearchBox);
-              }}
-              className={cx('btn-query-panel-header mx-1', {
-                active: showSearchBox,
-              })}
-              data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Open quick search"
-              data-cy="query-search-button"
-            >
-              <Search width="14" height="14" fill="var(--slate12)" />
-            </button>
+          <div className="col-auto d-flex" style={{ gap: '2px' }}>
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
               clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
+            <button
+              onClick={() => {
+                showSearchBox && setSearchTermForFilters('');
+                setShowSearchBox((showSearchBox) => !showSearchBox);
+              }}
+              className={cx('btn-query-panel-header', {
+                active: showSearchBox,
+              })}
+              data-tooltip-id="tooltip-for-query-panel-header-btn"
+              data-tooltip-content="Open quick search"
+              data-cy="query-search-button"
+            >
+              <Search width="14" height="14" fill="var(--icons-default)" />
+            </button>
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
           <AddDataSourceButton darkMode={darkMode} />
@@ -176,6 +174,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                   darkMode={darkMode}
                   editorRef={editorRef}
                   appId={appId}
+                  localDs={!!isDataSourceLocal(query)}
                 />
               ))}
             </div>
@@ -253,11 +252,10 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             }
             setShowMenu((show) => !show);
           }}
-          className="px-1 pe-3 ps-2 gap-0"
+          style={{ height: '28px', width: '28px', padding: '0px' }}
           data-cy={`show-ds-popover-button`}
         >
-          <Plus style={{ height: '16px' }} />
-          Add
+          <Plus style={{ height: '14px' }} fill="var(--icons-strong)" />
         </ButtonSolid>
       </span>
     </OverlayTrigger>

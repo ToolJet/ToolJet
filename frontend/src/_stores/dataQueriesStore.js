@@ -3,12 +3,13 @@ import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
 // import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
 import { shallow } from 'zustand/shallow';
 import { getCurrentState, useCurrentStateStore } from './currentStateStore';
+import { useResolveStore } from './resolverStore';
+import { handleReferenceTransactions } from './handleReferenceTransactions';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
@@ -25,6 +26,7 @@ const initialState = {
   isUpdatingQueryInProcess: false,
   /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
   queuedActions: {},
+  // queuedQueriesForRunOnAppLoad: [],
 };
 
 export const useDataQueriesStore = create(
@@ -34,12 +36,37 @@ export const useDataQueriesStore = create(
       actions: {
         // TODO: Remove editor state while changing currentState
         fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
-          set({ loadingDataQueries: true });
+          get().loadingDataQueries && set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
+
+          const diff = _.differenceWith(data.data_queries, get().dataQueries, _.isEqual);
+          const referencesManager = useResolveStore.getState().referenceMapper;
+          const newQueries = diff
+            .map((dq) => {
+              if (!referencesManager.get(dq.id)) {
+                return {
+                  id: dq.id,
+                  name: dq.name,
+                };
+              }
+            })
+            .filter((c) => c !== undefined);
+
+          useResolveStore.getState().actions.addEntitiesToMap(newQueries);
+
           set((state) => ({
             dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
             loadingDataQueries: false,
           }));
+
+          // Compute query state to be added in the current state
+          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          if (selectFirstQuery) {
+            actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
+          } else if (selectedQuery?.id) {
+            const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
+            actions.setSelectedQuery(query?.id);
+          }
 
           if (data.data_queries.length !== 0) {
             const queryConfirmationList = [];
@@ -47,12 +74,21 @@ export const useDataQueriesStore = create(
             const currentQueries = useCurrentStateStore.getState().queries;
 
             data.data_queries.forEach(({ id, name, options }) => {
-              updatedQueries[name] = _.merge(currentQueries[name], {
-                id: id,
-                isLoading: false,
-                data: [],
-                rawData: [],
-              });
+              if (runQueriesOnAppLoad && options.runOnPageLoad) {
+                updatedQueries[name] = _.merge(currentQueries[name], {
+                  id: id,
+                  isLoading: true,
+                  data: [],
+                  rawData: [],
+                });
+              } else
+                updatedQueries[name] = _.merge(currentQueries[name], {
+                  id: id,
+                  isLoading: false,
+                  data: [],
+                  rawData: [],
+                });
+
               if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                 queryConfirmationList.push({ queryId: id, queryName: name });
               }
@@ -68,19 +104,21 @@ export const useDataQueriesStore = create(
             });
           }
 
-          // Compute query state to be added in the current state
-          const { actions, selectedQuery } = useQueryPanelStore.getState();
-          if (selectFirstQuery) {
-            actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
-          } else if (selectedQuery?.id) {
-            const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
-            actions.setSelectedQuery(query?.id);
-          }
-
           // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, ref);
+          // if (runQueriesOnAppLoad) {
+          //   set({ queuedQueriesForRunOnAppLoad: data.data_queries });
+          // }
         },
-        setDataQueries: (dataQueries) => set({ dataQueries }),
+        setDataQueries: (dataQueries, type = 'initial') => {
+          set({ dataQueries });
+          if (type === 'mappingUpdate') {
+            const { actions } = useQueryPanelStore.getState();
+            actions.setSelectedQuery(null);
+            const queryId = dataQueries[0]?.id;
+
+            actions.setSelectedQuery(queryId);
+          }
+        },
         deleteDataQueries: (queryId) => {
           set({ isDeletingQueryInProcess: true });
           useAppDataStore.getState().actions.setIsSaving(true);
@@ -89,6 +127,7 @@ export const useDataQueriesStore = create(
             .then(() => {
               const { actions } = useQueryPanelStore.getState();
               const { dataQueries } = useDataQueriesStore.getState();
+              const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
               const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
               actions.setSelectedQuery(newSelectedQuery?.id || null);
               if (!newSelectedQuery?.id) {
@@ -102,7 +141,7 @@ export const useDataQueriesStore = create(
               const currentQueries = useCurrentStateStore.getState().queries;
 
               useCurrentStateStore.getState().actions.setCurrentState({
-                ...getCurrentState(),
+                ...useCurrentStateStore.getState(),
                 queries: Object.keys(currentQueries).reduce((acc, key) => {
                   if (currentQueries[key].id !== queryId) {
                     acc[key] = currentQueries[key];
@@ -110,6 +149,18 @@ export const useDataQueriesStore = create(
                   return acc;
                 }, {}),
               });
+
+              const referenceManager = useResolveStore.getState().referenceMapper;
+              referenceManager.delete(queryId);
+
+              const allHintsAssociatedWithQuery = useResolveStore
+                .getState()
+                .suggestions.appHints?.filter((suggestion) => {
+                  return suggestion?.hint.includes(deletedQueryName);
+                })
+                .map((item) => item.hint);
+
+              return useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
             })
             .catch(() => {
               set({
@@ -200,9 +251,21 @@ export const useDataQueriesStore = create(
               const currentQueries = useCurrentStateStore.getState().queries;
 
               useCurrentStateStore.getState().actions.setCurrentState({
-                ...getCurrentState(),
+                ...useCurrentStateStore.getState(),
                 queries: {
                   ...currentQueries,
+                  [data.name]: {
+                    id: data.id,
+                    isLoading: false,
+                    data: [],
+                    rawData: [],
+                  },
+                },
+              });
+
+              useResolveStore.getState().actions.addEntitiesToMap([{ id: data.id, name: data.name }]);
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
                   [data.name]: {
                     id: data.id,
                     isLoading: false,
@@ -256,7 +319,7 @@ export const useDataQueriesStore = create(
               const { [queryName]: _, ...rest } = currentQueries;
 
               useCurrentStateStore.getState().actions.setCurrentState({
-                ...getCurrentState(),
+                ...useCurrentStateStore.getState(),
                 queries: {
                   ...rest,
                   [newName]: {
@@ -266,7 +329,47 @@ export const useDataQueriesStore = create(
                 },
               });
             })
-            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+            .finally(() => {
+              useAppDataStore.getState().actions.setIsSaving(false);
+
+              const dataQueries = useDataQueriesStore.getState().dataQueries;
+              const updatedNames = [];
+
+              const referenceManager = useResolveStore.getState().referenceMapper;
+
+              dataQueries.forEach((dataQuery) => {
+                const existingName = referenceManager.get(dataQuery.id);
+
+                if (existingName === dataQuery.name) {
+                  return;
+                }
+
+                referenceManager.update(dataQuery.id, dataQuery.name);
+
+                updatedNames.push({
+                  id: dataQuery.id,
+                  name: existingName,
+                  newName: dataQuery.name,
+                  type: 'queries',
+                });
+              });
+
+              const currentAppEvents = useAppDataStore.getState().events;
+              const appDefinition = useEditorStore.getState().appDefinition;
+              const currentPageId = useEditorStore.getState().currentPageId;
+              const components = appDefinition.pages[currentPageId].components;
+              const currentVersionId = useAppDataStore.getState().currentVersionId;
+
+              handleReferenceTransactions(
+                components,
+                dataQueries,
+                currentAppEvents,
+                appDefinition,
+                currentPageId,
+                currentVersionId,
+                updatedNames
+              );
+            });
         },
         changeDataQuery: (newDataSource) => {
           const { selectedQuery } = useQueryPanelStore.getState();
@@ -328,6 +431,18 @@ export const useDataQueriesStore = create(
               }));
               actions.setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
 
+              useResolveStore.getState().actions.addEntitiesToMap([{ id: data.id, name: data.name }]);
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
+                  [data.name]: {
+                    id: data.id,
+                    isLoading: false,
+                    data: [],
+                    rawData: [],
+                  },
+                },
+              });
+
               const dataQueryEvents = useAppDataStore
                 .getState()
                 .events?.filter((event) => event.target === 'data_query' && event.sourceId === queryToClone.id);
@@ -358,10 +473,12 @@ export const useDataQueriesStore = create(
             set({ queuedActions: { ...get().queuedActions, saveData: newValues } });
             return;
           }
+          const entityIdMappedOptions = useResolveStore.getState().actions.findReferences(newValues?.options);
+
           useAppDataStore.getState().actions.setIsSaving(true);
           set({ isUpdatingQueryInProcess: true });
           dataqueryService
-            .update(newValues?.id, newValues?.name, newValues?.options)
+            .update(newValues?.id, newValues?.name, entityIdMappedOptions)
             .then((data) => {
               localStorage.removeItem('transformation');
               set((state) => ({
@@ -390,6 +507,72 @@ export const useDataQueriesStore = create(
               dataQueries: sortByAttribute(dataQueries, sortBy, newSortOrder),
             };
           });
+        },
+
+        updateBulkQueryOptions: (queryOptions, appVersionId) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
+          set({ isUpdatingQueryInProcess: true });
+
+          dataqueryService
+            .bulkUpdateQueryOptions(queryOptions, appVersionId)
+            .then((data) => {
+              localStorage.removeItem('transformation');
+              const { actions, selectedQuery } = useQueryPanelStore.getState();
+
+              const prevSelectedQuery = selectedQuery;
+              actions.setSelectedQuery(null);
+
+              set((state) => ({
+                dataQueries: state.dataQueries.map((query) => {
+                  const updatedQuery = data.find((q) => q.id === query.id);
+
+                  if (updatedQuery) {
+                    return { ...query, options: updatedQuery.options, updated_at: updatedQuery.updated_at };
+                  }
+                  return query;
+                }),
+
+                isUpdatingQueryInProcess: false,
+              }));
+
+              if (prevSelectedQuery?.id) {
+                actions.setSelectedQuery(prevSelectedQuery.id);
+              }
+            })
+
+            .catch(() => {
+              set({ isUpdatingQueryInProcess: false });
+            })
+            .finally(() => {
+              useAppDataStore.getState().actions.setIsSaving(false);
+            });
+        },
+        // clearQueuedQueriesForRunOnAppLoad: () => {
+        //   set({ queuedQueriesForRunOnAppLoad: [] });
+        // },
+        updateQueryOptionsState: (queryOptionsList) => {
+          set({ isUpdatingQueryInProcess: true });
+          const { actions, selectedQuery } = useQueryPanelStore.getState();
+
+          const prevSelectedQuery = selectedQuery;
+          actions.setSelectedQuery(null);
+
+          set((state) => ({
+            dataQueries: state.dataQueries.map((query) => {
+              const updatedQuery = queryOptionsList.find((q) => q.id === query.id);
+
+              if (updatedQuery) {
+                return { ...query, options: updatedQuery.options };
+              }
+              return query;
+            }),
+
+            isUpdatingQueryInProcess: false,
+          }));
+
+          if (prevSelectedQuery?.id) {
+            actions.setSelectedQuery(prevSelectedQuery.id);
+          }
         },
       },
     }),

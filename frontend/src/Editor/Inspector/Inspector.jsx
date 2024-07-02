@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
@@ -16,7 +15,7 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
@@ -34,6 +33,8 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
+import { Select } from './Components/Select';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -53,7 +54,18 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = ['Text', 'TextInput', 'PasswordInput', 'NumberInput', 'Table'];
+const NEW_REVAMPED_COMPONENTS = [
+  'Text',
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'Table',
+  'ToggleSwitchV2',
+  'Checkbox',
+  'DropdownV2',
+  'MultiselectV2',
+  'Button',
+];
 
 export const Inspector = ({
   componentDefinitionChanged,
@@ -94,13 +106,19 @@ export const Inspector = ({
     shallow
   );
   const { t } = useTranslation();
-  useHotkeys('backspace', () => {
-    if (isVersionReleased) return;
-    setWidgetDeleteConfirmation(true);
+  useHotkeys(
+    'backspace',
+    () => {
+      if (isVersionReleased) return;
+      setWidgetDeleteConfirmation(true);
+    },
+    { scopes: 'editor' }
+  );
+  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY), {
+    scopes: 'editor',
   });
-  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
-  const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
+  const componentMeta = JSON.parse(JSON.stringify(allComponents?.[selectedComponentId]?.component));
 
   const isMounted = useMounted();
 
@@ -153,9 +171,9 @@ export const Inspector = ({
     return null;
   };
 
-  function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
+  function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false, props = {}) {
     let newComponent = JSON.parse(JSON.stringify(component));
-    let newDefinition = _.cloneDeep(newComponent.component.definition);
+    let newDefinition = deepClone(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
@@ -166,11 +184,7 @@ export const Inspector = ({
       const defaultValue = getDefaultValue(value);
       // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
-      if (
-        component.component.component === 'Table' &&
-        param.name === 'enablePagination' &&
-        !resolveReferences(value, currentState)
-      ) {
+      if (component.component.component === 'Table' && param.name === 'enablePagination' && !resolveReferences(value)) {
         if (allParams?.['clientSidePagination']?.[attr]) {
           allParams['clientSidePagination'][attr] = value;
         }
@@ -204,7 +218,7 @@ export const Inspector = ({
     if (
       component.component.component === 'Table' &&
       param.name === 'contentWrap' &&
-      !resolveReferences(value, currentState) &&
+      !resolveReferences(value) &&
       newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
     ) {
       const updatedColumns = newDefinition.properties.columns.value.map((item) => {
@@ -221,6 +235,67 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent, {
       componentPropertyUpdated: true,
       isParamFromTableColumn: isParamFromTableColumn,
+      ...props,
+    });
+  }
+
+  // use following function when more than one property needs to be updated
+
+  function paramsUpdated(array, isParamFromTableColumn = false) {
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = _.cloneDeep(newComponent.component.definition);
+    array.map((item) => {
+      const { param, attr, value, paramType } = item;
+      let allParams = newDefinition[paramType] || {};
+      const paramObject = allParams[param.name];
+      if (!paramObject) {
+        allParams[param.name] = {};
+      }
+      if (attr) {
+        allParams[param.name][attr] = value;
+        const defaultValue = getDefaultValue(value);
+        // This is needed to have enable pagination in Table as backward compatible
+        // Whenever enable pagination is false, we turn client and server side pagination as false
+        if (
+          component.component.component === 'Table' &&
+          param.name === 'enablePagination' &&
+          !resolveReferences(value, currentState)
+        ) {
+          if (allParams?.['clientSidePagination']?.[attr]) {
+            allParams['clientSidePagination'][attr] = value;
+          }
+          if (allParams['serverSidePagination']?.[attr]) {
+            allParams['serverSidePagination'][attr] = value;
+          }
+        }
+        // This case is required to handle for older apps when serverSidePagination is connected to Fx
+        if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
+          allParams = {
+            ...allParams,
+            enablePagination: {
+              value: true,
+            },
+          };
+        }
+        if (param.type === 'select' && defaultValue) {
+          allParams[defaultValue.paramName]['value'] = defaultValue.value;
+        }
+        if (param.name === 'secondarySignDisplay') {
+          if (value === 'negative') {
+            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
+          } else if (value === 'positive') {
+            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
+          }
+        }
+      } else {
+        allParams[param.name] = value;
+      }
+      newDefinition[paramType] = allParams;
+      newComponent.component.definition = newDefinition;
+    });
+    componentDefinitionChanged(newComponent, {
+      componentPropertyUpdated: true,
+      isParamFromTableColumn,
     });
   }
 
@@ -314,15 +389,12 @@ export const Inspector = ({
         layoutPropertyChanged={layoutPropertyChanged}
         component={component}
         paramUpdated={paramUpdated}
+        paramsUpdated={paramsUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
-        // eventUpdated={eventUpdated}
-        // eventOptionUpdated={eventOptionUpdated}
         components={allComponents}
         currentState={currentState}
         darkMode={darkMode}
-        // eventsChanged={eventsChanged}
-        // apps={apps} !check
         pages={pages}
         allComponents={allComponents}
       />
@@ -445,17 +517,17 @@ export const Inspector = ({
         </div>
       </div>
       <span className="widget-documentation-link">
-        <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
+        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
           <span>
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
+                componentMeta:
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
+                    ? 'Toggle (Legacy)'
+                    : componentMeta.displayName === 'Toggle Switch'
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -467,7 +539,21 @@ export const Inspector = ({
     </div>
   );
 };
-
+const getDocsLink = (componentMeta) => {
+  const component = componentMeta?.component ?? '';
+  switch (component) {
+    case 'ToggleSwitchV2':
+      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
+    case 'DropdownV2':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'DropDown':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'MultiselectV2':
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
+    default:
+      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
+  }
+};
 const widgetsWithStyleConditions = {
   Modal: {
     conditions: [
@@ -572,11 +658,11 @@ const resolveConditionalStyle = (definition, condition, currentState) => {
   if (conditionExistsInDefinition) {
     switch (condition) {
       case 'cellSize': {
-        const cellSize = resolveReferences(definition[condition]?.value ?? false, currentState) === 'hugContent';
+        const cellSize = resolveReferences(definition[condition]?.value ?? false) === 'hugContent';
         return cellSize;
       }
       default:
-        return resolveReferences(definition[condition]?.value ?? false, currentState);
+        return resolveReferences(definition[condition]?.value ?? false);
     }
   }
 };
@@ -620,6 +706,10 @@ const GetAccordion = React.memo(
 
       case 'Form':
         return <Form {...restProps} />;
+
+      case 'DropdownV2':
+      case 'MultiselectV2':
+        return <Select {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

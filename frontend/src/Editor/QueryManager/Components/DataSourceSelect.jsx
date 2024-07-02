@@ -4,7 +4,7 @@ import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { authenticationService } from '@/_services';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -77,7 +77,9 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
                 </div>
               )}
               <DataSourceIcon source={sources?.[0]} height={16} />
-              <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
+              <span className="ms-1 small" style={{ fontSize: '13px' }}>
+                {dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}
+              </span>
             </div>
           ),
           options: sources.map((source) => ({
@@ -85,11 +87,12 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
               <div
                 key={source.id}
                 className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
+                style={{ fontSize: '13px' }}
                 data-tooltip-id="tooltip-for-add-query-dd-option"
-                data-tooltip-content={source.name}
+                data-tooltip-content={decodeEntities(source.name)}
                 data-cy={`ds-${source.name.toLowerCase()}`}
               >
-                {source.name}
+                {decodeEntities(source.name)}
                 <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
               </div>
             ),
@@ -116,7 +119,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
           label: (
             <div>
               <DataSourceIcon source={source} height={16} />{' '}
-              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small">
+              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small" style={{ fontSize: '13px' }}>
                 {source.name}
               </span>
             </div>

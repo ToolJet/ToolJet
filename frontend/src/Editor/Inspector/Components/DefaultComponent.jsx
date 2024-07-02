@@ -5,14 +5,28 @@ import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
-import { AllComponents } from '@/Editor/Box';
+// import { AllComponents } from '@/Editor/Box';
+import { AllComponents } from '@/_helpers/editorHelpers';
 
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'NumberInput', 'PasswordInput'];
+const SHOW_ADDITIONAL_ACTIONS = [
+  'Text',
+  'TextInput',
+  'NumberInput',
+  'PasswordInput',
+  'ToggleSwitchV2',
+  'Checkbox',
+  'DropdownV2',
+  'MultiselectV2',
+  'Button',
+];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
   TextInput: 'Data',
   PasswordInput: 'Data',
   NumberInput: 'Data',
+  ToggleSwitchV2: 'Data',
+  Checkbox: 'Data',
+  Button: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -86,11 +100,23 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'Text', 'Table'],
+    General: [
+      'Modal',
+      'TextInput',
+      'PasswordInput',
+      'NumberInput',
+      'Text',
+      'Table',
+      'Button',
+      'ToggleSwitchV2',
+      'Checkbox',
+      'DropdownV2',
+      'MultiselectV2',
+    ],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
-    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value, currentState)) {
+    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value)) {
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
   }

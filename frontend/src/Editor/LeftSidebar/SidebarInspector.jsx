@@ -60,15 +60,9 @@ export const LeftSidebarInspector = ({
   }, [selectedComponents]);
 
   const memoizedJSONData = React.useMemo(() => {
-    const updatedQueries = {};
     const { queries: currentQueries } = currentState;
-    if (!_.isEmpty(dataQueries)) {
-      dataQueries.forEach((query) => {
-        updatedQueries[query.name] = _.merge(currentQueries[query.name], { id: query.id });
-      });
-    }
-    // const data = _.merge(currentState, { queries: updatedQueries });
-    const jsontreeData = { ...currentState, queries: updatedQueries };
+
+    const jsontreeData = { ...currentState, queries: currentQueries };
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;
@@ -116,9 +110,7 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `assets/images/icons/widgets/${
-          component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
-        }.svg`,
+        iconPath: `assets/images/icons/widgets/${component.component.toLowerCase()}.svg`,
         className: 'component-icon',
       };
     }
@@ -136,7 +128,7 @@ export const LeftSidebarInspector = ({
             iconName: 'disable',
             jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
             className: 'component-icon',
-            tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
             isInfoIcon: true,
           });
         }
@@ -147,6 +139,57 @@ export const LeftSidebarInspector = ({
             jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        return icons;
+      }
+      if (!_.isEmpty(component) && component.component === 'Checkbox') {
+        const icons = [];
+
+        if (componentExposedVariables.setChecked) {
+          icons.push({
+            iconName: 'setChecked',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setValue as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        return icons;
+      }
+
+      if (!_.isEmpty(component) && component.component === 'Button') {
+        const icons = [];
+
+        if (componentExposedVariables.disable) {
+          icons.push({
+            iconName: 'disable',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        if (componentExposedVariables.visibility) {
+          icons.push({
+            iconName: 'visibility',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          });
+        }
+
+        if (componentExposedVariables.loading) {
+          icons.push({
+            iconName: 'loading',
+            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            className: 'component-icon',
+            tooltipMessage: 'This function will be deprecated soon, You can use setLoading as an alternative',
             isInfoIcon: true,
           });
         }

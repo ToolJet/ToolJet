@@ -6,11 +6,16 @@ import JSON5 from 'json5';
 import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
-import { getCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
+import { validateMultilineCode } from './utility';
+import { componentTypes } from '@/Editor/WidgetManager/components';
+
+const reservedKeyword = ['app', 'window'];
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -148,42 +153,39 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(
-  object,
-  state,
-  defaultValue,
-  customObjects = {},
-  withError = false,
-  forPreviewBox = false
-) {
+export function resolveReferences(object, defaultValue, customObjects = {}, withError = false, forPreviewBox = false) {
   if (object === '{{{}}}') return '';
-  const reservedKeyword = ['app', 'window']; //Keywords that slows down the app
+
   object = _.clone(object);
+  const currentState = useCurrentStateStore.getState();
   const objectType = typeof object;
   let error;
   switch (objectType) {
     case 'string': {
       if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
-        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
+        object = resolveString(object, currentState, customObjects, reservedKeyword, withError, forPreviewBox);
       }
 
       if (object.startsWith('{{') && object.endsWith('}}')) {
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          if (reservedKeyword.includes(code)) {
+          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
+          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+
+          if (code.match(keywordRegex)) {
             error = `${code} is a reserved keyword`;
             return [{}, error];
           }
 
-          return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+          return resolveCode(code, currentState, customObjects, withError, reservedKeyword, true);
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
           for (const dynamicVariable of dynamicVariables) {
             const value = resolveString(
               dynamicVariable,
-              state,
+              currentState,
               customObjects,
               reservedKeyword,
               withError,
@@ -203,17 +205,17 @@ export function resolveReferences(
           return [{}, error];
         }
 
-        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
+        return resolveCode(code, currentState, customObjects, withError, reservedKeyword, false);
       }
 
       const dynamicVariables = getDynamicVariables(object);
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], state, null, customObjects);
+          object = resolveReferences(dynamicVariables[0], null, customObjects);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, state, null, customObjects);
+            const value = resolveReferences(dynamicVariable, null, customObjects);
             if (typeof value !== 'function') {
               object = object.replace(dynamicVariable, value);
             }
@@ -229,7 +231,7 @@ export function resolveReferences(
         const new_array = [];
 
         object.forEach((element, index) => {
-          const resolved_object = resolveReferences(element, state);
+          const resolved_object = resolveReferences(element);
           new_array[index] = resolved_object;
         });
 
@@ -237,7 +239,7 @@ export function resolveReferences(
         return new_array;
       } else if (!_.isEmpty(object)) {
         Object.keys(object).forEach((key) => {
-          const resolved_object = resolveReferences(object[key], state);
+          const resolved_object = resolveReferences(object[key]);
           object[key] = resolved_object;
         });
         if (withError) return [object, error];
@@ -262,20 +264,20 @@ export function computeComponentName(componentType, currentComponents) {
     (component) => component.component.component === componentType
   );
   let found = false;
-  let componentName = '';
+  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
   let currentNumber = currentComponentsForKind.length + 1;
-
+  let _componentName = '';
   while (!found) {
-    componentName = `${componentType.toLowerCase()}${currentNumber}`;
+    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
     if (
-      Object.values(currentComponents).find((component) => component.component.name === componentName) === undefined
+      Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
       found = true;
     }
     currentNumber = currentNumber + 1;
   }
 
-  return componentName;
+  return _componentName;
 }
 
 export function computeActionName(actions) {
@@ -323,11 +325,11 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
   return str.join('&');
 };
 
-export function resolveWidgetFieldValue(prop, state, _default = [], customResolveObjects = {}) {
+export function resolveWidgetFieldValue(prop, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
   try {
-    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
+    return resolveReferences(widgetFieldValue, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }
@@ -335,7 +337,7 @@ export function resolveWidgetFieldValue(prop, state, _default = [], customResolv
   return widgetFieldValue;
 }
 
-export function validateWidget({ validationObject, widgetValue, currentState, customResolveObjects }) {
+export function validateWidget({ validationObject, widgetValue, currentState, component, customResolveObjects }) {
   let isValid = true;
   let validationError = null;
 
@@ -346,7 +348,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
   const mandatory = validationObject?.mandatory?.value;
-  const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
+  const validationRegex = resolveWidgetFieldValue(regex, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
   if (!re.test(widgetValue)) {
@@ -356,7 +358,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
+  const resolvedMinLength = resolveWidgetFieldValue(minLength, 0, customResolveObjects);
   if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
     return {
       isValid: false,
@@ -364,7 +366,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     };
   }
 
-  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, undefined, customResolveObjects);
   if (resolvedMaxLength !== undefined) {
     if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
       return {
@@ -374,7 +376,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
+  const resolvedMinValue = resolveWidgetFieldValue(minValue, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
     if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
       return {
@@ -394,17 +396,18 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
-  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, false, customResolveObjects);
   if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
-  const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
+  const resolvedMandatory = resolveWidgetFieldValue(mandatory, false, customResolveObjects);
 
-  if (resolvedMandatory == true) {
-    if (!widgetValue) {
-      return { isValid: false, validationError: `Field cannot be empty` };
-    }
+  if (resolvedMandatory == true && !widgetValue) {
+    return {
+      isValid: false,
+      validationError: `Field cannot be empty`,
+    };
   }
   return {
     isValid,
@@ -510,15 +513,13 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  mode = '',
-  parameters = {},
-  hasParamSupport = false
-) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
+  const isValidCode = validateMultilineCode(code, true);
+
+  if (isValidCode.status === 'failed') {
+    return isValidCode;
+  }
+
   const currentState = getCurrentState();
   let result = {},
     error = null;
@@ -536,7 +537,7 @@ export async function executeMultilineJS(
     queryDetails?.options?.parameters?.reduce(
       (paramObj, param) => ({
         ...paramObj,
-        [param.name]: resolveReferences(param.defaultValue, {}, undefined), //default values will not be resolved with currentState
+        [param.name]: resolveReferences(param.defaultValue, undefined), //default values will not be resolved with currentState
       }),
       {}
     ) || {};
@@ -624,6 +625,16 @@ export async function executeMultilineJS(
     result = { status: 'failed', data: { message: error, description: error } };
   }
 
+  if (hasCircularDependency(result)) {
+    return {
+      status: 'failed',
+      data: {
+        message: 'Circular dependency detected',
+        description: 'Cannot resolve circular dependency',
+      },
+    };
+  }
+
   return result;
 }
 
@@ -669,12 +680,26 @@ export const handleCircularStructureToJSON = () => {
 };
 
 export function hasCircularDependency(obj) {
-  try {
-    JSON.stringify(obj);
-  } catch (e) {
-    return String(e).includes('Converting circular structure to JSON');
+  let seenObjects = new WeakSet();
+
+  function detect(obj) {
+    if (obj && typeof obj === 'object') {
+      if (seenObjects.has(obj)) {
+        // Circular reference found
+        return true;
+      }
+      seenObjects.add(obj);
+
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key) && detect(obj[key])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
-  return false;
+
+  return detect(obj);
 }
 
 export const hightlightMentionedUserInComment = (comment) => {
@@ -1190,6 +1215,11 @@ export const determineJustifyContentValue = (value) => {
   }
 };
 
+export function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 export const USER_DRAWER_MODES = {
   EDIT: 'EDIT',
   CREATE: 'CREATE',
@@ -1208,66 +1238,66 @@ export const humanizeifDefaultGroupName = (groupName) => {
   }
 };
 
-export const defaultWhiteLabellingSettings = {
-  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
-  WHITE_LABEL_TEXT: 'ToolJet',
-  WHITE_LABEL_FAVICON: 'https://app.tooljet.com/favico.png',
+// This function is written only to handle diff colors W.R.T button types
+export const computeColor = (styleDefinition, value, meta) => {
+  if (styleDefinition.type?.value == 'primary') return value;
+  else {
+    if (meta?.displayName == 'Background') {
+      value = value == '#4368E3' ? '#FFFFFF' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Text color') {
+      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Icon color') {
+      value = value == '#FFFFFF' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Border color') {
+      value = value == '#4368E3' ? '#CCD1D5' : value;
+      return value;
+    }
+    if (meta?.displayName == 'Loader color') {
+      value = value == '#FFFFFF' ? '#4368E3' : value;
+      return value;
+    }
+  }
 };
 
-export const pageTitles = {
-  INSTANCE_SETTINGS: 'Settings',
-  WORKSPACE_SETTINGS: 'Workspace settings',
-  INTEGRATIONS: 'Marketplace',
-  WORKFLOWS: 'Workflows',
-  DATABASE: 'Database',
-  DATA_SOURCES: 'Data sources',
-  AUDIT_LOGS: 'Audit logs',
-  ACCOUNT_SETTINGS: 'Profile settings',
-  SETTINGS: 'Profile settings',
-  EDITOR: 'Editor',
-  WORKFLOW_EDITOR: 'workflowEditor',
-  VIEWER: 'Viewer',
-  DASHBOARD: 'Dashboard',
-  WORKSPACE_CONSTANTS: 'Workspace constants',
-};
-
-export const setWindowTitle = async (pageDetails, location) => {
-  const isEditorOrViewerGoingToRender = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
-  const pathToTitle = {
-    'instance-settings': pageTitles.INSTANCE_SETTINGS,
-    'workspace-settings': pageTitles.WORKSPACE_SETTINGS,
-    integrations: pageTitles.INTEGRATIONS,
-    workflows: pageTitles.WORKFLOWS,
-    database: pageTitles.DATABASE,
-    'data-sources': pageTitles.DATA_SOURCES,
-    'audit-logs': pageTitles.AUDIT_LOGS,
-    'account-settings': pageTitles.ACCOUNT_SETTINGS,
-    settings: pageTitles.SETTINGS,
-    'workspace-constants': pageTitles.WORKSPACE_CONSTANTS,
+export const triggerKeyboardShortcut = (keyCallbackFnArray, initiator) => {
+  const pressedKeys = [];
+  const keyboardShortcutStore = useKeyboardShortcutStore.getState();
+  const handleKeydown = (event) => {
+    pressedKeys.push(event.key);
+    const stringPressedKeys = pressedKeys.join(', ');
+    const currentComponent = keyboardShortcutStore.actions.getTopComponent();
+    if (initiator !== currentComponent) return;
+    for (const { key, callbackFn, args = [] } of keyCallbackFnArray) {
+      if (key === stringPressedKeys) {
+        callbackFn(...args);
+        break;
+      }
+    }
   };
-  const whiteLabelText = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
-  let pageTitleKey = pageDetails?.page || '';
-  let pageTitle = '';
-  if (!pageTitleKey && !isEditorOrViewerGoingToRender) {
-    pageTitleKey = Object.keys(pathToTitle).find((path) => location?.pathname?.includes(path)) || '';
-  }
-  switch (pageTitleKey) {
-    case pageTitles.VIEWER: {
-      const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
-      break;
+
+  const handleKeyUp = (event) => {
+    const index = pressedKeys.indexOf(event.key);
+    if (index > -1) {
+      pressedKeys.splice(index, 1);
     }
-    case pageTitles.EDITOR:
-    case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
-      break;
-    }
-    default: {
-      pageTitle = pathToTitle[pageTitleKey] || pageTitleKey;
-      break;
-    }
-  }
-  if (pageTitle) {
-    document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
-  }
+  };
+
+  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('keyup', handleKeyUp);
+
+  return () => {
+    document.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('keyup', handleKeyUp);
+  };
 };
+
+//For <>& UI display issues
+export function decodeEntities(encodedString) {
+  return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
+}

@@ -39,8 +39,15 @@ const List = () => {
 
     if (!isEmpty(data?.result)) {
       setTables(data.result || []);
-      setSelectedTable({ table_name: data.result[0].table_name, id: data.result[0].id });
-      updateSidebarNAV(data.result[0].table_name);
+      if (localStorage.getItem('tableDetails')) {
+        const retrievedTableData = JSON.parse(localStorage.getItem('tableDetails'));
+        setSelectedTable(retrievedTableData);
+        updateSidebarNAV(retrievedTableData.table_name);
+        localStorage.removeItem('tableDetails');
+      } else {
+        setSelectedTable({ table_name: data.result[0].table_name, id: data.result[0].id });
+        updateSidebarNAV(data.result[0].table_name);
+      }
     } else {
       setTables([]);
       setSelectedTable({});
@@ -97,9 +104,8 @@ const List = () => {
         )}
       </div>
       <div className="list-group mb-3">
-        {loading && loadingState && <Skeleton count={3} height={22} />}
+        {loading && <Skeleton count={3} height={22} />}
         {!loading &&
-          !loadingState &&
           filteredTables?.map(({ id, table_name }, index) => (
             <ListItem
               key={index}

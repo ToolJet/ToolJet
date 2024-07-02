@@ -12,13 +12,19 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   const [versionId, setVersionId] = useState(undefined);
   const [exportTjDb, setExportTjDb] = useState(true);
   const [currentVersion, setCurrentVersion] = useState(undefined);
+  const [versionSelectLoading, setVersionSelectLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchAppVersions() {
+      setLoading(true);
       try {
         const fetchVersions = await appsService.getVersions(app.id);
+        const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
         const { versions } = fetchVersions;
+        const { tables } = fetchTables;
         setVersions(versions);
+        setAllTables(tables);
         const currentEditingVersion = versions?.filter((version) => version?.isCurrentEditingVersion)[0];
         if (currentEditingVersion) {
           setCurrentVersion(currentEditingVersion);
@@ -30,16 +36,16 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         });
         closeModal();
       }
+      setLoading(false);
     }
     fetchAppVersions();
   }, [app, closeModal]);
 
   useEffect(() => {
     async function fetchAppTables() {
+      setVersionSelectLoading(true);
       try {
         if (!versionId) return;
-        const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
-        const { tables } = fetchTables;
         const tbl = await appsService.getAppByVersion(app.id, versionId); // this is used to get particular App by version
         const { dataQueries } = tbl;
         const extractedIdData = [];
@@ -64,13 +70,13 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const uniqueSet = new Set(extractedIdData);
         const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));
         setTables(selectedVersiontable);
-        setAllTables(tables);
       } catch (error) {
         toast.error('Could not fetch the tables.', {
           position: 'top-center',
         });
         closeModal();
       }
+      setVersionSelectLoading(false);
     }
     fetchAppTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,7 +149,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
           data-cy="modal-close-button"
         ></button>
       </BootstrapModal.Header>
-      {Array.isArray(versions) ? (
+      {Array.isArray(versions) && !loading ? (
         <>
           <BootstrapModal.Body>
             <div>
@@ -204,7 +210,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               Export All
             </ButtonSolid>
             <ButtonSolid
-              className="import-export-footer-btns"
+              className={`import-export-footer-btns ${versionSelectLoading ? 'btn-loading' : ''}`}
               data-cy="export-selected-version-button"
               onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
