@@ -126,7 +126,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 ### **Get User by ID**
     - **Description:** Returns a user by their ID.
-    - **URL:** `/api/ext/users/:id`
+    - **URL:** `/api/ext/user/:id`
     - **Method:** GET
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
@@ -223,7 +223,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 ### **Update User**
     - **Description:** Finds and updates a user by their ID.
-    - **URL:** `/api/ext/users/:id`
+    - **URL:** `/api/ext/user/:id`
     - **Method:** PATCH
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
@@ -262,7 +262,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ### **Replace User Workspaces Relations**
 
     - **Description:** Replaces all workspaces relations associated with a user.
-    - **URL:** `/api/ext/users/:id/workspaces`
+    - **URL:** `/api/ext/user/:id/workspaces`
     - **Method:** PUT
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
@@ -283,7 +283,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ### **Replace User Workspace**
 
     - **Description:** Updates a specific workspace relation associated with a user.
-    - **URL:** `/api/ext/users/:id/workspaces/:workspaceId`
+    - **URL:** `/api/ext/user/:id/workspaces/:workspaceId`
     - **Method:** PATCH
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
