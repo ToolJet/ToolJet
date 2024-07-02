@@ -1,12 +1,12 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { OpenAIApi, Configuration } from 'openai';
+import OpenAI from 'openai';
 import { getCompletion, getChatCompletion } from './query_operations';
 
 export default class Openai implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
-    const openai: OpenAIApi = await this.getConnection(sourceOptions);
+    const openai: OpenAI = await this.getConnection(sourceOptions);
     let result = {};
 
     try {
@@ -33,11 +33,11 @@ export default class Openai implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const openai: OpenAIApi = await this.getConnection(sourceOptions);
+    const openai: OpenAI = await this.getConnection(sourceOptions);
 
     try {
-      const response = await openai.listModels();
-      if (response.status === 200) {
+      const response = await openai.models.list();
+      if (response.data) {
         return {
           status: 'ok',
         };
@@ -47,19 +47,17 @@ export default class Openai implements QueryService {
     }
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<OpenAIApi> {
+  async getConnection(sourceOptions: SourceOptions): Promise<OpenAI> {
     const { apiKey, organizationId = null } = sourceOptions;
 
-    const creds = {
+    const config: OpenAI.FunctionParameters = {
       apiKey: apiKey,
     };
     if (organizationId) {
-      creds['organizationId'] = organizationId;
+      config.organization = organizationId;
     }
 
-    const config = new Configuration(creds);
-
-    const openai = new OpenAIApi(config);
+    const openai = new OpenAI(config);
     return openai;
   }
 }
