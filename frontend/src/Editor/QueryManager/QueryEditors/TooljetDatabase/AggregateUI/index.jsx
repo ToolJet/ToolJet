@@ -9,7 +9,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-
+import { ToolTip } from '@/_components';
 export const AggregateFilter = ({ darkMode, operation = '' }) => {
   const {
     columns,
@@ -295,6 +295,18 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     );
   };
 
+  const selectedTableName = getTableName(selectedTableId);
+
+  const isGroupByTableNameTruncated = (text) => {
+    const container = document.querySelector('.truncate-container');
+    const textElement = document.createElement('span');
+    textElement.innerText = text;
+    document.body.append(textElement);
+    const isTruncated = textElement?.offsetWidth > container?.offsetWidth;
+    document.body.removeChild(textElement);
+    return isTruncated;
+  };
+
   return (
     <>
       <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
@@ -405,14 +417,21 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
             </div>
           )}
           {operation === 'joinTable' && (
-            <div className="d-flex flex-column custom-gap-8">
+            <div className="d-flex flex-column custom-gap-8 join-group-bys">
               <div className="border rounded d-flex">
-                <div
-                  style={{ width: '15%', padding: '4px 8px' }}
-                  className="border border-only-right d-flex align-items-center"
+                <ToolTip
+                  message={selectedTableName}
+                  placement="top"
+                  tooltipClassName="tjdb-cell-tooltip"
+                  show={isGroupByTableNameTruncated(selectedTableName)}
                 >
-                  {getTableName(selectedTableId)}
-                </div>
+                  <div
+                    style={{ width: '15%', padding: '4px 8px' }}
+                    className="border border-only-right d-block align-items-center text-truncate truncate-container"
+                  >
+                    {selectedTableName}
+                  </div>
+                </ToolTip>
                 <div style={{ width: '85%' }}>
                   <SelectBox
                     width="100%"
@@ -429,14 +448,24 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                 </div>
               </div>
               {joinTableOptions?.joins?.map((table) => {
+                const tableName = getTableName(table.table); // Replace with your dynamic text
+                const isTextTruncated = isGroupByTableNameTruncated(tableName);
+
                 return (
                   <div key={table.table} className="border rounded d-flex">
-                    <div
-                      style={{ width: '15%', padding: '4px 8px' }}
-                      className="border border-only-right d-flex align-items-center"
+                    <ToolTip
+                      message={tableName}
+                      placement="top"
+                      tooltipClassName="tjdb-cell-tooltip"
+                      show={isTextTruncated}
                     >
-                      {getTableName(table.table)}
-                    </div>
+                      <div
+                        style={{ width: '15%', padding: '4px 8px' }}
+                        className="border border-only-right d-block align-items-center text-truncate group-by-trunate"
+                      >
+                        {tableName}
+                      </div>
+                    </ToolTip>
                     <div style={{ width: '85%' }}>
                       <SelectBox
                         width="100%"
