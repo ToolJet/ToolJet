@@ -426,13 +426,13 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                   show={isGroupByTableNameTruncated(selectedTableName)}
                 >
                   <div
-                    style={{ width: '15%', padding: '4px 8px' }}
+                    style={{ width: '25%', padding: '4px 8px' }}
                     className="border border-only-right d-block align-items-center text-truncate truncate-container"
                   >
                     {selectedTableName}
                   </div>
                 </ToolTip>
-                <div style={{ width: '85%' }}>
+                <div style={{ width: '75%' }}>
                   <SelectBox
                     width="100%"
                     height="32"
@@ -448,42 +448,45 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                 </div>
               </div>
               {joinTableOptions?.joins?.map((table) => {
-                const tableName = getTableName(table.table); // Replace with your dynamic text
-                const isTextTruncated = isGroupByTableNameTruncated(tableName);
-                const tableNameEmpty = !tableName;
-                const showTooltip = tableNameEmpty || isTextTruncated;
-                const toolTipMessage = tableNameEmpty ? 'Please select joining table to see its name' : tableName;
-                return (
-                  <div key={table.table} className="border rounded d-flex">
-                    <ToolTip
-                      message={toolTipMessage}
-                      placement="top"
-                      tooltipClassName="tjdb-cell-tooltip"
-                      show={showTooltip}
-                    >
-                      <div
-                        style={{ width: '15%', padding: '4px 8px' }}
-                        className="border border-only-right d-block align-items-center text-truncate group-by-trunate"
+                if (table.hasOwnProperty('table') && table.table) {
+                  const tableName = getTableName(table.table); // Replace with your dynamic text
+                  const isTextTruncated = isGroupByTableNameTruncated(tableName);
+                  const tableNameEmpty = !tableName;
+                  const showTooltip = tableNameEmpty || isTextTruncated;
+                  const toolTipMessage = tableNameEmpty ? 'Please select joining table to see its name' : tableName;
+                  return (
+                    <div key={table.table} className="border rounded d-flex">
+                      <ToolTip
+                        message={toolTipMessage}
+                        placement="top"
+                        tooltipClassName="tjdb-cell-tooltip"
+                        show={showTooltip}
                       >
-                        {tableName}
+                        <div
+                          style={{ width: '25%', padding: '4px 8px' }}
+                          className="border border-only-right d-block align-items-center text-truncate group-by-trunate"
+                        >
+                          {tableName}
+                        </div>
+                      </ToolTip>
+                      <div style={{ width: '75%' }}>
+                        <SelectBox
+                          width="100%"
+                          height="32"
+                          value={constructGroupByValue(operationDetails?.group_by?.[table.table])}
+                          options={getColumnsDetails(table.table)}
+                          placeholder={`Select column(s) to group by`}
+                          isMulti={true}
+                          handleChange={(value) => handleGroupByChange(table.table, value)}
+                          disabled={disableGroupBy() || tableNameEmpty}
+                          darkMode={darkMode}
+                          showTooltip={disableGroupBy()}
+                        />
                       </div>
-                    </ToolTip>
-                    <div style={{ width: '85%' }}>
-                      <SelectBox
-                        width="100%"
-                        height="32"
-                        value={constructGroupByValue(operationDetails?.group_by?.[table.table])}
-                        options={getColumnsDetails(table.table)}
-                        placeholder={`Select column(s) to group by`}
-                        isMulti={true}
-                        handleChange={(value) => handleGroupByChange(table.table, value)}
-                        disabled={disableGroupBy() || tableNameEmpty}
-                        darkMode={darkMode}
-                        showTooltip={disableGroupBy()}
-                      />
                     </div>
-                  </div>
-                );
+                  );
+                }
+                return null;
               })}
             </div>
           )}
