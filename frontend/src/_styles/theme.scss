@@ -178,6 +178,7 @@ $border-radius: 4px;
 
 body {
   font-family: 'IBM Plex Sans';
+  // color: var(--text-default) !important;
 }
 
 input,
@@ -3591,6 +3592,7 @@ input[type="text"] {
 
 .query-manager-events {
   max-width: 400px;
+  width: 330px;
 }
 
 .validation-without-icon {
@@ -5167,9 +5169,13 @@ div#driver-page-overlay {
   color: $light-gray;
 }
 
+.dynamic-form-element {
+  flex: 1 !important;
+}
+
 .dynamic-form-row {
-  margin-top: 20px !important;
-  margin-bottom: 20px !important;
+  margin-top: 16px !important;
+  // margin-bottom: 16px !important;
 }
 
 #transformation-popover-container {
@@ -12602,8 +12608,6 @@ tbody {
   align-items: center;
 }
 
-
-
 .avatar-list-stacked {
   display: flex;
 }
@@ -13227,7 +13231,6 @@ tbody {
   background-color: #1E823B;
   @extend .widget-version-identifier
 }
-
 .tjdb-table-tooltip {
   width: max-content !important;
 
@@ -13255,3 +13258,55 @@ tbody {
 div.ds-svg-container svg {
   padding: 2px;
 }
+
+
+
+.dropdown-multiselect-widget-custom-menu-list {
+  box-shadow: var(--elevation-400-box-shadow) !important;
+  border-radius: 8px;
+
+  .multiselect-custom-menulist-select-all {
+    display: flex;
+    padding: 8px 16px;
+    background-color: var(--surfaces-surface-01) !important;
+    color: var(--text-primary);
+
+    &:hover {
+      background-color: var(--interactive-overlays-fill-hover) !important;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+  }
+  .form-check-input:disabled {
+    background-color: var(--surfaces-surface-03) !important;
+  }
+}
+
+.dropdown-multiselect-widget-search-box-wrapper {
+  border-bottom: 1px solid var(--borders-weak-disabled);
+  display: flex;
+  padding: 8px 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  align-self: stretch;
+  height: 40px;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: var(--surfaces-surface-01) !important;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+  .dropdown-multiselect-widget-search-box {
+    width: 100%;
+    box-sizing: 'border-box';
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--slate12);
+    gap: 16px;
+  }
+}
+
