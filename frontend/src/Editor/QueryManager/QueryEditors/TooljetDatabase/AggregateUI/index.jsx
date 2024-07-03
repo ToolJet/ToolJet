@@ -92,39 +92,68 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     handleChange('aggregates', updatedAggregates);
   };
 
+  const showConfirmationMoalForLastFilledValue = (currentAggregates, aggregateKey) => {
+    if (!currentAggregates[aggregateKey]) {
+      return false;
+    }
+
+    // Check if all values for the matched key are truthy
+    const allValuesTruthy = Object.values(currentAggregates[aggregateKey]).every((value) => Boolean(value));
+    if (!allValuesTruthy) {
+      return false;
+    }
+
+    // Check if the rest of the keys have values that are either all empty or partially filled
+    const keys = Object.keys(currentAggregates);
+    for (const key of keys) {
+      if (key !== aggregateKey) {
+        const values = Object.values(currentAggregates[key]);
+        const allEmpty = values.every((value) => value === '');
+        const partiallyFilled = values.some((value) => value !== '') && values.some((value) => value === '');
+
+        if (!(allEmpty || partiallyFilled)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
   const handleDeleteAggregate = (aggregateKey) => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
     const numberOfAggregates = Object.keys(currentAggregates).length;
+    const currentGroupBy = { ...(operationDetails?.group_by || {}) };
+    const showConfirmationModal = showConfirmationMoalForLastFilledValue(currentAggregates, aggregateKey);
 
-    if (numberOfAggregates > 1) {
+    const isValidGroupByPresent = Object.values(currentGroupBy).some((selectedColumn) => selectedColumn.length >= 1);
+
+    const deleteAggregate = () => {
       delete currentAggregates[aggregateKey];
-      try {
-        handleChange('aggregates', currentAggregates);
-        toast.success('Aggregate function deleted successfully!');
-        return;
-      } catch (error) {
-        return toast.error('Could not delete aggregate function. Please try again!');
-      }
-    } else {
-      const currentGroupBy = { ...(operationDetails?.group_by || {}) };
-      const isValidGroupByPresent = Object.entries(currentGroupBy).some(([tableId, selectedColumn]) => {
-        if (tableId && selectedColumn.length >= 1) {
-          return true;
+      handleChange('aggregates', currentAggregates);
+      toast.success('Aggregate function deleted successfully!');
+    };
+
+    const showError = () => {
+      toast.error('Could not delete aggregate function. Please try again!');
+    };
+
+    try {
+      if (numberOfAggregates > 1) {
+        if (showConfirmationModal && isValidGroupByPresent) {
+          setShowDeleteConfirmation(true);
+        } else {
+          deleteAggregate();
         }
-        return false;
-      });
-      if (isValidGroupByPresent) {
-        setShowDeleteConfirmation(true);
       } else {
-        try {
-          delete currentAggregates[aggregateKey];
-          handleChange('aggregates', currentAggregates);
-          toast.success('Aggregate function deleted successfully!');
-          return;
-        } catch (error) {
-          return toast.error('Could not delete aggregate function. Please try again!');
+        if (isValidGroupByPresent) {
+          setShowDeleteConfirmation(true);
+        } else {
+          deleteAggregate();
         }
       }
+    } catch (error) {
+      showError();
     }
   };
 
