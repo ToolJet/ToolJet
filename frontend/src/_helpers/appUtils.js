@@ -563,6 +563,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           const { queryId, queryName, eventId, component } = event;
           const params = event['parameters'];
           if (!queryId && !queryName) {
+            const componentName = component ? `${component}: ` : '';
+            const eventMessage = eventId ? `${eventId} - ` : '';
+            toast.error(`${componentName}${eventMessage}No query has been associated with the action.`);
             throw new Error('No query selected');
           }
           const resolvedParams = {};
@@ -1231,9 +1234,10 @@ export function runQuery(
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
-  const componentName = component ? `${component}: ` : '';
-  const eventMessage = eventId ? `${eventId} - ` : '';
-  const errorMessage = `${componentName}${eventMessage}No query has been associated with the action.`;
+  // const componentName = component ? `${component}: ` : '';
+  // const eventMessage = eventId ? `${eventId} - ` : '';
+  // const errorMessage = `${componentName}${eventMessage}No query has been associated with the action.`;
+  // toast.error(errorMessage);
 
   if (shouldSetPreviewData) {
     setPreviewPanelExpanded(true);
@@ -1243,7 +1247,7 @@ export function runQuery(
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
-    toast.error(errorMessage);
+    // toast.error(errorMessage);
     return;
   }
 
