@@ -433,26 +433,35 @@ export async function copyToClipboard(text) {
   }
 }
 
-function showModal(_ref, modal, show) {
-  const modalId = modal?.id ?? modal;
-  if (_.isEmpty(modalId)) {
-    console.log('No modal is associated with this event.');
-    return Promise.resolve();
-  }
-  useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([modalId]);
-  const modalMeta = _ref.appDefinition.pages[_ref.currentPageId].components[modalId]; //! NeedToFix
+function showModal(_ref, modal, show, event) {
+  try {
+    const modalId = modal?.id ?? modal;
+    if (_.isEmpty(modalId)) {
+      throw new Error('No modal is associated with this event.');
+    }
+    useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([modalId]);
+    const modalMeta = _ref.appDefinition.pages[_ref.currentPageId].components[modalId]; //! NeedToFix
 
-  const _components = {
-    ...getCurrentState().components,
-    [modalMeta.component.name]: {
-      ...getCurrentState().components[modalMeta.component.name],
-      show: show,
-    },
-  };
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: _components,
-  });
-  return Promise.resolve();
+    const _components = {
+      ...getCurrentState().components,
+      [modalMeta.component.name]: {
+        ...getCurrentState().components[modalMeta.component.name],
+        show: show,
+      },
+    };
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: _components,
+    });
+
+    return Promise.resolve();
+  } catch (error) {
+    logError(show ? 'show_modal' : 'close_modal', show ? 'show-modal' : 'close_modal', error, event.eventId, {
+      modalId: modal?.id ?? modal,
+      sourceType: event.sourceType,
+    });
+
+    return Promise.reject(error);
+  }
 }
 
 function logoutAction() {
@@ -486,6 +495,28 @@ function debounce(func) {
 
 export const executeAction = debounce(executeActionWithDebounce);
 
+function logError(errorType, errorKind, error, event = '', options = {}) {
+  const returnSource = () => {
+    if (event.sourceType) return event.sourceType == 'data_query' ? 'query' : event.sourceType;
+
+    if (event.eventId == 'onDataQueryFailure' || event.eventId == 'onDataQuerySuccess') return 'query';
+    else if (event.eventId == 'onPageLoad') return 'page';
+    else return 'component';
+  };
+
+  useCurrentStateStore.getState().actions.setErrors({
+    [`${errorType} - ${returnSource()}`]: {
+      type: 'event',
+      kind: errorKind,
+      data: {
+        message: error.message,
+        description: JSON.stringify(error.message, null, 2),
+      },
+      options: options,
+      strace: 'app_level',
+    },
+  });
+}
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
@@ -513,19 +544,29 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         }
         return Promise.resolve();
       }
-
       case 'run-query': {
-        const { queryId, queryName, eventId, component } = event;
-        const params = event['parameters'];
-        const resolvedParams = {};
-        if (params) {
-          Object.keys(params).map(
-            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
-          );
+        try {
+          const { queryId, queryName, eventId, component } = event;
+          const params = event['parameters'];
+          if (!queryId && !queryName) {
+            throw new Error('No query selected');
+          }
+          const resolvedParams = {};
+          if (params) {
+            Object.keys(params).map(
+              (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
+            );
+          }
+
+          const name =
+            useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
+          return runQuery(_ref, queryId, name, undefined, mode, resolvedParams, component, eventId);
+        } catch (error) {
+          logError('run_query', 'run-query', error, event, {
+            eventId: event.eventId,
+          });
+          return Promise.reject(error);
         }
-        const name =
-          useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
-        return runQuery(_ref, queryId, name, undefined, mode, resolvedParams, component, eventId);
       }
       case 'logout': {
         return logoutAction();
@@ -536,47 +577,56 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         window.open(url, '_blank');
         return Promise.resolve();
       }
-
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
-        const queryParams = event.queryParams?.reduce(
-          (result, queryParam) => ({
-            ...result,
-            ...{
-              [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
-                queryParam[1],
-                getCurrentState(),
-                undefined,
-                customVariables
-              ),
-            },
-          }),
-          {}
-        );
-
-        let url = `/applications/${slug}`;
-
-        if (queryParams) {
-          const queryPart = serializeNestedObjectToQueryParams(queryParams);
-
-          if (queryPart.length > 0) url = url + `?${queryPart}`;
-        }
-
-        if (mode === 'view') {
-          _ref.navigate(url);
-        } else {
-          if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-            window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
+        try {
+          // Validate that slug is provided
+          if (!event.slug) {
+            throw new Error('No application slug provided');
           }
+          const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
+          const queryParams = event.queryParams?.reduce(
+            (result, queryParam) => ({
+              ...result,
+              ...{
+                [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
+                  queryParam[1],
+                  getCurrentState(),
+                  undefined,
+                  customVariables
+                ),
+              },
+            }),
+            {}
+          );
+
+          let url = `/applications/${slug}`;
+
+          if (queryParams) {
+            const queryPart = serializeNestedObjectToQueryParams(queryParams);
+            if (queryPart.length > 0) url += `?${queryPart}`;
+          }
+
+          if (mode === 'view') {
+            _ref.navigate(url);
+          } else {
+            if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
+              window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
+            }
+          }
+          return Promise.resolve();
+        } catch (error) {
+          logError('go_to_app', 'go-to-app', error, event, {
+            slug: event.slug,
+          });
+          return Promise.reject();
         }
-        return Promise.resolve();
       }
 
       case 'show-modal':
-        return showModal(_ref, event.modal, true);
+        return showModal(_ref, event.modal, true, event);
 
       case 'close-modal':
-        return showModal(_ref, event.modal, false);
+        return showModal(_ref, event.modal, false, event);
 
       case 'copy-to-clipboard': {
         const contentToCopy = resolveReferences(event.contentToCopy, getCurrentState(), undefined, customVariables);
@@ -705,58 +755,83 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'control-component': {
-        let component = Object.values(getCurrentState()?.components ?? {}).filter(
-          (component) => component.id === event.componentId
-        )[0];
-        let action = '';
-        let actionArguments = '';
-        // check if component id not found then try to find if its available as child widget else continue
-        //  with normal flow finding action
-        if (component == undefined) {
-          component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
-          const parent = Object.values(getCurrentState()?.components ?? {}).find(
-            (item) => item.id === component.parent
-          );
-          const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
-          if (child) {
-            action = child[event.componentSpecificActionHandle];
+        try {
+          if (!event.componentId) {
+            throw new Error('No component ID provided for control-component action.');
           }
-        } else {
-          //normal component outside a container ex : form
-          action = component?.[event.componentSpecificActionHandle];
+
+          if (!event.componentSpecificActionHandle) {
+            throw new Error('No component-specific action handle provided.');
+          }
+          let component = Object.values(getCurrentState()?.components ?? {}).filter(
+            (component) => component.id === event.componentId
+          )[0];
+          let action = '';
+          let actionArguments = '';
+          // check if component id not found then try to find if its available as child widget else continue
+          //  with normal flow finding action
+          if (component == undefined) {
+            component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
+            const parent = Object.values(getCurrentState()?.components ?? {}).find(
+              (item) => item.id === component.parent
+            );
+            const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
+            if (child) {
+              action = child[event.componentSpecificActionHandle];
+            }
+          } else {
+            //normal component outside a container ex : form
+            action = component?.[event.componentSpecificActionHandle];
+          }
+          actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+            ...param,
+            value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
+          }));
+          const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
+          return actionPromise ?? Promise.resolve();
+        } catch (error) {
+          logError('control_component', 'control-component', error, event, {
+            componentId: event.componentId,
+            actionHandle: event.componentSpecificActionHandle,
+          });
+
+          return Promise.reject(error);
         }
-        actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
-          ...param,
-          value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
-        }));
-        const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
-        return actionPromise ?? Promise.resolve();
       }
 
       case 'switch-page': {
-        const { name, disabled } = _ref.appDefinition.pages[event.pageId];
-
-        // Don't allow switching to disabled page in editor as well as viewer
-        if (!disabled) {
-          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
-        }
-        if (_ref.appDefinition.pages[event.pageId]) {
-          if (disabled) {
-            const generalProps = {
-              navToDisablePage: {
-                type: 'navToDisablePage',
-                page: name,
-                data: {
-                  message: `Attempt to switch to disabled page ${name} blocked.`,
-                  status: true,
-                },
-              },
-            };
-            useCurrentStateStore.getState().actions.setErrors(generalProps);
+        try {
+          const { pageId } = event;
+          if (!pageId) {
+            throw new Error('No page ID provided');
           }
-        }
+          const { name, disabled } = _ref.appDefinition.pages[pageId];
 
-        return Promise.resolve();
+          // Don't allow switching to disabled page in editor as well as viewer
+          if (!disabled) {
+            _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+          }
+          if (_ref.appDefinition.pages[event.pageId]) {
+            if (disabled) {
+              const generalProps = {
+                navToDisablePage: {
+                  type: 'navToDisablePage',
+                  page: name,
+                  data: {
+                    message: `Attempt to switch to disabled page ${name} blocked.`,
+                    status: true,
+                  },
+                },
+              };
+              useCurrentStateStore.getState().actions.setErrors(generalProps);
+            }
+          }
+          return Promise.resolve();
+        } catch (error) {
+          logError('switch_page', 'switch-page', error, event, {
+            pageId: event.pageId,
+          });
+        }
       }
     }
   }
@@ -1049,6 +1124,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                 kind: query.kind,
                 data: errorData,
                 options: options,
+                id: query.id,
               },
             });
             if (!calledFromQuery) setPreviewData(errorData);
@@ -1080,6 +1156,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                     type: 'transformations',
                     data: finalData,
                     options: options,
+                    id: query.id,
                   },
                 });
                 onEvent(_ref, 'onDataQueryFailure', queryEvents);
@@ -1095,6 +1172,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                 [query.name]: {
                   type: 'query',
                   kind: query.kind,
+                  id: query.id,
                 },
               },
             });
@@ -1192,7 +1270,6 @@ export function runQuery(
   }
 
   let _self = _ref;
-
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
     setTimeout(() => {
@@ -1209,6 +1286,7 @@ export function runQuery(
               isLoading: true,
               data: [],
               rawData: [],
+              id: queryId,
             },
           },
           errors: {},
@@ -1283,6 +1361,7 @@ export function runQuery(
                 kind: query.kind,
                 data: errorData,
                 options: options,
+                id: query.id,
               },
             });
 
@@ -1293,6 +1372,7 @@ export function runQuery(
                   {
                     ...getCurrentState().queries[queryName],
                     isLoading: false,
+                    id: query.id,
                   },
                   query.kind === 'restapi'
                     ? {
@@ -1326,6 +1406,7 @@ export function runQuery(
                     [queryName]: {
                       ...getCurrentState().queries[queryName],
                       isLoading: false,
+                      id: query.id,
                     },
                   },
                 });
@@ -1335,6 +1416,7 @@ export function runQuery(
                     type: 'transformations',
                     data: finalData,
                     options: options,
+                    id: query.id,
                   },
                 });
                 resolve(finalData);
@@ -1365,6 +1447,7 @@ export function runQuery(
                     isLoading: false,
                     data: finalData,
                     rawData,
+                    id: query.id,
                   },
                   query.kind === 'restapi'
                     ? {
@@ -1410,6 +1493,7 @@ export function runQuery(
               ...getCurrentState().queries,
               [queryName]: {
                 isLoading: false,
+                id: query.id,
               },
             },
           });
@@ -1420,18 +1504,24 @@ export function runQuery(
   });
 }
 
-export function setTablePageIndex(tableId, index) {
-  if (_.isEmpty(tableId)) {
-    console.log('No table is associated with this event.');
+export function setTablePageIndex(tableId, index, event) {
+  try {
+    if (_.isEmpty(tableId)) {
+      throw new Error('No table is associated with this event.');
+    }
+    if (typeof newPageIndex !== 'number' && newPageIndex !== undefined) {
+      throw new Error('Invalid page index.');
+    }
+    const table = Object.entries(getCurrentState().components).filter((entry) => entry?.[1]?.id === tableId)?.[0]?.[1];
+    const newPageIndex = resolveReferences(index, getCurrentState());
+    table.setPage(newPageIndex ?? 1);
     return Promise.resolve();
+  } catch (error) {
+    logError('set_table_page_index', 'set-table-page-index', error, event, {
+      tableId: tableId,
+    });
   }
-
-  const table = Object.entries(getCurrentState().components).filter((entry) => entry?.[1]?.id === tableId)?.[0]?.[1];
-  const newPageIndex = resolveReferences(index, getCurrentState());
-  table.setPage(newPageIndex ?? 1);
-  return Promise.resolve();
 }
-
 export function renderTooltip({ props, text }) {
   if (text === '') return <></>;
   return (
@@ -1547,8 +1637,8 @@ export const debuggerActions = {
         page: value.page,
         timestamp: moment(),
         strace: value.strace ?? 'app_level',
+        id: value.id,
       };
-
       switch (errorType) {
         case 'restapi':
           generalProps.message = value.data.message;
@@ -1590,6 +1680,11 @@ export const debuggerActions = {
           break;
         case 'navToDisablePage':
           generalProps.message = value.data.message;
+          break;
+        case 'event':
+          generalProps.message = value.data.message || 'An event error occurred';
+          generalProps.description = value.data.description || 'No additional description provided';
+          error.eventDetails = value.options;
           break;
 
         default:

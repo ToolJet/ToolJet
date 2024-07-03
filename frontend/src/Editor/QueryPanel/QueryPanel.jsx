@@ -4,11 +4,9 @@ import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelActions, useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useQueryPanelStore, useQueryPanelExpanded } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
-import Maximize from '@/_ui/Icon/solidIcons/Maximize';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import cx from 'classnames';
 
 const QueryPanel = ({
@@ -22,7 +20,7 @@ const QueryPanel = ({
   onQueryPaneDragging,
   handleQueryPaneExpanding,
 }) => {
-  const { updateQueryPanelHeight } = useQueryPanelActions();
+  const { updateQueryPanelHeight, toggleQueryPanel } = useQueryPanelActions();
   const dataQueries = useDataQueries();
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -32,8 +30,8 @@ const QueryPanel = ({
       },
     }
   );
+  const isExpanded = useQueryPanelExpanded();
   const queryPaneRef = useRef(null);
-  const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
   const [isDragging, setDragging] = useState(false);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight > 95
@@ -52,7 +50,6 @@ const QueryPanel = ({
       if (prevState?.selectedQuery?.id !== selectedQuery.id) {
         return;
       }
-
       //removing updated_at since this value changes whenever the data is updated in the BE
       const formattedQuery = cloneDeep(selectedQuery);
       delete formattedQuery.updated_at;
@@ -125,7 +122,7 @@ const QueryPanel = ({
           isExpanded: !maxLimitReached,
         };
         localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
-        setExpanded(!maxLimitReached);
+        toggleQueryPanel();
         setHeight(height);
       }
     }
@@ -142,7 +139,7 @@ const QueryPanel = ({
     } else {
       updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
     }
-    setExpanded(!isExpanded);
+    toggleQueryPanel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 

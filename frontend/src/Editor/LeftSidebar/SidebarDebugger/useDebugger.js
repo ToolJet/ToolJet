@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { debuggerActions } from '@/_helpers/appUtils';
-import { flow } from 'lodash';
 import moment from 'moment';
 
 const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
@@ -37,12 +36,13 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   }, [currentPageId]);
 
   useEffect(() => {
-    const newError = flow([
-      Object.entries,
-      // eslint-disable-next-line no-unused-vars
-      (arr) => arr.filter(([key, value]) => value.data?.status),
-      Object.fromEntries,
-    ])(errors);
+    const newError = Object.entries(errors).reduce((acc, [key, value]) => {
+      // Include errors with data.status OR of type 'event'
+      if (value.data?.status || value.type === 'event') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
     const newErrorLogs = debuggerActions.generateErrorLogs(newError);
     const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
     const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');

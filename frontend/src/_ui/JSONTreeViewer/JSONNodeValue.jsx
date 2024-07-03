@@ -22,17 +22,18 @@ const JSONTreeValueNode = ({ data, type }) => {
   if (value.length > 65) {
     value = `${value.substring(0, 65)} ... "`;
   }
-
   const clsForUndefinedOrNull = (type === 'Undefined' || type === 'Null') && 'badge badge-secondary';
   return (
     <>
-      <span
-        className={`mx-2 json-tree-valuetype json-tree-node-${String(
-          type
-        ).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
-      >
-        {value}
-      </span>
+      {value !== 'undefined' ? (
+        <span
+          className={`mx-2 json-tree-valuetype json-tree-node-${String(
+            type
+          ).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
+        >
+          {value}
+        </span>
+      ) : null}
       {appMode === 'auto' && (data === 'light' || data === 'dark') && (
         <span
           style={{

@@ -172,9 +172,12 @@ export class JSONTreeViewer extends React.Component {
   getOnSelectLabelDispatchActions = (currentNode, path) => {
     const actions = [];
     let parent = path ? path[path.length - 2] : 'root';
-
-    const nodeActions = this.props.treeType === 'debugger' && currentNode === 'componentId' ? 'all' : parent;
-
+    const nodeActions =
+      this.props.treeType === 'debugger' && currentNode === 'componentId'
+        ? 'all'
+        : currentNode === 'queries'
+        ? 'queries'
+        : parent;
     const dispatchActionForCurrentNode = this.getDispatchActionsForNode(nodeActions);
 
     if (currentNode === parent) return;

@@ -6,11 +6,14 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import useDebugger from './useDebugger'; // Import the useDebugger hook
+import { useQueryPanelActions, useSelectedQuery } from '@/_stores/queryPanelStore';
 
 function Logs({ logProps, idx, switchPage }) {
   const [open, setOpen] = React.useState(false);
   const { handleErrorClick, selectedError } = useDebugger({}); // Initialize the useDebugger hook and extract handleErrorClick
   const childRef = useRef(null);
+  const { setSelectedQuery, expandQueryPanel } = useQueryPanelActions();
+  const selectedQuery = useSelectedQuery();
 
   let titleLogType = logProps?.type;
   // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
@@ -58,6 +61,13 @@ function Logs({ logProps, idx, switchPage }) {
     }
   };
 
+  const handleSelectQueryOnEditor = (queryId) => {
+    const isAlreadySelected = queryId == selectedQuery.id;
+    if (!isAlreadySelected) {
+      setSelectedQuery(queryId);
+    }
+  };
+
   const callbackActions = [
     {
       for: 'all',
@@ -65,11 +75,24 @@ function Logs({ logProps, idx, switchPage }) {
       enableForAllChildren: true,
       enableFor1stLevelChildren: true,
     },
+    {
+      for: 'queries',
+      actions: [{ name: 'Select Query', dispatchAction: handleSelectQueryOnEditor, icon: false, onSelect: true }],
+      enableForAllChildren: true,
+      enableFor1stLevelChildren: true,
+    },
   ];
 
   React.useEffect(() => {
+    // After switchPage completes, call onSelect if childRef.current is defined
     if (childRef.current) {
-      onSelect(logProps.error.componentId, 'componentId', ['componentId']); // Update the selected error when the error log is clicked
+      if (logProps.type == 'component') onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+    } else if (logProps.type == 'query') {
+      expandQueryPanel();
+      setSelectedQuery(logProps.id);
+      onSelect(logProps.id, 'queries', ['queries']);
+    } else {
+      onSelect(logProps.error.componentId, 'events', ['events']);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, childRef.current]);
@@ -79,7 +102,9 @@ function Logs({ logProps, idx, switchPage }) {
       const actions = childRef.current
         .getOnSelectLabelDispatchActions(currentNode, path)
         ?.filter((action) => action.onSelect);
-      actions.forEach((action) => action.dispatchAction(data, currentNode));
+      actions.forEach((action) => {
+        action.dispatchAction(data, currentNode);
+      });
     }
   };
 
@@ -99,18 +124,33 @@ function Logs({ logProps, idx, switchPage }) {
     );
   };
 
-  console.log('logProps---', logProps);
-
   const handleClick = async () => {
-    setOpen((prev) => !prev);
-    handleErrorClick(logProps);
+    try {
+      setOpen((prev) => !prev);
+      handleErrorClick(logProps);
 
-    // Call switchPage and wait for it to complete
-    if (logProps.page.id !== currentPageId) await switchPage(logProps.page.id);
+      if (childRef.current) {
+        if (logProps?.page?.id && logProps?.page?.id !== currentPageId && logProps.type === 'component') {
+          await switchPage(logProps.page.id);
+        }
 
-    // After switchPage completes, call onSelect if childRef.current is defined
-    if (childRef.current) {
-      onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+        switch (logProps.type) {
+          case 'component':
+            await onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+            break;
+          case 'query':
+            await expandQueryPanel();
+            await setSelectedQuery(logProps.id);
+            await onSelect(logProps.id, 'queries', ['queries']);
+            break;
+          default:
+            console.warn(`Unhandled logProps type: ${logProps.type}`);
+            await onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+        }
+      }
+    } catch (error) {
+      console.error('Error in handleClick:', error);
+      // Handle the error appropriately
     }
   };
   return (
@@ -146,21 +186,21 @@ function Logs({ logProps, idx, switchPage }) {
           )}
         </span>
       </p>
-      {open && (
-        <JSONTreeViewer
-          data={logProps.error}
-          useIcons={false}
-          useIndentedBlock={true}
-          enableCopyToClipboard={false}
-          useActions={true}
-          actionIdentifier="id"
-          expandWithLabels={true}
-          fontSize={'10px'}
-          actionsList={callbackActions}
-          treeType="debugger"
-          ref={childRef}
-        />
-      )}
+      {/* {open && ( */}
+      <JSONTreeViewer
+        data={logProps.error}
+        useIcons={false}
+        useIndentedBlock={true}
+        enableCopyToClipboard={false}
+        useActions={true}
+        actionIdentifier="id"
+        expandWithLabels={true}
+        fontSize={'10px'}
+        actionsList={callbackActions}
+        treeType="debugger"
+        ref={childRef}
+      />
+      {/* )} */}
       <hr className="border-1 border-bottom bg-grey" />
     </div>
   );
