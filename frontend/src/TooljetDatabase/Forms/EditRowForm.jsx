@@ -18,6 +18,7 @@ import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { getLocalTimeZone, getUTCOffset } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const EditRowForm = ({
   onEdit,
@@ -28,7 +29,8 @@ const EditRowForm = ({
   initiator,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
+    useContext(TooljetDatabaseContext);
   const inputRefs = useRef({});
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
@@ -411,6 +413,7 @@ const EditRowForm = ({
               isOpenOnStart={false}
               isClearable={activeTab[index] === 'Custom'}
               errorMessage={errorMap[columnName]}
+              timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
             />
           </div>
         );
@@ -509,6 +512,21 @@ const EditRowForm = ({
                             <SolidIcon name="primarykey" />
                           </span>
                         )}
+                        {dataType === 'timestamp with time zone' && (
+                          <div
+                            style={{
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              marginLeft: '2px',
+                              marginTop: '1px',
+                            }}
+                          >
+                            <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                              getConfigurationProperty(accessor, 'timezone', getLocalTimeZone())
+                            )}`}</span>
+                          </div>
+                        )}
+
                         <ToolTip
                           message={
                             isMatchingForeignKeyColumn(Header) ? (

@@ -15,7 +15,7 @@ import cx from 'classnames';
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
-import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import { getLocalTimeZone, getUTCOffset } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const RowForm = ({
   onCreate,
@@ -479,6 +479,20 @@ const RowForm = ({
                         <span style={{ marginRight: '3px' }}>
                           <SolidIcon name="primarykey" />
                         </span>
+                      )}
+                      {dataType === 'timestamp with time zone' && (
+                        <div
+                          style={{
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginLeft: '2px',
+                            marginTop: '1px',
+                          }}
+                        >
+                          <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                            getConfigurationProperty(accessor, 'timezone', getLocalTimeZone())
+                          )}`}</span>
+                        </div>
                       )}
                       <ToolTip
                         message={

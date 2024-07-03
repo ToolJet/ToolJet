@@ -77,7 +77,6 @@ function TableSchema({
     });
     return dict;
   }, []);
-
   const CustomSelectOption = (props) => {
     return (
       <Option {...props}>
@@ -224,11 +223,20 @@ function TableSchema({
             </ToolTip>
 
             <ToolTip
-              message="Primary key data type cannot be modified"
+              message={
+                columnDetails[index]?.constraints_type?.is_primary_key === true
+                  ? 'Primary key data type cannot be modified'
+                  : columnDetails[index]?.data_type === 'timestamp with time zone'
+                  ? 'Date with time'
+                  : null
+              }
               placement="top"
               tooltipClassName="tootip-table"
               style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
-              show={isEditMode && columnDetails[index]?.constraints_type?.is_primary_key === true ? true : false}
+              show={
+                (isEditMode && columnDetails[index]?.constraints_type?.is_primary_key === true ? true : false) ||
+                columnDetails[index]?.data_type === 'timestamp with time zone'
+              }
             >
               <div className="p-0 datatype-dropdown" data-cy="type-dropdown-field">
                 <Select
@@ -402,6 +410,7 @@ function TableSchema({
                         isOpenOnStart={columnDetails[index]?.isOpenOnStart}
                         isClearable={true}
                         createEditTable={true}
+                        format="dd/MM/yyyy"
                       />
                     </div>
                   ) : (
