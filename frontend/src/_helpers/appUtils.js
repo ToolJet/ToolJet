@@ -2081,7 +2081,7 @@ const getSelectedText = () => {
   if (window.getSelection) {
     selectedText = window.getSelection().toString();
   } else if (window.document.selection) {
-    selectedText = window.ALLOC_STACKdocument.selection.createRange().text;
+    selectedText = document.selection.createRange().text;
   }
   return selectedText || null;
 };
