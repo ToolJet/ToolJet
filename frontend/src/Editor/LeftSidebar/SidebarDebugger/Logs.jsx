@@ -125,32 +125,27 @@ function Logs({ logProps, idx, switchPage }) {
   };
 
   const handleClick = async () => {
-    try {
-      setOpen((prev) => !prev);
-      handleErrorClick(logProps);
+    setOpen((prev) => !prev);
+    handleErrorClick(logProps);
 
-      if (childRef.current) {
-        if (logProps?.page?.id && logProps?.page?.id !== currentPageId && logProps.type === 'component') {
-          await switchPage(logProps.page.id);
-        }
+    if (!childRef.current) return;
 
-        switch (logProps.type) {
-          case 'component':
-            await onSelect(logProps.error.componentId, 'componentId', ['componentId']);
-            break;
-          case 'query':
-            await expandQueryPanel();
-            await setSelectedQuery(logProps.id);
-            await onSelect(logProps.id, 'queries', ['queries']);
-            break;
-          default:
-            console.warn(`Unhandled logProps type: ${logProps.type}`);
-            await onSelect(logProps.error.componentId, 'componentId', ['componentId']);
-        }
-      }
-    } catch (error) {
-      console.error('Error in handleClick:', error);
-      // Handle the error appropriately
+    if (logProps?.page?.id && logProps?.page?.id !== currentPageId && logProps.type === 'component') {
+      await switchPage(logProps.page.id);
+    }
+
+    switch (logProps.type) {
+      case 'component':
+        await onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+        break;
+      case 'query':
+        await expandQueryPanel();
+        await setSelectedQuery(logProps.id);
+        await onSelect(logProps.id, 'queries', ['queries']);
+        break;
+      default:
+        console.warn(`Unhandled logProps type: ${logProps.type}`);
+        await onSelect(logProps.error.componentId, 'componentId', ['componentId']);
     }
   };
   return (

@@ -470,8 +470,7 @@ function showModal(_ref, modal, show, event) {
     return Promise.resolve();
   } catch (error) {
     logError(show ? 'show_modal' : 'close_modal', show ? 'show-modal' : 'close_modal', error, event.eventId, {
-      modalId: modal?.id ?? modal,
-      sourceType: event.sourceType,
+      eventId: event.eventId,
     });
 
     return Promise.reject(error);
@@ -632,9 +631,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           }
           return Promise.resolve();
         } catch (error) {
-          logError('go_to_app', 'go-to-app', error, event, {
-            slug: event.slug,
-          });
+          logError('go_to_app', 'go-to-app', error, event, { eventId: event.eventId });
           return Promise.reject();
         }
       }
@@ -675,7 +672,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex);
+        setTablePageIndex(event.table, event.pageIndex, event);
         break;
       }
 
@@ -808,8 +805,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           return actionPromise ?? Promise.resolve();
         } catch (error) {
           logError('control_component', 'control-component', error, event, {
-            componentId: event.componentId,
-            actionHandle: event.componentSpecificActionHandle,
+            eventId: event.eventId,
           });
 
           return Promise.reject(error);
@@ -846,7 +842,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           return Promise.resolve();
         } catch (error) {
           logError('switch_page', 'switch-page', error, event, {
-            pageId: event.pageId,
+            eventId: event.eventId,
           });
         }
       }
@@ -1545,9 +1541,7 @@ export function setTablePageIndex(tableId, index, event) {
     table.setPage(newPageIndex ?? 1);
     return Promise.resolve();
   } catch (error) {
-    logError('set_table_page_index', 'set-table-page-index', error, event, {
-      tableId: tableId,
-    });
+    logError('set_table_page_index', 'set-table-page-index', error, event, { eventId: event?.eventId });
   }
 }
 export function renderTooltip({ props, text }) {
