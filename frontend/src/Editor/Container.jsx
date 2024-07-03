@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo, useContext } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes, EditorConstants } from './editorConstants';
@@ -22,7 +22,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
-import _, { cloneDeep, isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
@@ -37,6 +37,7 @@ import './editor.theme.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getSubpath } from '@/_helpers/routes';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
@@ -128,9 +129,9 @@ export const Container = ({
       const mobLayouts = Object.keys(boxes)
         .filter((key) => !boxes[key]?.component?.parent)
         .map((key) => {
-          return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
+          return { ...deepClone(boxes[key]?.layouts?.desktop), i: key };
         });
-      const updatedBoxes = cloneDeep(boxes);
+      const updatedBoxes = deepClone(boxes);
       let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
       newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
       Object.keys(boxes).forEach((id) => {
@@ -188,9 +189,9 @@ export const Container = ({
       const mobLayouts = Object.keys(components)
         .filter((key) => !components[key]?.component?.parent)
         .map((key) => {
-          return { ...cloneDeep(components[key]?.layouts?.desktop), i: key };
+          return { ...deepClone(components[key]?.layouts?.desktop), i: key };
         });
-      const updatedBoxes = cloneDeep(components);
+      const updatedBoxes = deepClone(components);
       let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
       newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
       Object.keys(components).forEach((id) => {
@@ -264,16 +265,18 @@ export const Container = ({
       return;
     }
 
-    if (!appDefinition.pages[currentPageId]?.components) return;
+    const definition = useEditorStore.getState().appDefinition;
+
+    if (!definition.pages[currentPageId]?.components) return;
 
     const newDefinition = {
-      ...appDefinition,
+      ...definition,
       pages: {
-        ...appDefinition.pages,
+        ...definition.pages,
         [currentPageId]: {
-          ...appDefinition.pages[currentPageId],
+          ...definition.pages[currentPageId],
           components: {
-            ...appDefinition.pages[currentPageId]?.components,
+            ...definition.pages[currentPageId]?.components,
             ...boxes,
           },
         },
@@ -282,7 +285,7 @@ export const Container = ({
 
     //need to check if a new component is added or deleted
 
-    const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+    const oldComponents = definition.pages[currentPageId]?.components ?? {};
     const newComponents = boxes;
 
     const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
@@ -295,7 +298,8 @@ export const Container = ({
       opts.componentAdded = true;
     }
 
-    const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+    const shouldUpdate = !_.isEmpty(diff(definition, newDefinition));
+
     if (shouldUpdate) {
       appDefinitionChanged(newDefinition, opts);
     }
@@ -373,7 +377,7 @@ export const Container = ({
         }
 
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-        const componentMeta = _.cloneDeep(
+        const componentMeta = deepClone(
           componentTypes.find((component) => component.component === item.component.component)
         );
 
@@ -397,15 +401,13 @@ export const Container = ({
             Listview: 'listItem',
           });
           const customResolverVariable = widgetResolvables[parentMeta?.component];
-          const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
+          const defaultChildren = deepClone(parentMeta)['defaultChildren'];
           const parentId = newComponent.id;
 
           defaultChildren.forEach((child) => {
             const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
-            const componentMeta = _.cloneDeep(
-              componentTypes.find((component) => component.component === componentName)
-            );
+            const componentMeta = deepClone(componentTypes.find((component) => component.component === componentName));
             const componentData = JSON.parse(JSON.stringify(componentMeta));
 
             const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / noOfGrids;
@@ -652,8 +654,13 @@ export const Container = ({
         return;
       }
       if (Object.keys(value)?.length > 0) {
-        setBoxes((boxes) =>
-          update(boxes, {
+        setBoxes((boxes) => {
+          // Ensure boxes[id] exists
+          if (!boxes[id]) {
+            console.error(`Box with id ${id} does not exist`);
+            return boxes;
+          }
+          return update(boxes, {
             [id]: {
               $merge: {
                 component: {
@@ -668,8 +675,9 @@ export const Container = ({
                 },
               },
             },
-          })
-        );
+          });
+        });
+
         if (!_.isEmpty(opts)) {
           paramUpdatesOptsRef.current = opts;
         }
@@ -825,6 +833,8 @@ export const Container = ({
     ? 'Connect to your data source or use our sample data source to start playing around!'
     : 'Connect to a data source to be able to create a query';
 
+  const showEmptyContainer = !appLoading && !isDragging && mode !== 'view';
+
   return (
     <ContainerWrapper
       showComments={showComments}
@@ -937,7 +947,7 @@ export const Container = ({
           />
         </div>
       </div>
-      {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
+      {Object.keys(boxes).length === 0 && showEmptyContainer && (
         <div style={{ paddingTop: '10%' }}>
           <div className="row empty-box-cont">
             <div className="col-md-4 dotted-cont">

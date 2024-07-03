@@ -21,6 +21,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     setIsSelectAllSelected,
     fireEvent,
     inputValue,
+    menuId,
   } = selectProps;
 
   const handleSelectAll = (e) => {
@@ -34,6 +35,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
   };
   return (
     <div
+      id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}
       className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
     >

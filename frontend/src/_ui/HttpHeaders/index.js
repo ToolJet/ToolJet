@@ -2,15 +2,9 @@ import React from 'react';
 import _ from 'lodash';
 import QueryEditor from './QueryEditor';
 import SourceEditor from './SourceEditor';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
-export default ({
-  getter,
-  options = [['', '']],
-  optionchanged,
-  currentState,
-  isRenderedAsQueryEditor,
-  workspaceConstants,
-}) => {
+export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQueryEditor, workspaceConstants }) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
     optionchanged(getter, newPairs);
@@ -23,7 +17,7 @@ export default ({
 
   function keyValuePairValueChanged(value, keyIndex, index) {
     if (!isRenderedAsQueryEditor) {
-      const newOptions = _.cloneDeep(options);
+      const newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
       options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
     } else {
@@ -40,7 +34,7 @@ export default ({
   };
 
   return isRenderedAsQueryEditor ? (
-    <QueryEditor {...commonProps} currentState={currentState} />
+    <QueryEditor {...commonProps} />
   ) : (
     <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} />
   );

@@ -81,7 +81,7 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
           parameters: selectedQuery?.options?.parameters?.reduce(
             (parameters, parameter) => ({
               ...parameters,
-              [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
+              [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
             }),
             {}
           ),

@@ -15,7 +15,7 @@ import {
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { componentTypes } from './WidgetManager/components';
 
@@ -25,6 +25,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { diff } from 'deep-object-diff';
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const SubContainer = ({
   mode,
@@ -59,7 +60,6 @@ export const SubContainer = ({
 }) => {
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
 
-  const currentState = useCurrentState();
   const { selectedComponents } = useEditorStore(
     (state) => ({
       selectedComponents: state.selectedComponents,
@@ -191,22 +191,24 @@ export const SubContainer = ({
   }, [containerWidth]);
 
   useEffect(() => {
-    if (appDefinitionChanged) {
+    const definition = useEditorStore.getState().appDefinition;
+
+    if (definition) {
       const newDefinition = {
-        ...appDefinition,
+        ...definition,
         pages: {
-          ...appDefinition.pages,
+          ...definition.pages,
           [currentPageId]: {
-            ...appDefinition.pages[currentPageId],
+            ...definition.pages[currentPageId],
             components: {
-              ...appDefinition.pages[currentPageId].components,
+              ...definition.pages[currentPageId].components,
               ...childWidgets,
             },
           },
         },
       };
 
-      const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+      const oldComponents = definition.pages[currentPageId]?.components ?? {};
       const newComponents = newDefinition.pages[currentPageId]?.components ?? {};
 
       const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
@@ -217,7 +219,7 @@ export const SubContainer = ({
         opts.componentAdded = true;
       }
 
-      const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+      const shouldUpdate = !_.isEmpty(diff(definition, newDefinition));
 
       if (shouldUpdate) {
         appDefinitionChanged(newDefinition, opts);
@@ -242,7 +244,7 @@ export const SubContainer = ({
           return;
         }
 
-        const componentMeta = _.cloneDeep(
+        const componentMeta = deepClone(
           componentTypes.find((component) => component.component === item.component.component)
         );
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -281,14 +283,14 @@ export const SubContainer = ({
               Listview: 'listItem',
             });
             const customResolverVariable = widgetResolvables[parentMeta?.component];
-            const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
+            const defaultChildren = deepClone(parentMeta)['defaultChildren'];
             const parentId = newComponent.id;
 
             defaultChildren.forEach((child) => {
               const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } =
                 child;
 
-              const componentMeta = _.cloneDeep(
+              const componentMeta = deepClone(
                 componentTypes.find((component) => component.component === componentName)
               );
               const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -531,6 +533,7 @@ export const SubContainer = ({
   }
 
   const getContainerProps = (componentId) => {
+    const currentState = getCurrentState();
     return {
       mode,
       snapToGrid,

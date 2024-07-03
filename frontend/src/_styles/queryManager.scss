@@ -713,6 +713,7 @@ $border-radius: 4px;
   display: flex;
   flex-direction: row;
   gap: 4px;
+  background-color: var(--controls-switch-tag) !important;
 
   .list-group-item {
     border: none !important;
@@ -724,6 +725,7 @@ $border-radius: 4px;
     border-radius: 6px;
     display: flex;
     align-items: center;
+    background: none !important;
 
     span {
       padding: 2px 0px;
@@ -732,7 +734,6 @@ $border-radius: 4px;
 
   .list-group-item:hover {
     color: var(--slate12) !important;
-    background-color: var(--slate3) !important;
     border-radius: 6px;
   }
 
@@ -749,12 +750,11 @@ $border-radius: 4px;
     transition-delay: 5ms;
 
     span {
-      background-color: #fff !important;
+      background-color: var(--controls-switch-tab);
     }
   }
 
   .list-group-item.active:hover {
-    background-color: var(--indigo3) !important;
     border-radius: 6px 6px 0 0;
   }
 }

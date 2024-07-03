@@ -116,10 +116,10 @@ export const DropdownV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => data.visible)
+        .filter((data) => data?.visible?.value)
         .map((value) => ({
           ...value,
-          isDisabled: value.disable,
+          isDisabled: value?.disable?.value,
         }));
       return _selectOptions;
     } else {

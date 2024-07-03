@@ -177,7 +177,6 @@ class Restapi extends React.Component {
                 <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
                   <CodeHinter
                     type="basic"
-                    currentState={this.props.currentState}
                     initialValue={options.url}
                     onChange={(value) => {
                       changeOption(this, 'url', value);

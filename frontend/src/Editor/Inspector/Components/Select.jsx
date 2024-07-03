@@ -28,17 +28,48 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   } = restProps;
 
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
-  const constructOptions = () => {
-    const options = resolveReferences(component?.component?.definition?.properties?.options?.value, currentState);
-    return options;
-  };
-  const _markedAsDefault = resolveReferences(
-    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value,
-    currentState
-  );
 
   const isDynamicOptionsEnabled = resolveReferences(
     component?.component?.definition?.properties?.advanced?.value,
+    currentState
+  );
+
+  const constructOptions = () => {
+    const optionsValue = component?.component?.definition?.properties?.options?.value;
+    const valuesToResolve = ['label', 'value'];
+    let options = [];
+
+    if (isDynamicOptionsEnabled || typeof optionsValue === 'string') {
+      options = resolveReferences(optionsValue, currentState);
+    } else {
+      options = optionsValue?.map((option) => {
+        const newOption = { ...option };
+
+        valuesToResolve.forEach((key) => {
+          if (option[key]) {
+            newOption[key] = resolveReferences(option[key], currentState);
+          }
+        });
+
+        return newOption;
+      });
+    }
+
+    return options.map((option) => {
+      const newOption = { ...option };
+
+      Object.keys(option).forEach((key) => {
+        if (typeof option[key]?.value === 'boolean') {
+          newOption[key]['value'] = `{{${option[key]?.value}}}`;
+        }
+      });
+
+      return newOption;
+    });
+  };
+
+  const _markedAsDefault = resolveReferences(
+    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value,
     currentState
   );
 
@@ -65,8 +96,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     ...draggableStyle,
   });
 
-  const updateAllOptionsParams = (options) => {
-    paramUpdated({ name: 'options' }, 'value', options, 'properties');
+  const updateAllOptionsParams = (options, props) => {
+    paramUpdated({ name: 'options' }, 'value', options, 'properties', false, props);
   };
 
   const generateNewOptions = () => {
@@ -85,8 +116,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     return {
       value,
       label,
-      visible: true,
-      disable: false,
+      visible: { value: '{{true}}' },
+      disable: { value: '{{false}}' },
+      default: { value: '{{false}}' },
     };
   };
 
@@ -100,7 +132,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const handleDeleteOption = (index) => {
     const _items = options.filter((option, i) => i !== index);
     setOptions(_items);
-    updateAllOptionsParams(_items);
+    updateAllOptionsParams(_items, { isParamFromDropdownOptions: true });
   };
 
   const handleLabelChange = (label, index) => {
@@ -160,18 +192,41 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       paramUpdated({ name: 'values' }, 'value', _markedAsDefault, 'properties');
     } else {
       const _value = isMarkedAsDefault ? options[index]?.value : '';
+      const _options = options.map((option, i) => {
+        if (i === index) {
+          return {
+            ...option,
+            default: {
+              ...option.default,
+              value,
+            },
+          };
+        } else {
+          return {
+            ...option,
+            default: {
+              ...option.default,
+              value: `{{false}}`,
+            },
+          };
+        }
+      });
+      setOptions(_options);
+      updateAllOptionsParams(_options);
       setMarkedAsDefault(_value);
       paramUpdated({ name: 'value' }, 'value', _value, 'properties');
     }
   };
 
   const handleVisibilityChange = (value, index) => {
-    const _value = resolveReferences(value, currentState);
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
           ...option,
-          visible: _value,
+          visible: {
+            ...option.visible,
+            value,
+          },
         };
       }
       return option;
@@ -181,12 +236,31 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const handleDisableChange = (value, index) => {
-    const _value = resolveReferences(value, currentState);
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
           ...option,
-          disable: _value,
+          disable: {
+            ...option.disable,
+            value,
+          },
+        };
+      }
+      return option;
+    });
+    setOptions(_options);
+    updateAllOptionsParams(_options);
+  };
+
+  const handleOnFxPress = (active, index, key) => {
+    const _options = options.map((option, i) => {
+      if (i === index) {
+        return {
+          ...option,
+          [key]: {
+            ...option[key],
+            fxActive: active,
+          },
         };
       }
       return option;
@@ -210,7 +284,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             <CodeHinter
               currentState={currentState}
               type={'basic'}
-              initialValue={item.label}
+              initialValue={item?.label}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -225,7 +299,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             <CodeHinter
               currentState={currentState}
               type={'basic'}
-              initialValue={item.value}
+              initialValue={item?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -236,9 +310,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={`{{${
-                isMultiSelect ? markedAsDefault.includes(item.value) : markedAsDefault === item.value
-              }}}`}
+              initialValue={item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -247,9 +319,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Make this default option'}
               paramName={'isEditable'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
+              onFxPress={(active) => handleOnFxPress(active, index, 'default')}
+              fxActive={item?.default?.fxActive}
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
+                isFxNotRequired: true,
               }}
               paramType={'toggle'}
             />
@@ -257,7 +332,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={`{{${item.visible}}}`}
+              initialValue={item?.visible?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -266,6 +341,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Visibility'}
               onChange={(value) => handleVisibilityChange(value, index)}
               paramName={'visible'}
+              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+              fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',
@@ -276,7 +353,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={`{{${item.disable}}}`}
+              initialValue={item?.disable?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -285,6 +362,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Disable'}
               paramName={'disable'}
               onChange={(value) => handleDisableChange(value, index)}
+              onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
+              fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',
                 displayName: 'Make editable',

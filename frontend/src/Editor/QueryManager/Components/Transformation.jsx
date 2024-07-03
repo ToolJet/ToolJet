@@ -102,8 +102,10 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
   const { t } = useTranslation();
 
   useEffect(() => {
-    changeOption('transformationLanguage', lang);
-    changeOption('transformation', state[lang]);
+    if (lang !== (options.transformationLanguage ?? 'javascript')) {
+      changeOption('transformationLanguage', lang);
+      changeOption('transformation', state[lang]);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 

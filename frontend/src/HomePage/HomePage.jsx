@@ -20,12 +20,13 @@ import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId, pageTitles, setWindowTitle } from '@/_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 import Skeleton from 'react-loading-skeleton';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 const { iconList, defaultIcon } = configs;
 
@@ -87,7 +88,7 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
-    setWindowTitle({ page: pageTitles.DASHBOARD });
+    fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
     this.setQueryParameter();
@@ -238,7 +239,13 @@ class HomePageComponent extends React.Component {
       };
       event.target.value = null;
     } catch (error) {
-      toast.error(error.message);
+      let errorMessage = 'Some Error Occured';
+      if (error?.error) {
+        errorMessage = error.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -271,7 +278,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
-      toast.error(error?.error || 'App import failed');
+      toast.error(error?.error || error?.message || 'App import failed');
     }
   };
 
@@ -720,7 +727,7 @@ class HomePageComponent extends React.Component {
               </div>
             </div>
             <div className="row">
-              <div className="col d-flex modal-footer-btn">
+              <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
                   variant="tertiary"
                   onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
@@ -750,7 +757,7 @@ class HomePageComponent extends React.Component {
               </div>
             </div>
             <div className="row">
-              <div className="col d-flex modal-footer-btn">
+              <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
                   onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
                   data-cy="cancel-button"
