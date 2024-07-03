@@ -64,8 +64,8 @@ export default function JoinSort({ darkMode }) {
             }}
             className="px-4 py-2 text-center rounded-1"
           >
-            <SolidIcon name="information" style={{ height: 14, width: 14 }} width={14} height={14} /> There are no
-            conditions
+            <SolidIcon name="information" style={{ height: 14, width: 14 }} width={14} height={14} /> No conditions
+            added
           </div>
         </Row>
       ) : (
