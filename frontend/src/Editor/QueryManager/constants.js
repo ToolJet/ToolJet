@@ -69,6 +69,7 @@ export const schemaUnavailableOptions = {
     url: '',
     url_params: [['', '']],
     headers: [['', '']],
+    cookies: [['', '']],
     body: [['', '']],
     json_body: null,
     body_toggle: false,
