@@ -37,14 +37,19 @@ export const useGridStore = create(
   )
 );
 
-useGridStore.subscribe(({ draggingComponentId }) => {
-  if (draggingComponentId) {
-    document.querySelector(`.dragged-movable-control-box`)?.classList?.remove('dragged-movable-control-box');
-    document.querySelector(`[target-id='${draggingComponentId}']`).classList.add('dragged-movable-control-box');
-  } else if (document.querySelector(`.dragged-movable-control-box`)) {
-    document.querySelector(`.dragged-movable-control-box`)?.classList.remove('dragged-movable-control-box');
-  }
-});
+// useGridStore.subscribe(({ draggingComponentId }) => {
+//   try {
+//     if (draggingComponentId) {
+//       document.querySelector(`.dragged-movable-control-box`)?.classList?.remove('dragged-movable-control-box');
+//       document.querySelector(`[target-id='${draggingComponentId}']`).classList.add('dragged-movable-control-box');
+//     } else if (document.querySelector(`.dragged-movable-control-box`)) {
+//       console.log('arpit:::xxx', { x: document.querySelector(`.dragged-movable-control-box`) });
+//       document.querySelector(`.dragged-movable-control-box`)?.classList.remove('dragged-movable-control-box');
+//     }
+//   } catch (error) {
+//     console.log('--error', error);
+//   }
+// });
 
 // useEditorStore.subscribe(({ hoveredComponent }) => {
 //   console.log('hoveredComponent--', hoveredComponent);
