@@ -849,10 +849,14 @@ export class TooljetDbService {
     if (!isEmpty(queryJson.aggregates)) {
       Object.entries(queryJson.aggregates).forEach(([_key, aggregateParams]) => {
         const { aggFx, column, table_id: tableId } = aggregateParams as any;
+        if (isEmpty(column) || isEmpty(aggFx))
+          throw new Error('There are empty values in certain aggregate conditions.');
+
         const allowedAggFunctions = ['sum', 'count'];
         if (!allowedAggFunctions.includes(aggFx)) {
           throw new BadRequestException('Invalid aggregate function');
         }
+
         queryBuilder.addSelect(
           `${AggregateFunctions[aggFx]}(${internalTableIdToNameMap[tableId]}.${column})`,
           `${internalTableIdToNameMap[tableId]}_${column}_${aggFx}`
