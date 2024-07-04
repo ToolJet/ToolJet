@@ -18,6 +18,7 @@
 @import "./componentdesign.scss";
 @import './pages-sidebar.scss';
 @import "./componentdesign.scss";
+
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -296,10 +297,10 @@ button {
   padding: 16px 16px !important;
   display: flex;
   justify-content: space-between;
-  align-items:center;
+  align-items: center;
 }
 
-.accordion-button.inspector::after{
+.accordion-button.inspector::after {
   display: none;
 }
 
@@ -4670,10 +4671,10 @@ input[type="text"] {
 
   .modal-footer-btn {
 
-    & > *:nth-child(2) {
+    &>*:nth-child(2) {
       margin-left: 16px;
+    }
   }
-}
 }
 
 .home-modal-component-editor.dark {
@@ -13231,6 +13232,7 @@ tbody {
   background-color: #1E823B;
   @extend .widget-version-identifier
 }
+
 .tjdb-table-tooltip {
   width: max-content !important;
 
@@ -13277,6 +13279,7 @@ div.ds-svg-container svg {
       border-radius: 8px;
     }
   }
+
   .form-check-input:disabled {
     background-color: var(--surfaces-surface-03) !important;
   }
@@ -13310,3 +13313,11 @@ div.ds-svg-container svg {
   }
 }
 
+.debugger-error-title {
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--interactive-overlays-fill-hover) !important;
+  }
+}

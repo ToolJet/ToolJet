@@ -135,9 +135,9 @@ function Logs({ logProps, idx, switchPage }) {
             renderNavToDisabledPageMessage()
           ) : (
             <>
-              <span className="d-flex justify-content-between align-items-center text-truncate">
+              <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
                 <span
-                  className="text-truncate text-slate-12 cursor-pointer"
+                  className={`text-slate-12 cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent dropdown toggle
                     handleClick();
@@ -146,7 +146,7 @@ function Logs({ logProps, idx, switchPage }) {
                   {title}
                 </span>
                 <small className="text-slate-10 text-right">{moment(logProps?.timestamp).fromNow()}</small>
-              </span>
+              </div>
               <span
                 className={cx('mx-1', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
