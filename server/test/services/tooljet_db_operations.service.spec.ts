@@ -8,9 +8,22 @@ import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
-import { clearDB, createNestAppInstance, setupOrganization } from '../test.helper';
+import { clearDB, createUser } from '../test.helper';
 import { setupTestTables } from '../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ormconfig, tooljetDbOrmconfig } from '../../ormconfig';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+import { getEnvVars } from '../../scripts/database-config-utils';
+import { User } from '@entities/user.entity';
+import { Organization } from '@entities/organization.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { GroupPermission } from '@entities/group_permission.entity';
+import { UserGroupPermission } from '@entities/user_group_permission.entity';
+import { App } from '@entities/app.entity';
 
 describe('TooljetDbOperationsService', () => {
   let app: INestApplication;
@@ -49,21 +62,49 @@ describe('TooljetDbOperationsService', () => {
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          envFilePath: ['../.env.test'],
+          load: [() => getEnvVars()],
+        }),
+        TypeOrmModule.forRoot(ormconfig),
+        TypeOrmModule.forRoot(tooljetDbOrmconfig),
+        TypeOrmModule.forFeature([
+          User,
+          Organization,
+          OrganizationUser,
+          App,
+          AppVersion,
+          GroupPermission,
+          UserGroupPermission,
+          InternalTable,
+        ]),
+      ],
+      providers: [TooljetDbOperationsService, TooljetDbService, PostgrestProxyService],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+
     appManager = getManager();
     tjDbManager = getConnection('tooljetDb').manager;
 
-    service = app.get<TooljetDbOperationsService>(TooljetDbOperationsService);
-    tooljetDbService = app.get<TooljetDbService>(TooljetDbService);
+    service = moduleFixture.get<TooljetDbOperationsService>(TooljetDbOperationsService);
+    tooljetDbService = moduleFixture.get<TooljetDbService>(TooljetDbService);
   });
 
   beforeEach(async () => {
     await clearDB();
 
-    const { defaultUser } = await setupOrganization(app);
-    organizationId = defaultUser.organizationId;
-    await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+    organizationId = adminUserData.organization.id;
 
+    await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
     const usersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'users' });
     usersTableId = usersTable.id;
   });
