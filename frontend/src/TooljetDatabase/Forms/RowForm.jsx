@@ -11,7 +11,6 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import cx from 'classnames';
-
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
@@ -534,7 +533,21 @@ const RowForm = ({
                       <span style={{ width: '24px' }}>
                         {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                       </span>
-                      <span style={{ marginRight: '5px' }}>{headerText}</span>
+                      <ToolTip
+                        message={<span>{headerText}</span>}
+                        show={dataType === 'timestamp with time zone' && headerText.length >= 20}
+                        placement="top"
+                        tooltipClassName="tjdb-table-tooltip"
+                      >
+                        <span
+                          style={{ marginRight: '5px' }}
+                          className={cx({
+                            'header-label-timestamp': dataType === 'timestamp with time zone',
+                          })}
+                        >
+                          {headerText}
+                        </span>
+                      </ToolTip>
                       {constraints_type?.is_primary_key === true && (
                         <span style={{ marginRight: '3px' }}>
                           <SolidIcon name="primarykey" />

@@ -312,6 +312,7 @@ export const DateTimePicker = ({
           'form-control-disabled': isDisabled && !darkMode,
           'dark-form-control-disabled': isDisabled && darkMode,
           'null-value-padding': !transformedTimestamp && !isEditCell,
+          'input-value-padding': transformedTimestamp,
         })}
         popperPlacement={'bottom-start'}
         popperClassName={cx({

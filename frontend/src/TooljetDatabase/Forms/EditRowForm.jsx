@@ -11,6 +11,7 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
+import cx from 'classnames';
 // import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 // import { Link } from 'react-router-dom';
 // import { getPrivateRoute } from '@/_helpers/routes';
@@ -532,7 +533,21 @@ const EditRowForm = ({
                         <span style={{ width: '24px' }}>
                           {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                         </span>
-                        <span style={{ marginRight: '5px' }}>{headerText}</span>
+                        <ToolTip
+                          message={<span>{headerText}</span>}
+                          show={dataType === 'timestamp with time zone' && headerText.length >= 20}
+                          placement="top"
+                          tooltipClassName="tjdb-table-tooltip"
+                        >
+                          <span
+                            style={{ marginRight: '5px' }}
+                            className={cx({
+                              'header-label-timestamp': dataType === 'timestamp with time zone',
+                            })}
+                          >
+                            {headerText}
+                          </span>
+                        </ToolTip>
                         {constraints_type?.is_primary_key === true && (
                           <span style={{ marginRight: '3px' }}>
                             <SolidIcon name="primarykey" />
