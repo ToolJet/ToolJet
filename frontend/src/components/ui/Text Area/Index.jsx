@@ -1,39 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Textarea } from './textarea';
+import { Textarea } from './Textarea';
 import { HelperMessage, InputLabel, ValidationMessage } from './TextareaUtils/TextareaUtils';
 
-const TextArea = (props) => {
-  const [isValid, setIsValid] = React.useState('');
+const TextAreaComponent = (props) => {
+  const [isValid, setIsValid] = React.useState(null);
   const [message, setMessage] = React.useState('');
 
   const inputStyle = `${
-    isValid === 'true'
-      ? '!tw-border-border-success-strong'
-      : isValid === 'false'
-      ? '!tw-border-border-danger-strong'
-      : ''
+    isValid === true ? '!tw-border-border-success-strong' : isValid === false ? '!tw-border-border-danger-strong' : ''
   }`;
 
-  //Format of Validation Function
-  // const validation = (x) => {
-  //   // Validation logic
-  //   console.log(x);
-  //   return { valid: 'false', message: 'Validation message' };
-  // };
-
   const handleChange = (e) => {
-    props.onChange(e);
+    let validateObj;
     if (props.validation) {
-      if (e.target.value === '') {
-        setIsValid('');
-        setMessage('');
-        return;
-      }
-      const { valid, message } = props.validation(e.target.value);
-      setIsValid(valid);
-      setMessage(message);
+      validateObj = props.validation(e);
+      setIsValid(validateObj.valid);
+      setMessage(validateObj.message);
     }
+    props.onChange(e, validateObj);
   };
 
   return (
@@ -47,16 +32,16 @@ const TextArea = (props) => {
           labelStyle={`${props.disabled ? '!tw-text-text-disabled' : ''}`}
         />
       )}
-      {(isValid === 'true' || isValid === 'false') && !props.disabled && (
+      {(isValid === true || isValid === false) && !props.disabled && (
         <ValidationMessage response={isValid} validationMessage={message} className="tw-gap-[5px]" />
       )}
     </div>
   );
 };
 
-export default TextArea;
+export default TextAreaComponent;
 
-TextArea.propTypes = {
+TextAreaComponent.propTypes = {
   width: PropTypes.string,
   placeholder: PropTypes.string,
   label: PropTypes.string,
@@ -70,7 +55,7 @@ TextArea.propTypes = {
   'aria-label': PropTypes.string,
 };
 
-TextArea.defaultProps = {
+TextAreaComponent.defaultProps = {
   placeholder: '',
   label: '',
   helperText: '',

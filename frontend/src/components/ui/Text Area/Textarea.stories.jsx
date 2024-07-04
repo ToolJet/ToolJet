@@ -1,9 +1,9 @@
 import React from 'react';
-import TextArea from './index';
+import TextAreaComponent from './Index';
 
 export default {
   title: 'Components/Textarea',
-  component: TextArea,
+  component: TextAreaComponent,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -45,7 +45,7 @@ export default {
   },
 };
 
-const Template = (args) => <TextArea {...args} />;
+const Template = (args) => <TextAreaComponent {...args} />;
 
 export const RocketTextArea = Template.bind({});
 RocketTextArea.args = {
@@ -62,13 +62,13 @@ RocketTextArea.args = {
   validation: () => {},
 };
 
-export const RocketTextAreaWithLabel = (args) => <TextArea {...args} label="Label text" />;
+export const RocketTextAreaWithLabel = (args) => <TextAreaComponent {...args} label="Label text" />;
 RocketTextAreaWithLabel.args = {
   ...RocketTextArea.args,
 };
 
 export const RocketTextAreaWithLabelAndHelperText = (args) => (
-  <TextArea {...args} label="Label text" helperText="Helper text" />
+  <TextAreaComponent {...args} label="Label text" helperText="Helper text" />
 );
 RocketTextAreaWithLabelAndHelperText.args = {
   ...RocketTextArea.args,

@@ -7,7 +7,7 @@ import {
   RemoveIcon,
   UploadIcon,
 } from './FileUploaderUtils/FileUploaderUtils';
-import { Label } from '../Label/label';
+import { Label } from '../Label/Label';
 
 const MultipleInputFile = ({ width, ...props }) => {
   const [files, setFiles] = useState([]);

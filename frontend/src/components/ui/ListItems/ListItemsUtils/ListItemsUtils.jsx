@@ -1,4 +1,50 @@
 import React from 'react';
+import Tooltip from '../../Tooltip/Tooltip';
+import { Button } from '../../Button/Button';
+
+export const Indentation = () => {
+  return <div className="tw-h-[16px] tw-w-[16px] tw-mr-[6px]"></div>;
+};
+
+export const ListItemsContent = ({ title, label, disabled }) => {
+  return (
+    <div
+      className={`tw-line-clamp-1 tw-max-w-[118px] tw-text-[12px]/[18px] tw-font-normal ${
+        disabled ? 'tw-text-text-disabled' : 'tw-text-text-default'
+      }`}
+    >
+      {title === '' ? label : title}
+    </div>
+  );
+};
+
+export const ListItemsAddon = ({ addon, disabled }) => {
+  return (
+    <div
+      className={`tw-ml-[6px] tw-text-[12px]/[18px] tw-font-normal ${
+        disabled ? 'tw-text-text-disabled' : 'tw-text-text-placeholder'
+      }`}
+    >
+      {addon}
+    </div>
+  );
+};
+
+export const SupportingText = ({ supportingText, disabled }) => {
+  return (
+    <div className="tw-relative tw-flex tw-flex-col tw-items-center tw-ml-[4px]">
+      <InfoIcon fill={disabled ? 'var(--icon-disabled)' : 'var(--icon-default)'} />
+      {supportingText && (
+        <Tooltip
+          arrow="Top Center"
+          className="tw-hidden peer-hover:tw-flex tw-absolute tw-top-full"
+          theme="dark"
+          tooltipLabel={supportingText}
+        />
+      )}
+    </div>
+  );
+};
 
 export const Input = (props) => {
   return (
@@ -46,5 +92,41 @@ export const InfoIcon = ({ fill }) => {
         fill={fill}
       />
     </svg>
+  );
+};
+
+export const TrailingAction = ({
+  trailingActionEdit,
+  trailingActionDuplicate,
+  trailingActionMenu,
+  trailingActionDelete,
+  onEdit,
+  onDuplicate,
+  onMenu,
+  onDelete,
+}) => {
+  return (
+    <div className="tw-hidden group-hover:tw-flex group-active:tw-flex tw-gap-[2px] tw-absolute tw-right-[8px]">
+      {trailingActionEdit && <Button iconOnly leadingIcon="editable" size="small" variant="outline" onClick={onEdit} />}
+      {trailingActionDuplicate && (
+        <Button iconOnly leadingIcon="copy" onClick={onDuplicate} size="small" variant="outline" />
+      )}
+      {trailingActionMenu && (
+        <Button iconOnly leadingIcon="morevertical" onClick={onMenu} size="small" variant="outline" />
+      )}
+      {trailingActionDelete && (
+        <Button iconOnly leadingIcon="delete" onClick={onDelete} size="small" variant="outline" />
+      )}
+    </div>
+  );
+};
+
+export const EditTrailingAction = ({ indexed, onCancel, onDelete, onSave }) => {
+  return (
+    <div className="tw-flex tw-gap-[2px]">
+      <Button iconOnly leadingIcon="remove" size="small" variant="outline" onClick={onCancel} />
+      {indexed && <Button iconOnly leadingIcon="delete" onClick={onDelete} size="small" variant="outline" />}
+      {!indexed && <Button iconOnly leadingIcon="tick" onClick={onSave} size="small" variant="outline" />}
+    </div>
   );
 };

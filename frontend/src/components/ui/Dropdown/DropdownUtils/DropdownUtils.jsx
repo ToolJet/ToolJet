@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../../Avatar/avatar';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { cn } from '@/lib/utils';
 import ValidationIcon from './ValidationIcon';
-import { Label } from '../../Label/label';
+import { Label } from '../../Label/Label';
 import HelperIcon from './HelperIcon';
 
 export const dropdownVariants = cva('', {
@@ -87,7 +87,7 @@ export const ValidationMessage = ({ response, validationMessage, className }) =>
       htmlFor="validation"
       type="helper"
       size="default"
-      className={`tw-font-normal ${response === 'true' ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
+      className={`tw-font-normal ${response === true ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
     >
       {validationMessage}
     </Label>

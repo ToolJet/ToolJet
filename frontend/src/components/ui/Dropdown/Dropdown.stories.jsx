@@ -1,10 +1,10 @@
 import React from 'react';
-import Dropdown from './index';
+import DropdownComponent from './Index';
 
 // Storybook configuration
 export default {
   title: 'Components/Dropdown',
-  component: Dropdown,
+  component: DropdownComponent,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -62,7 +62,7 @@ export default {
   },
 };
 
-const Template = (args) => <Dropdown {...args} />;
+const Template = (args) => <DropdownComponent {...args} />;
 
 export const RocketDropdown = Template.bind({});
 RocketDropdown.args = {
@@ -86,22 +86,24 @@ RocketDropdown.args = {
   helperText: '',
 };
 
-export const RocketDropdownWithLeadingIcon = (args) => <Dropdown {...args} leadingIcon={true} />;
+export const RocketDropdownWithLeadingIcon = (args) => <DropdownComponent {...args} leadingIcon={true} />;
 RocketDropdownWithLeadingIcon.args = {
   ...RocketDropdown.args,
 };
 
-export const RocketDropdownWithTrailingIcon = (args) => <Dropdown {...args} trailingAction="icon" />;
+export const RocketDropdownWithTrailingIcon = (args) => <DropdownComponent {...args} trailingAction="icon" />;
 RocketDropdownWithTrailingIcon.args = {
   ...RocketDropdown.args,
 };
 
-export const RocketDropdownWithTrailingCounter = (args) => <Dropdown {...args} trailingAction="counter" />;
+export const RocketDropdownWithTrailingCounter = (args) => <DropdownComponent {...args} trailingAction="counter" />;
 RocketDropdownWithTrailingCounter.args = {
   ...RocketDropdown.args,
 };
 
-export const RocketDropdownWithHelperText = (args) => <Dropdown {...args} helperText="This is a helper text" />;
+export const RocketDropdownWithHelperText = (args) => (
+  <DropdownComponent {...args} helperText="This is a helper text" />
+);
 RocketDropdownWithHelperText.args = {
   ...RocketDropdown.args,
 };

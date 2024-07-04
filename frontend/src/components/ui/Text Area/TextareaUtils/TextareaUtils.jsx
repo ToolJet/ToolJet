@@ -1,5 +1,5 @@
 import React from 'react';
-import { Label } from '../../Label/label';
+import { Label } from '../../Label/Label';
 import ValidationIcon from './ValidationIcon';
 import { cn } from '@/lib/utils';
 import HelperIcon from './HelperIcon';
@@ -11,7 +11,7 @@ export const ValidationMessage = ({ response, validationMessage, className }) =>
       htmlFor="validation"
       type="helper"
       size="default"
-      className={`tw-font-normal ${response === 'true' ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
+      className={`tw-font-normal ${response === true ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
     >
       {validationMessage}
     </Label>

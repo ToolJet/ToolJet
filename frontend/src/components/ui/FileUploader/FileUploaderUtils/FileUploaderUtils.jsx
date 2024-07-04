@@ -1,20 +1,6 @@
 import React from 'react';
 import { FileTypeIcons } from './FileTypeIcons';
-import { Label } from '../../Label/label';
-
-// export const ValidationMessage = ({ response, validationMessage, className }) => (
-//   <div className={cn('tw-flex tw-pl-[2px] tw-items-center tw-my-[2px]', className)}>
-//     <ValidationIcon result={response} />
-//     <Label
-//       htmlFor="validation"
-//       type="helper"
-//       size="default"
-//       className={`tw-font-normal ${response === 'true' ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
-//     >
-//       {validationMessage}
-//     </Label>
-//   </div>
-// );
+import { Label } from '../../Label/Label';
 
 export const RequiredIndicator = ({ disabled }) => (
   <span

@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import MultipleInputFile from './MultipleInputFile';
 import SingleInputFile from './SingleInputFile';
 
-const FileUploader = (props) => {
+const FileUploaderComponent = (props) => {
   return props.type === 'single' ? <SingleInputFile {...props} /> : <MultipleInputFile {...props} />;
 };
 
-export default FileUploader;
+export default FileUploaderComponent;
 
-FileUploader.propTypes = {
+FileUploaderComponent.propTypes = {
   type: PropTypes.oneOf(['single', 'multiple']),
   width: PropTypes.string,
   name: PropTypes.string,
@@ -23,7 +23,7 @@ FileUploader.propTypes = {
   maxSize: PropTypes.number,
 };
 
-FileUploader.defaultProps = {
+FileUploaderComponent.defaultProps = {
   type: 'single',
   width: '300px',
   name: '',

@@ -1,9 +1,9 @@
 import React from 'react';
-import FileUploader from './Index';
+import FileUploaderComponent from './Index';
 
 export default {
   title: 'Components/FileUploader',
-  component: FileUploader,
+  component: FileUploaderComponent,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -48,7 +48,7 @@ export default {
   },
 };
 
-const Template = (args) => <FileUploader {...args} />;
+const Template = (args) => <FileUploaderComponent {...args} />;
 
 export const RocketFileUploader = Template.bind({});
 RocketFileUploader.args = {
@@ -66,7 +66,7 @@ RocketFileUploader.args = {
 };
 
 export const RocketMultipleFileUploader = (args) => {
-  return <FileUploader {...args} type="multiple" />;
+  return <FileUploaderComponent {...args} type="multiple" />;
 };
 RocketMultipleFileUploader.args = {
   ...RocketFileUploader.args,
