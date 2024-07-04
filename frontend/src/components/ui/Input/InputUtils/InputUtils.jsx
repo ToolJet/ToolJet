@@ -1,17 +1,19 @@
 import React from 'react';
-import { Label } from '../../Label/label';
+import { Label } from '../../Label/Label';
 import ValidationIcon from './ValidationIcon';
 import { cn } from '@/lib/utils';
 import HelperIcon from './HelperIcon';
 
 export const ValidationMessage = ({ response, validationMessage, className }) => (
-  <div className={cn('tw-flex tw-pl-[2px] tw-items-center tw-my-[2px]', className)}>
-    <ValidationIcon result={response} />
+  <div className={cn('tw-flex tw-pl-[2px] tw-items-start tw-my-[2px]', className)}>
+    <div className="tw-flex tw-pt-[3.5px]">
+      <ValidationIcon result={response} />
+    </div>
     <Label
       htmlFor="validation"
       type="helper"
       size="default"
-      className={`tw-font-normal ${response === 'true' ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
+      className={`tw-font-normal ${response === true ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
     >
       {validationMessage}
     </Label>
@@ -19,8 +21,10 @@ export const ValidationMessage = ({ response, validationMessage, className }) =>
 );
 
 export const HelperMessage = ({ helperText, className, labelStyle }) => (
-  <div className={cn('tw-flex tw-pl-[2px] tw-items-center tw-my-[2px]', className)}>
-    <HelperIcon />
+  <div className={cn('tw-flex tw-pl-[2px] tw-items-start tw-my-[2px]', className)}>
+    <div className="tw-flex tw-pt-[3.5px]">
+      <HelperIcon />
+    </div>
     <Label htmlFor="helper" type="helper" size="default" className={cn('tw-font-normal', labelStyle)}>
       {helperText}
     </Label>
