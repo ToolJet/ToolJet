@@ -1545,6 +1545,7 @@ export function runQuery(
 
 export function setTablePageIndex(tableId, index, eventObj) {
   try {
+    const newPageIndex = resolveReferences(index, getCurrentState());
     if (_.isEmpty(tableId)) {
       throw new Error('No table is associated with this event.');
     }
@@ -1552,7 +1553,6 @@ export function setTablePageIndex(tableId, index, eventObj) {
       throw new Error('Invalid page index.');
     }
     const table = Object.entries(getCurrentState().components).filter((entry) => entry?.[1]?.id === tableId)?.[0]?.[1];
-    const newPageIndex = resolveReferences(index, getCurrentState());
     table.setPage(newPageIndex ?? 1);
     return Promise.resolve();
   } catch (error) {
