@@ -48,6 +48,10 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 ## API Endpoints
 
+:::danger
+Single-user operation endpoints were updated from plural to singular after v2.61.0. Ensure you're using documentation that corresponds to your ToolJet version.
+:::
+
 ### **Get All Users**
     - **Description:** Retrieves a list of all the users.
     - **URL:** `/api/ext/users`
