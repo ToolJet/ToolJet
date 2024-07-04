@@ -1,8 +1,9 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const Visibility = ({ onVisibilityChange, styleDefinition }) => {
-  const iconVisibility = styleDefinition?.iconVisibility?.value || false;
+  const iconVisibility = resolveReferences(styleDefinition?.iconVisibility?.value) || false;
 
   return (
     <div
@@ -11,7 +12,7 @@ export const Visibility = ({ onVisibilityChange, styleDefinition }) => {
       style={{ top: iconVisibility && '42%' }}
       onClick={(e) => {
         e.stopPropagation();
-        onVisibilityChange(!iconVisibility);
+        onVisibilityChange(`{{${!iconVisibility}}}`);
       }}
     >
       <SolidIcon name={iconVisibility ? 'eye1' : 'eyedisable'} width="20" fill={'var(--slate8)'} />
