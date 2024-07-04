@@ -268,10 +268,11 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     setOptions(_options);
     updateAllOptionsParams(_options);
   };
-
+  console.log(component, 'component');
   useEffect(() => {
     setOptions(constructOptions());
-  }, [isMultiSelect]);
+    console.log('jasmine');
+  }, [isMultiSelect, component?.id]);
 
   const _renderOverlay = (item, index) => {
     return (
