@@ -861,7 +861,7 @@ export class TooljetDbService {
         }
 
         queryBuilder.addSelect(
-          `${AggregateFunctions[aggFx]}(${internalTableIdToNameMap[tableId]}.${column})`,
+          `${AggregateFunctions[aggFx]}("${internalTableIdToNameMap[tableId]}"."${column}")`,
           `${internalTableIdToNameMap[tableId]}_${column}_${aggFx}`
         );
       });
@@ -874,12 +874,12 @@ export class TooljetDbService {
           groupByColumList.forEach((groupByColum) => {
             // The 'SELECT' statement needs to have 'GROUP_BY' columns added.
             queryBuilder.addSelect(
-              `${internalTableIdToNameMap[groupByTableId]}.${groupByColum}`,
+              `"${internalTableIdToNameMap[groupByTableId]}"."${groupByColum}"`,
               `${internalTableIdToNameMap[groupByTableId]}_${groupByColum}`
             );
 
             // Building `GROUP_BY` statement
-            queryBuilder.addGroupBy(`${internalTableIdToNameMap[groupByTableId]}.${groupByColum}`);
+            queryBuilder.addGroupBy(`"${internalTableIdToNameMap[groupByTableId]}"."${groupByColum}"`);
           });
         }
       });
