@@ -214,6 +214,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
             setPinned={handlePin}
             pinned={pinned}
             allLog={allLog}
+            switchPage={switchPage}
           />
         );
       case 'settings':

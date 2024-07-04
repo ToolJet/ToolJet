@@ -10,7 +10,7 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = useState({ read: 0, unread: 0 });
   const [allLog, setAllLog] = useState([]);
-
+  const [selectedError, setSelectedError] = useState(null); // New state for selected error
   const { errors, succededQuery } = useCurrentStateStore(
     (state) => ({
       errors: state.errors,
@@ -96,12 +96,17 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorLogs.length]);
+  const handleErrorClick = (selectedError) => {
+    setSelectedError(selectedError);
+  };
 
   return {
     errorLogs,
     clearErrorLogs,
     unReadErrorCount,
     allLog,
+    handleErrorClick,
+    selectedError,
   };
 };
 

@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { capitalize, startCase } from 'lodash';
 import moment from 'moment';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
-
-function Logs({ logProps, idx }) {
+import useDebugger from './useDebugger'; // Import the useDebugger hook
+function Logs({ logProps, idx, switchPage }) {
   const [open, setOpen] = React.useState(false);
   let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
   // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
   if (titleLogType === 'transformations') {
     titleLogType = 'query';
   }
+  const childRef = useRef(null);
+  const currentPageId = useEditorStore.getState().currentPageId;
   const title = `[${capitalize(titleLogType)}${titleLogType ? ' ' : ''}${logProps?.key}]`;
   const message =
     logProps?.type === 'navToDisablePage'
@@ -38,6 +40,9 @@ function Logs({ logProps, idx }) {
   };
 
   const { setSelectedComponents } = useEditorActions();
+  const { handleErrorClick, selectedError } = useDebugger({}); // Initialize the useDebugger hook and extract handleErrorClick
+
+  console.log('selectedError---', selectedError);
 
   const handleSelectComponentOnEditor = (componentId) => {
     const isAlreadySelected = useEditorStore
@@ -78,14 +83,49 @@ function Logs({ logProps, idx }) {
     );
   };
 
+  const onSelect = useCallback((data, currentNode, path) => {
+    if (!childRef.current) return;
+
+    const actions = childRef.current
+      .getOnSelectLabelDispatchActions(currentNode, path)
+      ?.filter((action) => action.onSelect);
+
+    actions.forEach((action) => {
+      action.dispatchAction(data, currentNode);
+    });
+  }, []);
+
+  const handleClick = useCallback(async () => {
+    handleErrorClick(logProps);
+
+    if (logProps?.page?.id && logProps?.page?.id !== currentPageId && logProps.type === 'component') {
+      try {
+        await switchPage(logProps.page.id);
+      } catch (error) {
+        console.error('Error switching page:', error);
+      }
+    }
+
+    switch (logProps.type) {
+      case 'component':
+        onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+        break;
+      case 'query':
+        onSelect(logProps.id, 'queries', ['queries']);
+        break;
+      default:
+        console.warn(`Unhandled logProps type: ${logProps.type}`);
+        onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logProps, currentPageId, onSelect]);
+
   return (
     <div className="tab-content debugger-content" key={`${logProps?.key}-${idx}`}>
       <p
         className="m-0 d-flex"
-        onClick={(e) => {
-          setOpen((prev) => !prev);
-        }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
+        onClick={() => setOpen((prev) => !prev)}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
           <SolidIcon name="downarrow" fill={`var(--icons-strong)`} width="16" />
@@ -95,9 +135,17 @@ function Logs({ logProps, idx }) {
             renderNavToDisabledPageMessage()
           ) : (
             <>
-              <span className="d-flex justify-content-between align-items-center  text-truncate">
-                <span className="text-truncate text-slate-12">{title}</span>
-                <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
+              <span className="d-flex justify-content-between align-items-center text-truncate">
+                <span
+                  className="text-truncate text-slate-12 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent dropdown toggle
+                    handleClick();
+                  }}
+                >
+                  {title}
+                </span>
+                <small className="text-slate-10 text-right">{moment(logProps?.timestamp).fromNow()}</small>
               </span>
               <span
                 className={cx('mx-1', {
@@ -124,6 +172,7 @@ function Logs({ logProps, idx }) {
           fontSize={'10px'}
           actionsList={callbackActions}
           treeType="debugger"
+          ref={childRef}
         />
       )}
       <hr className="border-1 border-bottom bg-grey" />

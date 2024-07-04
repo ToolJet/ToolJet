@@ -5,7 +5,7 @@ import Logs from './Logs';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 
-const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
+const DebuggerTabContent = ({ logs, darkMode, tabName, switchPage }) => {
   const { t } = useTranslation();
   return (
     <div className="debugger-card-body color-slate12">
@@ -23,14 +23,21 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
         })}
       >
         {logs.map((error, index) => (
-          <Logs key={index} errorProps={error} logProps={error} idx={index} darkMode={darkMode} />
+          <Logs
+            key={index}
+            errorProps={error}
+            logProps={error}
+            idx={index}
+            darkMode={darkMode}
+            switchPage={switchPage}
+          />
         ))}
       </div>
     </div>
   );
 };
 
-const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
+const SidebarDebuggerTabs = ({ darkMode, errors, allLog, switchPage }) => {
   return (
     <Tabs
       defaultActiveKey="allLog"
@@ -41,10 +48,10 @@ const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
       justify
     >
       <Tab eventKey="allLog" title="All Log">
-        <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName={'allLogs'} />
+        <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName={'allLogs'} switchPage={switchPage} />{' '}
       </Tab>
       <Tab eventKey="errors" title="Errors">
-        <DebuggerTabContent logs={errors} darkMode={darkMode} tabName={'errors'} />
+        <DebuggerTabContent logs={errors} darkMode={darkMode} tabName={'errors'} switchPage={switchPage} />{' '}
       </Tab>
     </Tabs>
   );
