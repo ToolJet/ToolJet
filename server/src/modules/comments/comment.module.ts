@@ -9,10 +9,11 @@ import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { CommentUsers } from 'src/entities/comment_user.entity';
+import { Comment } from 'src/entities/comment.entity';
 
 @Module({
   controllers: [CommentController],
-  imports: [TypeOrmModule.forFeature([CommentRepository, CommentUsers, AppVersion, User, Organization]), CaslModule],
-  providers: [CommentService, EmailService],
+  imports: [TypeOrmModule.forFeature([Comment, CommentUsers, AppVersion, User, Organization]), CaslModule],
+  providers: [CommentService, EmailService, CommentRepository],
 })
 export class CommentModule {}

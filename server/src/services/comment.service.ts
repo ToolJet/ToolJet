@@ -14,8 +14,7 @@ import { CommentUsers } from 'src/entities/comment_user.entity';
 @Injectable()
 export class CommentService {
   constructor(
-    @InjectRepository(CommentRepository)
-    private commentRepository: CommentRepository,
+    private readonly commentRepository: CommentRepository,
     @InjectRepository(AppVersion)
     private appVersionsRepository: Repository<AppVersion>,
     @InjectRepository(User)
@@ -65,9 +64,8 @@ export class CommentService {
   }
 
   public async getComments(threadId: string, appVersionsId: string): Promise<Comment[]> {
-    return await 
-    this._dataSource.
-    createQueryBuilder(Comment, 'comment')
+    return await this._dataSource
+      .createQueryBuilder(Comment, 'comment')
       .innerJoin('comment.user', 'user')
       .addSelect(['user.id', 'user.firstName', 'user.lastName'])
       .andWhere('comment.threadId = :threadId', {
@@ -99,9 +97,8 @@ export class CommentService {
     appVersionsId: string,
     pageId: string
   ): Promise<Comment[]> {
-    const comments = await 
-    this._dataSource.
-    createQueryBuilder(Comment, 'comment')
+    const comments = await this._dataSource
+      .createQueryBuilder(Comment, 'comment')
       .innerJoin('comment.user', 'user')
       .addSelect(['user.id', 'user.firstName', 'user.lastName'])
       .innerJoin('comment.thread', 'thread')
