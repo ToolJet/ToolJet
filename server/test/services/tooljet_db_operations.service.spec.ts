@@ -58,9 +58,8 @@ describe('TooljetDbOperationsService', () => {
   });
 
   beforeEach(async () => {
-    recordAndNormalizePollyContext(context);
-
     await clearDB();
+
     const { defaultUser } = await setupOrganization(app);
     organizationId = defaultUser.organizationId;
     await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
@@ -346,43 +345,3 @@ describe('TooljetDbOperationsService', () => {
     });
   });
 });
-
-// Normalize request and response data before persisting
-// the recording to ensure consistent recordings
-// so that the tests are not affected by dynamic information
-function recordAndNormalizePollyContext(context) {
-  context.polly.configure({
-    recordIfMissing: process.env.POLLY_MODE === 'record',
-    mode: process.env.POLLY_MODE || 'replay',
-    beforePersist: (req, recording) => {
-      // Normalize request
-      if (req.headers.has('authorization')) {
-        req.headers.set('authorization', 'Bearer <token>');
-      }
-      if (req.headers.has('tj-workspace-id')) {
-        req.headers.set('tj-workspace-id', '<workspace-id>');
-      }
-      if (req.headers.has('tableinfo')) {
-        req.headers.set('tableinfo', '<table-info>');
-      }
-      req.url = req.url.replace(/\/[^/]+$/, '/<table-id>');
-
-      // Normalize response
-      if (recording.response.headers.has('date')) {
-        recording.response.headers.set('date', '<date>');
-      }
-      if (recording.response.headers.has('content-location')) {
-        recording.response.headers.set('content-location', '/<table-id>');
-      }
-
-      // Remove or normalize timing information
-      delete recording.request.startedDateTime;
-      delete recording.response.startedDateTime;
-      delete recording.timings;
-      delete recording.time;
-
-      // Ensure consistent _id for the recording
-      recording._id = '<generated-id>';
-    },
-  });
-}
