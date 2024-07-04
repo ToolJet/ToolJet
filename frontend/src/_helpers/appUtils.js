@@ -139,6 +139,13 @@ export function onComponentOptionsChanged(component, options, id) {
 
         if (shouldUpdateRef) {
           shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
+          if (component.component === 'Table') {
+            const basePath = `components.${componentName}.${option[0]}`;
+
+            useResolveStore.getState().actions.addAppSuggestions({
+              [basePath]: option[1],
+            });
+          }
         }
       }
 
@@ -620,9 +627,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
-        const value = resolveReferences(event.value, undefined, customVariables);
-        const customAppVariables = { ...getCurrentState().variables };
+        const state = useCurrentStateStore.getState();
+        const key = resolveReferences(event.key, state, undefined, customVariables);
+        const value = resolveReferences(event.value, state, undefined, customVariables);
+        const customAppVariables = { ...state.variables };
         customAppVariables[key] = value;
         useResolveStore.getState().actions.addAppSuggestions({
           variables: customAppVariables,
