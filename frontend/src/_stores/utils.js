@@ -443,10 +443,21 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   return { suggestionList, hintsMap, resolvedRefs };
 }
 
+function containsBracketNotation(queryString) {
+  const bracketNotationRegex = /\[\s*['"][^'"]+['"]\s*\]/;
+  return bracketNotationRegex.test(queryString);
+}
+
 export function findAllEntityReferences(node, allRefs) {
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
+      if (typeof value === 'string' && containsBracketNotation(value)) {
+        //skip if the value is a bracket notation
+
+        break;
+      }
+
       if (
         typeof value === 'string' &&
         value.includes('{{') &&
