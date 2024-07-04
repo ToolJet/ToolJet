@@ -665,10 +665,10 @@ function executeActionWithDebounce(_ref, eventObj, mode, customVariables) {
       }
 
       case 'show-modal':
-        return showModal(_ref, event.modal, true, event);
+        return showModal(_ref, event.modal, true, eventObj);
 
       case 'close-modal':
-        return showModal(_ref, event.modal, false, event);
+        return showModal(_ref, event.modal, false, eventObj);
 
       case 'copy-to-clipboard': {
         const contentToCopy = resolveReferences(event.contentToCopy, undefined, customVariables);
@@ -700,7 +700,7 @@ function executeActionWithDebounce(_ref, eventObj, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex, event);
+        setTablePageIndex(event.table, event.pageIndex, eventObj);
         break;
       }
 
