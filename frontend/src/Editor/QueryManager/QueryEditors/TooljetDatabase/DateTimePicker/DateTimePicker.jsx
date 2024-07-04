@@ -19,7 +19,8 @@ export const DateTimePicker = ({
   saveFunction = () => {},
   timezone = getLocalTimeZone(),
   isClearable = false,
-  createEditTable = false,
+  isDefaultInput = false,
+  isDisabled = false,
   errorMessage,
 }) => {
   const startValue = useRef(timestamp);
@@ -302,9 +303,16 @@ export const DateTimePicker = ({
       }}
     >
       <DatePickerComponent
-        className={`input-field form-control validation-without-icon px-2 ${
-          darkMode ? 'bg-dark color-white' : 'bg-light'
-        } ${!isEditCell && 'tjdb-datepicker-wrapper '}`}
+        className={cx('input-field', 'validation-without-icon', 'px-2', {
+          'bg-dark color-white': darkMode,
+          'bg-light': !darkMode,
+          'tjdb-datepicker-wrapper': !isEditCell,
+          'tjdb-datepicker-celledit': isEditCell,
+          'form-control': !isDisabled,
+          'form-control-disabled': isDisabled && !darkMode,
+          'dark-form-control-disabled': isDisabled && darkMode,
+          'null-value-padding': !transformedTimestamp && !isEditCell,
+        })}
         popperPlacement={'bottom-start'}
         popperClassName={cx({
           'tjdb-datepicker-reset': !isEditCell,
@@ -342,7 +350,7 @@ export const DateTimePicker = ({
         fixedHeight
         dropdownMode="select"
         customInput={
-          transformedTimestamp || createEditTable ? (
+          transformedTimestamp || isDefaultInput ? (
             <input
               onFocus={'auto'}
               style={{
@@ -374,7 +382,7 @@ export const DateTimePicker = ({
               <span
                 style={{
                   position: 'static',
-                  margin: isEditCell ? '8px 0px 8px 0px' : '6px 0px 6px 0px',
+                  margin: isEditCell ? '8px 0px 8px 0px' : '5px 0px 5px 0px',
                   backgroundColor: 'transparent',
                 }}
                 className={cx({ 'cell-text-null': isEditCell, 'null-tag': !isEditCell })}

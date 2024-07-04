@@ -324,6 +324,7 @@ const ColumnForm = ({
                   setTimestamp={setDefaultValue}
                   timezone={timezone}
                   isClearable={true}
+                  isDefaultInput={true}
                 />
               ) : !foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input

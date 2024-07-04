@@ -98,7 +98,7 @@ const EditRowForm = ({
     editRowColumns.forEach(({ accessor }) => {
       if (rowData[accessor] != '') {
         const inputElement = inputRefs.current[accessor];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF');
         setErrorMap((prev) => {
           return { ...prev, [accessor]: '' };
         });
@@ -216,7 +216,7 @@ const EditRowForm = ({
           acc.newErrorMap[accessor] = 'Cannot be empty';
 
           const inputElement = inputRefs.current?.[accessor];
-          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
         }
         return acc;
       },
@@ -250,7 +250,7 @@ const EditRowForm = ({
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
       } else if (error?.code === postgresErrorCode.NotNullViolation) {
         const columnName = error?.message.split('.')[1];
         setErrorMap((prev) => {
@@ -272,7 +272,7 @@ const EditRowForm = ({
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
           }
         });
       }
@@ -406,7 +406,7 @@ const EditRowForm = ({
 
       case 'timestamp with time zone':
         return (
-          <div onClick={() => handleTabClick(index, 'Custom', column_default, isNullable, columnName, dataType)}>
+          <div style={{ position: 'relative' }}>
             <DateTimePicker
               timestamp={inputValues[index]?.value}
               setTimestamp={(value) => handleInputChange(index, value, columnName)}
@@ -414,7 +414,33 @@ const EditRowForm = ({
               isClearable={activeTab[index] === 'Custom'}
               errorMessage={errorMap[columnName]}
               timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
+              isDisabled={inputValues[index]?.disabled || shouldInputBeDisabled}
             />
+            {(inputValues[index]?.disabled || shouldInputBeDisabled) && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    currentValue[columnName]
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 4,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
           </div>
         );
 

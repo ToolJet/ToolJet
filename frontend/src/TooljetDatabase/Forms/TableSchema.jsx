@@ -409,8 +409,8 @@ function TableSchema({
                         }}
                         isOpenOnStart={columnDetails[index]?.isOpenOnStart}
                         isClearable={true}
-                        createEditTable={true}
-                        format="dd/MM/yyyy"
+                        isDefaultInput={true}
+                        // format="dd/MM/yyyy"
                       />
                     </div>
                   ) : (

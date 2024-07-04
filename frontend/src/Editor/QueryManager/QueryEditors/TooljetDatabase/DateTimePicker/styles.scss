@@ -166,3 +166,47 @@
 .input-error-border {
   border: 1px solid #DB4324 !important;
 }
+
+.form-control-disabled {
+  gap: 16px !important;
+  background: #f4f6fa !important;
+  border: 1px solid var(--slate7) !important;
+  border-radius: 6px !important;
+  margin-bottom: 4px !important;
+  color: var(--slate11) !important;
+  transition: none;
+  width: 100% !important;
+  padding: 7px 9px !important;
+
+  &:hover {
+    background: #F1F3F5 !important;
+    border: 1px solid var(--slate7) !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+    outline: none;
+  }
+}
+
+.dark-form-control-disabled {
+  gap: 16px !important;
+  background: var(--base) !important;
+  border: 1px solid var(--slate7) !important;
+  border-radius: 6px !important;
+  margin-bottom: 4px !important;
+  color: var(--slate12) !important;
+  transition: none;
+  width: 100% !important;
+  padding: 7px 9px !important;
+
+  &:hover {
+    background: var(--base) !important;
+    border: 1px solid var(--slate8) !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+    outline: none;
+  }
+}
+
+.null-value-padding {
+  padding: 0 9px !important;
+}

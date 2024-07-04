@@ -122,6 +122,15 @@ const RowForm = ({
     return matchingColumn;
   }
 
+  const handleDisabledInputClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
+    handleTabClick(index, tabData, defaultValue, nullValue, columnName, dataType, currentValue);
+    if (inputRefs.current[columnName]) {
+      setTimeout(() => {
+        inputRefs.current[columnName].focus();
+      }, 0);
+    }
+  };
+
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType) => {
     const newActiveTabs = [...activeTab];
     const oldActiveTab = [...activeTab];
@@ -385,6 +394,31 @@ const RowForm = ({
                 ref={(el) => (inputRefs.current[columnName] = el)}
               />
             )}
+            {inputValues[index]?.disabled && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    inputValues[index]?.column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    inputValues[index]?.value
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 1,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
             {inputValues[index].value === null && (
               <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>
             )}
@@ -422,7 +456,7 @@ const RowForm = ({
 
       case 'timestamp with time zone':
         return (
-          <div onClick={() => handleTabClick(index, 'Custom', defaultValue, isNullable, columnName, dataType)}>
+          <div style={{ position: 'relative' }}>
             <DateTimePicker
               timestamp={inputValues[index]?.value}
               setTimestamp={(value) => handleInputChange(index, value, columnName)}
@@ -430,7 +464,33 @@ const RowForm = ({
               timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
               isClearable={activeTab[index] === 'Custom'}
               errorMessage={errorMap[columnName]}
+              isDisabled={inputValues[index]?.disabled}
             />
+            {inputValues[index]?.disabled && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    inputValues[index]?.column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    inputValues[index]?.value
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 1,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
           </div>
         );
 
