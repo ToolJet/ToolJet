@@ -12,8 +12,9 @@ import {
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty, camelCase } from 'lodash';
-import { TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
+import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
 import { v4 as uuidv4 } from 'uuid';
+import { QueryError } from '@tooljet/plugins/packages/common';
 
 export type TableColumnSchema = {
   column_name: string;
@@ -816,8 +817,8 @@ export class TooljetDbService {
       const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap);
       return await queryBuilder.getRawMany();
     } catch (error) {
-      const errorObj = new QueryFailedError(error, [], error);
-      throw new TooljetDatabaseError(
+      const errorObj = new QueryFailedError(error, [], new PostgrestError(error));
+      const tjdbErrorObj = new TooljetDatabaseError(
         error.message,
         {
           origin: 'join_tables',
@@ -825,6 +826,8 @@ export class TooljetDbService {
         },
         errorObj
       );
+      const alteredErrorMessage = tjdbErrorObj.toString();
+      throw new QueryError(alteredErrorMessage, alteredErrorMessage, {});
     }
   }
 
