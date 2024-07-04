@@ -26,6 +26,9 @@ class Restapi extends React.Component {
       if (isEmpty(this.state.options['headers'])) {
         this.addNewKeyValuePair('headers');
       }
+      if (isEmpty(this.state.options['cookies'])) {
+        this.addNewKeyValuePair('cookies');
+      }
       if (isEmpty(this.state.options['method'])) {
         changeOption(this, 'method', 'get');
       }
@@ -37,14 +40,6 @@ class Restapi extends React.Component {
       setTimeout(() => {
         if (isEmpty(this.state.options['body'])) {
           this.addNewKeyValuePair('body');
-        }
-      }, 1000);
-      setTimeout(() => {
-        this.initizalizeRetryNetworkErrorsToggle();
-      }, 1000);
-      setTimeout(() => {
-        if (isEmpty(this.state.options['cookies'])) {
-          this.addNewKeyValuePair('cookies');
         }
       }, 1000);
     } catch (error) {
@@ -78,7 +73,7 @@ class Restapi extends React.Component {
 
     this.setState({ options: newOptions }, () => {
       //these values are set to empty array so that user can type in directly without adding new entry, hence no need to pass to parent state
-      if (!['headers', 'url_params', 'body'].includes(option)) {
+      if (!['headers', 'url_params', 'body', 'cookies'].includes(option)) {
         this.props.optionsChanged(newOptions);
       }
     });
