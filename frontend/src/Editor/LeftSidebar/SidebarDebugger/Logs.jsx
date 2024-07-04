@@ -29,11 +29,11 @@ function Logs({ logProps, idx }) {
         }`;
 
   const defaultStyles = {
-    transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+    transform: open ? 'rotate(-180deg)' : 'rotate(0deg)',
     transition: '0.2s all',
     display: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'inline-block',
     cursor: 'pointer',
-    paddingTop: '8px',
+    top: '8px',
     pointerEvents: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'default',
   };
 
@@ -85,10 +85,10 @@ function Logs({ logProps, idx }) {
         onClick={(e) => {
           setOpen((prev) => !prev);
         }}
-        style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
+        style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="cheveronright" width="16" />
+          <SolidIcon name="downarrow" fill={`var(--icons-strong)`} width="16" />
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
