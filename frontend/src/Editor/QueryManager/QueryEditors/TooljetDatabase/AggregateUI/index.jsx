@@ -80,11 +80,11 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     };
 
     const value = getValue(operation, optionToUpdate, selectedValue);
-    const table_id = selectedValue.hasOwnProperty('tableId') ? selectedValue.tableId : selectedTableId;
+    const tableIdExist = selectedValue.hasOwnProperty('tableId');
     const aggregateToUpdate = {
       ...currentAggregates[key],
       [optionToUpdate]: value,
-      table_id,
+      ...(tableIdExist && { table_id: selectedValue.tableId }),
     };
     const updatedAggregates = {
       ...currentAggregates,
