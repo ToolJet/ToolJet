@@ -15,12 +15,12 @@ function Logs({ logProps, idx, switchPage }) {
   const { setSelectedQuery, expandQueryPanel } = useQueryPanelActions();
   const selectedQuery = useSelectedQuery();
 
-  let titleLogType = logProps?.type;
+  let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
   // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
   if (titleLogType === 'transformations') {
     titleLogType = 'query';
   }
-  const title = ` [${capitalize(titleLogType)} ${logProps?.key}]`;
+  const title = `[${capitalize(titleLogType)}${titleLogType ? ' ' : ''}${logProps?.key}]`;
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message

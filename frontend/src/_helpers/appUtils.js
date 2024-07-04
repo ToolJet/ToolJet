@@ -412,7 +412,7 @@ export async function executeActionsForEventId(_ref, eventId, events = [], mode,
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event.event, mode, customVariables);
+    await executeAction(_ref, event, mode, customVariables);
   }
 }
 
@@ -447,7 +447,7 @@ export async function copyToClipboard(text) {
   }
 }
 
-function showModal(_ref, modal, show, event) {
+function showModal(_ref, modal, show, eventObj) {
   try {
     const modalId = modal?.id ?? modal;
     if (_.isEmpty(modalId)) {
@@ -469,8 +469,8 @@ function showModal(_ref, modal, show, event) {
 
     return Promise.resolve();
   } catch (error) {
-    logError(show ? 'show_modal' : 'close_modal', show ? 'show-modal' : 'close_modal', error, event.eventId, {
-      eventId: event.eventId,
+    logError(show ? 'show_modal' : 'close_modal', show ? 'show-modal' : 'close_modal', error, eventObj, {
+      eventId: eventObj.eventType,
     });
 
     return Promise.reject(error);
@@ -508,17 +508,40 @@ function debounce(func) {
 
 export const executeAction = debounce(executeActionWithDebounce);
 
-function logError(errorType, errorKind, error, event = '', options = {}) {
+function logError(errorType, errorKind, error, eventObj = '', options = {}) {
+  const { event } = eventObj;
   const returnSource = () => {
-    if (event.sourceType) return event.sourceType == 'data_query' ? 'query' : event.sourceType;
+    if (eventObj.eventType) return eventObj.eventType == 'data_query' ? 'query' : eventObj.eventType;
 
     if (event.eventId == 'onDataQueryFailure' || event.eventId == 'onDataQuerySuccess') return 'query';
     else if (event.eventId == 'onPageLoad') return 'page';
     else return 'component';
   };
+  let queryName = '';
+  // [Component ${Component_Name} - ${Event_Handler_Name} on ${Page_Name} Page]
+  // [Event ${Event_Handler_Name} on ${Page_Name} Page]
+  // [Query ${Query_Name} - ${Event_Handler_Name}]
+  const eventQueryId = eventObj.sourceId;
+
+  for (const key in useCurrentStateStore.getState().queries) {
+    if (useCurrentStateStore.getState().queries[key].id == eventQueryId) {
+      queryName = key;
+      break;
+    }
+  }
+
+  const constructErrorHeader = () => {
+    if (returnSource() == 'component')
+      return `Component ${event.component} - ${event.actionId} ${`on ${
+        useCurrentStateStore.getState().page.name
+      } page`}`;
+    else if (returnSource() == 'page') {
+      return `Event ${event.actionId} ${`on ${useCurrentStateStore.getState().page.name} page`}`;
+    } else return `Query ${queryName} - ${event.actionId}`;
+  };
 
   useCurrentStateStore.getState().actions.setErrors({
-    [`${errorType} - ${returnSource()}`]: {
+    [constructErrorHeader()]: {
       type: 'event',
       kind: errorKind,
       data: {
@@ -530,7 +553,8 @@ function logError(errorType, errorKind, error, event = '', options = {}) {
     },
   });
 }
-function executeActionWithDebounce(_ref, event, mode, customVariables) {
+function executeActionWithDebounce(_ref, eventObj, mode, customVariables) {
+  const { event } = eventObj;
   if (event) {
     if (event.runOnlyIf) {
       const shouldRun = resolveReferences(event.runOnlyIf, undefined, customVariables);
@@ -578,7 +602,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
             useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
           return runQuery(_ref, queryId, name, undefined, mode, resolvedParams, component, eventId);
         } catch (error) {
-          logError('run_query', 'run-query', error, event, {
+          logError('run_query', 'run-query', error, eventObj, {
             eventId: event.eventId,
           });
           return Promise.reject(error);
@@ -631,7 +655,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           }
           return Promise.resolve();
         } catch (error) {
-          logError('go_to_app', 'go-to-app', error, event, { eventId: event.eventId });
+          logError('go_to_app', 'go-to-app', error, eventObj, { eventId: event.eventId });
           return Promise.reject();
         }
       }
@@ -804,7 +828,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
           return actionPromise ?? Promise.resolve();
         } catch (error) {
-          logError('control_component', 'control-component', error, event, {
+          logError('control_component', 'control-component', error, eventObj, {
             eventId: event.eventId,
           });
 
@@ -841,7 +865,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           }
           return Promise.resolve();
         } catch (error) {
-          logError('switch_page', 'switch-page', error, event, {
+          logError('switch_page', 'switch-page', error, eventObj, {
             eventId: event.eventId,
           });
         }
@@ -1528,7 +1552,7 @@ export function runQuery(
   });
 }
 
-export function setTablePageIndex(tableId, index, event) {
+export function setTablePageIndex(tableId, index, eventObj) {
   try {
     if (_.isEmpty(tableId)) {
       throw new Error('No table is associated with this event.');
@@ -1541,7 +1565,7 @@ export function setTablePageIndex(tableId, index, event) {
     table.setPage(newPageIndex ?? 1);
     return Promise.resolve();
   } catch (error) {
-    logError('set_table_page_index', 'set-table-page-index', error, event, { eventId: event?.eventId });
+    logError('set_table_page_index', 'set-table-page-index', error, eventObj, { eventId: eventObj.eventType });
   }
 }
 export function renderTooltip({ props, text }) {
@@ -2076,7 +2100,6 @@ export const addNewWidgetToTheEditor = (
 
   const gridWidth = subContainerWidth / noOfGrid;
   left = Math.round(left / gridWidth);
-  console.log('Top calc', { top, initialClientOffset, delta, zoomLevel, offsetFromTopOfWindow, subContainerWidth });
 
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
