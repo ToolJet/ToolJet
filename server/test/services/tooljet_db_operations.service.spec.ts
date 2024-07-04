@@ -63,17 +63,6 @@ describe('TooljetDbOperationsService', () => {
     const { defaultUser } = await setupOrganization(app);
     organizationId = defaultUser.organizationId;
     await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
-    const usersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'users' });
-    usersTableId = usersTable.id;
-  });
-
-  beforeEach(async () => {
-    context.polly.configure({ recordIfMissing: true });
-    await clearDB();
-
-    const { defaultUser } = await setupOrganization(app);
-    organizationId = defaultUser.organizationId;
-    await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
 
     const usersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'users' });
     usersTableId = usersTable.id;
