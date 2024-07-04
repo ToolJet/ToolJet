@@ -46,6 +46,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
   }, [operation, handleOptionsChange, joinTableOptionsChange]);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [currentAggregateKeyForDeleteConfirmation, setCurrentAggregateKeyForDeleteConfirmation] = useState(null);
 
   const addNewAggregateOption = () => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
@@ -131,34 +132,46 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     const deleteAggregate = () => {
       delete currentAggregates[aggregateKey];
       handleChange('aggregates', currentAggregates);
-      toast.success('Aggregate function deleted successfully!');
+      return toast.success('Aggregate function deleted successfully!');
     };
 
     const showError = () => {
-      toast.error('Could not delete aggregate function. Please try again!');
+      return toast.error('Could not delete aggregate function. Please try again!');
     };
 
     try {
       if (numberOfAggregates > 1) {
         if (showConfirmationModal && isValidGroupByPresent) {
+          setCurrentAggregateKeyForDeleteConfirmation(aggregateKey);
           setShowDeleteConfirmation(true);
+          return;
         } else {
           deleteAggregate();
+          return;
         }
       } else {
         if (isValidGroupByPresent) {
+          setCurrentAggregateKeyForDeleteConfirmation(aggregateKey);
           setShowDeleteConfirmation(true);
+          return;
         } else {
           deleteAggregate();
+          return;
         }
       }
     } catch (error) {
       showError();
+      return;
     }
   };
 
-  const executeAggregateDeletion = (aggregateKey) => {
+  const executeAggregateDeletion = () => {
+    const aggregateKey = currentAggregateKeyForDeleteConfirmation || '';
+
     try {
+      if (!aggregateKey) {
+        throw new Error('Could not delete aggregate function. Please try again!');
+      }
       const currentAggregates = { ...(operationDetails?.aggregates || {}) };
       delete currentAggregates[aggregateKey];
       const currentGroupBy = {};
@@ -397,7 +410,9 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                       'Deleting the aggregate function will also delete the  group by conditions. Are you sure, you want to continue?'
                     }
                     // confirmButtonLoading={isDeletingQueryInProcess}
-                    onConfirm={() => executeAggregateDeletion(aggregateKey)}
+                    onConfirm={() => {
+                      executeAggregateDeletion();
+                    }}
                     onCancel={() => setShowDeleteConfirmation(false)}
                     darkMode={darkMode}
                   />
