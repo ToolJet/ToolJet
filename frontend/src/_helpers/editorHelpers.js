@@ -146,33 +146,6 @@ export function isOnlyLayoutUpdate(diffState) {
   return componentDiff.length > 0;
 }
 
-function findDotNotations(jsString) {
-  const dotNotationRegex = /components\.(\w+)\.value/g;
-  const matches = [];
-  let match;
-
-  while ((match = dotNotationRegex.exec(jsString)) !== null) {
-    matches.push(match[1]);
-  }
-
-  return matches;
-}
-
-function verifyDotAndBracketNotations(jsString) {
-  const dotNotations = findDotNotations(jsString);
-
-  for (const notation of dotNotations) {
-    const bracketNotation = `components['${notation}'].value`;
-    const dotNotation = `components.${notation}.value`;
-
-    if (!jsString.includes(bracketNotation) && jsString.includes(dotNotation)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 function findReferenceInComponent(node, changedCurrentState) {
   if (!node) return false;
 
@@ -186,7 +159,7 @@ function findReferenceInComponent(node, changedCurrentState) {
         ) {
           // Check if the referenced entity is in the state
 
-          if (changedCurrentState.some((state) => value.includes(state) || verifyDotAndBracketNotations(value))) {
+          if (changedCurrentState.some((state) => value.includes(state))) {
             return true;
           }
         } else if (typeof value === 'object') {
