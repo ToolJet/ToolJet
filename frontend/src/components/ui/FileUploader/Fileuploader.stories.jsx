@@ -1,9 +1,10 @@
-import React from 'react';
-import FileUploaderComponent from './Index';
+import React, { useState } from 'react';
+import FileUploadComponent from './FileUpload/Index';
+import FileListComponent from './FileList/Index';
 
 export default {
   title: 'Components/FileUploader',
-  component: FileUploaderComponent,
+  component: FileUploadComponent,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -18,9 +19,6 @@ export default {
     width: {
       control: 'text',
     },
-    name: {
-      control: 'text',
-    },
     id: {
       control: 'text',
     },
@@ -30,7 +28,7 @@ export default {
     label: {
       control: 'text',
     },
-    'aria-label': {
+    ariaLabel: {
       control: 'text',
     },
     required: {
@@ -45,29 +43,60 @@ export default {
     maxSize: {
       control: 'number',
     },
+    onRetry: {
+      control: 'function',
+    },
   },
 };
 
-const Template = (args) => <FileUploaderComponent {...args} />;
+const Template = ({
+  type,
+  width,
+  id,
+  disabled,
+  label,
+  ariaLabel,
+  required,
+  helperText,
+  acceptedFormats,
+  maxSize,
+  onRetry,
+}) => {
+  const [files, setFiles] = useState([]);
+
+  const removeFile = (fileToRemove) => {
+    setFiles(files.filter((file) => file !== fileToRemove));
+  };
+
+  return (
+    <div>
+      <FileUploadComponent
+        id={id}
+        aria-label={ariaLabel}
+        type={type}
+        files={files}
+        onFilesChange={setFiles}
+        width={width}
+        label={label}
+        helperText={helperText}
+        required={required}
+        disabled={disabled}
+        acceptedFormats={acceptedFormats}
+        maxSize={maxSize}
+      />
+      <FileListComponent type={type} files={files} onRemove={removeFile} width={width} onRetry={onRetry} />
+    </div>
+  );
+};
 
 export const RocketFileUploader = Template.bind({});
 RocketFileUploader.args = {
   type: 'single',
   width: '300px',
-  name: '',
-  id: '',
-  disabled: false,
   label: 'Label text',
-  'aria-label': '',
-  required: false,
   helperText: 'This is a description',
+  required: false,
+  disabled: false,
   acceptedFormats: 'PNG, JPG, PDF',
   maxSize: 10,
-};
-
-export const RocketMultipleFileUploader = (args) => {
-  return <FileUploaderComponent {...args} type="multiple" />;
-};
-RocketMultipleFileUploader.args = {
-  ...RocketFileUploader.args,
 };

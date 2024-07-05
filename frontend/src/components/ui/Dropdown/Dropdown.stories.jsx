@@ -67,9 +67,18 @@ const Template = (args) => <DropdownComponent {...args} />;
 export const RocketDropdown = Template.bind({});
 RocketDropdown.args = {
   options: {
-    'Option 1': 'Option 1',
-    'Option 2': 'Option 2',
-    'Option 3': 'Option 3',
+    'Option 1': {
+      value: 'Option 1',
+      avatarSrc: 'https://github.com/shadcn.png',
+      avatarAlt: '@shadcn',
+      avatarFall: 'fallback value',
+    },
+    'Option 2': {
+      value: 'Option 2',
+    },
+    'Option 3': {
+      value: 'Option 3',
+    },
   },
   width: '170px',
   placeholder: 'Select an option',

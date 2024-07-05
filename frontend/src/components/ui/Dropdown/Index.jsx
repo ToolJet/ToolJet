@@ -38,10 +38,10 @@ const DropdownComponent = ({ options = {}, ...props }) => {
             {Object.keys(options).map((key) => (
               <SelectItem
                 {...props}
-                value={options[key]}
-                // avatarSrc="https://github.com/shadcn.png"
-                // avatarAlt="@shadcn"
-                // avatarFall="CN"
+                value={options[key].value}
+                avatarSrc={options[key].avatarSrc}
+                avatarAlt={options[key].avatarAlt}
+                avatarFall={options[key].avatarFall}
                 key={key}
               >
                 {key}

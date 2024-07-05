@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Constraints, FileUploadIcon, InputFileLabel, UploadIcon } from '../FileUploaderUtils/FileUploaderUtils';
 
-const FileUploadComponent = ({
+const FileUpload = ({
   type,
   files,
   onFilesChange,
@@ -19,7 +19,9 @@ const FileUploadComponent = ({
     event.preventDefault();
     setIsHovering(true);
   };
+
   const handleDragLeave = () => setIsHovering(false);
+
   const handleDrop = (event) => {
     event.preventDefault();
     console.log(event.dataTransfer.files);
@@ -32,6 +34,7 @@ const FileUploadComponent = ({
       onFilesChange([...newFiles]);
     }
   };
+
   const handleFileChange = (event) => {
     console.log(event.target.files);
     const newFiles = Array.from(event.target.files);
@@ -107,4 +110,4 @@ const FileUploadComponent = ({
   );
 };
 
-export default FileUploadComponent;
+export default FileUpload;
