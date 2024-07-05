@@ -38,6 +38,7 @@ import { InvitedUser } from 'src/decorators/invited-user.decorator';
 import { InvitedUserSessionDto } from '@dto/invited-user-session.dto';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { OrganizationInviteAuthGuard } from 'src/modules/auth/organization-invite-auth.guard';
+import { OrganizationUsersService } from '@services/organization_users.service';
 
 @Controller()
 export class AppController {
@@ -45,7 +46,8 @@ export class AppController {
     private authService: AuthService,
     private userService: UsersService,
     private sessionService: SessionService,
-    private organizationService: OrganizationsService
+    private organizationService: OrganizationsService,
+    private organizationUsersService: OrganizationUsersService
   ) {}
 
   @Post('authenticate')
@@ -83,20 +85,29 @@ export class AppController {
   @UseGuards(SessionAuthGuard)
   @Get('session')
   async getSessionDetails(@User() user, @Query('appId') appId: string, @Query('workspaceSlug') workspaceSlug: string) {
+    let appData: { organizationId: string; isPublic: boolean };
     let currentOrganization: Organization;
-
-    let app: { organizationId: string; isPublic: boolean };
     if (appId) {
-      app = await this.userService.returnOrgIdOfAnApp(appId);
+      appData = await this.userService.returnOrgIdOfAnApp(appId);
     }
 
-    /* if the user has a session and the app is public, we don't need to authorize the app organization id */
-    if ((app && !app?.isPublic) || workspaceSlug) {
-      const organization = await this.organizationService.fetchOrganization(workspaceSlug || app.organizationId);
+    if (workspaceSlug || appData?.organizationId) {
+      const organization = await this.organizationService.fetchOrganization(workspaceSlug || appData.organizationId);
       if (!organization) {
         throw new NotFoundException("Coudn't found workspace. workspace id or slug is incorrect!.");
       }
-      currentOrganization = organization;
+      const activeMemberOfOrganization = await this.organizationUsersService.isTheUserIsAnActiveMemberOfTheWorkspace(
+        user.id,
+        organization.id
+      );
+      if (activeMemberOfOrganization) currentOrganization = organization;
+      const alreadyWorkspaceSessionAvailable = user.organizationIds?.includes(appData?.organizationId);
+      const orgIdNeedsToBeUpdatedForApplicationSession =
+        appData && appData.organizationId !== user.defaultOrganizationId && alreadyWorkspaceSessionAvailable;
+      if (orgIdNeedsToBeUpdatedForApplicationSession) {
+        /* If the app's organization id is there in the JWT and user default organization id is different, then update it */
+        await this.userService.updateUser(user.id, { defaultOrganizationId: appData.organizationId });
+      }
     }
     return await this.authService.generateSessionPayload(user, currentOrganization);
   }
