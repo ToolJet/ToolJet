@@ -29,8 +29,9 @@ export class TooljetDbModule implements OnModuleInit {
 
   async onModuleInit() {
     const enableTooljetDb = this.configService.get('ENABLE_TOOLJET_DB') === 'true';
-    console.log(`ToolJet Database enabled: ${enableTooljetDb}`);
     this.logger.log(`ToolJet Database enabled: ${enableTooljetDb}`);
+
+    if (!enableTooljetDb) return;
 
     const hasTooljetDbReconfig = this.configService.get('TOOLJET_DB_RECONFIG') === 'true';
     this.logger.log(`Tooljet Database reconfig: ${hasTooljetDbReconfig}`);
