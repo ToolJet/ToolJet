@@ -370,12 +370,12 @@ export class DataSourcesService {
           encrypted: false,
         });
 
-      dataSource.options = (
-        await this.appEnvironmentService.getOptions(dataSourceId, organizationId, envToUpdate.id)
-      ).options;
-
-      const newOptions = await this.parseOptionsForUpdate(dataSource, options);
       if (isMultiEnvEnabled) {
+        dataSource.options = (
+          await this.appEnvironmentService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+        ).options;
+
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options);
         await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
       } else {
         const allEnvs = await this.appEnvironmentService.getAll(organizationId);
@@ -385,6 +385,11 @@ export class DataSourcesService {
         */
         await Promise.all(
           allEnvs.map(async (envToUpdate) => {
+            dataSource.options = (
+              await this.appEnvironmentService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+            ).options;
+
+            const newOptions = await this.parseOptionsForUpdate(dataSource, options);
             await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
           })
         );

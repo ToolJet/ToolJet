@@ -185,7 +185,9 @@ export class LicenseService {
         if (organizationId !== licenseTerms.workspaceId) {
           throw new Error('Incorrect organization in license key');
         }
-
+        const expiryDate = new Date(licenseTerms.expiry);
+        const expiryWithGracePeriod = new Date(expiryDate);
+        expiryWithGracePeriod.setDate(expiryDate.getDate() + 14);
         await dbTransactionWrap((manager: EntityManager) => {
           return manager.upsert(
             OrganizationsLicense,
@@ -193,6 +195,7 @@ export class LicenseService {
               licenseKey: dto.key,
               terms: licenseTerms,
               expiryDate: licenseTerms.expiry,
+              expiryWithGracePeriod,
               licenseType: licenseTerms.type,
               organizationId: licenseTerms.workspaceId,
               updatedAt: new Date(),

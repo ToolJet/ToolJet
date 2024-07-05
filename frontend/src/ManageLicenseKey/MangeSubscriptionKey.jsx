@@ -40,6 +40,7 @@ function ManageSubscriptionKey({ darkMode }) {
   const [featureAccess, setFeatureAccess] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [licenseKey, setLicenseKey] = useState('');
   const { workspaceId } = useParams();
   const { load_app, current_organization_id, current_user } = authenticationService.currentSessionValue;
   const licenseType = featureAccess?.licenseStatus?.licenseType;
@@ -174,6 +175,10 @@ function ManageSubscriptionKey({ darkMode }) {
       setProration({ amount_due: 0 });
     }
   }, [planForm]);
+
+  const updateLicense = async () => {
+    licenseService.update({ key: licenseKey });
+  };
 
   const fetchCurrentPlanDetails = async () => {
     setLicenseLoaded(false);
@@ -469,6 +474,10 @@ function ManageSubscriptionKey({ darkMode }) {
         }
         footerBody={footerBody()}
       />
+      <div style={{ display: 'none' }}>
+        <textarea value={licenseKey} onChange={(event) => setLicenseKey(event.target.value)}></textarea>
+        <button onClick={updateLicense}>Submit</button>
+      </div>
       <ChatwootIntegration
         token="oN4XrHrWTqwPTgj66JuzVrje"
         darkMode={darkMode}
