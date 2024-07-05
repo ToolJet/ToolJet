@@ -150,17 +150,3 @@ export function updateParentNodes(path, newValue) {
 
   return pathsToUpdate;
 }
-
-export function getAllChildPathAndValue(obj, path = '') {
-  if (!obj || typeof obj !== 'object') return [];
-
-  const paths = [];
-  for (const key in obj) {
-    if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-      paths.push(...getAllChildPathAndValue(obj[key], `${path}${key}.`));
-    } else {
-      paths.push({ path: `${path}${key}`, value: obj[key] });
-    }
-  }
-  return paths;
-}
