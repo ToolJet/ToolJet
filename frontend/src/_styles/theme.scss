@@ -8856,25 +8856,38 @@ tbody {
   padding: 16px;
 
   tbody {
-
-    tr>td>span,
-    tr>td>a {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 140px;
+    tr{
+      td {
+        border-bottom-width: 0px !important;
+        display: flex;
+        align-items: center;
+        flex: 9%;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        &[data-name="role-header"] {
+          max-width: 98px !important;
+        }
+        span,a {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 140px;
+        }
+      }
     }
   }
 
   thead {
     tr {
-      padding: 0px 6px;
+      padding: 6px 0px 0px 6px;
       gap: 8px;
       width: 848px;
       height: 40px;
       display: flex;
       align-items: center;
-      margin-top: 6px;
     }
 
     tr>th {
@@ -8882,6 +8895,10 @@ tbody {
       border-bottom: none !important;
       padding: 0 !important;
       width: 282px;
+
+      &[data-name="role-header"] {
+        width:120px !important;
+      }
     }
   }
 
@@ -8895,17 +8912,21 @@ tbody {
     gap: 8px;
   }
 
-  tr>td {
-    border-bottom-width: 0px !important;
-    display: flex;
-    align-items: center;
-    flex: 9%;
-    padding-left: 0px !important;
-    padding-right: 0px !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  // tr>td {
+  //   border-bottom-width: 0px !important;
+  //   display: flex;
+  //   align-items: center;
+  //   flex: 9%;
+  //   padding-left: 0px !important;
+  //   padding-right: 0px !important;
+  //   white-space: nowrap;
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+
+  //   &[data-name="role-header"] {
+  //       width:120px !important;
+  //     }
+  // }
 }
 
 .user-actions-button {

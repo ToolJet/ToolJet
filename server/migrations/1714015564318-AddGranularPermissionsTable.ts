@@ -14,7 +14,7 @@ export class AddGranularPermissionsTable1714015564318 implements MigrationInterf
       CREATE TABLE granular_permissions (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         group_id UUID,
-        name VARCHAR NOT NULL,
+        name VARCHAR(50) NOT NULL,
         type resource_type NOT NULL,
         is_all BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

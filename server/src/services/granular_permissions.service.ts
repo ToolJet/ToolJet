@@ -77,7 +77,7 @@ export class GranularPermissionsService {
       const { organizationId, updateGranularPermissionDto, group } = updateGranularPermissionsObj;
       const { isAll, name, resourcesToAdd, resourcesToDelete, actions, allowRoleChange } = updateGranularPermissionDto;
       const updateGranularPermission = {
-        isAll: isAll == true ? true : false,
+        isAll: isAll !== null || isAll !== undefined ? isAll : granularPermissions.isAll,
         ...(name && { name }),
       };
       const updateResource: UpdateResourceGroupPermissionsObject = {
@@ -89,7 +89,8 @@ export class GranularPermissionsService {
         allowRoleChange,
       };
       await catchDbException(async () => {
-        await manager.update(GranularPermissions, id, updateGranularPermission);
+        if (Object.keys(updateGranularPermission).length > 0)
+          await manager.update(GranularPermissions, id, updateGranularPermission);
       }, [DATA_BASE_CONSTRAINTS.GRANULAR_PERMISSIONS_NAME_UNIQUE]);
       await this.updateResourcePermissions(updateResource, organizationId, manager);
     }, manager);

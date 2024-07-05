@@ -37,8 +37,11 @@ export class AbilityService {
     resourcePermissionsObject: ResourcePermissionQueryObject
   ): Promise<UserPermissions> {
     const permissions = await this.getResourcePermission(user, resourcePermissionsObject);
+    console.log('loggin permissions');
+
     const adminGroup = permissions.find((group) => group.name === USER_ROLE.ADMIN);
     const appsGranularPermissions = permissions.flatMap((item) => item.groupGranularPermissions);
+    console.log(appsGranularPermissions);
     const userPermissions: UserPermissions = permissions.reduce((acc, group) => {
       return {
         isAdmin: !!adminGroup,

@@ -257,7 +257,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
           data-cy="helper-text-admin-app-access"
         >
-          <SolidIcon name="information" fill="#3E63DD" /> {text}
+          <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}>
             read documentation
           </a>{' '}

@@ -8,6 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
 import { humanizeifDefaultGroupName, decodeEntities } from '@/_helpers/utils';
+import { ToolTip } from '@/_components/ToolTip';
 
 const UsersTable = ({
   isLoading,
@@ -34,7 +35,9 @@ const UsersTable = ({
                 <th data-cy="users-table-name-column-header">
                   {translator('header.organization.menus.manageUsers.name', 'Name')}
                 </th>
-                <th data-cy="users-table-groups-column-header">User role</th>
+                <th data-cy="users-table-groups-column-header" data-name="role-header">
+                  User role
+                </th>
                 <th data-cy="users-table-groups-column-header">Custom groups</th>
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
@@ -100,7 +103,7 @@ const UsersTable = ({
                           </span>
                         </div>
                       </td>
-                      <GroupChipTD groups={user.role_group.map((group) => group.name)} />
+                      <GroupChipTD groups={user.role_group.map((group) => group.name)} isRole={true} />
                       <GroupChipTD groups={user.groups.map((group) => group.name)} />
                       {user.status && (
                         <td className="text-muted">
@@ -178,7 +181,7 @@ const UsersTable = ({
 
 export default UsersTable;
 
-const GroupChipTD = ({ groups = [] }) => {
+const GroupChipTD = ({ groups = [], isRole = false }) => {
   const [showAllGroups, setShowAllGroups] = useState(false);
   const groupsListRef = useRef();
 
@@ -216,13 +219,16 @@ const GroupChipTD = ({ groups = [] }) => {
   };
 
   const renderGroupChip = (group, index) => (
-    <span className="group-chip" key={index} data-cy="group-chip">
-      {humanizeifDefaultGroupName(group)}
-    </span>
+    <ToolTip message={group}>
+      <span className="group-chip" key={index} data-cy="group-chip">
+        {humanizeifDefaultGroupName(group)}
+      </span>
+    </ToolTip>
   );
 
   return (
     <td
+      data-name={isRole ? 'role-header' : ''}
       data-active={showAllGroups}
       ref={groupsListRef}
       onClick={(e) => {

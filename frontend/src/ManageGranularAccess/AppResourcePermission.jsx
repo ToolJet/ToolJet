@@ -11,6 +11,7 @@ function AppResourcePermissions({
   openEditPermissionModal,
 }) {
   const [onHover, setHover] = useState(false);
+  const [notClickable, setNotClickable] = useState(false);
   const isRoleGroup = currentGroupPermission.name == 'admin';
   const disableEditUpdate = currentGroupPermission.name == 'end-user';
   const appsPermissions = permissions.appsGroupPermissions;
@@ -29,7 +30,8 @@ function AppResourcePermissions({
         setHover(false);
       }}
       onClick={() => {
-        !isRoleGroup && openEditPermissionModal(permissions);
+        if (notClickable) console.log('this is runing');
+        !isRoleGroup && !notClickable && openEditPermissionModal(permissions);
       }}
     >
       <div className="resource-name">
@@ -40,14 +42,21 @@ function AppResourcePermissions({
         <div className="d-flex apps-permission-wrap flex-column">
           <label className="form-check form-check-inline">
             <input
+              onMouseOver={() => {
+                setNotClickable(true);
+              }}
+              onMouseOut={() => {
+                setNotClickable(false);
+              }}
               className="form-check-input"
               type="radio"
               onClick={() => {
-                updateOnlyGranularPermissions(permissions, {
-                  canEdit: !appsPermissions.canEdit,
-                  canView: appsPermissions.canEdit,
-                  ...(!appsPermissions.canEdit && { hideFromDashboard: false }),
-                });
+                !appsPermissions.canEdit &&
+                  updateOnlyGranularPermissions(permissions, {
+                    canEdit: !appsPermissions.canEdit,
+                    canView: appsPermissions.canEdit,
+                    ...(!appsPermissions.canEdit && { hideFromDashboard: false }),
+                  });
               }}
               checked={appsPermissions.canEdit}
               disabled={isRoleGroup || disableEditUpdate}
@@ -61,13 +70,20 @@ function AppResourcePermissions({
           </label>
           <label className="form-check form-check-inline">
             <input
+              onMouseOver={() => {
+                setNotClickable(true);
+              }}
+              onMouseOut={() => {
+                setNotClickable(false);
+              }}
               className="form-check-input"
               type="radio"
               onClick={() => {
-                updateOnlyGranularPermissions(permissions, {
-                  canView: !appsPermissions.canView,
-                  canEdit: appsPermissions.canView,
-                });
+                !appsPermissions.canView &&
+                  updateOnlyGranularPermissions(permissions, {
+                    canView: !appsPermissions.canView,
+                    canEdit: appsPermissions.canView,
+                  });
               }}
               checked={appsPermissions.canView}
               disabled={isRoleGroup || disableEditUpdate}
@@ -80,6 +96,12 @@ function AppResourcePermissions({
           </label>
           <label className="form-check form-check-inline">
             <input
+              onMouseOver={() => {
+                setNotClickable(true);
+              }}
+              onMouseOut={() => {
+                setNotClickable(false);
+              }}
               className="form-check-input"
               type="checkbox"
               onChange={() => {

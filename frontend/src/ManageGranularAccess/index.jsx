@@ -1,20 +1,15 @@
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import ModalBase from '@/_ui/Modal';
-import { AppsSelect } from '@/_ui/Modal/AppsSelect';
-import Multiselect from '@/_ui/Multiselect/Multiselect';
 import React from 'react';
-import { OverlayTrigger } from 'react-bootstrap';
 import { withTranslation } from 'react-i18next';
 import { groupPermissionV2Service } from '@/_services';
 import { toast } from 'react-hot-toast';
-import GroupChipTD from '@/ManageGroupPermissionsV2/ResourceChip';
 import '../ManageGroupPermissionsV2/groupPermissions.theme.scss';
 import ChangeRoleModal from '@/ManageGroupPermissionResourcesV2/ChangeRoleModal';
 import AppResourcePermissions from '@/ManageGranularAccess/AppResourcePermission';
 import AddResourcePermissionsMenu from '@/ManageGranularAccess/AddResourcePermissionsMenu';
 import { ConfirmDialog } from '@/_components';
-import { ToolTip } from '@/_components/ToolTip';
+import AddEditResourcePermissionsModal from '@/ManageGranularAccess/AddEditResourceModal/AddEditResourcePermissionsModal';
 
 class ManageGranularAccessComponent extends React.Component {
   constructor(props) {
@@ -163,8 +158,8 @@ class ManageGranularAccessComponent extends React.Component {
       modalTitle: 'Edit app permissions',
       showAddPermissionModal: true,
       modalType: 'edit',
-      isAll: granularPermission.isAll,
-      isCustom: currentApps?.length > 0,
+      isAll: !!granularPermission.isAll,
+      isCustom: !granularPermission.isAll,
       newPermissionName: granularPermission.name,
       initialPermissionState: {
         canEdit: appsGroupPermission.canEdit,
@@ -288,9 +283,11 @@ class ManageGranularAccessComponent extends React.Component {
           style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
           data-cy="helper-text-admin-app-access"
         >
-          <SolidIcon name="information" fill="#3E63DD" /> {text}
-          <a style={{ margin: '0', padding: '0', textDecoration: 'none', color: '#3E63DD' }}>Read Documentation</a> to
-          know more
+          <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
+          <a style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}>
+            read documentation
+          </a>{' '}
+          to know more
         </p>
       </div>
     );
@@ -344,6 +341,10 @@ class ManageGranularAccessComponent extends React.Component {
     console.log('this is running');
     this.updateGranularPermissions(true);
     this.handleAutoRoleChangeModalClose();
+  };
+
+  updateState = (stateUpdater) => {
+    this.setState((prevState) => stateUpdater(prevState));
   };
 
   handleConfirmAutoRoleChangeOnlyGroupUpdate = () => {
@@ -414,9 +415,7 @@ class ManageGranularAccessComponent extends React.Component {
           darkMode={this.props.darkMode}
           isLoading={isLoading}
         />
-        <ModalBase
-          size="md"
-          show={showAddPermissionModal}
+        <AddEditResourcePermissionsModal
           handleClose={this.closeAddPermissionModal}
           handleConfirm={
             modalType === 'add'
@@ -425,7 +424,10 @@ class ManageGranularAccessComponent extends React.Component {
                   this.updateGranularPermissions();
                 }
           }
-          className="permission-manager-modal"
+          updateParentState={this.updateState}
+          resourceType="app"
+          currentState={this.state}
+          show={showAddPermissionModal}
           title={
             <div className="my-3 permission-manager-title" data-cy="modal-title">
               <span className="font-weight-500">
@@ -458,149 +460,12 @@ class ManageGranularAccessComponent extends React.Component {
             disabled: (modalType === 'add' && !newPermissionName) || (isCustom && selectedApps.length === 0),
             tooltipMessage: addPermissionTooltipMessage,
           }}
+          disableBuilderLevelUpdate={disableEditUpdate}
+          selectedApps={selectedApps}
+          setSelectedApps={this.setSelectedApps}
+          addableApps={addableApps}
           darkMode={this.props.darkMode}
-        >
-          <div className="form-group mb-3">
-            <label className="form-label bold-text">Permission name</label>
-            <div className="tj-app-input">
-              <input
-                type="text"
-                className={'form-control'}
-                placeholder={'Eg. Product analytics apps'}
-                name="permissionName"
-                value={newPermissionName}
-                onChange={(e) => {
-                  this.setState({
-                    newPermissionName: e.target.value,
-                  });
-                }}
-              />
-              <span className="text-danger">{errors['permissionName']}</span>
-            </div>
-            <div className="mt-1 tj-text-xxsm">
-              <div data-cy="workspace-login-help-text">Permission name must be unique and max 50 characters</div>
-            </div>
-          </div>
-          <div className="form-group mb-3">
-            <label className="form-label bold-text">Permission</label>
-            <div className="type-container">
-              <div className="left-container">
-                <label className="form-check form-check-inline">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    disabled={disableEditUpdate}
-                    checked={initialPermissionState.canEdit}
-                    onClick={() => {
-                      this.setState((prevState) => ({
-                        initialPermissionState: {
-                          ...prevState.initialPermissionState,
-                          canEdit: !prevState.initialPermissionState.canEdit,
-                          canView: prevState.initialPermissionState.canEdit,
-                          ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
-                        },
-                      }));
-                    }}
-                  />
-
-                  <div>
-                    <span className="form-check-label text-muted">Edit</span>
-                    <span className="text-muted tj-text-xsm">Access to app builder</span>
-                  </div>
-                </label>
-              </div>
-              <div className="right-container">
-                <label className="form-check form-check-inline">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    disabled={disableEditUpdate}
-                    checked={initialPermissionState.canView}
-                    onClick={() => {
-                      this.setState((prevState) => ({
-                        initialPermissionState: {
-                          ...prevState.initialPermissionState,
-                          canView: !prevState.initialPermissionState.canView,
-                          canEdit: prevState.initialPermissionState.canView,
-                          ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
-                        },
-                      }));
-                    }}
-                  />
-                  <div>
-                    <span className="form-check-label text-muted">View</span>
-                    <span className="text-muted tj-text-xsm">Only view deployed version of app</span>
-                  </div>
-                </label>
-                <label className="form-check form-check-inline">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    disabled={!initialPermissionState.canView}
-                    checked={initialPermissionState.hideFromDashboard}
-                    onClick={() => {
-                      this.setState((prevState) => ({
-                        initialPermissionState: {
-                          ...initialPermissionState,
-                          hideFromDashboard: !prevState.initialPermissionState.hideFromDashboard,
-                        },
-                      }));
-                    }}
-                  />
-                  <div>
-                    <span className={`form-check-label faded-text`}>Hide from dashboard</span>
-                    <span className="text-muted tj-text-xsm">App will be accessible by URL only</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="form-group mb-3">
-            <label className="form-label bold-text">Resources</label>
-            <div className="resources-container">
-              <label className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  checked={isAll}
-                  onClick={() => {
-                    this.setState((prevState) => ({ isAll: !prevState.isAll, isCustom: prevState.isAll }));
-                  }}
-                />
-                <div>
-                  <span className="form-check-label text-muted">All apps</span>
-                  <span className="text-muted tj-text-xsm">
-                    This will select all apps in the workspace including any new apps created
-                  </span>
-                </div>
-              </label>
-              <label className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  disabled={addableApps.length === 0}
-                  checked={isCustom}
-                  onClick={() => {
-                    this.setState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
-                  }}
-                />
-                <div>
-                  <span className="form-check-label text-muted">Custom</span>
-                  <span className="text-muted tj-text-xsm">
-                    Select specific applications you want to add to the group
-                  </span>
-                </div>
-              </label>
-              <AppsSelect
-                disabled={!isCustom}
-                allowSelectAll={true}
-                value={selectedApps}
-                onChange={this.setSelectedApps}
-                options={addableApps}
-              />
-            </div>
-          </div>
-        </ModalBase>
+        />
         {!granularPermissions.length ? (
           <div className="empty-container">
             <div className="icon-container">

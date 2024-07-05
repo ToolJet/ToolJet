@@ -442,6 +442,10 @@
 
 }
 
-.custom-input-error:focus {
-  border-color: red !important; /* Change border color when input is focused */
+.error-text{
+  color: red;
+}
+.form-control,
+.error-input {
+  border-color: red !important;
 }
