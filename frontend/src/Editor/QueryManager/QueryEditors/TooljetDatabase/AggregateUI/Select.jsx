@@ -24,7 +24,7 @@ export const SelectBox = ({
         <DropDownSelect
           customBorder={false}
           showPlaceHolder
-          options={options}
+          options={options || []}
           darkMode={darkMode}
           onChange={handleChange}
           value={value}

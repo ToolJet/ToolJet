@@ -9,7 +9,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-
+import { ToolTip } from '@/_components';
 export const AggregateFilter = ({ darkMode, operation = '' }) => {
   const {
     columns,
@@ -46,6 +46,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
   }, [operation, handleOptionsChange, joinTableOptionsChange]);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [currentAggregateKeyForDeleteConfirmation, setCurrentAggregateKeyForDeleteConfirmation] = useState(null);
 
   const addNewAggregateOption = () => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
@@ -79,11 +80,11 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     };
 
     const value = getValue(operation, optionToUpdate, selectedValue);
-    const table_id = selectedValue.hasOwnProperty('tableId') ? selectedValue.tableId : selectedTableId;
+    const tableIdExist = selectedValue.hasOwnProperty('tableId');
     const aggregateToUpdate = {
       ...currentAggregates[key],
       [optionToUpdate]: value,
-      table_id,
+      ...(tableIdExist && { table_id: selectedValue.tableId }),
     };
     const updatedAggregates = {
       ...currentAggregates,
@@ -92,48 +93,88 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     handleChange('aggregates', updatedAggregates);
   };
 
-  const handleDeleteAggregate = (aggregateKey) => {
-    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
-    const numberOfAggregates = Object.keys(currentAggregates).length;
+  const showConfirmationMoalForLastFilledValue = (currentAggregates, aggregateKey) => {
+    if (!currentAggregates[aggregateKey]) {
+      return false;
+    }
 
-    if (numberOfAggregates > 1) {
-      delete currentAggregates[aggregateKey];
-      try {
-        handleChange('aggregates', currentAggregates);
-        toast.success('Aggregate function deleted successfully!');
-        return;
-      } catch (error) {
-        return toast.error('Could not delete aggregate function. Please try again!');
-      }
-    } else {
-      const currentGroupBy = { ...(operationDetails?.group_by || {}) };
-      const isValidGroupByPresent = Object.entries(currentGroupBy).some(([tableId, selectedColumn]) => {
-        if (tableId && selectedColumn.length >= 1) {
-          return true;
-        }
-        return false;
-      });
-      if (isValidGroupByPresent) {
-        setShowDeleteConfirmation(true);
-      } else {
-        try {
-          delete currentAggregates[aggregateKey];
-          handleChange('aggregates', currentAggregates);
-          toast.success('Aggregate function deleted successfully!');
-          return;
-        } catch (error) {
-          return toast.error('Could not delete aggregate function. Please try again!');
+    // Check if all values for the matched key are truthy
+    const allValuesTruthy = Object.values(currentAggregates[aggregateKey]).every((value) => Boolean(value));
+    if (!allValuesTruthy) {
+      return false;
+    }
+
+    // Check if the rest of the keys have values that are either all empty or partially filled
+    const keys = Object.keys(currentAggregates);
+    for (const key of keys) {
+      if (key !== aggregateKey) {
+        const values = Object.values(currentAggregates[key]);
+        const allEmpty = values.every((value) => value === '');
+        const partiallyFilled = values.some((value) => value !== '') && values.some((value) => value === '');
+
+        if (!(allEmpty || partiallyFilled)) {
+          return false;
         }
       }
     }
+
+    return true;
   };
 
-  const executeAggregateDeletion = (aggregateKey) => {
+  const handleDeleteAggregate = (aggregateKey) => {
+    const currentAggregates = { ...(operationDetails?.aggregates || {}) };
+    const numberOfAggregates = Object.keys(currentAggregates).length;
+    const currentGroupBy = { ...(operationDetails?.group_by || {}) };
+    const showConfirmationModal = showConfirmationMoalForLastFilledValue(currentAggregates, aggregateKey);
+
+    const isValidGroupByPresent = Object.values(currentGroupBy).some((selectedColumn) => selectedColumn.length >= 1);
+
+    const deleteAggregate = () => {
+      delete currentAggregates[aggregateKey];
+      handleChange('aggregates', currentAggregates);
+      return toast.success('Aggregate function deleted successfully!');
+    };
+
+    const showError = () => {
+      return toast.error('Could not delete aggregate function. Please try again!');
+    };
+
     try {
+      if (numberOfAggregates > 1) {
+        if (showConfirmationModal && isValidGroupByPresent) {
+          setCurrentAggregateKeyForDeleteConfirmation(aggregateKey);
+          setShowDeleteConfirmation(true);
+          return;
+        } else {
+          deleteAggregate();
+          return;
+        }
+      } else {
+        if (isValidGroupByPresent) {
+          setCurrentAggregateKeyForDeleteConfirmation(aggregateKey);
+          setShowDeleteConfirmation(true);
+          return;
+        } else {
+          deleteAggregate();
+          return;
+        }
+      }
+    } catch (error) {
+      showError();
+      return;
+    }
+  };
+
+  const executeAggregateDeletion = () => {
+    const aggregateKey = currentAggregateKeyForDeleteConfirmation || '';
+
+    try {
+      if (!aggregateKey) {
+        throw new Error('Could not delete aggregate function. Please try again!');
+      }
       const currentAggregates = { ...(operationDetails?.aggregates || {}) };
       delete currentAggregates[aggregateKey];
-      const currentGroupBy = { ...(operationDetails?.group_by || {}) };
-      delete currentGroupBy?.[selectedTableId];
+      const currentGroupBy = {};
 
       handleChange('group_by', currentGroupBy);
       handleChange('aggregates', currentAggregates);
@@ -244,35 +285,43 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     },
   ];
 
+  const getJoinTableOption = (value, tableId) => {
+    const valueToFilter = `${value}-${tableId}`;
+    let foundOption = null; // Use a variable to store the found option
+
+    tableListOptions?.forEach((singleOption) => {
+      if (foundOption) return; // Exit early if foundOption is set
+      singleOption?.options?.some((option) => {
+        if (option.value === valueToFilter) {
+          foundOption = {
+            value: valueToFilter.split('-')[0],
+            label: option.tableName + '.' + option.label,
+            table: tableId,
+          };
+          return true; // Exit the some loop early
+        }
+        return false; // Continue the some loop
+      });
+    });
+
+    return foundOption || {};
+  };
+
+  const getListRowsOption = (value) => {
+    const option = columnAccessorsOptions?.find((option) => option?.value === value);
+    return option || {};
+  };
+
   const constructAggregateValue = (value, operation, option, tableId = '') => {
     if (option === 'aggFx') {
       const option = aggFxOptions.find((option) => option?.value === value);
       return option || {};
     }
     if (option === 'column') {
-      switch (operation) {
-        case 'joinTable': {
-          const option = tableListOptions?.reduce((acc, singleOption) => {
-            const valueToFilter = `${value}-${tableId}`;
-            singleOption?.options?.find((option) => {
-              if (option.value === valueToFilter) {
-                acc = {
-                  value: valueToFilter.split('-')[0],
-                  label: option.tableName + '.' + option.label,
-                  table: tableId,
-                };
-              }
-            });
-            return acc;
-          }, {});
-          return option || {};
-        }
-        case 'listRows': {
-          const option = columnAccessorsOptions?.find((option) => option?.value === value);
-          return option || {};
-        }
-        default:
-          break;
+      if (operation === 'joinTable') {
+        return getJoinTableOption(value, tableId);
+      } else if (operation === 'listRows') {
+        return getListRowsOption(value);
       }
     }
   };
@@ -286,6 +335,18 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
         };
       }) || []
     );
+  };
+
+  const selectedTableName = getTableName(selectedTableId);
+
+  const isGroupByTableNameTruncated = (text) => {
+    const container = document.querySelector('.truncate-container');
+    const textElement = document.createElement('span');
+    textElement.innerText = text;
+    document.body.append(textElement);
+    const isTruncated = textElement?.offsetWidth > container?.offsetWidth;
+    document.body.removeChild(textElement);
+    return isTruncated;
   };
 
   return (
@@ -349,7 +410,9 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                       'Deleting the aggregate function will also delete the  group by conditions. Are you sure, you want to continue?'
                     }
                     // confirmButtonLoading={isDeletingQueryInProcess}
-                    onConfirm={() => executeAggregateDeletion(aggregateKey)}
+                    onConfirm={() => {
+                      executeAggregateDeletion();
+                    }}
                     onCancel={() => setShowDeleteConfirmation(false)}
                     darkMode={darkMode}
                   />
@@ -398,15 +461,22 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
             </div>
           )}
           {operation === 'joinTable' && (
-            <div className="d-flex flex-column custom-gap-8">
+            <div className="d-flex flex-column custom-gap-8 join-group-bys">
               <div className="border rounded d-flex">
-                <div
-                  style={{ width: '15%', padding: '4px 8px' }}
-                  className="border border-only-right d-flex align-items-center"
+                <ToolTip
+                  message={selectedTableName}
+                  placement="top"
+                  tooltipClassName="tjdb-cell-tooltip"
+                  show={isGroupByTableNameTruncated(selectedTableName)}
                 >
-                  {getTableName(selectedTableId)}
-                </div>
-                <div style={{ width: '85%' }}>
+                  <div
+                    style={{ width: '25%', padding: '4px 8px' }}
+                    className="border border-only-right d-block align-items-center text-truncate truncate-container"
+                  >
+                    {selectedTableName}
+                  </div>
+                </ToolTip>
+                <div style={{ width: '75%' }}>
                   <SelectBox
                     width="100%"
                     height="32"
@@ -422,30 +492,45 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                 </div>
               </div>
               {joinTableOptions?.joins?.map((table) => {
-                return (
-                  <div key={table.table} className="border rounded d-flex">
-                    <div
-                      style={{ width: '15%', padding: '4px 8px' }}
-                      className="border border-only-right d-flex align-items-center"
-                    >
-                      {getTableName(table.table)}
+                if (table.hasOwnProperty('table') && table.table) {
+                  const tableName = getTableName(table.table); // Replace with your dynamic text
+                  const isTextTruncated = isGroupByTableNameTruncated(tableName);
+                  const tableNameEmpty = !tableName;
+                  const showTooltip = tableNameEmpty || isTextTruncated;
+                  const toolTipMessage = tableNameEmpty ? 'Please select joining table to see its name' : tableName;
+                  return (
+                    <div key={table.table} className="border rounded d-flex">
+                      <ToolTip
+                        message={toolTipMessage}
+                        placement="top"
+                        tooltipClassName="tjdb-cell-tooltip"
+                        show={showTooltip}
+                      >
+                        <div
+                          style={{ width: '25%', padding: '4px 8px' }}
+                          className="border border-only-right d-block align-items-center text-truncate group-by-trunate"
+                        >
+                          {tableName}
+                        </div>
+                      </ToolTip>
+                      <div style={{ width: '75%' }}>
+                        <SelectBox
+                          width="100%"
+                          height="32"
+                          value={constructGroupByValue(operationDetails?.group_by?.[table.table])}
+                          options={getColumnsDetails(table.table)}
+                          placeholder={`Select column(s) to group by`}
+                          isMulti={true}
+                          handleChange={(value) => handleGroupByChange(table.table, value)}
+                          disabled={disableGroupBy() || tableNameEmpty}
+                          darkMode={darkMode}
+                          showTooltip={disableGroupBy()}
+                        />
+                      </div>
                     </div>
-                    <div style={{ width: '85%' }}>
-                      <SelectBox
-                        width="100%"
-                        height="32"
-                        value={constructGroupByValue(operationDetails?.group_by?.[table.table])}
-                        options={getColumnsDetails(table.table)}
-                        placeholder={`Select column(s) to group by`}
-                        isMulti={true}
-                        handleChange={(value) => handleGroupByChange(table.table, value)}
-                        disabled={disableGroupBy()}
-                        darkMode={darkMode}
-                        showTooltip={disableGroupBy()}
-                      />
-                    </div>
-                  </div>
-                );
+                  );
+                }
+                return null;
               })}
             </div>
           )}

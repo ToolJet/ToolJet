@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import { clone } from 'lodash';
+import { clone, isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
@@ -87,11 +87,14 @@ const SelectTableMenu = ({ darkMode }) => {
     return cleanedJoin;
   };
 
-  const showSelectSection = () => {
+  const showSelectSection = useCallback(() => {
     const groupBy = joinTableOptions?.group_by || {};
-    const isGroupByUsed = Object?.values(groupBy)?.some((condition) => condition?.length >= 1);
-    return isGroupByUsed ? false : true;
-  };
+    const aggregates = joinTableOptions?.aggregates || {};
+    const isGroupByUsed = Object?.values(groupBy)?.some((columnList) => columnList?.length >= 1);
+    //checking if isGroupby is valid or aggregates is not empty then hide select or else show select options
+    return isGroupByUsed || !isEmpty(aggregates) ? false : true;
+  }, [joinTableOptions]);
+
   return (
     <div>
       {/* Join Section */}
