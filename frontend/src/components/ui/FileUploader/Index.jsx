@@ -1,10 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import MultipleInputFile from './MultipleInputFile';
-import SingleInputFile from './SingleInputFile';
+import FileUploadComponent from './FileUpload/FileUpload';
+import FileListComponent from './FileList/FileList';
 
 const FileUploaderComponent = (props) => {
-  return props.type === 'single' ? <SingleInputFile {...props} /> : <MultipleInputFile {...props} />;
+  const [files, setFiles] = useState([]);
+
+  const removeFile = (fileToRemove) => {
+    setFiles(files.filter((file) => file !== fileToRemove));
+  };
+
+  return (
+    <div>
+      <FileUploadComponent
+        type={props.type}
+        files={files}
+        onFilesChange={setFiles}
+        width={props.width}
+        label={props.label}
+        helperText={props.helperText}
+        required={props.required}
+        disabled={props.disabled}
+        acceptedFormats={props.acceptedFormats}
+        maxSize={props.maxSize}
+      />
+      <FileListComponent type={props.type} files={files} onRemove={removeFile} width={props.width} />
+    </div>
+  );
 };
 
 export default FileUploaderComponent;
