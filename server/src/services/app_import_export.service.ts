@@ -1635,7 +1635,11 @@ export class AppImportExportService {
 
   // Entire function should be santised for Undefined values
   replaceTooljetDbTableIds(queryOptions, tooljetDatabaseMapping, organizationId: string) {
-    let transformedQueryOptions;
+    let transformedQueryOptions = { ...queryOptions };
+
+    // FIXME: Even if the operation is not 'join_tables',
+    // the queryOptions currently can have fields on join_table
+    // if the user switches b/w operations in the UI
     if (Object.keys(queryOptions).includes('join_table')) {
       transformedQueryOptions = this.replaceTooljetDbTableIdOnJoin(
         queryOptions,

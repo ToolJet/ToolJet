@@ -39,6 +39,7 @@ import {
   SOURCE,
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_USER_SOURCE,
 } from 'src/helpers/user_lifecycle';
 import { MetadataService } from './metadata.service';
 import { CookieOptions, Response } from 'express';
@@ -55,6 +56,7 @@ import { AbilityService } from './permissions-ability.service';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+import { ResendInviteDto } from '@dto/resend-invite.dto';
 
 @Injectable()
 export class AuthService {
@@ -73,7 +75,9 @@ export class AuthService {
     private sessionService: SessionService,
     private userRoleService: UserRoleService,
     private groupPermissionsService: GroupPermissionsServiceV2,
-    private abilityService: AbilityService
+    private abilityService: AbilityService,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>
   ) {}
 
   verifyToken(token: string) {
@@ -257,13 +261,70 @@ export class AuthService {
     });
   }
 
-  async resendEmail(email: string) {
+  async resendEmail(body: ResendInviteDto) {
+    const { email, organizationId, redirectTo } = body;
     if (!email) {
       throw new BadRequestException();
     }
     const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
+
+    if (existingUser?.status === USER_STATUS.ARCHIVED) {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
+
+    if (!organizationId && existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
+    }
+
+    let organizationUser: OrganizationUser;
+    if (organizationId) {
+      /* Workspace signup invitation email */
+      organizationUser = existingUser.organizationUsers.find(
+        (organizationUser) => organizationUser.organizationId === organizationId
+      );
+      if (organizationUser.status === WORKSPACE_USER_STATUS.ACTIVE) {
+        throw new NotAcceptableException('User already exists in the workspace.');
+      }
+      if (organizationUser.status === WORKSPACE_USER_STATUS.ARCHIVED) {
+        throw new NotAcceptableException('User has been archived, please contact the administrator');
+      }
+    }
+
+    if (organizationUser) {
+      const invitedOrganization = await this.organizationsRepository.findOne({
+        where: { id: organizationUser.organizationId },
+        select: ['name', 'id'],
+      });
+      if (existingUser.invitationToken) {
+        /* Not activated. */
+        this.emailService
+          .sendWelcomeEmail(
+            existingUser.email,
+            existingUser.firstName,
+            existingUser.invitationToken,
+            organizationUser.invitationToken,
+            organizationUser.organizationId,
+            invitedOrganization.name,
+            null,
+            redirectTo
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+        return;
+      } else {
+        /* Already activated */
+        this.emailService
+          .sendOrganizationUserWelcomeEmail(
+            existingUser.email,
+            existingUser.firstName,
+            null,
+            organizationUser.invitationToken,
+            invitedOrganization.name,
+            organizationUser.organizationId,
+            redirectTo
+          )
+          .catch((err) => console.error(err));
+        return;
+      }
     }
 
     if (existingUser?.invitationToken) {
@@ -368,7 +429,13 @@ export class AuthService {
       await this.organizationUsersService.create(user, personalWorkspace, true, manager);
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
-        const organizationUser = await this.organizationUsersService.create(user, signingUpOrganization, true, manager);
+        const organizationUser = await this.organizationUsersService.create(
+          user,
+          signingUpOrganization,
+          true,
+          manager,
+          WORKSPACE_USER_SOURCE.SIGNUP
+        );
         await this.userRoleService.addUserRole(
           { userId: user.id, role: USER_ROLE.END_USER },
           signingUpOrganization.id,
@@ -586,7 +653,13 @@ export class AuthService {
       signingUpOrganization.id,
       manager
     );
-    return this.organizationUsersService.create(existingUser, signingUpOrganization, true, manager);
+    return this.organizationUsersService.create(
+      existingUser,
+      signingUpOrganization,
+      true,
+      manager,
+      WORKSPACE_USER_SOURCE.SIGNUP
+    );
   }
 
   async activateAccountWithToken(activateAccountWithToken: ActivateAccountWithTokenDto, response: any) {
@@ -873,8 +946,26 @@ export class AuthService {
         });
         await this.organizationUsersService.activateOrganization(organizationUser, manager);
       }
-      return this.generateLoginResultPayload(response, user, organization, null, null, loggedInUser, manager);
+      const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
+      return this.generateLoginResultPayload(
+        response,
+        user,
+        organization,
+        null,
+        isWorkspaceSignup,
+        loggedInUser,
+        manager
+      );
     });
+  }
+
+  async getInviteeDetails(token: string) {
+    const organizationUser: OrganizationUser = await this.organizationUsersRepository.findOneOrFail({
+      where: { invitationToken: token },
+      select: ['id', 'user'],
+      relations: ['user'],
+    });
+    return { email: organizationUser.user.email };
   }
 
   async verifyInviteToken(token: string, organizationToken?: string) {
@@ -951,20 +1042,22 @@ export class AuthService {
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0];
-      const organizationDetails = currentOrganization
+      const organizationDetails = currentOrganizationId
         ? currentOrganization
-        : await manager.findOneOrFail(Organization, {
-            where: { id: currentOrganizationId },
-            select: ['slug', 'name', 'id'],
-          });
+          ? currentOrganization
+          : await manager.findOneOrFail(Organization, {
+              where: { id: currentOrganizationId },
+              select: ['slug', 'name', 'id'],
+            })
+        : null;
 
       return decamelizeKeys({
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        currentOrganizationSlug: organizationDetails.slug,
-        currentOrganizationName: organizationDetails.name,
+        currentOrganizationSlug: organizationDetails?.slug,
+        currentOrganizationName: organizationDetails?.name,
         currentOrganizationId,
       });
     });
@@ -1046,6 +1139,7 @@ export class AuthService {
       lastName,
       status: invitedUserStatus,
       organizationStatus,
+      organizationUserSource,
       invitedOrganizationId,
       source,
     } = invitedUser;
@@ -1082,6 +1176,18 @@ export class AuthService {
       throw new NotAcceptableException(errorResponse);
     }
 
+    const isWorkspaceSignup =
+      organizationStatus === WORKSPACE_USER_STATUS.INVITED &&
+      !!organizationToken &&
+      invitedUserStatus === USER_STATUS.ACTIVE &&
+      organizationUserSource === WORKSPACE_USER_SOURCE.SIGNUP;
+    if (isWorkspaceSignup) {
+      /* Active user & Organization invite */
+      const responseObj = {
+        organizationUserSource,
+      };
+      return decamelizeKeys(responseObj);
+    }
     /* Send back the organization invite url if the user has old workspace + account invitation URL */
     const doesUserHaveWorkspaceAndAccountInvite =
       organizationAndAccountInvite &&

@@ -4,7 +4,7 @@
 .global-datasources-sidebar {
     height: calc(100vh - 64px);
     max-width: 288px;
-    background: var(--base);
+    background: var(--page-default);
     display: grid;
     grid-template-rows: auto 1fr auto;
     border-right: 1px solid var(--slate5);
@@ -105,7 +105,7 @@
 
 .datasource-modal-container {
     position: relative;
-    // background: var(--slate2);
+    background: var(--page-default);
 
     .modal-header {
         background-color: var(--slate3) !important;

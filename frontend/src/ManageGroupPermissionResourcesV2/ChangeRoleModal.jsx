@@ -34,12 +34,12 @@ function ChangeRoleModal({
   const renderUserChangeTitle = (type) => {
     const addUserTitle = (
       <div className="my-3" data-cy="modal-title">
-        <span className="tj-text-md font-weight-500">Change in user role</span>
+        <span className="tj-text-md font-weight-500">Add user(s)</span>
       </div>
     );
     const updatePermissionTitile = (
       <div className="my-3" data-cy="modal-title">
-        <span className="tj-text-md font-weight-500">Add user(s)</span>
+        <span className="tj-text-md font-weight-500"> Change in user role</span>
       </div>
     );
     const message = type === 'USER_ROLE_CHANGE_ADD_USERS' ? addUserTitle : updatePermissionTitile;

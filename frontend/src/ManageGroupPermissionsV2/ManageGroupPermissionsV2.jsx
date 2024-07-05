@@ -320,7 +320,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       .then(() => {
         toast.success('Group deleted successfully');
         this.fetchGroups();
-        this.setState({ selectedGroup: 'All users', isDeletingGroup: false });
+        this.setState({ selectedGroup: 'Admin', isDeletingGroup: false });
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -342,7 +342,7 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   executeGroupUpdation = () => {
-    this.setState({ isUpdatingGroupName: true, selectedGroup: this.state.newGroupName });
+    this.setState({ isUpdatingGroupName: true });
     groupPermissionV2Service
       .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
       .then(() => {
@@ -352,6 +352,7 @@ class ManageGroupPermissionsComponent extends React.Component {
           isUpdatingGroupName: false,
           groupToBeUpdated: null,
           showGroupNameUpdateForm: false,
+          selectedGroup: this.state.newGroupName,
         });
       })
       .catch(({ error }) => {

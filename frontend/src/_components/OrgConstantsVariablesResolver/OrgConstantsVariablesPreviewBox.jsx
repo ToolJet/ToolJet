@@ -61,7 +61,7 @@ const verifyConstant = (value, definedConstants) => {
 };
 
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
-  const [preview, error] = resolveReferences(value, state, null, {}, true, true);
+  const [preview, error] = resolveReferences(value, null, {}, true, true);
 
   const previewType = typeof preview;
 

@@ -141,6 +141,8 @@ function InviteUsersForm({
     return { newGroupsToAdd, groupsToRemove, selectedGroupsIds };
   };
 
+  const validUserDetail = fields['fullName']?.length > 0 && fields['email']?.length > 0;
+
   const isEdited = () => {
     const { newGroupsToAdd, groupsToRemove } = getEditedGroups();
     const { first_name, last_name } = currentEditingUser || {};
@@ -351,7 +353,9 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers || creatingUser || !isEdited() || (!isEditing && !containRoleGroup)}
+              disabled={
+                uploadingUsers || creatingUser || !isEdited() || (!isEditing && !containRoleGroup) || !validUserDetail
+              }
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

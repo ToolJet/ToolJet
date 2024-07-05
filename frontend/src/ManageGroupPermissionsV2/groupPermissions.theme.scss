@@ -132,7 +132,7 @@
 
     .remove-icon-container{
       display: flex;
-      justify-content: end;
+      justify-content: flex-end;
       margin-right: 10px;
 
       .close-btn {
@@ -380,7 +380,7 @@
 .edit-icon-container{
   max-width: 10px;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: flex-start;
   padding: 0;
   height: 100%;
