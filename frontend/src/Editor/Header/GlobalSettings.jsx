@@ -172,7 +172,7 @@ export const GlobalSettings = ({
                     label="Unique app slug"
                     placeholder={t('editor.appSlug', 'Unique app slug')}
                     maxLength={50}
-                    onChange={(e) => {
+                    onChange={(e, validateObj) => {
                       e.persist();
                       delayedSlugChange(e.target.value, 'slug');
                     }}

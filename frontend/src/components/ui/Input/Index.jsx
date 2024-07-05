@@ -31,7 +31,6 @@ InputComponent.propTypes = {
 
 InputComponent.defaultProps = {
   type: 'text',
-  value: '',
   onChange: (e, validateObj) => {},
   placeholder: '',
   name: '',

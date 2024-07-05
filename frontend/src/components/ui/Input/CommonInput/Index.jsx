@@ -3,8 +3,8 @@ import NumberInput from './NumberInput';
 import TextInput from './TextInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
 
-const CommonInput = ({ label, helperText, disabled, required, onChange, ...restProps }) => {
-  const InputComponent = restProps.type === 'number' ? NumberInput : TextInput;
+const CommonInput = ({ label, helperText, disabled, required, ...restProps }) => {
+  const InputComponentType = restProps.type === 'number' ? NumberInput : TextInput;
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
 
@@ -15,13 +15,13 @@ const CommonInput = ({ label, helperText, disabled, required, onChange, ...restP
       setIsValid(validateObj.valid);
       setMessage(validateObj.message);
     }
-    onChange(e, validateObj);
+    restProps.onChange(e, validateObj);
   };
 
   return (
     <div>
       {label && <InputLabel disabled={disabled} label={label} required={required} />}
-      <InputComponent
+      <InputComponentType
         disabled={disabled}
         required={required}
         response={isValid}
