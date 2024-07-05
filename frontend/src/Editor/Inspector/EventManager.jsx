@@ -363,7 +363,7 @@ export const EventManager = ({
         actionId: 'show-alert',
         message: 'Hello world!',
         alertType: 'info',
-        component: eventMetaDefinition.component,
+        component: eventMetaDefinition.name,
         ...customEventRefs,
       },
       eventType: eventSourceType,
