@@ -11,6 +11,8 @@ import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class PageService {
@@ -24,7 +26,7 @@ export class PageService {
   ) {}
 
   async findPagesForVersion(appVersionId: string): Promise<Page[]> {
-    const allPages = await this.pageRepository.find({ where: {appVersionId} });
+    const allPages = await this.pageRepository.find({ where: { appVersionId } });
 
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
@@ -55,9 +57,9 @@ export class PageService {
   }
 
   async clonePage(pageId: string, appVersionId: string) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager:EntityManager) => {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const pageToClone = await manager.findOne(Page, {
-        where: {id:pageId}
+        where: { id: pageId },
       });
 
       if (!pageToClone) {
@@ -67,7 +69,7 @@ export class PageService {
       let pageName = `${pageToClone.name} (copy)`;
       let pageHandle = `${pageToClone.handle}-copy`;
 
-      const allPages = await this.pageRepository.find({ where: {appVersionId} });
+      const allPages = await this.pageRepository.find({ where: { appVersionId } });
 
       const pageNameORHandleExists = allPages.filter((page) => {
         return page.name.includes(pageName) || page.handle.includes(pageHandle);
@@ -98,7 +100,7 @@ export class PageService {
 
   async clonePageEventsAndComponents(pageId: string, clonePageId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const pageComponents = await manager.find(Component, { where: {pageId} });
+      const pageComponents = await manager.find(Component, { where: { pageId } });
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
 
@@ -213,6 +215,20 @@ export class PageService {
           await manager.update(Component, component.id, { parent: parentId });
         }
       }
+
+      const toUpdateComponents = clonedComponents.filter((component) => {
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, componentsIdMap);
+        }
+      });
+
+      if (!isEmpty(toUpdateComponents)) {
+        await manager.save(toUpdateComponents);
+      }
     });
   }
 
@@ -252,7 +268,7 @@ export class PageService {
     const { editingVersion } = await this.appService.findAppFromVersion(appVersionId);
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
-        where: { id: pageId }
+        where: { id: pageId },
       });
 
       if (!pageExists) {
@@ -270,7 +286,7 @@ export class PageService {
         throw new Error('Page not deleted');
       }
 
-      const pages = await this.pageRepository.find({ where:{ appVersionId: pageExists.appVersionId} });
+      const pages = await this.pageRepository.find({ where: { appVersionId: pageExists.appVersionId } });
 
       const rearrangedPages = this.rearrangePagesOnDelete(pages, pageDeletedIndex);
 

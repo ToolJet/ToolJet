@@ -17,7 +17,9 @@ import { textConfig } from './text';
 import { imageConfig } from './image';
 import { containerConfig } from './container';
 import { dropdownConfig } from './dropdown';
+import { dropdownV2Config } from './dropdownV2';
 import { multiselectConfig } from './multiselect';
+import { multiselectV2Config } from './multiselectV2';
 import { richtextareaConfig } from './richtextarea';
 import { mapConfig } from './map';
 import { qrscannerConfig } from './qrscanner';
@@ -71,8 +73,10 @@ export {
   textConfig,
   imageConfig,
   containerConfig,
-  dropdownConfig,
+  dropdownConfig, //!Depreciated
+  dropdownV2Config,
   multiselectConfig,
+  multiselectV2Config, //!Depreciated
   richtextareaConfig,
   mapConfig,
   qrscannerConfig,

@@ -60,20 +60,8 @@ export const LeftSidebarInspector = ({
   }, [selectedComponents]);
 
   const memoizedJSONData = React.useMemo(() => {
-    const updatedQueries = {};
     const { queries: currentQueries } = currentState;
-    // if (!_.isEmpty(dataQueries)) {
-    //   const copyCurrentQueies = JSON.parse(JSON.stringify(currentQueries));
-    //   dataQueries.forEach((query) => {
-    //     updatedQueries[query.name] = _.merge(copyCurrentQueies[query.name], {
-    //       id: query.id,
-    //       isLoading: false,
-    //       data: [],
-    //       rawData: [],
-    //     });
-    //   });
-    // }
-    // const data = _.merge(currentState, { queries: updatedQueries });
+
     const jsontreeData = { ...currentState, queries: currentQueries };
     delete jsontreeData.errors;
     delete jsontreeData.client;
@@ -122,9 +110,7 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `assets/images/icons/widgets/${
-          component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
-        }.svg`,
+        iconPath: `assets/images/icons/widgets/${component.component.toLowerCase()}.svg`,
         className: 'component-icon',
       };
     }

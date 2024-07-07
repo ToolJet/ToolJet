@@ -9,13 +9,14 @@ import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { WORKSPACE_USER_SOURCE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 
 /* TYPES */
 type InvitedUserType = Partial<User> & {
   invitedOrganizationId?: string;
   organizationStatus?: string;
+  organizationUserSource?: string;
 };
 
 @Injectable()
@@ -32,7 +33,8 @@ export class OrganizationUsersService {
     user: User,
     organization: DeepPartial<Organization>,
     isInvite?: boolean,
-    manager?: EntityManager
+    manager?: EntityManager,
+    source: WORKSPACE_USER_SOURCE = WORKSPACE_USER_SOURCE.INVITE
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
@@ -41,6 +43,7 @@ export class OrganizationUsersService {
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
+          source,
           role: 'all-users',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -68,11 +71,13 @@ export class OrganizationUsersService {
   }
 
   async findByWorkspaceInviteToken(invitationToken: string): Promise<InvitedUserType> {
-    const organizationUser = await this._dataSource.getRepository(OrganizationUser)
+    const organizationUser = await this._dataSource
+      .getRepository(OrganizationUser)
       .createQueryBuilder('organizationUser')
       .select([
         'organizationUser.organizationId',
         'organizationUser.invitationToken',
+        'organizationUser.source',
         'organizationUser.status',
         'user.id',
         'user.email',
@@ -99,6 +104,7 @@ export class OrganizationUsersService {
     }
     user.invitedOrganizationId = organizationUser.organizationId;
     user.organizationStatus = organizationUser.status;
+    user.organizationUserSource = organizationUser.source;
     return user;
   }
 
@@ -150,7 +156,11 @@ export class OrganizationUsersService {
     const invitationToken = uuid.v4();
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
+      await manager.update(OrganizationUser, id, {
+        status: WORKSPACE_USER_STATUS.INVITED,
+        source: WORKSPACE_USER_SOURCE.INVITE,
+        invitationToken,
+      });
     }, manager);
 
     if (organizationUser.user.invitationToken) {
@@ -226,10 +236,34 @@ export class OrganizationUsersService {
   }
 
   async activeAdminCount(organizationId: string) {
-    return await this._dataSource.createQueryBuilder(GroupPermission, 'group_permissions')
+    return await this._dataSource
+      .createQueryBuilder(GroupPermission, 'group_permissions')
       .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
       .where('group_permissions.group = :admin', { admin: 'admin' })
       .andWhere('group_permissions.organization = :organizationId', { organizationId })
       .getCount();
+  }
+
+  async organizationsCount(manager?: EntityManager) {
+    return dbTransactionWrap(async (manager) => {
+      return await manager
+        .createQueryBuilder(Organization, 'organizations')
+        .innerJoin(
+          'organizations.organizationUsers',
+          'organizationUsers',
+          'organizationUsers.status IN(:...statusList)',
+          {
+            statusList: [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED],
+          }
+        )
+        .getCount();
+    }, manager);
+  }
+
+  async getUser(token: string) {
+    return await this.organizationUsersRepository.findOneOrFail({
+      where: { invitationToken: token },
+      relations: ['user'],
+    });
   }
 }

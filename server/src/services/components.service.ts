@@ -95,7 +95,12 @@ export class ComponentsService {
               componentData[column === 'others' ? 'displayPreferences' : column],
               updatedDefinition[column],
               (objValue, srcValue) => {
-                if (componentData.type === 'Table' && _.isArray(objValue)) {
+                if (
+                  (componentData.type === 'Table' ||
+                    componentData.type === 'DropdownV2' ||
+                    componentData.type === 'MultiselectV2') &&
+                  _.isArray(objValue)
+                ) {
                   return srcValue;
                 }
               }
@@ -110,13 +115,12 @@ export class ComponentsService {
             return acc;
           }, {});
 
+          // Update the component with merged data
           await manager.update(Component, componentId, newComponentsData);
-          return;
+        } else {
+          // Update the component directly if definition is not changed
+          await manager.update(Component, componentId, component);
         }
-
-        await manager.update(Component, componentId, component);
-
-        return;
       }
     }, appVersionId);
   }

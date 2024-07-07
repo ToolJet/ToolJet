@@ -16,6 +16,7 @@ import {
   lifecycleEvents,
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_USER_SOURCE,
 } from 'src/helpers/user_lifecycle';
 import { generateInviteURL, generateNextNameAndSlug, isValidDomain } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
@@ -75,7 +76,13 @@ export class OauthService {
       manager
     );
     // Setting up invited organization, organization user status should be invited if user status is invited
-    await this.organizationUsersService.create(user, organization, !!user.invitationToken, manager);
+    await this.organizationUsersService.create(
+      user,
+      organization,
+      !!user.invitationToken,
+      manager,
+      WORKSPACE_USER_SOURCE.SIGNUP
+    );
 
     if (defaultOrganization) {
       // Setting up default organization

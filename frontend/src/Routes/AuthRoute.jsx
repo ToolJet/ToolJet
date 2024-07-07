@@ -4,6 +4,12 @@ import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { getRedirectURL, pathnameToArray } from '@/_helpers/routes';
 import { authenticationService } from '@/_services';
 import { useLocation, useParams } from 'react-router-dom';
+import {
+  resetToDefaultWhiteLabels,
+  retrieveWhiteLabelFavicon,
+  retrieveWhiteLabelText,
+  setFaviconAndTitle,
+} from '@white-label/whiteLabelling';
 
 export const AuthRoute = ({ children, navigate }) => {
   const { isLoading, session, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
@@ -29,8 +35,7 @@ export const AuthRoute = ({ children, navigate }) => {
 
   useEffect(
     () => {
-      authenticationService.deleteAllAuthCookies();
-      fetchOrganizationDetails();
+      initialize();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [location.pathname]
@@ -43,10 +48,29 @@ export const AuthRoute = ({ children, navigate }) => {
   );
 
   useEffect(() => {
-    const isComingFromPasswordReset = location?.state?.from === '/reset-password';
+    const isComingFromPasswordReset =
+      location?.state?.from === '/reset-password' || location?.state?.from === '/forgot-password';
     if ((isInvalidSession || isComingFromPasswordReset) && !isGettingConfigs) setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInvalidSession, isGettingConfigs]);
+
+  const initialize = () => {
+    const pathname = location.pathname;
+    authenticationService.deleteAllAuthCookies();
+    fetchOrganizationDetails();
+    verifyWhiteLabeling(pathname);
+  };
+
+  const verifyWhiteLabeling = (pathname) => {
+    const signupRegex = /^\/signup\/[^/]+$/;
+    const loginRegex = /^\/login\/[^/]+$/;
+    if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
+      resetToDefaultWhiteLabels();
+    }
+    const whiteLabelText = retrieveWhiteLabelText();
+    const whiteLabelFavicon = retrieveWhiteLabelFavicon();
+    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
+  };
 
   const fetchOrganizationDetails = () => {
     authenticationService.getOrganizationConfigs(organizationSlug).then(
