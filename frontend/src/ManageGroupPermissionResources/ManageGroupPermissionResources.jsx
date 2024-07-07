@@ -73,8 +73,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       groupPermissionService
         .getUsersNotInGroup(query, groupPermissionId)
         .then(({ users }) => {
-          console.log('logging users');
-          console.log(users);
           resolve(
             users.map((user) => {
               return {

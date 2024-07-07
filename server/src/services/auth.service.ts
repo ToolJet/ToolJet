@@ -46,7 +46,10 @@ import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
-import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import {
+  GROUP_PERMISSIONS_TYPE,
+  USER_ROLE,
+} from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { AppAuthenticationDto, AppSignupDto } from '@dto/app-authentication.dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
@@ -244,11 +247,13 @@ export class AuthService {
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
-        //Check this for permissions.........
         currentOrganizationName: organization.name,
         admin: await this.usersService.hasGroup(user, USER_ROLE.ADMIN, null, manager),
         userPermissions: userPermissions,
-        groupPermissions: permissions,
+        groupPermissions: permissions.filter(
+          (group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP || group.name === USER_ROLE.ADMIN
+        ),
+        role: permissions.find((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT),
         appGroupPermissions: appGroupPermissions,
         currentUser: {
           id: user.id,

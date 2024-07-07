@@ -120,8 +120,6 @@ function InviteUsersForm({
   };
 
   const handleEditUser = (e) => {
-    console.log(currentEditingUser);
-    console.log(newRole);
     e.preventDefault();
     if (newRole) setIsChangeRoleModalOpen(true);
     else {
@@ -354,7 +352,11 @@ function InviteUsersForm({
               type="submit"
               variant="primary"
               disabled={
-                uploadingUsers || creatingUser || !isEdited() || (!isEditing && !containRoleGroup) || !validUserDetail
+                uploadingUsers ||
+                creatingUser ||
+                !isEdited() ||
+                (!isEditing && !containRoleGroup && uploadingUsers) ||
+                (!isEditing && !validUserDetail && uploadingUsers)
               }
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}

@@ -30,7 +30,6 @@ function AppResourcePermissions({
         setHover(false);
       }}
       onClick={() => {
-        if (notClickable) console.log('this is runing');
         !isRoleGroup && !notClickable && openEditPermissionModal(permissions);
       }}
     >

@@ -189,15 +189,12 @@ class ManageGroupPermissionsComponent extends React.Component {
       .then((data) => {
         const groupPermissions = data.groupPermissions;
         const defaultGroups = this.sortDefaultGroup(groupPermissions.filter((group) => group.type === 'default'));
-        console.log('logging group');
-
         const currentGroupId =
           type == 'admin'
             ? defaultGroups[0].id
             : type == 'current'
             ? this.findCurrentGroupDetails(groupPermissions)
             : groupPermissions.at(-1).id;
-        console.log(groupPermissions.find((group) => group.id === currentGroupId));
         this.setState(
           {
             groups: groupPermissions.filter((group) => group.type === 'custom'),

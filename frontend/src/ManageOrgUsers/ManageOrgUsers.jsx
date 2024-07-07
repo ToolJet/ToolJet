@@ -79,7 +79,6 @@ class ManageOrgUsersComponent extends React.Component {
     if (!this.state.file) {
       errors['file'] = 'This field is required';
     }
-
     this.setState({ errors: errors });
     return Object.keys(errors).length === 0;
   }

@@ -11,9 +11,6 @@ export function AppsSelect(props) {
   const workspaceId = getWorkspaceId();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  console.log('Props prinitng');
-  console.log(props.options);
-
   //Will be used when workspace routing settings have been merged
   const Menu = (props) => {
     return (
@@ -182,8 +179,6 @@ export function AppsSelect(props) {
           isSelectAllPresentInSelection &&
           !isCurrentSelectAll
         ) {
-          console.log('value');
-          console.log(props.value);
           if (props.value.find((app) => app?.isAllField)?.isAllField)
             props.onChange(selected.filter((app) => !app?.isAllField));
           return props.onChange([...props.options, props.allOption]);

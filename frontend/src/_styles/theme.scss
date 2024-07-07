@@ -9467,6 +9467,12 @@ tbody {
   // overflow-y: auto;
   height: calc(100vh - 300px);
 
+  .group-users-list-container{
+    height: calc(100vh - 300px - 100px); /* Set a fixed height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border-bottom: 1px solid var(--slate6) !important;
+  }
+
 }
 
 .groups-sub-header-wrap {
@@ -9788,6 +9794,9 @@ tbody {
   text-transform: capitalize;
 }
 
+
+
+
 .manage-group-users-row {
   display: flex;
   flex-direction: row;
@@ -9823,6 +9832,7 @@ tbody {
     padding-top: 5px;
   }
 }
+
 
 .manage-group-app-table-body {
   width: 602px !important;

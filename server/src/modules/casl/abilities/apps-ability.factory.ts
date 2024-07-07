@@ -8,19 +8,19 @@ import { APP_RESOURCE_ACTIONS, TOOLJET_RESOURCE } from 'src/constants/global.con
 
 type Actions =
   | 'authorizeOauthForSource' //Deprecated
-  | APP_RESOURCE_ACTIONS.CLONE //
-  | APP_RESOURCE_ACTIONS.IMPORT //
-  | APP_RESOURCE_ACTIONS.CREATE //
-  | 'createDataSource' //
-  | 'createQuery' //
-  | 'createUsers' //
-  | APP_RESOURCE_ACTIONS.VERSIONS_CREATE //
-  | APP_RESOURCE_ACTIONS.VERSION_DELETE //
-  | 'deleteApp' //
-  | 'deleteDataSource' //
-  | 'deleteQuery' //
-  | 'fetchUsers' //
-  | APP_RESOURCE_ACTIONS.VERSION_READ //
+  | APP_RESOURCE_ACTIONS.CLONE
+  | APP_RESOURCE_ACTIONS.IMPORT
+  | APP_RESOURCE_ACTIONS.CREATE
+  | 'createDataSource'
+  | 'createQuery'
+  | 'createUsers'
+  | APP_RESOURCE_ACTIONS.VERSIONS_CREATE
+  | APP_RESOURCE_ACTIONS.VERSION_DELETE
+  | 'deleteApp'
+  | 'deleteDataSource'
+  | 'deleteQuery'
+  | 'fetchUsers'
+  | APP_RESOURCE_ACTIONS.VERSION_READ
   | 'getDataSources'
   | 'getQueries'
   | 'previewQuery'
@@ -71,8 +71,8 @@ export class AppsAbilityFactory {
     if (userPermission.appCreate) {
       can(APP_RESOURCE_ACTIONS.CREATE, App);
       can(APP_RESOURCE_ACTIONS.IMPORT, App);
+      can(APP_RESOURCE_ACTIONS.EXPORT, App);
       if (appUpdateAllowed) {
-        can(APP_RESOURCE_ACTIONS.EXPORT, App);
         can(APP_RESOURCE_ACTIONS.CLONE, App);
       }
     }

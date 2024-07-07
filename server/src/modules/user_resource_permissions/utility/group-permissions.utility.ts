@@ -121,9 +121,6 @@ export function getAllUserGroupsQuery(
     })
     .where('groupUsers.userId = :userId', {
       userId,
-    })
-    .andWhere('groups.type = :type', {
-      type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
     });
   return query;
 }

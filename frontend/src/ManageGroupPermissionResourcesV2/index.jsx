@@ -102,8 +102,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       groupPermissionV2Service
         .getUsersNotInGroup(query, groupPermissionId)
         .then((users) => {
-          console.log('loggimgusers');
-          console.log(users);
           resolve(
             users.map((user) => {
               return {
@@ -152,7 +150,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error }) => {
-        console.log(error);
         if (error?.type) {
           this.setState({
             showAutoRoleChangeModal: true,
@@ -173,8 +170,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   setSelectedUsers = (value) => {
-    console.log('user value');
-    console.log(value);
     this.setState({
       selectedUsers: value,
     });
@@ -187,8 +182,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   addSelectedUsersToGroup = (groupPermissionId, selectedUsers, allowRoleChange) => {
-    console.log('selected users');
-    console.log(selectedUsers);
     this.setState({ isAddingUsers: true });
     const body = {
       userIds: selectedUsers.map((user) => user.value),
@@ -198,7 +191,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     groupPermissionV2Service
       .addUsersInGroups(body)
       .then(() => {
-        console.log('this is running');
         this.setState({
           selectedUsers: [],
           isLoadingUsers: true,
@@ -320,7 +312,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     });
 
   changeThisComponentState = (state = {}) => {
-    console.log('this is changing');
     this.setState(state);
   };
 
@@ -390,7 +381,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   toggleAddUsersToRoleModal = () => this.setState({ isAddUsersToRoleModalOpen: !this.state.isAddUsersToRoleModalOpen });
 
   handleConfirmAutoRoleChangeGroupUpdate = () => {
-    console.log('this is running');
     const { updateParam, groupPermission } = this.state;
     this.updateGroupPermission(groupPermission.id, updateParam, true);
     this.setState({
@@ -703,7 +693,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         </div>
                       )}
 
-                      <section>
+                      <section className="group-users-list-container">
                         {isLoadingGroup || isLoadingUsers ? (
                           <tr>
                             <td className="col-auto">
@@ -722,7 +712,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           usersInGroup.map((item) => {
                             const user = item.user;
                             const groupUserId = item.id;
-                            console.log(user);
                             return (
                               <div
                                 key={user.id}

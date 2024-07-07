@@ -49,7 +49,6 @@ class ManageGranularAccessComponent extends React.Component {
   }
 
   componentDidMount() {
-    console.log('addable apps are');
     this.fetchAppsCanBeAdded();
     this.fetchGranularPermissions(this.props.groupPermissionId);
   }
@@ -58,8 +57,6 @@ class ManageGranularAccessComponent extends React.Component {
     groupPermissionV2Service
       .fetchAddableApps()
       .then((data) => {
-        console.log('fetching app');
-        console.log(data);
         const addableApps = data.map((app) => {
           return {
             name: app.name,
@@ -67,7 +64,6 @@ class ManageGranularAccessComponent extends React.Component {
             label: app.name,
           };
         });
-        console.log(addableApps);
         this.setState({
           addableApps,
         });
@@ -232,8 +228,6 @@ class ManageGranularAccessComponent extends React.Component {
     const groupAppsToDelete = currentEditingPermissions?.appsGroupPermissions?.groupApps?.filter((groupApp) =>
       appsToDelete?.includes(groupApp.appId)
     );
-    console.log('logging groups apps to delete');
-    console.log(groupAppsToDelete);
     const resourcesToDelete = groupAppsToDelete?.map(({ id }) => {
       return {
         id: id,
@@ -320,8 +314,6 @@ class ManageGranularAccessComponent extends React.Component {
   };
 
   setSelectedApps = (values) => {
-    console.log('Logging selected values');
-    console.log(values);
     this.setState({ selectedApps: values });
   };
 
@@ -338,7 +330,6 @@ class ManageGranularAccessComponent extends React.Component {
     });
   };
   handleConfirmAutoRoleChangeGroupUpdate = () => {
-    console.log('this is running');
     this.updateGranularPermissions(true);
     this.handleAutoRoleChangeModalClose();
   };
