@@ -462,6 +462,7 @@ const RowForm = ({
               isOpenOnStart={false}
               timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
               isClearable={activeTab[index] === 'Custom'}
+              isPlaceholderEnabled={activeTab[index] === 'Custom'}
               errorMessage={errorMap[columnName]}
               isDisabled={inputValues[index]?.disabled}
             />

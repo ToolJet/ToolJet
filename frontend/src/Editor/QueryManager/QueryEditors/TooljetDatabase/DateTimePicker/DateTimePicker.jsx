@@ -19,7 +19,7 @@ export const DateTimePicker = ({
   saveFunction = () => {},
   timezone = getLocalTimeZone(),
   isClearable = false,
-  isDefaultInput = false,
+  isPlaceholderEnabled = false,
   isDisabled = false,
   errorMessage,
 }) => {
@@ -335,7 +335,9 @@ export const DateTimePicker = ({
           } else {
             if (event) {
               handleDefaultChange(newTimestamp);
-              setIsOpen(false);
+              if (event.type === 'click') {
+                setIsOpen(false);
+              }
             } else {
               handleDefaultChange(newTimestamp, true);
             }
@@ -351,7 +353,7 @@ export const DateTimePicker = ({
         fixedHeight
         dropdownMode="select"
         customInput={
-          transformedTimestamp || isDefaultInput ? (
+          transformedTimestamp || isPlaceholderEnabled ? (
             <input
               onFocus={'auto'}
               style={{

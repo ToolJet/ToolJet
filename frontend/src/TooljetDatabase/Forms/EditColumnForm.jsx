@@ -592,7 +592,7 @@ const ColumnForm = ({
                     setTimestamp={setDefaultValue}
                     timezone={timezone}
                     isClearable={true}
-                    isDefaultInput={true}
+                    isPlaceholderEnabled={true}
                   />
                 ) : !isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
                   <input

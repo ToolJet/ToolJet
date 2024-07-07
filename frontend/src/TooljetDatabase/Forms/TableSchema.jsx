@@ -409,7 +409,7 @@ function TableSchema({
                         }}
                         isOpenOnStart={columnDetails[index]?.isOpenOnStart}
                         isClearable={true}
-                        isDefaultInput={true}
+                        isPlaceholderEnabled={true}
                         // format="dd/MM/yyyy"
                       />
                     </div>

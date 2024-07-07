@@ -413,6 +413,7 @@ const EditRowForm = ({
               setTimestamp={(value) => handleInputChange(index, value, columnName)}
               isOpenOnStart={false}
               isClearable={activeTab[index] === 'Custom'}
+              isPlaceholderEnabled={activeTab[index] === 'Custom'}
               errorMessage={errorMap[columnName]}
               timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
               isDisabled={inputValues[index]?.disabled || shouldInputBeDisabled}
