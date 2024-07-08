@@ -632,6 +632,16 @@
     .total-page-number {
       color: var(--slate11) !important
     }
+
+    .tj-base-btn {
+      &:disabled {
+        svg {
+            path {
+                fill: var(--slate8) !important;
+            }
+        }
+      }
+    }
   }
 }
 
