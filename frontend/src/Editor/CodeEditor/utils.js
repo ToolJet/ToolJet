@@ -4,7 +4,8 @@ import _, { isEmpty } from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
-import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
+import { hasCircularDependency } from '@/_helpers/utils';
+import { validateMultilineCode } from '@/_helpers/utility';
 
 const acorn = require('acorn');
 
@@ -101,26 +102,25 @@ const resolveWorkspaceVariables = (query) => {
   let resolvedStr = query;
   let error = null;
   let valid = false;
+
   // Resolve %%object%%
   const serverRegex = /(%%.+?%%)/g;
-  const serverMatch = resolvedStr.match(serverRegex)?.[0];
+  const serverMatches = resolvedStr.match(serverRegex);
 
-  if (serverMatch) {
-    const code = serverMatch.replace(/%%/g, '');
+  if (serverMatches) {
+    serverMatches.forEach((serverMatch) => {
+      const code = serverMatch.replace(/%%/g, '');
 
-    if (code.includes('server.')) {
-      resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
-      error = 'Server variables cannot be resolved in the client.';
-    } else {
-      const [resolvedCode, err] = resolveCode(code);
-
-      if (!resolvedCode) {
-        error = err ? err : `Cannot resolve ${query}`;
+      if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
+        resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
       } else {
+        const resolvedCode = resolveCode(code);
+
         resolvedStr = resolvedStr.replace(serverMatch, resolvedCode);
-        valid = true;
       }
-    }
+    });
+
+    valid = true;
   }
 
   return [valid, error, resolvedStr];
@@ -231,7 +231,10 @@ const queryHasStringOtherThanVariable = (query) => {
   return false;
 };
 
-export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
+export const resolveReferences = (query, validationSchema, customResolvers = {}, paramName) => {
+  if (typeof query === 'number') {
+    return [true, null, query];
+  }
   if (query !== '' && (!query || typeof query !== 'string')) return [false, null, null];
   let resolvedValue = query;
   let error = null;
@@ -239,6 +242,16 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   //Todo : remove resolveWorkspaceVariables when workspace variables are removed
   if (query?.startsWith('%%') && query?.endsWith('%%')) {
     return resolveWorkspaceVariables(query);
+  }
+
+  if (query?.startsWith('{{') && query?.endsWith('}}')) {
+    const { status, data } = validateMultilineCode(query);
+
+    if (status === 'failed') {
+      const errMessage = `${data.message} -  ${data.description}`;
+
+      return [false, errMessage, query, query];
+    }
   }
 
   if ((!validationSchema || isEmpty(validationSchema)) && (!query?.includes('{{') || !query?.includes('}}'))) {
@@ -257,17 +270,10 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     useJSResolvers = true;
   }
 
-  const customWidgetResolvers = ['listItem'];
-  const isCustomResolvers = customWidgetResolvers.some((resolver) => query.includes(resolver));
-
   const { lookupTable } = useResolveStore.getState();
 
   if (useJSResolvers) {
     resolvedValue = resolveMultiDynamicReferences(query, lookupTable, queryHasJSCode);
-  } else if (isCustomResolvers && !_.isEmpty(customResolvers)) {
-    const currentState = useCurrentStateStore.getState();
-    const resolvedCode = olderResolverMethod(query, currentState, '', customResolvers);
-    resolvedValue = resolvedCode;
   } else {
     let value = query?.replace(/{{|}}/g, '').trim();
 
@@ -408,3 +414,19 @@ export const validateComponentProperty = (resolvedValue, validation) => {
 
   return validate(resolvedValue, schema, defaultValue, true);
 };
+
+export function hasDeepChildren(obj, currentDepth = 1, maxDepth = 3) {
+  if (currentDepth > maxDepth) {
+    return true;
+  }
+
+  for (const key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      if (hasDeepChildren(obj[key], currentDepth + 1, maxDepth)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}

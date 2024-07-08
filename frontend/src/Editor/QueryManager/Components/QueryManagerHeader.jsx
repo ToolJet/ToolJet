@@ -15,24 +15,20 @@ import {
   useShowCreateQuery,
   useNameInputFocussed,
 } from '@/_stores/queryPanelStore';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useSelectedQueryLoadingState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
-import { cloneDeep } from 'lodash';
-
-import ParameterList from './ParameterList';
 import { decodeEntities } from '@/_helpers/utils';
 
-export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
+export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setActiveTab, activeTab }, ref) => {
   const { renameQuery } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
-  const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
-  const { queries } = currentState;
+  const isLoading = useSelectedQueryLoadingState();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -40,8 +36,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
     }),
     shallow
   );
-
-  const { updateDataQuery } = useDataQueriesActions();
 
   useEffect(() => {
     if (selectedQuery?.name) {
@@ -95,9 +89,17 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
         console.log(error, data);
       });
   };
+  const tabs = [
+    { id: 1, label: 'Setup' },
+    {
+      id: 2,
+      label: 'Transformation',
+      condition: selectedQuery?.kind !== 'runpy' && selectedQuery?.kind !== 'runjs',
+    },
+    { id: 3, label: 'Settings' },
+  ];
 
   const renderRunButton = () => {
-    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <span
         {...(isInDraft && {
@@ -107,7 +109,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
       >
         <button
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
+          className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
           disabled={isInDraft}
           {...(isInDraft && {
@@ -131,57 +133,21 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
   const renderButtons = () => {
     if (selectedQuery === null || showCreateQuery) return;
-    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <>
+        {renderRunButton()}
         <PreviewButton
           onClick={previewButtonOnClick}
           buttonLoadingState={buttonLoadingState}
           isRunButtonLoading={isLoading}
         />
-        {renderRunButton()}
       </>
     );
   };
 
-  const optionsChanged = (newOptions) => {
-    setOptions(newOptions);
-    updateDataQuery(cloneDeep(newOptions));
-  };
-
-  const handleAddParameter = (newParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-      const newOptions = {
-        ...prevOptions,
-        parameters: [...(prevOptions?.parameters ?? []), newParameter],
-      };
-      optionsChanged(newOptions);
-    }
-  };
-
-  const handleParameterChange = (index, updatedParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
-      const updatedParameters = [...prevOptions.parameters];
-      updatedParameters[index] = updatedParameter;
-      optionsChanged({ ...prevOptions, parameters: updatedParameters });
-    }
-  };
-
-  const handleParameterRemove = (index) => {
-    const prevOptions = { ...options };
-    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChanged({ ...prevOptions, parameters: updatedParameters });
-  };
-
-  const paramListContainerRef = useRef(null);
-
   return (
-    <div className="row header">
-      <div className="col font-weight-500">
+    <div className="row header" style={{ padding: '8px 16px' }}>
+      <div className="col font-weight-500 p-0">
         {selectedQuery && (
           <NameInput
             onInput={executeQueryNameUpdation}
@@ -190,25 +156,30 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
             isDiabled={isVersionReleased}
           />
         )}
-
-        <div
-          className="query-parameters-list col w-100 d-flex justify-content-center font-weight-500"
-          ref={paramListContainerRef}
-        >
-          {selectedQuery && (
-            <ParameterList
-              parameters={options.parameters}
-              handleAddParameter={handleAddParameter}
-              handleParameterChange={handleParameterChange}
-              handleParameterRemove={handleParameterRemove}
-              currentState={currentState}
-              darkMode={darkMode}
-              containerRef={paramListContainerRef}
-            />
-          )}
-        </div>
+        {selectedQuery && (
+          <div className="d-flex" style={{ marginBottom: '-15px', gap: '3px' }}>
+            {tabs.map(
+              (tab) =>
+                (tab.condition === undefined || tab.condition) && (
+                  <p
+                    key={tab.id}
+                    className="m-0 d-flex align-items-center h-100"
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
+                      cursor: 'pointer',
+                      padding: '0px 8px 6px 8px',
+                      color: activeTab === tab.id ? 'var(--text-default)' : 'var(--text-placeholder)',
+                    }}
+                  >
+                    {tab.label}
+                  </p>
+                )
+            )}
+          </div>
+        )}
       </div>
-      <div className="query-header-buttons me-3">{renderButtons()}</div>
+      <div className="query-header-buttons">{renderButtons()}</div>
     </div>
   );
 });
@@ -220,7 +191,7 @@ const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
   return (
     <button
       onClick={onClick}
-      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
+      className={`default-tertiary-button  ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">

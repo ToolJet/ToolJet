@@ -10,6 +10,8 @@ import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
 import { ConfirmDialog } from '@/_components';
 import { serialDataType } from '../constants';
+import cx from 'classnames';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const TableForm = ({
   selectedTable = {},
@@ -26,6 +28,7 @@ const TableForm = ({
   onEdit,
   onClose,
   updateSelectedTable,
+  initiator,
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
@@ -36,7 +39,7 @@ const TableForm = ({
   const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
-  const [columns, setColumns] = useState(_.cloneDeep(selectedTableColumns));
+  const [columns, setColumns] = useState(deepClone(selectedTableColumns));
   const { organizationId, foreignKeys, setForeignKeys } = useContext(TooljetDatabaseContext);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
@@ -130,7 +133,9 @@ const TableForm = ({
 
     const tableNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     if (!tableNameRegex.test(tableName)) {
-      toast.error('Table name can only contain alphabets, numbers and underscores');
+      toast.error(
+        'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores.'
+      );
       return false;
     }
 
@@ -139,7 +144,6 @@ const TableForm = ({
 
   const handleCreate = async () => {
     if (!validateTableName()) return;
-
     const columnNames = Object.values(columns).map((column) => column.column_name);
     if (columnNames.some((columnName) => isEmpty(columnName))) {
       toast.error('Column names cannot be empty');
@@ -166,14 +170,6 @@ const TableForm = ({
     onCreate && onCreate({ id: data.result.id, table_name: tableName });
     setCreateForeignKeyInEdit(false);
   };
-
-  function handleKeyPress(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (!isEditMode) handleCreate(e);
-      if (isEditMode && selectedTable.table_name !== tableName) handleEdit();
-    }
-  }
 
   const handleEdit = async () => {
     if (!validateTableName()) return;
@@ -249,17 +245,17 @@ const TableForm = ({
     <div className="drawer-card-wrapper">
       <div className="card-header">
         {!isEditMode && (
-          <h3 className="card-title" data-cy="create-new-table-header">
+          <h3 className={cx('card-title', { 'card-title-light': !darkMode })} data-cy="create-new-table-header">
             Create a new table
           </h3>
         )}
         {isEditMode && (
-          <h3 className="card-title" data-cy="edit-table-header">
+          <h3 className={cx('card-title', { 'card-title-light': !darkMode })} data-cy="edit-table-header">
             Edit table
           </h3>
         )}
       </div>
-      <div>
+      <div className="card-body-wrapper">
         <div className="card-body">
           {isEditMode && (
             <div className="edit-warning-info mb-3">
@@ -272,7 +268,7 @@ const TableForm = ({
             </div>
           )}
           <div className="">
-            <div className="form-label" data-cy="table-name-label">
+            <div className={cx('form-label', { 'form-label-light': !darkMode })} data-cy="table-name-label">
               Table name
             </div>
             <div className="tj-app-input">
@@ -288,7 +284,6 @@ const TableForm = ({
                   setTableName(e.target.value);
                 }}
                 autoFocus
-                onKeyPress={handleKeyPress}
               />
             </div>
           </div>
@@ -330,6 +325,7 @@ const TableForm = ({
           (isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation))
         }
         showToolTipForFkOnReadDocsSection={true}
+        initiator={initiator}
       />
       <ConfirmDialog
         title={'Change in primary key'}

@@ -19,7 +19,7 @@ export const Link = ({ cellValue, linkTarget, underline, underlineColor, linkCol
         }}
         rel="noreferrer"
       >
-        {displayText && typeof displayText !== 'object' ? displayText : cellValue}
+        {displayText && typeof displayText !== 'object' ? displayText : String(cellValue)}
       </a>
     </div>
   );
