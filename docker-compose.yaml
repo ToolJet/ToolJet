@@ -64,7 +64,7 @@ services:
       - postgres
 
   postgres:
-    container_name: postgres
+    container_name: ${PG_HOST}
     image: postgres:13
     restart: always
     ports:
