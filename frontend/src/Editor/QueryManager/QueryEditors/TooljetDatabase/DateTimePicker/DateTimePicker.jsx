@@ -9,7 +9,8 @@ import { getLocalTimeZone, convertToDateType, formatDate } from '../util';
 export const DateTimePicker = ({
   enableDate = true,
   enableTime = true,
-  format = 'dd/MM/yyyy, h:mm aa',
+  format = 'dd/MM/yyyy, hh:mm aa',
+  timeFormat = 'hh:mm aa',
   isOpenOnStart = false,
   timestamp = null,
   setTimestamp,
@@ -361,6 +362,7 @@ export const DateTimePicker = ({
         showTimeSelectOnly={enableDate ? false : true}
         showMonthDropdown
         showYearDropdown
+        locale="en-GB"
         fixedHeight
         dropdownMode="select"
         customInput={
@@ -408,6 +410,7 @@ export const DateTimePicker = ({
         }
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
         dateFormat={format}
+        timeFormat={timeFormat}
         {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer })}
         {...(!isEditCell && { calendarContainer: memoizedDefaultCalendarContainer })}
       />
