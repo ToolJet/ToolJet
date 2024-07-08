@@ -42,17 +42,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     if (isDynamicOptionsEnabled || typeof optionsValue === 'string') {
       options = resolveReferences(optionsValue, currentState);
     } else {
-      options = optionsValue?.map((option) => {
-        const newOption = { ...option };
-
-        valuesToResolve.forEach((key) => {
-          if (option[key]) {
-            newOption[key] = resolveReferences(option[key], currentState);
-          }
-        });
-
-        return newOption;
-      });
+      options = optionsValue?.map((option) => option);
     }
 
     return options.map((option) => {
@@ -268,10 +258,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     setOptions(_options);
     updateAllOptionsParams(_options);
   };
-  console.log(component, 'component');
+
   useEffect(() => {
     setOptions(constructOptions());
-    console.log('jasmine');
   }, [isMultiSelect, component?.id]);
 
   const _renderOverlay = (item, index) => {
@@ -417,7 +406,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {item.label}
+                                    {resolveReferences(item.label, currentState)}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (

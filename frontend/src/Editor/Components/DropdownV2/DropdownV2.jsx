@@ -102,15 +102,16 @@ export const DropdownV2 = ({
     const foundItem = _schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
-
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
         .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
-        .map((value) => ({
-          ...value,
-          isDisabled: resolveReferences(advanced ? value?.disable : value?.disable?.value, currentState),
+        .map((data) => ({
+          ...data,
+          label: resolveReferences(data?.label, currentState),
+          value: resolveReferences(data?.value, currentState),
+          isDisabled: resolveReferences(advanced ? data?.disable : data?.disable?.value, currentState),
         }));
       return _selectOptions;
     } else {

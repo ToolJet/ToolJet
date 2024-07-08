@@ -88,9 +88,11 @@ export const MultiselectV2 = ({
     let _selectOptions = Array.isArray(_options)
       ? _options
           .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
-          .map((value) => ({
-            ...value,
-            isDisabled: resolveReferences(advanced ? value?.disable : value?.disable?.value, currentState),
+          .map((data) => ({
+            ...data,
+            label: resolveReferences(data?.label, currentState),
+            value: resolveReferences(data?.value, currentState),
+            isDisabled: resolveReferences(advanced ? data?.disable : data?.disable?.value, currentState),
           }))
       : [];
     return _selectOptions;
