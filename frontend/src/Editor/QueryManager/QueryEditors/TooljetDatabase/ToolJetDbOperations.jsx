@@ -436,7 +436,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const handleTableNameSelect = (tableId) => {
     setSelectedTableId(tableId);
     fetchTableInformation(tableId, true, tables);
-    optionchanged('organization_id', organizationId);
     optionchanged('table_id', tableId);
 
     setJoinTableOptions(() => {
