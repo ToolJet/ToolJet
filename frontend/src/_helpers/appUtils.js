@@ -9,9 +9,10 @@ import {
   generateAppActions,
   loadPyodide,
   isQueryRunnable,
+  resolveWidgetFieldValue,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isArray, isEmpty } from 'lodash';
+import _, { isArray, isEmpty, set } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -38,6 +39,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
 import { updateParentNodes } from './utility';
+import { deepClone } from './utilities/utils.helpers';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -84,7 +86,9 @@ const debouncedChange = _.debounce(() => {
 
 export function onComponentOptionsChanged(component, options, id) {
   let componentName = component.name;
-  const { isEditorReady, page } = getCurrentState();
+  const { isEditorReady, page } = useCurrentStateStore.getState();
+
+  if (!isEditorReady || !useEditorStore.getState().appDefinition.pages[page.id]) return;
 
   if (id) {
     const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
@@ -101,18 +105,25 @@ export function onComponentOptionsChanged(component, options, id) {
 
     const components = getCurrentState().components;
     let componentData = components[componentName];
-    componentData = componentData || {};
+    componentData = deepClone(componentData) || {};
 
     const shouldUpdateResolvedRefsOfHints = [];
-
+    const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
+    const isFromComponent = component.component === 'Form';
     for (const option of options) {
       componentData[option[0]] = option[1];
-
-      const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
 
       let path = null;
       if (isListviewOrKanbaComponent) {
         path = `components.${componentName}`;
+      } else if (isFromComponent) {
+        const basePath = `components.${componentName}.${option[0]}`;
+
+        useResolveStore.getState().actions.addAppSuggestions({
+          [basePath]: option[1],
+        });
+
+        shouldUpdateResolvedRefsOfHints.push({ hint: basePath, newRef: componentData[option[1]] });
       } else {
         path = `components.${componentName}.${option[0]}`;
       }
@@ -162,6 +173,8 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
+
   let componentName = component.name;
 
   if (id) {
@@ -175,8 +188,10 @@ export function onComponentOptionChanged(component, option_name, value, id) {
 
   const { isEditorReady, components: currentComponents } = getCurrentState();
 
+  if (!currentComponents) return;
+
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
-  let componentData = components[componentName] || {};
+  let componentData = deepClone(components[componentName]) || {};
   componentData[option_name] = value;
 
   const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
@@ -381,9 +396,6 @@ export async function runTransformation(
         currentState.page
       );
     } catch (err) {
-      const $error = err.name;
-      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-      if (mode === 'edit') toast.error($errorMessage);
       result = {
         message: err.stack.split('\n')[0],
         status: 'failed',
@@ -400,7 +412,7 @@ export async function executeActionsForEventId(_ref, eventId, events = [], mode,
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
+    await executeAction(_ref, event.event, mode, customVariables);
   }
 }
 
@@ -491,14 +503,14 @@ export const executeAction = debounce(executeActionWithDebounce);
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
-      const shouldRun = resolveReferences(event.runOnlyIf, getCurrentState(), undefined, customVariables);
+      const shouldRun = resolveReferences(event.runOnlyIf, undefined, customVariables);
       if (!shouldRun) {
         return false;
       }
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
+        const message = resolveReferences(event.message, undefined, customVariables);
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -521,9 +533,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const params = event['parameters'];
         const resolvedParams = {};
         if (params) {
-          Object.keys(params).map(
-            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
-          );
+          Object.keys(params).map((param) => (resolvedParams[param] = resolveReferences(params[param], undefined)));
         }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
@@ -534,23 +544,18 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'open-webpage': {
-        const url = resolveReferences(event.url, getCurrentState(), undefined, customVariables);
+        const url = resolveReferences(event.url, undefined, customVariables);
         window.open(url, '_blank');
         return Promise.resolve();
       }
 
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
+        const slug = resolveReferences(event.slug, undefined, customVariables);
         const queryParams = event.queryParams?.reduce(
           (result, queryParam) => ({
             ...result,
             ...{
-              [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
-                queryParam[1],
-                getCurrentState(),
-                undefined,
-                customVariables
-              ),
+              [resolveReferences(queryParam[0])]: resolveReferences(queryParam[1], undefined, customVariables),
             },
           }),
           {}
@@ -581,15 +586,15 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         return showModal(_ref, event.modal, false);
 
       case 'copy-to-clipboard': {
-        const contentToCopy = resolveReferences(event.contentToCopy, getCurrentState(), undefined, customVariables);
+        const contentToCopy = resolveReferences(event.contentToCopy, undefined, customVariables);
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
       }
 
       case 'set-localstorage-value': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, undefined, customVariables);
+        const value = resolveReferences(event.value, undefined, customVariables);
         localStorage.setItem(key, value);
 
         return Promise.resolve();
@@ -597,9 +602,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, getCurrentState(), undefined, customVariables) ?? [];
-        const fileName = resolveReferences(event.fileName, getCurrentState(), undefined, customVariables) ?? 'data.txt';
-        const fileType = resolveReferences(event.fileType, getCurrentState(), undefined, customVariables) ?? 'csv';
+        const data = resolveReferences(event.data, undefined, customVariables) ?? [];
+        const fileName = resolveReferences(event.fileName, undefined, customVariables) ?? 'data.txt';
+        const fileType = resolveReferences(event.fileType, undefined, customVariables) ?? 'csv';
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
@@ -610,13 +615,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex, _ref);
+        setTablePageIndex(event.table, event.pageIndex);
         break;
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, undefined, customVariables);
+        const value = resolveReferences(event.value, undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         customAppVariables[key] = value;
         useResolveStore.getState().actions.addAppSuggestions({
@@ -628,13 +633,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'get-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         return customAppVariables[key];
       }
 
       case 'unset-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
         useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
@@ -648,8 +653,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-page-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, undefined, customVariables);
+        const value = resolveReferences(event.value, undefined, customVariables);
         const customPageVariables = {
           ...getCurrentState().page.variables,
           [key]: value,
@@ -671,7 +676,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'get-page-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, undefined, customVariables);
         const customPageVariables = {
           ...getCurrentState().page.variables,
         };
@@ -679,7 +684,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'unset-page-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences(event.key, undefined, customVariables);
         const customPageVariables = _.omit(getCurrentState().page.variables, key);
 
         useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
@@ -729,7 +734,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         }
         actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
-          value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
+          value: resolveReferences(param.value, undefined, customVariables),
         }));
         const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
@@ -740,7 +745,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
-          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, [], customVariables));
         }
         if (_ref.appDefinition.pages[event.pageId]) {
           if (disabled) {
@@ -769,10 +774,8 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    //hack to make sure that the page is loaded before executing the actions
-    setTimeout(async () => {
-      return await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
-    }, 0);
+    // for onPageLoad events, we need to execute the actions after the page is loaded
+    handleLowPriorityWork(() => executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables));
   }
 
   if (eventName === 'onTrigger') {
@@ -933,12 +936,12 @@ export function getQueryVariables(options, state) {
         const vars =
           options.includes('{{constants.') && !options.includes('%%')
             ? 'HiddenOrganizationConstant'
-            : resolveReferences(options, state);
+            : resolveReferences(options);
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
         dynamicVariables.forEach((variable) => {
-          queryVariables[variable] = resolveReferences(variable, state);
+          queryVariables[variable] = resolveReferences(variable);
         });
       }
 
@@ -969,9 +972,12 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
   let parameters = userSuppliedParameters;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
-
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
+  const queryEvents = useAppDataStore
+    .getState()
+    .events.filter((event) => event.target === 'data_query' && event.sourceId === query.id);
   setPreviewLoading(true);
+  setPreviewPanelExpanded(true);
   if (queryPreviewData) {
     setPreviewData('');
   }
@@ -980,7 +986,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
     parameters = query.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
-        [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
+        [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
       }),
       {}
     );
@@ -1007,26 +1013,8 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
       .then(async (data) => {
         let finalData = data.data;
 
-        if (query.options.enableTransformation) {
-          finalData = await runTransformation(
-            _ref,
-            finalData,
-            query.options.transformation,
-            query.options.transformationLanguage,
-            query,
-            'edit'
-          );
-        }
-
-        if (calledFromQuery) {
-          setPreviewLoading(false);
-        } else {
-          setPreviewLoading(false);
-          setPreviewData(finalData);
-        }
         let queryStatusCode = data?.status ?? null;
         const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
-
         switch (true) {
           // Note: Need to move away from statusText -> statusCode
           case queryStatus === 'Bad Request' ||
@@ -1036,8 +1024,40 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatusCode === 400 ||
             queryStatusCode === 404 ||
             queryStatusCode === 422: {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-            toast.error(`${err.message}`);
+            let errorData = {};
+            switch (query.kind) {
+              case 'runpy':
+                errorData = data.data;
+                break;
+              case 'tooljetdb':
+                if (data?.error) {
+                  errorData = {
+                    message: data?.error?.message || 'Something went wrong',
+                    description: data?.error?.message || 'Something went wrong',
+                    status: data?.statusText || 'Failed',
+                    data: data?.error || {},
+                  };
+                } else {
+                  errorData = data;
+                  errorData.description = data.errorMessage || 'Something went wrong';
+                }
+                break;
+              default:
+                errorData = data;
+                break;
+            }
+
+            onEvent(_ref, 'onDataQueryFailure', queryEvents);
+            useCurrentStateStore.getState().actions.setErrors({
+              [query.name]: {
+                type: 'query',
+                kind: query.kind,
+                data: errorData,
+                options: options,
+              },
+            });
+            if (!calledFromQuery) setPreviewData(errorData);
+
             break;
           }
           case queryStatus === 'needs_oauth': {
@@ -1050,16 +1070,50 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatus === 'Created' ||
             queryStatus === 'Accepted' ||
             queryStatus === 'No Content': {
-            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-              icon: '🚀',
+            if (query.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
+                useCurrentStateStore.getState().actions.setErrors({
+                  [query.name]: {
+                    type: 'transformations',
+                    data: finalData,
+                    options: options,
+                  },
+                });
+                onEvent(_ref, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
+                resolve({ status: data.status, data: finalData });
+                if (!calledFromQuery) setPreviewData(finalData);
+                return;
+              }
+            }
+
+            useCurrentStateStore.getState().actions.setCurrentState({
+              succededQuery: {
+                [query.name]: {
+                  type: 'query',
+                  kind: query.kind,
+                },
+              },
             });
+            if (!calledFromQuery) setPreviewData(finalData);
+            onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
             break;
           }
         }
+        setPreviewLoading(false);
 
         resolve({ status: data.status, data: finalData });
       })
-      .catch(({ error, data }) => {
+      .catch((err) => {
+        const { error, data } = err;
         setPreviewLoading(false);
         setPreviewData(data);
         toast.error(error);
@@ -1089,8 +1143,13 @@ export function runQuery(
   // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
 
+  if (shouldSetPreviewData) {
+    setPreviewPanelExpanded(true);
+    setPreviewLoading(true);
+    queryPreviewData && setPreviewData('');
+  }
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
@@ -1102,7 +1161,7 @@ export function runQuery(
     parameters = dataQuery.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
-        [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
+        [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
       }),
       {}
     );
@@ -1136,7 +1195,7 @@ export function runQuery(
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
-    setTimeout(() => {
+    return _.delay(async () => {
       if (shouldSetPreviewData) {
         setPreviewLoading(true);
         queryPreviewData && setPreviewData('');
@@ -1206,6 +1265,7 @@ export function runQuery(
                   };
                 } else {
                   errorData = data;
+                  errorData.description = data.errorMessage || 'Something went wrong';
                 }
                 break;
               default:
@@ -1246,6 +1306,16 @@ export function runQuery(
             });
             resolve(data);
             onEvent(_self, 'onDataQueryFailure', queryEvents);
+
+            const toUpdateRefs = [
+              { hint: `queries.${queryName}.isLoading`, newRef: false },
+              {
+                hint: `queries.${queryName}.data`,
+                newRef: [],
+              },
+            ];
+
+            useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
             if (mode !== 'view') {
               const err = query.kind == 'tooljetdb' ? data?.error || data : data;
               toast.error(err?.message ? err?.message : 'Something went wrong');
@@ -1254,7 +1324,6 @@ export function runQuery(
           } else {
             let rawData = data.data;
             let finalData = data.data;
-
             if (dataQuery.options.enableTransformation) {
               finalData = await runTransformation(
                 _ref,
@@ -1284,6 +1353,8 @@ export function runQuery(
                 });
                 resolve(finalData);
                 onEvent(_self, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
+                if (shouldSetPreviewData) setPreviewData(finalData);
                 return;
               }
             }
@@ -1327,16 +1398,14 @@ export function runQuery(
               },
             });
 
-            if (mode === 'edit') {
-              useResolveStore.getState().actions.addAppSuggestions({
-                queries: {
-                  [queryName]: {
-                    data: finalData,
-                    isLoading: false,
-                  },
+            useResolveStore.getState().actions.addAppSuggestions({
+              queries: {
+                [queryName]: {
+                  data: finalData,
+                  isLoading: false,
                 },
-              });
-            }
+              },
+            });
 
             const basePath = `queries.${queryName}`;
 
@@ -1359,18 +1428,18 @@ export function runQuery(
 
           resolve({ status: 'failed', message: error });
         });
-    }, 100);
+    }, 10);
   });
 }
 
-export function setTablePageIndex(tableId, index, _ref) {
+export function setTablePageIndex(tableId, index) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
   }
 
   const table = Object.entries(getCurrentState().components).filter((entry) => entry?.[1]?.id === tableId)?.[0]?.[1];
-  const newPageIndex = resolveReferences(index, getCurrentState());
+  const newPageIndex = resolveReferences(index);
   table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
@@ -1407,7 +1476,7 @@ export function computeComponentState(components = {}) {
       if (!components[key]) return;
 
       const { component } = components[key];
-      const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component === comp.component));
+      const componentMeta = deepClone(componentTypes.find((comp) => component.component === comp.component));
       const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
       const existingValues = currentComponents[existingComponentName];
 
@@ -1619,7 +1688,15 @@ export const cloneComponents = (
   isCloning = true,
   isCut = false
 ) => {
-  if (selectedComponents.length < 1) return getSelectedText();
+  const selectedText = getSelectedText();
+  if (selectedText) {
+    navigator.clipboard.writeText(selectedText);
+    toast.success('Text copied to clipboard');
+    return;
+  }
+  let addedComponent = {};
+
+  if (selectedComponents.length < 1) return;
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
 
@@ -1638,7 +1715,7 @@ export const cloneComponents = (
     return true;
   });
 
-  let newDefinition = _.cloneDeep(appDefinition);
+  let newDefinition = deepClone(appDefinition);
   let newComponents = [],
     newComponentObj = {},
     addedComponentId = new Set();
@@ -1671,7 +1748,7 @@ export const cloneComponents = (
   if (isCloning) {
     const parentId = allComponents[selectedComponents[0]?.id]?.['component']?.parent ?? undefined;
 
-    addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
+    addedComponent = addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -1686,6 +1763,7 @@ export const cloneComponents = (
   return new Promise((resolve) => {
     useEditorStore.getState().actions.updateEditorState({
       currentSidebarTab: 2,
+      ...(isCloning && { selectedComponents: [{ id: addedComponent.id, component: addedComponent }] }),
     });
     resolve();
   });
@@ -1771,6 +1849,7 @@ export const addComponents = (
 ) => {
   const finalComponents = {};
   const componentMap = {};
+  let newComponent = {};
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
 
@@ -1818,12 +1897,13 @@ export const addComponents = (
       componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
     }
 
-    const newComponent = {
+    newComponent = {
       component: {
         ...componentData,
         name: componentName,
       },
       layouts: component.layouts,
+      id: newComponentId,
     };
 
     finalComponents[newComponentId] = newComponent;
@@ -1836,7 +1916,10 @@ export const addComponents = (
   }
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
-  !isCloning && toast.success('Component pasted succesfully');
+  if (!isCloning) {
+    toast.success('Component pasted succesfully');
+  }
+  return newComponent;
 };
 
 export const addNewWidgetToTheEditor = (
@@ -1850,8 +1933,8 @@ export const addNewWidgetToTheEditor = (
   isInSubContainer = false,
   addingDefault = false
 ) => {
-  const componentMetaData = _.cloneDeep(componentMeta);
-  const componentData = _.cloneDeep(componentMetaData);
+  const componentMetaData = deepClone(componentMeta);
+  const componentData = deepClone(componentMetaData);
   const noOfGrid = useGridStore.getState().noOfGrid;
 
   const defaultWidth = componentMetaData.defaultSize.width;
@@ -1967,19 +2050,40 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
     delete newDefinition.pages[pageId].components[componentId];
   });
 
+  const appDefinition = useEditorStore.getState().appDefinition;
+
+  const deleteFromMap = [...toDeleteComponents];
+  const deletedComponentNames = deleteFromMap.map((id) => {
+    return appDefinition.pages[pageId].components[id].component.name;
+  });
+
+  const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+  const allHintsAssociatedWithQuery = [];
+
+  if (allAppHints.length > 0) {
+    deletedComponentNames.forEach((componentName) => {
+      return allAppHints.forEach((suggestion) => {
+        if (suggestion?.hint.includes(componentName)) {
+          allHintsAssociatedWithQuery.push(suggestion.hint);
+        }
+      });
+    });
+  }
+
+  useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
+  useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
+
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
 };
 
 const getSelectedText = () => {
+  let selectedText = '';
   if (window.getSelection) {
-    navigator.clipboard.writeText(window.getSelection());
+    selectedText = window.getSelection().toString();
+  } else if (window.document.selection) {
+    selectedText = document.selection.createRange().text;
   }
-  if (window.document.getSelection) {
-    navigator.clipboard.writeText(window.document.getSelection());
-  }
-  if (window.document.selection) {
-    navigator.clipboard.writeText(window.document.selection.createRange().text);
-  }
+  return selectedText || null;
 };
 
 function convertMapSet(obj) {
@@ -1999,12 +2103,28 @@ function convertMapSet(obj) {
 export const checkExistingQueryName = (newName) =>
   useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
 
-export const runQueries = (queries, _ref, isOnLoad = false) => {
-  queries.forEach((query) => {
-    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-      runQuery(_ref, query.id, query.name, isOnLoad);
+// export const runQueries = (queries, _ref, isOnLoad = false) => {
+//   queries.forEach((query) => {
+//     if (query.options.runOnPageLoad && isQueryRunnable(query)) {
+//       runQuery(_ref, query.id, query.name, isOnLoad);
+//     }
+//   });
+// };
+
+export const runQueries = async (queries, _ref, isOnLoad = false) => {
+  try {
+    for (const query of queries) {
+      if (query.options.runOnPageLoad && isQueryRunnable(query) && !query.options?.requestConfirmation) {
+        await runQuery(_ref, query.id, query.name, isOnLoad);
+      }
     }
-  });
+  } catch (error) {
+    // If any query fails, reject the promise with the error
+    return Promise.reject(error);
+  }
+
+  // Return a resolved promise if all queries are successful
+  return Promise.resolve();
 };
 
 export const computeQueryState = (queries) => {
@@ -2038,7 +2158,7 @@ export const buildComponentMetaDefinition = (components = {}) => {
   for (const componentId in components) {
     const currentComponentData = components[componentId];
 
-    const componentMeta = _.cloneDeep(
+    const componentMeta = deepClone(
       componentTypes.find((comp) => currentComponentData.component.component === comp.component)
     );
 
@@ -2083,7 +2203,7 @@ export const buildComponentMetaDefinition = (components = {}) => {
 };
 
 export const buildAppDefinition = (data) => {
-  const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
+  const editingVersion = camelizeKeys(_.omit(data.editing_version, ['definition', 'updated_at', 'created_at', 'name']));
 
   editingVersion['currentVersionId'] = editingVersion.id;
   _.unset(editingVersion, 'id');
@@ -2187,4 +2307,25 @@ function extractVersion(versionStr) {
 // Select multiple components using Selecto via drag
 export const setMultipleComponentsSelected = (components) => {
   useEditorStore.getState().actions.selectMultipleComponents(components);
+};
+
+export const calculateMoveableBoxHeight = (componentType, layoutData, stylesDefinition, label) => {
+  // Early return for non input components
+  if (!['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2'].includes(componentType)) {
+    return layoutData?.height;
+  }
+  const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+
+  const resolvedLabel = label?.value?.length ?? 0;
+  const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
+  const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
+
+  let newHeight = layoutData?.height;
+  if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
+    if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
+      newHeight += 20;
+    }
+  }
+
+  return newHeight;
 };

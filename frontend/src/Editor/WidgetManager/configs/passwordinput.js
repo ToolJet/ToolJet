@@ -213,7 +213,7 @@ export const passinputConfig = {
   },
   exposedVariables: {
     value: '',
-    mandatory: { value: '{{false}}' },
+    isMandatory: false,
     isVisible: true,
     isDisabled: false,
     isLoading: false,

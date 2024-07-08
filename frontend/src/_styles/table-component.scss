@@ -98,6 +98,10 @@
 
 
 .jet-data-table {
+  &::-webkit-scrollbar {
+    display: unset !important;
+  }
+
   &::-webkit-scrollbar-thumb {
     background-color: var(--slate4) !important;
     /* Color of the scrollbar thumb */

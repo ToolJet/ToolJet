@@ -11,6 +11,8 @@ import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class PageService {
@@ -210,6 +212,20 @@ export class PageService {
         if (parentId) {
           await manager.update(Component, component.id, { parent: parentId });
         }
+      }
+
+      const toUpdateComponents = clonedComponents.filter((component) => {
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, componentsIdMap);
+        }
+      });
+
+      if (!isEmpty(toUpdateComponents)) {
+        await manager.save(toUpdateComponents);
       }
     });
   }
