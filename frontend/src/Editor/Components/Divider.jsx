@@ -1,14 +1,20 @@
 import React from 'react';
 
-export const Divider = function Divider({ styles, dataCy }) {
+export const Divider = function Divider({ styles, dataCy, height, width, darkMode }) {
   const { visibility, dividerColor, boxShadow } = styles;
-  const color = dividerColor ?? '#E7E8EA';
 
+  const color =
+    dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
   return (
     <div
-      className="hr mt-1"
-      style={{ display: visibility ? '' : 'none', color: color, opacity: '1', boxShadow }}
+      className="row"
+      style={{ display: visibility ? 'flex' : 'none', padding: '0 8px', width, height, alignItems: 'center' }}
       data-cy={dataCy}
-    ></div>
+    >
+      <div
+        className="col-6"
+        style={{ height: '1px', width, backgroundColor: color, padding: '0rem', marginLeft: '0.5rem', boxShadow }}
+      ></div>
+    </div>
   );
 };

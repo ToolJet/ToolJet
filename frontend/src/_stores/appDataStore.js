@@ -55,7 +55,7 @@ export const useAppDataStore = create(
 
             let updateDiff = appDefinitionDiff.updateDiff;
 
-            if (appDefinitionDiff.operation === 'update') {
+            if (appDefinitionDiff.operation === 'update' || appDefinitionDiff.operation === 'create') {
               updateDiff = useResolveStore.getState().actions.findReferences(updateDiff);
             }
 
