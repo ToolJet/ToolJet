@@ -27,6 +27,7 @@ export const DateTimePicker = ({
   const timestampRef = useRef(timestamp);
   const prevTimestampRef = useRef(timestamp || new Date().toISOString());
   const transformedTimestamp = timestamp ? convertToDateType(timestamp, timezone) : null;
+  const [triggeredKeyPress, setTriggeredKeyPress] = useState(0);
   const minDate = new Date(1800, 0, 1);
   const maxDate = new Date(2200, 11, 31);
   const [isOpen, setIsOpen] = useState(isOpenOnStart);
@@ -68,6 +69,12 @@ export const DateTimePicker = ({
     timestampRef.current = stringifiedTimestamp;
     setTimestamp(stringifiedTimestamp, isTimeSelect);
   };
+
+  useEffect(() => {
+    if (isOpen === false && isEditCell) {
+      setIsOpen(true);
+    }
+  }, [triggeredKeyPress]);
 
   useEffect(() => {
     const currentTimeInMilliseconds = new Date(timestampRef.current).getTime();
@@ -332,6 +339,10 @@ export const DateTimePicker = ({
         onChange={(newTimestamp, event) => {
           if (isEditCell) {
             handleCellEditChange(newTimestamp);
+            if (event?.type === 'keydown') {
+              setTriggeredKeyPress((prev) => prev + 1);
+              setIsOpen(false);
+            }
           } else {
             if (event) {
               handleDefaultChange(newTimestamp);
