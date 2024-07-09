@@ -252,6 +252,7 @@ class ManageGranularAccessComponent extends React.Component {
       .catch(({ error }) => {
         if (error?.type) {
           this.setState({
+            showEditRoleErrorModal: false,
             showAutoRoleChangeModal: true,
             autoRoleChangeModalMessage: error?.error,
             autoRoleChangeModalList: error?.data,
