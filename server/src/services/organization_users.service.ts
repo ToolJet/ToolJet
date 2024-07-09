@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createQueryBuilder } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
@@ -8,7 +7,6 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { ConfigService } from '@nestjs/config';
 import { WORKSPACE_USER_SOURCE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
@@ -216,20 +214,6 @@ export class OrganizationUsersService {
     }
 
     return personalWorkspaceArray;
-  }
-
-  async lastActiveAdmin(organizationId: string): Promise<boolean> {
-    const adminsCount = await this.activeAdminCount(organizationId);
-
-    return adminsCount <= 1;
-  }
-
-  async activeAdminCount(organizationId: string) {
-    return await createQueryBuilder(GroupPermission, 'group_permissions')
-      .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
-      .where('group_permissions.group = :admin', { admin: 'admin' })
-      .andWhere('group_permissions.organization = :organizationId', { organizationId })
-      .getCount();
   }
 
   async organizationsCount(manager?: EntityManager) {

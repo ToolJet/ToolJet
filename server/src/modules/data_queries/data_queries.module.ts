@@ -15,8 +15,6 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -43,9 +41,6 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
       Credential,
       DataSource,
       FolderApp,
-      //Depreciated
-      GroupPermission,
-      AppGroupPermission,
       User,
       OrganizationUser,
       Organization,

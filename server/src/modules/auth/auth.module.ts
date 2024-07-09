@@ -15,14 +15,10 @@ import { ConfigService } from '@nestjs/config';
 import { EmailService } from '@services/email.service';
 import { OauthService, GoogleOAuthService, GitOAuthService } from '@ee/services/oauth';
 import { OauthController } from '@ee/controllers/oauth.controller';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
 import { FilesService } from '@services/files.service';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
-import { GroupPermissionsService } from '@services/group_permissions.service';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
@@ -49,14 +45,8 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
       File,
       Organization,
       OrganizationUser,
-      //Depreciated
-      GroupPermission,
       App,
       SSOConfigs,
-      //Depreciated
-      AppGroupPermission,
-      //Depreciated
-      UserGroupPermission,
       DataSource,
       Credential,
       Plugin,
@@ -84,8 +74,6 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
     GoogleOAuthService,
     GitOAuthService,
     FilesService,
-    //Need to remove group Permission service since this is not required.
-    GroupPermissionsService,
     EncryptionService,
     DataSourcesService,
     CredentialsService,

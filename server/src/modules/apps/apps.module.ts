@@ -20,9 +20,6 @@ import { FoldersService } from '@services/folders.service';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
@@ -59,10 +56,6 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
       User,
       Organization,
       DataSource,
-      //Depreciated
-      GroupPermission,
-      AppGroupPermission,
-      UserGroupPermission,
       Credential,
       File,
       Plugin,

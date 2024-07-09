@@ -23,8 +23,6 @@ import { AppUser } from 'src/entities/app_user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { DataSourcesService } from '@services/data_sources.service';
@@ -52,10 +50,6 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
       DataSource,
       DataQuery,
       FolderApp,
-      //Depreciated
-      GroupPermission,
-      //Depreciated
-      AppGroupPermission,
       Credential,
     ]),
     CaslModule,

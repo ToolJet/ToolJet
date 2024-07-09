@@ -11,16 +11,12 @@ import { UsersService } from 'src/services/users.service';
 import { CaslModule } from '../casl/casl.module';
 import { EmailService } from '@services/email.service';
 import { FilesService } from '@services/files.service';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { AuthService } from '@services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { GroupPermissionsService } from '@services/group_permissions.service';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { AppConfigService } from '@services/app_config.service';
 import { Plugin } from 'src/entities/plugin.entity';
@@ -45,11 +41,8 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
       OrganizationUser,
       User,
       File,
-      GroupPermission,
       App,
       SSOConfigs,
-      AppGroupPermission,
-      UserGroupPermission,
       DataSource,
       Credential,
       Plugin,
@@ -77,8 +70,6 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
     EmailService,
     FilesService,
     AuthService,
-    //Need to check if group permission is required in organization module
-    GroupPermissionsService,
     EncryptionService,
     DataSourcesService,
     CredentialsService,

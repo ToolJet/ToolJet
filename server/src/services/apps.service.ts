@@ -7,8 +7,6 @@ import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
@@ -174,50 +172,9 @@ export class AppsService {
             updatedAt: new Date(),
           })
         );
-
-        //Depreciated - Need to change this
-        await this.createAppGroupPermissionsForAdmin(app, manager);
         return app;
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     });
-  }
-
-  //Need to change this as per new group permissions
-  async createAppGroupPermissionsForAdmin(app: App, manager: EntityManager): Promise<void> {
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
-        where: {
-          organizationId: app.organizationId,
-          group: 'admin',
-        },
-      });
-
-      for (const groupPermission of orgDefaultGroupPermissions) {
-        const appGroupPermission = manager.create(AppGroupPermission, {
-          groupPermissionId: groupPermission.id,
-          appId: app.id,
-          ...this.fetchDefaultAppGroupPermissions(groupPermission.group),
-        });
-
-        await manager.save(appGroupPermission);
-      }
-    }, manager);
-  }
-
-  //Change this ..
-  fetchDefaultAppGroupPermissions(group: string): {
-    read: boolean;
-    update: boolean;
-    delete: boolean;
-  } {
-    switch (group) {
-      case 'all_users':
-        return { read: true, update: false, delete: false };
-      case 'admin':
-        return { read: true, update: true, delete: true };
-      default:
-        throw `${group} is not a default group`;
-    }
   }
 
   async clone(existingApp: App, user: User, appName: string): Promise<App> {

@@ -54,11 +54,12 @@ export class AppsController {
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await this.appsService.create(name, user, manager);
-
+      console.log('okay till here');
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
+
       await this.appsService.update(app.id, appUpdateDto, manager);
 
       return decamelizeKeys(app);
