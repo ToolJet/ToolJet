@@ -42,27 +42,31 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
 
       for (const groupPermissions of groups) {
         const query = `
-            INSERT INTO permission_groups (
-                organization_id,
-                name,
-                type,
-                app_create,
-                app_delete,
-                folder_crud,
-                org_constant_crud,
-                data_source_create,
-                data_source_delete,
-            ) VALUES (
-                ${organizationId} , ${groupPermissions.group} , ${GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP},${groupPermissions.appCreate}, ${groupPermissions.appDelete}
-                , ${groupPermissions.folderCreate}, ${groupPermissions.orgEnvironmentConstantCreate}, false , false
-            ) RETURNING *;`;
+          INSERT INTO permission_groups (
+            organization_id,
+            name,
+            type,
+            app_create,
+            app_delete,
+            folder_crud,
+            org_constant_crud,
+            data_source_create,
+            data_source_delete
+          ) VALUES (
+            '${organizationId}',
+            '${this.getGroupName(groupPermissions.group)}',
+            '${GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP}',
+            ${groupPermissions.appCreate},
+            ${groupPermissions.appDelete},
+            ${groupPermissions.folderCreate},
+            ${groupPermissions.orgEnvironmentConstantCreate},
+            false,
+            false
+          ) RETURNING *;
+        `;
         const group: GroupPermissions = (await manager.query(query))[0];
         const existingGroupUsers = groupPermissions.userGroupPermission;
-        await this.migrateUserGroup(
-          manager,
-          existingGroupUsers.map((record) => record.userId),
-          groupPermissions.id
-        );
+        await this.migrateUserGroup(manager, [...new Set(existingGroupUsers.map((record) => record.userId))], group.id);
         const resources = [ResourceType.APP];
         for (const resource of resources) {
           if (resource === ResourceType.APP) {
@@ -110,11 +114,10 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         return `custom-${USER_ROLE.BUILDER}`;
       case USER_ROLE.END_USER:
         return `custom-${USER_ROLE.END_USER}`;
-      case 'all-users':
+      case 'all_users':
         return `Custom All users`;
       default:
-        name;
-        break;
+        return name;
     }
   }
 
@@ -158,11 +161,12 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
   }
 
   async migrateUserGroup(manager: EntityManager, userIds: string[], groupId: string) {
-    const valuesString = `( ${userIds.map((id) => `(${id}, ${groupId} )`).join(',')} )`;
-    const query = `INSERT INTO group_users (
-            user_id,
-            group_id
-        ) VALUES ${valuesString}`;
+    if (userIds.length == 0) return;
+    const valuesString = userIds.map((id) => `('${id}', '${groupId}')`).join(',');
+    const query = `
+      INSERT INTO group_users (user_id, group_id)
+      VALUES ${valuesString};
+    `;
     return await manager.query(query);
   }
 
