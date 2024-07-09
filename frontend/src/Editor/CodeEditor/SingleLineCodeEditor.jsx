@@ -330,6 +330,10 @@ const DynamicEditorBridge = (props) => {
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
 
+  useEffect(() => {
+    setForceCodeBox(fxActive);
+  }, [component]);
+
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>

@@ -25,7 +25,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, setWindowTitle, pageTitles, isValidUUID } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, isValidUUID } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -50,6 +50,8 @@ import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import TooljetBanner from './Viewer/TooljetBanner';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -491,7 +493,7 @@ class ViewerComponent extends React.Component {
         useCurrentStateStore.getState().actions.initializeCurrentStateOnVersionSwitch();
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
-        setWindowTitle({
+        fetchAndSetWindowTitle({
           page: pageTitles.VIEWER,
           appName: data.name,
           preview,
@@ -516,7 +518,7 @@ class ViewerComponent extends React.Component {
     await appService
       .fetchAppByVersion(appId, versionId)
       .then((data) => {
-        setWindowTitle({
+        fetchAndSetWindowTitle({
           page: pageTitles.VIEWER,
           appName: data.name,
           preview: true,
@@ -703,7 +705,7 @@ class ViewerComponent extends React.Component {
     const bgColor =
       (this.props.canvasBackground?.backgroundFxQuery || this.props.canvasBackground?.canvasBackgroundColor) ??
       '#2f3c4c';
-    const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
+    const resolvedBackgroundColor = resolveReferences(bgColor);
     if (['#2f3c4c', '#F2F2F5', '#edeff5'].includes(resolvedBackgroundColor)) {
       return this.props.darkMode ? '#2f3c4c' : '#F2F2F5';
     }
@@ -851,7 +853,7 @@ class ViewerComponent extends React.Component {
     const queryConfirmationList = this.props?.queryConfirmationList ?? [];
     const canvasMaxWidth = this.computeCanvasMaxWidth();
     const pages =
-      Object.entries(_.cloneDeep(appDefinition)?.pages)
+      Object.entries(deepClone(appDefinition)?.pages)
         .map(([id, page]) => ({ id, ...page }))
         .sort((a, b) => a.index - b.index) || [];
 
@@ -889,7 +891,7 @@ class ViewerComponent extends React.Component {
         >
           <Confirm
             show={queryConfirmationList.length > 0}
-            message={'Do you want to run this query?'}
+            message={'Do you want to run this query'}
             onConfirm={(queryConfirmationData) =>
               onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationData, true, 'view')
             }
@@ -1074,14 +1076,18 @@ const withStore = (Component) => (props) => {
   }
 
   React.useEffect(() => {
-    const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
-    const currentComponents = Object.keys(currentComponentsDef);
+    const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
-    setTimeout(() => {
-      if (currentComponents.length > 0) {
-        batchUpdateComponents(currentComponents);
-      }
-    }, 400);
+    if (isPageSwitched) {
+      const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
+      const currentComponents = Object.keys(currentComponentsDef);
+
+      setTimeout(() => {
+        if (currentComponents.length > 0) {
+          batchUpdateComponents(currentComponents);
+        }
+      }, 400);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPageId]);
 

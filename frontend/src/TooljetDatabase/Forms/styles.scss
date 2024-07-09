@@ -85,7 +85,7 @@
   background-color: #FFF8F7;
   padding: 8px;
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: center;
   border-radius: 6px;
   border: 1px solid #FDD8D3;
@@ -366,7 +366,7 @@
     .table-schema-row {
       display: flex;
       align-items: center;
-      justify-content: start;
+      justify-content: flex-start;
       gap: 6px;
 
       input.form-control {
@@ -494,7 +494,7 @@
 
   .key-changes-container {
     display: flex;
-    align-items: start;
+    align-items: flex-start;
     justify-content: space-between;
     padding: 12px;
     font-weight: 500;
@@ -554,15 +554,18 @@
       background: none !important;
       color: var(--slate9) !important;
       cursor: auto !important;
-      svg{
-        path:first-child{
+
+      svg {
+        path:first-child {
           fill: var(--slate7) !important;
         }
-        path:nth-child(2){
+
+        path:nth-child(2) {
           fill: var(--base) !important;
         }
       }
     }
+
     &:disabled:hover {
       background: var(--slate3) !important;
     }

@@ -1,6 +1,6 @@
 import { schemaUnavailableOptions } from '@/Editor/QueryManager/constants';
 import { allOperations } from '@tooljet/plugins/client';
-import { capitalize } from 'lodash';
+import { capitalize, cloneDeep } from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
@@ -10,7 +10,7 @@ export const getDefaultOptions = (source) => {
 
   if (isSchemaUnavailable) {
     options = {
-      ...{ ...schemaUnavailableOptions[source.kind] },
+      ...{ ...cloneDeep(schemaUnavailableOptions[source.kind]) },
       ...(source?.kind != 'runjs' && {
         transformationLanguage: 'javascript',
         enableTransformation: false,

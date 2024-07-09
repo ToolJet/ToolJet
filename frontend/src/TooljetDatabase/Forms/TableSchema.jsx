@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { UniqueConstraintPopOver } from '../Table/ActionsPopover/UniqueConstraintPopOver';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
@@ -11,10 +11,16 @@ import ArrowRight from '../Icons/ArrowRight.svg';
 import Tick from '../Icons/Tick.svg';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
-import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
 import './styles.scss';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import {
+  convertDateToTimeZoneFormatted,
+  getLocalTimeZone,
+  timeZonesWithOffsets,
+} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 function TableSchema({
   columns,
@@ -68,6 +74,15 @@ function TableSchema({
   useEffect(() => {
     setPreviousColumnNames(Object.keys(columnDetails).map((key, index) => columnDetails[index]?.column_name));
   }, [columnDetails]);
+  const tzOptions = useMemo(() => timeZonesWithOffsets(), []);
+
+  const tzDictionary = useMemo(() => {
+    const dict = {};
+    tzOptions.forEach((option) => {
+      dict[option.value] = option;
+    });
+    return dict;
+  }, []);
 
   const CustomSelectOption = (props) => {
     return (
@@ -368,44 +383,74 @@ function TableSchema({
             ) : (
               <ToolTip
                 message={
-                  columnDetails[index]?.data_type === 'serial' ? 'Serial data type values cannot be modified' : null
+                  columnDetails[index]?.data_type === 'serial'
+                    ? 'Serial data type values cannot be modified'
+                    : columnDetails[index]?.data_type === 'timestamp with time zone' &&
+                      columnDetails[index]?.column_default
+                    ? convertDateToTimeZoneFormatted(
+                        columnDetails[index].column_default,
+                        columnDetails[index]?.configurations?.timezone || getLocalTimeZone()
+                      )
+                    : null
                 }
                 placement="top"
                 tooltipClassName="tootip-table"
                 style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
-                show={columnDetails[index]?.data_type === 'serial'}
+                show={
+                  columnDetails[index]?.data_type === 'serial' ||
+                  (columnDetails[index]?.data_type === 'timestamp with time zone' &&
+                    !!columnDetails[index]?.column_default)
+                }
               >
                 <div className="m-0" data-cy="column-default-input-field">
-                  <input
-                    onChange={(e) => {
-                      e.persist();
-                      const prevColumns = { ...columnDetails };
-                      prevColumns[index].column_default = e.target.value;
-                      setColumns(prevColumns);
-                    }}
-                    value={
-                      columnDetails[index].data_type === 'serial'
-                        ? 'Auto-generated'
-                        : // : checkDefaultValue(columnDetails[index].column_default)
-                          // ? null
-                          columnDetails[index].column_default
-                    }
-                    type="text"
-                    className="form-control defaultValue"
-                    data-cy="default-input-field"
-                    placeholder={
-                      (columnDetails[index].data_type === 'serial' &&
-                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                      columnDetails[index].data_type === 'serial'
-                        ? 'Auto-generated'
-                        : 'Enter value'
-                    }
-                    disabled={
-                      (columnDetails[index].data_type === 'serial' &&
-                        columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                      columnDetails[index].data_type === 'serial'
-                    }
-                  />
+                  {columnDetails[index].data_type === 'timestamp with time zone' ? (
+                    <div style={{ width: '125px' }}>
+                      <DateTimePicker
+                        timestamp={columnDetails[index].column_default}
+                        timezone={columnDetails[index]?.configurations?.timezone || getLocalTimeZone()}
+                        setTimestamp={(value, isTimeSelect = false) => {
+                          const prevColumns = { ...columnDetails };
+                          columnDetails[index].isOpenOnStart =
+                            isTimeSelect && !!prevColumns[index]?.column_default === false && !!value === true;
+                          prevColumns[index].column_default = value;
+                          setColumns(prevColumns);
+                        }}
+                        isOpenOnStart={columnDetails[index]?.isOpenOnStart}
+                        isClearable={true}
+                      />
+                    </div>
+                  ) : (
+                    <input
+                      onChange={(e) => {
+                        e.persist();
+                        const prevColumns = { ...columnDetails };
+                        prevColumns[index].column_default = e.target.value;
+                        setColumns(prevColumns);
+                      }}
+                      value={
+                        columnDetails[index].data_type === 'serial'
+                          ? 'Auto-generated'
+                          : // : checkDefaultValue(columnDetails[index].column_default)
+                            // ? null
+                            columnDetails[index].column_default
+                      }
+                      type="text"
+                      className="form-control defaultValue"
+                      data-cy="default-input-field"
+                      placeholder={
+                        (columnDetails[index].data_type === 'serial' &&
+                          columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                        columnDetails[index].data_type === 'serial'
+                          ? 'Auto-generated'
+                          : 'Enter value'
+                      }
+                      disabled={
+                        (columnDetails[index].data_type === 'serial' &&
+                          columnDetails[index]?.constraints_type?.is_primary_key === true) ||
+                        columnDetails[index].data_type === 'serial'
+                      }
+                    />
+                  )}
                 </div>
               </ToolTip>
             )}
@@ -414,20 +459,22 @@ function TableSchema({
               message={
                 columnDetails[index]?.data_type === 'boolean'
                   ? 'Boolean type column cannot be a primary key'
+                  : columnDetails[index]?.data_type === 'timestamp with time zone'
+                  ? ' Primary key cannot be created with this column type'
                   : 'There must be atleast one Primary key'
               }
               placement="top"
               tooltipClassName="tootip-table"
               show={
                 (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                columnDetails[index]?.data_type === 'boolean'
+                ['boolean', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)
               }
             >
               <div className="primary-check">
                 <IndeterminateCheckbox
                   checked={
                     columnDetails[index]?.constraints_type?.is_primary_key &&
-                    columnDetails[index]?.data_type === 'boolean'
+                    ['boolean', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)
                       ? false
                       : columnDetails[index]?.constraints_type?.is_primary_key
                       ? true
@@ -458,7 +505,7 @@ function TableSchema({
                   }}
                   disabled={
                     (primaryKeyLength === 1 && columnDetails[index]?.constraints_type?.is_primary_key === true) ||
-                    columnDetails[index].data_type === 'boolean'
+                    ['boolean', 'timestamp with time zone'].includes(columnDetails[index]?.data_type)
                   }
                 />
               </div>
@@ -537,6 +584,8 @@ function TableSchema({
                 setColumns={setColumns}
                 index={index}
                 isEditMode={isEditMode}
+                tzDictionary={tzDictionary}
+                tzOptions={tzOptions}
               >
                 <div className="cursor-pointer">
                   <MenuIcon />

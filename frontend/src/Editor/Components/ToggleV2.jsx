@@ -165,7 +165,6 @@ export const ToggleSwitchV2 = ({
     setExposedVariable('isLoading', loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
-
   useEffect(() => {
     setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,12 +174,10 @@ export const ToggleSwitchV2 = ({
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
-
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
-
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
       setLoading(loading);
