@@ -101,6 +101,7 @@ export function onComponentOptionsChanged(component, options, id) {
       useCurrentStateStore.getState().actions.setCurrentState({
         components: { ...duplicateCurrentState },
       });
+      duplicateCurrentState = null;
 
       const state = getCurrentState();
 
@@ -115,7 +116,6 @@ export function onComponentOptionsChanged(component, options, id) {
         null,
         isPageSwitched
       );
-      duplicateCurrentState = null;
     }
 
     const components = getCurrentState().components;
@@ -219,6 +219,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
       useCurrentStateStore.getState().actions.setCurrentState({
         components: { ...duplicateCurrentState },
       });
+      duplicateCurrentState = null;
 
       const state = getCurrentState();
 
@@ -233,7 +234,6 @@ export function onComponentOptionChanged(component, option_name, value, id) {
         null,
         isPageSwitched
       );
-      duplicateCurrentState = null;
     }
     // Always update the current state if editor is ready
     useCurrentStateStore.getState().actions.setCurrentState({
