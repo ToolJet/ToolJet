@@ -14,6 +14,7 @@ import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDataba
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, checkDefaultValue } from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
+import './styles.scss';
 
 function TableSchema({
   columns,
