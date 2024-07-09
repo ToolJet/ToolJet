@@ -25,9 +25,14 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
       const userIdsWithEditPermissions = (
         await manager
           .createQueryBuilder(User, 'users')
-          .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.organizationId := ', {
-            organizationId,
-          })
+          .innerJoin(
+            'users.organizationUsers',
+            'organization_users',
+            'organization_users.organizationId = :organizationId ',
+            {
+              organizationId,
+            }
+          )
           .innerJoin(
             'users.groupPermissions',
             'group_permissions',
@@ -49,9 +54,14 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
       const userIdsOfAppOwners = (
         await manager
           .createQueryBuilder(User, 'users')
-          .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.organizationId := ', {
-            organizationId,
-          })
+          .innerJoin(
+            'users.organizationUsers',
+            'organization_users',
+            'organization_users.organizationId = :organizationId',
+            {
+              organizationId,
+            }
+          )
           .innerJoin('users.apps', 'apps')
           .select('users.id')
           .distinct()
@@ -62,14 +72,14 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
         await manager
           .createQueryBuilder(UserGroupPermission, 'usersGroup')
           .innerJoin(
-            'userGroup.groupPermission',
+            'usersGroup.groupPermission',
             'groupPermission',
-            'groupPermission.organizationId := organizationId',
+            'groupPermission.organizationId = :organizationId',
             {
               organizationId,
             }
           )
-          .where('groupPermission.name := admin', {
+          .where('groupPermission.group = :admin', {
             admin: 'admin',
           })
           .getMany()
@@ -82,6 +92,10 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
       const endUserGroup = await manager.findOne(GroupPermissions, {
         where: { name: USER_ROLE.END_USER, type: GROUP_PERMISSIONS_TYPE.DEFAULT, organizationId: organizationId },
       });
+
+      console.log('Builders users');
+      console.log(builderUsersWoAdmin);
+
       await this.migrateUserGroup(manager, builderUsersWoAdmin, builderGroup.id);
       const organizationUser = (
         await manager.find(OrganizationUser, {
@@ -97,11 +111,12 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
   }
 
   async migrateUserGroup(manager: EntityManager, userIds: string[], groupId: string) {
-    const valuesString = `( ${userIds.map((id) => `(${id}, ${groupId} )`).join(',')} )`;
-    const query = `INSERT INTO group_users (
-            user_id,
-            group_id
-        ) VALUES ${valuesString}`;
+    if (userIds.length === 0) return;
+    const valuesString = userIds.map((id) => `('${id}', '${groupId}')`).join(',');
+    const query = `
+      INSERT INTO group_users (user_id, group_id)
+      VALUES ${valuesString};
+    `;
     return await manager.query(query);
   }
 

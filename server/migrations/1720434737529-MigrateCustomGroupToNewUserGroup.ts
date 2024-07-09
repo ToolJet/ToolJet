@@ -30,12 +30,12 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
     for (const organizationId of organizationIds) {
       const groups = await manager
         .createQueryBuilder(GroupPermission, 'groupPermission')
-        .where('groupPermission.organizationId := organizationId', {
+        .where('groupPermission.organizationId = :organizationId', {
           organizationId,
         })
         .innerJoinAndSelect('groupPermission.appGroupPermission', 'appGroupPermission')
         .innerJoinAndSelect('groupPermission.userGroupPermission', 'userGroupPermission')
-        .andWhere('groupPermission.group != admin', {
+        .andWhere('groupPermission.group != :admin', {
           admin: 'admin',
         })
         .getMany();
@@ -56,7 +56,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
                 ${organizationId} , ${groupPermissions.group} , ${GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP},${groupPermissions.appCreate}, ${groupPermissions.appDelete}
                 , ${groupPermissions.folderCreate}, ${groupPermissions.orgEnvironmentConstantCreate}, false , false
             ) RETURNING *;`;
-        const group: GroupPermissions = await manager.query(query);
+        const group: GroupPermissions = (await manager.query(query))[0];
         const existingGroupUsers = groupPermissions.userGroupPermission;
         await this.migrateUserGroup(
           manager,
@@ -132,11 +132,8 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         ) VALUES (
             ${createObject.groupId} , ${createObject.name} , ${createObject.type},${createObject.isAll}
         ) RETURNING *;`;
-    return await manager.query(query);
+    return (await manager.query(query))[0];
   }
-
-  //Add check   custom_builder , custom_end-user,  -->
-  // All users permissions..
 
   async createAppsResourcePermission(
     manager: EntityManager,
@@ -145,16 +142,19 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
   ): Promise<AppsGroupPermissions> {
     const { granularPermissions } = createMeta;
     const query = `
-        INSERT INTO apps_group_permissions (
-            granular_permission_id,
-            can_edit,
-            can_view,
-            hide_from_dashboard,
-            
-        ) VALUES (
-            ${granularPermissions.id} , ${createObject.canEdit} , ${createObject.canView},${createObject.hideFromDashboard}
-        ) RETURNING *;`;
-    return await manager.query(query);
+    INSERT INTO apps_group_permissions (
+      granular_permission_id,
+      can_edit,
+      can_view,
+      hide_from_dashboard
+    ) VALUES (
+      ${granularPermissions.id},
+      ${createObject.canEdit},
+      ${createObject.canView},
+      ${createObject.hideFromDashboard}
+    ) RETURNING *;
+  `;
+    return (await manager.query(query))[0];
   }
 
   async migrateUserGroup(manager: EntityManager, userIds: string[], groupId: string) {
@@ -167,11 +167,11 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
   }
 
   async addAppsGroupToPermissions(manager: EntityManager, appIds: string[], appPermissionsId: string) {
-    const valuesString = `( ${appIds.map((id) => `(${id}, ${appPermissionsId} )`).join(',')} )`;
-    const query = `INSERT INTO group_apps (
-            app_id,
-            apps_group_permissions_id
-        ) VALUES ${valuesString}`;
+    const valuesString = appIds.map((id) => `('${id}', '${appPermissionsId}')`).join(',');
+    const query = `
+    INSERT INTO group_apps (app_id, apps_group_permissions_id)
+    VALUES ${valuesString};
+  `;
     return await manager.query(query);
   }
 
@@ -190,6 +190,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       groupId: group.id,
       type: resource as ResourceType,
       isAll: false,
+      createAppsPermissionsObject: {},
     };
     const granularPermissions = await this.createGranularPermission(manager, dtoObject);
     const appsGroupPermissions = await this.createAppsResourcePermission(
