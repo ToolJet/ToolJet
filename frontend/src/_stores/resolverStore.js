@@ -128,6 +128,9 @@ export const useResolveStore = create(
 
           if (!alreadyExists) {
             lookupHintsMap.set(key, value);
+            if (key.startsWith('variable') || key.startsWith('page.variables')) {
+              newUpdatedrefs.push(key);
+            }
           } else {
             const existingLookupId = lookupHintsMap.get(key);
             const newResolvedRef = resolvedRefs.get(value);
