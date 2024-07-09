@@ -51,7 +51,7 @@ const Preview = ({ darkMode }) => {
   const queryPreviewDataWithCircularDependenciesRemoved = useMemo(() => {
     const stringifiedValue = JSON.stringify(queryPreviewData, reservedKeywordReplacer);
 
-    return JSON.parse(stringifiedValue);
+    return stringifiedValue ? JSON.parse(stringifiedValue) : undefined;
   }, [queryPreviewData]);
 
   return (
