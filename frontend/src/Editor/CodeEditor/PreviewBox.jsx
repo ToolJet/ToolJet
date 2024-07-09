@@ -10,6 +10,7 @@ import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
 import { JsonViewer } from '@textea/json-viewer';
+import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 export const PreviewBox = ({
   currentValue,
@@ -41,11 +42,6 @@ export const PreviewBox = ({
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
-
-  if (hasCircularDependency(resolvedValue)) {
-    previewContent = JSON.stringify(resolvedValue, handleCircularStructureToJSON());
-    previewType = typeof previewContent;
-  }
 
   const ifCoersionErrorHasCircularDependency = (value) => {
     if (hasCircularDependency(value)) {
