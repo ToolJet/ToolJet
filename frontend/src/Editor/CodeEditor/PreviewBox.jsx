@@ -96,7 +96,7 @@ export const PreviewBox = ({
 
       setError({
         message: _error,
-        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue) : resolvedValue,
+        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue, reservedKeywordReplacer) : resolvedValue,
         type: jsErrorType,
       });
       setCoersionData(null);
