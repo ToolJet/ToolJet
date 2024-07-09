@@ -64,6 +64,42 @@ export const DEFAULT_GROUP_PERMISSIONS = {
   },
 } as Record<string, CreateDefaultGroupObject>;
 
+export const DEFAULT_GROUP_PERMISSIONS_MIGRATIONS = {
+  ADMIN: {
+    name: USER_ROLE.ADMIN,
+    type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+    appCreate: true,
+    appDelete: true,
+    folderCRUD: true,
+    orgConstantCRUD: true,
+    dataSourceCreate: true,
+    dataSourceDelete: true,
+    isBuilderLevel: true,
+  },
+  BUILDER: {
+    name: USER_ROLE.BUILDER,
+    type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+    appCreate: false,
+    appDelete: false,
+    folderCRUD: false,
+    orgConstantCRUD: false,
+    dataSourceCreate: false,
+    dataSourceDelete: false,
+    isBuilderLevel: false,
+  },
+  END_USER: {
+    name: USER_ROLE.END_USER,
+    type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+    appCreate: false,
+    appDelete: false,
+    folderCRUD: false,
+    orgConstantCRUD: false,
+    dataSourceCreate: false,
+    dataSourceDelete: false,
+    isBuilderLevel: false,
+  },
+} as Record<string, CreateDefaultGroupObject>;
+
 export const ERROR_HANDLER = {
   GROUP_NOT_EXIST: "Group doesn't exist",
   DEFAULT_GROUP_NAME: 'Name cannot be same as user default group',

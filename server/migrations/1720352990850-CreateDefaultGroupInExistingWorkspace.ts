@@ -6,7 +6,7 @@ import {
 } from '@module/user_resource_permissions/constants/granular-permissions.constant';
 import {
   USER_ROLE,
-  DEFAULT_GROUP_PERMISSIONS,
+  DEFAULT_GROUP_PERMISSIONS_MIGRATIONS,
 } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import {
   CreateResourcePermissionObject,
@@ -30,7 +30,7 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
 
     for (const organizationId of organizationIds) {
       for (const defaultGroup of Object.keys(USER_ROLE)) {
-        const groupPermissions = DEFAULT_GROUP_PERMISSIONS[defaultGroup];
+        const groupPermissions = DEFAULT_GROUP_PERMISSIONS_MIGRATIONS[defaultGroup];
         const query = `
           INSERT INTO permission_groups (
             organization_id,
@@ -67,12 +67,14 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
             isAll: true,
             createAppsPermissionsObject: {},
           };
-          const granularPermissions = await this.createGranularPermission(manager, dtoObject);
-          await this.createAppsResourcePermission(
-            manager,
-            { granularPermissions, organizationId },
-            createResourcePermissionObj
-          );
+          if (group.name === USER_ROLE.ADMIN) {
+            const granularPermissions = await this.createGranularPermission(manager, dtoObject);
+            await this.createAppsResourcePermission(
+              manager,
+              { granularPermissions, organizationId },
+              createResourcePermissionObj
+            );
+          }
         }
         //Migrating Admins to new Admins
         if (group.name === USER_ROLE.ADMIN) {

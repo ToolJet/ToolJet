@@ -33,12 +33,13 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         .where('groupPermission.organizationId = :organizationId', {
           organizationId,
         })
-        .innerJoinAndSelect('groupPermission.appGroupPermission', 'appGroupPermission')
-        .innerJoinAndSelect('groupPermission.userGroupPermission', 'userGroupPermission')
+        .leftJoinAndSelect('groupPermission.appGroupPermission', 'appGroupPermission')
+        .leftJoinAndSelect('groupPermission.userGroupPermission', 'userGroupPermission')
         .andWhere('groupPermission.group != :admin', {
           admin: 'admin',
         })
         .getMany();
+
       for (const groupPermissions of groups) {
         const query = `
             INSERT INTO permission_groups (
@@ -51,7 +52,6 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
                 org_constant_crud,
                 data_source_create,
                 data_source_delete,
-                
             ) VALUES (
                 ${organizationId} , ${groupPermissions.group} , ${GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP},${groupPermissions.appCreate}, ${groupPermissions.appDelete}
                 , ${groupPermissions.folderCreate}, ${groupPermissions.orgEnvironmentConstantCreate}, false , false
