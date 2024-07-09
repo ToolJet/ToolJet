@@ -103,7 +103,6 @@ useCurrentStateStore.subscribe((state) => {
   updateCanvasBackground(useEditorStore.getState().canvasBackground);
 
   const isStoreIntialized = useResolveStore.getState().storeReady;
-  const isViewMode = state.globals.mode?.value === 'view';
   if (!isStoreIntialized) {
     const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
@@ -125,12 +124,6 @@ useCurrentStateStore.subscribe((state) => {
     );
 
     return useResolveStore.getState().actions.updateStoreState({ storeReady: true });
-  } else if (isViewMode) {
-    //With viewer mode, we need to add app suggestions for current state updated
-    useResolveStore.getState().actions.addAppSuggestions({
-      components: state.components,
-      queries: state.queries,
-    });
   }
 }, shallow);
 
