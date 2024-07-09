@@ -22,7 +22,7 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
       canEdit: false,
-      canView: true,
+      canView: false,
       hideFromDashboard: false,
     },
   },

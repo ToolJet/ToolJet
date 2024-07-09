@@ -54,7 +54,6 @@ export class UserRoleService {
             groupId: group.id,
             type: resource as ResourceType,
             isAll: true,
-            createAppsPermissionsObject: {},
           };
           await this.granularPermissionsService.create(
             {

@@ -5,8 +5,6 @@ import { SearchParamItem } from '@helpers/db-utility/db-utility.interface';
 export interface CreateDefaultGroupObject {
   type: GROUP_PERMISSIONS_TYPE;
   name: string;
-  editable: boolean;
-  onlyBuilders: boolean;
   appCreate: boolean;
   appDelete: boolean;
   folderCRUD: boolean;

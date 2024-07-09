@@ -728,8 +728,6 @@ export class OrganizationsService {
 
           let isInvalidRole = false;
           const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
-          console.log(data);
-          console.log('loggin row');
 
           if (user?.status === USER_STATUS.ARCHIVED) {
             archivedUsers.push(data?.email);
@@ -764,9 +762,6 @@ export class OrganizationsService {
       })
       .on('data', function () {})
       .on('data-invalid', (row, rowNumber) => {
-        console.log('invalid row');
-        console.log(row);
-
         const invalidField = Object.keys(row).filter((key) => {
           if (Array.isArray(row[key])) {
             return row[key].length === 0;

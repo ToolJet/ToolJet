@@ -32,8 +32,6 @@ export const DEFAULT_GROUP_PERMISSIONS = {
   ADMIN: {
     name: USER_ROLE.ADMIN,
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
-    editable: false,
-    onlyBuilders: true,
     appCreate: true,
     appDelete: true,
     folderCRUD: true,
@@ -45,8 +43,6 @@ export const DEFAULT_GROUP_PERMISSIONS = {
   BUILDER: {
     name: USER_ROLE.BUILDER,
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
-    editable: false,
-    onlyBuilders: true,
     appCreate: true,
     appDelete: true,
     folderCRUD: true,
@@ -58,8 +54,6 @@ export const DEFAULT_GROUP_PERMISSIONS = {
   END_USER: {
     name: USER_ROLE.END_USER,
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
-    editable: true,
-    onlyBuilders: false,
     appCreate: false,
     appDelete: false,
     folderCRUD: false,

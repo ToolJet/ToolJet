@@ -20,7 +20,6 @@ export class AddGroupPermissionsTable1714015513342 implements MigrationInterface
         app_delete BOOLEAN DEFAULT false,
         folder_crud BOOLEAN DEFAULT false,
         org_constant_crud BOOLEAN DEFAULT false,
-        org_variable_crud BOOLEAN DEFAULT false,
         data_source_create BOOLEAN DEFAULT false,
         data_source_delete BOOLEAN DEFAULT false,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
