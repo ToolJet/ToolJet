@@ -68,50 +68,56 @@ async function bootstrap() {
     exclude: pathsToExclude,
   });
   app.enableCors({
-    origin: true,
+    origin: process.env.TOOLJET_HOST,
     credentials: true,
   });
   app.use(compression());
 
   app.use(
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        upgradeInsecureRequests: null,
-        'img-src': ['*', 'data:', 'blob:'],
-        'script-src': [
-          'maps.googleapis.com',
-          'storage.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
-          "'self'",
-          "'unsafe-inline'",
-          "'unsafe-eval'",
-          'blob:',
-          'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
-          'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
-          'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
-          'cdn.skypack.dev',
-          'cdn.jsdelivr.net',
-          'https://esm.sh',
-          'www.googletagmanager.com',
-        ],
-        'default-src': [
-          'maps.googleapis.com',
-          'storage.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
-          '*.sentry.io',
-          "'self'",
-          'blob:',
-          'www.googletagmanager.com',
-        ],
-        'connect-src': ['ws://' + domain, "'self'", '*'],
-        'frame-ancestors': ['*'],
-        'frame-src': ['*'],
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          upgradeInsecureRequests: null,
+          'img-src': ['*', 'data:', 'blob:'],
+          'script-src': [
+            'maps.googleapis.com',
+            'storage.googleapis.com',
+            'apis.google.com',
+            'accounts.google.com',
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            'blob:',
+            'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
+            'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
+            'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
+            'cdn.skypack.dev',
+            'cdn.jsdelivr.net',
+            'https://esm.sh',
+            'www.googletagmanager.com',
+          ],
+          'default-src': [
+            'maps.googleapis.com',
+            'storage.googleapis.com',
+            'apis.google.com',
+            'accounts.google.com',
+            '*.sentry.io',
+            "'self'",
+            'blob:',
+            'www.googletagmanager.com',
+          ],
+          'connect-src': ['ws://' + domain, "'self'", '*'],
+          'frame-ancestors': ['*'],
+          'frame-src': ['*'],
+        },
       },
+      frameguard: process.env.ENABLE_APP_EMBED || process.env.ENABLE_PRIVATE_APP_EMBED ? false : { action: 'deny' },
+      hidePoweredBy: true,
     })
   );
+  // app.use(
+  //   helmet.crossOriginEmbedderPolicy({}))
 
   app.use(cookieParser());
   app.use(json({ limit: '50mb' }));
