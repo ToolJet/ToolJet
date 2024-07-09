@@ -508,6 +508,7 @@ function debounce(func) {
 
 export const executeAction = debounce(executeActionWithDebounce);
 
+//used to construct the error in debugger
 function logError(errorType, errorKind, error, eventObj = '', options = {}) {
   const { event = {} } = eventObj;
   const currentState = useCurrentStateStore.getState();
@@ -1163,6 +1164,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                 kind: query.kind,
                 data: errorData,
                 options: options,
+                id: query.id,
               },
             });
             if (!calledFromQuery) setPreviewData(errorData);
@@ -1194,6 +1196,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                     type: 'transformations',
                     data: finalData,
                     options: options,
+                    id: query.id,
                   },
                 });
                 onEvent(_ref, 'onDataQueryFailure', queryEvents);
@@ -1394,6 +1397,7 @@ export function runQuery(
                 kind: query.kind,
                 data: errorData,
                 options: options,
+                id: query.id,
               },
             });
 
@@ -1460,6 +1464,7 @@ export function runQuery(
                     type: 'transformations',
                     data: finalData,
                     options: options,
+                    id: query.id,
                   },
                 });
                 resolve(finalData);

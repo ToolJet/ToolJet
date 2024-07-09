@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { debuggerActions } from '@/_helpers/appUtils';
-import { flow } from 'lodash';
 import moment from 'moment';
 
 const useDebugger = ({ currentPageId, isDebuggerOpen }) => {

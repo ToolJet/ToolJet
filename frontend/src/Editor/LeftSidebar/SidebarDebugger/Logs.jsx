@@ -6,6 +6,8 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import useDebugger from './useDebugger'; // Import the useDebugger hook
+import { useQueryPanelExpansion, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
+
 function Logs({ logProps, idx, switchPage }) {
   const [open, setOpen] = React.useState(false);
   let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
@@ -29,6 +31,9 @@ function Logs({ logProps, idx, switchPage }) {
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
           logProps?.error?.message
         }`;
+  const [isExpanded, toggleQueryEditor, setQueryPanelExpansion] = useQueryPanelExpansion();
+  const { setSelectedQuery, expandQueryPanel } = useQueryPanelActions();
+  const selectedQuery = useSelectedQuery();
 
   const defaultStyles = {
     transform: open ? 'rotate(-180deg)' : 'rotate(0deg)',
@@ -65,7 +70,21 @@ function Logs({ logProps, idx, switchPage }) {
       enableForAllChildren: true,
       enableFor1stLevelChildren: true,
     },
+    {
+      for: 'queries',
+      actions: [{ name: 'Select Query', dispatchAction: handleSelectQueryOnEditor, icon: false, onSelect: true }],
+      enableForAllChildren: true,
+      enableFor1stLevelChildren: true,
+    },
   ];
+
+  const handleSelectQueryOnEditor = (queryId) => {
+    const isAlreadySelected = queryId == selectedQuery.id;
+    console.log('isAlreadySelected----', isAlreadySelected);
+    if (!isAlreadySelected) {
+      setSelectedQuery(queryId);
+    }
+  };
 
   const renderNavToDisabledPageMessage = () => {
     const text = message.split(logProps.page);
@@ -105,13 +124,16 @@ function Logs({ logProps, idx, switchPage }) {
         console.error('Error switching page:', error);
       }
     }
-
     switch (logProps.type) {
       case 'component':
         onSelect(logProps.error.componentId, 'componentId', ['componentId']);
         break;
       case 'query':
-        onSelect(logProps.id, 'queries', ['queries']);
+        // if (!isExpanded) {
+        setQueryPanelExpansion(true);
+        // }
+        await setSelectedQuery(logProps.id);
+        await onSelect(logProps.id, 'queries', ['queries']);
         break;
       default:
         console.warn(`Unhandled logProps type: ${logProps.type}`);

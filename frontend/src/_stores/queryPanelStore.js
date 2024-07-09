@@ -1,5 +1,4 @@
 import { create, zustandDevTools } from './utils';
-import { shallow } from 'zustand/shallow';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 const initialState = {
@@ -13,6 +12,7 @@ const initialState = {
   showCreateQuery: false,
   nameInputFocussed: false,
   previewPanelExpanded: false,
+  isQueryPanelExpanded: queryManagerPreferences?.isExpanded ?? true,
 };
 
 export const useQueryPanelStore = create(
@@ -38,6 +38,16 @@ export const useQueryPanelStore = create(
         setShowCreateQuery: (showCreateQuery) => set({ showCreateQuery }),
         setNameInputFocussed: (nameInputFocussed) => set({ nameInputFocussed }),
         setPreviewPanelExpanded: (previewPanelExpanded) => set({ previewPanelExpanded }),
+        toggleQueryPanelExpansion: () =>
+          set((state) => {
+            const newExpandedState = !state.isQueryPanelExpanded;
+            // Update localStorage
+            const preferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+            preferences.isExpanded = newExpandedState;
+            localStorage.setItem('queryManagerPreferences', JSON.stringify(preferences));
+            return { isQueryPanelExpanded: newExpandedState };
+          }),
+        setQueryPanelExpansion: (isExpanded) => set({ isQueryPanelExpanded: isExpanded }),
       },
     }),
     { name: 'Query Panel Store' }
@@ -57,3 +67,9 @@ export const useShowCreateQuery = () =>
 export const useNameInputFocussed = () =>
   useQueryPanelStore((state) => [state.nameInputFocussed, state.actions.setNameInputFocussed]);
 export const usePreviewPanelExpanded = () => useQueryPanelStore((state) => state.previewPanelExpanded);
+export const useQueryPanelExpansion = () =>
+  useQueryPanelStore((state) => [
+    state.isQueryPanelExpanded,
+    state.actions.toggleQueryPanelExpansion,
+    state.actions.setQueryPanelExpansion,
+  ]);

@@ -4,11 +4,9 @@ import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelActions, useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useQueryPanelStore, useQueryPanelExpansion } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
-import Maximize from '@/_ui/Icon/solidIcons/Maximize';
 import { isEmpty, isEqual } from 'lodash';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import cx from 'classnames';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
@@ -34,7 +32,7 @@ const QueryPanel = ({
     }
   );
   const queryPaneRef = useRef(null);
-  const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
+  const [isExpanded, toggleQueryEditor, setQueryPanelExpansion] = useQueryPanelExpansion();
   const [isDragging, setDragging] = useState(false);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight > 95
@@ -100,57 +98,69 @@ const QueryPanel = ({
     isTopOfQueryPanel && setDragging(true);
   };
 
-  const onMouseMove = (e) => {
-    if (queryPaneRef.current) {
-      const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
-      const clientY = e.clientY;
+  const onMouseMove = useCallback(
+    (e) => {
+      if (queryPaneRef.current) {
+        const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
+        const clientY = e.clientY;
 
-      if ((clientY >= componentTop) & (clientY <= componentTop + 5)) {
-        setTopOfQueryPanel(true);
-      } else if (isTopOfQueryPanel) {
-        setTopOfQueryPanel(false);
-      }
-
-      if (isDragging) {
-        let height = (clientY / window.innerHeight) * 100,
-          maxLimitReached = false;
-
-        if (height > 94) {
-          height = 30;
-          maxLimitReached = true;
+        if ((clientY >= componentTop) & (clientY <= componentTop + 5)) {
+          setTopOfQueryPanel(true);
+        } else if (isTopOfQueryPanel) {
+          setTopOfQueryPanel(false);
         }
-        if (height < 4.5) height = 4.5;
-        queryManagerPreferences.current = {
-          ...queryManagerPreferences.current,
-          queryPanelHeight: height,
-          isExpanded: !maxLimitReached,
-        };
-        localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
-        setExpanded(!maxLimitReached);
-        setHeight(height);
-      }
-    }
-  };
 
+        if (isDragging) {
+          let height = (clientY / window.innerHeight) * 100,
+            maxLimitReached = false;
+
+          if (height > 94) {
+            height = 30;
+            maxLimitReached = true;
+          }
+          if (height < 4.5) height = 4.5;
+          queryManagerPreferences.current = {
+            ...queryManagerPreferences.current,
+            queryPanelHeight: height,
+            isExpanded: !maxLimitReached,
+          };
+          localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
+          setQueryPanelExpansion(!maxLimitReached);
+          setHeight(height);
+          updateQueryPanelHeight(height);
+        }
+      }
+    },
+    [isDragging, isTopOfQueryPanel, setQueryPanelExpansion, updateQueryPanelHeight]
+  );
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
 
-  const toggleQueryEditor = useCallback(() => {
-    queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
-    localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
-    if (isExpanded) {
-      updateQueryPanelHeight(95);
-    } else {
-      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-    }
-    setExpanded(!isExpanded);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded]);
+  // const toggleQueryEditor = useCallback(() => {
+  //   queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
+  //   localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
+  //   if (isExpanded) {
+  //     updateQueryPanelHeight(95);
+  //   } else {
+  //     updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+  //   }
+  //   setExpanded(!isExpanded);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isExpanded]);
 
   const updateDataQueries = useCallback(() => {
     dataQueriesChanged();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleToggleQueryEditor = useCallback(() => {
+    toggleQueryEditor();
+    if (!isExpanded) {
+      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+    } else {
+      updateQueryPanelHeight(95);
+    }
+  }, [isExpanded, toggleQueryEditor, updateQueryPanelHeight]);
 
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
@@ -167,13 +177,13 @@ const QueryPanel = ({
         <div style={{ width: '288px', padding: '5px 12px' }} className="d-flex justify-content align-items-center">
           <button
             className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
-            onClick={toggleQueryEditor}
+            onClick={handleToggleQueryEditor}
           >
             {isExpanded ? 'Collapse' : 'Expand'}
           </button>
           <div className="vr" />
           <button
-            onClick={toggleQueryEditor}
+            onClick={handleToggleQueryEditor}
             className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
           >
             Queries
@@ -199,12 +209,12 @@ const QueryPanel = ({
             darkMode={darkMode}
             editorRef={editorRef}
             appId={appId}
-            toggleQueryEditor={toggleQueryEditor}
+            toggleQueryEditor={handleToggleQueryEditor}
           />
           <div className="query-definition-pane-wrapper">
             <div className="query-definition-pane">
               <QueryManager
-                toggleQueryEditor={toggleQueryEditor}
+                toggleQueryEditor={handleToggleQueryEditor}
                 dataQueries={dataQueries}
                 dataQueriesChanged={updateDataQueries}
                 appId={appId}
