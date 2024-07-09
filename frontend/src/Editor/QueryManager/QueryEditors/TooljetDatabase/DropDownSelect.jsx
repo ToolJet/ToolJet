@@ -192,7 +192,7 @@ const DropDownSelect = ({
             closePopup={() => setShowMenu(isForeignKeyInEditCell ? true : false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
-            // loader={loader}
+            loader={loader}
             isLoading={isLoading}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
