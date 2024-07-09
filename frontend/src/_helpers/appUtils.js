@@ -91,7 +91,7 @@ export function onComponentOptionsChanged(component, options, id) {
   if (!isEditorReady || !useEditorStore.getState().appDefinition.pages[page.id]) return;
 
   if (id) {
-    const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
+    const _component = useEditorStore.getState()?.appDefinition?.pages[page.id]?.components[id];
     const _componentName = _component?.component?.name || componentName;
     if (_componentName !== componentName) {
       componentName = _componentName;
@@ -186,7 +186,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
 
   if (id) {
     //? component passed as argument contains previous state of the component data, component name is not updated
-    const _component = useEditorStore.getState().appDefinition.pages[getCurrentState().page.id].components[id];
+    const _component = useEditorStore.getState()?.appDefinition?.pages[getCurrentState().page.id]?.components[id];
     const _componentName = _component?.component?.name || componentName;
     if (_componentName !== componentName) {
       componentName = _componentName;
