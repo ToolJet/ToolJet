@@ -8,7 +8,7 @@ const switchVariants = cva('tw-flex', {
   variants: {
     align: {
       left: ``,
-      right: `tw-w-full tw-flex-row-reverse tw-justify-between`,
+      right: `tw-flex-row-reverse tw-justify-between`,
     },
   },
   compoundVariants: [
@@ -21,6 +21,16 @@ const switchVariants = cva('tw-flex', {
       align: 'left',
       size: 'large',
       className: 'tw-space-x-[8px]',
+    },
+    {
+      align: 'right',
+      size: 'default',
+      className: 'tw-w-[295px]',
+    },
+    {
+      align: 'right',
+      size: 'large',
+      className: 'tw-w-[278px]',
     },
   ],
   defaultVariants: {

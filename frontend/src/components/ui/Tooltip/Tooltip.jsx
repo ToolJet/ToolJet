@@ -11,7 +11,7 @@ const Tooltip = ({ tooltipLabel, supportingText, theme, arrow, children, width, 
         className={cn(
           tooltipVariants({ arrow, theme }),
           `${
-            supportingText && 'tw-w-[320px]'
+            supportingText && 'tw-max-w-[320px]'
           } tw-flex tw-flex-col tw-py-[8px] tw-px-[12px] tw-items-start tw-self-stretch tw-rounded-[8px] tw-shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08),0px_4px_6px_-2px_rgba(16,24,40,0.03)]`
         )}
         style={{ width: width }}
@@ -49,6 +49,8 @@ Tooltip.propTypes = {
   supportingText: PropTypes.string,
   theme: PropTypes.oneOf(['light', 'dark']),
   arrow: PropTypes.oneOf(['Bottom Center', 'Bottom Left', 'Bottom Right', 'Top Center', 'Left', 'Right']),
+  children: PropTypes.node,
+  width: PropTypes.string,
   className: PropTypes.string,
 };
 
@@ -56,5 +58,7 @@ Tooltip.defaultProps = {
   supportingText: '',
   theme: 'light',
   arrow: '',
+  children: null,
+  width: '',
   className: '',
 };

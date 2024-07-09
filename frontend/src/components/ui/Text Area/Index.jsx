@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Textarea } from './Textarea';
 import { HelperMessage, InputLabel, ValidationMessage } from './TextareaUtils/TextareaUtils';
 
-const TextAreaComponent = (props) => {
+const TextAreaComponent = ({ onValueChange, ...props }) => {
   const [isValid, setIsValid] = React.useState(null);
   const [message, setMessage] = React.useState('');
 
@@ -18,13 +18,13 @@ const TextAreaComponent = (props) => {
       setIsValid(validateObj.valid);
       setMessage(validateObj.message);
     }
-    props.onChange(e, validateObj);
+    onValueChange(e, validateObj);
   };
 
   return (
     <div>
       {props.label && <InputLabel label={props.label} disabled={props.disabled} required={props.required} />}
-      <Textarea {...props} onChange={handleChange} className={inputStyle} />
+      <Textarea {...props} onValueChange={handleChange} className={inputStyle} />
       {props.helperText && (
         <HelperMessage
           helperText={props.helperText}
@@ -48,7 +48,7 @@ TextAreaComponent.propTypes = {
   helperText: PropTypes.string,
   disabled: PropTypes.bool,
   required: PropTypes.bool,
-  onChange: PropTypes.func,
+  onValueChange: PropTypes.func,
   validation: PropTypes.func,
   name: PropTypes.string,
   id: PropTypes.string,
@@ -61,7 +61,7 @@ TextAreaComponent.defaultProps = {
   helperText: '',
   disabled: false,
   required: false,
-  onChange: () => {},
+  onValueChange: (e, validateObj) => {},
   validation: () => {},
   name: '',
   id: '',

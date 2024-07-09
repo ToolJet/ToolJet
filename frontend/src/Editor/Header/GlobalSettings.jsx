@@ -222,6 +222,7 @@ export const GlobalSettings = ({
                   checked={hideHeader}
                   onCheckedChange={(e) => globalSettingsChanged({ hideHeader: e })}
                   data-cy={`toggle-hide-header-for-launched-apps`}
+                  className="tw-w-full"
                 />
               </div>
               <div className="tw-flex tw-mb-3">
@@ -232,6 +233,7 @@ export const GlobalSettings = ({
                   checked={isMaintenanceOn}
                   onCheckedChange={() => setConfirmationShow(true)}
                   data-cy={`toggle-maintenance-mode`}
+                  className="tw-w-full"
                 />
               </div>
               <div className="d-flex mb-3">

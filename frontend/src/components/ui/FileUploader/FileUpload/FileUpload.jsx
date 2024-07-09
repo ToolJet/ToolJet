@@ -46,12 +46,16 @@ const FileUpload = ({
     }
   };
 
+  const handleClick = () => {
+    document.getElementById('browse').click();
+  };
+
   return (
     <div style={{ width: width }}>
       {label && <InputFileLabel label={label} helper={helperText} required={required} disabled={disabled} />}
       {((type === 'single' && files.length === 0) || type === 'multiple') && (
         <div
-          className={`tw-h-[140px] tw-p-[24px] tw-mx-auto tw-flex tw-flex-col tw-justify-center tw-items-center tw-gap-[6px] tw-rounded-[8px] tw-border tw-border-dashed tw-transition
+          className={`tw-cursor-pointer tw-h-[140px] tw-p-[24px] tw-mx-auto tw-flex tw-flex-col tw-justify-center tw-items-center tw-gap-[6px] tw-rounded-[8px] tw-border tw-border-dashed tw-transition
           ${
             disabled
               ? 'tw-bg-background-surface-layer-02 tw-border-border-disabled'
@@ -62,6 +66,7 @@ const FileUpload = ({
           onDragOver={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          onClick={handleClick}
         >
           <div
             className="tw-relative tw-h-[32px] tw-w-[32px] tw-flex tw-items-center tw-justify-center tw-shrink-0"
@@ -87,7 +92,7 @@ const FileUpload = ({
             Drag and drop your files here or{' '}
             <label
               htmlFor="browse"
-              className={disabled ? 'tw-text-text-disabled' : 'tw-text-text-accent cursor-pointer'}
+              className={disabled ? 'tw-text-text-disabled' : 'tw-text-text-accent tw-cursor-pointer'}
             >
               browse
             </label>

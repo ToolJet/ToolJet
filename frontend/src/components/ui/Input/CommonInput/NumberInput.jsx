@@ -5,14 +5,14 @@ import { Button } from '../../Button/Button';
 import { cn } from '@/lib/utils';
 import { inputVariants } from '../InputUtils/Variants';
 
-const Btn = ({ onClick, icon, disabled }) => (
+const Btn = ({ onClick, icon, disabled, className }) => (
   <Button
     iconOnly
     leadingIcon={icon}
     onClick={onClick}
     size="small"
     variant="ghost"
-    className="tw-h-[50%]"
+    className={`tw-h-[50%] tw-rounded-none ${className}`}
     fill={disabled ? 'var(--icon-weak)' : 'var(--icon-default)'}
     disabled={disabled}
   />
@@ -63,11 +63,11 @@ const NumberInput = ({ size, leadingIcon, response, disabled, ...restProps }) =>
       <div
         className={cn(
           inputVariants({ size }),
-          'tw-absolute tw-top-0 tw-right-0 tw-flex tw-flex-col tw-border-l-[1px] tw-border-y-transparent tw-border-r-transparent tw-border-solid tw-border-l-border-weak'
+          'tw-absolute tw-top-0 tw-right-0 tw-flex tw-flex-col tw-border-l-[1px] tw-border-y-0 tw-border-r-0 tw-border-solid tw-border-l-border-weak'
         )}
       >
-        <Btn icon="uparrow" onClick={handleIncrement} disabled={disabled} />
-        <Btn icon="downarrow" onClick={handleDecrement} disabled={disabled} />
+        <Btn icon="uparrow" onClick={handleIncrement} disabled={disabled} className="tw-rounded-tr-[8px]" />
+        <Btn icon="downarrow" onClick={handleDecrement} disabled={disabled} className="tw-rounded-br-[8px]" />
       </div>
     </div>
   );

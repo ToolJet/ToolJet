@@ -36,7 +36,7 @@ export default {
     required: {
       control: 'boolean',
     },
-    onChange: {
+    onValueChange: {
       control: 'function',
     },
     validation: {
@@ -58,7 +58,7 @@ RocketTextArea.args = {
   'aria-label': 'aria-label',
   disabled: false,
   required: false,
-  onChange: () => {},
+  onValueChange: (e, validateObj) => {},
   validation: () => {},
 };
 

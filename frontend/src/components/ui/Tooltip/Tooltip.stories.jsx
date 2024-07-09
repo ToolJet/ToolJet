@@ -27,6 +27,12 @@ export default {
         type: 'select',
       },
     },
+    children: {
+      control: 'text',
+    },
+    width: {
+      control: 'text',
+    },
     className: {
       control: 'text',
     },

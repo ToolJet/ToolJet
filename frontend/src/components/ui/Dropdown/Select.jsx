@@ -25,7 +25,10 @@ const SelectTrigger = React.forwardRef(({ className, children, open, size, ...pr
       ref={ref}
       className={cn(
         dropdownVariants({ size }),
-        'tw-flex tw-items-center tw-justify-between tw-gap-[12px] tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-border-border-default hover:tw-border-border-strong tw-bg-background-surface-layer-01 tw-text-[12px]/[18px] tw-font-normal tw-text-text-placeholder focus:tw-outline-none focus:tw-ring-[1px] focus:tw-ring-interactive-focus-outline focus:tw-ring-offset-[1px] focus:tw-ring-offset-interactive-focus-outline disabled:tw-cursor-not-allowed disabled:tw-bg-[#CCD1D5]/30 disabled:tw-border-transparent',
+        `tw-flex tw-items-center tw-justify-between tw-gap-[12px] tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-border-border-default hover:tw-border-border-strong tw-bg-background-surface-layer-01 tw-text-[12px]/[18px] tw-font-normal tw-text-text-placeholder focus:tw-border-transparent focus:tw-outline-none focus:tw-ring-[1px] focus:tw-ring-interactive-focus-outline focus:tw-ring-offset-[1px] focus:tw-ring-offset-interactive-focus-outline disabled:tw-cursor-not-allowed disabled:tw-bg-[#CCD1D5]/30 disabled:tw-border-transparent ${
+          open &&
+          'tw-border-transparent tw-outline-none tw-ring-[1px] tw-ring-interactive-focus-outline tw-ring-offset-[1px] tw-ring-offset-interactive-focus-outline'
+        }`,
         className
       )}
       style={{ width: props.width }}
