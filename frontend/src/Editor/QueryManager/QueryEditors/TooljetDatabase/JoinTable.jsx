@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import { clone } from 'lodash';
+import { clone, isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
@@ -12,6 +12,7 @@ import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/Editor/CodeEditor';
+import { AggregateFilter } from './AggregateUI';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -86,6 +87,14 @@ const SelectTableMenu = ({ darkMode }) => {
     return cleanedJoin;
   };
 
+  const showSelectSection = useCallback(() => {
+    const groupBy = joinTableOptions?.group_by || {};
+    const aggregates = joinTableOptions?.aggregates || {};
+    const isGroupByUsed = Object?.values(groupBy)?.some((columnList) => columnList?.length >= 1);
+    //checking if isGroupby is valid or aggregates is not empty then hide select or else show select options
+    return isGroupByUsed || !isEmpty(aggregates) ? false : true;
+  }, [joinTableOptions]);
+
   return (
     <div>
       {/* Join Section */}
@@ -131,6 +140,8 @@ const SelectTableMenu = ({ darkMode }) => {
           </Row>
         </div>
       </div>
+      <AggregateFilter darkMode={darkMode} operation="joinTable" />
+
       {/* Filter Section */}
       <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Filter</label>
@@ -185,12 +196,14 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Select Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label flex-shrink-0">Select</label>
-        <div className="field flex-grow-1">
-          <JoinSelect darkMode={darkMode} />
+      {showSelectSection() && (
+        <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+          <label className="form-label flex-shrink-0">Select</label>
+          <div className="field flex-grow-1">
+            <JoinSelect darkMode={darkMode} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

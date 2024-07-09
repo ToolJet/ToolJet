@@ -46,7 +46,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
 
   return (
     <div className="row tj-db-field-wrapper">
-      <div className="tab-content-wrapper mt-2 d-flex">
+      <div className="tab-content-wrapper d-flex" style={{ marginTop: '16px' }}>
         <label className="form-label" data-cy="label-column-filter">
           Columns
         </label>

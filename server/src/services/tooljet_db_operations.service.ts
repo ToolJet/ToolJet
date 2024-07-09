@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import PostgrestQueryBuilder from 'src/helpers/postgrest_query_builder';
 import { QueryService, QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { TooljetDbService } from './tooljet_db.service';
 import { isEmpty } from 'lodash';
 import { PostgrestProxyService } from './postgrest_proxy.service';
 import { maybeSetSubPath } from 'src/helpers/utils.helper';
+import { EntityManager } from 'typeorm';
+import { InternalTable } from 'src/entities/internal_table.entity';
+import { QueryError } from '@tooljet/plugins/packages/common';
 
 @Injectable()
 export class TooljetDbOperationsService implements QueryService {
-  constructor(private tooljetDbService: TooljetDbService, private postgrestProxyService: PostgrestProxyService) {}
+  constructor(
+    private tooljetDbService: TooljetDbService,
+    private postgrestProxyService: PostgrestProxyService,
+    private readonly manager: EntityManager
+  ) {}
 
   async run(_sourceOptions, queryOptions, _dataSourceCacheId, _dataSourceCacheUpdatedAt): Promise<QueryResult> {
     switch (queryOptions.operation) {
@@ -52,32 +59,63 @@ export class TooljetDbOperationsService implements QueryService {
         data: {},
       };
     }
-    const { table_id: tableId, list_rows: listRows } = queryOptions;
-    const query = [];
+    try {
+      const { table_id: tableId, list_rows: listRows, organization_id: organizationId } = queryOptions;
+      const query = [];
 
-    if (!isEmpty(listRows)) {
-      const { limit, where_filters: whereFilters, order_filters: orderFilters, offset } = listRows;
+      if (!isEmpty(listRows)) {
+        const {
+          limit,
+          where_filters: whereFilters,
+          order_filters: orderFilters,
+          offset,
+          aggregates = {},
+          group_by: groupBy = {},
+        } = listRows;
 
-      if (limit && isNaN(limit)) {
-        return {
-          status: 'failed',
-          errorMessage: 'Limit should be a number.',
-          data: {},
-        };
+        const internalTable = await this.manager.findOne(InternalTable, {
+          where: {
+            organizationId,
+            id: tableId,
+          },
+        });
+
+        if (!internalTable) throw new NotFoundException('Table not found');
+
+        if (limit && isNaN(limit)) {
+          return {
+            status: 'failed',
+            errorMessage: 'Limit should be a number.',
+            data: {},
+          };
+        }
+
+        const whereQuery = buildPostgrestQuery(whereFilters);
+        const orderQuery = buildPostgrestQuery(orderFilters);
+        if (!isEmpty(aggregates) || !isEmpty(groupBy)) {
+          const groupByAndAggregateQueryList = this.buildAggregateAndGroupByQuery(
+            internalTable.tableName,
+            aggregates,
+            groupBy
+          );
+          if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
+        }
+        !isEmpty(whereQuery) && query.push(whereQuery);
+        !isEmpty(orderQuery) && query.push(orderQuery);
+        !isEmpty(limit) && query.push(`limit=${limit}`);
+        !isEmpty(offset) && query.push(`offset=${offset}`);
       }
 
-      const whereQuery = buildPostgrestQuery(whereFilters);
-      const orderQuery = buildPostgrestQuery(orderFilters);
+      const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
+      const url =
+        query.length > 0
+          ? `/api/tooljet-db/proxy/${tableId}` + `?${query.join('&')}`
+          : `/api/tooljet-db/proxy/${tableId}`;
 
-      !isEmpty(whereQuery) && query.push(whereQuery);
-      !isEmpty(orderQuery) && query.push(orderQuery);
-      !isEmpty(limit) && query.push(`limit=${limit}`);
-      !isEmpty(offset) && query.push(`offset=${offset}`);
+      return await this.proxyPostgrest(maybeSetSubPath(url), 'GET', headers);
+    } catch (error) {
+      throw new QueryError(error.message, error.message, {});
     }
-    const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
-    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}` + `?${query}`);
-
-    return await this.proxyPostgrest(url, 'GET', headers);
   }
 
   async createRow(queryOptions): Promise<QueryResult> {
@@ -170,9 +208,11 @@ export class TooljetDbOperationsService implements QueryService {
     const sanitizedJoinTableJson = { ...join_table };
     // If mandatory fields ( Select, Join & From section ), are empty throw error
     const mandatoryFieldsButEmpty = [];
-    if (!sanitizedJoinTableJson?.fields.length) mandatoryFieldsButEmpty.push('Select');
+    if (!sanitizedJoinTableJson?.fields.length && isEmpty(sanitizedJoinTableJson.aggregates))
+      mandatoryFieldsButEmpty.push('Select and Aggregate');
     if (sanitizedJoinTableJson?.from && !Object.keys(sanitizedJoinTableJson?.from).length)
       mandatoryFieldsButEmpty.push('From');
+
     if (mandatoryFieldsButEmpty.length) {
       return {
         status: 'failed',
@@ -189,6 +229,16 @@ export class TooljetDbOperationsService implements QueryService {
     ) {
       delete sanitizedJoinTableJson.conditions;
     }
+
+    // Sanitise the GroupBy and Aggregate JSON properly
+    if (sanitizedJoinTableJson.group_by && !Object.keys(sanitizedJoinTableJson.group_by)?.length) {
+      delete sanitizedJoinTableJson.group_by;
+    }
+
+    if (sanitizedJoinTableJson.aggregates && !Object.keys(sanitizedJoinTableJson.aggregates)?.length) {
+      delete sanitizedJoinTableJson.aggregates;
+    }
+
     if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
       delete sanitizedJoinTableJson.order_by;
 
@@ -197,6 +247,35 @@ export class TooljetDbOperationsService implements QueryService {
     });
 
     return { status: 'ok', data: { result } };
+  }
+
+  private buildAggregateAndGroupByQuery(
+    tableName: string,
+    aggregates: { [key: string]: { aggFx: string; column: string } },
+    groupBy: { [key: string]: Array<string> }
+  ) {
+    enum AggregateFunctions {
+      sum = 'sum',
+      count = 'count',
+    }
+
+    const query = [];
+    if (!isEmpty(aggregates)) {
+      Object.entries(aggregates).forEach(([_key, aggregateDetail]) => {
+        const { aggFx, column } = aggregateDetail;
+        if (isEmpty(column) || isEmpty(aggFx))
+          throw new Error('There are empty values in certain aggregate conditions.');
+        if (aggFx && column) query.push(`${tableName}_${column}_${aggFx}:${column}.${AggregateFunctions[aggFx]}()`);
+      });
+    }
+
+    if (!isEmpty(groupBy)) {
+      Object.entries(groupBy).forEach(([_key, groupByColumList]) => {
+        if (!isEmpty(groupByColumList)) query.push(...groupByColumList);
+      });
+    }
+
+    return query;
   }
 }
 

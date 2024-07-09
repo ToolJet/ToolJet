@@ -28,7 +28,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
       )}
 
       {options.map((option, index) => (
-        <div className="d-flex align-items-top row-container query-manager-border-color mb-2" key={index}>
+        <div className="d-flex align-items-top row-container query-manager-border-color" key={index}>
           <Input
             type="text"
             className="input-control"
@@ -78,7 +78,12 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
       ))}
 
       <div className="d-flex mb-2" style={{ height: '16px' }}>
-        <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)} style={{ gap: '0px' }}>
+        <ButtonSolid
+          variant="ghostBlue"
+          size="sm"
+          onClick={() => addNewKeyValuePair(options)}
+          style={{ gap: '0px', fontSize: '12px', fontWeight: '500', padding: '0px 9px' }}
+        >
           <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
           &nbsp;&nbsp;Add more
         </ButtonSolid>

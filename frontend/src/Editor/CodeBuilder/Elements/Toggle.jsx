@@ -9,12 +9,12 @@ export const Toggle = ({ value, onChange, cyLabel, meta }) => {
             className="form-check form-switch mb-0 d-flex justify-content-end"
             style={{ marginBottom: '0px', paddingLeft: '28px' }}
           >
-            {meta.toggleLabel && (
+            {meta?.toggleLabel && (
               <span
                 className="font-weight-400 font-size-12 d-flex align-items-center color-slate12"
                 style={{ marginRight: '78px' }}
               >
-                {meta.toggleLabel}
+                {meta?.toggleLabel}
               </span>
             )}
             <input

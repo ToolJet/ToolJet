@@ -61,6 +61,10 @@ const DropDownSelect = ({
   saveFKValue,
   loader,
   isLoading = false,
+  columnDefaultValue = '',
+  setColumnDefaultValue = () => {},
+  showControlComponent = false,
+  placeholder = '',
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -188,7 +192,7 @@ const DropDownSelect = ({
             closePopup={() => setShowMenu(isForeignKeyInEditCell ? true : false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
-            loader={loader}
+            // loader={loader}
             isLoading={isLoading}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
@@ -228,6 +232,9 @@ const DropDownSelect = ({
             isForeignKeyInEditCell={isForeignKeyInEditCell}
             closeFKMenu={closeFKMenu}
             saveFKValue={saveFKValue}
+            columnDefaultValue={columnDefaultValue}
+            setColumnDefaultValue={setColumnDefaultValue}
+            showControlComponent={showControlComponent}
           />
         </Popover>
       }
@@ -238,7 +245,7 @@ const DropDownSelect = ({
           style={{
             position: 'relative',
             left: '-10px',
-            top: selected.label === null ? '0px' : '2px',
+            top: selected.label === null || selected.label === undefined || isCellEdit ? '0px' : '2px',
             paddingLeft: '10px',
             paddingBottom: '4px',
           }}
@@ -247,19 +254,20 @@ const DropDownSelect = ({
             setShowMenu(true);
           }}
         >
-          <span
+          <p
             className={cx({
-              'd-flex align-items-center justify-content-center': selected.label === null,
+              'd-flex align-items-center justify-content-center m-0':
+                selected.label === null || selected.label === undefined,
+              'cell-menu-text m-0': selected.label !== null || selected.label !== undefined,
             })}
             style={{
-              display: 'inline-block',
               color: darkMode ? '#fff' : '',
-              width: selected.label === null && '40px',
-              background: selected.label === null && 'var(--slate3)',
+              width: (selected.label === null || selected.label === undefined) && '40px',
+              background: (selected.label === null || selected.label === undefined) && 'var(--slate3)',
             }}
           >
-            {selected.label === null ? 'Null' : selected.label}
-          </span>
+            {selected.label === null || selected.label === undefined ? 'Null' : selected.label}
+          </p>
         </div>
       ) : (
         <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
@@ -311,7 +319,11 @@ const DropDownSelect = ({
                   )
                 ) : showPlaceHolder ? (
                   <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
-                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
+                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer
+                      ? topPlaceHolder
+                      : placeholder
+                      ? placeholder
+                      : 'Select...'}
                   </span>
                 ) : (
                   ''
@@ -347,7 +359,7 @@ const DropDownSelect = ({
 function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
   if (options?.length === selected?.length && selected?.length !== 0) {
     // Filter Options without 'Select All'
-    const optionsWithoutSelectAll = options.filter((option) => option.value !== 'SELECT ALL');
+    const optionsWithoutSelectAll = options?.filter((option) => option?.value !== 'SELECT ALL');
     return (
       <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
         All {optionsWithoutSelectAll?.length} selected
@@ -366,15 +378,15 @@ function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
     );
   }
 
-  return selected.map((option) => (
-    <Badge key={option.value} className="me-1 dd-select-value-badge" bg="secondary">
-      {option.label}
+  return selected?.map((option) => (
+    <Badge key={option?.value} className="me-1 dd-select-value-badge" bg="secondary">
+      {option?.label}
       <span
         role="button"
         onClick={(e) => {
           setSelected((selected) => {
-            onChange && onChange(selected.filter((opt) => opt.value !== option.value));
-            return selected.filter((opt) => opt.value !== option.value);
+            onChange && onChange(selected.filter((opt) => opt?.value !== option?.value));
+            return selected?.filter((opt) => opt?.value !== option?.value);
           });
           e.preventDefault();
           e.stopPropagation();

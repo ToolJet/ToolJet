@@ -13,8 +13,16 @@ const CreateColumnDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const { organizationId, selectedTable, setColumns, setPageCount, handleRefetchQuery, pageSize, setForeignKeys } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    selectedTable,
+    setColumns,
+    setPageCount,
+    handleRefetchQuery,
+    pageSize,
+    setForeignKeys,
+    setConfigurations,
+  } = useContext(TooljetDatabaseContext);
 
   return (
     <>
@@ -33,6 +41,7 @@ const CreateColumnDrawer = ({
               }
 
               const { foreign_keys = [] } = data?.result || {};
+              setConfigurations(data?.result?.configurations || {});
               if (data?.result?.columns?.length > 0) {
                 setColumns(
                   data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({

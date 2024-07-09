@@ -13,9 +13,11 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'TextInput',
   'NumberInput',
   'PasswordInput',
-  'Button',
   'ToggleSwitchV2',
   'Checkbox',
+  'DropdownV2',
+  'MultiselectV2',
+  'Button',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -108,11 +110,13 @@ export const baseComponentProperties = (
       'Button',
       'ToggleSwitchV2',
       'Checkbox',
+      'DropdownV2',
+      'MultiselectV2',
     ],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
-    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value, currentState)) {
+    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value)) {
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
   }

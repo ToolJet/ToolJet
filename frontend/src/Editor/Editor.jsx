@@ -46,13 +46,8 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import {
-  getWorkspaceId,
-  isValidUUID,
-  setWindowTitle,
-  defaultWhiteLabellingSettings,
-  pageTitles,
-} from '@/_helpers/utils';
+import { getWorkspaceId, isValidUUID } from '@/_helpers/utils';
+import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
@@ -69,7 +64,7 @@ import {
   resetAllStores,
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { EMPTY_ARRAY, flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
@@ -87,14 +82,10 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex, EditorConstants } from './editorConstants';
-import {
-  findComponentsWithReferences,
-  handleLowPriorityWork,
-  updateCanvasBackground,
-  clearAllQueuedTasks,
-} from '@/_helpers/editorHelpers';
+import { handleLowPriorityWork, updateCanvasBackground, clearAllQueuedTasks } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
+import { resolveReferences } from './CodeEditor/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -288,7 +279,6 @@ const EditorComponent = (props) => {
     if (didAppDefinitionChanged) {
       prevAppDefinition.current = appDefinition;
     }
-
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
@@ -296,70 +286,32 @@ const EditorComponent = (props) => {
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      handleLowPriorityWork(() => autoSave());
+      handleLowPriorityWork(() => autoSave(), 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
-  /**
-   ** Async updates components in batches to optimize and processing efficiency.
-   * This function iterates over an array of component IDs, updating them in fixed-size batches,
-   * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
-   * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
-   * ensuring the system is ready for the next cycle of updates.
-   *
-   * @param {Array} componentIds An array of component IDs that need updates.
-   * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
-   */
-
-  async function batchUpdateComponents(componentIds) {
-    if (componentIds.length === 0) return;
-
-    let updatedComponentIds = [];
-
-    for (let i = 0; i < componentIds.length; i += 10) {
-      const batch = componentIds.slice(i, i + 10);
-      batch.forEach((id) => {
-        updatedComponentIds.push(id);
-      });
-
-      updateComponentsNeedsUpdateOnNextRender(batch);
-      // Delay to allow UI to process
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    }
-
-    // Flush only updated components
-
-    flushComponentsToRender(updatedComponentIds);
-  }
-
-  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
-
-  useEffect(() => {
-    if (lastUpdatedRef.length > 0) {
-      const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
-
-      const directRenders = lastUpdatedRef.map((ref) => ref.includes('rerender') && ref.split(' ')[1]);
-
-      const toUpdateRefs = lastUpdatedRef.filter((ref) => !ref.includes('rerender'));
-
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, toUpdateRefs);
-
-      if (directRenders.length > 0) {
-        componentIdsWithReferences.push(...directRenders);
-      }
-
-      if (componentIdsWithReferences.length > 0) {
-        batchUpdateComponents(componentIdsWithReferences);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastUpdatedRef]);
-
   useEffect(
     () => {
-      const components = appDefinition?.pages?.[currentPageId]?.components || {};
-      computeComponentState(components);
+      const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+      const isResolverStoreReady = useResolveStore.getState().storeReady;
+      if (isEditorReady && isResolverStoreReady) {
+        const components = appDefinition?.pages?.[currentPageId]?.components || {};
+        computeComponentState(components);
+      }
+
+      const isPageSwitched = useResolveStore.getState().isPageSwitched;
+
+      if (isPageSwitched) {
+        const currentStateObj = useCurrentStateStore.getState();
+
+        useResolveStore.getState().actions.addAppSuggestions({
+          queries: currentStateObj.queries,
+          components: currentStateObj.components,
+          page: currentStateObj.page,
+        });
+        useResolveStore.getState().actions.pageSwitched(false);
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentPageId]
@@ -392,6 +344,11 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, mounted]);
+
+  useEffect(() => {
+    updateEntityReferences(appDefinition, currentPageId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.length]);
 
   const handleYmapEventUpdates = () => {
     props.ymap?.set('eventHandlersUpdated', {
@@ -608,7 +565,7 @@ const EditorComponent = (props) => {
     app.name = newName;
     updateState({ appName: newName, app: app });
     updateState({ appName: newName });
-    setWindowTitle({ page: pageTitles.EDITOR, appName: newName });
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: newName });
   };
 
   const onZoomChanged = (zoom) => {
@@ -745,9 +702,9 @@ const EditorComponent = (props) => {
       user_id: userId,
       events,
     } = appData;
-    useResolveStore.getState().actions.updateJSHints();
+
     const startingPageHandle = props.params.pageHandle;
-    setWindowTitle({ page: pageTitles.EDITOR, appName });
+    fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
     current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
     await fetchOrgEnvironmentConstants();
@@ -764,24 +721,27 @@ const EditorComponent = (props) => {
       app: appData,
     });
 
+    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+    await fetchDataSources(editing_version?.id);
+
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
-      handleLowPriorityWork(async () => {
-        useResolveStore.getState().actions.updateLastUpdatedRefs(['constants']);
-        await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
-        await fetchDataSources(editing_version?.id);
+      handleLowPriorityWork(() => {
+        useResolveStore.getState().actions.updateLastUpdatedRefs(['constants', 'client']);
         commonLowPriorityActions(events, { homePageId });
       });
     });
   };
 
-  const commonLowPriorityActions = async (events, { homePageId }) => {
+  const commonLowPriorityActions = (events, { homePageId }) => {
     const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
     const editorRef = getEditorRef();
-    await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
-    await handleEvent('onPageLoad', currentPageEvents, {}, true);
+    runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true).then(() => {
+      handleEvent('onPageLoad', currentPageEvents, {}, true);
+    });
   };
 
   const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
+    useResolveStore.getState().actions.updateJSHints();
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -1118,12 +1078,13 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
         })
-        .catch(() => {
+        .catch((err) => {
           updateEditorState({
             saveError: true,
             isUpdatingEditorStateInProcess: false,
           });
-          toast.error('App could not save.');
+          // toast.error('App could not save.');
+          toast.error(err?.error ?? 'App could not save.');
         })
         .finally(() => {
           if (appDiffOptions?.cloningComponent) {
@@ -1433,6 +1394,7 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setEditorReady(true);
 
     const currentComponents = appJson?.pages?.[pageId]?.components;
+    const currentDataQueries = useDataQueriesStore.getState().dataQueries;
 
     const referenceManager = useResolveStore.getState().referenceMapper;
 
@@ -1446,8 +1408,17 @@ const EditorComponent = (props) => {
         };
       }
     });
+    const newDataQueries = currentDataQueries.map((dq) => {
+      if (!referenceManager.get(dq.id)) {
+        return {
+          id: dq.id,
+          name: dq.name,
+        };
+      }
+    });
 
-    useResolveStore.getState().actions.addEntitiesToMap(newComponents);
+    useResolveStore.getState().actions.addEntitiesToMap([...newComponents, ...newDataQueries]);
+    // useResolveStore.getState().actions.addEntitiesToMap(newDataQueries);
   };
 
   const updateEntityReferences = (appJson, pageId) => {
@@ -1485,6 +1456,7 @@ const EditorComponent = (props) => {
           newGlobalSettings = dfs(newGlobalSettings, entity, value);
         }
       });
+      const [_, error, resolvedCanvasBackgroundColor] = resolveReferences(newGlobalSettings?.backgroundFxQuery, {});
 
       const newAppDefinition = produce(appJson, (draft) => {
         draft.globalSettings = newGlobalSettings;
@@ -1493,7 +1465,7 @@ const EditorComponent = (props) => {
       // Setting the canvas background to the editor store
       setCanvasBackground({
         backgroundFxQuery: newGlobalSettings?.backgroundFxQuery,
-        canvasBackgroundColor: newGlobalSettings?.canvasBackgroundColor,
+        canvasBackgroundColor: resolvedCanvasBackgroundColor || '',
       });
 
       updateEditorState({
@@ -1668,11 +1640,11 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${newHandle}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    // props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${newHandle}`, {
+    //   state: {
+    //     isSwitchingPage: true,
+    //   },
+    // });
 
     const page = {
       id: newPageId,
@@ -1707,14 +1679,15 @@ const EditorComponent = (props) => {
       return;
     }
 
-    clearAllQueuedTasks();
+    await clearAllQueuedTasks();
+    useResolveStore.getState().actions.resetStore();
     useEditorStore.getState().actions.setPageProgress(true);
     useCurrentStateStore.getState().actions.setEditorReady(false);
-    useResolveStore.getState().actions.resetStore();
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
-    const pageHandle = getCurrentState().pageHandle;
+
+    const pageHandle = useCurrentStateStore.getState().page?.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
@@ -1723,6 +1696,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
     navigateToPage(queryParams, handle);
 
     const page = {
@@ -1743,9 +1717,6 @@ const EditorComponent = (props) => {
 
     await onEditorLoad(appDefinition, pageId, true);
     updateEntityReferences(appDefinition, pageId);
-    handleLowPriorityWork(() => {
-      useResolveStore.getState().actions.updateJSHints();
-    });
 
     setCurrentPageId(pageId);
 
@@ -1754,9 +1725,14 @@ const EditorComponent = (props) => {
       .events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
-    handleLowPriorityWork(() => {
-      useEditorStore.getState().actions.setPageProgress(false);
-    }, 100);
+    handleLowPriorityWork(
+      () => {
+        useEditorStore.getState().actions.setPageProgress(false);
+        useResolveStore.getState().actions.updateJSHints();
+      },
+      null,
+      true
+    );
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
@@ -1790,7 +1766,9 @@ const EditorComponent = (props) => {
     });
 
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const newCurrentPageId = isHomePage ? Object.keys(copyOfAppDefinition.pages)[0] : copyOfAppDefinition.homePageId;
 
+    setCurrentPageId(newCurrentPageId);
     const toBeDeletedPage = copyOfAppDefinition.pages[pageId];
 
     const newAppDefinition = {
@@ -1798,9 +1776,6 @@ const EditorComponent = (props) => {
       pages: omit(copyOfAppDefinition.pages, pageId),
     };
 
-    const newCurrentPageId = isHomePage ? Object.keys(copyOfAppDefinition.pages)[0] : copyOfAppDefinition.homePageId;
-
-    setCurrentPageId(newCurrentPageId);
     updateEditorState({
       isUpdatingEditorStateInProcess: true,
     });
@@ -1812,8 +1787,6 @@ const EditorComponent = (props) => {
     });
 
     toast.success(`${toBeDeletedPage.name} page deleted.`);
-
-    switchPage(newCurrentPageId);
   };
 
   const disableEnablePage = ({ pageId, isDisabled }) => {
@@ -1879,7 +1852,7 @@ const EditorComponent = (props) => {
     setIsSaving(true);
     appVersionService
       .clonePage(appId, editingVersionId, pageId)
-      .then((data) => {
+      .then(async (data) => {
         const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
         const pages = data.pages.reduce((acc, page) => {
@@ -1903,6 +1876,8 @@ const EditorComponent = (props) => {
           events: data.events,
         });
         appDefinitionChanged(newAppDefinition);
+        await onEditorLoad(newAppDefinition, pageId, false);
+        updateEntityReferences(newAppDefinition, pageId);
       })
       .finally(() => setIsSaving(false));
   };
@@ -1992,9 +1967,11 @@ const EditorComponent = (props) => {
   }
 
   const handleCanvasContainerMouseUp = (e) => {
+    const selectedText = window.getSelection().toString();
     if (
       ['real-canvas', 'modal'].includes(e.target.className) &&
-      useEditorStore.getState()?.selectedComponents?.length
+      useEditorStore.getState()?.selectedComponents?.length &&
+      !selectedText
     ) {
       setSelectedComponents(EMPTY_ARRAY);
     }

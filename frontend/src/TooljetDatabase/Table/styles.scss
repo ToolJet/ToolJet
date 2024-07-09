@@ -22,7 +22,6 @@
   width: 100% !important;
 
   .table-header-container {
-    width: 140px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -171,15 +170,15 @@
       div {
         padding-bottom: 0px !important;
 
-        span {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          width: 85%;
+        .cell-menu-text {
+          white-space: nowrap ;
+          overflow: hidden ;
+          text-overflow: ellipsis ;
+          width: 85% ;
           color: var(--slate11) !important;
           cursor: default;
           border-radius: 6px;
-          height: 20px;
+          // height: 20px;
           font-size: 12px;
         }
       }
@@ -190,7 +189,7 @@
     .tjdb-td-wrapper {
       div {
         padding-bottom: 0px !important;
-        span {
+        .cell-menu-text {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -198,7 +197,7 @@
           color: var(--slate11) !important;
           cursor: default;
           border-radius: 6px;
-          height: 20px;
+          // height: 20px;
           font-size: 12px;
         }
       }
@@ -329,7 +328,7 @@
     justify-content: center;
     cursor: default;
     border-radius: 6px;
-    width: 40px;
+    width: 40px !important;
     height: 20px;
     font-size: 12px;
   }
@@ -416,7 +415,7 @@
 .create-table-list-items {
   .popover-body {
     padding: 0px !important;
-    width: 240px !important;
+    min-width: 240px !important;
 
     .unique-constraint-parent {
       padding: 16px 16px 0px 16px !important;

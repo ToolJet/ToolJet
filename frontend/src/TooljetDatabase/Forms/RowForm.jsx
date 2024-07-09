@@ -14,6 +14,8 @@ import cx from 'classnames';
 
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const RowForm = ({
   onCreate,
@@ -24,7 +26,8 @@ const RowForm = ({
   shouldResetRowForm,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
+    useContext(TooljetDatabaseContext);
   const inputRefs = useRef({});
   const primaryKeyColumns = [];
   const nonPrimaryKeyColumns = [];
@@ -137,6 +140,8 @@ const RowForm = ({
       newInputValues[index] = { value: null, checkboxValue: null, disabled: true, label: null };
     } else if (tabData === 'Custom' && dataType === 'character varying') {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
+    } else if (tabData === 'Custom' && dataType === 'timestamp with time zone') {
+      newInputValues[index] = { value: new Date().toISOString(), checkboxValue: false, disabled: false, label: '' };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     }
@@ -308,7 +313,7 @@ const RowForm = ({
     onCreate && onCreate(shouldKeepDrawerOpen);
   };
 
-  const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index) => {
+  const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index, isNullable) => {
     const isSerialDataTypeColumn = dataType === 'serial';
     const handleInputFocus = () => {
       if (activeTab[index] === 'Null') {
@@ -441,6 +446,19 @@ const RowForm = ({
               disabled={inputValues[index].checkboxValue === null}
             />
           </label>
+        );
+
+      case 'timestamp with time zone':
+        return (
+          <div onClick={() => handleTabClick(index, 'Custom', defaultValue, isNullable, columnName, dataType)}>
+            <DateTimePicker
+              timestamp={inputValues[index]?.value}
+              setTimestamp={(value) => handleInputChange(index, value, columnName)}
+              isOpenOnStart={false}
+              timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
+              isClearable={activeTab[index] === 'Custom'}
+            />
+          </div>
         );
 
       default:
@@ -596,7 +614,7 @@ const RowForm = ({
                   tooltipClassName="tootip-table"
                   show={dataType === 'serial'}
                 >
-                  {renderElement(accessor, dataType, isPrimaryKey, column_default, index)}
+                  {renderElement(accessor, dataType, isPrimaryKey, column_default, index, isNullable)}
                 </ToolTip>
               </div>
             );
