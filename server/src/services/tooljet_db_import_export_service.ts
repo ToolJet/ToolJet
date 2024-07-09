@@ -149,7 +149,7 @@ export class TooljetDbImportExportService {
     const internalTableColumnSchema = await this.tooljetDbService.perform(internalTable.organizationId, 'view_table', {
       id: internalTable.id,
     });
-    const internalTableColumns = new Set<string>(internalTableColumnSchema.map((c) => c.column_name));
+    const internalTableColumns = new Set<string>(internalTableColumnSchema.columns.map((c) => c.column_name));
     const isSubset = (subset: Set<string>, superset: Set<string>) => [...subset].every((item) => superset.has(item));
 
     return isSubset(dtoColumns, internalTableColumns);
