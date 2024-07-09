@@ -14,6 +14,7 @@ import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDataba
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
+import './styles.scss';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import {
   convertDateToTimeZoneFormatted,
@@ -32,9 +33,11 @@ function TableSchema({
   indexHover,
   editColumns,
   foreignKeyDetails,
+  setForeignKeyDetails,
   existingForeignKeyDetails,
 }) {
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+  const [previousColumnNames, setPreviousColumnNames] = useState([]);
 
   const { Option } = components;
 
@@ -68,6 +71,9 @@ function TableSchema({
     setDefaultValue(newDefaultValue);
   }, [columnDetails]);
 
+  useEffect(() => {
+    setPreviousColumnNames(Object.keys(columnDetails).map((key, index) => columnDetails[index]?.column_name));
+  }, [columnDetails]);
   const tzOptions = useMemo(() => timeZonesWithOffsets(), []);
 
   const tzDictionary = useMemo(() => {
@@ -163,6 +169,16 @@ function TableSchema({
                 onChange={(e) => {
                   e.persist();
                   const prevColumns = { ...columnDetails };
+                  setForeignKeyDetails((prevState) => {
+                    return prevState.map((item) => {
+                      return {
+                        ...item,
+                        column_names: item.column_names.map((col) => {
+                          return col === previousColumnNames[index] ? e.target.value : col;
+                        }),
+                      };
+                    });
+                  });
                   prevColumns[index].column_name = e.target.value;
                   setColumns(prevColumns);
                 }}
