@@ -61,7 +61,7 @@ const FileUpload = ({
               ? 'tw-bg-background-surface-layer-02 tw-border-border-disabled'
               : isHovering
               ? 'tw-bg-background-accent-weak tw-border-interactive-focus-outline'
-              : 'tw-bg-background-surface-layer-01 tw-border-border-default hover:tw-border-border-strong'
+              : 'tw-bg-background-surface-layer-01 tw-border-border-default hover:tw-bg-[#CCD1D5]/30 hover:tw-border-border-strong'
           }`}
           onDragOver={handleDragEnter}
           onDragLeave={handleDragLeave}

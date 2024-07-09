@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Textarea } from './Textarea';
 import { HelperMessage, InputLabel, ValidationMessage } from './TextareaUtils/TextareaUtils';
 
-const TextAreaComponent = ({ onValueChange, ...props }) => {
+const TextAreaComponent = ({ onChange, ...props }) => {
   const [isValid, setIsValid] = React.useState(null);
   const [message, setMessage] = React.useState('');
 
@@ -18,7 +18,7 @@ const TextAreaComponent = ({ onValueChange, ...props }) => {
       setIsValid(validateObj.valid);
       setMessage(validateObj.message);
     }
-    onValueChange(e, validateObj);
+    onChange(e, validateObj);
   };
 
   return (
@@ -48,7 +48,7 @@ TextAreaComponent.propTypes = {
   helperText: PropTypes.string,
   disabled: PropTypes.bool,
   required: PropTypes.bool,
-  onValueChange: PropTypes.func,
+  onChange: PropTypes.func,
   validation: PropTypes.func,
   name: PropTypes.string,
   id: PropTypes.string,
@@ -61,7 +61,7 @@ TextAreaComponent.defaultProps = {
   helperText: '',
   disabled: false,
   required: false,
-  onValueChange: (e, validateObj) => {},
+  onChange: (e, validateObj) => {},
   validation: () => {},
   name: '',
   id: '',
