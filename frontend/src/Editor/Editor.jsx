@@ -305,12 +305,14 @@ const EditorComponent = (props) => {
       if (isPageSwitched) {
         const currentStateObj = useCurrentStateStore.getState();
 
-        useResolveStore.getState().actions.addAppSuggestions({
-          queries: currentStateObj.queries,
-          components: currentStateObj.components,
-          page: currentStateObj.page,
+        handleLowPriorityWork(() => {
+          useResolveStore.getState().actions.addAppSuggestions({
+            queries: currentStateObj.queries,
+            components: currentStateObj.components,
+            page: currentStateObj.page,
+          });
+          useResolveStore.getState().actions.pageSwitched(false);
         });
-        useResolveStore.getState().actions.pageSwitched(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
