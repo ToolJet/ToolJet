@@ -9,6 +9,12 @@
   padding: 20px;
 }
 
+.header-label-timestamp {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .drawer-card-wrapper {
 
   .tj-base-btn {

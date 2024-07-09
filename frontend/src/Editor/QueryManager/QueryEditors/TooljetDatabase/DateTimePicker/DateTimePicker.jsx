@@ -9,7 +9,8 @@ import { getLocalTimeZone, convertToDateType, formatDate } from '../util';
 export const DateTimePicker = ({
   enableDate = true,
   enableTime = true,
-  format = 'dd/MM/yyyy, h:mm aa',
+  format = 'dd/MM/yyyy, hh:mm aa',
+  timeFormat = 'hh:mm aa',
   isOpenOnStart = false,
   timestamp = null,
   setTimestamp,
@@ -19,18 +20,28 @@ export const DateTimePicker = ({
   saveFunction = () => {},
   timezone = getLocalTimeZone(),
   isClearable = false,
+  isPlaceholderEnabled = false,
+  isDisabled = false,
+  errorMessage,
 }) => {
-  const transformedTimestamp = timestamp ? convertToDateType(timestamp, timezone) : null;
+  const startValue = useRef(timestamp);
   const timestampRef = useRef(timestamp);
   const prevTimestampRef = useRef(timestamp || new Date().toISOString());
+  const transformedTimestamp = timestamp ? convertToDateType(timestamp, timezone) : null;
+  const [triggeredKeyPress, setTriggeredKeyPress] = useState(0);
+  const minDate = new Date(1800, 0, 1);
+  const maxDate = new Date(2200, 11, 31);
   const [isOpen, setIsOpen] = useState(isOpenOnStart);
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      handleCancel();
-    } else if (e.key === 'Enter') {
-      handleSave();
-      setIsOpen(false);
+    if (isEditCell) {
+      if (e.key === 'Escape') {
+        handleCancel();
+        timestampRef.current = startValue.current;
+        setTimestamp(startValue.current);
+      } else if (e.key === 'Enter') {
+        handleSave();
+      }
     }
     e.stopPropagation();
   };
@@ -39,8 +50,12 @@ export const DateTimePicker = ({
     setIsOpen(false);
   };
 
-  const handleSave = () => {
+  const handleSave = (e) => {
+    if (e) {
+      e.stopPropagation();
+    }
     saveFunction(timestampRef.current);
+    startValue.current = timestampRef.current;
     setIsOpen(false);
   };
 
@@ -57,12 +72,25 @@ export const DateTimePicker = ({
   };
 
   useEffect(() => {
+    if (isOpen === false && isEditCell) {
+      setIsOpen(true);
+    }
+  }, [triggeredKeyPress]);
+
+  useEffect(() => {
     const currentTimeInMilliseconds = new Date(timestampRef.current).getTime();
     const defaultValueInMilliseconds = new Date(defaultValue).getTime();
     if (currentTimeInMilliseconds !== defaultValueInMilliseconds && timestampRef.current !== null) {
       prevTimestampRef.current = timestampRef.current;
     }
   }, [timestampRef.current]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const SaveChangesSection = () => {
     const [isNull, setIsNull] = useState(timestampRef.current === null);
@@ -189,7 +217,7 @@ export const DateTimePicker = ({
             Cancel
           </ButtonSolid>
           <ButtonSolid
-            onClick={handleSave}
+            onClick={(e) => handleSave(e)}
             disabled={timestamp == timestampRef.current ? true : false}
             variant="primary"
             size="sm"
@@ -283,25 +311,45 @@ export const DateTimePicker = ({
       }}
     >
       <DatePickerComponent
-        className={`input-field form-control validation-without-icon px-2 ${
-          darkMode ? 'bg-dark color-white' : 'bg-light'
-        } ${!isEditCell && 'tjdb-datepicker-wrapper '}`}
+        className={cx('input-field', 'validation-without-icon', 'px-2', {
+          'bg-dark color-white': darkMode,
+          'bg-light': !darkMode,
+          'tjdb-datepicker-wrapper': !isEditCell,
+          'tjdb-datepicker-celledit': isEditCell,
+          'form-control': !isDisabled,
+          'form-control-disabled': isDisabled && !darkMode,
+          'dark-form-control-disabled': isDisabled && darkMode,
+          'null-value-padding': !transformedTimestamp && !isEditCell,
+          'input-value-padding': transformedTimestamp,
+        })}
         popperPlacement={'bottom-start'}
-        popperClassName={`${!isEditCell && 'tjdb-datepicker-reset'}`}
+        popperClassName={cx({
+          'tjdb-datepicker-reset': !isEditCell,
+          'tjdb-datepicker-celledit-reset': isEditCell,
+        })}
         onInputClick={() => {
           setIsOpen(true);
         }}
         isClearable={isClearable}
+        value={transformedTimestamp}
         onClickOutside={() => setIsOpen(false)}
-        placeholderText="DD/MM/YYYY, 12:00pm"
+        placeholderText="dd/mm/yyyy, 12:00am/pm"
         selected={transformedTimestamp}
+        minDate={minDate}
+        maxDate={maxDate}
         onChange={(newTimestamp, event) => {
           if (isEditCell) {
             handleCellEditChange(newTimestamp);
+            if (event?.type === 'keydown') {
+              setTriggeredKeyPress((prev) => prev + 1);
+              setIsOpen(false);
+            }
           } else {
             if (event) {
               handleDefaultChange(newTimestamp);
-              setIsOpen(false);
+              if (event.type === 'click') {
+                setIsOpen(false);
+              }
             } else {
               handleDefaultChange(newTimestamp, true);
             }
@@ -314,10 +362,11 @@ export const DateTimePicker = ({
         showTimeSelectOnly={enableDate ? false : true}
         showMonthDropdown
         showYearDropdown
+        locale="en-GB"
         fixedHeight
         dropdownMode="select"
         customInput={
-          transformedTimestamp ? (
+          transformedTimestamp || isPlaceholderEnabled ? (
             <input
               onFocus={'auto'}
               style={{
@@ -326,6 +375,7 @@ export const DateTimePicker = ({
                 alignItems: 'center',
                 overflow: 'hidden',
               }}
+              className={cx({ 'tjdb-datepicker-celledit-input': isEditCell, 'input-error-border': errorMessage })}
             />
           ) : (
             <div
@@ -334,14 +384,22 @@ export const DateTimePicker = ({
                 display: 'flex',
                 alignItems: 'center',
                 position: 'relative',
+                border: 'none',
+                backgroundColor: 'transparent',
               }}
+              className={cx('null-container', {
+                'tjdb-datepicker-celledit-input': isEditCell,
+                'bg-dark color-white': darkMode,
+                'bg-white': !darkMode,
+                'input-error-border': errorMessage,
+              })}
               tabindex="0"
-              className="null-container"
             >
               <span
                 style={{
                   position: 'static',
-                  margin: isEditCell ? '8px 0px 8px 0px' : '6px 0px 6px 0px',
+                  margin: isEditCell ? '8px 0px 8px 0px' : '5px 0px 5px 0px',
+                  backgroundColor: 'transparent',
                 }}
                 className={cx({ 'cell-text-null': isEditCell, 'null-tag': !isEditCell })}
               >
@@ -352,9 +410,22 @@ export const DateTimePicker = ({
         }
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
         dateFormat={format}
-        {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer, onKeyDown: handleKeyDown })}
+        timeFormat={timeFormat}
+        {...(isEditCell && { calendarContainer: memoizedCustomCalendarContainer })}
         {...(!isEditCell && { calendarContainer: memoizedDefaultCalendarContainer })}
       />
+      {errorMessage && (
+        <small
+          className="tj-input-error"
+          style={{
+            fontSize: '10px',
+            color: '#DB4324',
+          }}
+          data-cy="app-name-error-label"
+        >
+          {errorMessage}
+        </small>
+      )}
     </div>
   );
 };

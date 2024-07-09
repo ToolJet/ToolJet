@@ -26,8 +26,14 @@ export class TooljetDbImportExportService {
 
     if (!internalTable) throw new NotFoundException('Tooljet database table not found');
 
+    const { configurations = {} } = internalTable;
     const { columns, foreign_keys } = await this.tooljetDbService.perform(organizationId, 'view_table', {
       id: tjDbDto.table_id,
+    });
+
+    columns.forEach((column) => {
+      const columnUuid = configurations?.columns?.column_names?.[column.column_name];
+      column.configurations = configurations?.columns?.configurations?.[columnUuid];
     });
 
     return {

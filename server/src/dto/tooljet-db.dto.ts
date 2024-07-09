@@ -210,7 +210,8 @@ export class PostgrestTableColumnDto {
   @IsOptional()
   constraints_type: ConstraintTypeDto;
 
-  configurations: any;
+  @IsOptional()
+  configurations: Record<string, any>;
 }
 
 export class EditTableColumnsDto {

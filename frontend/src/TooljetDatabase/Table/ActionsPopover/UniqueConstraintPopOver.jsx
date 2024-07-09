@@ -9,6 +9,7 @@ import Select, { components } from 'react-select';
 import { formatOptionLabel } from '@/TooljetDatabase/constants';
 import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
+import defaultStyles from '@/_ui/Select/styles';
 // eslint-disable-next-line no-unused-vars
 export const UniqueConstraintPopOver = ({
   disabled,
@@ -77,6 +78,33 @@ export const UniqueConstraintPopOver = ({
                 <Select
                   placeholder="Select Timezone"
                   value={tzDictionary[columns[index].configurations.timezone]}
+                  styles={{
+                    control: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: darkMode ? '#2b3547' : state.menuIsOpen ? '#F1F3F5' : '#fff',
+                    }),
+                    singleValue: (provided) => ({
+                      ...provided,
+                      color: darkMode ? '#fff' : '#232e3c',
+                    }),
+                    input: (provided) => ({
+                      ...provided,
+                      color: darkMode ? '#fff' : '#232e3c',
+                    }),
+                    menu: (provided) => ({
+                      ...provided,
+                      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+                    }),
+                    option: (provided) => ({
+                      ...provided,
+                      backgroundColor: darkMode ? '#2b3547' : '#fff',
+                      color: darkMode ? '#fff' : '#232e3c',
+                      cursor: 'pointer',
+                      ':hover': {
+                        backgroundColor: darkMode ? '#323C4B' : '#d8dce9',
+                      },
+                    }),
+                  }}
                   formatOptionLabel={formatOptionLabel}
                   options={tzOptions}
                   onChange={(option) => {

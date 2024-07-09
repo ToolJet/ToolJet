@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
+import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
@@ -155,17 +156,6 @@ const ColumnForm = ({
   const existingReferencedColumnName = foreignKeys[selectedForeignkeyIndex]?.referenced_column_names[0];
   const currentReferencedTableName = targetTable?.value;
   const currentReferencedColumnName = targetColumn?.value;
-
-  const checkIfButtonShouldBeDisabled = () => {
-    if (isTimestamp) {
-      return ![
-        timezone === columnConfigurations?.timezone,
-        defaultValue === selectedColumn?.column_default,
-        columnName === selectedColumn?.Header,
-      ].some((item) => item === false);
-    }
-    return true;
-  };
 
   const handleCreateForeignKeyinEditMode = async () => {
     const data = [
@@ -579,8 +569,8 @@ const ColumnForm = ({
                 onChange={(option) => {
                   setTimezone(option.value);
                 }}
+                styles={defaultStyles(darkMode, '100%')}
                 components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
-                styles={customStyles}
               />
             </div>
           )}
@@ -602,6 +592,7 @@ const ColumnForm = ({
                     setTimestamp={setDefaultValue}
                     timezone={timezone}
                     isClearable={true}
+                    isPlaceholderEnabled={true}
                   />
                 ) : !isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
                   <input
@@ -912,7 +903,6 @@ const ColumnForm = ({
           shouldDisableCreateBtn={columnName === ''}
           showToolTipForFkOnReadDocsSection={true}
           initiator={initiator}
-          isButtonDisabledForTimestamp={checkIfButtonShouldBeDisabled()}
         />
       </div>
       <ConfirmDialog

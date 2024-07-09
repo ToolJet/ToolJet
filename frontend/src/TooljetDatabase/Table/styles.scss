@@ -15,11 +15,18 @@
 //   margin-right: 6px !important;
 // }
 
+.tj-database-column-header:hover{
+  .primaryKeyTooltip{
+    width: 88% !important;
+  }
+}
+
 .primaryKeyTooltip {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100% !important;
+  height: 100% !important;
 
   .table-header-container {
     white-space: nowrap;

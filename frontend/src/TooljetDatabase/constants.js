@@ -264,7 +264,8 @@ export default function tjdbDropdownStyles(
       backgroundColor:
         state.isSelected && !darkMode ? '#F0F4FF' : state.isSelected && darkMode ? '#323C4B' : 'transparent',
       ':hover': {
-        backgroundColor: state.isFocused && !darkMode ? '#F0F4FF' : '#323C4B',
+        backgroundColor:
+          state.isFocused && !darkMode ? '#F0F4FF' : state.isFocused && darkMode ? '#323C4B' : 'transparent',
       },
       color: darkMode ? '#fff' : '#232e3c',
       cursor: 'pointer',
