@@ -98,6 +98,23 @@ export function onComponentOptionsChanged(component, options, id) {
 
   if (isEditorReady) {
     if (duplicateCurrentState !== null) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...duplicateCurrentState },
+      });
+
+      const state = getCurrentState();
+
+      const isPageSwitched = useResolveStore.getState().isPageSwitched;
+
+      handleLowPriorityWork(
+        () => {
+          useResolveStore.getState().actions.updateAppSuggestions({
+            components: !isPageSwitched ? state.components : {},
+          });
+        },
+        null,
+        isPageSwitched
+      );
       duplicateCurrentState = null;
     }
 
@@ -199,6 +216,23 @@ export function onComponentOptionChanged(component, option_name, value, id) {
 
   if (isEditorReady) {
     if (duplicateCurrentState !== null) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...duplicateCurrentState },
+      });
+
+      const state = getCurrentState();
+
+      const isPageSwitched = useResolveStore.getState().isPageSwitched;
+
+      handleLowPriorityWork(
+        () => {
+          useResolveStore.getState().actions.updateAppSuggestions({
+            components: !isPageSwitched ? state.components : {},
+          });
+        },
+        null,
+        isPageSwitched
+      );
       duplicateCurrentState = null;
     }
     // Always update the current state if editor is ready
