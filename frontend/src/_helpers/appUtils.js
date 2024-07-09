@@ -1329,6 +1329,13 @@ export function runQuery(
               const err = query.kind == 'tooljetdb' ? data?.error || data : data;
               toast.error(err?.message ? err?.message : 'Something went wrong');
             }
+            useResolveStore.getState().actions.addAppSuggestions({
+              queries: {
+                [queryName]: {
+                  isLoading: false,
+                },
+              },
+            });
             return;
           } else {
             let rawData = data.data;
