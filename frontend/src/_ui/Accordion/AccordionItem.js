@@ -34,14 +34,14 @@ const AccordionItem = ({ open = true, index, title, children }) => {
       <h2 className="accordion-header" id={`heading-${index}`} data-cy={`widget-accordion-${title.toLowerCase()}`}>
         <div className={cx('accordion-button inspector', { collapsed: !show })}>
           <span className="text-capitalize accordion-title-text">{title}</span>
-          <div
+          <button
             type="button"
             data-bs-toggle="collapse"
             data-bs-target={`collapse-${index}`}
             aria-expanded="false"
             className={cx('accordion-item-trigger', { collapsed: !show })}
             onClick={() => setShow(!show)}
-          ></div>
+          ></button>
         </div>
       </h2>
       <div
