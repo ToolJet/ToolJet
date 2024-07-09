@@ -1398,11 +1398,21 @@ export function runQuery(
               },
             });
 
+            const requestResponseOptions =
+              query.kind === 'restapi'
+                ? {
+                    request: data.request,
+                    response: data.response,
+                    responseHeaders: data.responseHeaders,
+                  }
+                : {};
+
             useResolveStore.getState().actions.addAppSuggestions({
               queries: {
                 [queryName]: {
                   data: finalData,
                   isLoading: false,
+                  ...requestResponseOptions,
                 },
               },
             });
