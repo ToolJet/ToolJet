@@ -149,6 +149,7 @@ export function Table({
     borderColor,
     isMaxRowHeightAuto,
     columnHeaderWrap,
+    headerCasing,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
@@ -1350,6 +1351,7 @@ export function Table({
                                             'wrap-wrapper':
                                               resolveReferences(columnHeaderWrap, currentState) === 'wrap',
                                           })}
+                                          style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
                                         >
                                           {column.render('Header')}
                                         </div>

@@ -83,6 +83,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const contentWrapProperty = styles?.contentWrap ?? true;
   const borderColor = styles?.borderColor ?? 'var(--borders-weak-disabled)';
   const columnHeaderWrap = styles?.columnHeaderWrap ?? 'fixed';
+  const headerCasing = styles?.headerCasing ?? 'uppercase';
 
   return {
     color,
@@ -122,5 +123,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     boxShadow,
     borderColor,
     columnHeaderWrap,
+    headerCasing,
   };
 }
