@@ -12,6 +12,7 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
+@import './groups-permissions.scss';
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
@@ -8924,25 +8925,38 @@ tbody {
   padding: 16px;
 
   tbody {
-
-    tr>td>span,
-    tr>td>a {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 140px;
+    tr{
+      td {
+        border-bottom-width: 0px !important;
+        display: flex;
+        align-items: center;
+        flex: 9%;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        &[data-name="role-header"] {
+          max-width: 98px !important;
+        }
+        span,a {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 140px;
+        }
+      }
     }
   }
 
   thead {
     tr {
-      padding: 0px 6px;
+      padding: 6px 0px 0px 6px;
       gap: 8px;
       width: 848px;
       height: 40px;
       display: flex;
       align-items: center;
-      margin-top: 6px;
     }
 
     tr>th {
@@ -8950,6 +8964,10 @@ tbody {
       border-bottom: none !important;
       padding: 0 !important;
       width: 282px;
+
+      &[data-name="role-header"] {
+        width:120px !important;
+      }
     }
   }
 
@@ -8963,17 +8981,21 @@ tbody {
     gap: 8px;
   }
 
-  tr>td {
-    border-bottom-width: 0px !important;
-    display: flex;
-    align-items: center;
-    flex: 9%;
-    padding-left: 0px !important;
-    padding-right: 0px !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  // tr>td {
+  //   border-bottom-width: 0px !important;
+  //   display: flex;
+  //   align-items: center;
+  //   flex: 9%;
+  //   padding-left: 0px !important;
+  //   padding-right: 0px !important;
+  //   white-space: nowrap;
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+
+  //   &[data-name="role-header"] {
+  //       width:120px !important;
+  //     }
+  // }
 }
 
 .user-actions-button {
@@ -9440,15 +9462,21 @@ tbody {
 }
 
 .manage-groups-body {
-  padding: 24px;
+  padding: 12px 12px 10px 12px;
   font-size: 12px;
-  overflow-y: auto;
+  // overflow-y: auto;
   height: calc(100vh - 300px);
+
+  .group-users-list-container{
+    height: calc(100vh - 300px - 100px); /* Set a fixed height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border-bottom: 1px solid var(--slate6) !important;
+  }
 
 }
 
 .groups-sub-header-wrap {
-  width: 612px;
+  // width: 612px;
   height: 36px;
   border-bottom: 1px solid var(--slate5) !important;
 
@@ -9618,14 +9646,15 @@ tbody {
 }
 
 .apps-permission-wrap {
-  height: 72px;
+  height: auto;
   justify-content: center;
+  width: auto;
   gap: 12px;
 }
 
 .apps-folder-permission-wrap,
 .apps--variable-permission-wrap {
-  height: 44px;
+  height: auto;
 }
 
 .manage-group-permision-header {
@@ -9635,7 +9664,7 @@ tbody {
   p {
     padding: 8px 12px;
     gap: 10px;
-    width: 206px;
+    width: 230px;
     height: 36px;
     font-weight: 500;
     color: var(--slate11) !important;
@@ -9682,13 +9711,19 @@ tbody {
 
 .default-group-wrap {
   gap: 10px;
-  width: 119px;
-  height: 28px;
+  width: 130px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--grass3);
+  background: var(--indigo3);
   border-radius: 100px;
+  border: 2px solid var(--indigo7);
+  color: var(--indigo9);
+
+  path {
+    fill: var(--indigo9);
+  }
 }
 
 .sso-icon-wrapper {
@@ -9759,6 +9794,9 @@ tbody {
   text-transform: capitalize;
 }
 
+
+
+
 .manage-group-users-row {
   display: flex;
   flex-direction: row;
@@ -9769,13 +9807,13 @@ tbody {
   border-bottom: 1px solid var(--slate5);
 
   p {
-    width: 272px;
+    width: 262px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 
     span {
-      max-width: 150px;
+      max-width: 140px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -9785,7 +9823,16 @@ tbody {
   &:hover .apps-remove-btn {
     display: flex;
   }
+
+  .edit-role-btn{
+    margin-left: auto;
+    margin-right: 20px;
+    display: flex;
+    align-items: center; 
+    padding-top: 5px;
+  }
 }
+
 
 .manage-group-app-table-body {
   width: 602px !important;
@@ -9853,7 +9900,7 @@ tbody {
   border-bottom: 1px solid var(--slate5);
   width: 612px;
   height: 36px;
-  padding: 8px 12px;
+  padding: 8px 12px 8px 2px;
   align-items: center;
 
 
@@ -9861,6 +9908,15 @@ tbody {
     width: 272px !important;
     color: var(--slate11);
     font-weight: 500;
+  }
+
+  .edit-role-btn{
+    margin-left: auto;
+    margin-right: 50px;
+    display: flex;
+    width: 20px;
+    align-items: center; 
+    padding-top: 5px;
   }
 
 }
@@ -9888,12 +9944,12 @@ tbody {
 .apps-variable-permission-wrap,
 .apps-constant-permission-wrap {
   gap: 10px;
-  height: 72px;
+  height: auto;
 }
 
 .apps-folder-permission-wrap,
 .apps-variable-permission-wrap {
-  height: 44px;
+  height: auto;
   border-bottom: 1px solid var(--slate5);
 }
 
@@ -10799,6 +10855,12 @@ tbody {
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+
+
+  .user-detail{
+    display: flex;
+    flex-direction: column;    
+  }
 
 }
 
@@ -12784,7 +12846,7 @@ tbody {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    max-width: 185px;
+    max-width: 210px;
   }
 
   .group-chip {
@@ -13170,6 +13232,27 @@ tbody {
   }
 }
 
+.modal-base {
+  .modal-footer {
+    padding: 1rem;
+
+    .tj-btn-left-icon {
+      svg {
+        width: 20px;
+        height: 20px;
+
+        path {
+          fill: var(--indigo1);
+        }
+      }
+    }
+
+    .tj-large-btn {
+      font-weight: 500;
+      font-size: 14px;
+    }
+  }
+}
 .component-spinner {
   animation: l13 1s infinite linear;
   position: absolute;
@@ -13183,7 +13266,6 @@ tbody {
 
 .widget-version-identifier {
   position: absolute;
-  right: 0px;
   top: 0px;
   border-radius: 0px 8px 0px 8px;
   height: 16px;

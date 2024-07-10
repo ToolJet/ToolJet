@@ -17,7 +17,9 @@
       "@services/*": ["src/services/*"],
       "@controllers/*": ["src/controllers/*"],
       "@repositories/*": ["src/repositories/*"],
-      "@dto/*": ["src/dto/*"]
+      "@dto/*": ["src/dto/*"],
+      "@module/*": ["src/modules/*"],
+      "@helpers/*": ["src/helpers/*"]
     },
   },
   "exclude": ["node_modules", "dist"]

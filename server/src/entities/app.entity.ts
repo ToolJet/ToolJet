@@ -16,9 +16,10 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
-import { AppGroupPermission } from './app_group_permission.entity';
 import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
+import { GroupApps } from './group_apps.entity';
+import { AppGroupPermission } from './app_group_permission.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
@@ -64,6 +65,7 @@ export class App extends BaseEntity {
   })
   appVersions: AppVersion[];
 
+  //Depreciated
   @ManyToMany(() => GroupPermission)
   @JoinTable({
     name: 'app_group_permissions',
@@ -76,6 +78,10 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
+  @OneToMany(() => GroupApps, (groupApps) => groupApps.app, { onDelete: 'CASCADE' })
+  appGroups: GroupApps[];
+
+  //Depreciated
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   appGroupPermissions: AppGroupPermission[];
 

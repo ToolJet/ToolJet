@@ -1,0 +1,146 @@
+@import "./typography.scss";
+@import "./designtheme.scss";
+
+.granular-access-container {
+    display: flex;
+    flex-direction: row;
+    height: 470px;
+    gap: 0;
+
+    .manage-granular-permissions-info {
+        display: flex;
+        height: 48px;
+        width: 612px;
+        border-radius: 6px;
+        padding: 12px 24px 12px 24px;
+        background: var(--slate3);
+        border: 1px solid var(--slate5);
+        border-radius: 6px;
+        margin-bottom: 16px;
+
+        p {
+            color: var(--slate12);
+            // gap: 14px;
+            display: flex;
+            align-items: center;
+
+        }
+    }
+  
+
+    .manage-granular-permission-header {
+        border-bottom: 1px solid var(--slate5);
+        display: flex;
+        p {
+            padding: 8px 12px;
+            // gap: 10px;
+            width: 230px;
+            height: 36px;
+            font-weight: 500;
+            color: var(--slate11) !important;
+        }
+    }
+
+    .empty-container {
+        flex-shrink: 0; /* Prevent shrinking */
+        height: 100%; /* Take full height of the parent container */
+        display: flex;
+        align-items: center; /* Center items vertically */
+        justify-content: center; /* Center items horizontally */
+        text-align: center;
+        flex-direction: column;
+        width: 330px;
+
+        .icon-container {
+            width: 55px;
+            height: 55px;
+            background: var(--indigo4);
+            border-radius: 6px;
+
+            svg {
+                width: 45px;
+                height: 45px;
+                path {
+                    fill: var(--indigo9);
+                }
+            }
+        }
+
+        .add-permission-btn {
+            width: 135px;
+        }
+    }
+
+    .permission-body-one {
+        flex-grow: 1; /* Allow this to grow and fill available space */
+        overflow-y: auto;
+        border-bottom: 1px solid var(--slate5);
+        margin: 0; /* Ensure no margin */
+        padding: 0; /* Ensure no padding */
+        min-height: calc(100% - 48px - 16px - 55px - 70px);
+        max-height: calc(100% - 48px - 16px - 55px - 70px);
+    }
+
+    .permission-body-two {
+        flex-grow: 1; /* Allow this to grow and fill available space */
+        overflow-y: auto;
+        border-bottom: 1px solid var(--slate5);
+        margin: 0; /* Ensure no margin */
+        padding: 0; /* Ensure no padding */
+        min-height: calc(100% - 16px - 55px - 54px);
+        max-height: calc(100% - 16px - 55px - 54px);
+    }
+
+    .side-button-cont {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center; /* Ensure the content is centered vertically */
+        height: 50px;
+        flex-shrink: 0; /* Prevent shrinking */
+        margin: 0; /* Ensure no margin */
+        padding: 12px; /* Ensure no padding */
+        margin-bottom: 15px;
+
+        .add-icon {
+            width: 135px;
+            height: 30px;
+        }
+    }
+}
+
+
+.permission-type {
+    border: 0px !important;
+    width: 100% !important;
+    justify-content: flex-start;
+    padding-left: 1rem;
+}
+
+.permission-manager-modal {
+    .permission-manager-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .type-container {
+        display: flex;
+        justify-content: space-between;
+
+        .right-container {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}
+
+
+.delete-icon-cont {
+    margin-left: 200px;
+
+    .icon-class{
+        border: none !important;
+        background-color: none !important;
+
+    }
+}

@@ -36,7 +36,6 @@ import { join } from 'path';
 import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
-import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import { CopilotModule } from './modules/copilot/copilot.module';
@@ -47,6 +46,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { PermissionsModule } from '@module/permissions/permissions.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -130,7 +131,8 @@ const imports = [
   CaslModule,
   MetaModule,
   LibraryAppModule,
-  GroupPermissionsModule,
+  UserResourcePermissionsModule,
+  PermissionsModule,
   FilesModule,
   PluginsModule,
   EventsModule,

@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
+import { DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { ConfigService } from '@nestjs/config';
 import { WORKSPACE_USER_SOURCE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
@@ -57,18 +56,6 @@ export class OrganizationUsersService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.findOne(OrganizationUser, { where: { organizationId } });
     }, manager);
-  }
-
-  async changeRole(id: string, role: string) {
-    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
-    if (organizationUser.role == 'admin') {
-      const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
-
-      if (lastActiveAdmin) {
-        throw new BadRequestException('Atleast one active admin is required.');
-      }
-    }
-    return await this.organizationUsersRepository.update(id, { role });
   }
 
   async findByWorkspaceInviteToken(invitationToken: string): Promise<InvitedUserType> {
@@ -133,7 +120,7 @@ export class OrganizationUsersService {
       relations: ['user'],
     });
 
-    await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId);
+    await this.usersService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
     await this.organizationUsersRepository.update(id, {
       status: WORKSPACE_USER_STATUS.ARCHIVED,
       invitationToken: null,
@@ -227,20 +214,6 @@ export class OrganizationUsersService {
     }
 
     return personalWorkspaceArray;
-  }
-
-  async lastActiveAdmin(organizationId: string): Promise<boolean> {
-    const adminsCount = await this.activeAdminCount(organizationId);
-
-    return adminsCount <= 1;
-  }
-
-  async activeAdminCount(organizationId: string) {
-    return await createQueryBuilder(GroupPermission, 'group_permissions')
-      .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
-      .where('group_permissions.group = :admin', { admin: 'admin' })
-      .andWhere('group_permissions.organization = :organizationId', { organizationId })
-      .getCount();
   }
 
   async organizationsCount(manager?: EntityManager) {

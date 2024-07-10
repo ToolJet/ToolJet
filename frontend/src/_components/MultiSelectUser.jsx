@@ -19,7 +19,7 @@ function MultiSelectUser({
   const listOfOptions = useRef([]);
 
   useEffect(() => {
-    setOptions(filterOptions(listOfOptions.current));
+    setOptions(listOfOptions.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedValues, listOfOptions.current]);
 
@@ -35,14 +35,19 @@ function MultiSelectUser({
   );
 
   function renderCustom(props, option) {
+    const valuePresent = selectedValues.some((item) => item.value === option.value);
     return (
       <div className={`item-renderer`}>
         <div>
           <input
             type="checkbox"
-            // eslint-disable-next-line no-unused-vars
+            checked={valuePresent}
             onClick={(e) => {
-              onSelect([...selectedValues, option]);
+              if (!valuePresent) {
+                onSelect([...selectedValues, option]);
+              } else {
+                onSelect([...selectedValues.filter((item) => item.value !== option.value)]);
+              }
             }}
           />
           <div className="d-flex flex-column" style={{ marginLeft: '12px' }}>
@@ -76,7 +81,7 @@ function MultiSelectUser({
         closeOnSelect={false}
         search={true}
         multiple
-        value={{ name: '' }}
+        value={selectedValues}
         onChange={(id, value) => onSelect([...selectedValues, ...value])}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}

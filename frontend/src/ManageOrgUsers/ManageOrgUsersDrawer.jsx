@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import InviteUsersForm from './InviteUsersForm';
-import { groupPermissionService } from '@/_services';
+import { groupPermissionService, groupPermissionV2Service } from '@/_services';
 import { authenticationService } from '../_services/authentication.service';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 
@@ -27,11 +27,13 @@ const ManageOrgUsersDrawer = ({
 
   const humanizeifDefaultGroupName = (groupName) => {
     switch (groupName) {
-      case 'all_users':
-        return 'All users';
+      case 'end-user':
+        return 'End user';
 
       case 'admin':
         return 'Admin';
+      case 'builder':
+        return 'Builder';
 
       default:
         return groupName;
@@ -41,19 +43,17 @@ const ManageOrgUsersDrawer = ({
   const fetchOrganizations = () => {
     const { current_organization_id } = authenticationService.currentSessionValue;
 
-    groupPermissionService
+    groupPermissionV2Service
       .getGroups()
-      .then(({ group_permissions }) => {
-        const orgGroups = group_permissions
-          .filter((group) => group.organization_id === current_organization_id)
-          .map(({ group }) => ({
-            label:
-              group === 'all_users' && isEditing
-                ? `${humanizeifDefaultGroupName(group)} (Default group)`
-                : humanizeifDefaultGroupName(group),
-            name: humanizeifDefaultGroupName(group),
-            value: group,
-            ...(group === 'all_users' && isEditing && { isDisabled: true, isFixed: true }),
+      .then(({ groupPermissions }) => {
+        const orgGroups = groupPermissions
+          .filter((group) => group.organizationId === current_organization_id)
+          .map(({ name, type, id }) => ({
+            label: humanizeifDefaultGroupName(name),
+            name: humanizeifDefaultGroupName(name),
+            value: name,
+            groupType: type,
+            id: id,
           }));
         setGroups(orgGroups);
       })

@@ -9,6 +9,7 @@
         "search": "Search",
         "update": "Update",
         "delete": "Delete",
+        "remove":"Remove",
         "add": "Add",
         "view": "View",
         "create": "Create",
@@ -269,7 +270,7 @@
                         "userGroups": "User Groups",
                         "createNewGroup": "Create new group",
                         "updateGroup": "Update group",
-                        "addNewGroup": "Add new group",
+                        "addNewGroup": "Create new group",
                         "enterName": "Enter group name",
                         "createGroup": "Create Group",
                         "name": "Name"

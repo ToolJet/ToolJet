@@ -244,10 +244,7 @@ class RawManageOrgVarsComponent extends React.Component {
   }
 
   canDeleteVariable = () => {
-    return this.canAnyGroupPerformAction(
-      'org_environment_variable_delete',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return authenticationService.currentSessionValue.org_constant_c_r_u_d;
   };
   setIsManageVarDrawerOpen = (val) => {
     this.setState({ isManageVarDrawerOpen: val });

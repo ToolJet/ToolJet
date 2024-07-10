@@ -36,9 +36,9 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { ManageOrgVars } from '@/ManageOrgVars';
+import { ManageGroupPermissionsV2 } from '@/ManageGroupPermissionsV2/ManageGroupPermissionsV2';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 
 const AppWrapper = (props) => {
@@ -310,7 +310,7 @@ class AppComponent extends React.Component {
                   path="groups"
                   element={
                     <AdminRoute>
-                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <ManageGroupPermissionsV2 switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AdminRoute>
                   }
                 />

@@ -223,12 +223,15 @@ const EditorComponent = (props) => {
 
     // Subscribe to changes in the current session using RxJS observable pattern
     const subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentUser && currentSession?.group_permissions) {
+      if (currentUser && (currentSession?.group_permissions || currentSession?.role)) {
         const userVars = {
           email: currentUser.email,
           firstName: currentUser.first_name,
           lastName: currentUser.last_name,
-          groups: currentSession.group_permissions?.map((group) => group.group),
+          groups: currentSession?.group_permissions
+            ? ['all_users', ...currentSession.group_permissions.map((group) => group.name)]
+            : ['all_users'],
+          role: currentSession?.role?.name,
         };
 
         const appUserDetails = {

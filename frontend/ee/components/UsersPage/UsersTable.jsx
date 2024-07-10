@@ -8,6 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './UsersActionMenu';
 import { humanizeifDefaultGroupName, decodeEntities } from '@/_helpers/utils';
+import { ToolTip } from '@/_components/ToolTip';
 
 const UsersTable = ({
   isLoading,
@@ -34,10 +35,10 @@ const UsersTable = ({
                 <th data-cy="users-table-name-column-header">
                   {translator('header.organization.menus.manageUsers.name', 'Name')}
                 </th>
-                <th data-cy="users-table-email-column-header">
-                  {translator('header.organization.menus.manageUsers.email', 'Email')}
+                <th data-cy="users-table-groups-column-header" data-name="role-header">
+                  User role
                 </th>
-                <th data-cy="users-table-groups-column-header">Groups</th>
+                <th data-cy="users-table-groups-column-header">Custom groups</th>
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
                     {translator('header.organization.menus.manageUsers.status', 'Status')}
@@ -90,22 +91,20 @@ const UsersTable = ({
                             user.last_name ? user.last_name[0] : ''
                           }`}
                         />
-                        <span
-                          className="mx-3 tj-text tj-text-sm"
-                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
-                        >
-                          {decodeEntities(user.name)}
-                        </span>
+                        <div className="user-detail">
+                          <span
+                            className="mx-3 tj-text tj-text-sm"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
+                          >
+                            {decodeEntities(user.name)}
+                          </span>
+                          <span style={{ color: '#687076' }} className="user-email mx-3  tj-text-xsm">
+                            {user.email}
+                          </span>
+                        </div>
                       </td>
-                      <td className="text-muted">
-                        <a
-                          className="text-reset user-email tj-text-sm"
-                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-email`}
-                        >
-                          {user.email}
-                        </a>
-                      </td>
-                      <GroupChipTD groups={user.groups} />
+                      <GroupChipTD groups={user.role_group.map((group) => group.name)} isRole={true} />
+                      <GroupChipTD groups={user.groups.map((group) => group.name)} />
                       {user.status && (
                         <td className="text-muted">
                           <span
@@ -182,7 +181,7 @@ const UsersTable = ({
 
 export default UsersTable;
 
-const GroupChipTD = ({ groups = [] }) => {
+const GroupChipTD = ({ groups = [], isRole = false }) => {
   const [showAllGroups, setShowAllGroups] = useState(false);
   const groupsListRef = useRef();
 
@@ -213,20 +212,23 @@ const GroupChipTD = ({ groups = [] }) => {
     return arr;
   }
 
-  const orderedArray = moveValuesToLast(groups, ['all_users', 'admin']);
+  const orderedArray = groups;
 
   const toggleAllGroupsList = (e) => {
     setShowAllGroups(!showAllGroups);
   };
 
   const renderGroupChip = (group, index) => (
-    <span className="group-chip" key={index} data-cy="group-chip">
-      {humanizeifDefaultGroupName(group)}
-    </span>
+    <ToolTip message={group}>
+      <span className="group-chip" key={index} data-cy="group-chip">
+        {humanizeifDefaultGroupName(group)}
+      </span>
+    </ToolTip>
   );
 
   return (
     <td
+      data-name={isRole ? 'role-header' : ''}
       data-active={showAllGroups}
       ref={groupsListRef}
       onClick={(e) => {
@@ -235,28 +237,31 @@ const GroupChipTD = ({ groups = [] }) => {
       className={cx('text-muted groups-name-cell', { 'groups-hover': orderedArray.length > 2 })}
     >
       <div className="groups-name-container tj-text-sm font-weight-500">
-        {orderedArray.slice(0, 2).map((group, index) => {
-          if (orderedArray.length <= 2) {
-            return renderGroupChip(group, index);
-          }
+        {orderedArray.length === 0 ? (
+          <div className="empty-text">-</div>
+        ) : (
+          orderedArray.slice(0, 2).map((group, index) => {
+            if (orderedArray.length <= 2) {
+              return renderGroupChip(group, index);
+            }
 
-          if (orderedArray.length > 2) {
-            if (index === 1) {
+            if (orderedArray.length > 2 && index === 1) {
               return (
-                <>
-                  <span className="group-chip" key={index}>
-                    {' '}
-                    +{orderedArray.length - 1} more
-                  </span>
+                <React.Fragment key={index}>
+                  {renderGroupChip(group, index)}
+                  <span className="group-chip">+{orderedArray.length - 2} more</span>
                   {showAllGroups && (
-                    <div className="all-groups-list">{groups.map((group, index) => renderGroupChip(group, index))}</div>
+                    <div className="all-groups-list">
+                      {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
+                    </div>
                   )}
-                </>
+                </React.Fragment>
               );
             }
+
             return renderGroupChip(group, index);
-          }
-        })}
+          })
+        )}
       </div>
     </td>
   );

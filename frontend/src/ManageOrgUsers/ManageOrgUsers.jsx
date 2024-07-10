@@ -11,6 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
+import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -36,6 +37,11 @@ class ManageOrgUsersComponent extends React.Component {
       userDrawerMode: USER_DRAWER_MODES.CREATE,
       newSelectedGroups: [],
       existingGroupsToRemove: [],
+      showErrorModal: false,
+      errorModalMessage: '',
+      errorItemList: [],
+      errorTitle: '',
+      errorIconName: 'usergear',
     };
   }
 
@@ -73,7 +79,6 @@ class ManageOrgUsersComponent extends React.Component {
     if (!this.state.file) {
       errors['file'] = 'This field is required';
     }
-
     this.setState({ errors: errors });
     return Object.keys(errors).length === 0;
   }
@@ -96,11 +101,22 @@ class ManageOrgUsersComponent extends React.Component {
 
   changeNewUserOption = (name, e) => {
     let fields = this.state.fields;
+    let errors = {};
     fields[name] = e.target.value;
 
     this.setState({
       fields,
     });
+
+    if (name === 'email') {
+      if (!this.validateEmail(fields['email'])) {
+        errors['email'] = 'Email is not valid';
+        this.setState({ errors });
+      } else {
+        errors['email'] = '';
+        this.setState({ errors });
+      }
+    }
   };
 
   archiveOrgUser = (id) => {
@@ -135,6 +151,7 @@ class ManageOrgUsersComponent extends React.Component {
       });
   };
 
+  //Need to work on that
   inviteBulkUsers = (event) => {
     event.preventDefault();
     if (this.handleFileValidation()) {
@@ -178,7 +195,7 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
-  manageUser = (currentOrgUserId, selectedGroups, groupsToAdd, groupsToRemove) => {
+  manageUser = (currentOrgUserId, selectedGroups, role, groupsToAdd, groupsToRemove) => {
     const isEditing = this.state.userDrawerMode === USER_DRAWER_MODES.EDIT;
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
@@ -201,11 +218,13 @@ class ManageOrgUsersComponent extends React.Component {
         last_name: this.state.fields.lastName,
         email: this.state.fields.email,
         groups: selectedGroups,
+        role: role,
       };
 
       const updateUserBody = {
         addGroups: groupsToAdd,
         removeGroups: groupsToRemove,
+        role: role,
       };
       service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
         .then(() => {
@@ -220,7 +239,13 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error);
+          this.setState({
+            showErrorModal: true,
+            errorModalMessage: error.error,
+            errorTitle: error?.title || 'Conflicting Permissions',
+            errorItemList: error?.data,
+            errorIconName: 'usergear',
+          });
           this.setState({ creatingUser: false });
         });
     } else {
@@ -249,6 +274,16 @@ class ManageOrgUsersComponent extends React.Component {
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied');
+  };
+
+  clearErrorState = () => {
+    this.setState({
+      showErrorModal: false,
+      errorModalMessage: '',
+      errorItemList: [],
+      errorTitle: '',
+      errorIconName: '',
+    });
   };
 
   pageChanged = (page) => {
@@ -290,10 +325,24 @@ class ManageOrgUsersComponent extends React.Component {
       meta,
       currentEditingUser,
       userDrawerMode,
+      showErrorModal,
+      errorModalMessage,
+      errorItemList,
+      errorTitle,
+      errorIconName,
     } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
+          <EditRoleErrorModal
+            darkMode={this.props.darkMode}
+            show={showErrorModal}
+            errorMessage={errorModalMessage}
+            errorTitle={errorTitle}
+            listItems={errorItemList}
+            iconName={errorIconName}
+            onClose={this.clearErrorState}
+          />
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}

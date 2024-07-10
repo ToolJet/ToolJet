@@ -15,14 +15,10 @@ import { ConfigService } from '@nestjs/config';
 import { EmailService } from '@services/email.service';
 import { OauthService, GoogleOAuthService, GitOAuthService } from '@ee/services/oauth';
 import { OauthController } from '@ee/controllers/oauth.controller';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
 import { FilesService } from '@services/files.service';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
-import { GroupPermissionsService } from '@services/group_permissions.service';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
@@ -37,21 +33,20 @@ import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    UserResourcePermissionsModule,
     TypeOrmModule.forFeature([
       User,
       File,
       Organization,
       OrganizationUser,
-      GroupPermission,
       App,
       SSOConfigs,
-      AppGroupPermission,
-      UserGroupPermission,
       DataSource,
       Credential,
       Plugin,
@@ -79,7 +74,6 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
     GoogleOAuthService,
     GitOAuthService,
     FilesService,
-    GroupPermissionsService,
     EncryptionService,
     DataSourcesService,
     CredentialsService,
