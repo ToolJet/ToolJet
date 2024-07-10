@@ -36,7 +36,7 @@ export function UserGroupsSelect(props) {
     return (
       <div className="mb-2 d-flex align-items-center">
         <SolidIcon name={type === 'default' ? 'usergear' : 'usergroup'} />
-        <span className="ml-1 group-title">{type === 'default' ? 'USER ROLE' : 'CUSTOM GROUP'}</span>
+        <span className="ml-1 group-title">{type === 'default' ? 'USER ROLE' : 'GROUPS'}</span>
         {type === 'default' && <span style={{ color: 'red' }}>*</span>}
       </div>
     );

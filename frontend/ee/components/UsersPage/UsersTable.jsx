@@ -98,7 +98,7 @@ const UsersTable = ({
                           >
                             {decodeEntities(user.name)}
                           </span>
-                          <span style={{ color: '#687076' }} className="user-email mx-3 tj-text tj-text-xsm">
+                          <span style={{ color: '#687076' }} className="user-email mx-3  tj-text-xsm">
                             {user.email}
                           </span>
                         </div>

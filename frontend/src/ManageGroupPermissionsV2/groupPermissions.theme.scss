@@ -254,12 +254,13 @@
     margin: 0;
     border-radius: 6px;
     background-color: var(--slate3);
-    color: black;
+    color: var(--slate11);
     min-height: 24px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
     max-width: 100px;
+    font-size: 12px;
   }
 
   .all-groups-list {
@@ -400,6 +401,12 @@
 }
 
 .manage-resource-permission{
+
+
+  .tj-text-xxsm{
+    color: var(--slate11)
+  }
+
 
   transition: background-color 0.3s ease;
   border-bottom: 1px solid var(--slate5);

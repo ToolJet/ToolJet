@@ -112,7 +112,7 @@ export class GroupPermissionsServiceV2 {
               message: {
                 error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
                 data: getEndUsersList?.map((user) => user.email),
-                title: 'Cannot add this permissions to the group',
+                title: 'Cannot add this permission to the group',
                 type: 'USER_ROLE_CHANGE',
               },
             });
@@ -202,7 +202,7 @@ export class GroupPermissionsServiceV2 {
             message: {
               error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
               data: editorUsersToBeAdded?.map((user) => user.email),
-              title: 'Cannot add this permissions to the group',
+              title: 'Cannot add this permission to the group',
               type: 'USER_ROLE_CHANGE_ADD_USERS',
             },
           });

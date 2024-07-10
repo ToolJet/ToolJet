@@ -250,7 +250,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           data-cy="helper-text-admin-app-access"
         >
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
-          <a style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}>
+          <a
+            style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+          >
             read documentation
           </a>{' '}
           to know more
@@ -318,7 +321,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   generateSelection = (selected) => {
     return selected?.map((d) => {
       return (
-        <div className="selected-item tj-ms" key={d.value}>
+        <div className="selected-item tj-ms tj-ms-usergroup" key={d.value}>
           <FilterPreview text={`${d?.email}`} onClose={() => this.removeSelection(selected, d.value)} />
         </div>
       );
@@ -329,6 +332,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.setState({ isChangeRoleModalOpen: true, updatingUserRole: updatingUser });
 
   showChangeRoleModalMessage = () => {
+    console.log('called');
     this.setState({ showRoleEditMessage: true });
   };
 
@@ -470,7 +474,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
             <div>{EDIT_ROLE_MESSAGE?.[groupPermission?.name]?.[selectedNewRole](isPaidPlan)}</div>
           ) : (
             <div>
-              <label className="form-label text-muted">User role</label>
+              <label className="form-label">User role</label>
               <Select
                 options={this.props.roleOptions.filter((group) => group.value !== groupPermission?.name)}
                 value={selectedNewRole}
@@ -649,7 +653,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         {selectedUsers.length > 0 && (
                           <div className="row mt-2">
                             <div className="selected-section">
-                              <div className="selected-text">Selected Users:</div>
+                              <div className="selected-text">Selected Users 123:</div>
                               {this.generateSelection(selectedUsers)}
                             </div>
                           </div>
@@ -851,9 +855,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           {this.props.t('globals.create', 'Create')}
                                         </span>
                                         <span
-                                          class={`text-muted tj-text-xxsm ${
-                                            disablePermissionUpdate && 'check-label-disable'
-                                          }`}
+                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
                                         >
                                           Create apps in this workspace
                                         </span>
@@ -878,9 +880,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           {this.props.t('globals.delete', 'Delete')}
                                         </span>
                                         <span
-                                          class={`text-muted tj-text-xxsm ${
-                                            disablePermissionUpdate && 'check-label-disable'
-                                          }`}
+                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
                                         >
                                           Delete any app in this workspace
                                         </span>
@@ -921,9 +921,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           )}
                                         </span>
                                         <span
-                                          class={`text-muted tj-text-xxsm ${
-                                            disablePermissionUpdate && 'check-label-disable'
-                                          }`}
+                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
                                         >
                                           All operations on folders
                                         </span>
@@ -960,9 +958,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           )}
                                         </span>
                                         <span
-                                          class={`text-muted tj-text-xxsm ${
-                                            disablePermissionUpdate && 'check-label-disable'
-                                          }`}
+                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
                                         >
                                           All operations on workspace constants
                                         </span>
@@ -986,6 +982,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       setErrorState={this.setErrorState}
                       updateParentState={this.changeThisComponentState}
                       fetchGroup={this.fetchGroupPermission}
+                      darkMode={this.props.darkMode}
                     />
                   </aside>
                 </div>

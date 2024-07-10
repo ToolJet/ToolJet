@@ -1,6 +1,7 @@
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React from 'react';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { withTranslation } from 'react-i18next';
 import { groupPermissionV2Service } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -11,6 +12,7 @@ import AddResourcePermissionsMenu from '@/ManageGranularAccess/AddResourcePermis
 import { ConfirmDialog } from '@/_components';
 import AddEditResourcePermissionsModal from '@/ManageGranularAccess/AddEditResourceModal/AddEditResourcePermissionsModal';
 
+import { ToolTip } from '@/_components/ToolTip';
 class ManageGranularAccessComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -93,7 +95,7 @@ class ManageGranularAccessComponent extends React.Component {
     groupPermissionV2Service
       .deleteGranularPermission(currentEditingPermissions.id)
       .then(() => {
-        toast.success('Deleted permissions successfully');
+        toast.success('Deleted permission successfully');
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
       })
@@ -386,7 +388,7 @@ class ManageGranularAccessComponent extends React.Component {
       <div className="row granular-access-container justify-content-center">
         <ConfirmDialog
           show={deleteConfirmationModal}
-          message={'This permissions will be permanently deleted. Do you want to continue?'}
+          message={'This permission will be permanently deleted. Do you want to continue?'}
           confirmButtonLoading={deletingPermissions}
           onConfirm={() => this.deleteGranularPermissions()}
           onCancel={() => {
@@ -481,10 +483,10 @@ class ManageGranularAccessComponent extends React.Component {
                 {'Name'}
               </p>
               <p data-cy="permissions-header" className="tj-text-xsm">
-                {this.props.t('header.organization.menus.manageGroups.permissionResources.permissions', 'Permissions')}
+                {'Permission'}
               </p>
               <p data-cy="permissions-header" className="tj-text-xsm">
-                {'Resources'}
+                {'Resource'}
               </p>
             </div>
             <div className={showPermissionInfo ? 'permission-body-one' : 'permission-body-two'}>

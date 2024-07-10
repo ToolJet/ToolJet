@@ -151,7 +151,7 @@ class ManageGroupPermissionsComponent extends React.Component {
             </div>
           </Popover.Body>
         </Popover>
-        {(groupName == 'all_users' || groupName == 'admin') && (
+        {(groupName == 'all_users' || groupName == 'admin' || groupName == 'builder' || groupName == 'end-user') && (
           <Tooltip
             id="tooltip-for-delete"
             className="tooltip"
@@ -231,6 +231,8 @@ class ManageGroupPermissionsComponent extends React.Component {
     if (value.length > 50) {
       this.setState({
         groupNameMessage: 'Max length has been reached',
+        isSaveBtnDisabled: true,
+        newGroupName: value?.slice(0, 50),
       });
       return;
     }
@@ -249,7 +251,7 @@ class ManageGroupPermissionsComponent extends React.Component {
   humanizeifDefaultGroupName = (groupName) => {
     switch (groupName) {
       case 'end-user':
-        return 'End user';
+        return 'End-user';
       case 'admin':
         return 'Admin';
       case 'builder':
@@ -379,7 +381,7 @@ class ManageGroupPermissionsComponent extends React.Component {
     } = this.state;
 
     const grounNameErrorStyle =
-      this.state.newGroupName?.length >= 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
+      this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
     const { addPermission, addApps, addUsers } = groupDuplicateOption;
     const allFalse = [addPermission, addApps, addUsers].every((value) => !value);
 
@@ -400,7 +402,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               handleConfirm={this.duplicateGroup}
               handleClose={this.toggleShowDuplicateModal}
               title="Duplicate group"
-              confirmBtnProps={{ title: 'Duplicate', disabled: allFalse }}
+              confirmBtnProps={{ title: 'Duplicate', disabled: allFalse, tooltipMessage: false }}
               isLoading={isDuplicatingGroup}
               cancelDisabled={isDuplicatingGroup}
               data-cy="modal-title"

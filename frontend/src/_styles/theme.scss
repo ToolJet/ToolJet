@@ -9476,7 +9476,7 @@ tbody {
 }
 
 .groups-sub-header-wrap {
-  width: 612px;
+  // width: 612px;
   height: 36px;
   border-bottom: 1px solid var(--slate5) !important;
 
@@ -12854,7 +12854,7 @@ tbody {
     margin: 0;
     border-radius: 6px;
     background-color: var(--slate3);
-    // color: var(--slate11);
+    color: var(--slate11);
     min-height: 24px;
     text-overflow: ellipsis;
     overflow: hidden;
