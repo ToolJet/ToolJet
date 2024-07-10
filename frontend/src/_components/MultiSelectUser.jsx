@@ -72,7 +72,7 @@ function MultiSelectUser({
     [selectedValues]
   );
   return (
-    <div className="tj-ms tj-ms-count">
+    <div className="tj-ms tj-ms-count" style={{ width: '100%', paddingRight: '0px' }}>
       <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
       <Select
         className={className}

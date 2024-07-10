@@ -242,7 +242,7 @@ class ManageOrgUsersComponent extends React.Component {
           this.setState({
             showErrorModal: true,
             errorModalMessage: error.error,
-            errorTitle: error?.title || 'Conflicting Permissions',
+            errorTitle: error?.title || 'Conflicting permissions',
             errorItemList: error?.data,
             errorIconName: 'usergear',
           });
