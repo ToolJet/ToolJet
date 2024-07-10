@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
+import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
@@ -155,17 +156,6 @@ const ColumnForm = ({
   const existingReferencedColumnName = foreignKeys[selectedForeignkeyIndex]?.referenced_column_names[0];
   const currentReferencedTableName = targetTable?.value;
   const currentReferencedColumnName = targetColumn?.value;
-
-  const checkIfButtonShouldBeDisabled = () => {
-    if (isTimestamp) {
-      return ![
-        timezone === columnConfigurations?.timezone,
-        defaultValue === selectedColumn?.column_default,
-        columnName === selectedColumn?.Header,
-      ].some((item) => item === false);
-    }
-    return true;
-  };
 
   const handleCreateForeignKeyinEditMode = async () => {
     const data = [
@@ -467,8 +457,8 @@ const ColumnForm = ({
     return foreignKeys.some((foreignKey) => foreignKey.column_names[0] === columnName);
   }
 
-  function isMatchingForeignKeyColumnDetails(columnHeader) {
-    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+  function isMatchingForeignKeyColumnDetails(columnName) {
+    const matchingColumn = foreignKeyDetails.find((foreignKey) => foreignKey.column_names[0] === columnName);
     return matchingColumn;
   }
 
@@ -536,7 +526,19 @@ const ColumnForm = ({
               className="form-control"
               data-cy="column-name-input-field"
               autoComplete="off"
-              onChange={(e) => setColumnName(e.target.value)}
+              onChange={(e) => {
+                setForeignKeyDetails((prevState) => {
+                  return prevState.map((item) => {
+                    return {
+                      ...item,
+                      column_names: item.column_names.map((col) => {
+                        return col === columnName ? e.target.value : col;
+                      }),
+                    };
+                  });
+                });
+                setColumnName(e.target.value);
+              }}
               autoFocus
             />
           </div>
@@ -579,8 +581,8 @@ const ColumnForm = ({
                 onChange={(option) => {
                   setTimezone(option.value);
                 }}
+                styles={defaultStyles(darkMode, '100%')}
                 components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
-                styles={customStyles}
               />
             </div>
           )}
@@ -602,6 +604,7 @@ const ColumnForm = ({
                     setTimestamp={setDefaultValue}
                     timezone={timezone}
                     isClearable={true}
+                    isPlaceholderEnabled={true}
                   />
                 ) : !isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
                   <input
@@ -627,7 +630,7 @@ const ColumnForm = ({
                       </div>
                     }
                     loader={
-                      <div className="mx-2">
+                      <>
                         <Skeleton
                           height={22}
                           width={396}
@@ -641,7 +644,7 @@ const ColumnForm = ({
                           className="skeleton"
                           style={{ margin: '7px 50px 15px 7px' }}
                         />
-                      </div>
+                      </>
                     }
                     isLoading={true}
                     value={foreignKeyDefaultValue}
@@ -732,18 +735,18 @@ const ColumnForm = ({
               {foreignKeyDetails?.length > 0 && isMatchingForeignKeyColumn(selectedColumn?.Header) && isForeignKey && (
                 <div className="foreignKey-details mt-0">
                   <span className="foreignKey-text">
-                    {isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.column_names[0]}
+                    {isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]}
                   </span>
                   <div className="foreign-key-relation">
                     <ForeignKeyRelationIcon width="13" height="13" />
                   </div>
                   <span className="foreignKey-text">{`${
-                    isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.referenced_table_name
-                  }.${isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.referenced_column_names[0]}`}</span>
+                    isMatchingForeignKeyColumnDetails(columnName)?.referenced_table_name
+                  }.${isMatchingForeignKeyColumnDetails(columnName)?.referenced_column_names[0]}`}</span>
                   <div
                     className="editForeignkey"
                     onClick={() => {
-                      openEditForeignKey(isMatchingForeignKeyColumnDetails(selectedColumn?.Header)?.column_names[0]);
+                      openEditForeignKey(isMatchingForeignKeyColumnDetails(columnName)?.column_names[0]);
                     }}
                   >
                     <EditIcon width="17" height="18" />
@@ -912,7 +915,6 @@ const ColumnForm = ({
           shouldDisableCreateBtn={columnName === ''}
           showToolTipForFkOnReadDocsSection={true}
           initiator={initiator}
-          isButtonDisabledForTimestamp={checkIfButtonShouldBeDisabled()}
         />
       </div>
       <ConfirmDialog

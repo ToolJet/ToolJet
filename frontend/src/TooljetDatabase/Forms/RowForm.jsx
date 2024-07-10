@@ -11,11 +11,10 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import cx from 'classnames';
-
 import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
-import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import { getLocalTimeZone, getUTCOffset } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const RowForm = ({
   onCreate,
@@ -56,6 +55,9 @@ const RowForm = ({
   const inputValuesDefaultValues = () => {
     return Array.isArray(rowColumns)
       ? rowColumns.map((item, _index) => {
+          if (item.dataType === 'timestamp with time zone' && !item.column_default) {
+            return { value: new Date().toISOString(), checkboxValue: false, disabled: false, label: '' };
+          }
           if (item.accessor === 'id') {
             return { value: '', checkboxValue: false, disabled: false, label: '' };
           }
@@ -119,8 +121,18 @@ const RowForm = ({
     return matchingColumn;
   }
 
+  const handleDisabledInputClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
+    handleTabClick(index, tabData, defaultValue, nullValue, columnName, dataType, currentValue);
+    if (inputRefs.current[columnName]) {
+      setTimeout(() => {
+        inputRefs.current[columnName].focus();
+      }, 0);
+    }
+  };
+
   const handleTabClick = (index, tabData, defaultValue, nullValue, columnName, dataType) => {
     const newActiveTabs = [...activeTab];
+    const oldActiveTab = [...activeTab];
     newActiveTabs[index] = tabData;
     setActiveTab(newActiveTabs);
     const newInputValues = [...inputValues];
@@ -141,6 +153,7 @@ const RowForm = ({
     } else if (tabData === 'Custom' && dataType === 'character varying') {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     } else if (tabData === 'Custom' && dataType === 'timestamp with time zone') {
+      if (oldActiveTab[index] === 'Custom') return;
       newInputValues[index] = { value: new Date().toISOString(), checkboxValue: false, disabled: false, label: '' };
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
@@ -165,24 +178,6 @@ const RowForm = ({
             ? defaultVal
             : inputValuesArr[index].value,
       });
-    }
-  };
-
-  const handleDisabledInputClick = (index, columnName) => {
-    if (inputRefs.current[columnName]) {
-      setTimeout(() => {
-        inputRefs.current[columnName].focus();
-      }, 0);
-    }
-    const newInputValues = [...inputValues];
-    const isCurrentlyDisabled = newInputValues[index].disabled;
-    newInputValues[index] = {
-      ...newInputValues[index],
-      disabled: !isCurrentlyDisabled,
-    };
-    setInputValues(newInputValues);
-    if (isCurrentlyDisabled) {
-      setData((prevData) => ({ ...prevData, [columnName]: newInputValues[index].value }));
     }
   };
 
@@ -225,6 +220,11 @@ const RowForm = ({
 
       if (column.dataType === 'boolean') {
         result[column.accessor] = column_default ? column_default : false;
+        return result;
+      }
+
+      if (column.dataType === 'timestamp with time zone') {
+        result[column.accessor] = column_default ? column_default : new Date().toISOString();
         return result;
       }
 
@@ -287,6 +287,13 @@ const RowForm = ({
         });
         const inputElement = inputRefs.current?.[columnName];
         inputElement?.style?.setProperty('background-color', '#FFF8F7');
+      } else if (error?.code === postgresErrorCode.NotNullViolation) {
+        const columnName = error?.message.split('.')[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Cannot be Null' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       } else if (error?.message.includes('Invalid input syntax for type')) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
@@ -341,11 +348,11 @@ const RowForm = ({
                   </div>
                 }
                 loader={
-                  <div className="mx-2">
+                  <>
                     <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
                     <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
                     <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-                  </div>
+                  </>
                 }
                 isLoading={true}
                 value={inputValues[index]?.value !== null && inputValues[index]}
@@ -400,7 +407,17 @@ const RowForm = ({
             )}
             {inputValues[index]?.disabled && (
               <div
-                onClick={() => handleDisabledInputClick(index, columnName)}
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    inputValues[index]?.column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    inputValues[index]?.value
+                  )
+                }
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -450,14 +467,42 @@ const RowForm = ({
 
       case 'timestamp with time zone':
         return (
-          <div onClick={() => handleTabClick(index, 'Custom', defaultValue, isNullable, columnName, dataType)}>
+          <div style={{ position: 'relative' }}>
             <DateTimePicker
               timestamp={inputValues[index]?.value}
               setTimestamp={(value) => handleInputChange(index, value, columnName)}
               isOpenOnStart={false}
               timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
               isClearable={activeTab[index] === 'Custom'}
+              isPlaceholderEnabled={activeTab[index] === 'Custom'}
+              errorMessage={errorMap[columnName]}
+              isDisabled={inputValues[index]?.disabled}
             />
+            {inputValues[index]?.disabled && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    inputValues[index]?.column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    inputValues[index]?.value
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 1,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
           </div>
         );
 
@@ -501,11 +546,39 @@ const RowForm = ({
                       <span style={{ width: '24px' }}>
                         {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                       </span>
-                      <span style={{ marginRight: '5px' }}>{headerText}</span>
+                      <ToolTip
+                        message={<span>{headerText}</span>}
+                        show={dataType === 'timestamp with time zone' && headerText.length >= 20}
+                        placement="top"
+                        tooltipClassName="tjdb-table-tooltip"
+                      >
+                        <span
+                          style={{ marginRight: '5px' }}
+                          className={cx({
+                            'header-label-timestamp': dataType === 'timestamp with time zone',
+                          })}
+                        >
+                          {headerText}
+                        </span>
+                      </ToolTip>
                       {constraints_type?.is_primary_key === true && (
                         <span style={{ marginRight: '3px' }}>
                           <SolidIcon name="primarykey" />
                         </span>
+                      )}
+                      {dataType === 'timestamp with time zone' && (
+                        <div
+                          style={{
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginLeft: '2px',
+                            marginTop: '1px',
+                          }}
+                        >
+                          <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                            getConfigurationProperty(accessor, 'timezone', getLocalTimeZone())
+                          )}`}</span>
+                        </div>
                       )}
                       <ToolTip
                         message={

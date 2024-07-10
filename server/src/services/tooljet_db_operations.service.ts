@@ -17,19 +17,25 @@ export class TooljetDbOperationsService implements QueryService {
     private readonly manager: EntityManager
   ) {}
 
-  async run(_sourceOptions, queryOptions, _dataSourceCacheId, _dataSourceCacheUpdatedAt): Promise<QueryResult> {
+  async run(
+    _sourceOptions,
+    queryOptions,
+    _dataSourceCacheId,
+    _dataSourceCacheUpdatedAt,
+    context
+  ): Promise<QueryResult> {
     switch (queryOptions.operation) {
       case 'list_rows':
-        return this.listRows(queryOptions);
+        return this.listRows(queryOptions, context);
       case 'create_row':
-        return this.createRow(queryOptions);
+        return this.createRow(queryOptions, context);
       case 'update_rows':
-        return this.updateRows(queryOptions);
+        return this.updateRows(queryOptions, context);
       case 'delete_rows':
-        return this.deleteRows(queryOptions);
+        return this.deleteRows(queryOptions, context);
       case 'join_tables':
         // custom implementation without PostgREST
-        return this.joinTables(queryOptions);
+        return this.joinTables(queryOptions, context);
 
       default:
         return {
@@ -51,7 +57,7 @@ export class TooljetDbOperationsService implements QueryService {
     return { status: 'ok', data: result };
   }
 
-  async listRows(queryOptions): Promise<QueryResult> {
+  async listRows(queryOptions, context): Promise<QueryResult> {
     if (hasNullValueInFilters(queryOptions, 'list_rows')) {
       return {
         status: 'failed',
@@ -60,7 +66,8 @@ export class TooljetDbOperationsService implements QueryService {
       };
     }
     try {
-      const { table_id: tableId, list_rows: listRows, organization_id: organizationId } = queryOptions;
+      const { table_id: tableId, list_rows: listRows } = queryOptions;
+      const { organization_id: organizationId } = context.app;
       const query = [];
 
       if (!isEmpty(listRows)) {
@@ -106,7 +113,7 @@ export class TooljetDbOperationsService implements QueryService {
         !isEmpty(offset) && query.push(`offset=${offset}`);
       }
 
-      const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
+      const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
       const url =
         query.length > 0
           ? `/api/tooljet-db/proxy/${tableId}` + `?${query.join('&')}`
@@ -118,19 +125,19 @@ export class TooljetDbOperationsService implements QueryService {
     }
   }
 
-  async createRow(queryOptions): Promise<QueryResult> {
+  async createRow(queryOptions, context): Promise<QueryResult> {
     const columns = Object.values(queryOptions.create_row).reduce((acc, colOpts: { column: string; value: any }) => {
       if (isEmpty(colOpts.column)) return acc;
       return Object.assign(acc, { [colOpts.column]: colOpts.value });
     }, {});
-
-    const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
+    const { organization_id: organizationId } = context.app;
+    const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
 
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${queryOptions.table_id}`);
     return await this.proxyPostgrest(url, 'POST', headers, columns);
   }
 
-  async updateRows(queryOptions): Promise<QueryResult> {
+  async updateRows(queryOptions, context): Promise<QueryResult> {
     if (hasNullValueInFilters(queryOptions, 'update_rows')) {
       return {
         status: 'failed',
@@ -140,6 +147,7 @@ export class TooljetDbOperationsService implements QueryService {
     }
     const { table_id: tableId, update_rows: updateRows } = queryOptions;
     const { where_filters: whereFilters, columns } = updateRows;
+    const { organization_id: organizationId } = context.app;
 
     const query = [];
     const whereQuery = buildPostgrestQuery(whereFilters);
@@ -150,12 +158,12 @@ export class TooljetDbOperationsService implements QueryService {
 
     !isEmpty(whereQuery) && query.push(whereQuery);
 
-    const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
+    const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
     return await this.proxyPostgrest(url, 'PATCH', headers, body);
   }
 
-  async deleteRows(queryOptions): Promise<QueryResult> {
+  async deleteRows(queryOptions, context): Promise<QueryResult> {
     if (hasNullValueInFilters(queryOptions, 'delete_rows')) {
       return {
         status: 'failed',
@@ -165,6 +173,7 @@ export class TooljetDbOperationsService implements QueryService {
     }
     const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = queryOptions;
     const { where_filters: whereFilters, limit = 1 } = deleteRows;
+    const { organization_id: organizationId } = context.app;
 
     const query = [];
     const whereQuery = buildPostgrestQuery(whereFilters);
@@ -187,13 +196,13 @@ export class TooljetDbOperationsService implements QueryService {
     !isEmpty(whereQuery) && query.push(whereQuery);
     limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
-    const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': queryOptions.organization_id };
+    const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
     return await this.proxyPostgrest(url, 'DELETE', headers);
   }
 
-  async joinTables(queryOptions): Promise<QueryResult> {
-    const organizationId = queryOptions.organization_id;
+  async joinTables(queryOptions, context): Promise<QueryResult> {
+    const { organization_id: organizationId } = context.app;
     const { join_table = {} } = queryOptions;
 
     // Empty Input is restricted

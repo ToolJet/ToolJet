@@ -106,6 +106,7 @@ const ColumnsForm = ({
           setColumnSelection={setColumnSelection}
           handleDelete={handleDelete}
           isEditMode={isEditMode}
+          setForeignKeyDetails={setForeignKeyDetails}
           isActiveForeignKey={
             !isEmpty(foreignKeyDetails?.column_names) &&
             !isEmpty(foreignKeyDetails?.referenced_column_names) &&

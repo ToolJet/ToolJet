@@ -20,6 +20,7 @@ import './styles.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import defaultStyles from '@/_ui/Select/styles';
 
 const ColumnForm = ({
   onCreate,
@@ -302,7 +303,7 @@ const ColumnForm = ({
                 setTimezone(option.value);
               }}
               components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
-              styles={customStyles}
+              styles={defaultStyles(darkMode, '100%')}
             />
           </div>
         )}
@@ -323,6 +324,7 @@ const ColumnForm = ({
                   setTimestamp={setDefaultValue}
                   timezone={timezone}
                   isClearable={true}
+                  isPlaceholderEnabled={true}
                 />
               ) : !foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input
@@ -352,11 +354,11 @@ const ColumnForm = ({
                     </div>
                   }
                   loader={
-                    <div className="mx-2">
+                    <>
                       <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
                       <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
                       <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-                    </div>
+                    </>
                   }
                   isLoading={true}
                   value={foreignKeyDefaultValue}
