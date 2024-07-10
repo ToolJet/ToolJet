@@ -312,6 +312,24 @@ export class OrganizationPaymentService {
   }
 
   async paymentFailedHandler(invoiceObject) {
+    const subscription = await dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(OrganizationSubscription, 'organization_subscription')
+        .leftJoinAndSelect('organization_subscription.user', 'user')
+        .where('organization_subscription.subscription_id = :subscriptionId', {
+          subscriptionId: invoiceObject.subscription,
+        })
+        .getOne();
+    });
+
+    if (!subscription || !subscription.user) {
+      // Should be self host payment
+      this.emailService
+        .sendPaymentFailedInfoToToolJet(invoiceObject)
+        .catch((err) => console.error('Error while sending Payment failed mail to tooljet', err));
+      return;
+    }
+
     const status = 'failed';
     const dueDate = new Date(invoiceObject.period_end * 1000);
     await this.updateInvoice(
@@ -322,14 +340,7 @@ export class OrganizationPaymentService {
         status: status,
       }
     );
-    const manager = getManager();
-    const subscription = await manager
-      .createQueryBuilder(OrganizationSubscription, 'organization_subscription')
-      .leftJoinAndSelect('organization_subscription.user', 'user')
-      .where('organization_subscription.subscription_id = :subscriptionId', {
-        subscriptionId: invoiceObject.subscription,
-      })
-      .getOne();
+
     const { user } = subscription;
     const { email, firstName } = user;
     const licenseStatus = await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS, subscription.organizationId);
@@ -349,6 +360,11 @@ export class OrganizationPaymentService {
   async upcomingInvoiceHandler(invoiceObject) {
     const { subscription: subscriptionId, status, period_end, hosted_invoice_url, id: invoiceId } = invoiceObject;
     const organizationLicensePayments = await this.getOrganizationLicensePayments(undefined, subscriptionId);
+
+    if (!organizationLicensePayments || !organizationLicensePayments.customerId) {
+      // Self hosted
+      return;
+    }
     const { customerId, userId, id } = organizationLicensePayments;
     const dueDate = new Date(period_end * 1000);
 

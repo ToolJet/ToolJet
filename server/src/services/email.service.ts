@@ -325,6 +325,17 @@ export class EmailService {
     });
   }
 
+  sendPaymentFailedInfoToToolJet(paymentObj) {
+    return this.sendEmail(this.FROM_EMAIL, 'Subscription payment failed', {
+      bodyContent: `<div><div>${JSON.stringify(paymentObj)}</div><a href='https://dashboard.stripe.com/subscriptions/${
+        paymentObj?.subscription
+      }'>Subscription Link</a></div>`,
+      footerText: '',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
   async retrieveWhiteLabelSettings(organizationId?: string) {
     if (!organizationId) {
       return {};

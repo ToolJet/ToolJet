@@ -180,8 +180,11 @@ export default class RestapiQueryService implements QueryService {
       // so that AWS SSRF attacks don't happen
       const response = await this.makeRequest(url, requestOptions);
       result = this.getResponse(response);
+      const requestUrl = sourceOptions.password
+        ? response.request.requestUrl?.replace(/:\/\/(.*?):(.*?)@/, '://$1:<password>@')
+        : response.request.requestUrl;
       requestObject = {
-        requestUrl: response.request.requestUrl,
+        requestUrl,
         method: response.request.options.method,
         headers: response.request.options.headers,
         params: urrl.parse(response.request.requestUrl, true).query,
