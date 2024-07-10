@@ -82,6 +82,10 @@ const debouncedChange = _.debounce(() => {
   useCurrentStateStore.getState().actions.setCurrentState({
     components: newComponentsState,
   });
+  const isPageSwitched = useResolveStore.getState().isPageSwitched;
+  useResolveStore.getState().actions.updateAppSuggestions({
+    components: !isPageSwitched ? getCurrentState().components : {},
+  });
 }, 100);
 
 export function onComponentOptionsChanged(component, options, id) {
@@ -98,24 +102,7 @@ export function onComponentOptionsChanged(component, options, id) {
 
   if (isEditorReady) {
     if (duplicateCurrentState !== null) {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...duplicateCurrentState },
-      });
       duplicateCurrentState = null;
-
-      const state = getCurrentState();
-
-      const isPageSwitched = useResolveStore.getState().isPageSwitched;
-
-      handleLowPriorityWork(
-        () => {
-          useResolveStore.getState().actions.updateAppSuggestions({
-            components: !isPageSwitched ? state.components : {},
-          });
-        },
-        null,
-        isPageSwitched
-      );
     }
 
     const components = getCurrentState().components;
@@ -216,24 +203,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
 
   if (isEditorReady) {
     if (duplicateCurrentState !== null) {
-      useCurrentStateStore.getState().actions.setCurrentState({
-        components: { ...duplicateCurrentState },
-      });
       duplicateCurrentState = null;
-
-      const state = getCurrentState();
-
-      const isPageSwitched = useResolveStore.getState().isPageSwitched;
-
-      handleLowPriorityWork(
-        () => {
-          useResolveStore.getState().actions.updateAppSuggestions({
-            components: !isPageSwitched ? state.components : {},
-          });
-        },
-        null,
-        isPageSwitched
-      );
     }
     // Always update the current state if editor is ready
     useCurrentStateStore.getState().actions.setCurrentState({
