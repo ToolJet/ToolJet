@@ -204,7 +204,7 @@ export class GranularPermissionsService {
             message: {
               error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
               data: groupEndUsers?.map((user) => user.email),
-              title: 'Cannot add this permissions to the group',
+              title: 'Cannot add this permission to the group',
               type: 'USER_ROLE_CHANGE',
             },
           });

@@ -3,7 +3,7 @@ import GroupChipTD from '@/ManageGroupPermissionsV2/ResourceChip';
 import '../ManageGroupPermissionsV2/groupPermissions.theme.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 function AppResourcePermissions({
   updateOnlyGranularPermissions,
   permissions,
@@ -32,27 +32,38 @@ function AppResourcePermissions({
         !isRoleGroup && openEditPermissionModal(permissions);
       }}
     >
-      <div className="resource-name">
+      <div className="resource-name d-flex">
         <SolidIcon name="app" width="20px" className="resource-icon" />
         <div className="resource-text">{permissions.name}</div>
       </div>
       <div className="text-muted">
         <div className="d-flex apps-permission-wrap flex-column">
           <label className="form-check form-check-inline">
-            <input
-              className="form-check-input"
-              type="radio"
-              onClick={() => {
-                updateOnlyGranularPermissions(permissions, {
-                  canEdit: !appsPermissions.canEdit,
-                  canView: appsPermissions.canEdit,
-                  ...(!appsPermissions.canEdit && { hideFromDashboard: false }),
-                });
-              }}
-              checked={appsPermissions.canEdit}
-              disabled={isRoleGroup || disableEditUpdate}
-              data-cy="app-create-checkbox"
-            />
+            <OverlayTrigger
+              overlay={
+                disableEditUpdate ? (
+                  <Tooltip id="tooltip-disable-edit-update">End-user cannot have edit permission</Tooltip>
+                ) : (
+                  <span></span>
+                )
+              }
+              placement="top"
+            >
+              <input
+                className="form-check-input"
+                type="radio"
+                onClick={() => {
+                  updateOnlyGranularPermissions(permissions, {
+                    canEdit: !appsPermissions.canEdit,
+                    canView: appsPermissions.canEdit,
+                    ...(!appsPermissions.canEdit && { hideFromDashboard: false }),
+                  });
+                }}
+                checked={appsPermissions.canEdit}
+                disabled={isRoleGroup || disableEditUpdate}
+                data-cy="app-create-checkbox"
+              />
+            </OverlayTrigger>
             <span className="form-check-label" data-cy="app-create-label">
               {'Edit'}
             </span>
@@ -102,17 +113,15 @@ function AppResourcePermissions({
         <GroupChipTD groups={apps} />
       </div>
       <div className="edit-icon-container">
-        {onHover && (
-          <ButtonSolid
-            leftIcon="editrectangle"
-            className="edit-permission-custom"
-            iconWidth="14"
-            onClick={() => {
-              openEditPermissionModal(permissions);
-            }}
-            disabled={isRoleGroup}
-          />
-        )}
+        <ButtonSolid
+          leftIcon="editrectangle"
+          className="edit-permission-custom"
+          iconWidth="14"
+          onClick={() => {
+            openEditPermissionModal(permissions);
+          }}
+          disabled={isRoleGroup}
+        />
       </div>
     </div>
   );

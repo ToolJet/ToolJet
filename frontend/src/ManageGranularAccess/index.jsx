@@ -101,7 +101,7 @@ class ManageGranularAccessComponent extends React.Component {
     groupPermissionV2Service
       .deleteGranularPermission(currentEditingPermissions.id)
       .then(() => {
-        toast.success('Deleted permissions successfully');
+        toast.success('Deleted permission successfully');
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
       })
@@ -392,7 +392,7 @@ class ManageGranularAccessComponent extends React.Component {
       <div className="row granular-access-container justify-content-center">
         <ConfirmDialog
           show={deleteConfirmationModal}
-          message={'This permissions will be permanently deleted. Do you want to continue?'}
+          message={'This permission will be permanently deleted. Do you want to continue?'}
           confirmButtonLoading={deletingPermissions}
           onConfirm={() => this.deleteGranularPermissions()}
           onCancel={() => {
@@ -643,10 +643,10 @@ class ManageGranularAccessComponent extends React.Component {
                 {'Name'}
               </p>
               <p data-cy="permissions-header" className="tj-text-xsm">
-                {this.props.t('header.organization.menus.manageGroups.permissionResources.permissions', 'Permissions')}
+                {'Permission'}
               </p>
               <p data-cy="permissions-header" className="tj-text-xsm">
-                {'Resources'}
+                {'Resource'}
               </p>
             </div>
             <div className={showPermissionInfo ? 'permission-body-one' : 'permission-body-two'}>

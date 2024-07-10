@@ -258,7 +258,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           data-cy="helper-text-admin-app-access"
         >
           <SolidIcon name="information" fill="#3E63DD" /> {text}
-          <a style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}>
+          <a
+            style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            target="_blank"
+            rel="noreferrer"
+          >
             read documentation
           </a>{' '}
           to know more
@@ -327,7 +332,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   generateSelection = (selected) => {
     return selected?.map((d) => {
       return (
-        <div className="selected-item tj-ms" key={d.value}>
+        <div className="selected-item tj-ms tj-ms-usergroup" key={d.value}>
           <FilterPreview text={`${d?.email}`} onClose={() => this.removeSelection(selected, d.value)} />
         </div>
       );
@@ -338,6 +343,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.setState({ isChangeRoleModalOpen: true, updatingUserRole: updatingUser });
 
   showChangeRoleModalMessage = () => {
+    console.log('called');
     this.setState({ showRoleEditMessage: true });
   };
 
@@ -659,7 +665,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         {selectedUsers.length > 0 && (
                           <div className="row mt-2">
                             <div className="selected-section">
-                              <div className="selected-text">Selected Users:</div>
+                              <div className="selected-text">Selected Users 123:</div>
                               {this.generateSelection(selectedUsers)}
                             </div>
                           </div>

@@ -102,11 +102,22 @@ class ManageOrgUsersComponent extends React.Component {
 
   changeNewUserOption = (name, e) => {
     let fields = this.state.fields;
+    let errors = {};
     fields[name] = e.target.value;
 
     this.setState({
       fields,
     });
+
+    if (name === 'email') {
+      if (!this.validateEmail(fields['email'])) {
+        errors['email'] = 'Email is not valid';
+        this.setState({ errors });
+      } else {
+        errors['email'] = '';
+        this.setState({ errors });
+      }
+    }
   };
 
   archiveOrgUser = (id) => {
