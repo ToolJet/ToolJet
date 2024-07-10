@@ -30,6 +30,7 @@ export const shouldUpdate = (prevProps, nextProps) => {
   return (
     deepEqualityCheckusingLoDash(prevProps?.id, nextProps?.id) &&
     deepEqualityCheckusingLoDash(prevProps?.component?.definition, nextProps?.component?.definition) &&
+    deepEqualityCheckusingLoDash(prevProps?.customResolvables, nextProps?.customResolvables) &&
     prevProps?.width === nextProps?.width &&
     prevProps?.height === nextProps?.height &&
     prevProps?.darkMode === nextProps?.darkMode &&

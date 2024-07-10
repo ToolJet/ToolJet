@@ -24,6 +24,7 @@ export const appService = {
   createAppUser,
   setPasswordFromToken,
   acceptInvite,
+  getInviteeDetails,
 };
 
 function getConfig() {
@@ -201,4 +202,9 @@ function acceptInvite({ token, password }) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/accept-invite`, requestOptions).then(handleResponseWithoutValidation);
+}
+
+function getInviteeDetails(token) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/invitee-details?token=${token}`, requestOptions).then(handleResponse);
 }

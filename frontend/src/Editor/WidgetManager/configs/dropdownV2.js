@@ -13,7 +13,11 @@ export const dropdownV2Config = {
   },
   validation: {
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
-    customRule: { type: 'code', displayName: 'Custom validation' },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+    },
   },
   properties: {
     label: {
@@ -138,6 +142,7 @@ export const dropdownV2Config = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
+      isFxNotRequired: true,
     },
     labelWidth: {
       type: 'slider',
@@ -281,11 +286,11 @@ export const dropdownV2Config = {
       advanced: { value: `{{false}}` },
       schema: {
         value:
-          "{{[\t{label: 'Option 1',value: '1',disable: false,visible: true,default: true},{label: 'Option 2',value: '2',disable: false,visible: true},{label: 'Option 3',value: '3',disable: false,visible: true}\t]}}",
+          "{{[\t{label: 'option1',value: '1',disable: {value: false },visible: {value:true  },default: {value: false} },{label: 'option2',value: '2',disable: {value: false },visible:{value: true},default: {value: true}  },{label: 'option3',value: '3',disable: {value: false },visible: {value:true  },default: {value: false}  }\t]}}",
       },
       options: {
         value:
-          "{{[\t{label: 'Option 1',value: '1',disable: false,visible: true,default: true},{label: 'Option 2',value: '2',disable: false,visible: true},{label: 'Option 3',value: '3',disable: false,visible: true}\t]}}",
+          "{{[\t{label: 'option1',value: '1',disable: {value: false },visible: {value:true  },default: {value: false} },{label: 'option2',value: '2',disable: {value: false },visible:{value: true},default: {value: true}  },{label: 'option3',value: '3',disable: {value: false },visible: {value:true  },default: {value: false}  }\t]}}",
       },
       label: { value: 'Select' },
       value: { value: '{{"2"}}' },

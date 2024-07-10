@@ -1,5 +1,6 @@
 // import '@/Editor/wdyr';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
@@ -10,6 +11,7 @@ import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
 import { individualGroupableProps } from './gridUtils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, bottom: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -246,6 +248,30 @@ export default function DragContainer({
     lastDraggedEventsRef.current = posWithParent;
   };
 
+  const widgetsWithDefinitions = Object.entries(boxes).map(([id, box]) => {
+    const propertiesDefinition = box?.component?.definition?.properties || {};
+    const stylesDefinition = box?.component?.definition?.styles || {};
+    return {
+      id,
+      propertiesDefinition,
+      stylesDefinition,
+      ...box,
+    };
+  });
+
+  const isComponentVisible = (id) => {
+    for (const key in widgetsWithDefinitions) {
+      if (widgetsWithDefinitions[key].id === id) {
+        const visibility =
+          widgetsWithDefinitions[key].propertiesDefinition?.visibility?.value ??
+          widgetsWithDefinitions[key].stylesDefinition?.visibility?.value ??
+          null;
+        return resolveWidgetFieldValue(visibility);
+      }
+    }
+    return true;
+  };
+
   return mode === 'edit' ? (
     <>
       <Moveable
@@ -375,6 +401,9 @@ export default function DragContainer({
           useGridStore.getState().actions.setDragTarget();
         }}
         onResizeStart={(e) => {
+          if (!isComponentVisible(e.target.id)) {
+            return false;
+          }
           performance.mark('onResizeStart');
           useGridStore.getState().actions.setResizingComponentId(e.target.id);
           e.setMin([gridWidth, 10]);
@@ -500,7 +529,7 @@ export default function DragContainer({
               isDraggingRef.current = false;
             }
 
-            if (draggedSubContainer) {
+            if (draggedSubContainer || !e.lastEvent) {
               return;
             }
 

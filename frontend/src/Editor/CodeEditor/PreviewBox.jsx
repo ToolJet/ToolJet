@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { computeCoercion, getCurrentNodeType, resolveReferences } from './utils';
+import { computeCoercion, getCurrentNodeType, hasDeepChildren, resolveReferences } from './utils';
 import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
@@ -17,6 +17,7 @@ export const PreviewBox = ({
   setErrorStateActive,
   setErrorMessage,
   customVariables,
+  isWorkspaceVariable,
 }) => {
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
@@ -68,7 +69,8 @@ export const PreviewBox = ({
 
   useEffect(() => {
     const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
-    if (!validationSchema || isEmpty(validationSchema)) {
+
+    if (isWorkspaceVariable || !validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
     }
 
@@ -115,6 +117,7 @@ export const PreviewBox = ({
         resolvedValue={content}
         coersionData={coersionData}
         withValidation={!isEmpty(validationSchema)}
+        isWorkspaceVariable={isWorkspaceVariable}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -125,7 +128,14 @@ export const PreviewBox = ({
   );
 };
 
-const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, withValidation }) => {
+const RenderResolvedValue = ({
+  error,
+  previewType,
+  resolvedValue,
+  coersionData,
+  withValidation,
+  isWorkspaceVariable,
+}) => {
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
 
@@ -140,12 +150,13 @@ const RenderResolvedValue = ({ error, previewType, resolvedValue, coersionData, 
     return resolvedValue + coersionData?.coercionPreview;
   };
 
-  const previewValueType =
-    withValidation || (coersionData && coersionData?.typeBeforeCoercion)
-      ? `${coersionData?.typeBeforeCoercion} ${
-          coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
-        }`
-      : previewType;
+  const previewValueType = isWorkspaceVariable
+    ? previewType
+    : withValidation || (coersionData && coersionData?.typeBeforeCoercion)
+    ? `${coersionData?.typeBeforeCoercion} ${
+        coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
+      }`
+    : previewType;
 
   const previewContent = !withValidation ? resolvedValue : computeCoersionPreview(resolvedValue, coersionData);
 
@@ -341,6 +352,8 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
   if (showJSONTree) {
     const darkMode = localStorage.getItem('darkMode') === 'true';
 
+    const hasDeepChild = hasDeepChildren(prettyPrintedJson);
+
     return (
       <div className="preview-json">
         <JsonViewer
@@ -351,7 +364,8 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           enableClipboard={false}
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}
-          groupArraysAfterLength={500}
+          groupArraysAfterLength={hasDeepChild ? 10 : 100}
+          maxDisplayLength={hasDeepChild ? 10 : 50}
         />
       </div>
     );

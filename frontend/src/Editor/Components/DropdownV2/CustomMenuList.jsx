@@ -21,6 +21,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     setIsSelectAllSelected,
     fireEvent,
     inputValue,
+    menuId,
   } = selectProps;
 
   const handleSelectAll = (e) => {
@@ -34,6 +35,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
   };
   return (
     <div
+      id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}
       className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
     >
@@ -66,10 +68,10 @@ const CustomMenuList = ({ selectProps, ...props }) => {
         />
       </div>
       {showAllOption && !optionsLoadingState && (
-        <div className="multiselect-custom-menulist-select-all">
-          <FormCheck checked={isSelectAllSelected} onChange={handleSelectAll} />
+        <label htmlFor="select-all-checkbox" className="multiselect-custom-menulist-select-all">
+          <FormCheck id="select-all-checkbox" checked={isSelectAllSelected} onChange={handleSelectAll} />
           <span style={{ marginLeft: '4px' }}>Select all</span>
-        </div>
+        </label>
       )}
       <MenuList {...props} selectProps={selectProps}>
         {optionsLoadingState ? (

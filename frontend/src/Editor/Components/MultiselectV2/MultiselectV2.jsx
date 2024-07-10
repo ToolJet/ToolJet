@@ -64,7 +64,7 @@ export const MultiselectV2 = ({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
-  const validationData = validate(selected.length ? selected.map((option) => option.value) : null);
+  const validationData = validate(selected?.length ? selected?.map((option) => option.value) : null);
   const { isValid, validationError } = validationData;
   const valueContainerRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -85,24 +85,32 @@ export const MultiselectV2 = ({
 
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
-    let _selectOptions = _options
-      .filter((data) => data.visible)
-      .map((value) => ({
-        ...value,
-        isDisabled: value.disable,
-      }));
+    let _selectOptions = Array.isArray(_options)
+      ? _options
+        .filter((data) => data?.visible?.value)
+        .map((value) => ({
+          ...value,
+          isDisabled: value?.disable?.value,
+        }))
+      : [];
     return _selectOptions;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
-      const foundItem = schema?.filter((item) => item?.visible && item?.default);
+      const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
       return foundItem;
     }
     if (isDefault) {
-      return selectOptions?.filter((item) => value?.find((val) => val === item.value));
-    } else return selectOptions?.filter((item) => selected?.find((val) => val.value === item.value));
+      return Array.isArray(selectOptions)
+        ? selectOptions.filter((item) => value?.find((val) => val === item.value))
+        : [];
+    } else {
+      return Array.isArray(selectOptions)
+        ? selectOptions.filter((item) => selected?.find((val) => val.value === item.value))
+        : [];
+    }
   }
 
   function hasVisibleFalse(value) {
@@ -134,11 +142,11 @@ export const MultiselectV2 = ({
   useEffect(() => {
     setExposedVariable(
       'selectedOptions',
-      selected.map(({ label, value }) => ({ label, value }))
+      Array.isArray(selected) && selected?.map(({ label, value }) => ({ label, value }))
     );
     setExposedVariable(
       'options',
-      selectOptions?.map(({ label, value }) => ({ label, value }))
+      Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value }))
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selected), selectOptions]);
@@ -216,12 +224,18 @@ export const MultiselectV2 = ({
     }
   };
   const handleClickOutside = (event) => {
-    if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
+    let menu = document.getElementById(`dropdown-multiselect-widget-custom-menu-list-${id}`);
+    if (
+      multiselectRef.current &&
+      !multiselectRef.current.contains(event.target) &&
+      menu &&
+      !menu.contains(event.target)
+    ) {
       if (isMultiselectOpen) {
         fireEvent('onBlur');
+        setIsMultiselectOpen(false);
+        setSearchInputValue('');
       }
-      setIsMultiselectOpen(false);
-      setSearchInputValue('');
     }
   };
 
@@ -234,7 +248,7 @@ export const MultiselectV2 = ({
 
   // Handle Select all logic
   useEffect(() => {
-    if (selectOptions.length === selected.length) {
+    if (selectOptions?.length === selected?.length) {
       setIsSelectAllSelected(true);
     } else {
       setIsSelectAllSelected(false);
@@ -286,8 +300,8 @@ export const MultiselectV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isMultiSelectLoading || isMultiSelectDisabled
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
     }),
 
     input: (provided, _state) => ({
@@ -322,10 +336,10 @@ export const MultiselectV2 = ({
       color: _state.isDisabled
         ? 'var(_--text-disbled)'
         : selectedTextColor !== '#1B1F24'
-        ? selectedTextColor
-        : isMultiSelectDisabled || isMultiSelectLoading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+          ? selectedTextColor
+          : isMultiSelectDisabled || isMultiSelectLoading
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
       padding: '8px 6px 8px 12px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -352,10 +366,11 @@ export const MultiselectV2 = ({
   return (
     <>
       <div
+        ref={multiselectRef}
         data-cy={`label-${String(component.name).toLowerCase()} `}
         className={cx('multiselect-widget', 'd-flex', {
           [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -392,8 +407,9 @@ export const MultiselectV2 = ({
           isMandatory={isMandatory}
           _width={_width}
         />
-        <div className="w-100 px-0 h-100" ref={multiselectRef}>
+        <div className="w-100 px-0 h-100">
           <Select
+            menuId={id}
             isDisabled={isMultiSelectDisabled}
             value={selected}
             onChange={onChangeHandler}
@@ -433,6 +449,8 @@ export const MultiselectV2 = ({
             optionsLoadingState={optionsLoadingState}
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
+            menuPlacement="auto"
+            menuPortalTarget={document.body}
           />
         </div>
       </div>

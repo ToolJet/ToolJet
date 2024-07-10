@@ -116,10 +116,10 @@ export const DropdownV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => data.visible)
+        .filter((data) => data?.visible?.value)
         .map((value) => ({
           ...value,
-          isDisabled: value.disable,
+          isDisabled: value?.disable?.value,
         }));
       return _selectOptions;
     } else {
@@ -277,8 +277,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -319,8 +319,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
       padding: '8px 6px 8px 38px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -354,8 +354,8 @@ export const DropdownV2 = ({
         data-cy={`label-${String(component.name).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) ||
-            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) ||
+              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -434,6 +434,7 @@ export const DropdownV2 = ({
             isSearchable={false}
             darkMode={darkMode}
             optionsLoadingState={properties.optionsLoadingState}
+            menuPlacement="auto"
           />
         </div>
       </div>
