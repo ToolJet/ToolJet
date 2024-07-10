@@ -288,8 +288,15 @@ class ManageGranularAccessComponent extends React.Component {
           data-cy="helper-text-admin-app-access"
         >
           <SolidIcon name="information" fill="#3E63DD" /> {text}
-          <a style={{ margin: '0', padding: '0', textDecoration: 'none', color: '#3E63DD' }}>Read Documentation</a> to
-          know more
+          <a
+            style={{ margin: '0', padding: '0', textDecoration: 'none', color: '#3E63DD' }}
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Read Documentation
+          </a>{' '}
+          to know more !
         </p>
       </div>
     );

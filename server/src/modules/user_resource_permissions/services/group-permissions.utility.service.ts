@@ -117,7 +117,7 @@ export class GroupPermissionsUtilityService {
                 message: {
                   error:
                     'End-users can only be granted permission to view apps. Kindly change the user role or custom group to continue.',
-                  title: 'Conflicting Permissions',
+                  title: 'Conflicting permissions',
                 },
               });
             }
