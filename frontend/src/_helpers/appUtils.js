@@ -82,14 +82,18 @@ const debouncedChange = _.debounce(() => {
   useCurrentStateStore.getState().actions.setCurrentState({
     components: newComponentsState,
   });
+  const isPageSwitched = useResolveStore.getState().isPageSwitched;
+  useResolveStore.getState().actions.updateAppSuggestions({
+    components: !isPageSwitched ? getCurrentState().components : {},
+  });
 }, 100);
 
 export function onComponentOptionsChanged(component, options, id) {
   let componentName = component.name;
-  const { isEditorReady, page } = getCurrentState();
+  const { isEditorReady, page } = useCurrentStateStore.getState();
 
   if (id) {
-    const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
+    const _component = useEditorStore.getState()?.appDefinition?.pages[page.id]?.components[id];
     const _componentName = _component?.component?.name || componentName;
     if (_componentName !== componentName) {
       componentName = _componentName;
@@ -130,6 +134,14 @@ export function onComponentOptionsChanged(component, options, id) {
 
         if (shouldUpdateRef) {
           shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
+          if (component.component === 'Table' && option[0] === 'selectedRow') {
+            const basePath = `components.${componentName}.${option[0]}`;
+            useResolveStore.getState().actions.removeAppSuggestions([basePath]);
+
+            useResolveStore.getState().actions.addAppSuggestions({
+              [basePath]: option[1],
+            });
+          }
         }
       }
 
@@ -168,7 +180,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
 
   if (id) {
     //? component passed as argument contains previous state of the component data, component name is not updated
-    const _component = useEditorStore.getState().appDefinition.pages[getCurrentState().page.id].components[id];
+    const _component = useEditorStore.getState()?.appDefinition?.pages[getCurrentState().page.id]?.components[id];
     const _componentName = _component?.component?.name || componentName;
     if (_componentName !== componentName) {
       componentName = _componentName;
@@ -617,9 +629,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
-        const customAppVariables = { ...getCurrentState().variables };
+        const state = useCurrentStateStore.getState();
+        const key = resolveReferences(event.key, state, undefined, customVariables);
+        const value = resolveReferences(event.value, state, undefined, customVariables);
+        const customAppVariables = { ...state.variables };
         customAppVariables[key] = value;
         useResolveStore.getState().actions.addAppSuggestions({
           variables: customAppVariables,
@@ -1287,6 +1300,13 @@ export function runQuery(
               const err = query.kind == 'tooljetdb' ? data?.error || data : data;
               toast.error(err?.message ? err?.message : 'Something went wrong');
             }
+            useResolveStore.getState().actions.addAppSuggestions({
+              queries: {
+                [queryName]: {
+                  isLoading: false,
+                },
+              },
+            });
             return;
           } else {
             let rawData = data.data;

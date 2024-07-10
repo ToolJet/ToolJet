@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { getCurrentState } from '@/_stores/currentStateStore';
+import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
@@ -153,7 +153,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
 
 export function resolveReferences(
   object,
-  state,
+  _state,
   defaultValue,
   customObjects = {},
   withError = false,
@@ -164,6 +164,9 @@ export function resolveReferences(
   object = _.clone(object);
   const objectType = typeof object;
   let error;
+
+  const state = useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
+
   switch (objectType) {
     case 'string': {
       if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
@@ -641,16 +644,6 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
     console.log('JS execution failed: ', err);
     error = err.stack.split('\n')[0];
     result = { status: 'failed', data: { message: error, description: error } };
-  }
-
-  if (hasCircularDependency(result)) {
-    return {
-      status: 'failed',
-      data: {
-        message: 'Circular dependency detected',
-        description: 'Cannot resolve circular dependency',
-      },
-    };
   }
 
   return result;

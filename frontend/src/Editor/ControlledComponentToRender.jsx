@@ -20,7 +20,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
 
     const parentReRendered = listToRender.find((item) => item === prevProps?.parentId);
 
-    if (componentToRender || parentReRendered) {
+    const grandParentReRendered = listToRender.find((item) => item === prevProps?.grandParentId);
+
+    if (componentToRender || parentReRendered || grandParentReRendered) {
       needToRender = true;
     }
   }

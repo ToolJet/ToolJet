@@ -151,6 +151,7 @@ function findReferenceInComponent(node, changedCurrentState) {
           ((value.includes('{{') && value.includes('}}')) || value.includes('%%client'))
         ) {
           // Check if the referenced entity is in the state
+
           if (changedCurrentState.some((state) => value.includes(state))) {
             return true;
           }
