@@ -134,8 +134,9 @@ export function onComponentOptionsChanged(component, options, id) {
 
         if (shouldUpdateRef) {
           shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
-          if (component.component === 'Table') {
+          if (component.component === 'Table' && option[0] === 'selectedRow') {
             const basePath = `components.${componentName}.${option[0]}`;
+            useResolveStore.getState().actions.removeAppSuggestions([basePath]);
 
             useResolveStore.getState().actions.addAppSuggestions({
               [basePath]: option[1],
