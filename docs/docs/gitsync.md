@@ -350,19 +350,44 @@ There are two types of generated SSH keys: **
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Step 4: Deploy the SSH key to GitLab repository
+### Step 4: Deploy the SSH key to GitLab
 
-From the top-left corner, click on the user avatar and select the **Edit Profile** option. Navigate to the **SSH Keys** tab and click on the **Add new key** button.
+Now, let's add the SSH key to GitLab. You have two options, depending on your needs:
+
+Option 1: Add as a user-wide SSH key (for access to all your repositories)
+
+- Click on your avatar in the top-left corner and select **Edit Profile**.
+- Navigate to the **SSH Keys** tab and click the **Add new key** button.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/gitlab/addingssh.png" alt="GitLab SSH Key" />
 </div>
 <br/>
 
-Paste the SSH key that you copied in Step 3 in the **Key** field, enter a title for the SSH key in the **Title** field, set **Usage type** to **Authenticatioin & signing**, and set the ***Expiration date(optional)**. Finally, click on the **Add key** button.
+- In the **Key** field, paste the SSH key you generated in ToolJet's Configure Git tab during the previous step..
+- Give your key a descriptive title.
+- Set **Usage type** to **Authentication & signing**.
+- Optionally, set an expiration date.
+- Click **Add key** to save.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/gitlab/activessh.png" alt="GitLab SSH Key" />
+</div>
+<br/>
+
+Option 2: Add as a deploy key (for access to a specific repository only)
+
+- Navigate to the repository you want to add the key to.
+- Click on the **Settings** tab and select **Repository**.
+- Once you are in the **Repository Settings**, expand the **Deploy Keys** section.
+- Click on the **Add new deploy key** button.
+- Give your key a descriptive title.
+- In the **Key** field, paste the SSH key you generated in ToolJet's Configure Git tab during the previous step.
+- Enable the **Grant write permissions to this key** checkbox. We need this permission to push changes to the repository.
+- Click **Add key** to save.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/gitlab/deploy-keys.png" alt="GitLab Deploy Key" />
 </div>
 <br/>
 
