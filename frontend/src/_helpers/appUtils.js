@@ -81,7 +81,7 @@ const debouncedChange = _.debounce(() => {
     components: newComponentsState,
   });
   const isPageSwitched = useResolveStore.getState().isPageSwitched;
-  useResolveStore.getState().actions.updateAppSuggestions({
+  useResolveStore.getState().actions.addAppSuggestions({
     components: !isPageSwitched ? getCurrentState().components : {},
   });
 }, 100);
