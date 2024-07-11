@@ -40,7 +40,8 @@ export class GranularPermissionsService {
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { createGranularPermissionDto, organizationId } = createGranularPermissionObject;
-      const { name, type, groupId, isAll } = createGranularPermissionDto;
+      const { name, type, groupId, isAll: isAllDto } = createGranularPermissionDto;
+      const isAll = isAllDto ? true : false;
       const granularPermissions: GranularPermissions = await catchDbException(async () => {
         const granularPermissions = manager.create(GranularPermissions, { name, type, groupId, isAll });
         return await manager.save(granularPermissions);
@@ -77,7 +78,7 @@ export class GranularPermissionsService {
       const { organizationId, updateGranularPermissionDto, group } = updateGranularPermissionsObj;
       const { isAll, name, resourcesToAdd, resourcesToDelete, actions, allowRoleChange } = updateGranularPermissionDto;
       const updateGranularPermission = {
-        isAll: isAll !== null || isAll !== undefined ? isAll : granularPermissions.isAll,
+        isAll: isAll ?? granularPermissions.isAll,
         ...(name && { name }),
       };
       const updateResource: UpdateResourceGroupPermissionsObject = {

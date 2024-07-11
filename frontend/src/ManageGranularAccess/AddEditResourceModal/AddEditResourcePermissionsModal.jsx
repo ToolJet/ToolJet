@@ -104,7 +104,7 @@ function AddEditResourcePermissionsModal({
               type="radio"
               checked={isAll}
               onClick={() => {
-                updateParentState((prevState) => ({ isAll: !prevState.isAll, isCustom: !!prevState.isAll }));
+                !isAll && updateParentState((prevState) => ({ isAll: !prevState.isAll, isCustom: !!prevState.isAll }));
               }}
             />
             <div>
@@ -121,7 +121,8 @@ function AddEditResourcePermissionsModal({
               disabled={addableApps.length === 0 || disableBuilderLevelUpdate}
               checked={isCustom}
               onClick={() => {
-                updateParentState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
+                !isCustom &&
+                  updateParentState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
               }}
             />
             <div>

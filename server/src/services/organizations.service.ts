@@ -63,7 +63,7 @@ interface UserCsvRow {
   first_name: string;
   last_name: string;
   email: string;
-  role: string;
+  user_role: string;
   groups?: any;
 }
 
@@ -711,7 +711,7 @@ export class OrganizationsService {
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.name);
     csv
       .parseString(fileStream.toString(), {
-        headers: ['first_name', 'last_name', 'email', 'groups', 'role'],
+        headers: ['first_name', 'last_name', 'email', 'groups', 'user_role'],
         renameHeaders: true,
         ignoreEmpty: true,
       })
@@ -719,13 +719,12 @@ export class OrganizationsService {
         return next(null, {
           ...row,
           groups: this.createGroupsList(row?.groups),
-          role: this.convertUserRolesCasing(row?.role),
+          user_role: this.convertUserRolesCasing(row?.user_role),
         });
       })
       .validate(async (data: UserCsvRow, next) => {
         await dbTransactionWrap(async (manager: EntityManager) => {
           //Check for existing users
-
           let isInvalidRole = false;
           const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
 
@@ -734,7 +733,14 @@ export class OrganizationsService {
           } else if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
             existingUsers.push(data?.email);
           } else {
-            users.push(data);
+            const user = {
+              first_name: data.first_name,
+              last_name: data.last_name,
+              email: data.email,
+              role: data.user_role,
+              groups: data?.groups,
+            };
+            users.push(user);
           }
 
           //Check for invalid groups
@@ -748,8 +754,8 @@ export class OrganizationsService {
             }
           }
 
-          if (!Object.values(USER_ROLE).includes(data?.role as USER_ROLE)) {
-            invalidRoles.push(data?.role);
+          if (!Object.values(USER_ROLE).includes(data?.user_role as USER_ROLE)) {
+            invalidRoles.push(data?.user_role);
             isInvalidRole = true;
           }
 

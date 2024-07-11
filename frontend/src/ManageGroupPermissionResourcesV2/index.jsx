@@ -555,7 +555,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
               <nav className="nav nav-tabs groups-sub-header-wrap">
                 <a
-                  onClick={() => this.setState({ currentTab: 'users', showUserSearchBox: false })}
+                  onClick={() => {
+                    this.setState({ currentTab: 'granularAccess', showUserSearchBox: false });
+                    this.setSelectedUsers([]);
+                  }}
                   className={cx('nav-item nav-link', { active: currentTab === 'users' })}
                   data-cy="users-link"
                 >
@@ -570,7 +573,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 </a>
 
                 <a
-                  onClick={() => this.setState({ currentTab: 'permissions', showUserSearchBox: false })}
+                  onClick={() => {
+                    this.setState({ currentTab: 'granularAccess', showUserSearchBox: false });
+                    this.setSelectedUsers([]);
+                  }}
                   className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
                   data-cy="permissions-link"
                 >
@@ -587,7 +593,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   )}
                 </a>
                 <a
-                  onClick={() => this.setState({ currentTab: 'granularAccess', showUserSearchBox: false })}
+                  onClick={() => {
+                    this.setState({ currentTab: 'granularAccess', showUserSearchBox: false });
+                    this.setSelectedUsers([]);
+                  }}
                   className={cx('nav-item nav-link', { active: currentTab === 'granularAccess' })}
                   data-cy="granular-access-link"
                 >

@@ -35,7 +35,7 @@ function AppResourcePermissions({
     >
       <div className="resource-name d-flex">
         <SolidIcon name="app" width="20px" className="resource-icon" />
-        <div className="resource-text">{permissions.name}</div>
+        <div className="resource-text">{`  ${permissions.name}`}</div>
       </div>
       <div className="text-muted">
         <div className="d-flex apps-permission-wrap flex-column">
