@@ -230,9 +230,8 @@ class ManageGroupPermissionsComponent extends React.Component {
   changeNewGroupName = (value) => {
     if (value.length > 50) {
       this.setState({
-        groupNameMessage: 'Max length has been reached',
-        isSaveBtnDisabled: true,
         newGroupName: value?.slice(0, 50),
+        isSaveBtnDisabled: false,
       });
       return;
     }
@@ -278,7 +277,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       .catch(({ error }) => {
         toast.error(error, {
           style: {
-            maxWidth: '500px  !important',
+            maxWidth: '500px',
           },
         });
         this.setState({

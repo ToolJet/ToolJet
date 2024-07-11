@@ -256,7 +256,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           >
             read documentation
           </a>{' '}
-          to know more
+          to know more !
         </p>
       </div>
     );
@@ -466,7 +466,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           show={isChangeRoleModalOpen}
           isLoading={isLoadingUsers}
           handleClose={this.closeChangeRoleModal}
-          confirmBtnProps={{ title: 'Continue', disabled: !selectedNewRole }}
+          confirmBtnProps={{ title: 'Continue', disabled: !selectedNewRole, tooltipMessage: false }}
           darkMode={this.props.darkMode}
           className="edit-role-confirm"
         >
@@ -662,7 +662,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         {selectedUsers.length > 0 && (
                           <div className="row mt-2">
                             <div className="selected-section">
-                              <div className="selected-text">Selected Users 123:</div>
+                              <div className="selected-text">Selected Users :</div>
                               {this.generateSelection(selectedUsers)}
                             </div>
                           </div>
@@ -696,7 +696,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             fill="#889096"
                             className="search-user-group-btn"
                           />
-                          <p className="tj-text-xsm" data-cy="name-header">
+                          <p className="tj-text-xsm" data-cy="name-header" style={{ padding: '10px' }}>
                             User name
                           </p>
                           <p className="tj-text-xsm" data-cy="email-header">

@@ -106,7 +106,7 @@ export const ERROR_HANDLER = {
   DEFAULT_GROUP_NAME_UPDATE: 'Not allowed to change default group name',
   DEFAULT_GROUP_NAME_DELETE: 'Not allowed to delete default group',
   NON_EDITABLE_GROUP_UPDATE: 'Group cannot be update because its not allowed',
-  NON_BUILDER_PERMISSION_UPDATE: 'End user cannot have this builder level permissions',
+  NON_BUILDER_PERMISSION_UPDATE: 'End-user cannot have this builder level permissions',
   DEFAULT_GROUP_UPDATE_NOT_ALLOWED: 'Defaults group cant be deleted',
   UPDATE_EDITABLE_PERMISSION_END_USER_GROUP:
     'End-users can only be granted permission to view apps. If you wish to add this permission, kindly change the following users role from end-user to builder- ',
