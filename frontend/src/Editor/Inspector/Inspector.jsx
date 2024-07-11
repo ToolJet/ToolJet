@@ -240,126 +240,6 @@ export const Inspector = ({
     });
   }
 
-  // use following function when more than one property needs to be updated
-
-  function paramsUpdated(array, isParamFromTableColumn = false) {
-    let newComponent = JSON.parse(JSON.stringify(component));
-    let newDefinition = _.cloneDeep(newComponent.component.definition);
-    array.map((item) => {
-      const { param, attr, value, paramType } = item;
-      let allParams = newDefinition[paramType] || {};
-      const paramObject = allParams[param.name];
-      if (!paramObject) {
-        allParams[param.name] = {};
-      }
-      if (attr) {
-        allParams[param.name][attr] = value;
-        const defaultValue = getDefaultValue(value);
-        // This is needed to have enable pagination in Table as backward compatible
-        // Whenever enable pagination is false, we turn client and server side pagination as false
-        if (
-          component.component.component === 'Table' &&
-          param.name === 'enablePagination' &&
-          !resolveReferences(value, currentState)
-        ) {
-          if (allParams?.['clientSidePagination']?.[attr]) {
-            allParams['clientSidePagination'][attr] = value;
-          }
-          if (allParams['serverSidePagination']?.[attr]) {
-            allParams['serverSidePagination'][attr] = value;
-          }
-        }
-        // This case is required to handle for older apps when serverSidePagination is connected to Fx
-        if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
-          allParams = {
-            ...allParams,
-            enablePagination: {
-              value: true,
-            },
-          };
-        }
-        if (param.type === 'select' && defaultValue) {
-          allParams[defaultValue.paramName]['value'] = defaultValue.value;
-        }
-        if (param.name === 'secondarySignDisplay') {
-          if (value === 'negative') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-          } else if (value === 'positive') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-          }
-        }
-      } else {
-        allParams[param.name] = value;
-      }
-      newDefinition[paramType] = allParams;
-      newComponent.component.definition = newDefinition;
-    });
-    componentDefinitionChanged(newComponent, {
-      componentPropertyUpdated: true,
-      isParamFromTableColumn,
-    });
-  }
-
-  // use following function when more than one property needs to be updated
-
-  function paramsUpdated(array, isParamFromTableColumn = false) {
-    let newComponent = JSON.parse(JSON.stringify(component));
-    let newDefinition = _.cloneDeep(newComponent.component.definition);
-    array.map((item) => {
-      const { param, attr, value, paramType } = item;
-      let allParams = newDefinition[paramType] || {};
-      const paramObject = allParams[param.name];
-      if (!paramObject) {
-        allParams[param.name] = {};
-      }
-      if (attr) {
-        allParams[param.name][attr] = value;
-        const defaultValue = getDefaultValue(value);
-        // This is needed to have enable pagination in Table as backward compatible
-        // Whenever enable pagination is false, we turn client and server side pagination as false
-        if (
-          component.component.component === 'Table' &&
-          param.name === 'enablePagination' &&
-          !resolveReferences(value, currentState)
-        ) {
-          if (allParams?.['clientSidePagination']?.[attr]) {
-            allParams['clientSidePagination'][attr] = value;
-          }
-          if (allParams['serverSidePagination']?.[attr]) {
-            allParams['serverSidePagination'][attr] = value;
-          }
-        }
-        // This case is required to handle for older apps when serverSidePagination is connected to Fx
-        if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
-          allParams = {
-            ...allParams,
-            enablePagination: {
-              value: true,
-            },
-          };
-        }
-        if (param.type === 'select' && defaultValue) {
-          allParams[defaultValue.paramName]['value'] = defaultValue.value;
-        }
-        if (param.name === 'secondarySignDisplay') {
-          if (value === 'negative') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-          } else if (value === 'positive') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-          }
-        }
-      } else {
-        allParams[param.name] = value;
-      }
-      newDefinition[paramType] = allParams;
-      newComponent.component.definition = newDefinition;
-    });
-    componentDefinitionChanged(newComponent, {
-      componentPropertyUpdated: true,
-      isParamFromTableColumn,
-    });
-  }
-
   function layoutPropertyChanged(param, attr, value, paramType) {
     paramUpdated(param, attr, value, paramType);
 
@@ -450,7 +330,6 @@ export const Inspector = ({
         layoutPropertyChanged={layoutPropertyChanged}
         component={component}
         paramUpdated={paramUpdated}
-        paramsUpdated={paramsUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
         components={allComponents}
@@ -587,8 +466,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>

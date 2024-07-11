@@ -108,17 +108,18 @@ const BoxUI = (props) => {
             ? null
             : ['hover', 'focus']
           : !generalProperties.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
+          ? null
+          : ['hover', 'focus']
       }
       overlay={(props) =>
         renderTooltip({
           props,
           text: inCanvas
-            ? `${shouldAddBoxShadowAndVisibility.includes(component.component)
-              ? properties.tooltip
-              : generalProperties.tooltip
-            }`
+            ? `${
+                shouldAddBoxShadowAndVisibility.includes(component.component)
+                  ? properties.tooltip
+                  : generalProperties.tooltip
+              }`
             : `${t(`widget.${component.name}.description`, component.description)}`,
         })
       }

@@ -138,11 +138,11 @@ export const Container = ({
         const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
         updatedBoxes[id].layouts.mobile = mobLayout
           ? {
-            left: mobLayout.left,
-            height: mobLayout.height,
-            top: mobLayout.top,
-            width: mobLayout.width,
-          }
+              left: mobLayout.left,
+              height: mobLayout.height,
+              top: mobLayout.top,
+              width: mobLayout.width,
+            }
           : updatedBoxes[id].layouts.desktop;
       });
       setBoxes({ ...updatedBoxes });
@@ -198,11 +198,11 @@ export const Container = ({
         const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
         updatedBoxes[id].layouts.mobile = mobLayout
           ? {
-            left: mobLayout.left,
-            height: mobLayout.height,
-            top: mobLayout.top,
-            width: mobLayout.width,
-          }
+              left: mobLayout.left,
+              height: mobLayout.height,
+              top: mobLayout.top,
+              width: mobLayout.width,
+            }
           : updatedBoxes[id].layouts.desktop;
       });
       setBoxes({ ...updatedBoxes });
@@ -558,7 +558,7 @@ export const Container = ({
           _width = Math.round(
             (copyOfBoxes[id]['layouts'][currentLayout].width *
               useGridStore.getState().subContainerWidths[boxes[id]['component']?.parent]) /
-            containerWidth
+              containerWidth
           );
         } else {
           _width = Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / containerWidth);
@@ -1061,8 +1061,9 @@ const WidgetWrapper = ({
         className={
           isGhostComponent
             ? `ghost-target`
-            : `target widget-target target1 ele-${id} moveable-box ${isResizing ? 'resizing-target' : ''} ${isWidgetActive ? 'active-target' : ''
-            } ${isHovered ? 'hovered-target' : ''} ${isDragging ? 'opacity-0' : ''}`
+            : `target widget-target target1 ele-${id} moveable-box ${isResizing ? 'resizing-target' : ''} ${
+                isWidgetActive ? 'active-target' : ''
+              } ${isHovered ? 'hovered-target' : ''} ${isDragging ? 'opacity-0' : ''}`
         }
         data-id={`${parent}`}
         id={id}
