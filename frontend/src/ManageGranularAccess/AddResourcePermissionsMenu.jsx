@@ -40,7 +40,7 @@ function AddResourcePermissionsMenu({ openAddPermissionModal, resourcesOptions, 
       </div>
     </OverlayTrigger>
   ) : (
-    <div className={'cursor-pointer side-button-cont'}>
+    <div className={'cursor-pointer'}>
       <ButtonSolid
         variant="tertiary"
         iconWidth="17"

@@ -390,7 +390,7 @@ class ManageGranularAccessComponent extends React.Component {
       ? 'Please select apps or select all apps option'
       : '';
     return (
-      <div className="row granular-access-container justify-content-center">
+      <div>
         <ConfirmDialog
           show={deleteConfirmationModal}
           message={'This permission will be permanently deleted. Do you want to continue?'}
@@ -523,15 +523,15 @@ class ManageGranularAccessComponent extends React.Component {
                 </>
               )}
             </div>
-            <div className="side-button-cont">
-              <AddResourcePermissionsMenu
-                openAddPermissionModal={this.openAddPermissionModal}
-                resourcesOptions={resourcesOptions}
-                currentGroupPermission={currentGroupPermission}
-              />
-            </div>
           </>
         )}
+        <div className="side-button-cont">
+          <AddResourcePermissionsMenu
+            openAddPermissionModal={this.openAddPermissionModal}
+            resourcesOptions={resourcesOptions}
+            currentGroupPermission={currentGroupPermission}
+          />
+        </div>
       </div>
     );
   }

@@ -1,11 +1,7 @@
 @import "./typography.scss";
 @import "./designtheme.scss";
 
-.granular-access-container {
-    display: flex;
-    flex-direction: row;
-    height: 470px;
-    gap: 0;
+
 
     .manage-granular-permissions-info {
         display: flex;
@@ -77,8 +73,8 @@
         border-bottom: 1px solid var(--slate5);
         margin: 0; /* Ensure no margin */
         padding: 0; /* Ensure no padding */
-        min-height: calc(100% - 48px - 16px - 55px - 70px);
-        max-height: calc(100% - 48px - 16px - 55px - 70px);
+        max-height: calc(100vh - 370px - 100px);
+        min-height: calc(100vh - 370px - 100px);
     }
 
     .permission-body-two {
@@ -87,26 +83,28 @@
         border-bottom: 1px solid var(--slate5);
         margin: 0; /* Ensure no margin */
         padding: 0; /* Ensure no padding */
-        min-height: calc(100% - 16px - 55px - 54px);
-        max-height: calc(100% - 16px - 55px - 54px);
+        max-height: calc(100vh - 300px - 100px);
+        min-height: calc(100vh - 300px - 100px);
     }
 
-    .side-button-cont {
+
+.side-button-cont {
+        justify-self: flex-end;
         display: flex;
-        justify-content: flex-end;
         align-items: center; /* Ensure the content is centered vertically */
         height: 50px;
         flex-shrink: 0; /* Prevent shrinking */
         margin: 0; /* Ensure no margin */
         padding: 12px; /* Ensure no padding */
-        margin-bottom: 15px;
+        justify-content: flex-end;
+        // margin-bottom: 20px;
+        // margin-top: auto;
 
         .add-icon {
             width: 135px;
             height: 30px;
         }
     }
-}
 
 
 .permission-type {
