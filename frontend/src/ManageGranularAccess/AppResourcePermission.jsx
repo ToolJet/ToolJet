@@ -39,17 +39,17 @@ function AppResourcePermissions({
       </div>
       <div className="text-muted">
         <div className="d-flex apps-permission-wrap flex-column">
-          <label className="form-check form-check-inline">
-            <OverlayTrigger
-              overlay={
-                disableEditUpdate ? (
-                  <Tooltip id="tooltip-disable-edit-update">End-user cannot have edit permission</Tooltip>
-                ) : (
-                  <span></span>
-                )
-              }
-              placement="top"
-            >
+          <OverlayTrigger
+            overlay={
+              disableEditUpdate ? (
+                <Tooltip id="tooltip-disable-edit-update">End-user cannot have edit permission</Tooltip>
+              ) : (
+                <span></span>
+              )
+            }
+            placement="top"
+          >
+            <label className="form-check form-check-inline">
               <input
                 onMouseOver={() => {
                   setNotClickable(true);
@@ -71,13 +71,13 @@ function AppResourcePermissions({
                 disabled={isRoleGroup || disableEditUpdate}
                 data-cy="app-create-checkbox"
               />
-            </OverlayTrigger>
-            <span className="form-check-label" data-cy="app-create-label">
-              {'Edit'}
-            </span>
-            {/* <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>Create apps in this workspace</span> */}
-            <span class={`tj-text-xxsm`}>Access to app builder</span>
-          </label>
+              <span className="form-check-label" data-cy="app-create-label">
+                {'Edit'}
+              </span>
+              {/* <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>Create apps in this workspace</span> */}
+              <span class={`tj-text-xxsm`}>Access to app builder</span>
+            </label>
+          </OverlayTrigger>
           <label className="form-check form-check-inline">
             <input
               onMouseOver={() => {
