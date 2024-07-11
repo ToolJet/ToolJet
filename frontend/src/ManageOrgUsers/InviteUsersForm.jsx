@@ -128,8 +128,8 @@ function InviteUsersForm({
   };
 
   const editUser = () => {
-    const { newGroupsToAdd, groupsToRemove, selectedGroupsIds, role } = getEditedGroups();
-    manageUser(currentEditingUser.id, selectedGroupsIds, role, newGroupsToAdd, groupsToRemove);
+    const { newGroupsToAdd, groupsToRemove, selectedGroupsIds } = getEditedGroups();
+    manageUser(currentEditingUser.id, selectedGroupsIds, newRole?.value, newGroupsToAdd, groupsToRemove);
   };
 
   const getEditedGroups = () => {
@@ -139,22 +139,19 @@ function InviteUsersForm({
     return { newGroupsToAdd, groupsToRemove, selectedGroupsIds };
   };
 
-  const validUserDetail = fields['fullName']?.length > 0 && fields['email']?.length > 0;
-
   const isEdited = () => {
     const { newGroupsToAdd, groupsToRemove } = getEditedGroups();
+    const inValidUserDetail = !(fields?.['fullName'] && fields?.['email']);
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
           groupsToRemove.length ||
           newRole ||
           newGroupsToAdd.length
-      : true;
+      : !inValidUserDetail || activeTab == 2;
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
-  const containRoleGroup =
-    selectedGroups.filter((item) => ['admin', 'end-user', 'builder'].includes(item.value)).length > 0;
 
   return (
     <div>
@@ -351,13 +348,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={
-                uploadingUsers ||
-                creatingUser ||
-                !isEdited() ||
-                (!isEditing && !containRoleGroup && uploadingUsers) ||
-                (!isEditing && !validUserDetail && uploadingUsers)
-              }
+              disabled={uploadingUsers || creatingUser || !isEdited()}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

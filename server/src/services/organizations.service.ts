@@ -622,12 +622,6 @@ export class OrganizationsService {
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-
-        await this.userRoleService.addUserRole(
-          { userId: user.id, role: USER_ROLE.END_USER },
-          defaultOrganization.id,
-          manager
-        );
       }
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({

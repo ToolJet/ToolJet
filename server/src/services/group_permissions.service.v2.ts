@@ -193,7 +193,9 @@ export class GroupPermissionsServiceV2 {
       validateAddGroupUserOperation(group);
       const editorRoleUsers = await this.groupPermissionsUtilityService.getRoleUsersList(
         USER_ROLE.END_USER,
-        organizationId
+        organizationId,
+        null,
+        manager
       );
       const editorUsersToBeAdded = editorRoleUsers.filter((user) => userIds.includes(user.id));
       if (isBuilderLevel && editorUsersToBeAdded.length) {

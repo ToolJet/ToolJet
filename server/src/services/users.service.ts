@@ -165,7 +165,6 @@ export class UsersService {
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
     const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups, source, role } = params;
-
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
     const updatableParams = {

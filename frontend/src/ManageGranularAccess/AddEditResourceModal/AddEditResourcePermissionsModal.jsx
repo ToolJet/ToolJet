@@ -68,7 +68,7 @@ function AddEditResourcePermissionsModal({
                 ...prevState.initialPermissionState,
                 canEdit: !prevState.initialPermissionState.canEdit,
                 canView: prevState.initialPermissionState.canEdit,
-                ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
               },
             }));
           }}

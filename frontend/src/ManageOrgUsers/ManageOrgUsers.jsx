@@ -224,7 +224,7 @@ class ManageOrgUsersComponent extends React.Component {
       const updateUserBody = {
         addGroups: groupsToAdd,
         removeGroups: groupsToRemove,
-        role: role,
+        ...(role && { role: role }),
       };
       service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
         .then(() => {
