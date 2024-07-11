@@ -85,6 +85,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       .catch((err) => {
         this.setState({
           isDuplicatingGroup: false,
+          creatingGroup: false,
           groupDuplicateOption: { addPermission: true, addApps: true, addUsers: true },
         });
         console.error('Error occured in duplicating: ', err);
@@ -261,6 +262,11 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   createGroup = () => {
+    const regex = /^[a-zA-Z0-9_ -]+$/;
+    if (!regex.test(this.state.newGroupName)) {
+      toast.error('Group name can only contain letters, numbers, underscores and hyphens');
+      return;
+    }
     this.setState({ creatingGroup: true });
     groupPermissionV2Service
       .create(this.state.newGroupName)
