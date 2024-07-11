@@ -24,7 +24,7 @@ const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps
     disabled ? 'placeholder:tw-text-text-placeholder' : 'placeholder:tw-text-text-default'
   } ${
     isValid === true ? '!tw-border-border-success-strong' : isValid === false ? '!tw-border-border-danger-strong' : ''
-  }`;
+  } ${size === 'medium' && '!tw-text-[16px]/[24px]'}`;
 
   useEffect(() => {
     if (inputRef.current) {

@@ -25,9 +25,9 @@ const TextInput = ({
       {leadingIcon && (
         <SolidIcon
           name={leadingIcon}
-          width="16px"
-          height="16px"
-          className={`tw-absolute ${size === 'small' ? 'tw-top-[6px] tw-left-[10px]' : 'tw-top-[7px] tw-left-[12px]'}`}
+          className={`tw-h-[16px] tw-w-[16px] tw-absolute ${
+            size === 'small' ? 'tw-left-[10px] tw-top-[6px]' : 'tw-left-[12px] tw-top-[8px]'
+          }`}
           fill="var(--icon-default)"
         />
       )}

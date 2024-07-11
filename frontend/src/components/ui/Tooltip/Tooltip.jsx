@@ -10,9 +10,7 @@ const Tooltip = ({ tooltipLabel, supportingText, theme, arrow, children, width, 
       <div
         className={cn(
           tooltipVariants({ arrow, theme }),
-          `${
-            supportingText && 'tw-max-w-[320px]'
-          } tw-flex tw-flex-col tw-py-[8px] tw-px-[12px] tw-items-start tw-self-stretch tw-rounded-[8px] tw-shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08),0px_4px_6px_-2px_rgba(16,24,40,0.03)]`
+          `tw-max-w-[320px] tw-flex tw-flex-col tw-py-[8px] tw-px-[12px] tw-items-start tw-self-stretch tw-rounded-[8px] tw-shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08),0px_4px_6px_-2px_rgba(16,24,40,0.03)] tw-overflow-hidden`
         )}
         style={{ width: width }}
       >

@@ -70,7 +70,6 @@ const ListItems = (props) => {
       {edit && <Input value={value} onChange={(e) => setValue(e.target.value)} />}
       {edit && (
         <EditTrailingAction
-          indexed={props.indexed}
           onCancel={() => setEdit(false)}
           onSave={() => {
             setTitle(value);

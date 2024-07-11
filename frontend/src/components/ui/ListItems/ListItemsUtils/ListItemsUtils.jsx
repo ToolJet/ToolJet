@@ -39,6 +39,7 @@ export const SupportingText = ({ supportingText, disabled }) => {
           arrow="Top Center"
           className="tw-hidden peer-hover:tw-flex tw-absolute tw-top-full"
           theme="dark"
+          width="max-content"
           tooltipLabel={supportingText}
         />
       )}
@@ -49,7 +50,7 @@ export const SupportingText = ({ supportingText, disabled }) => {
 export const Input = (props) => {
   return (
     <input
-      className={`tw-h-[28px] tw-flex tw-py-[7px] tw-px-[6px] tw-items-center tw-w-full tw-bg-background-surface-layer-01 tw-rounded-[6px] tw-text-[12px]/[18px] tw-text-text-default tw-font-medium tw-mr-[8px] tw-border-transparent tw-ring-[1px] tw-ring-interactive-focus-outline tw-ring-offset-[1px] tw-ring-offset-interactive-focus-outline tw-line-clamp-1 disabled:tw-cursor-not-allowed disabled:tw-border-transparent`}
+      className={`tw-h-[28px] tw-flex tw-py-[7px] tw-px-[6px] tw-items-center tw-w-full tw-bg-background-surface-layer-01 tw-rounded-[6px] tw-text-[12px]/[18px] tw-text-text-default tw-font-medium tw-mr-[8px] tw-border-[2px] tw-border-solid tw-border-interactive-focus-outline tw-line-clamp-1 disabled:tw-cursor-not-allowed`}
       {...props}
     />
   );
@@ -121,12 +122,11 @@ export const TrailingAction = ({
   );
 };
 
-export const EditTrailingAction = ({ indexed, onCancel, onDelete, onSave }) => {
+export const EditTrailingAction = ({ onCancel, onSave }) => {
   return (
     <div className="tw-flex tw-gap-[2px]">
       <Button iconOnly leadingIcon="remove" size="small" variant="outline" onClick={onCancel} />
-      {indexed && <Button iconOnly leadingIcon="delete" onClick={onDelete} size="small" variant="outline" />}
-      {!indexed && <Button iconOnly leadingIcon="tick" onClick={onSave} size="small" variant="outline" />}
+      <Button iconOnly leadingIcon="tick" onClick={onSave} size="small" variant="outline" />
     </div>
   );
 };
