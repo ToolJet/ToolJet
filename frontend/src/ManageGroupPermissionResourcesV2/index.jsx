@@ -84,6 +84,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           isBuilderLevel: isBuilderLevel,
         };
       });
+      this.setSelectedUsers([]);
     });
   };
 
