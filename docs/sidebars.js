@@ -49,6 +49,7 @@ const sidebars = {
       },
       'items': [
         'setup/try-tooljet',
+        'setup/choose-your-tooljet',
         'setup/system-requirements',
         'setup/digitalocean',
         'setup/docker',
