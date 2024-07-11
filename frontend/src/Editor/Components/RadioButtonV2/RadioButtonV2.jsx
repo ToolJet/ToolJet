@@ -33,7 +33,6 @@ export const RadioButtonV2 = ({
     schema,
     optionsLoadingState,
     loadingState,
-    options,
   } = properties;
 
   const {
@@ -58,6 +57,7 @@ export const RadioButtonV2 = ({
   const [checkedValue, setValue] = useState(() => value);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const options = component?.definition?.properties?.options?.value;
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -72,10 +72,12 @@ export const RadioButtonV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => data.visible)
-        .map((value) => ({
-          ...value,
-          isDisabled: value.disable,
+        .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
+        .map((data) => ({
+          ...data,
+          label: resolveReferences(data?.label, currentState),
+          value: resolveReferences(data?.value, currentState),
+          isDisabled: resolveReferences(advanced ? data?.disable : data?.disable?.value, currentState),
         }));
       return _selectOptions;
     } else {
@@ -198,11 +200,15 @@ export const RadioButtonV2 = ({
                     <span
                       className="checkmark"
                       style={{
-                        backgroundColor: !isChecked && switchOffBackgroundColor,
-                        '--selected-background-color': switchOnBackgroundColor,
+                        backgroundColor:
+                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),
+                        '--selected-background-color': option.isDisabled
+                          ? 'var(--surfaces-surface-03)'
+                          : switchOnBackgroundColor,
                         '--selected-border-color': borderColor,
-                        '--selected-handle-color': handleColor,
-                        border: !isChecked && `1px solid ${borderColor}`,
+                        '--selected-handle-color': option.isDisabled ? 'var(--icons-default)' : handleColor,
+                        border:
+                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : `1px solid ${borderColor}`),
                       }}
                     ></span>
                   </label>
