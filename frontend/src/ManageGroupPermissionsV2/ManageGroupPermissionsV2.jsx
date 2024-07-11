@@ -507,7 +507,6 @@ class ManageGroupPermissionsComponent extends React.Component {
                 </ButtonSolid>
               )}
             </div>
-
             <Modal
               show={showNewGroupForm || showGroupNameUpdateForm}
               closeModal={() =>
@@ -589,16 +588,90 @@ class ManageGroupPermissionsComponent extends React.Component {
                 </div>
               </form>
             </Modal>
-
-            {!showNewGroupForm && !showGroupNameUpdateForm && (
-              <div className="org-users-page-card-wrap">
-                <div className="org-users-page-sidebar">
-                  <div className="default-group-list-container">
+            <div className="org-users-page-card-wrap">
+              <div className="org-users-page-sidebar">
+                <div className="default-group-list-container">
+                  <div className="mb-2 d-flex align-items-center">
+                    <SolidIcon name="usergear" />
+                    <span className="ml-1 group-title">USER ROLE</span>
+                  </div>
+                  {defaultGroups.map((permissionGroup) => {
+                    return (
+                      <FolderList
+                        key={permissionGroup.id}
+                        listId={permissionGroup.id}
+                        overlayFunctionParam={{
+                          id: permissionGroup.id,
+                          groupName: permissionGroup.name,
+                        }}
+                        selectedItem={this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.name)}
+                        onClick={() => {
+                          this.setState({
+                            selectedGroupPermissionId: permissionGroup.id,
+                            selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
+                            selectedGroupObject: permissionGroup,
+                          });
+                        }}
+                        toolTipText={this.humanizeifDefaultGroupName(permissionGroup.name)}
+                        overLayComponent={this.renderPopoverContent}
+                        className="groups-folder-list"
+                        dataCy={this.humanizeifDefaultGroupName(permissionGroup.name)
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')}
+                      >
+                        <span>
+                          <OverflowTooltip>{this.humanizeifDefaultGroupName(permissionGroup.name)}</OverflowTooltip>
+                        </span>
+                      </FolderList>
+                    );
+                  })}
+                </div>
+                <div>
+                  {!showGroupSearchBar ? (
                     <div className="mb-2 d-flex align-items-center">
-                      <SolidIcon name="usergear" />
-                      <span className="ml-1 group-title">USER ROLE</span>
+                      <SolidIcon name="usergroup" width="18px" fill="#889096" />
+                      <span className="ml-1 group-title">CUSTOM GROUPS</span>
+                      <div className="create-group-cont">
+                        <ButtonSolid
+                          onClick={(e) => {
+                            e.preventDefault();
+                            this.setState({ showGroupSearchBar: true });
+                          }}
+                          size="xsm"
+                          rightIcon="search"
+                          iconWidth="15"
+                          fill="#889096"
+                          className="create-group-custom"
+                        />
+                        <ButtonSolid
+                          onClick={(e) => {
+                            e.preventDefault();
+                            this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
+                          }}
+                          size="sm"
+                          fill="#889096"
+                          rightIcon="plus"
+                          iconWidth="20"
+                          className="create-group-custom"
+                        />
+                      </div>
                     </div>
-                    {defaultGroups.map((permissionGroup) => {
+                  ) : (
+                    <div className="searchbox-custom">
+                      <SearchBox
+                        dataCy={`query-manager`}
+                        width="70px !important"
+                        callBack={this.handleGroupSearch}
+                        placeholder={'Search'}
+                        customClass="tj-common-search-input-group"
+                        onClearCallback={this.handleGroupSearchClose}
+                        autoFocus={true}
+                      />
+                    </div>
+                  )}
+
+                  {groups.length ? (
+                    filteredGroup.map((permissionGroup) => {
                       return (
                         <FolderList
                           key={permissionGroup.id}
@@ -629,116 +702,37 @@ class ManageGroupPermissionsComponent extends React.Component {
                           </span>
                         </FolderList>
                       );
-                    })}
-                  </div>
-                  <div>
-                    {!showGroupSearchBar ? (
-                      <div className="mb-2 d-flex align-items-center">
-                        <SolidIcon name="usergroup" width="18px" fill="#889096" />
-                        <span className="ml-1 group-title">CUSTOM GROUPS</span>
-                        <div className="create-group-cont">
-                          <ButtonSolid
-                            onClick={(e) => {
-                              e.preventDefault();
-                              this.setState({ showGroupSearchBar: true });
-                            }}
-                            size="xsm"
-                            rightIcon="search"
-                            iconWidth="15"
-                            fill="#889096"
-                            className="create-group-custom"
-                          />
-                          <ButtonSolid
-                            onClick={(e) => {
-                              e.preventDefault();
-                              this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
-                            }}
-                            size="sm"
-                            fill="#889096"
-                            rightIcon="plus"
-                            iconWidth="20"
-                            className="create-group-custom"
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="searchbox-custom">
-                        <SearchBox
-                          dataCy={`query-manager`}
-                          width="70px !important"
-                          callBack={this.handleGroupSearch}
-                          placeholder={'Search'}
-                          customClass="tj-common-search-input-group"
-                          onClearCallback={this.handleGroupSearchClose}
-                          autoFocus={true}
-                        />
-                      </div>
-                    )}
-
-                    {groups.length ? (
-                      filteredGroup.map((permissionGroup) => {
-                        return (
-                          <FolderList
-                            key={permissionGroup.id}
-                            listId={permissionGroup.id}
-                            overlayFunctionParam={{
-                              id: permissionGroup.id,
-                              groupName: permissionGroup.name,
-                            }}
-                            selectedItem={
-                              this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.name)
-                            }
-                            onClick={() => {
-                              this.setState({
-                                selectedGroupPermissionId: permissionGroup.id,
-                                selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
-                                selectedGroupObject: permissionGroup,
-                              });
-                            }}
-                            toolTipText={this.humanizeifDefaultGroupName(permissionGroup.name)}
-                            overLayComponent={this.renderPopoverContent}
-                            className="groups-folder-list"
-                            dataCy={this.humanizeifDefaultGroupName(permissionGroup.name)
-                              .toLowerCase()
-                              .replace(/\s+/g, '-')}
-                          >
-                            <span>
-                              <OverflowTooltip>{this.humanizeifDefaultGroupName(permissionGroup.name)}</OverflowTooltip>
-                            </span>
-                          </FolderList>
-                        );
-                      })
-                    ) : (
-                      <div className="empty-custom-group-info">
-                        <SolidIcon className="info-icon" name="information" width="18px" />
-                        <span className="tj-text-xsm text-center info-label">No custom groups added</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="org-users-page-card-body">
-                  {isLoading ? (
-                    <Loader />
+                    })
                   ) : (
-                    <ManageGroupPermissionResourcesV2
-                      groupPermissionId={this.state.selectedGroupPermissionId}
-                      darkMode={this.props.darkMode}
-                      selectedGroup={this.state.selectedGroup}
-                      selectedGroupObject={this.state.selectedGroupObject}
-                      updateGroupName={this.updateGroupName}
-                      deleteGroup={this.deleteGroup}
-                      roleOptions={defaultGroups.map((group) => {
-                        return {
-                          name: this.humanizeifDefaultGroupName(group.name),
-                          value: group.name,
-                        };
-                      })}
-                    />
+                    <div className="empty-custom-group-info">
+                      <SolidIcon className="info-icon" name="information" width="18px" />
+                      <span className="tj-text-xsm text-center info-label">No custom groups added</span>
+                    </div>
                   )}
                 </div>
               </div>
-            )}
+
+              <div className="org-users-page-card-body">
+                {isLoading ? (
+                  <Loader />
+                ) : (
+                  <ManageGroupPermissionResourcesV2
+                    groupPermissionId={this.state.selectedGroupPermissionId}
+                    darkMode={this.props.darkMode}
+                    selectedGroup={this.state.selectedGroup}
+                    selectedGroupObject={this.state.selectedGroupObject}
+                    updateGroupName={this.updateGroupName}
+                    deleteGroup={this.deleteGroup}
+                    roleOptions={defaultGroups.map((group) => {
+                      return {
+                        name: this.humanizeifDefaultGroupName(group.name),
+                        value: group.name,
+                      };
+                    })}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </ErrorBoundary>

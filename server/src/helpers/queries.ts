@@ -53,9 +53,16 @@ export function viewableAppsQueryUsingPermissions(
   if (select) {
     viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));
   }
-  if (userAppPermissions.hideAll || !(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
+  const viewAll = userAppPermissions.isAllEditable || userAppPermissions.isAllViewable;
+  if (!viewAll || userAppPermissions.hideAll) {
     viewableAppsQb.where('viewable_apps.id IN (:...viewableApps)', {
       viewableApps,
+    });
+  }
+  const hiddenApps = userAppPermissions.hiddenAppsId;
+  if (!userAppPermissions.hideAll && viewAll && hiddenApps.length > 0) {
+    viewableAppsQb.where('viewable_apps.id NOT IN (:...hiddenApps)', {
+      hiddenApps,
     });
   }
   return viewableAppsQb;
