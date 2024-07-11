@@ -143,7 +143,11 @@ class ManageGranularAccessComponent extends React.Component {
             errorListItems: error.data,
           });
         }
-        toast.error(error);
+        toast.error(error, {
+          style: {
+            maxWidth: '500px',
+          },
+        });
       });
     // .then(())
   };
@@ -264,7 +268,11 @@ class ManageGranularAccessComponent extends React.Component {
           });
           return;
         }
-        toast.error(error.error);
+        toast.error(error, {
+          style: {
+            maxWidth: '500px',
+          },
+        });
         this.closeAddPermissionModal();
       });
   };
@@ -289,7 +297,7 @@ class ManageGranularAccessComponent extends React.Component {
           >
             read documentation
           </a>{' '}
-          to know more
+          to know more !
         </p>
       </div>
     );

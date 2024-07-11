@@ -359,6 +359,7 @@ class ManageOrgUsersComponent extends React.Component {
               currentEditingUser={currentEditingUser}
               setUserValues={this.setUserValues}
               creatingUser={this.state.creatingUser}
+              darkMode={this.props.darkMode}
             />
           )}
 

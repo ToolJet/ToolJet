@@ -354,7 +354,11 @@ class ManageGroupPermissionsComponent extends React.Component {
         });
       })
       .catch(({ error }) => {
-        toast.error(error);
+        toast.error(error, {
+          style: {
+            maxWidth: '500px',
+          },
+        });
         this.setState({
           isUpdatingGroupName: false,
         });

@@ -4,6 +4,7 @@ import InviteUsersForm from './InviteUsersForm';
 import { groupPermissionService, groupPermissionV2Service } from '@/_services';
 import { authenticationService } from '../_services/authentication.service';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
+import { propTypes } from 'react-bootstrap/esm/Image';
 
 const ManageOrgUsersDrawer = ({
   isInviteUsersDrawerOpen,
@@ -20,6 +21,7 @@ const ManageOrgUsersDrawer = ({
   userDrawerMode,
   setUserValues,
   creatingUser,
+  darkMode,
 }) => {
   const [groups, setGroups] = useState([]);
 
@@ -93,6 +95,7 @@ const ManageOrgUsersDrawer = ({
         userDrawerMode={userDrawerMode}
         setUserValues={setUserValues}
         creatingUser={creatingUser}
+        darkMode={darkMode}
       />
     </Drawer>
   );

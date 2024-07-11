@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../ManageGroupPermissionsV2/groupPermissions.theme.scss';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 function AppPermissionsActions({
   handleClickEdit,
@@ -11,22 +12,33 @@ function AppPermissionsActions({
   return (
     <div className="type-container">
       <div className="left-container">
-        <label className="form-check form-check-inline">
-          <input
-            className="form-check-input"
-            type="radio"
-            disabled={disableBuilderLevelUpdate}
-            checked={initialPermissionState.canEdit}
-            onClick={() => {
-              !initialPermissionState.canEdit && handleClickEdit();
-            }}
-          />
+        <OverlayTrigger
+          overlay={
+            disableBuilderLevelUpdate ? (
+              <Tooltip id="tooltip-disable-edit-update">End-user cannot have edit permission</Tooltip>
+            ) : (
+              <span></span>
+            )
+          }
+          placement="left"
+        >
+          <label className="form-check form-check-inline">
+            <input
+              className="form-check-input"
+              type="radio"
+              disabled={disableBuilderLevelUpdate}
+              checked={initialPermissionState.canEdit}
+              onClick={() => {
+                !initialPermissionState.canEdit && handleClickEdit();
+              }}
+            />
 
-          <div>
-            <span className="form-check-label text-muted">Edit</span>
-            <span className="text-muted tj-text-xsm">Access to app builder</span>
-          </div>
-        </label>
+            <div>
+              <span className="form-check-label">Edit</span>
+              <span className="tj-text-xsm">Access to app builder</span>
+            </div>
+          </label>
+        </OverlayTrigger>
       </div>
       <div className="right-container">
         <label className="form-check form-check-inline">
@@ -40,8 +52,8 @@ function AppPermissionsActions({
             }}
           />
           <div>
-            <span className="form-check-label text-muted">View</span>
-            <span className="text-muted tj-text-xsm">Only view deployed version of app</span>
+            <span className="form-check-label">View</span>
+            <span className="tj-text-xsm">Only view deployed version of app</span>
           </div>
         </label>
         <label className="form-check form-check-inline">
@@ -56,7 +68,7 @@ function AppPermissionsActions({
           />
           <div>
             <span className={`form-check-label faded-text`}>Hide from dashboard</span>
-            <span className="text-muted tj-text-xsm">App will be accessible by URL only</span>
+            <span className="tj-text-xsm">App will be accessible by URL only</span>
           </div>
         </label>
       </div>
