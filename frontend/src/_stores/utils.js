@@ -5,6 +5,7 @@ import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { v4 as uuid } from 'uuid';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -386,7 +387,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
     keys.forEach((key, index) => {
-      const uniqueId = _.uniqueId();
+      const uniqueId = uuid();
       const value = data[key];
       const _type = Object.prototype.toString.call(value).slice(8, -1);
       const prevType = map.get(path)?.type;

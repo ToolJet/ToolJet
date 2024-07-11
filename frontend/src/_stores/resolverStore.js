@@ -83,8 +83,11 @@ export const useResolveStore = create(
       updateAppSuggestions: (refState) => {
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
 
+        const suggestions = get().suggestions;
+        suggestions.appHints = suggestionList;
+
         set(() => ({
-          suggestions: { ...get().suggestions, appHints: suggestionList },
+          suggestions: suggestions,
           lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs },
         }));
       },
