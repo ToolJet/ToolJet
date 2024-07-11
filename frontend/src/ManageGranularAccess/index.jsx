@@ -474,11 +474,13 @@ class ManageGranularAccessComponent extends React.Component {
             <p className="tj-text-xsm mb-2">
               Add assets to configure granular, asset-level permissions for this user group
             </p>
-            <AddResourcePermissionsMenu
-              openAddPermissionModal={this.openAddPermissionModal}
-              resourcesOptions={resourcesOptions}
-              currentGroupPermission={currentGroupPermission}
-            />
+            <div className="menu">
+              <AddResourcePermissionsMenu
+                openAddPermissionModal={this.openAddPermissionModal}
+                resourcesOptions={resourcesOptions}
+                currentGroupPermission={currentGroupPermission}
+              />
+            </div>
           </div>
         ) : (
           <>
@@ -525,13 +527,15 @@ class ManageGranularAccessComponent extends React.Component {
             </div>
           </>
         )}
-        <div className="side-button-cont">
-          <AddResourcePermissionsMenu
-            openAddPermissionModal={this.openAddPermissionModal}
-            resourcesOptions={resourcesOptions}
-            currentGroupPermission={currentGroupPermission}
-          />
-        </div>
+        {granularPermissions.length && (
+          <div className="side-button-cont">
+            <AddResourcePermissionsMenu
+              openAddPermissionModal={this.openAddPermissionModal}
+              resourcesOptions={resourcesOptions}
+              currentGroupPermission={currentGroupPermission}
+            />
+          </div>
+        )}
       </div>
     );
   }

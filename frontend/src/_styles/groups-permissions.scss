@@ -39,13 +39,20 @@
 
     .empty-container {
         flex-shrink: 0; /* Prevent shrinking */
-        height: 100%; /* Take full height of the parent container */
+        min-height: calc(100vh - 300px - 100px);
         display: flex;
         align-items: center; /* Center items vertically */
         justify-content: center; /* Center items horizontally */
         text-align: center;
         flex-direction: column;
-        width: 330px;
+        width: 100%;
+
+        .menu{
+            width: 100%;
+            display: flex;
+        align-items: center; /* Center items vertically */
+        justify-content: center; /* Center items horizontally */
+        }
 
         .icon-container {
             width: 55px;
@@ -63,7 +70,7 @@
         }
 
         .add-permission-btn {
-            width: 135px;
+            width: 190px;
         }
     }
 

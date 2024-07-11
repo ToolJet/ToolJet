@@ -126,16 +126,19 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
     createObject: CreateGranularPermissionDto
   ): Promise<GranularPermissions> {
     const query = `
-        INSERT INTO granular_permissions (
-            group_id,
-            name,
-            type,
-            is_all,
-            
-        ) VALUES (
-            ${createObject.groupId} , ${createObject.name} , ${createObject.type},${createObject.isAll}
-        ) RETURNING *;`;
-    return (await manager.query(query))[0];
+    INSERT INTO granular_permissions (
+      group_id,
+      name,
+      type,
+      is_all
+    ) VALUES (
+      $1, $2, $3, $4
+    ) RETURNING *;
+  `;
+
+    const parameters = [createObject.groupId, createObject.name, createObject.type, createObject.isAll];
+
+    return (await manager.query(query, parameters))[0];
   }
 
   async createAppsResourcePermission(
@@ -151,13 +154,18 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       can_view,
       hide_from_dashboard
     ) VALUES (
-      ${granularPermissions.id},
-      ${createObject.canEdit},
-      ${createObject.canView},
-      ${createObject.hideFromDashboard}
+      $1, $2, $3, $4
     ) RETURNING *;
   `;
-    return (await manager.query(query))[0];
+
+    const parameters = [
+      granularPermissions.id,
+      createObject.canEdit,
+      createObject.canView,
+      createObject.hideFromDashboard,
+    ];
+
+    return (await manager.query(query, parameters))[0];
   }
 
   async migrateUserGroup(manager: EntityManager, userIds: string[], groupId: string) {
@@ -190,7 +198,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
     const nameInit = createResourcePermissionObj.canView ? 'Viewable' : 'Updatable';
     if (appsPermissions.length === 0) return;
     const dtoObject = {
-      name: `${nameInit} ${DEFAULT_GRANULAR_PERMISSIONS_NAME[resource]}`,
+      name: `'${nameInit} ${DEFAULT_GRANULAR_PERMISSIONS_NAME[resource]}'`,
       groupId: group.id,
       type: resource as ResourceType,
       isAll: false,
