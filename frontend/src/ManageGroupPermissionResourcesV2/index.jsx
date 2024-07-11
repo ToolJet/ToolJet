@@ -255,7 +255,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
             href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             read documentation
           </a>{' '}
