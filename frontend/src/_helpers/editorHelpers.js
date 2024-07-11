@@ -146,6 +146,40 @@ export function isOnlyLayoutUpdate(diffState) {
   return componentDiff.length > 0;
 }
 
+function findNotations(jsString) {
+  const dotNotationRegex = /(\w+)\.(\w+(\.\w+)*)/g;
+  const matches = [];
+  let match;
+
+  while ((match = dotNotationRegex.exec(jsString)) !== null) {
+    matches.push({
+      base: match[1],
+      accessors: match[2].split('.'),
+    });
+  }
+
+  return matches;
+}
+
+function convertToBracketNotation(base, accessors) {
+  return `${base}${accessors.map((accessor) => `['${accessor}']`).join('')}`;
+}
+
+function verifyDotAndBracketNotations(jsString) {
+  const notations = findNotations(jsString);
+
+  for (const { base, accessors } of notations) {
+    const dotNotation = `${base}.${accessors.join('.')}`;
+    const bracketNotation = convertToBracketNotation(base, accessors);
+
+    if (jsString.includes(dotNotation) && !jsString.includes(bracketNotation)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function findReferenceInComponent(node, changedCurrentState) {
   if (!node) return false;
 
@@ -159,7 +193,7 @@ function findReferenceInComponent(node, changedCurrentState) {
         ) {
           // Check if the referenced entity is in the state
 
-          if (changedCurrentState.some((state) => value.includes(state))) {
+          if (changedCurrentState.some((state) => value.includes(state) || verifyDotAndBracketNotations(value))) {
             return true;
           }
         } else if (typeof value === 'object') {
