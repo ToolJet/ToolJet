@@ -121,7 +121,8 @@ function InviteUsersForm({
 
   const handleEditUser = (e) => {
     e.preventDefault();
-    if (newRole) setIsChangeRoleModalOpen(true);
+    if (newRole && EDIT_ROLE_MESSAGE?.[currentEditingUser?.role_group?.[0]?.name]?.[newRole?.value]?.())
+      setIsChangeRoleModalOpen(true);
     else {
       editUser();
     }
@@ -174,7 +175,7 @@ function InviteUsersForm({
           }}
           confirmBtnProps={{ title: 'Continue' }}
         >
-          <div>{EDIT_ROLE_MESSAGE?.[currentEditingUser?.role_group?.[0]?.name]?.[newRole?.value]()}</div>
+          <div>{EDIT_ROLE_MESSAGE?.[currentEditingUser?.role_group?.[0]?.name]?.[newRole?.value]?.()}</div>
         </ModalBase>
       )}
       <div className="animation-fade invite-user-drawer-wrap">

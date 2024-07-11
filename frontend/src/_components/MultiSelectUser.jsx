@@ -21,7 +21,7 @@ function MultiSelectUser({
   useEffect(() => {
     setOptions(listOfOptions.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedValues, listOfOptions.current]);
+  }, [JSON.stringify(selectedValues), listOfOptions.current]);
 
   const searchFunction = useCallback(
     async (query) => {

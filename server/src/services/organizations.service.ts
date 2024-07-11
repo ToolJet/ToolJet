@@ -779,9 +779,9 @@ export class OrganizationsService {
 
           if (invalidRows.length) {
             const invalidFieldsArray = invalidFields.entries().next().value[1];
-            const errorMsg = `Invalid row(s): [${invalidFieldsArray.join(', ')}] in [${
+            const errorMsg = `Missing ${[invalidFieldsArray.join(',')]} information in ${
               invalidRows.length
-            }] row(s). No users were uploaded.`;
+            } row(s);. No users were uploaded, please update and try again.`;
             throw new BadRequestException(errorMsg);
           }
 
