@@ -34,8 +34,10 @@ function AppPermissionsActions({
             />
 
             <div>
-              <span className="form-check-label">Edit</span>
-              <span className="tj-text-xsm">Access to app builder</span>
+              <span className={`form-check-label ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>Edit</span>
+              <span className={`tj-text-xsm ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>
+                Access to app builder
+              </span>
             </div>
           </label>
         </OverlayTrigger>

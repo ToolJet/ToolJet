@@ -140,8 +140,10 @@ function AddEditResourcePermissionsModal({
                 }}
               />
               <div>
-                <span className="form-check-label">Custom</span>
-                <span className="tj-text-xsm">Select specific applications you want to add to the group</span>
+                <span className={`form-check-label ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>Custom</span>
+                <span className={`tj-text-xsm ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>
+                  Select specific applications you want to add to the group
+                </span>
               </div>
             </label>
           </OverlayTrigger>
