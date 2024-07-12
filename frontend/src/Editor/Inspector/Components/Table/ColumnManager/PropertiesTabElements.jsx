@@ -253,7 +253,7 @@ export const PropertiesTabElements = ({
               paramType="properties"
             />
           </div>
-          {resolveReferences(column?.isEditable) && (
+          {resolveReferences(column?.isEditable, currentState) && (
             <ValidationProperties
               column={column}
               index={index}

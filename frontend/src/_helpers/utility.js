@@ -35,22 +35,14 @@ export function validateMultilineCode(code) {
     if (!inString && !inComment) {
       const restOfCode = code.substring(i);
       const match = restOfCode.match(keywordRegex);
-
       if (match && match.index === 0) {
-        // Ensure the match is an exact word
-        const before = i > 0 ? code[i - 1] : null;
-        const after = i + match[0].length < code.length ? code[i + match[0].length] : null;
-        const isExactMatch = (!before || /\W/.test(before)) && (!after || /\W/.test(after));
-
-        if (isExactMatch) {
-          return {
-            status: 'failed',
-            data: {
-              message: `Code contains reserved keywords`,
-              description: 'Cannot resolve code with reserved keywords in it. Please remove them and try again.',
-            },
-          };
-        }
+        return {
+          status: 'failed',
+          data: {
+            message: `Code contains reserved keywords`,
+            description: 'Cannot resolve code with reserved keywords in it. Please remove them and try again.',
+          },
+        };
       }
     }
   }

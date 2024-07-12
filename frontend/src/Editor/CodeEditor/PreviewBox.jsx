@@ -69,7 +69,6 @@ export const PreviewBox = ({
 
   useEffect(() => {
     const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
-
     if (isWorkspaceVariable || !validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
     }
@@ -365,7 +364,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}
           groupArraysAfterLength={hasDeepChild ? 10 : 100}
-          maxDisplayLength={hasDeepChild ? 10 : 50}
         />
       </div>
     );

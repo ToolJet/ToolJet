@@ -18,6 +18,7 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import CodeHinter from '@/Editor/CodeEditor';
 
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 
@@ -81,7 +82,7 @@ class TableComponent extends React.Component {
   checkIfAllColumnsAreEditable = (component) => {
     const isAllColumnsEditable = component.component?.definition?.properties?.columns?.value
       ?.filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
-      .every((column) => resolveReferences(column.isEditable));
+      .every((column) => resolveReferences(column.isEditable, this.props.currentState));
     return isAllColumnsEditable;
   };
 
@@ -91,7 +92,7 @@ class TableComponent extends React.Component {
     if (prevPropsColumns !== currentPropsColumns) {
       const isAllColumnsEditable = currentPropsColumns
         .filter((column) => !NON_EDITABLE_COLUMNS.includes(column.columnType))
-        .every((column) => resolveReferences(column.isEditable));
+        .every((column) => resolveReferences(column.isEditable, this.props.currentState));
       this.setState({ isAllColumnsEditable });
     }
   }
@@ -171,7 +172,7 @@ class TableComponent extends React.Component {
         className={`${this.props.darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
-          maxHeight: resolveReferences(column.isEditable) ? '100vh' : 'inherit',
+          maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
           overflowY: 'auto',
           zIndex: '9999',
         }}
@@ -469,7 +470,10 @@ class TableComponent extends React.Component {
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   handleMakeAllColumnsEditable = (value) => {
-    const columns = resolveReferences(this.props.component.component.definition.properties.columns);
+    const columns = resolveReferences(
+      this.props.component.component.definition.properties.columns,
+      this.props.currentState
+    );
 
     this.setState({ isAllColumnsEditable: resolveReferences(value) });
 
@@ -498,37 +502,37 @@ class TableComponent extends React.Component {
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
     const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
-      ? resolveReferences(component.component.definition.properties.showFilterButton?.value)
+      ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
       : false;
     const displayServerSideSearch = component.component.definition.properties.displaySearchBox?.value
-      ? resolveReferences(component.component.definition.properties.displaySearchBox?.value)
+      ? resolveReferences(component.component.definition.properties.displaySearchBox?.value, currentState)
       : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
-      ? resolveReferences(component.component.definition.properties.serverSidePagination?.value)
+      ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
 
     const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
-      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value)
+      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
       : false;
 
     let enablePagination = !has(component.component.definition.properties, 'enablePagination')
       ? clientSidePagination || serverSidePagination
-      : resolveReferences(component.component.definition.properties.enablePagination?.value);
+      : resolveReferences(component.component.definition.properties.enablePagination?.value, currentState);
 
     const enabledSort = component.component.definition.properties.enabledSort?.value
-      ? resolveReferences(component.component.definition.properties.enabledSort?.value)
+      ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
       : true;
     const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
-      ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value) ?? false
+      ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState) ?? false
       : false;
     //from app definition values are of string data type if defined or else,undefined
     const allowSelection = component.component.definition.properties?.allowSelection?.value
-      ? resolveReferences(component.component.definition.properties.allowSelection?.value)
-      : resolveReferences(component.component.definition.properties.highlightSelectedRow.value) ||
-        resolveReferences(component.component.definition.properties.showBulkSelector.value);
+      ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
+      : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
+        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
 
     const renderCustomElement = (param, paramType = 'properties') => {
-      return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType);
+      return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
 
     let items = [];
@@ -565,8 +569,8 @@ class TableComponent extends React.Component {
                   {({ innerRef, droppableProps, placeholder }) => (
                     <div className="w-100 d-flex custom-gap-4 flex-column" {...droppableProps} ref={innerRef}>
                       {columns.value.map((item, index) => {
-                        const resolvedItemName = resolveReferences(item.name);
-                        const isEditable = resolveReferences(item.isEditable);
+                        const resolvedItemName = resolveReferences(item.name, this.state.currentState);
+                        const isEditable = resolveReferences(item.isEditable, this.state.currentState);
                         const columnVisibility = item?.columnVisibility ?? true;
                         const getSecondaryText = (text) => {
                           switch (text) {
@@ -658,7 +662,7 @@ class TableComponent extends React.Component {
                                       deleteIconOutsideMenu={true}
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
-                                      isColumnVisible={resolveReferences(columnVisibility)}
+                                      isColumnVisible={resolveReferences(columnVisibility, this.state.currentState)}
                                       className={`${
                                         this.state.activeColumnPopoverIndex === index && 'active-column-list'
                                       }`}

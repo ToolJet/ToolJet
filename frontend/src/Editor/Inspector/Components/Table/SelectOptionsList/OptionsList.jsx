@@ -106,7 +106,7 @@ export const OptionsList = ({
       const options = column.options;
       options[optionIndex][property] = value;
       column.options = options;
-      const isValueTruthy = !!resolveReferences(value);
+      const isValueTruthy = !!resolveReferences(value, currentState);
 
       // This block is responsible for updating list of defaultOptions when makeDefaultOption prop is updated
       if (property === 'makeDefaultOption') {
@@ -235,7 +235,7 @@ export const OptionsList = ({
           }}
           paramType="properties"
         />
-        {resolveReferences(column?.useDynamicOptions) ? (
+        {resolveReferences(column?.useDynamicOptions, currentState) ? (
           <div className="d-flex custom-gap-7 flex-column">
             <CodeHinter
               currentState={currentState}

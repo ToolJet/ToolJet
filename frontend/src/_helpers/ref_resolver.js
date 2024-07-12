@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { deepClone } from './utilities/utils.helpers';
 
 export default class RefResolver {
   constructor(originalJSON) {
@@ -7,7 +6,7 @@ export default class RefResolver {
   }
 
   resolve(inputJSON) {
-    const outputJSON = deepClone(inputJSON || this.originalJSON);
+    const outputJSON = _.cloneDeep(inputJSON || this.originalJSON);
 
     if (typeof outputJSON === 'object') {
       Object.keys(outputJSON).forEach((key) => {
@@ -18,7 +17,7 @@ export default class RefResolver {
   }
 
   evaluateObject(inputObject) {
-    let outputObject = deepClone(inputObject);
+    let outputObject = _.cloneDeep(inputObject);
     if (typeof outputObject === 'object') {
       if (outputObject.$ref) {
         const array = outputObject.$ref.split('/');

@@ -15,7 +15,7 @@ import {
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
-import { getCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 
 import { useEditorStore } from '@/_stores/editorStore';
@@ -24,7 +24,6 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { diff } from 'deep-object-diff';
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const SubContainer = ({
   mode,
@@ -59,6 +58,7 @@ export const SubContainer = ({
 }) => {
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
 
+  const currentState = useCurrentState();
   const { selectedComponents } = useEditorStore(
     (state) => ({
       selectedComponents: state.selectedComponents,
@@ -241,7 +241,7 @@ export const SubContainer = ({
           return;
         }
 
-        const componentMeta = deepClone(
+        const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -280,14 +280,14 @@ export const SubContainer = ({
               Listview: 'listItem',
             });
             const customResolverVariable = widgetResolvables[parentMeta?.component];
-            const defaultChildren = deepClone(parentMeta)['defaultChildren'];
+            const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
             const parentId = newComponent.id;
 
             defaultChildren.forEach((child) => {
               const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } =
                 child;
 
-              const componentMeta = deepClone(
+              const componentMeta = _.cloneDeep(
                 componentTypes.find((component) => component.component === componentName)
               );
               const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -530,7 +530,6 @@ export const SubContainer = ({
   }
 
   const getContainerProps = (componentId) => {
-    const currentState = getCurrentState();
     return {
       mode,
       snapToGrid,

@@ -4,7 +4,6 @@ import { devtools } from 'zustand/middleware';
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -118,7 +117,7 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
   const actionsPath = generatePath(appDiff, 'actions');
   const deletionHistoryPath = generatePath(appDiff, 'columnDeletionHistory');
 
-  let _diff = deepClone(appDiff);
+  let _diff = _.cloneDeep(appDiff);
 
   if (columnsPath) {
     const columnsValue = getValueFromJson(definition, columnsPath);
@@ -242,7 +241,9 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
         return result;
       }
 
-      const componentMeta = deepClone(componentTypes.find((comp) => comp.component === component.component.component));
+      const componentMeta = _.cloneDeep(
+        componentTypes.find((comp) => comp.component === component.component.component)
+      );
 
       if (!componentMeta) {
         return result;
@@ -318,7 +319,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
 };
 
 function toRemoveExposedvariablesFromComponentDiff(object) {
-  const copy = deepClone(object);
+  const copy = _.cloneDeep(object);
   const componentIds = _.keys(copy);
 
   componentIds.forEach((componentId) => {
@@ -339,7 +340,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
 
   const getCurrentNodeType = (node) => Object.prototype.toString.call(node).slice(8, -1);
 
-  const state = deepClone(refState);
+  const state = _.cloneDeep(refState);
   const queries = forQueryParams ? {} : state['queries'];
   const actions = initalLoad
     ? [

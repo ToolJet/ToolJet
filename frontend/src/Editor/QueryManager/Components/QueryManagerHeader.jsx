@@ -15,14 +15,15 @@ import {
   useShowCreateQuery,
   useNameInputFocussed,
 } from '@/_stores/queryPanelStore';
-import { useSelectedQueryLoadingState } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
+import { cloneDeep } from 'lodash';
+
 import ParameterList from './ParameterList';
 import { decodeEntities } from '@/_helpers/utils';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -30,7 +31,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   const selectedDataSource = useSelectedDataSource();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
-  const isLoading = useSelectedQueryLoadingState();
+  const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
+  const { queries } = currentState;
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -95,6 +97,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   };
 
   const renderRunButton = () => {
+    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <span
         {...(isInDraft && {
@@ -128,6 +131,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
   const renderButtons = () => {
     if (selectedQuery === null || showCreateQuery) return;
+    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <>
         <PreviewButton
@@ -142,7 +146,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
   const optionsChanged = (newOptions) => {
     setOptions(newOptions);
-    updateDataQuery(deepClone(newOptions));
+    updateDataQuery(cloneDeep(newOptions));
   };
 
   const handleAddParameter = (newParameter) => {
@@ -197,6 +201,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
               handleAddParameter={handleAddParameter}
               handleParameterChange={handleParameterChange}
               handleParameterRemove={handleParameterRemove}
+              currentState={currentState}
               darkMode={darkMode}
               containerRef={paramListContainerRef}
             />

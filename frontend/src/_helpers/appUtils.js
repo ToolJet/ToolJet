@@ -38,7 +38,6 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
 import { updateParentNodes } from './utility';
-import { deepClone } from './utilities/utils.helpers';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -102,7 +101,7 @@ export function onComponentOptionsChanged(component, options, id) {
 
     const components = getCurrentState().components;
     let componentData = components[componentName];
-    componentData = deepClone(componentData) || {};
+    componentData = componentData || {};
 
     const shouldUpdateResolvedRefsOfHints = [];
 
@@ -163,8 +162,6 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
-  if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
-
   let componentName = component.name;
 
   if (id) {
@@ -178,10 +175,8 @@ export function onComponentOptionChanged(component, option_name, value, id) {
 
   const { isEditorReady, components: currentComponents } = getCurrentState();
 
-  if (!currentComponents) return;
-
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
-  let componentData = deepClone(components[componentName]) || {};
+  let componentData = components[componentName] || {};
   componentData[option_name] = value;
 
   const isListviewOrKanbaComponent = component.component === 'Listview' || component.component === 'Kanban';
@@ -469,19 +464,41 @@ function logoutAction() {
   return Promise.resolve();
 }
 
-export const executeAction = _.debounce(executeActionWithDebounce);
+function debounce(func) {
+  const timers = new Map();
+
+  return (...args) => {
+    const event = args[1] || {};
+    const eventId = uuidv4();
+
+    if (event.debounce === undefined) {
+      return func.apply(this, args);
+    }
+
+    clearTimeout(timers.get(eventId));
+
+    const timer = setTimeout(() => {
+      func.apply(this, args);
+      timers.delete(eventId);
+    }, Number(event.debounce));
+
+    timers.set(eventId, timer);
+  };
+}
+
+export const executeAction = debounce(executeActionWithDebounce);
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
-      const shouldRun = resolveReferences(event.runOnlyIf, undefined, customVariables);
+      const shouldRun = resolveReferences(event.runOnlyIf, getCurrentState(), undefined, customVariables);
       if (!shouldRun) {
         return false;
       }
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, undefined, customVariables);
+        const message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -504,7 +521,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const params = event['parameters'];
         const resolvedParams = {};
         if (params) {
-          Object.keys(params).map((param) => (resolvedParams[param] = resolveReferences(params[param], undefined)));
+          Object.keys(params).map(
+            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
+          );
         }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
@@ -515,18 +534,23 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'open-webpage': {
-        const url = resolveReferences(event.url, undefined, customVariables);
+        const url = resolveReferences(event.url, getCurrentState(), undefined, customVariables);
         window.open(url, '_blank');
         return Promise.resolve();
       }
 
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, undefined, customVariables);
+        const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
         const queryParams = event.queryParams?.reduce(
           (result, queryParam) => ({
             ...result,
             ...{
-              [resolveReferences(queryParam[0])]: resolveReferences(queryParam[1], undefined, customVariables),
+              [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
+                queryParam[1],
+                getCurrentState(),
+                undefined,
+                customVariables
+              ),
             },
           }),
           {}
@@ -557,15 +581,15 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         return showModal(_ref, event.modal, false);
 
       case 'copy-to-clipboard': {
-        const contentToCopy = resolveReferences(event.contentToCopy, undefined, customVariables);
+        const contentToCopy = resolveReferences(event.contentToCopy, getCurrentState(), undefined, customVariables);
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
       }
 
       case 'set-localstorage-value': {
-        const key = resolveReferences(event.key, undefined, customVariables);
-        const value = resolveReferences(event.value, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         localStorage.setItem(key, value);
 
         return Promise.resolve();
@@ -573,9 +597,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, undefined, customVariables) ?? [];
-        const fileName = resolveReferences(event.fileName, undefined, customVariables) ?? 'data.txt';
-        const fileType = resolveReferences(event.fileType, undefined, customVariables) ?? 'csv';
+        const data = resolveReferences(event.data, getCurrentState(), undefined, customVariables) ?? [];
+        const fileName = resolveReferences(event.fileName, getCurrentState(), undefined, customVariables) ?? 'data.txt';
+        const fileType = resolveReferences(event.fileType, getCurrentState(), undefined, customVariables) ?? 'csv';
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
@@ -591,8 +615,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
-        const value = resolveReferences(event.value, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         customAppVariables[key] = value;
         useResolveStore.getState().actions.addAppSuggestions({
@@ -604,13 +628,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'get-custom-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         return customAppVariables[key];
       }
 
       case 'unset-custom-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
         useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
@@ -624,8 +648,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-page-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
-        const value = resolveReferences(event.value, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         const customPageVariables = {
           ...getCurrentState().page.variables,
           [key]: value,
@@ -647,7 +671,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'get-page-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customPageVariables = {
           ...getCurrentState().page.variables,
         };
@@ -655,7 +679,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'unset-page-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customPageVariables = _.omit(getCurrentState().page.variables, key);
 
         useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
@@ -705,7 +729,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         }
         actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
-          value: resolveReferences(param.value, undefined, customVariables),
+          value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
         }));
         const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
@@ -716,7 +740,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
-          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, [], customVariables));
+          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
         }
         if (_ref.appDefinition.pages[event.pageId]) {
           if (disabled) {
@@ -745,9 +769,10 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    return _.debounce(async () => {
-      await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
-    }, 10);
+    //hack to make sure that the page is loaded before executing the actions
+    setTimeout(async () => {
+      return await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
+    }, 0);
   }
 
   if (eventName === 'onTrigger') {
@@ -908,12 +933,12 @@ export function getQueryVariables(options, state) {
         const vars =
           options.includes('{{constants.') && !options.includes('%%')
             ? 'HiddenOrganizationConstant'
-            : resolveReferences(options);
+            : resolveReferences(options, state);
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
         dynamicVariables.forEach((variable) => {
-          queryVariables[variable] = resolveReferences(variable);
+          queryVariables[variable] = resolveReferences(variable, state);
         });
       }
 
@@ -955,7 +980,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
     parameters = query.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
-        [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
+        [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
       }),
       {}
     );
@@ -1077,7 +1102,7 @@ export function runQuery(
     parameters = dataQuery.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
-        [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
+        [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
       }),
       {}
     );
@@ -1111,7 +1136,7 @@ export function runQuery(
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
-    return _.delay(async () => {
+    setTimeout(() => {
       if (shouldSetPreviewData) {
         setPreviewLoading(true);
         queryPreviewData && setPreviewData('');
@@ -1302,14 +1327,16 @@ export function runQuery(
               },
             });
 
-            useResolveStore.getState().actions.addAppSuggestions({
-              queries: {
-                [queryName]: {
-                  data: finalData,
-                  isLoading: false,
+            if (mode === 'edit') {
+              useResolveStore.getState().actions.addAppSuggestions({
+                queries: {
+                  [queryName]: {
+                    data: finalData,
+                    isLoading: false,
+                  },
                 },
-              },
-            });
+              });
+            }
 
             const basePath = `queries.${queryName}`;
 
@@ -1332,7 +1359,7 @@ export function runQuery(
 
           resolve({ status: 'failed', message: error });
         });
-    }, 10);
+    }, 100);
   });
 }
 
@@ -1343,7 +1370,7 @@ export function setTablePageIndex(tableId, index, _ref) {
   }
 
   const table = Object.entries(getCurrentState().components).filter((entry) => entry?.[1]?.id === tableId)?.[0]?.[1];
-  const newPageIndex = resolveReferences(index);
+  const newPageIndex = resolveReferences(index, getCurrentState());
   table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
@@ -1380,7 +1407,7 @@ export function computeComponentState(components = {}) {
       if (!components[key]) return;
 
       const { component } = components[key];
-      const componentMeta = deepClone(componentTypes.find((comp) => component.component === comp.component));
+      const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component === comp.component));
       const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
       const existingValues = currentComponents[existingComponentName];
 
@@ -1599,7 +1626,7 @@ export const cloneComponents = (
     return true;
   });
 
-  let newDefinition = deepClone(appDefinition);
+  let newDefinition = _.cloneDeep(appDefinition);
   let newComponents = [],
     newComponentObj = {},
     addedComponentId = new Set();
@@ -1810,8 +1837,8 @@ export const addNewWidgetToTheEditor = (
   isInSubContainer = false,
   addingDefault = false
 ) => {
-  const componentMetaData = deepClone(componentMeta);
-  const componentData = deepClone(componentMetaData);
+  const componentMetaData = _.cloneDeep(componentMeta);
+  const componentData = _.cloneDeep(componentMetaData);
   const noOfGrid = useGridStore.getState().noOfGrid;
 
   const defaultWidth = componentMetaData.defaultSize.width;
@@ -1927,29 +1954,6 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
     delete newDefinition.pages[pageId].components[componentId];
   });
 
-  const appDefinition = useEditorStore.getState().appDefinition;
-
-  const deleteFromMap = [...toDeleteComponents];
-  const deletedComponentNames = deleteFromMap.map((id) => {
-    return appDefinition.pages[pageId].components[id].component.name;
-  });
-
-  const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
-  const allHintsAssociatedWithQuery = [];
-
-  if (allAppHints.length > 0) {
-    deletedComponentNames.forEach((componentName) => {
-      return allAppHints.forEach((suggestion) => {
-        if (suggestion?.hint.includes(componentName)) {
-          allHintsAssociatedWithQuery.push(suggestion.hint);
-        }
-      });
-    });
-  }
-
-  useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
-  useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
-
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
 };
 
@@ -1982,28 +1986,12 @@ function convertMapSet(obj) {
 export const checkExistingQueryName = (newName) =>
   useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
 
-// export const runQueries = (queries, _ref, isOnLoad = false) => {
-//   queries.forEach((query) => {
-//     if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-//       runQuery(_ref, query.id, query.name, isOnLoad);
-//     }
-//   });
-// };
-
-export const runQueries = async (queries, _ref, isOnLoad = false) => {
-  try {
-    for (const query of queries) {
-      if (query.options.runOnPageLoad && isQueryRunnable(query) && !query.options?.requestConfirmation) {
-        await runQuery(_ref, query.id, query.name, isOnLoad);
-      }
+export const runQueries = (queries, _ref, isOnLoad = false) => {
+  queries.forEach((query) => {
+    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
+      runQuery(_ref, query.id, query.name, isOnLoad);
     }
-  } catch (error) {
-    // If any query fails, reject the promise with the error
-    return Promise.reject(error);
-  }
-
-  // Return a resolved promise if all queries are successful
-  return Promise.resolve();
+  });
 };
 
 export const computeQueryState = (queries) => {
@@ -2037,7 +2025,7 @@ export const buildComponentMetaDefinition = (components = {}) => {
   for (const componentId in components) {
     const currentComponentData = components[componentId];
 
-    const componentMeta = deepClone(
+    const componentMeta = _.cloneDeep(
       componentTypes.find((comp) => currentComponentData.component.component === comp.component)
     );
 
@@ -2082,7 +2070,7 @@ export const buildComponentMetaDefinition = (components = {}) => {
 };
 
 export const buildAppDefinition = (data) => {
-  const editingVersion = camelizeKeys(_.omit(data.editing_version, ['definition', 'updated_at', 'created_at', 'name']));
+  const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
 
   editingVersion['currentVersionId'] = editingVersion.id;
   _.unset(editingVersion, 'id');

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
@@ -16,7 +16,6 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
-import { debounce } from 'lodash';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -45,21 +44,37 @@ const MultiLineCodeEditor = (props) => {
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   } = props;
 
+  const [currentValue, setCurrentValue] = React.useState(() => initialValue);
+
   const context = useContext(CodeHinterContext);
 
   const { suggestionList } = createReferencesLookup(context, true);
 
-  const currentValueRef = useRef(initialValue);
+  const diffOfCurrentValue = React.useRef(null);
 
-  const handleChange = (val) => (currentValueRef.current = val);
+  const handleChange = React.useCallback((val) => {
+    setCurrentValue(val);
+
+    const diff = val.length - currentValue.length;
+
+    if (diff > 0) {
+      diffOfCurrentValue.current = val.slice(-diff);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOnBlur = () => {
-    if (!delayOnChange) return onChange(currentValueRef.current);
+    if (!delayOnChange) return onChange(currentValue);
     setTimeout(() => {
-      onChange(currentValueRef.current);
+      onChange(currentValue);
     }, 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   };
+
+  useEffect(() => {
+    setCurrentValue(initialValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   const heightInPx = typeof height === 'string' && height?.includes('px') ? height : `${height}px`;
 
@@ -206,7 +221,7 @@ const MultiLineCodeEditor = (props) => {
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
-                value={initialValue}
+                value={currentValue}
                 placeholder={placeholder}
                 height={'100%'}
                 minHeight={heightInPx}
@@ -242,7 +257,7 @@ const MultiLineCodeEditor = (props) => {
             {showPreview && (
               <div className="multiline-previewbox-wrapper">
                 <PreviewBox
-                  currentValue={currentValueRef.current}
+                  currentValue={currentValue}
                   validationSchema={null}
                   setErrorStateActive={() => null}
                   componentId={null}

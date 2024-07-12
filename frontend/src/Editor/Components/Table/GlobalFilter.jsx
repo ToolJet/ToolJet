@@ -49,7 +49,6 @@ export const GlobalFilter = ({
           onClick={() => {
             setGlobalFilter(undefined);
             setValue('');
-            debouncedChange('');
             onComponentOptionChanged(component, 'searchText', '');
           }}
         >

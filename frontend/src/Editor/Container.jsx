@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo, useContext } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes, EditorConstants } from './editorConstants';
@@ -17,7 +17,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
-import _, { isEmpty } from 'lodash';
+import _, { cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
@@ -32,7 +32,6 @@ import './editor.theme.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getSubpath } from '@/_helpers/routes';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
@@ -124,9 +123,9 @@ export const Container = ({
       const mobLayouts = Object.keys(boxes)
         .filter((key) => !boxes[key]?.component?.parent)
         .map((key) => {
-          return { ...deepClone(boxes[key]?.layouts?.desktop), i: key };
+          return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
         });
-      const updatedBoxes = deepClone(boxes);
+      const updatedBoxes = cloneDeep(boxes);
       let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
       newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
       Object.keys(boxes).forEach((id) => {
@@ -183,9 +182,9 @@ export const Container = ({
       const mobLayouts = Object.keys(components)
         .filter((key) => !components[key]?.component?.parent)
         .map((key) => {
-          return { ...deepClone(components[key]?.layouts?.desktop), i: key };
+          return { ...cloneDeep(components[key]?.layouts?.desktop), i: key };
         });
-      const updatedBoxes = deepClone(components);
+      const updatedBoxes = cloneDeep(components);
       let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
       newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
       Object.keys(components).forEach((id) => {
@@ -367,7 +366,7 @@ export const Container = ({
         }
 
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-        const componentMeta = deepClone(
+        const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );
 
@@ -391,13 +390,15 @@ export const Container = ({
             Listview: 'listItem',
           });
           const customResolverVariable = widgetResolvables[parentMeta?.component];
-          const defaultChildren = deepClone(parentMeta)['defaultChildren'];
+          const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
           const parentId = newComponent.id;
 
           defaultChildren.forEach((child) => {
             const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
-            const componentMeta = deepClone(componentTypes.find((component) => component.component === componentName));
+            const componentMeta = _.cloneDeep(
+              componentTypes.find((component) => component.component === componentName)
+            );
             const componentData = JSON.parse(JSON.stringify(componentMeta));
 
             const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / noOfGrids;

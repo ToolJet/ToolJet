@@ -68,7 +68,7 @@ import {
   resetAllStores,
 } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import { EMPTY_ARRAY, flushComponentsToRender, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
@@ -86,7 +86,12 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex, EditorConstants } from './editorConstants';
-import { handleLowPriorityWork, updateCanvasBackground, clearAllQueuedTasks } from '@/_helpers/editorHelpers';
+import {
+  findComponentsWithReferences,
+  handleLowPriorityWork,
+  updateCanvasBackground,
+  clearAllQueuedTasks,
+} from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
 
@@ -295,14 +300,65 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
+  /**
+   ** Async updates components in batches to optimize and processing efficiency.
+   * This function iterates over an array of component IDs, updating them in fixed-size batches,
+   * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
+   * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
+   * ensuring the system is ready for the next cycle of updates.
+   *
+   * @param {Array} componentIds An array of component IDs that need updates.
+   * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
+   */
+
+  async function batchUpdateComponents(componentIds) {
+    if (componentIds.length === 0) return;
+
+    let updatedComponentIds = [];
+
+    for (let i = 0; i < componentIds.length; i += 10) {
+      const batch = componentIds.slice(i, i + 10);
+      batch.forEach((id) => {
+        updatedComponentIds.push(id);
+      });
+
+      updateComponentsNeedsUpdateOnNextRender(batch);
+      // Delay to allow UI to process
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Flush only updated components
+
+    flushComponentsToRender(updatedComponentIds);
+  }
+
+  const lastUpdatedRef = useResolveStore((state) => state.lastUpdatedRefs, shallow);
+
+  useEffect(() => {
+    if (lastUpdatedRef.length > 0) {
+      const currentComponents = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
+
+      const directRenders = lastUpdatedRef.map((ref) => ref.includes('rerender') && ref.split(' ')[1]);
+
+      const toUpdateRefs = lastUpdatedRef.filter((ref) => !ref.includes('rerender'));
+
+      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, toUpdateRefs);
+
+      if (directRenders.length > 0) {
+        componentIdsWithReferences.push(...directRenders);
+      }
+
+      if (componentIdsWithReferences.length > 0) {
+        batchUpdateComponents(componentIdsWithReferences);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastUpdatedRef]);
+
   useEffect(
     () => {
-      const isEditorReady = useCurrentStateStore.getState().isEditorReady;
-      const isResolverStoreReady = useResolveStore.getState().storeReady;
-      if (isEditorReady && isResolverStoreReady) {
-        const components = appDefinition?.pages?.[currentPageId]?.components || {};
-        computeComponentState(components);
-      }
+      const components = appDefinition?.pages?.[currentPageId]?.components || {};
+      computeComponentState(components);
 
       const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
@@ -348,11 +404,6 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, mounted]);
-
-  useEffect(() => {
-    updateEntityReferences(appDefinition, currentPageId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events.length]);
 
   const handleYmapEventUpdates = () => {
     props.ymap?.set('eventHandlersUpdated', {
@@ -725,23 +776,21 @@ const EditorComponent = (props) => {
       app: appData,
     });
 
-    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
-    await fetchDataSources(editing_version?.id);
-
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
-      handleLowPriorityWork(() => {
+      handleLowPriorityWork(async () => {
         useResolveStore.getState().actions.updateLastUpdatedRefs(['constants', 'client']);
+        await useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+        await fetchDataSources(editing_version?.id);
         commonLowPriorityActions(events, { homePageId });
       });
     });
   };
 
-  const commonLowPriorityActions = (events, { homePageId }) => {
+  const commonLowPriorityActions = async (events, { homePageId }) => {
     const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
     const editorRef = getEditorRef();
-    runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true).then(() => {
-      handleEvent('onPageLoad', currentPageEvents, {}, true);
-    });
+    await runQueries(useDataQueriesStore.getState().dataQueries, editorRef, true);
+    await handleEvent('onPageLoad', currentPageEvents, {}, true);
   };
 
   const processNewAppDefinition = async (data, startingPageHandle, versionSwitched = false, onComplete) => {
@@ -1082,13 +1131,12 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
         })
-        .catch((err) => {
+        .catch(() => {
           updateEditorState({
             saveError: true,
             isUpdatingEditorStateInProcess: false,
           });
-          // toast.error('App could not save.');
-          toast.error(err?.error ?? 'App could not save.');
+          toast.error('App could not save.');
         })
         .finally(() => {
           if (appDiffOptions?.cloningComponent) {
@@ -1866,7 +1914,7 @@ const EditorComponent = (props) => {
     setIsSaving(true);
     appVersionService
       .clonePage(appId, editingVersionId, pageId)
-      .then(async (data) => {
+      .then((data) => {
         const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
         const pages = data.pages.reduce((acc, page) => {
@@ -1890,8 +1938,6 @@ const EditorComponent = (props) => {
           events: data.events,
         });
         appDefinitionChanged(newAppDefinition);
-        await onEditorLoad(newAppDefinition, pageId, false);
-        updateEntityReferences(newAppDefinition, pageId);
       })
       .finally(() => setIsSaving(false));
   };

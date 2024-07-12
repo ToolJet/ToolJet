@@ -1,17 +1,5 @@
 import { resolveReferences } from '@/_helpers/utils';
 
-import { resolveReferences as newResolveReference } from './CodeEditor/utils';
-
-const handleResolveReferences = (initialValue, defaultValue, customResolvers) => {
-  const [_, error, value] = newResolveReference(initialValue, {}, customResolvers);
-
-  if (error) {
-    return defaultValue;
-  }
-
-  return value;
-};
-
 export const resolveProperties = (component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
     return Object.entries(component.definition.properties).reduce(
@@ -20,7 +8,7 @@ export const resolveProperties = (component, currentState, defaultValue, customR
         ...{
           [entry[0]]: entry[1]?.skipResolve
             ? entry[1].value
-            : handleResolveReferences(entry[1].value, defaultValue, customResolvables),
+            : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables),
         },
       }),
       {}
@@ -35,7 +23,7 @@ export const resolveStyles = (component, currentState, defaultValue, customResol
       const key = entry[0];
       const value = entry[1]?.skipResolve
         ? entry[1].value
-        : handleResolveReferences(entry[1].value, defaultValue, customResolvables);
+        : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
       return {
         ...resolvedStyles,
         ...{ [key]: value },
@@ -53,7 +41,7 @@ export const resolveGeneralProperties = (component, currentState, defaultValue, 
       const key = entry[0];
       const value = entry[1]?.skipResolve
         ? entry[1].value
-        : handleResolveReferences(entry[1].value, defaultValue, customResolvables);
+        : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
       return {
         ...resolvedGeneral,
         ...{ [key]: value },
@@ -71,7 +59,7 @@ export const resolveGeneralStyles = (component, currentState, defaultValue, cust
       const key = entry[0];
       const value = entry[1]?.skipResolve
         ? entry[1].value
-        : handleResolveReferences(entry[1].value, defaultValue, customResolvables);
+        : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
       return {
         ...resolvedGeneral,
         ...{ [key]: value },

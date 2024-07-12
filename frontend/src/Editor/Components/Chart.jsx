@@ -4,8 +4,7 @@ import Plotly from 'plotly.js-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
-import { isEqual } from 'lodash';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { isEqual, cloneDeep } from 'lodash';
 var tinycolor = require('tinycolor2');
 
 export const Chart = function Chart({
@@ -233,7 +232,7 @@ const PlotComponent = memo(
     return (
       <Plot
         data={data}
-        layout={deepClone(layout)} // Cloning the layout since the object is getting mutated inside the package
+        layout={cloneDeep(layout)} // Cloning the layout since the object is getting mutated inside the package
         config={config}
         onClick={(e) => {
           onClick(e.points);

@@ -21,7 +21,8 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   };
   const conditionalAccordionItems = (component) => {
     const useDefaultButton = resolveReferences(
-      component.component.definition.properties.useDefaultButton?.value ?? false
+      component.component.definition.properties.useDefaultButton?.value ?? false,
+      currentState
     );
     const accordionItems = [];
     const options = ['useDefaultButton'];
