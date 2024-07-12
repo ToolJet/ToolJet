@@ -60,7 +60,7 @@ class ManageGroupPermissionsComponent extends React.Component {
 
   duplicateGroup = () => {
     const { groupDuplicateOption, groupToDuplicate } = this.state;
-    this.setState({ isDuplicatingGroup: true, creatingGroup: true });
+    this.setState({ isDuplicatingGroup: true });
     groupPermissionV2Service
       .duplicate(groupToDuplicate, groupDuplicateOption)
       .then((data) => {
