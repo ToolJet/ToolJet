@@ -66,7 +66,9 @@ function addAppsPermissionsTOQuery(query: SelectQueryBuilder<GroupPermissions>, 
       new Brackets((qb) => {
         appsIdList.forEach((appId, index) => {
           if (index === 0) {
-            qb.where('groupApps.appId = :appId', { appId }).orWhere('granularPermissions.isAll = true');
+            qb.where('groupApps.appId = :appId', { appId })
+              .orWhere('granularPermissions.isAll = true')
+              .orWhere('groupApps.id IS NULL');
           } else {
             qb.orWhere('groupApps.appId = :appId', { appId });
           }

@@ -264,8 +264,7 @@ export class AppsController {
   @Delete(':id')
   async delete(@User() user, @AppDecorator() app: App) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-
-    if (!ability.can('deleteApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.DELETE, app)) {
       throw new ForbiddenException('Only administrators are allowed to delete apps.');
     }
 

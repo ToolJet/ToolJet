@@ -535,7 +535,7 @@ class ManageGranularAccessComponent extends React.Component {
             </div>
           </>
         )}
-        {granularPermissions.length && (
+        {granularPermissions.length > 0 && (
           <div className="side-button-cont">
             <AddResourcePermissionsMenu
               openAddPermissionModal={this.openAddPermissionModal}

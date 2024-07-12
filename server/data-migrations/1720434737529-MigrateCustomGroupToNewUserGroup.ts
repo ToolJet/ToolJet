@@ -116,6 +116,12 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         return `custom-${USER_ROLE.END_USER}`;
       case 'all_users':
         return `Custom All users`;
+      case 'Builder':
+        return `Custom Builder`;
+      case 'End User':
+        return `Custom End User`;
+      case 'Admin':
+        return `Custom Admin`;
       default:
         return name;
     }

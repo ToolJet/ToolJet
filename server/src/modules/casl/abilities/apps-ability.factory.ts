@@ -111,7 +111,7 @@ export class AppsAbilityFactory {
     }
 
     if (userPermission.appDelete) {
-      can('deleteApp', App);
+      can(APP_RESOURCE_ACTIONS.DELETE, App);
     }
 
     can(APP_RESOURCE_ACTIONS.VIEW, App, { isPublic: true });

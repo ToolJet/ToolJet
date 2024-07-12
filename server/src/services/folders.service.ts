@@ -47,6 +47,19 @@ export class FoldersService {
 
   async all(user: User, searchKey: string): Promise<Folder[]> {
     const allFolderList = await this.allFolders(user);
+    if (!searchKey || !allFolderList || allFolderList.length === 0) {
+      return allFolderList;
+    }
+    const folders = await this.allFolders(user, searchKey);
+    allFolderList.forEach((folder, index) => {
+      const currentFolder = folders.find((f) => f.id === folder.id);
+      if (currentFolder) {
+        allFolderList[index] = currentFolder;
+      } else {
+        allFolderList[index].folderApps = [];
+        allFolderList[index].generateCount();
+      }
+    });
     return allFolderList;
   }
 
@@ -76,19 +89,17 @@ export class FoldersService {
     const userAppPermissions = userPermission?.[TOOLJET_RESOURCE.APP];
 
     const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
-
-    if (folderAppIds.length == 0 || userAppPermissions?.hideAll) {
+    if (folderAppIds.length == 0) {
       return {
         viewableApps: [],
         totalCount: 0,
       };
     }
     const viewableAppsTotal = Array.from(
-      new Set(
-        [...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId].filter(
-          (id) => !userAppPermissions.hiddenAppsId.includes(id)
-        )
-      )
+      new Set([
+        ...userAppPermissions.editableAppsId,
+        ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+      ])
     );
 
     const viewableAppIds = viewableAppsTotal.filter((id) => folderAppIds.includes(id));
@@ -97,15 +108,10 @@ export class FoldersService {
       .innerJoin('apps.user', 'user')
       .addSelect(['user.firstName', 'user.lastName']);
 
-    if (!(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
-      viewableAppsInFolder.where('apps.id IN (...viewableAppIds)', {
-        viewableAppIds,
-      });
-    } else {
-      viewableAppsInFolder.where('apps.organizationId = :organizationId', {
-        organizationId: user.organizationId,
-      });
-    }
+    // if (!(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
+    viewableAppsInFolder.where('apps.id IN (:...viewableAppIds)', {
+      viewableAppIds: viewableAppIds,
+    });
 
     const [viewableApps, totalCount] = await Promise.all([
       viewableAppsInFolder
