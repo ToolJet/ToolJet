@@ -2,7 +2,7 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import _ from 'lodash';
 
 export function validateMultilineCode(code) {
-  const reservedKeyword = ['app', 'this']; // Case-sensitive reserved keywords except 'window'
+  const reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
   const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')})\\b`, 'i');
   let inString = false;
   let inComment = false;
@@ -33,18 +33,6 @@ export function validateMultilineCode(code) {
 
     // If we are not within a string or a comment, check for keywords
     if (!inString && !inComment) {
-      // Special handling for 'window'
-      if (code.substring(i, i + 6) === 'window' && (code[i + 6] === undefined || code[i + 6] !== '.')) {
-        return {
-          status: 'failed',
-          data: {
-            message: `Code contains reserved keyword 'window'`,
-            description:
-              'Cannot resolve code with reserved keyword "window" in it unless it is followed by a dot. Please remove it and try again.',
-          },
-        };
-      }
-
       const restOfCode = code.substring(i);
       const match = restOfCode.match(keywordRegex);
 

@@ -258,18 +258,16 @@ export const Container = ({
       return;
     }
 
-    const definition = useEditorStore.getState().appDefinition;
-
-    if (!definition.pages[currentPageId]?.components) return;
+    if (!appDefinition.pages[currentPageId]?.components) return;
 
     const newDefinition = {
-      ...definition,
+      ...appDefinition,
       pages: {
-        ...definition.pages,
+        ...appDefinition.pages,
         [currentPageId]: {
-          ...definition.pages[currentPageId],
+          ...appDefinition.pages[currentPageId],
           components: {
-            ...definition.pages[currentPageId]?.components,
+            ...appDefinition.pages[currentPageId]?.components,
             ...boxes,
           },
         },
@@ -278,7 +276,7 @@ export const Container = ({
 
     //need to check if a new component is added or deleted
 
-    const oldComponents = definition.pages[currentPageId]?.components ?? {};
+    const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
     const newComponents = boxes;
 
     const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
@@ -291,8 +289,7 @@ export const Container = ({
       opts.componentAdded = true;
     }
 
-    const shouldUpdate = !_.isEmpty(diff(definition, newDefinition));
-
+    const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
     if (shouldUpdate) {
       appDefinitionChanged(newDefinition, opts);
     }
@@ -1048,16 +1045,15 @@ const WidgetWrapper = ({
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   const { label = { value: null } } = propertiesDefinition ?? {};
-  const visibility = propertiesDefinition?.visibility?.value ?? stylesDefinition?.visibility?.value ?? null;
-  const resolvedVisibility = resolveWidgetFieldValue(visibility);
 
   const styles = {
     width: width + 'px',
-    height: resolvedVisibility ? calculateMoveableBoxHeight() + 'px' : '10px',
+    height: calculateMoveableBoxHeight() + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),
   };
+
   return (
     <>
       <div

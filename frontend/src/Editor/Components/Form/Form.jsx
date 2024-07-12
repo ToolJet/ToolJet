@@ -3,7 +3,7 @@ import { SubCustomDragLayer } from '@/Editor/SubCustomDragLayer';
 import { SubContainer } from '@/Editor/SubContainer';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import _, { debounce, omit } from 'lodash';
+import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
@@ -189,9 +189,7 @@ export const Form = function Form(props) {
   };
   const fireSubmissionEvent = () => {
     if (isValid) {
-      onEvent('onSubmit', formEvents).then(() => {
-        debounce(() => resetComponent(), 100)();
-      });
+      onEvent('onSubmit', formEvents).then(() => resetComponent());
     } else {
       fireEvent('onInvalid');
     }
