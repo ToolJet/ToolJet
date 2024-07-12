@@ -157,7 +157,7 @@ export const NumberInput = function NumberInput({
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     boxShadow: boxShadow,
-    padding: component?.definition?.styles?.iconVisibility?.value
+    padding: styles.iconVisibility
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
