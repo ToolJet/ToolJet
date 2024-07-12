@@ -207,7 +207,9 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
       }
     });
   } else {
-    const variableToResolve = code.replace(/{{|}}/g, '').trim();
+    const trimmedCode = code.trim();
+    const variableToResolve =
+      trimmedCode.startsWith('{{') && trimmedCode.endsWith('}}') ? trimmedCode.slice(2, -2).trim() : trimmedCode;
 
     const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
