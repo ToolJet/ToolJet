@@ -318,6 +318,29 @@ export function validateQueryName(name) {
   return nameRegex.test(name);
 }
 
+export function validateKebabCase(slug) {
+  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  if (slug === '') {
+    return { isValid: false, error: 'Handle cannot be empty.' };
+  }
+  if (!/^[a-zA-Z0-9]/.test(slug)) {
+    return { isValid: false, error: 'Handle must start with a letter or number.' };
+  }
+  if (/[^a-zA-Z0-9-]/.test(slug)) {
+    return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
+  }
+  if (/--/.test(slug)) {
+    return { isValid: false, error: 'Handle cannot contain consecutive hyphens.' };
+  }
+  if (slug.endsWith('-')) {
+    return { isValid: false, error: 'Handle cannot end with a hyphen.' };
+  }
+  if (!pattern.test(slug)) {
+    return { isValid: false, error: 'Handle does not match the kebab-case pattern.' };
+  }
+  return { isValid: true, error: null };
+}
+
 export const convertToKebabCase = (string) =>
   string
     .replace(/([a-z])([A-Z])/g, '$1-$2')
