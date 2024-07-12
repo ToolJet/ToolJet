@@ -19,7 +19,7 @@ export class GroupPermissions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'organization_id' })
+  @Column({ name: 'organization_id', nullable: false })
   organizationId: string;
 
   @Column({ name: 'name', nullable: false })

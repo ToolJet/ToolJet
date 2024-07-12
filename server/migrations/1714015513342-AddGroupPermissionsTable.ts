@@ -13,7 +13,7 @@ export class AddGroupPermissionsTable1714015513342 implements MigrationInterface
     await queryRunner.query(`
     CREATE TABLE IF NOT EXISTS permission_groups (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        organization_id UUID,
+        organization_id UUID NOT NULL,
         name VARCHAR(50) NOT NULL,
         type group_permissions_type NOT NULL DEFAULT 'custom',
         app_create BOOLEAN DEFAULT false,

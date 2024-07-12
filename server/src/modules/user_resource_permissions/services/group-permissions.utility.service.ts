@@ -163,6 +163,7 @@ export class GroupPermissionsUtilityService {
       return await manager.save(
         manager.create(GroupPermissions, {
           name: newName,
+          organizationId: group.organizationId,
           type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
           ...(addPermission ? instanceToPlain(group) : {}),
         })
