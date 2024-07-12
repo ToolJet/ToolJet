@@ -102,7 +102,7 @@ function AppResourcePermissions({
             <span className="form-check-label" data-cy="app-delete-label">
               {'View'}
             </span>
-            <span class={`tj-text-xxsm`}>Only view released version of app</span>
+            <span class={`tj-text-xxsm`}>Only access released version of apps</span>
           </label>
           <label className="form-check form-check-inline">
             <input

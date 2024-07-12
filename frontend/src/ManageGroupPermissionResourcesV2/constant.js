@@ -1,5 +1,10 @@
 import React from 'react';
 
+const endUserToAdminMessage =
+  "Updating the user's details will change their role from end-user to admin. Are you sure you want to continue?";
+const endUserToBuilderMessage =
+  "Updating the user's details will change their role from end-user to builder. Are you sure you want to continue?";
+
 export const EDIT_ROLE_MESSAGE = {
   admin: {
     builder: () => {
@@ -50,7 +55,7 @@ export const EDIT_ROLE_MESSAGE = {
               Changing user default group from end-user to builder will affect the count of users covered by your plan.
             </p>
           )}
-          <p className="tj-text-sm">Are you sure you want to continue?</p>
+          <p className="tj-text-sm">{endUserToBuilderMessage}</p>
         </div>
       );
     },
@@ -62,7 +67,7 @@ export const EDIT_ROLE_MESSAGE = {
               Changing user default group from end-user to admin will affect the count of users covered by your plan.
             </p>
           )}
-          <p className="tj-text-sm">Are you sure you want to continue?</p>
+          <p className="tj-text-sm">{endUserToAdminMessage}</p>
         </div>
       );
     },

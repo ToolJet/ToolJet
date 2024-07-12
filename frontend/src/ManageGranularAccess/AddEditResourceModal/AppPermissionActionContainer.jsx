@@ -53,7 +53,7 @@ function AppPermissionsActions({
           />
           <div>
             <span className="form-check-label">View</span>
-            <span className="tj-text-xsm">Only view deployed version of app</span>
+            <span className="tj-text-xsm">Only access released version of apps</span>
           </div>
         </label>
         <label className="form-check form-check-inline">
@@ -67,7 +67,7 @@ function AppPermissionsActions({
             }}
           />
           <div>
-            <span className={`form-check-label faded-text`}>Hide from dashboard</span>
+            <span className={`form-check-label`}>Hide from dashboard</span>
             <span className="tj-text-xsm">App will be accessible by URL only</span>
           </div>
         </label>
