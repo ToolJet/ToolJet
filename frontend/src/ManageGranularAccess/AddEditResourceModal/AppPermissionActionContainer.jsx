@@ -34,8 +34,13 @@ function AppPermissionsActions({
             />
 
             <div>
-              <span className={`form-check-label ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>Edit</span>
-              <span className={`tj-text-xsm ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>
+              <span
+                className="form-check-label"
+                style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+              >
+                Edit
+              </span>
+              <span className="tj-text-xsm" style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}>
                 Access to app builder
               </span>
             </div>
@@ -54,8 +59,15 @@ function AppPermissionsActions({
             }}
           />
           <div>
-            <span className="form-check-label">View</span>
-            <span className="tj-text-xsm">Only access released version of apps</span>
+            <span
+              className="form-check-label"
+              style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+            >
+              View
+            </span>
+            <span className="tj-text-xsm" style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}>
+              Only access released version of apps
+            </span>
           </div>
         </label>
         <label className="form-check form-check-inline">

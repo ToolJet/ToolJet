@@ -140,8 +140,16 @@ function AddEditResourcePermissionsModal({
                 }}
               />
               <div>
-                <span className={`form-check-label ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>Custom</span>
-                <span className={`tj-text-xsm ${disableBuilderLevelUpdate ? 'text-muted' : ''}`}>
+                <span
+                  className="form-check-label"
+                  style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+                >
+                  Custom
+                </span>
+                <span
+                  className="tj-text-xsm"
+                  style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+                >
                   Select specific applications you want to add to the group
                 </span>
               </div>
