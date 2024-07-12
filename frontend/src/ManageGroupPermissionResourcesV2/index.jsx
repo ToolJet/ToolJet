@@ -298,7 +298,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .catch(({ error }) => {
         this.setState({
           showEditRoleErrorModal: true,
-          errorTitle: error?.title ? error?.title : 'Cannot remove last admin',
+          errorTitle: error?.title ? error?.title : 'Cannot update the user role',
           errorMessage: error.error,
           errorIconName: 'usergear',
           errorListItems: error.data,

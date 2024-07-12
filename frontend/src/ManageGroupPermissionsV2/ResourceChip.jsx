@@ -56,7 +56,9 @@ const GroupChipTD = ({ groups = [] }) => {
     >
       <div className="groups-name-container tj-text-sm font-weight-500">
         {orderedArray.length === 0 ? (
-          renderGroupChip('-', null)
+          <div className="groups-name-row">
+            <div className="empty-text">-</div>
+          </div>
         ) : (
           <>
             <div className="groups-name-row">

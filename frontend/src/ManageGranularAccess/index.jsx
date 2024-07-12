@@ -205,7 +205,7 @@ class ManageGranularAccessComponent extends React.Component {
         }
         this.props.updateParentState({
           showEditRoleErrorModal: true,
-          errorTitle: error?.title ? error?.title : 'Cannot remove last admin',
+          errorTitle: error?.title ? error?.title : 'Cannot update the permissions',
           errorMessage: error.error,
           errorIconName: 'usergear',
           errorListItems: error.data,

@@ -18,7 +18,7 @@ function AppResourcePermissions({
   let apps = appsPermissions?.groupApps?.map((app) => {
     return app?.app?.name;
   });
-  if (apps.length == 0 || permissions.isAll) apps = ['All apps'];
+  if (permissions.isAll) apps = ['All apps'];
 
   return (
     <div
