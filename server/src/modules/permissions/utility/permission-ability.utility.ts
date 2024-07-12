@@ -30,7 +30,11 @@ export function getUserPermissionsQuery(
     }, {});
     query
       .leftJoin('groupPermissions.groupGranularPermissions', 'granularPermissions')
-      .andWhere(orConditions, parameters)
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(orConditions, parameters).orWhere('granularPermissions.id IS NULL');
+        })
+      )
       .addSelect(['granularPermissions.isAll', 'granularPermissions.type']);
   }
 

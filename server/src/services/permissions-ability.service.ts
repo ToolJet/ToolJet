@@ -46,7 +46,7 @@ export class AbilityService {
         appCreate: acc.appCreate || group.appCreate,
         appDelete: acc.appDelete || group.appDelete,
         folderCRUD: acc.folderCRUD || group.folderCRUD,
-        orgConstantCRUD: acc.folderCRUD || group.folderCRUD,
+        orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
         orgVariableCRUD: acc.orgVariableCRUD,
       };
     }, DEFAULT_USER_PERMISSIONS);
