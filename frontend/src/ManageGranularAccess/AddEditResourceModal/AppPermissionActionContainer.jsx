@@ -41,7 +41,7 @@ function AppPermissionsActions({
           />
           <div>
             <span className="form-check-label text-muted">View</span>
-            <span className="text-muted tj-text-xsm">Only view deployed version of app</span>
+            <span className="text-muted tj-text-xsm">Only access released version of apps</span>
           </div>
         </label>
         <label className="form-check form-check-inline">

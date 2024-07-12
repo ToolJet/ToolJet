@@ -31,19 +31,17 @@ export function viewableAppsQueryUsingPermissions(
   searchKey?: string,
   select?: Array<string>
 ): SelectQueryBuilder<AppBase> {
-  let viewableApps = userAppPermissions.hideAll
-    ? [null]
+  const viewableApps = userAppPermissions.hideAll
+    ? [...userAppPermissions.editableAppsId]
     : [
         null,
         ...Array.from(
-          new Set(
-            [...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId].filter(
-              (id) => !userAppPermissions.hiddenAppsId.includes(id)
-            )
-          )
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+          ])
         ),
       ];
-  viewableApps = viewableApps.filter((id) => !userAppPermissions.hiddenAppsId.includes(id));
   const viewableAppsQb = manager
     .createQueryBuilder(AppBase, 'viewable_apps')
     .innerJoin('viewable_apps.user', 'user')
@@ -59,7 +57,7 @@ export function viewableAppsQueryUsingPermissions(
       viewableApps,
     });
   }
-  const hiddenApps = userAppPermissions.hiddenAppsId;
+  const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
   if (!userAppPermissions.hideAll && viewAll && hiddenApps.length > 0) {
     viewableAppsQb.where('viewable_apps.id NOT IN (:...hiddenApps)', {
       hiddenApps,
