@@ -26,6 +26,7 @@ function InviteUsersForm({
   userDrawerMode,
   setUserValues,
   creatingUser,
+  darkMode,
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
@@ -168,12 +169,13 @@ function InviteUsersForm({
           }
           handleConfirm={editUser}
           show={isChangeRoleModalOpen}
+          darkMode={darkMode}
           handleClose={() => {
             setIsChangeRoleModalOpen(false);
             onCancel();
             onClose();
           }}
-          confirmBtnProps={{ title: 'Continue' }}
+          confirmBtnProps={{ title: 'Continue', tooltipMessage: false }}
         >
           <div>{EDIT_ROLE_MESSAGE?.[currentEditingUser?.role_group?.[0]?.name]?.[newRole?.value]?.()}</div>
         </ModalBase>

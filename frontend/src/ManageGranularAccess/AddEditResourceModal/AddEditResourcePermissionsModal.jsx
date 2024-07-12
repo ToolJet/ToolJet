@@ -3,6 +3,7 @@ import '../../ManageGroupPermissionsV2/groupPermissions.theme.scss';
 import ModalBase from '@/_ui/Modal';
 import { AppsSelect } from '@/_ui/Modal/AppsSelect';
 import AppPermissionsActions from './AppPermissionActionContainer';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 function AddEditResourcePermissionsModal({
   handleClose,
@@ -46,15 +47,18 @@ function AddEditResourcePermissionsModal({
             name="permissionName"
             value={newPermissionName}
             onChange={(e) => {
-              if (e.target.value?.length < 51)
-                updateParentState(() => ({
-                  newPermissionName: e.target.value,
-                }));
+              let value = e.target.value;
+              if (value?.length > 50) {
+                value = value.slice(0, 50);
+              }
+              updateParentState(() => ({
+                newPermissionName: value,
+              }));
             }}
           />
           <span className="text-danger">{errors['permissionName']}</span>
         </div>
-        <div className={`mt-1 tj-text-xxsm ${newPermissionName?.length == 50 ? 'error-text' : ''}`}>
+        <div className={`mt-1 tj-text-xxsm ${newPermissionName?.length > 50 ? 'error-text' : ''}`}>
           <div data-cy="workspace-login-help-text">Permission name must be unique and max 50 characters</div>
         </div>
       </div>
@@ -108,28 +112,49 @@ function AddEditResourcePermissionsModal({
               }}
             />
             <div>
-              <span className="form-check-label text-muted">All apps</span>
-              <span className="text-muted tj-text-xsm">
+              <span className="form-check-label">All apps</span>
+              <span className="tj-text-xsm">
                 This will select all apps in the workspace including any new apps created
               </span>
             </div>
           </label>
-          <label className="form-check form-check-inline">
-            <input
-              className="form-check-input"
-              type="radio"
-              disabled={addableApps.length === 0 || disableBuilderLevelUpdate}
-              checked={isCustom}
-              onClick={() => {
-                !isCustom &&
-                  updateParentState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
-              }}
-            />
-            <div>
-              <span className="form-check-label text-muted">Custom</span>
-              <span className="text-muted tj-text-xsm">Select specific applications you want to add to the group</span>
-            </div>
-          </label>
+          <OverlayTrigger
+            overlay={
+              disableBuilderLevelUpdate ? (
+                <Tooltip id="tooltip-disable-edit-update">Use custom groups to select custom resources</Tooltip>
+              ) : (
+                <span></span>
+              )
+            }
+            placement="left"
+          >
+            <label className="form-check form-check-inline">
+              <input
+                className="form-check-input"
+                type="radio"
+                disabled={addableApps.length === 0 || disableBuilderLevelUpdate}
+                checked={isCustom}
+                onClick={() => {
+                  !isCustom &&
+                    updateParentState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
+                }}
+              />
+              <div>
+                <span
+                  className="form-check-label"
+                  style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+                >
+                  Custom
+                </span>
+                <span
+                  className="tj-text-xsm"
+                  style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+                >
+                  Select specific applications you want to add to the group
+                </span>
+              </div>
+            </label>
+          </OverlayTrigger>
           <AppsSelect
             disabled={!isCustom}
             allowSelectAll={true}

@@ -156,7 +156,7 @@ export function UserGroupsSelect(props) {
     }),
     menu: (base) => ({
       ...base,
-      background: 'unset',
+      background: 'var(--surfaces-app-bg-default)',
       '.add-group-btn': {
         display: 'flex',
         justifyContent: 'flex-end',
