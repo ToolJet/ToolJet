@@ -1779,9 +1779,7 @@ const EditorComponent = (props) => {
     });
 
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const newCurrentPageId = isHomePage ? Object.keys(copyOfAppDefinition.pages)[0] : copyOfAppDefinition.homePageId;
 
-    setCurrentPageId(newCurrentPageId);
     const toBeDeletedPage = copyOfAppDefinition.pages[pageId];
 
     const newAppDefinition = {
@@ -1789,6 +1787,9 @@ const EditorComponent = (props) => {
       pages: omit(copyOfAppDefinition.pages, pageId),
     };
 
+    const newCurrentPageId = isHomePage ? Object.keys(copyOfAppDefinition.pages)[0] : copyOfAppDefinition.homePageId;
+
+    setCurrentPageId(newCurrentPageId);
     updateEditorState({
       isUpdatingEditorStateInProcess: true,
     });
@@ -1800,6 +1801,8 @@ const EditorComponent = (props) => {
     });
 
     toast.success(`${toBeDeletedPage.name} page deleted.`);
+
+    switchPage(newCurrentPageId);
   };
 
   const disableEnablePage = ({ pageId, isDisabled }) => {
