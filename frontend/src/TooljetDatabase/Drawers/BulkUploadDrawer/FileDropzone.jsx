@@ -12,7 +12,6 @@ export function FileDropzone({
   errors,
   handleFileChange,
   onButtonClick,
-  onDrop,
   setProgress,
   progress,
 }) {
@@ -23,7 +22,13 @@ export function FileDropzone({
 
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
-    onDrop,
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length === 1) {
+        const file = acceptedFiles[0];
+        setFileData(file); // Set the file data
+        handleFileChange(file);
+      }
+    },
     noClick: true,
     onDropRejected: (files) => {
       if (Math.round(files[0].size / 1024) > 2 * 1024) {
@@ -65,9 +70,13 @@ export function FileDropzone({
     <>
       {fileData?.name ? (
         <div className="bulkUpload-file">
-          <ul>{acceptedFiles}</ul>
+          {/* <ul>
+            {acceptedFiles.map((file) => (
+              <li key={file.path}>{file.path}</li>
+            ))}
+          </ul> */}
 
-          <div className="fileName" ref={divRef}>
+          <div className="fileName mt-3" ref={divRef}>
             {fileData?.name && (
               <ul className="m-0 p-0" data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>
             )}
@@ -142,7 +151,11 @@ export function FileDropzone({
                 className="form-control"
                 data-cy="input-field-bulk-upload"
               />
-              <ul>{acceptedFiles}</ul>
+              <ul>
+                {acceptedFiles.map((file) => (
+                  <li key={file.path}>{file.path}</li>
+                ))}
+              </ul>
               {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
             </div>
           </div>
