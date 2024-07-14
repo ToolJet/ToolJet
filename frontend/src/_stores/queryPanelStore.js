@@ -13,6 +13,7 @@ const initialState = {
   nameInputFocussed: false,
   previewPanelExpanded: false,
   isQueryPanelExpanded: queryManagerPreferences?.isExpanded ?? true,
+  activeQueryHeaderTab: 1,
 };
 
 export const useQueryPanelStore = create(
@@ -20,6 +21,7 @@ export const useQueryPanelStore = create(
     (set, get) => ({
       ...initialState,
       actions: {
+        setActiveQueryHeaderTab: (tabIndex) => set({ activeQueryHeaderTab: tabIndex }),
         updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
         updatePreviewPanelHeight: (newHeight) => set(() => ({ previewPanelHeight: newHeight })),
         setSelectedQuery: (queryId) => {
@@ -73,3 +75,6 @@ export const useQueryPanelExpansion = () =>
     state.actions.toggleQueryPanelExpansion,
     state.actions.setQueryPanelExpansion,
   ]);
+
+export const useActiveTab = () =>
+  useQueryPanelStore((state) => [state.activeQueryHeaderTab, state.actions.setActiveQueryHeaderTab]);
