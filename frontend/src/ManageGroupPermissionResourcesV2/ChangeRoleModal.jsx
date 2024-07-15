@@ -50,7 +50,7 @@ function ChangeRoleModal({
     <ModalBase
       title={renderUserChangeTitle(autoRoleChangeMessageType)}
       handleConfirm={handleConfirmation}
-      confirmBtnProps={{ title: 'Continue' }}
+      confirmBtnProps={{ title: 'Continue', tooltipMessage: false }}
       show={showAutoRoleChangeModal}
       handleClose={handleAutoRoleChangeModalClose}
       darkMode={darkMode}
