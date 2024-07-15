@@ -7,6 +7,7 @@ import { CreateGroupPermissionDto, UpdateGroupPermissionDto } from '@dto/group_p
 import { ERROR_HANDLER } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import { GetGroupUsersObject } from '../interface/group-permissions.interface';
+import { USER_STATUS } from '@helpers/user_lifecycle';
 
 export function getRoleUsersListQuery(
   role: USER_ROLE,
@@ -19,7 +20,13 @@ export function getRoleUsersListQuery(
     .innerJoinAndSelect('user.userGroups', 'userGroups')
     .innerJoin('userGroups.group', 'group', 'group.organizationId = :organizationId', { organizationId })
     .andWhere('group.type = :type', { type: GROUP_PERMISSIONS_TYPE.DEFAULT })
-    .andWhere('group.name = :name', { name: role });
+    .andWhere('group.name = :name', { name: role })
+    .innerJoin('user.organizationUsers', 'organizationUsers', 'organizationUsers.organizationId = :organizationId', {
+      organizationId,
+    })
+    .andWhere('organizationUsers.status = :status', {
+      status: USER_STATUS.ACTIVE,
+    });
 
   if (groupPermissionId) {
     query.andWhere(
@@ -38,7 +45,9 @@ export function getRoleUsersListQuery(
     'user.firstName',
     'user.lastName',
     'user.email',
+    'user.status',
     'userGroups.groupId',
+    'organizationUsers.status',
     'userGroups.id',
     'group.name',
     'group.type',
