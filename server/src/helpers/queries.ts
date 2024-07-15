@@ -5,15 +5,13 @@ import { User } from 'src/entities/user.entity';
 import { createQueryBuilder, EntityManager, SelectQueryBuilder } from 'typeorm';
 
 export function getFolderQuery(organizationId: string, searchKey?: string): SelectQueryBuilder<Folder> {
-  const query = createQueryBuilder(Folder, 'folders');
-
+  const query = createQueryBuilder(Folder, 'folders')
+    .leftJoinAndSelect('folders.folderApps', 'folder_apps')
+    .leftJoin('folder_apps.app', 'app');
   if (searchKey) {
-    query
-      .leftJoinAndSelect('folders.folderApps', 'folder_apps')
-      .leftJoin('folder_apps.app', 'app')
-      .where('LOWER(app.name) like :searchKey', {
-        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-      });
+    query.where('LOWER(app.name) like :searchKey', {
+      searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+    });
   }
   query
     .andWhere('folders.organization_id = :organizationId', {
@@ -47,6 +45,12 @@ export function viewableAppsQueryUsingPermissions(
     .innerJoin('viewable_apps.user', 'user')
     .addSelect(['user.firstName', 'user.lastName'])
     .where('viewable_apps.organization_id = :organizationId', { organizationId: user.organizationId });
+
+  if (searchKey) {
+    viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
+      searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+    });
+  }
 
   if (select) {
     viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));

@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { getFolderQuery } from 'src/helpers/queries';
-import { createQueryBuilder, Repository, UpdateResult } from 'typeorm';
+import { createQueryBuilder, EntityManager, Repository, UpdateResult } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
-import { catchDbException } from 'src/helpers/utils.helper';
+import { catchDbException, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { AppBase } from 'src/entities/app_base.entity';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
@@ -47,7 +47,7 @@ export class FoldersService {
 
   async all(user: User, searchKey: string): Promise<Folder[]> {
     const allFolderList = await this.allFolders(user);
-    if (!searchKey || !allFolderList || allFolderList.length === 0) {
+    if (!searchKey || allFolderList.length === 0) {
       return allFolderList;
     }
     const folders = await this.allFolders(user, searchKey);
@@ -76,56 +76,58 @@ export class FoldersService {
     viewableApps: AppBase[];
     totalCount: number;
   }> {
-    const folderApps = await this.folderAppsRepository.find({
-      where: {
-        folderId: folder.id,
-      },
-    });
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const folderApps = await manager
+        .createQueryBuilder(FolderApp, 'folderApp')
+        .innerJoin('folderApp.app', 'app')
+        .where('app.name LIKE :name', { name: `%${searchKey}%` })
+        .getMany();
 
-    const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: TOOLJET_RESOURCE.APP }],
-      organizationId: user.organizationId,
-    });
-    const userAppPermissions = userPermission?.[TOOLJET_RESOURCE.APP];
+      const userPermission = await this.abilityService.resourceActionsPermission(user, {
+        resources: [{ resource: TOOLJET_RESOURCE.APP }],
+        organizationId: user.organizationId,
+      });
+      const userAppPermissions = userPermission?.[TOOLJET_RESOURCE.APP];
 
-    const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
-    if (folderAppIds.length == 0) {
+      const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
+      if (folderAppIds.length == 0) {
+        return {
+          viewableApps: [],
+          totalCount: 0,
+        };
+      }
+      const viewableAppsTotal = Array.from(
+        new Set([
+          ...userAppPermissions.editableAppsId,
+          ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+        ])
+      );
+
+      const viewableAppIds = viewableAppsTotal.filter((id) => folderAppIds.includes(id));
+
+      const viewableAppsInFolder = createQueryBuilder(AppBase, 'apps')
+        .innerJoin('apps.user', 'user')
+        .addSelect(['user.firstName', 'user.lastName']);
+
+      // if (!(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
+      viewableAppsInFolder.where('apps.id IN (:...viewableAppIds)', {
+        viewableAppIds: viewableAppIds,
+      });
+
+      const [viewableApps, totalCount] = await Promise.all([
+        viewableAppsInFolder
+          .take(9)
+          .skip(9 * (page - 1))
+          .orderBy('apps.createdAt', 'DESC')
+          .getMany(),
+        viewableAppsInFolder.getCount(),
+      ]);
+
       return {
-        viewableApps: [],
-        totalCount: 0,
+        viewableApps,
+        totalCount,
       };
-    }
-    const viewableAppsTotal = Array.from(
-      new Set([
-        ...userAppPermissions.editableAppsId,
-        ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-      ])
-    );
-
-    const viewableAppIds = viewableAppsTotal.filter((id) => folderAppIds.includes(id));
-
-    const viewableAppsInFolder = createQueryBuilder(AppBase, 'apps')
-      .innerJoin('apps.user', 'user')
-      .addSelect(['user.firstName', 'user.lastName']);
-
-    // if (!(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
-    viewableAppsInFolder.where('apps.id IN (:...viewableAppIds)', {
-      viewableAppIds: viewableAppIds,
     });
-
-    const [viewableApps, totalCount] = await Promise.all([
-      viewableAppsInFolder
-        .take(9)
-        .skip(9 * (page - 1))
-        .orderBy('apps.createdAt', 'DESC')
-        .getMany(),
-      viewableAppsInFolder.getCount(),
-    ]);
-
-    return {
-      viewableApps,
-      totalCount,
-    };
   }
 
   async delete(user: User, id: string) {
