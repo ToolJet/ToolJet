@@ -70,12 +70,13 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         const resources = [ResourceType.APP];
         for (const resource of resources) {
           if (resource === ResourceType.APP) {
-            const viewLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
-              (appPermissions) => appPermissions.read
-            );
             const updateLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
               (appPermissions) => appPermissions.update
             );
+            const viewLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
+              (appPermissions) => appPermissions.read && !appPermissions.update
+            );
+
             const createResourcePermissionObjView: CreateResourcePermissionObject = {
               canView: true,
               canEdit: false,
