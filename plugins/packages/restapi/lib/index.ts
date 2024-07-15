@@ -169,8 +169,9 @@ export default class RestapiQueryService implements QueryService {
     try {
       const response = await got(url, requestOptions);
       result = this.getResponse(response);
+      const requestUrl = response?.request?.options?.url?.origin + response?.request?.options?.url?.pathname;
       requestObject = {
-        requestUrl: response.request.requestUrl,
+        requestUrl,
         method: response.request.options.method,
         headers: response.request.options.headers,
         params: urrl.parse(response.request.requestUrl, true).query,
