@@ -2,23 +2,25 @@ import React from 'react';
 import AppCard from './AppCard';
 import { useTranslation } from 'react-i18next';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import Skeleton from 'react-loading-skeleton';
 
 const AppList = (props) => {
   const { t } = useTranslation();
   return (
     <div className="app-list">
-      {props.isLoading && (
+      {!props.isLoading && (
         <>
           {Array.from(Array(2)).map((_, rowIndex) => (
-            <div className="row skeleton-container mb-3" key={rowIndex}>
+            <div className="row skeleton-container mb-3 mt-3" key={rowIndex}>
               {Array.from(Array(3)).map((_, index) => (
                 <div className="col" key={rowIndex * 3 + index}>
-                  <div className="card-skeleton-container">
+                  {/* <div className="card-skeleton-container">
                     <div className="app-icon-skeleton"></div>
                     <div className="skeleton-line"></div>
                     <div className="skeleton-line"></div>
                     <div className="skeleton-line"></div>
-                  </div>
+                  </div> */}
+                  <Skeleton count={1} height={200} width={275} className="mb-1" />
                 </div>
               ))}
             </div>

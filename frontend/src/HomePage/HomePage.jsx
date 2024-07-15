@@ -25,7 +25,7 @@ import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
-import Skeleton from 'react-loading-skeleton';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 
 const { iconList, defaultIcon } = configs;
@@ -850,14 +850,14 @@ class HomePageComponent extends React.Component {
             >
               <div className="w-100 mb-5 container home-page-content-container">
                 {isLoading && (
-                  <Skeleton
-                    count={1}
-                    height={20}
-                    width={880}
-                    baseColor="#ECEEF0"
-                    className="mb-3"
-                    style={{ marginTop: '2rem' }}
-                  />
+                  <div className="d-flex justify-content-between w-100" style={{ marginTop: '2rem' }}>
+                    <div className="justify-content-start">
+                      <Skeleton count={1} height={20} width={60} className="mb-3" />
+                    </div>
+                    <div className="justify-content-end">
+                      <Skeleton count={1} height={20} width={120} className="mb-3" />
+                    </div>
+                  </div>
                 )}
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
