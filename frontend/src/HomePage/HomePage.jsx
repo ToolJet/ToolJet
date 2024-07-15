@@ -849,7 +849,7 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
-                {isLoading && (
+                {isLoading && !appSearchKey && (
                   <Skeleton
                     count={1}
                     height={20}
