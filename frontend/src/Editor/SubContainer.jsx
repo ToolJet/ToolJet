@@ -15,7 +15,7 @@ import {
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
-import { getCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 
 import { useEditorStore } from '@/_stores/editorStore';
@@ -24,7 +24,6 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { diff } from 'deep-object-diff';
 import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const SubContainer = ({
   mode,
@@ -59,6 +58,7 @@ export const SubContainer = ({
 }) => {
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
 
+  const currentState = useCurrentState();
   const { selectedComponents } = useEditorStore(
     (state) => ({
       selectedComponents: state.selectedComponents,
@@ -190,24 +190,22 @@ export const SubContainer = ({
   }, [containerWidth]);
 
   useEffect(() => {
-    const definition = useEditorStore.getState().appDefinition;
-
-    if (definition) {
+    if (appDefinitionChanged) {
       const newDefinition = {
-        ...definition,
+        ...appDefinition,
         pages: {
-          ...definition.pages,
+          ...appDefinition.pages,
           [currentPageId]: {
-            ...definition.pages[currentPageId],
+            ...appDefinition.pages[currentPageId],
             components: {
-              ...definition.pages[currentPageId].components,
+              ...appDefinition.pages[currentPageId].components,
               ...childWidgets,
             },
           },
         },
       };
 
-      const oldComponents = definition.pages[currentPageId]?.components ?? {};
+      const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
       const newComponents = newDefinition.pages[currentPageId]?.components ?? {};
 
       const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
@@ -218,7 +216,7 @@ export const SubContainer = ({
         opts.componentAdded = true;
       }
 
-      const shouldUpdate = !_.isEmpty(diff(definition, newDefinition));
+      const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
 
       if (shouldUpdate) {
         appDefinitionChanged(newDefinition, opts);
@@ -243,7 +241,7 @@ export const SubContainer = ({
           return;
         }
 
-        const componentMeta = deepClone(
+        const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -282,14 +280,14 @@ export const SubContainer = ({
               Listview: 'listItem',
             });
             const customResolverVariable = widgetResolvables[parentMeta?.component];
-            const defaultChildren = deepClone(parentMeta)['defaultChildren'];
+            const defaultChildren = _.cloneDeep(parentMeta)['defaultChildren'];
             const parentId = newComponent.id;
 
             defaultChildren.forEach((child) => {
               const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } =
                 child;
 
-              const componentMeta = deepClone(
+              const componentMeta = _.cloneDeep(
                 componentTypes.find((component) => component.component === componentName)
               );
               const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -532,7 +530,6 @@ export const SubContainer = ({
   }
 
   const getContainerProps = (componentId) => {
-    const currentState = getCurrentState();
     return {
       mode,
       snapToGrid,
@@ -718,19 +715,11 @@ const SubWidgetWrapper = ({
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
 
-  const isComponentVisible = () => {
-    const visibility =
-      widget.component.definition?.properties?.visibility?.value ??
-      widget.component.definition?.styles?.visibility?.value ??
-      null;
-    return resolveWidgetFieldValue(visibility);
-  };
-
   let width = (canvasWidth * layoutData.width) / 43;
   width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
   const styles = {
     width: width + 'px',
-    height: isComponentVisible() ? layoutData.height + 'px' : '10px',
+    height: layoutData.height + 'px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };

@@ -1,5 +1,4 @@
 import HttpClient from '@/_helpers/http-client';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import _ from 'lodash';
 
 const tooljetAdapter = new HttpClient();
@@ -68,7 +67,7 @@ function updateTable(organizationId, tableName, columns) {
 }
 
 function renameTable(organizationId, tableName, newTableName, data = []) {
-  let bodyData = deepClone(data);
+  let bodyData = _.cloneDeep(data);
   bodyData.forEach((obj) => {
     ['new_column', 'old_column'].forEach(function (key) {
       if (obj[key]?.data_type === 'serial') delete obj[key]?.column_default;

@@ -1,15 +1,9 @@
 import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
 import { createReferencesLookup, findAllEntityReferences, findEntityId } from './utils';
 import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
 import { dfs, removeAppSuggestions } from './handleReferenceTransactions';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
-
-import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
-
-import { flushComponentsToRender, useEditorStore } from '@/_stores/editorStore';
 
 class ReferencesBiMap {
   constructor() {
@@ -70,7 +64,7 @@ const initialState = {
 };
 
 export const useResolveStore = create(
-  subscribeWithSelector((set, get) => ({
+  (set, get) => ({
     ...initialState,
     actions: {
       updateStoreState: (state) => {
@@ -83,8 +77,11 @@ export const useResolveStore = create(
       updateAppSuggestions: (refState) => {
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
 
+        const suggestions = get().suggestions;
+        suggestions.appHints = suggestionList;
+
         set(() => ({
-          suggestions: { ...get().suggestions, appHints: suggestionList },
+          suggestions: suggestions,
           lookupTable: { ...get().lookupTable, hints: hintsMap, resolvedRefs },
         }));
       },
@@ -99,52 +96,50 @@ export const useResolveStore = create(
       updateLastUpdatedRefs: (updatedRefs) => {
         set(() => ({ lastUpdatedRefs: updatedRefs }));
       },
-      addAppSuggestions: (partialRefState) => {
+      addAppSuggestions: (partialRefState, intialLoad = false) => {
         if (Object.keys(partialRefState).length === 0) return;
 
-        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(partialRefState);
+        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(partialRefState, false, intialLoad);
 
         const _hintsMap = get().lookupTable.hints;
         const resolvedRefsMap = get().lookupTable.resolvedRefs;
 
-        let lookupHintsMap, lookupResolvedRefs;
-
-        if (_hintsMap.size > 0) {
-          lookupHintsMap = new Map([..._hintsMap]);
-        } else {
-          lookupHintsMap = new Map();
-        }
-
-        if (resolvedRefsMap.size > 0) {
-          lookupResolvedRefs = new Map([...resolvedRefsMap]);
-        } else {
-          lookupResolvedRefs = new Map();
-        }
+        let lookupHintsMap = _hintsMap.size > 0 ? new Map([..._hintsMap]) : new Map();
+        let lookupResolvedRefs = resolvedRefsMap.size > 0 ? new Map([...resolvedRefsMap]) : new Map();
 
         const newUpdatedrefs = [];
+        const updates = new Map();
 
         hintsMap.forEach((value, key) => {
-          const alreadyExists = lookupHintsMap.has(key);
-
-          if (!alreadyExists) {
+          if (!lookupHintsMap.has(key)) {
             lookupHintsMap.set(key, value);
+            if (key.startsWith('variable') || key.startsWith('page.variables')) {
+              newUpdatedrefs.push(key);
+            }
           } else {
             const existingLookupId = lookupHintsMap.get(key);
             const newResolvedRef = resolvedRefs.get(value);
 
-            resolvedRefs.delete(value);
-            resolvedRefs.set(existingLookupId, newResolvedRef);
+            updates.set(existingLookupId, newResolvedRef);
             newUpdatedrefs.push(key);
           }
+        });
+
+        updates.forEach((newResolvedRef, existingLookupId) => {
+          resolvedRefs.set(existingLookupId, newResolvedRef);
+        });
+
+        updates.forEach((_, existingLookupId) => {
+          resolvedRefs.delete(existingLookupId);
         });
 
         resolvedRefs.forEach((value, key) => {
           lookupResolvedRefs.set(key, value);
         });
 
-        const uniqueAppHints = suggestionList.filter((hint) => {
-          return !get().suggestions.appHints.find((h) => h.hint === hint.hint);
-        });
+        const uniqueAppHints = suggestionList.filter(
+          (hint) => !get().suggestions.appHints.some((h) => h.hint === hint.hint)
+        );
 
         set(() => ({
           suggestions: {
@@ -154,7 +149,7 @@ export const useResolveStore = create(
           lookupTable: {
             ...get().lookupTable,
             hints: lookupHintsMap,
-            resolvedRefs: lookupResolvedRefs,
+            resolvedRefs: new Map([...lookupResolvedRefs, ...updates]),
           },
           lastUpdatedRefs: newUpdatedrefs,
         }));
@@ -281,7 +276,7 @@ export const useResolveStore = create(
         const entityRefs = findEntityIdsFromRefNames(entityNameReferences);
 
         if (!_.isEmpty(entityRefs)) {
-          let diffObj = deepClone(obj);
+          let diffObj = _.cloneDeep(obj);
 
           for (const [key, value] of Object.entries(entityRefs)) {
             diffObj = dfs(diffObj, key, value);
@@ -297,7 +292,7 @@ export const useResolveStore = create(
         const referencesSubstring = updatedEntityName.type + '.' + updatedEntityName.name;
         const allRefsInHints = [];
         const toDeleteAppHints = [];
-        const lookupHintsMap = new Map(deepClone([...get().lookupTable.hints]));
+        const lookupHintsMap = new Map(_.cloneDeep([...get().lookupTable.hints]));
         const currentSuggestions = get().suggestions.appHints;
 
         lookupHintsMap.forEach((value, key) => {
@@ -337,65 +332,8 @@ export const useResolveStore = create(
         });
       },
     },
-  })),
+  }),
   { name: 'Resolver Store' }
 );
-
-// Subscribed only to lastUpdatedRefs and compute the components that needs to be re-rendered
-useResolveStore.subscribe(
-  (state) => state.lastUpdatedRefs,
-  (lastUpdatedRefs) => {
-    if (lastUpdatedRefs.length > 0) {
-      const currentComponents =
-        useEditorStore.getState().appDefinition?.pages?.[useEditorStore.getState().currentPageId]?.components || {};
-
-      const directRenders = lastUpdatedRefs
-        .map((ref) => ref.includes('rerender') && ref.split(' ')[1])
-        .filter((item) => item !== false);
-
-      const toUpdateRefs = lastUpdatedRefs.filter((ref) => !ref.includes('rerender'));
-
-      const componentIdsWithReferences = findComponentsWithReferences(currentComponents, toUpdateRefs);
-
-      if (directRenders.length > 0) {
-        componentIdsWithReferences.push(...directRenders);
-      }
-
-      if (componentIdsWithReferences.length > 0) {
-        batchUpdateComponents(componentIdsWithReferences);
-      }
-    }
-  }
-);
-
-/**
- ** Async updates components in batches to optimize and processing efficiency.
- * This function iterates over an array of component IDs, updating them in fixed-size batches,
- * and introduces a delay after each batch to allow the UI thread to manage other tasks, such as rendering updates.
- * After all batches are processed, it flushes the updates to clear any flags or temporary states indicating pending updates,
- * ensuring the system is ready for the next cycle of updates.
- *
- * @param {Array} componentIds An array of component IDs that need updates.
- * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
- */
-
-async function batchUpdateComponents(componentIds) {
-  if (componentIds.length === 0) return;
-
-  let updatedComponentIds = [];
-
-  for (let i = 0; i < componentIds.length; i += 10) {
-    const batch = componentIds.slice(i, i + 10);
-    batch.forEach((id) => {
-      updatedComponentIds.push(id);
-    });
-
-    useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender(batch);
-  }
-
-  // Flush only updated components
-
-  flushComponentsToRender(updatedComponentIds);
-}
 
 export const useResolverStoreActions = () => useResolveStore.getState().actions;

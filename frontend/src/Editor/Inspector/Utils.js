@@ -50,7 +50,7 @@ export function renderCustomStyles(
     const { conditionallyRender = null } = paramConfig;
 
     const getResolvedValue = (key) => {
-      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
+      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
@@ -136,7 +136,7 @@ export function renderElement(
     if (conditionallyRender) {
       const { key, value } = conditionallyRender;
       if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
+        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
         if (resolvedValue?.value !== value) return;
       }
     }

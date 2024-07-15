@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { copilotService } from '@/_services/copilot.service';
 import { toast } from 'react-hot-toast';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export async function getRecommendation(currentContext, query, lang = 'javascript') {
   const words = query.split(' ');
@@ -67,7 +66,7 @@ function getResult(suggestionList, query) {
 }
 
 export function getSuggestionKeys(refState) {
-  const state = deepClone(refState);
+  const state = _.cloneDeep(refState);
   const queries = state['queries'];
   const actions = [
     'runQuery',

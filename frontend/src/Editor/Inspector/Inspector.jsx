@@ -33,7 +33,6 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -161,7 +160,7 @@ export const Inspector = ({
 
   function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
     let newComponent = JSON.parse(JSON.stringify(component));
-    let newDefinition = deepClone(newComponent.component.definition);
+    let newDefinition = _.cloneDeep(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
@@ -172,7 +171,11 @@ export const Inspector = ({
       const defaultValue = getDefaultValue(value);
       // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
-      if (component.component.component === 'Table' && param.name === 'enablePagination' && !resolveReferences(value)) {
+      if (
+        component.component.component === 'Table' &&
+        param.name === 'enablePagination' &&
+        !resolveReferences(value, currentState)
+      ) {
         if (allParams?.['clientSidePagination']?.[attr]) {
           allParams['clientSidePagination'][attr] = value;
         }
@@ -206,7 +209,7 @@ export const Inspector = ({
     if (
       component.component.component === 'Table' &&
       param.name === 'contentWrap' &&
-      !resolveReferences(value) &&
+      !resolveReferences(value, currentState) &&
       newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
     ) {
       const updatedColumns = newDefinition.properties.columns.value.map((item) => {
@@ -356,6 +359,8 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  console.log('componentMeta', componentMeta);
+
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -444,7 +449,7 @@ export const Inspector = ({
       </div>
       <span className="widget-documentation-link">
         <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
+          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.component ?? '')}`}
           target="_blank"
           rel="noreferrer"
           data-cy="widget-documentation-link"
@@ -453,7 +458,7 @@ export const Inspector = ({
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
+                componentMeta: componentMeta.component,
               })}
             </small>
           </span>
@@ -570,11 +575,11 @@ const resolveConditionalStyle = (definition, condition, currentState) => {
   if (conditionExistsInDefinition) {
     switch (condition) {
       case 'cellSize': {
-        const cellSize = resolveReferences(definition[condition]?.value ?? false) === 'hugContent';
+        const cellSize = resolveReferences(definition[condition]?.value ?? false, currentState) === 'hugContent';
         return cellSize;
       }
       default:
-        return resolveReferences(definition[condition]?.value ?? false);
+        return resolveReferences(definition[condition]?.value ?? false, currentState);
     }
   }
 };

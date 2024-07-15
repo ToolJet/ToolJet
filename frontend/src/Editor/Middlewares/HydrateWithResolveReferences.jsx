@@ -9,7 +9,7 @@ import { validateProperties } from '../component-properties-validation';
 import { getComponentName, debuggerActions } from '@/_helpers/appUtils';
 import { memoizeFunction } from '../../_helpers/editorHelpers';
 import { componentTypes } from '../WidgetManager/components';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
@@ -18,15 +18,26 @@ const getComponentMetaData = memoizeFunction((componentType) => {
 });
 
 const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, children }) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const componentMeta = useMemo(() => getComponentMetaData(component?.component), []);
 
-  const resolvedProperties = resolveProperties(component, {}, null, customResolvables, id);
+  const currentState = useCurrentState();
 
-  const resolvedStyles = resolveStyles(component, {}, null, customResolvables);
+  const resolvedProperties = useMemo(() => {
+    return resolveProperties(component, currentState, null, customResolvables, id);
+  }, [component, currentState, customResolvables, id]);
 
-  const resolvedGeneralProperties = resolveGeneralProperties(component, {}, null, customResolvables);
+  const resolvedStyles = useMemo(() => {
+    return resolveStyles(component, currentState, null, customResolvables);
+  }, [component, currentState, customResolvables]);
 
-  const resolvedGeneralStyles = resolveGeneralStyles(component, {}, null, customResolvables);
+  const resolvedGeneralProperties = useMemo(() => {
+    return resolveGeneralProperties(component, currentState, null, customResolvables);
+  }, [component, currentState, customResolvables]);
+
+  const resolvedGeneralStyles = useMemo(() => {
+    return resolveGeneralStyles(component, currentState, null, customResolvables);
+  }, [component, currentState, customResolvables]);
 
   const [validatedProperties, propertyErrors] =
     mode === 'edit' && component.validate
@@ -56,11 +67,6 @@ const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, 
       : [resolvedGeneralStyles, []];
 
   useEffect(() => {
-    const isEditorReady = useCurrentStateStore.getState().isEditorReady;
-
-    if (!isEditorReady) return;
-    const currentState = useCurrentStateStore.getState();
-
     const currentPage = currentState?.page;
     const componentName = getComponentName(currentState, id);
     const errorLog = Object.fromEntries(

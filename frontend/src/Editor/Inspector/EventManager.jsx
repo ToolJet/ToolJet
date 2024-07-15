@@ -26,7 +26,6 @@ import { diff } from 'deep-object-diff';
 import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appService } from '@/_services';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const EventManager = ({
   sourceId,
@@ -265,9 +264,6 @@ export const EventManager = ({
 
   function getPageOptions(event) {
     // If disabled page is already selected then don't remove from page options
-
-    if (!Array.isArray(pages) || pages.length === 0) return [];
-
     if (pages.find((page) => page.id === event.pageId)?.disabled) {
       return pages.map((page) => ({
         name: page.name,
@@ -283,7 +279,7 @@ export const EventManager = ({
   }
 
   function handleQueryChange(index, updates) {
-    let newEvents = deepClone(events);
+    let newEvents = _.cloneDeep(events);
     let updatedEvent = newEvents[index];
 
     updatedEvent.event = {
@@ -305,7 +301,7 @@ export const EventManager = ({
   }
 
   function handlerChanged(index, param, value) {
-    let newEvents = deepClone(events);
+    let newEvents = _.cloneDeep(events);
 
     let updatedEvent = newEvents[index];
     updatedEvent.event[param] = value;
@@ -345,7 +341,7 @@ export const EventManager = ({
   }
 
   function removeHandler(index) {
-    const eventsHandler = deepClone(events);
+    const eventsHandler = _.cloneDeep(events);
 
     const eventId = eventsHandler[index].id;
     setEventToDeleteLoaderIndex(index);
@@ -524,7 +520,7 @@ export const EventManager = ({
 
             {event.actionId === 'go-to-app' && (
               <GotoApp
-                event={deepClone(event)}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
@@ -827,7 +823,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'switch-page' && (
               <SwitchPage
-                event={deepClone(event)}
+                event={_.cloneDeep(event)}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
@@ -944,7 +940,7 @@ export const EventManager = ({
   }
 
   const reorderEvents = (startIndex, endIndex) => {
-    const result = deepClone(events);
+    const result = _.cloneDeep(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
 

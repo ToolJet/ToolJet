@@ -10,7 +10,6 @@ import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { Alert } from '@/_ui/Alert/Alert';
 import { Button } from '@/_ui/LeftSidebar';
 import { useNavigate, useParams } from 'react-router-dom';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 function useWorkspaceRouting() {
   const navigate = useNavigate();
@@ -90,7 +89,7 @@ class RawManageOrgVarsComponent extends React.Component {
     });
 
     orgEnvironmentVariableService.getVariables().then((data) => {
-      const variables = deepClone(data.variables)?.filter(({ variable_name }) => !/copilot_/.test(variable_name));
+      const variables = _.cloneDeep(data.variables)?.filter(({ variable_name }) => !/copilot_/.test(variable_name));
       this.setState({
         variables: variables,
         isLoading: false,

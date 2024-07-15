@@ -9,17 +9,18 @@ import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
-import { difference } from 'lodash';
+import { cloneDeep, difference } from 'lodash';
 import DropDownSelect from './DropDownSelect';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
+  const currentState = useCurrentState();
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
@@ -63,7 +64,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
     setJoinTableOptions((prevJoinOptions) => {
       const { conditions, order_by = [], joins: currJoins, fields: currFields = [] } = prevJoinOptions;
-      const conditionsList = deepClone(conditions?.conditionsList || []);
+      const conditionsList = cloneDeep(conditions?.conditionsList || []);
       const newConditionsList = conditionsList.filter((condition) => {
         const { leftField } = condition || {};
         if (tableSet.has(leftField?.table)) {
@@ -243,7 +244,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       if (isNewTableAdded) {
         setJoinTableOptions((joinOptions) => {
           const { fields } = joinOptions;
-          const newFields = deepClone(fields).filter((field) => field.table !== tableId);
+          const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
           newFields.push(
             ...(data?.result?.columns
               ? data.result.columns.map((col) => ({
@@ -392,7 +393,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         if (isNewTableAdded) {
           setJoinTableOptions((joinOptions) => {
             const { fields } = joinOptions;
-            const newFields = deepClone(fields).filter((field) => field.table !== tableId);
+            const newFields = cloneDeep(fields).filter((field) => field.table !== tableId);
             newFields.push(
               ...(data?.result?.columns
                 ? data.result.columns.map((col) => ({
@@ -524,7 +525,14 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       </div>
 
       {/* component to render based on the operation */}
-      {ComponentToRender && <ComponentToRender options={options} optionchanged={optionchanged} darkMode={darkMode} />}
+      {ComponentToRender && (
+        <ComponentToRender
+          currentState={currentState}
+          options={options}
+          optionchanged={optionchanged}
+          darkMode={darkMode}
+        />
+      )}
     </TooljetDatabaseContext.Provider>
   );
 };

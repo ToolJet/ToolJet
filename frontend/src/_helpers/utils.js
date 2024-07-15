@@ -151,39 +151,50 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(object, defaultValue, customObjects = {}, withError = false, forPreviewBox = false) {
+export function resolveReferences(
+  object,
+  _state,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false
+) {
   if (object === '{{{}}}') return '';
 
   object = _.clone(object);
-  const currentState = useCurrentStateStore.getState();
   const objectType = typeof object;
   let error;
+
+  const state = useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
+
   switch (objectType) {
     case 'string': {
       if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
-        object = resolveString(object, currentState, customObjects, reservedKeyword, withError, forPreviewBox);
+        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
       }
 
       if (object.startsWith('{{') && object.endsWith('}}')) {
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
-          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+          //Will be remove in next release
 
-          if (code.match(keywordRegex)) {
-            error = `${code} is a reserved keyword`;
-            return [{}, error];
+          const { status, data } = validateMultilineCode(code);
+
+          if (status === 'failed') {
+            const errMessage = `${data.message} -  ${data.description}`;
+
+            return [{}, errMessage];
           }
 
-          return resolveCode(code, currentState, customObjects, withError, reservedKeyword, true);
+          return resolveCode(code, state, customObjects, withError, [], true);
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
           for (const dynamicVariable of dynamicVariables) {
             const value = resolveString(
               dynamicVariable,
-              currentState,
+              state,
               customObjects,
               reservedKeyword,
               withError,
@@ -203,17 +214,17 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
           return [{}, error];
         }
 
-        return resolveCode(code, currentState, customObjects, withError, reservedKeyword, false);
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
       }
 
       const dynamicVariables = getDynamicVariables(object);
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], null, customObjects);
+          object = resolveReferences(dynamicVariables[0], state, null, customObjects);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, null, customObjects);
+            const value = resolveReferences(dynamicVariable, state, null, customObjects);
             if (typeof value !== 'function') {
               object = object.replace(dynamicVariable, value);
             }
@@ -229,7 +240,7 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
         const new_array = [];
 
         object.forEach((element, index) => {
-          const resolved_object = resolveReferences(element);
+          const resolved_object = resolveReferences(element, state);
           new_array[index] = resolved_object;
         });
 
@@ -237,7 +248,7 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
         return new_array;
       } else if (!_.isEmpty(object)) {
         Object.keys(object).forEach((key) => {
-          const resolved_object = resolveReferences(object[key]);
+          const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
         });
         if (withError) return [object, error];
@@ -327,7 +338,8 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   const widgetFieldValue = prop;
 
   try {
-    return resolveReferences(widgetFieldValue, _default, customResolveObjects);
+    const state = getCurrentState();
+    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }
@@ -534,7 +546,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
     queryDetails?.options?.parameters?.reduce(
       (paramObj, param) => ({
         ...paramObj,
-        [param.name]: resolveReferences(param.defaultValue, undefined), //default values will not be resolved with currentState
+        [param.name]: resolveReferences(param.defaultValue, {}, undefined), //default values will not be resolved with currentState
       }),
       {}
     ) || {};
@@ -620,16 +632,6 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
     console.log('JS execution failed: ', err);
     error = err.stack.split('\n')[0];
     result = { status: 'failed', data: { message: error, description: error } };
-  }
-
-  if (hasCircularDependency(result)) {
-    return {
-      status: 'failed',
-      data: {
-        message: 'Circular dependency detected',
-        description: 'Cannot resolve circular dependency',
-      },
-    };
   }
 
   return result;

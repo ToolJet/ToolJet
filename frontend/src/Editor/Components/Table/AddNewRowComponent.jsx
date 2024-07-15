@@ -5,7 +5,6 @@ import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,
@@ -153,7 +152,7 @@ export function AddNewRowComponent({
         <button
           className="btn btn-light btn-sm m-2"
           onClick={() => {
-            const rowData = deepClone(newRowsState);
+            const rowData = _.cloneDeep(newRowsState);
             const index = rowData.length;
             let newRow = getNewRowObject();
             newRow = utilityForNestedNewRow(newRow);
