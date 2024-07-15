@@ -53,6 +53,18 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     brew search postgrest
     ```
 
+    Once PostgREST is installed, you can start the PostgREST service using Homebrew services:
+
+    ```
+    brew services start postgrest
+    ```
+
+    Run the following command to check the status of the PostgREST service and other Homebrew-managed services:
+
+    ```
+    brew services list
+    ```
+
     1.5 Clone the repository
     ```bash
     git clone https://github.com/tooljet/tooljet.git
