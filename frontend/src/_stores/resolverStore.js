@@ -102,10 +102,10 @@ export const useResolveStore = create(
       updateLastUpdatedRefs: (updatedRefs) => {
         set(() => ({ lastUpdatedRefs: updatedRefs }));
       },
-      addAppSuggestions: (partialRefState) => {
+      addAppSuggestions: (partialRefState, intialLoad = false) => {
         if (Object.keys(partialRefState).length === 0) return;
 
-        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(partialRefState);
+        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(partialRefState, false, intialLoad);
 
         const _hintsMap = get().lookupTable.hints;
         const resolvedRefsMap = get().lookupTable.resolvedRefs;
