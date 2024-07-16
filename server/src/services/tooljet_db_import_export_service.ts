@@ -4,7 +4,7 @@ import { ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resour
 import { TooljetDbService } from './tooljet_db.service';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { transformTjdbImportDto } from 'src/helpers/tjdb_dto_transforms';
+import { transformTjdbImportDto } from '@dto/transformers/tjdb-dto-transforms';
 import { InjectEntityManager } from '@nestjs/typeorm';
 
 @Injectable()

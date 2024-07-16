@@ -2,7 +2,7 @@
 // ToolJet Database from older versions.
 
 import { ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
-import { isVersionGreaterThanOrEqual } from './utils.helper';
+import { isVersionGreaterThanOrEqual } from 'src/helpers/utils.helper';
 
 // Transformations required to make schema corresponding to the
 // version in the key to work with the current application's version.

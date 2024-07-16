@@ -1,8 +1,7 @@
-import { IsUUID, IsOptional, IsString, IsDefined } from 'class-validator';
-import { JsonSchemaValidator } from '@dto/validators/validation';
-import { Validate } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { transformTJDB } from './transformers/resource_import';
+import { IsUUID, IsOptional, IsString, IsDefined, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { ValidateTooljetDatabaseSchema } from './validators/tooljet-database.validator';
+import { TjdbSchemaToLatestVersion } from './transformers/resource-transformer';
 
 export class ImportResourcesDto {
   @IsUUID()
@@ -11,15 +10,24 @@ export class ImportResourcesDto {
   @IsString()
   tooljet_version: string;
 
+  // TODO: Add transformation and validation for app similar to tooljet_database
   @IsOptional()
   app: ImportAppDto[];
 
   @IsOptional()
-  @Transform(transformTJDB)
+  // Transform the input data to the latest schema version
+  // This should be applied first to ensure the data is in
+  // the correct format before validation
+  @Transform(TjdbSchemaToLatestVersion)
+  @ValidateNested({ each: true })
+  // Ensure each item is properly instantiated as ImportTooljetDatabaseDto
+  // This is crucial for nested validation to work correctly
+  @Type(() => ImportTooljetDatabaseDto)
+  // Custom validator to check against the tooljet database schema
+  // This should be applied last to validate the transformed
+  // and instantiated data
+  @ValidateTooljetDatabaseSchema({ each: true })
   tooljet_database: ImportTooljetDatabaseDto[];
-
-  @Validate(JsonSchemaValidator, ['tooljet_database', '2.43.0'])
-  validate: any;
 }
 
 export class ImportAppDto {
