@@ -24,8 +24,8 @@ export function getRoleUsersListQuery(
     .innerJoin('user.organizationUsers', 'organizationUsers', 'organizationUsers.organizationId = :organizationId', {
       organizationId,
     })
-    .andWhere('organizationUsers.status = :status', {
-      status: USER_STATUS.ACTIVE,
+    .andWhere('organizationUsers.status != :status', {
+      status: USER_STATUS.ARCHIVED,
     });
 
   if (groupPermissionId) {

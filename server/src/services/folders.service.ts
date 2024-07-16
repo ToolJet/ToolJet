@@ -79,7 +79,9 @@ export class FoldersService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const folderApps = await manager
         .createQueryBuilder(FolderApp, 'folderApp')
-        .innerJoin('folderApp.app', 'app')
+        .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
+          id: folder.id,
+        })
         .where('app.name LIKE :name', { name: `%${searchKey}%` })
         .getMany();
 

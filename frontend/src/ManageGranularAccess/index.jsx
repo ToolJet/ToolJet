@@ -134,6 +134,7 @@ class ManageGranularAccessComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.closeAddPermissionModal();
+        console.log(error);
         if (error?.error) {
           this.props.updateParentState({
             showEditRoleErrorModal: true,
@@ -142,8 +143,9 @@ class ManageGranularAccessComponent extends React.Component {
             errorIconName: 'usergear',
             errorListItems: error.data,
           });
+          return;
         }
-        toast.error(error, {
+        toast.error(error?.error, {
           style: {
             maxWidth: '500px',
           },
@@ -213,6 +215,7 @@ class ManageGranularAccessComponent extends React.Component {
           errorMessage: error.error,
           errorIconName: 'usergear',
           errorListItems: error.data,
+          showAddPermissionModal: false,
         });
       });
   };
