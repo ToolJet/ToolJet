@@ -91,7 +91,7 @@ export class TooljetDbService {
     organizationId: string,
     params,
     connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[]; configurations: any }> {
+  ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[] }> {
     const { table_name: tableName, id: id } = params;
     const { appManager, tjdbManager } = connectionManagers;
 
