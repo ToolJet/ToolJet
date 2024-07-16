@@ -6,6 +6,7 @@ title: GitSync
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
+
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
 
