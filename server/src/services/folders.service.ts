@@ -98,20 +98,29 @@ export class FoldersService {
           totalCount: 0,
         };
       }
-      const viewableAppsTotal = Array.from(
-        new Set([
-          ...userAppPermissions.editableAppsId,
-          ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-        ])
-      );
+      const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+      const viewableAppsTotal = isAllEditable
+        ? [null, ...folderAppIds]
+        : hideAll
+        ? [null, ...userAppPermissions.editableAppsId]
+        : isAllViewable
+        ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
+        : [
+            null,
+            ...Array.from(
+              new Set([
+                ...userAppPermissions.editableAppsId,
+                ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+              ])
+            ),
+          ];
 
-      const viewableAppIds = viewableAppsTotal.filter((id) => folderAppIds.includes(id));
+      const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
 
       const viewableAppsInFolder = createQueryBuilder(AppBase, 'apps')
         .innerJoin('apps.user', 'user')
         .addSelect(['user.firstName', 'user.lastName']);
 
-      // if (!(userAppPermissions.isAllEditable || userAppPermissions.isAllViewable)) {
       viewableAppsInFolder.where('apps.id IN (:...viewableAppIds)', {
         viewableAppIds: viewableAppIds,
       });

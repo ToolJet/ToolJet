@@ -48,14 +48,16 @@ const AppList = (props) => {
           </div>
         </div>
       )}
-      {!props.isLoading && props.currentFolder.count === 0 && (
+      {!props.isLoading && props.apps?.length === 0 && (
         <div className="text-center d-block">
           <EmptyFoldersIllustration className="mb-4" data-cy="empty-folder-image" />
           <span
             className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
             data-cy="empty-folder-text"
           >
-            {t('homePage.thisFolderIsEmpty', 'This folder is empty')}
+            {props.currentFolder?.count == 0
+              ? t('homePage.thisFolderIsEmpty', 'This folder is empty')
+              : t('homePage.nonAccessibleFolderApps', 'No apps are accessible of this folder')}
           </span>
         </div>
       )}

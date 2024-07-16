@@ -30,7 +30,7 @@ export function viewableAppsQueryUsingPermissions(
   select?: Array<string>
 ): SelectQueryBuilder<AppBase> {
   const viewableApps = userAppPermissions.hideAll
-    ? [...userAppPermissions.editableAppsId]
+    ? [null, ...userAppPermissions.editableAppsId]
     : [
         null,
         ...Array.from(
@@ -40,6 +40,7 @@ export function viewableAppsQueryUsingPermissions(
           ])
         ),
       ];
+
   const viewableAppsQb = manager
     .createQueryBuilder(AppBase, 'viewable_apps')
     .innerJoin('viewable_apps.user', 'user')
@@ -55,14 +56,16 @@ export function viewableAppsQueryUsingPermissions(
   if (select) {
     viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));
   }
-  const viewAll = userAppPermissions.isAllEditable || userAppPermissions.isAllViewable;
-  if (!viewAll || userAppPermissions.hideAll) {
+  const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+  if (isAllEditable) return viewableAppsQb;
+  if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
     viewableAppsQb.where('viewable_apps.id IN (:...viewableApps)', {
       viewableApps,
     });
+    return viewableAppsQb;
   }
   const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
-  if (!userAppPermissions.hideAll && viewAll && hiddenApps.length > 0) {
+  if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0) {
     viewableAppsQb.where('viewable_apps.id NOT IN (:...hiddenApps)', {
       hiddenApps,
     });
