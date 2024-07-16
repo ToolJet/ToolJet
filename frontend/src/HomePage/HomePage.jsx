@@ -27,6 +27,7 @@ import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
+import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 
 const { iconList, defaultIcon } = configs;
 
@@ -849,16 +850,7 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
-                {isLoading && (
-                  <div className="d-flex justify-content-between w-100" style={{ marginTop: '2rem' }}>
-                    <div className="justify-content-start">
-                      <Skeleton count={1} height={20} width={60} className="mb-3" />
-                    </div>
-                    <div className="justify-content-end">
-                      <Skeleton count={1} height={20} width={120} className="mb-3" />
-                    </div>
-                  </div>
-                )}
+                {isLoading && <HeaderSkeleton />}
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
