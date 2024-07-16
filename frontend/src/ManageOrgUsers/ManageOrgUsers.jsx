@@ -175,7 +175,14 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error, { position: 'top-center' });
+          toast.error(error, {
+            position: 'top-center',
+            style: {
+              minWidth: '200px',
+              whiteSpace: 'nowrap', // Prevent text from wrapping to the next line
+              wordBreak: 'keep-all', // Prevent word breaks
+            },
+          });
           this.setState({ uploadingUsers: false });
         });
     }
