@@ -169,6 +169,10 @@ export function resolveReferences(
 
   const state = useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
 
+  if (_state.parameters) {
+    state.parameters = { ..._state.parameters };
+  }
+
   switch (objectType) {
     case 'string': {
       if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
