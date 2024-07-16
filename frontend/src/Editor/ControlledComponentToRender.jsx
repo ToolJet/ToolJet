@@ -16,7 +16,6 @@ export const shouldUpdate = (prevProps, nextProps) => {
 
   if (componentId) {
     const componentToRender = listToRender.find((item) => item === componentId);
-
     const parentReRendered = listToRender.find((item) => item === prevProps?.parentId);
 
     if (componentToRender || parentReRendered) {
@@ -24,7 +23,7 @@ export const shouldUpdate = (prevProps, nextProps) => {
     }
   }
 
-  // Added to render the defaukt child components
+  // Added to render the default child components
   if (prevProps?.childComponents === null && nextProps?.childComponents) return false;
 
   return (
@@ -35,6 +34,7 @@ export const shouldUpdate = (prevProps, nextProps) => {
     prevProps?.height === nextProps?.height &&
     prevProps?.darkMode === nextProps?.darkMode &&
     prevProps?.childComponents === nextProps?.childComponents &&
+    prevProps?.isEditorReady === nextProps?.isEditorReady &&
     !needToRender
   );
 };

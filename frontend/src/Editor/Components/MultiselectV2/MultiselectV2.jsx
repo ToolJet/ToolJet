@@ -27,7 +27,7 @@ export const MultiselectV2 = ({
   darkMode,
   fireEvent,
   validate,
-  width,
+  isEditorReady,
 }) => {
   let {
     label,
@@ -177,8 +177,10 @@ export const MultiselectV2 = ({
         setIsMultiSelectDisabled(value);
       },
     };
-    setExposedVariables(exposedVariables);
-  }, []);
+    if (isEditorReady) {
+      setExposedVariables(exposedVariables);
+    }
+  }, [isEditorReady]);
 
   useEffect(() => {
     // Expose selectOption

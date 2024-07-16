@@ -19,6 +19,7 @@ export const Listview = function Listview({
   darkMode,
   dataCy,
   childComponents,
+  isEditorReady,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -58,7 +59,9 @@ export const Listview = function Listview({
       selectedRecordId: index,
       selectedRecord: childrenData[index],
     };
-    setExposedVariables(exposedVariables);
+    if (isEditorReady) {
+      setExposedVariables(exposedVariables);
+    }
     fireEvent('onRecordClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
@@ -68,7 +71,9 @@ export const Listview = function Listview({
       selectedRowId: index,
       selectedRow: childrenData[index],
     };
-    setExposedVariables(exposedVariables);
+    if (isEditorReady) {
+      setExposedVariables(exposedVariables);
+    }
     fireEvent('onRowClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
@@ -85,16 +90,20 @@ export const Listview = function Listview({
       data: removeFunctionObjects(childrenDataClone),
       children: childrenData,
     };
-    setExposedVariables(exposedVariables);
+    if (isEditorReady) {
+      setExposedVariables(exposedVariables);
+    }
     if (selectedRowIndex != undefined) {
       const exposedVariables = {
         selectedRowId: selectedRowIndex,
         selectedRow: childrenData[selectedRowIndex],
       };
-      setExposedVariables(exposedVariables);
+      if (isEditorReady) {
+        setExposedVariables(exposedVariables);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData, childComponents]);
+  }, [childrenData, childComponents, isEditorReady]);
 
   function filterComponents() {
     if (!childrenData || childrenData.length === 0) {

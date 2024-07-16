@@ -18,6 +18,7 @@ export const Button = function Button(props) {
     type,
     padding,
     iconVisibility,
+    isEditorReady,
   } = styles;
 
   const { loadingState, disabledState } = properties;
@@ -114,10 +115,10 @@ export const Button = function Button(props) {
       },
     };
 
-    setExposedVariables(exposedVariables);
+    if (isEditorReady) setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
+  }, [disable, isEditorReady]);
 
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
