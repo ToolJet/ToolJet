@@ -3,28 +3,14 @@ import { EntityManager, In, ObjectLiteral, SelectQueryBuilder, Table, TableColum
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty, camelCase } from 'lodash';
-import { TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
-
-export type TableColumnSchema = {
-  column_name: string;
-  data_type: SupportedDataTypes;
-  column_default: string | null;
-  character_maximum_length: number | null;
-  numeric_precision: number | null;
-  is_nullable: 'YES' | 'NO';
-  constraint_type: string | null;
-  keytype: string | null;
-};
-
-export type ForeignKeyDetails = {
-  column_names: Array<string>;
-  referenced_table_name: string;
-  referenced_column_names: Array<string>;
-  on_delete: string;
-  on_update: string;
-};
-
-export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
+import {
+  TooljetDatabaseColumn,
+  TooljetDatabaseDataTypes,
+  TooljetDatabaseError,
+  TooljetDatabaseForeignKey,
+  TooljetDbActions,
+  TJDB,
+} from 'src/modules/tooljet_db/tooljet-db.types';
 
 // Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
 declare module 'typeorm' {
@@ -91,7 +77,7 @@ export class TooljetDbService {
     organizationId: string,
     params,
     connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[] }> {
+  ): Promise<{ foreign_keys: TooljetDatabaseForeignKey[]; columns: TooljetDatabaseColumn[] }> {
     const { table_name: tableName, id: id } = params;
     const { appManager, tjdbManager } = connectionManagers;
 
@@ -667,7 +653,7 @@ export class TooljetDbService {
     if (!tables?.length) throw new BadRequestException('Tables are not chosen');
 
     const tableIdList: Array<string> = tables
-      .filter((table) => table.type === 'Table')
+      .filter((table) => table.type === 'Table' && !isEmpty(table.name))
       .map((filteredTable) => filteredTable.name);
 
     const internalTables = await this.findOrFailInternalTableFromTableId(tableIdList, organizationId);
@@ -847,17 +833,17 @@ export class TooljetDbService {
     }
   }
 
-  private prepareColumnListForCreateTable(columns) {
+  private prepareColumnListForCreateTable(columns: TooljetDatabaseColumn[]) {
     const columnList = columns.map((column) => {
-      const { column_name, constraints_type = {} } = column;
+      const { column_name, constraints_type = {} as any } = column;
       const is_primary_key_column = constraints_type?.is_primary_key || false;
 
-      const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
+      const prepareDataTypeAndDefault = (column): { data_type: TooljetDatabaseDataTypes; column_default: unknown } => {
         const { data_type, column_default = undefined } = column;
-        const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
-        const isCharacterVarying = () => data_type === 'character varying';
+        const isSerial = () => data_type === TJDB.integer && /^nextval\(/.test(column_default);
+        const isCharacterVarying = () => data_type === TJDB.character_varying;
 
-        if (isSerial()) return { data_type: 'serial', column_default: undefined };
+        if (isSerial()) return { data_type: TJDB.serial, column_default: undefined };
         if (isCharacterVarying()) return { data_type, column_default: this.addQuotesIfString(column_default) };
 
         return { data_type, column_default };
@@ -876,7 +862,7 @@ export class TooljetDbService {
     return columnList;
   }
 
-  private prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info) {
+  private prepareForeignKeyDetailsJSON(foreign_keys: TooljetDatabaseForeignKey[], referenced_tables_info) {
     if (!foreign_keys.length) return [];
     const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
       const {
