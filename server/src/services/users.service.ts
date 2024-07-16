@@ -7,7 +7,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import {
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
@@ -221,9 +221,10 @@ export class UsersService {
 
   async throwErrorIfUserIsLastActiveAdmin(user: User, organizationId: string) {
     const result = await this.groupPermissionsUtilityService.getRoleUsersList(USER_ROLE.ADMIN, organizationId);
-    const isAdmin = result.find((userItem) => userItem.id === user.id);
+    const allActiveAdmin = result.filter((admin) => admin.organizationUsers[0].status === USER_STATUS.ACTIVE);
+    const isAdmin = allActiveAdmin.find((userItem) => userItem.id === user.id);
 
-    if (isAdmin && result.length < 2) throw new BadRequestException('Atleast one active admin is required');
+    if (isAdmin && allActiveAdmin.length < 2) throw new BadRequestException('Atleast one active admin is required');
   }
 
   async hasGroup(user: User, role: USER_ROLE, organizationId?: string, manager?: EntityManager): Promise<boolean> {
