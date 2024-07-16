@@ -137,7 +137,7 @@ export class AppsControllerV2 {
 
     const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
     const eventsForVersion = app.editingVersion ? await this.eventsService.findEventsForVersion(versionToLoad.id) : [];
-    const appTheme = await this.appsServiceSep.getTheme(user.organizationId, versionToLoad?.globalSettings?.theme?.id);
+    const appTheme = await this.appsServiceSep.getTheme(app.organizationId, versionToLoad?.globalSettings?.theme?.id);
 
     // serialize
     return {
