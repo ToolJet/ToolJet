@@ -189,12 +189,12 @@ export default class RestapiQueryService implements QueryService {
       );
 
       if (error instanceof HTTPError) {
+        const requestUrl = error?.request?.options?.url?.origin + error?.request?.options?.url?.pathname;
+        const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, ['authorization']);
         result = {
           requestObject: {
-            requestUrl: sourceOptions.password // Remove password from error object
-              ? error.request.requestUrl?.replace(`${sourceOptions.password}@`, '<password>@')
-              : error.request.requestUrl,
-            requestHeaders: error.request.options.headers,
+            requestUrl,
+            requestHeaders,
             requestParams: urrl.parse(error.request.requestUrl, true).query,
           },
           responseObject: {
