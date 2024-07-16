@@ -90,6 +90,21 @@ function handleApiKeyAuthentication(sourceOptions, requestOptions, additionalOpt
 }
 
 function handleBasicAuthentication(sourceOptions: any, requestOptions: any): QueryResult {
+  /*
+    This change is specific to cloud. 
+    Before making any changes, Please consult with the team leads.
+    Link to the issue -> https://github.com/sindresorhus/got/issues/1169
+  */
+  let base64Credentials: string;
+  if(sourceOptions.username && sourceOptions.password){
+    try {
+      base64Credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
+      const customHeaders = { ...requestOptions.headers, Authorization: `Basic ${base64Credentials}`};
+      requestOptions.headers = customHeaders;
+    } catch (error) {
+      console.error('Authorization header creation failed', error);
+    }
+  }
   return {
     status: 'ok',
     data: { ...requestOptions, username: sourceOptions.username, password: sourceOptions.password },
