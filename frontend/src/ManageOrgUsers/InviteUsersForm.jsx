@@ -132,6 +132,7 @@ function InviteUsersForm({
   const editUser = () => {
     const { newGroupsToAdd, groupsToRemove, selectedGroupsIds } = getEditedGroups();
     manageUser(currentEditingUser.id, selectedGroupsIds, newRole?.value, newGroupsToAdd, groupsToRemove);
+    setIsChangeRoleModalOpen(false);
   };
 
   const getEditedGroups = () => {
