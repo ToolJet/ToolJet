@@ -365,12 +365,8 @@ class ManageGranularAccessComponent extends React.Component {
 
   render() {
     const {
-      isEmpty,
       showAddPermissionModal,
-      errors,
       selectedApps,
-      initialPermissionState,
-      isAll,
       isCustom,
       granularPermissions,
       isLoading,
@@ -379,11 +375,8 @@ class ManageGranularAccessComponent extends React.Component {
       modalType,
       newPermissionName,
       showAutoRoleChangeModal,
-      autoRoleChangeModalMessage,
       autoRoleChangeModalList,
       autoRoleChangeMessageType,
-      updateParam,
-      updatingPermission,
       updateType,
       deleteConfirmationModal,
       deletingPermissions,
