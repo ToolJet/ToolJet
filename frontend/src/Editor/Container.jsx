@@ -646,7 +646,7 @@ export const Container = ({
       }
       if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) => {
-          // Ensure boxes[id] exists
+          // Ensure boxes[id] exists. This can happen is page is already switched and the component attributes change gets triggered after that
           if (!boxes[id]) {
             console.error(`Box with id ${id} does not exist`);
             return boxes;
@@ -668,7 +668,6 @@ export const Container = ({
             },
           });
         });
-
         if (!_.isEmpty(opts)) {
           paramUpdatesOptsRef.current = opts;
         }
