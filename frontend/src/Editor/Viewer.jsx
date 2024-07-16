@@ -52,6 +52,7 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import TooljetBanner from './Viewer/TooljetBanner';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
+import { distinctUntilChanged } from 'rxjs';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -544,41 +545,52 @@ class ViewerComponent extends React.Component {
     useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
 
   setupViewer() {
-    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      const slug = this.props.params.slug;
-      const appId = this.props.id;
-      const versionId = this.props.versionId;
+    this.subscription = authenticationService.currentSession
+      .pipe(
+        distinctUntilChanged((prev, curr) => {
+          // custom comparison to avoid instance_id in the comparison and prevent loadApplication from being called multiple times
+          const clonedPrevState = { ...prev };
+          const clonedCurrState = { ...curr };
+          delete clonedPrevState.instance_id;
+          delete clonedCurrState.instance_id;
+          return JSON.stringify(clonedCurrState) === JSON.stringify(clonedPrevState);
+        })
+      )
+      .subscribe((currentSession) => {
+        const slug = this.props.params.slug;
+        const appId = this.props.id;
+        const versionId = this.props.versionId;
 
-      if (currentSession?.load_app && slug) {
-        if (currentSession?.group_permissions) {
-          useAppDataStore.getState().actions.setAppId(appId);
+        if (currentSession?.load_app && slug) {
+          if (currentSession?.group_permissions) {
+            useAppDataStore.getState().actions.setAppId(appId);
 
-          const currentUser = currentSession.current_user;
-          const userVars = {
-            email: currentUser.email,
-            firstName: currentUser.first_name,
-            lastName: currentUser.last_name,
-            groups: currentSession?.group_permissions?.map((group) => group.group),
-          };
-          this.props.setCurrentState({
-            globals: {
-              ...this.props.currentState.globals,
-              currentUser: userVars, // currentUser is updated in setStateForContainer function as well
-            },
-          });
-          this.setState({
-            currentUser,
-            userVars,
-            versionId,
-          });
-          this.fetchAppVersions(appId);
-          versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
-        } else if (currentSession?.authentication_failed) {
-          this.loadApplicationBySlug(slug, true);
+            const currentUser = currentSession.current_user;
+            const userVars = {
+              email: currentUser.email,
+              firstName: currentUser.first_name,
+              lastName: currentUser.last_name,
+              groups: currentSession?.group_permissions?.map((group) => group.group),
+            };
+            this.props.setCurrentState({
+              globals: {
+                ...this.props.currentState.globals,
+                currentUser: userVars, // currentUser is updated in setStateForContainer function as well
+              },
+            });
+            this.setState({
+              currentUser,
+              userVars,
+              versionId,
+            });
+            this.fetchAppVersions(appId);
+            versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
+          } else if (currentSession?.authentication_failed) {
+            this.loadApplicationBySlug(slug, true);
+          }
         }
-      }
-      this.setState({ isLoading: false });
-    });
+        this.setState({ isLoading: false });
+      });
   }
 
   /**
