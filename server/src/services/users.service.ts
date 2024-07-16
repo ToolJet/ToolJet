@@ -223,7 +223,7 @@ export class UsersService {
     const result = await this.groupPermissionsUtilityService.getRoleUsersList(USER_ROLE.ADMIN, organizationId);
     const isAdmin = result.find((userItem) => userItem.id === user.id);
 
-    if (isAdmin && result.length <= 2) throw new BadRequestException('Atleast one active admin is required');
+    if (isAdmin && result.length < 2) throw new BadRequestException('Atleast one active admin is required');
   }
 
   async hasGroup(user: User, role: USER_ROLE, organizationId?: string, manager?: EntityManager): Promise<boolean> {
