@@ -303,3 +303,7 @@ export const isValidDomain = (email: string, restrictedDomain: string): boolean 
   }
   return true;
 };
+
+export const isHttpsEnabled = () => {
+  return !!process.env.TOOLJET_HOST?.startsWith('https');
+};

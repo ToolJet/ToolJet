@@ -47,6 +47,9 @@ import { ImportExportResourcesModule } from './modules/import_export_resources/i
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { GetConnection } from './helpers/getconnection';
+import { APP_INTERCEPTOR } from '@nestjs/core/constants';
+import { HelmetInterceptor } from './interceptors/helmet.interceptor';
+import { CustomHeadersInterceptor } from './interceptors/custom-headers.interceptors';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -172,7 +175,19 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
 @Module({
   imports,
   controllers: [AppController],
-  providers: [EmailService, SeedsService, GetConnection],
+  providers: [
+    EmailService,
+    SeedsService,
+    GetConnection,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HelmetInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CustomHeadersInterceptor,
+    },
+  ],
 })
 export class AppModule implements OnModuleInit {
   constructor() {}
