@@ -12,7 +12,7 @@ import {
   resolveWidgetFieldValue,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isArray, isEmpty, set } from 'lodash';
+import _, { isArray, isEmpty } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -1852,88 +1852,84 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
   return false;
 };
 
-export const addComponents = (
-  pageId,
-  appDefinition,
-  appDefinitionChanged,
-  parentId = undefined,
-  newComponentObj,
-  fromClipboard = false
-) => {
-  const finalComponents = {};
-  const componentMap = {};
-  let newComponent = {};
-  let parentComponent = undefined;
-  const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
+export const addComponents = _.debounce(
+  (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj, fromClipboard = false) => {
+    const finalComponents = {};
+    const componentMap = {};
+    let newComponent = {};
+    let parentComponent = undefined;
+    const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
 
-  if (parentId) {
-    const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
-    parentComponent = JSON.parse(JSON.stringify(appDefinition.pages[pageId].components[id[0]]));
-  }
+    if (parentId) {
+      const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
+      parentComponent = JSON.parse(JSON.stringify(appDefinition.pages[pageId].components[id[0]]));
+    }
 
-  pastedComponents.forEach((component) => {
-    const newComponentId = isCut ? component.componentId : uuidv4();
-    const componentName = computeComponentName(component.component.component, {
-      ...appDefinition.pages[pageId].components,
-      ...finalComponents,
+    pastedComponents.forEach((component) => {
+      const newComponentId = isCut ? component.componentId : uuidv4();
+      const componentName = computeComponentName(component.component.component, {
+        ...appDefinition.pages[pageId].components,
+        ...finalComponents,
+      });
+
+      const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pastedComponents, parentId);
+      const parentRef = isParentTabOrCalendar
+        ? component.component.parent.split('-').slice(0, -1).join('-')
+        : component.component.parent;
+      const isParentAlsoCopied = parentRef && componentMap[parentRef];
+
+      componentMap[component.componentId] = newComponentId;
+      let isChild = isParentAlsoCopied ? component.component.parent : parentId;
+      const componentData = JSON.parse(JSON.stringify(component.component));
+
+      if (isCloning && parentId && !componentData.parent) {
+        isChild = component.component.parent;
+      }
+
+      if (!parentComponent && !isParentAlsoCopied && fromClipboard) {
+        isChild = undefined;
+        componentData.parent = undefined;
+      }
+
+      if (!isCloning && parentComponent && fromClipboard) {
+        componentData.parent = isParentAlsoCopied ?? parentId;
+      } else if (isChild && isChildOfTabsOrCalendar(component, pastedComponents, parentId)) {
+        const parentId = component.component.parent.split('-').slice(0, -1).join('-');
+        const childTabId = component.component.parent.split('-').at(-1);
+
+        componentData.parent = `${componentMap[parentId]}-${childTabId}`;
+      } else if (isChild) {
+        const isParentInMap = componentMap[isChild] !== undefined;
+
+        componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
+      }
+
+      newComponent = {
+        component: {
+          ...componentData,
+          name: componentName,
+        },
+        layouts: component.layouts,
+        id: newComponentId,
+      };
+
+      finalComponents[newComponentId] = newComponent;
+
+      // const doesComponentHaveChildren = getAllChildComponents
     });
 
-    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pastedComponents, parentId);
-    const parentRef = isParentTabOrCalendar
-      ? component.component.parent.split('-').slice(0, -1).join('-')
-      : component.component.parent;
-    const isParentAlsoCopied = parentRef && componentMap[parentRef];
-
-    componentMap[component.componentId] = newComponentId;
-    let isChild = isParentAlsoCopied ? component.component.parent : parentId;
-    const componentData = JSON.parse(JSON.stringify(component.component));
-
-    if (isCloning && parentId && !componentData.parent) {
-      isChild = component.component.parent;
+    if (currentPageId === pageId) {
+      updateComponentLayout(pastedComponents, parentId, isCut);
     }
 
-    if (!parentComponent && !isParentAlsoCopied && fromClipboard) {
-      isChild = undefined;
-      componentData.parent = undefined;
+    updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
+    if (!isCloning) {
+      toast.success('Component pasted succesfully');
     }
-
-    if (!isCloning && parentComponent && fromClipboard) {
-      componentData.parent = isParentAlsoCopied ?? parentId;
-    } else if (isChild && isChildOfTabsOrCalendar(component, pastedComponents, parentId)) {
-      const parentId = component.component.parent.split('-').slice(0, -1).join('-');
-      const childTabId = component.component.parent.split('-').at(-1);
-
-      componentData.parent = `${componentMap[parentId]}-${childTabId}`;
-    } else if (isChild) {
-      const isParentInMap = componentMap[isChild] !== undefined;
-
-      componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
-    }
-
-    newComponent = {
-      component: {
-        ...componentData,
-        name: componentName,
-      },
-      layouts: component.layouts,
-      id: newComponentId,
-    };
-
-    finalComponents[newComponentId] = newComponent;
-
-    // const doesComponentHaveChildren = getAllChildComponents
-  });
-
-  if (currentPageId === pageId) {
-    updateComponentLayout(pastedComponents, parentId, isCut);
-  }
-
-  updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
-  if (!isCloning) {
-    toast.success('Component pasted succesfully');
-  }
-  return newComponent;
-};
+    return newComponent;
+  },
+  100
+);
 
 export const addNewWidgetToTheEditor = (
   componentMeta,
