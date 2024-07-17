@@ -103,15 +103,11 @@ export class GroupPermissionsUtilityService {
     const { organizationId, userId, groupsToAddIds } = functionParam;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userRole = await this.getUserRole(userId, organizationId, manager);
-      console.log('this is running');
-
       if (userRole.name === USER_ROLE.END_USER) {
         return await Promise.all(
           groupsToAddIds.map(async (id) => {
             const group = await manager.findOne(GroupPermissions, id);
             const isEditableGroup = await this.isEditableGroup(group, manager);
-            console.log(isEditableGroup);
-
             if (isEditableGroup) {
               throw new BadRequestException({
                 message: {

@@ -571,6 +571,10 @@ export class OrganizationsService {
       email: inviteNewUserDto.email,
       ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
+    console.log('user is');
+
+    console.log(inviteNewUserDto);
+
     const groups = inviteNewUserDto?.groups;
     const role = inviteNewUserDto.role;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -634,8 +638,10 @@ export class OrganizationsService {
         true,
         manager
       );
+      console.log('good till here');
 
       await this.usersService.attachUserGroup(groups, currentOrganization.id, user.id, manager);
+      console.log('not good till here');
       const name = fullName(currentUser.firstName, currentUser.lastName);
       if (shouldSendWelcomeMail) {
         this.emailService
@@ -696,7 +702,7 @@ export class OrganizationsService {
     const archivedUsers = [];
     const invalidRows = [];
     const invalidFields = new Set();
-    const invalidGroups = [];
+    let invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const manager = getManager();
     const invalidRoles = [];
@@ -710,9 +716,12 @@ export class OrganizationsService {
         ignoreEmpty: true,
       })
       .transform((row: UserCsvRow, next) => {
+        const groupNames = this.createGroupsList(row?.groups);
+        invalidGroups = [...invalidGroups, ...groupNames.filter((group) => !existingGroups.includes(group))];
+        const groups = groupPermissions.filter((group) => groupNames.includes(group.name)).map((group) => group.id);
         return next(null, {
           ...row,
-          groups: this.createGroupsList(row?.groups),
+          groups: groups,
           user_role: this.convertUserRolesCasing(row?.user_role),
         });
       })
@@ -720,6 +729,7 @@ export class OrganizationsService {
         await dbTransactionWrap(async (manager: EntityManager) => {
           //Check for existing users
           let isInvalidRole = false;
+
           const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
 
           if (user?.status === USER_STATUS.ARCHIVED) {
@@ -738,15 +748,6 @@ export class OrganizationsService {
           }
 
           //Check for invalid groups
-          const receivedGroups: string[] | null = data?.groups.length ? data?.groups : null;
-
-          if (Array.isArray(receivedGroups)) {
-            for (const group of receivedGroups) {
-              if (existingGroups.indexOf(group) === -1) {
-                invalidGroups.push(group);
-              }
-            }
-          }
 
           if (!Object.values(USER_ROLE).includes(data?.user_role as USER_ROLE)) {
             invalidRoles.push(data?.user_role);

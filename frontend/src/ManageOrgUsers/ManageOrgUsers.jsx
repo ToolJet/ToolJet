@@ -175,6 +175,17 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
+          if (error?.error) {
+            this.setState({
+              showErrorModal: true,
+              errorModalMessage: error.error,
+              errorTitle: error?.title || 'Conflicting permissions',
+              errorItemList: error?.data,
+              errorIconName: 'usergear',
+            });
+            this.setState({ creatingUser: false });
+            return;
+          }
           toast.error(error, {
             position: 'top-center',
             style: {
@@ -246,14 +257,18 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          this.setState({
-            showErrorModal: true,
-            errorModalMessage: error.error,
-            errorTitle: error?.title || 'Conflicting permissions',
-            errorItemList: error?.data,
-            errorIconName: 'usergear',
-          });
-          this.setState({ creatingUser: false });
+          if (error?.error) {
+            this.setState({
+              showErrorModal: true,
+              errorModalMessage: error.error,
+              errorTitle: error?.title || 'Conflicting permissions',
+              errorItemList: error?.data,
+              errorIconName: 'usergear',
+            });
+            this.setState({ creatingUser: false });
+            return;
+          }
+          toast.error(error);
         });
     } else {
       this.setState({ creatingUser: false, file: null, isInviteUsersDrawerOpen: true });
