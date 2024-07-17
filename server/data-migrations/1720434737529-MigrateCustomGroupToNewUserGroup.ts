@@ -119,7 +119,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         return `Custom All users`;
       case 'Builder':
         return `Custom Builder`;
-      case 'End User':
+      case 'End-user':
         return `Custom End User`;
       case 'Admin':
         return `Custom Admin`;
