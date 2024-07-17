@@ -1132,6 +1132,10 @@ export function runQuery(
   shouldSetPreviewData = false,
   isOnLoad = false
 ) {
+  //for resetting the hints when the query is run for large number of times
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByQueryName(queryName);
+
   let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   const queryEvents = useAppDataStore
