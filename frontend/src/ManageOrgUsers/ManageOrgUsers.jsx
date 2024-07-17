@@ -183,7 +183,7 @@ class ManageOrgUsersComponent extends React.Component {
               errorItemList: error?.data,
               errorIconName: 'usergear',
             });
-            this.setState({ creatingUser: false });
+            this.setState({ creatingUser: false, uploadingUsers: false });
             return;
           }
           toast.error(error, {
