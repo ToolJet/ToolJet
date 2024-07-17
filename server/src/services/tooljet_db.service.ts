@@ -303,14 +303,15 @@ export class TooljetDbService {
           }),
         })
       );
-
       await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
-
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await queryRunner.release();
-      await tjdbQueryRunner.release();
+
+      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+      if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
+      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
 
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
