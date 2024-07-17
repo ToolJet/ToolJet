@@ -351,6 +351,17 @@
     }
 }
 
+.rest-api-tab-content {
+    .fields-container {
+        .rest-api-codehinter-key-field {
+            .cm-editor {
+                border-radius: 4px 0px 0px 4px !important;
+                box-shadow: none !important;
+            }
+        }
+    }
+}
+
 .border-danger {
     .cm-editor {
         border: 1px solid red !important;
