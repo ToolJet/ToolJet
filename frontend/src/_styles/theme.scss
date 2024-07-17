@@ -6767,11 +6767,15 @@ tbody {
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         color: white;
+        
       }
 
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         background-color: transparent;
+        option{
+          background-color: #232e3c;
+        }
       }
     }
 
