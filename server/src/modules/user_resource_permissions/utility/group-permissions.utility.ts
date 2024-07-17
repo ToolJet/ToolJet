@@ -206,7 +206,7 @@ export function getUserInGroupQuery(
     .innerJoinAndSelect(
       'users.organizationUsers',
       'organizationUsers',
-      'organizationUsers.organizationId != :organizationId',
+      'organizationUsers.organizationId = :organizationId',
       {
         organizationId,
       }
