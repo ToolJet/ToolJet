@@ -45,14 +45,13 @@ export const EDIT_ROLE_MESSAGE = {
         </div>
       );
     },
-    admin: (isPaidPlan) => {
+    admin: () => {
       return (
         <div>
-          {isPaidPlan && (
-            <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-              Changing user role from builder to admin will grant access to all resources and settings.
-            </p>
-          )}
+          <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
+            Changing user role from builder to admin will grant access to all resources and settings.
+          </p>
+
           <p className="tj-text-sm">Are you sure you want to continue?</p>
         </div>
       );
