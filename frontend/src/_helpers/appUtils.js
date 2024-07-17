@@ -1132,7 +1132,7 @@ export function runQuery(
   shouldSetPreviewData = false,
   isOnLoad = false
 ) {
-  //for resetting the hints when the query is run for large number of times
+  //for resetting the hints when the query is run for large number of items
   if (mode == 'edit') {
     const resolveStoreActions = useResolveStore.getState().actions;
     resolveStoreActions.resetHintsByQueryName(queryName);
