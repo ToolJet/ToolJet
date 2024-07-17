@@ -303,7 +303,6 @@ class HomePageComponent extends React.Component {
 
   canUserPerform(user, action, app) {
     const currentSession = authenticationService.currentSessionValue;
-    const userPermissions = currentSession.user_permissions;
     const appPermission = currentSession.app_group_permissions;
     const canUpdateApp =
       appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.includes(app?.id));
