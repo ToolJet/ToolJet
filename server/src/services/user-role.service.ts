@@ -21,6 +21,7 @@ import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { AddUserRoleObject } from '@module/user_resource_permissions/interface/group-permissions.interface';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 import { App } from 'src/entities/app.entity';
+import { USER_STATUS } from '@helpers/user_lifecycle';
 
 @Injectable()
 export class UserRoleService {
@@ -94,7 +95,11 @@ export class UserRoleService {
           null,
           manager
         );
-        if (groupUsers.length < 2)
+        const admins = groupUsers
+          .map((group) => group.user)
+          .filter((user) => user.organizationUsers[0].status === USER_STATUS.ACTIVE);
+
+        if (admins.length < 2)
           throw new BadRequestException({
             message: {
               error: ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED,

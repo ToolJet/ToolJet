@@ -203,6 +203,17 @@ export function getUserInGroupQuery(
     .innerJoinAndSelect('groupUsers.user', 'users', 'groupUsers.groupId = :groupId', {
       groupId,
     })
+    .innerJoinAndSelect(
+      'users.organizationUsers',
+      'organizationUsers',
+      'organizationUsers.organizationId != :organizationId',
+      {
+        organizationId,
+      }
+    )
+    .andWhere('organizationUsers.status != :status', {
+      status: USER_STATUS.ARCHIVED,
+    })
     .innerJoinAndSelect('users.userGroups', 'userRole')
     .innerJoinAndSelect('userRole.group', 'role', 'role.organizationId = :organizationId', {
       organizationId,
@@ -219,6 +230,7 @@ export function getUserInGroupQuery(
       'users.email',
       'userRole.id',
       'role.name',
+      'organizationUsers.status',
     ])
     .addSelect('role.name', 'userRole')
     .andWhere(addableUserGetOrConditions(searchInput));
