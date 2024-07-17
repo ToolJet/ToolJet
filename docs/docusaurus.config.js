@@ -143,7 +143,7 @@ module.exports = {
         },
         googleTagManager: isProd
           ? {
-            containerId: process.env.GTM,
+            containerId: process.env.GTM || 'development',
           }
           : undefined,
       },
