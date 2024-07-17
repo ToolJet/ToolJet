@@ -321,3 +321,18 @@ export const updateCanvasBackground = ({ canvasBackgroundColor, backgroundFxQuer
     }
   }
 };
+
+export function checkAndExtractEntityId(errorString) {
+  const regex = /"([a-f0-9-]+)"/;
+  const match = errorString.match(regex);
+  if (match && match[1]) {
+    return {
+      entityId: match[1],
+      message: 'The last component is not saved, so the last action is also not saved.',
+    };
+  }
+  return {
+    entityId: null,
+    message: 'No entity ID found in the error message.',
+  };
+}
