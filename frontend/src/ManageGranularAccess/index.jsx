@@ -134,7 +134,6 @@ class ManageGranularAccessComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.closeAddPermissionModal();
-        console.log(error);
         if (error?.error) {
           this.props.updateParentState({
             showEditRoleErrorModal: true,
@@ -145,7 +144,7 @@ class ManageGranularAccessComponent extends React.Component {
           });
           return;
         }
-        toast.error(error?.error, {
+        toast.error(error, {
           style: {
             maxWidth: '500px',
           },
