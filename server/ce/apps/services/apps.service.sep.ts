@@ -6,7 +6,7 @@ export class AppsServiceSep {
       id: '63277bf2-1849-4374-965c-2e296319d619',
       name: 'TJ default',
       definition: {
-        brand: new TJDefaultTheme(),
+        brand: { colors: new TJDefaultTheme() },
       },
       isDefault: true,
       isBasic: true,

@@ -23,7 +23,7 @@ interface Colors {
 }
 
 interface Definition {
-  brand: Colors;
+  brand: { colors: Colors };
 }
 
 export class TJDefaultTheme {
