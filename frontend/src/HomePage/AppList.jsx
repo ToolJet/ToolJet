@@ -57,7 +57,7 @@ const AppList = (props) => {
           >
             {props.currentFolder?.count == 0
               ? t('homePage.thisFolderIsEmpty', 'This folder is empty')
-              : t('homePage.nonAccessibleFolderApps', 'No apps are accessible of this folder')}
+              : t('homePage.nonAccessibleFolderApps', 'You do not have access to any applications in this folder.')}
           </span>
         </div>
       )}
