@@ -56,7 +56,6 @@ function InviteUsersForm({
   ];
   const [selectedGroups, setSelectedGroups] = useState([]);
   useEffect(() => {
-    console.log('activeTab changed', activeTab);
     setFileUpload(false);
   }, [activeTab]);
 
@@ -86,7 +85,6 @@ function InviteUsersForm({
   }, [currentEditingUser, groups]);
 
   const onDrop = useCallback((acceptedFiles) => {
-    console.log('onDrop', acceptedFiles);
     const file = acceptedFiles[0];
     if (Math.round(file.size / 1024) > 1024) {
       toast.error('File size cannot exceed more than 1MB');
