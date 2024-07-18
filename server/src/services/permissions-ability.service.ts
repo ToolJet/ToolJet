@@ -16,7 +16,7 @@ import {
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { getUserPermissionsQuery } from '@module/permissions/utility/permission-ability.utility';
-import { App } from 'src/entities/app.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 
 @Injectable()
 export class AbilityService {
@@ -88,7 +88,7 @@ export class AbilityService {
     });
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const appsOwnedByUser = await manager.find(App, {
+      const appsOwnedByUser = await manager.find(AppBase, {
         where: { userId: user.id, organizationId: user.organizationId },
       });
 

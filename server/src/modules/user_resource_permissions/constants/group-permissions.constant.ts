@@ -102,6 +102,7 @@ export const DEFAULT_GROUP_PERMISSIONS_MIGRATIONS = {
 
 export const ERROR_HANDLER = {
   GROUP_NOT_EXIST: "Group doesn't exist",
+  RESERVED_KEYWORDS_FOR_GROUP_NAME: 'Group name cannot be same as reserved keywords',
   DEFAULT_GROUP_NAME: 'Name cannot be same as user default group',
   DEFAULT_GROUP_NAME_UPDATE: 'Not allowed to change default group name',
   DEFAULT_GROUP_NAME_DELETE: 'Not allowed to delete default group',

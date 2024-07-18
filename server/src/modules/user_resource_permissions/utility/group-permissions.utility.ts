@@ -135,7 +135,12 @@ export function getAllUserGroupsQuery(
 }
 
 export function validateCreateGroupOperation(createGroupPermissionDto: CreateGroupPermissionDto) {
-  if (createGroupPermissionDto.name in USER_ROLE) throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_NAME);
+  const humanizeList = ['End-user', 'Builder', 'Admin'];
+  if (humanizeList.includes(createGroupPermissionDto.name))
+    throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_NAME);
+
+  if (Object.values(USER_ROLE).includes(createGroupPermissionDto.name as USER_ROLE))
+    throw new BadRequestException(ERROR_HANDLER.RESERVED_KEYWORDS_FOR_GROUP_NAME);
 }
 
 export function addableUsersToGroupQuery(
