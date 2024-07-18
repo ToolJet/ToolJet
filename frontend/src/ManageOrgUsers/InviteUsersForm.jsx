@@ -43,6 +43,7 @@ function InviteUsersForm({
       return indexA - indexB;
     });
   const [isChangeRoleModalOpen, setIsChangeRoleModalOpen] = useState(false);
+  const [fileUpload, setFileUpload] = useState(false);
   const groupedOptions = [
     {
       label: 'default',
@@ -54,6 +55,9 @@ function InviteUsersForm({
     },
   ];
   const [selectedGroups, setSelectedGroups] = useState([]);
+  useEffect(() => {
+    setFileUpload(false);
+  }, [activeTab]);
 
   const hiddenFileInput = useRef(null);
 
@@ -86,6 +90,7 @@ function InviteUsersForm({
       toast.error('File size cannot exceed more than 1MB');
     } else {
       handleFileChange(file);
+      setFileUpload(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -334,6 +339,7 @@ function InviteUsersForm({
                 handleFileChange={handleFileChange}
                 inviteBulkUsers={inviteBulkUsers}
                 onDrop={onDrop}
+                setFileUpload={setFileUpload}
               />
             </div>
           )}
@@ -353,7 +359,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers || creatingUser || !isEdited()}
+              disabled={uploadingUsers || creatingUser || !isEdited() || (activeTab !== 1 && !fileUpload)}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"
