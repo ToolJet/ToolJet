@@ -99,7 +99,8 @@ export function validateUpdateGroupOperation(
   ) {
     throw new MethodNotAllowedException(ERROR_HANDLER.DEFAULT_GROUP_NAME_UPDATE);
   }
-
+  const humanizeList = ['End-user', 'Builder', 'Admin'];
+  if (humanizeList.includes(newName)) throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_NAME);
   if ([USER_ROLE.ADMIN, USER_ROLE.END_USER].includes(name as USER_ROLE)) {
     throw new MethodNotAllowedException(ERROR_HANDLER.NON_EDITABLE_GROUP_UPDATE);
   }

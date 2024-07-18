@@ -48,7 +48,7 @@ const AppList = (props) => {
           </div>
         </div>
       )}
-      {!props.isLoading && props.apps?.length === 0 && (
+      {!props.isLoading && (props.apps?.length === 0 || props.currentFolder?.count == 0) && (
         <div className="text-center d-block">
           <EmptyFoldersIllustration className="mb-4" data-cy="empty-folder-image" />
           <span
