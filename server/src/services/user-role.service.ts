@@ -98,8 +98,8 @@ export class UserRoleService {
         const admins = groupUsers
           .map((group) => group.user)
           .filter((user) => user.organizationUsers[0].status === USER_STATUS.ACTIVE);
-
-        if (admins.length < 2)
+        const isAdmin = admins.find((admin) => admin.id === userId);
+        if (isAdmin && admins.length < 2)
           throw new BadRequestException({
             message: {
               error: ERROR_HANDLER.EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED,
