@@ -22,7 +22,7 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | [Access any user's personal workspace (create, edit or delete apps)](#access-any-workspace) | ❌ | ✅ |
 | [Archive Admin or any user of any workspace](#archiveunarchive-users) | ❌ | ✅ |
 | [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace) | ❌ | ✅ |
-| [Manage any workspace's setting (Groups/SSO/Workspace constants)](#manage-workspace-setting-groupsssoworkspace-constants) | ❌ | ✅ |
+| [Manage any workspace's setting (Groups/SSO/Workspace constants)](#manage-workspace-settings-groupsssoworkspace-constants) | ❌ | ✅ |
 | [Manage all users from all the workspaces in the instance](#manage-all-users-in-the-instance) | ❌ | ✅ |
 | [Make any user Super Admin](#make-the-user-super-admin) | ❌ | ✅ |
 | [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users) | ❌ | ✅ |
