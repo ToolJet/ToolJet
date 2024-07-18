@@ -61,6 +61,9 @@ export function FileDropzone({
             onChange={(e) => {
               const file = e.target.files[0];
               setFileData(file);
+              if (file === undefined) {
+                setFileUpload(false);
+              }
               if (Math.round(file.size / 1024) > 1024) {
                 toast.error('File size cannot exceed more than 1MB');
                 e.target.value = null;
