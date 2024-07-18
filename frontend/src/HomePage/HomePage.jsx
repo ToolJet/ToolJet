@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { appsService, folderService, authenticationService, libraryAppService } from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
+import _, { sample, isEmpty } from 'lodash';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -14,7 +15,6 @@ import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
-import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
@@ -912,7 +912,7 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {(isLoading || meta.total_count > 0 || currentFolder.count === 0) && (
+                {(isLoading || meta.total_count > 0 || !_.isEmpty(currentFolder)) && (
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}
