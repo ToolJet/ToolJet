@@ -32,7 +32,6 @@ function InviteUsersForm({
   const [activeTab, setActiveTab] = useState(1);
   const [existingGroups, setExistingGroups] = useState([]);
   const [newRole, setNewRole] = useState(null);
-
   const customGroups = groups.filter((group) => group.groupType === 'custom');
   const roleGroups = groups
     .filter((group) => group.groupType === 'default')
@@ -312,7 +311,9 @@ function InviteUsersForm({
                       ToolJet won’t be able to recognise files in any other format.{' '}
                     </p>
                     <ButtonSolid
-                      href="../../assets/csv/sample_upload.csv"
+                      href={`${window.public_config?.TOOLJET_HOST}${
+                        window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                      }assets/csv/sample_upload.csv`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
