@@ -167,7 +167,7 @@ export function resolveReferences(
   const objectType = typeof object;
   let error;
 
-  const state = useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
+  const state = _state ?? useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
 
   if (_state.parameters) {
     state.parameters = { ..._state.parameters };
