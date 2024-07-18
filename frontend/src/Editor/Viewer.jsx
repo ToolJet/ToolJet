@@ -548,7 +548,7 @@ class ViewerComponent extends React.Component {
     this.subscription = authenticationService.currentSession
       .pipe(
         distinctUntilChanged((prev, curr) => {
-          // custom comparison to avoid instance_id in the comparison and prevent loadApplication from being called multiple times
+          // Instance id is updated after page load, this custom comparison avoids instance_id in the comparison and prevent loadApplication from being called multiple times
           const clonedPrevState = { ...prev };
           const clonedCurrState = { ...curr };
           delete clonedPrevState.instance_id;
