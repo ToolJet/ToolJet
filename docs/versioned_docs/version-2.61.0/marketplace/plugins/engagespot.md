@@ -36,7 +36,7 @@ You can change your Engagespot BaseURL by enable custom endpoint.
 
 ## Querying Engagespot
 
-Click on `+Add` button of the [query manager](/docs/app-builder/query-panel/#add) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
+Click on `+Add` button of the [query manager](/docs/app-builder/query-panel/#query-manager) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
 
 <div style={{textAlign: 'center'}}>
 

@@ -139,7 +139,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
   </div>
   
-5. Under environmental variable please add corresponding Tooljet database env variables. You can also refer [env variable](/docs/setup/env-vars#tooljet-database).
+5. Under environmental variable please add corresponding Tooljet database env variables. You can also refer [env variable](/docs/setup/env-vars/#enable-tooljet-database--optional-).
 
 6. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for Tooljet application or the separate PostgreSQL database created respective to Tooljet Database from the drop-down option.
 
@@ -157,7 +157,7 @@ Once the Service is created and live, to make the  Cloud Service URL public. Ple
 
 
 
-7. Additional Environmental variable to be added to Tooljet application or Tooljet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars#tooljet-database)
+7. Additional Environmental variable to be added to Tooljet application or Tooljet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars/#enable-tooljet-database--optional-)
 
 
   <div style={{textAlign: 'center'}}>

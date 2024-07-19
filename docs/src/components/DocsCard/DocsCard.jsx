@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import styles from './DocsCard.css'
 
 export const DocsCard = ({ label, imgSrc, link, height = 40, width = 40, title }) => {
-    console.log(title);
     const kubernetesSvg = '/img/setup/icons/kubernetes.svg'
 
     const imagePath = imgSrc.includes('kubernetes') ? kubernetesSvg : `/img/setup/icons/${imgSrc}.svg`

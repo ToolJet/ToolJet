@@ -89,7 +89,7 @@ You can join two or more tables in the ToolJet database by using the **Join** op
 
   </div>
 
-- **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records. The operations supported are same as the [filter operations](#available-operations-are) for the **List rows** operation.
+- **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records. The operations supported are same as the [filter operations](/docs/tooljet-db/database-editor#available-operations-are) for the **List rows** operation.
 - **Sort**: Sort the query response by choosing a column and the order (ascending or descending).
 - **Limit**: Limit the number of records to be returned by entering a number. 
 - **Offset**: Offset the number of records to be returned by entering a number. This parameter is used for pagination.
