@@ -47,7 +47,7 @@ export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count
 
 export function resolve(data, state) {
   if (data.startsWith('{{queries.') || data.startsWith('{{globals.') || data.startsWith('{{components.')) {
-    let prop = data.replace('{{', '').replace('}}', '');
+    let prop = removeNestedDoubleCurlyBraces(data);
     return findProp(state, prop, '');
   }
 }
@@ -114,7 +114,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
 
   if (codeMatches) {
     codeMatches.forEach((codeMatch) => {
-      const code = codeMatch.replace('{{', '').replace('}}', '');
+      const code = removeNestedDoubleCurlyBraces(codeMatch);
 
       if (reservedKeyword.includes(code)) {
         resolvedStr = resolvedStr.replace(codeMatch, '');

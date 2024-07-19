@@ -5,6 +5,7 @@ import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -455,7 +456,7 @@ export function findAllEntityReferences(node, allRefs) {
         const referenceExists = value;
 
         if (referenceExists) {
-          const ref = value.replace('{{', '').replace('}}', '');
+          const ref = removeNestedDoubleCurlyBraces(value);
 
           const entityName = ref.split('.')[1];
 
