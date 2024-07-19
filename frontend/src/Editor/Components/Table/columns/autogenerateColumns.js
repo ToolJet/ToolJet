@@ -106,7 +106,7 @@ export default function autogenerateColumns(
     finalKeys.includes(column?.key || column?.name)
   );
 
-  setTimeout(() => setProperty('columns', finalColumns), 10);
+  setTimeout(() => setProperty('columns', finalColumns), 100);
 }
 
 const dataTypeToColumnTypeMapping = {
