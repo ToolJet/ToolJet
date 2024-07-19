@@ -146,7 +146,7 @@ You cannot delete a Primary Key of a target table if it is being used as a forei
 
 ## Foreign Key
 
-A foreign key relation refers to linking one column or set of columns of the current table with one column or set of columns in an existing table. This relationship establishes a connection between the two tables, enabling the current source table to reference the existing target table. While creating a Foreign Key relationship, you can select the desired [action](#available-actions) to be performed on the source row when the referenced(target) row is updated or deleted.
+A foreign key relation refers to linking one column or set of columns of the current table with one column or set of columns in an existing table. This relationship establishes a connection between the two tables, enabling the current source table to reference the existing target table. While creating a Foreign Key relationship, you can select the desired [action](#foreign-key-actions) to be performed on the source row when the referenced(target) row is updated or deleted.
 
 ### Constraints
 - The target table must contain a column having the same data type as the column in the source table.

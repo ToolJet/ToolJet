@@ -37,7 +37,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 
 ## Querying Salesforce
 
-- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#add) located at the bottom panel of the editor.
+- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
 - Select the previously configured Salesforce datasource from the **Data Source** dropdown.
 
 - In the Operation dropdown, select the desired operation type. ToolJet supports two operation types for Salesforce interactions:
