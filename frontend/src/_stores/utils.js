@@ -438,24 +438,43 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   return { suggestionList, hintsMap, resolvedRefs };
 }
 
+function containsBracketNotation(queryString) {
+  const bracketNotationRegex = /\[\s*['"][^'"]+['"]\s*\]/;
+  return bracketNotationRegex.test(queryString);
+}
+
 export function findAllEntityReferences(node, allRefs) {
+  const extractReferencesFromString = (str) => {
+    const regex = /{{(components|queries)\.[^{}]*}}/g;
+    const matches = str.match(regex);
+    if (matches) {
+      matches.forEach((match) => {
+        const ref = match.replace('{{', '').replace('}}', '');
+        const entityName = ref.split('.')[1];
+        allRefs.push(entityName);
+      });
+    }
+  };
+
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
-      if (
-        typeof value === 'string' &&
-        value.includes('{{') &&
-        value.includes('}}') &&
-        (value.startsWith('{{components') || value.startsWith('{{queries'))
-      ) {
-        const referenceExists = value;
 
-        if (referenceExists) {
-          const ref = value.replace('{{', '').replace('}}', '');
+      if (typeof value === 'string') {
+        if (containsBracketNotation(value)) {
+          // Skip if the value is a bracket notation
+          break;
+        }
 
-          const entityName = ref.split('.')[1];
-
-          allRefs.push(entityName);
+        if (
+          value.includes('{{') &&
+          value.includes('}}') &&
+          (value.startsWith('{{components') || value.startsWith('{{queries'))
+        ) {
+          extractReferencesFromString(value);
+        } else {
+          // Handle cases where references are embedded within strings
+          extractReferencesFromString(value);
         }
       } else if (typeof value === 'object') {
         findAllEntityReferences(value, allRefs);
