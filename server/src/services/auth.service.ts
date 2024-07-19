@@ -242,13 +242,14 @@ export class AuthService {
         organizationId: user.organizationId,
         resources: [{ resource: TOOLJET_RESOURCE.APP }],
       });
+      const isAdmin = !!permissions.find((permission) => permission.name === USER_ROLE.ADMIN);
       const appGroupPermissions = userPermissions?.[TOOLJET_RESOURCE.APP];
       delete userPermissions?.[TOOLJET_RESOURCE.APP];
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
         currentOrganizationName: organization.name,
-        admin: await this.usersService.hasGroup(user, USER_ROLE.ADMIN, null, manager),
+        admin: isAdmin,
         userPermissions: userPermissions,
         groupPermissions: permissions.filter(
           (group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP || group.name === USER_ROLE.ADMIN

@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { User } from 'src/entities/user.entity';
 import {
+  ERROR_HANDLER,
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
 } from '@module/user_resource_permissions/constants/group-permissions.constant';
@@ -107,6 +108,7 @@ export class GroupPermissionsUtilityService {
         return await Promise.all(
           groupsToAddIds.map(async (id) => {
             const group = await manager.findOne(GroupPermissions, id);
+            if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
             const isEditableGroup = await this.isEditableGroup(group, manager);
             if (isEditableGroup) {
               throw new BadRequestException({

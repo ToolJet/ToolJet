@@ -8,16 +8,12 @@ import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
-import {
-  GROUP_PERMISSIONS_TYPE,
-  USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { UserRoleService } from './user-role.service';
 import { validateDeleteGroupUserOperation } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
 import { Organization } from 'src/entities/organization.entity';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -225,23 +221,6 @@ export class UsersService {
     const isAdmin = allActiveAdmin.find((userItem) => userItem.id === user.id);
 
     if (isAdmin && allActiveAdmin.length < 2) throw new BadRequestException('Atleast one active admin is required');
-  }
-
-  async hasGroup(user: User, role: USER_ROLE, organizationId?: string, manager?: EntityManager): Promise<boolean> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const result = await manager
-        .createQueryBuilder(GroupPermissions, 'group_permissions')
-        .innerJoin('group_permissions.groupUsers', 'groupUsers')
-        .where('group_permissions.organizationId = :organizationId', {
-          organizationId: organizationId || user.organizationId,
-        })
-        .andWhere('group_permissions.name = :role ', { role })
-        .andWhere('group_permissions.type = :type', { type: GROUP_PERMISSIONS_TYPE.DEFAULT })
-        .andWhere('groupUsers.userId = :userId', { userId: user.id })
-        .getCount();
-
-      return result > 0;
-    }, manager);
   }
 
   async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {

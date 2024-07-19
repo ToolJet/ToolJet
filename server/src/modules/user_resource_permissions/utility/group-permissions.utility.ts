@@ -136,8 +136,6 @@ export function getAllUserGroupsQuery(
 }
 
 export function validateCreateGroupOperation(createGroupPermissionDto: CreateGroupPermissionDto) {
-  console.log('this is running');
-
   const humanizeList = ['End-user', 'Builder', 'Admin'];
 
   if (humanizeList.includes(createGroupPermissionDto.name)) {
