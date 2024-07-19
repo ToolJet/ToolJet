@@ -58,26 +58,26 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
-      },
-      "suffix": {
-        "label": "Suffix",
-        "key": "suffix",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter suffix",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins"
       }
     },
     "chat": {
-      "prompt": {
+      "messages": {
         "label": "Message",
-        "key": "prompt",
+        "key": "messages",
         "type": "codehinter",
         "description": "Enter message",
-        "placeholder": "Draft an email or other piece of writing",
+        "placeholder": "[{\"role\": \"user\", \"content\": \"Hello\"}, {\"role\": \"assistant\", \"content\": \"Hi\"]",
         "height": "150px"
+      },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter model",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "max_tokens": {
         "label": "Max Tokens",
@@ -105,16 +105,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter stop sequence",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins"
-      },
-      "suffix": {
-        "label": "Suffix",
-        "key": "suffix",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter suffix",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"

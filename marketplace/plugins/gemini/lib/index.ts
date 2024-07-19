@@ -1,8 +1,8 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
-import { SourceOptions, QueryOptions, Operation } from './types';
+import { SourceOptions, QueryOptions, Operation, TextCompletionQueryOptions, ChatCompletionQueryOptions } from './types';
 import * as PortKeyAi from 'portkey-ai';
-import { getChatCompletion, getCompletion } from './portkey_operations';
-import { PROVIDER_GOOGLE } from './constants';
+import { getChatCompletion, getCompletion } from './query_operations';
+import { DEFAULT_COMPLETION_MODEL, PROVIDER_GOOGLE } from './constants';
 export default class Gemini implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
@@ -11,10 +11,10 @@ export default class Gemini implements QueryService {
     try {
       switch (operation) {
         case Operation.Completion:
-          result = await getCompletion(portkey, queryOptions);
+          result = await getCompletion(portkey, queryOptions as TextCompletionQueryOptions);
           break;
         case Operation.Chat:
-          result = await getChatCompletion(portkey, queryOptions);
+          result = await getChatCompletion(portkey, queryOptions as ChatCompletionQueryOptions);
           break;
         default:
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
@@ -33,9 +33,16 @@ export default class Gemini implements QueryService {
     if (!portkey) {
       throw new QueryError('Connection test failed', 'Could not connect to Portkey', {});
     }
+    const queryOptions: TextCompletionQueryOptions = {
+      operation: Operation.Completion,
+      model: DEFAULT_COMPLETION_MODEL,
+      prompt: 'H',
+      max_tokens: 10,
+    }
     let result = {};
-    result = await getCompletion(portkey, { operation: Operation.Completion, prompt: 'H', max_tokens: 1 });
+    result = await getCompletion(portkey, queryOptions);
     if (result['error']) {
+      console.log(result);
       return {
         status: 'failed',
         message: result['error'],
@@ -55,6 +62,7 @@ export default class Gemini implements QueryService {
       provider: PROVIDER_GOOGLE,
       Authorization: apiKey
     };
+    console.log(creds);
     return new PortKeyAi.Portkey(creds);
   }
 }
