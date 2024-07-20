@@ -408,12 +408,18 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
-  if (!events || !isArray(events) || events.length === 0) return;
+  if (!events || !Array.isArray(events) || events.length === 0) return;
   const filteredEvents = events?.filter((event) => event?.event.eventId === eventId)?.sort((a, b) => a.index - b.index);
+  const results = await Promise.allSettled(
+    filteredEvents.map((event) => executeAction(_ref, event, mode, customVariables))
+  );
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      console.error(`Action ${index} failed:`, result.reason);
+    }
+  });
 
-  for (const event of filteredEvents) {
-    await executeAction(_ref, event, mode, customVariables);
-  }
+  return results;
 }
 
 export function onComponentClick(_ref, id, component, mode = 'edit') {
@@ -555,6 +561,8 @@ function logError(errorType, errorKind, error, eventObj = '', options = {}) {
       },
       options: options,
       strace: 'app_level',
+      id: eventObj?.id,
+      sourceId: eventObj?.sourceId,
     },
   });
 }

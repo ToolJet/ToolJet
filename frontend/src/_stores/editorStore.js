@@ -42,6 +42,8 @@ const initialState = {
   editorCanvasWidth: 1092,
   canvasBackground: {},
   pageSwitchInProgress: false,
+  selectedSidebarItem: null,
+  showSettingsModal: false,
 };
 
 export const useEditorStore = create(
@@ -49,6 +51,8 @@ export const useEditorStore = create(
   (set, get) => ({
     ...initialState,
     actions: {
+      setSelectedSidebarItem: (item) => set({ selectedSidebarItem: item }),
+      setShowSettingsModal: (show) => set({ showSettingsModal: show }),
       setShowComments: (showComments) =>
         set({ showComments }, false, {
           type: ACTIONS.SET_HOVERED_COMPONENT,
@@ -132,3 +136,8 @@ export const flushComponentsToRender = (componentIds = []) => {
   useEditorStore.getState().actions.flushComponentsNeedsUpdateOnNextRender(componentIds);
   useResolveStore.getState().actions.flushLastUpdatedRefs();
 };
+
+export const useSelectedSidebarItem = () =>
+  useEditorStore((state) => [state.selectedSidebarItem, state.actions.setSelectedSidebarItem]);
+export const useShowSettingsModal = () =>
+  useEditorStore((state) => [state.showSettingsModal, state.actions.setShowSettingsModal]);

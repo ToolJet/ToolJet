@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from './utils';
 
 const useDebuggerStore = create((set) => ({
   selectedError: null,

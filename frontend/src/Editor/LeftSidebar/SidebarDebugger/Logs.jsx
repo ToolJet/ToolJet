@@ -1,12 +1,15 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { capitalize, startCase } from 'lodash';
 import moment from 'moment';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import { useEditorActions, useEditorStore, useSelectedSidebarItem, useShowSettingsModal } from '@/_stores/editorStore';
 import useDebugger from './useDebugger'; // Import the useDebugger hook
 import { useQueryPanelExpansion, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import useDebuggerStore from '@/_stores/debuggerStore';
+import { useActiveTab } from '@/_stores/queryPanelStore';
 
 function Logs({ logProps, idx, switchPage }) {
   const [open, setOpen] = React.useState(false);
@@ -34,6 +37,11 @@ function Logs({ logProps, idx, switchPage }) {
   const [isExpanded, toggleQueryEditor, setQueryPanelExpansion] = useQueryPanelExpansion();
   const { setSelectedQuery, expandQueryPanel } = useQueryPanelActions();
   const selectedQuery = useSelectedQuery();
+  const [activeQueryHeaderTab, setActiveQueryHeaderTab] = useActiveTab(); // Get activeQueryHeaderTab and setActiveQueryHeaderTab from the store
+  const [selectedSidebarItem, setSelectedSidebarItem] = useSelectedSidebarItem();
+  const [showSettingsModal, setShowSettingsModal] = useShowSettingsModal();
+
+  const { setCurrentPageId } = useEditorActions();
 
   const defaultStyles = {
     transform: open ? 'rotate(-180deg)' : 'rotate(0deg)',
@@ -45,24 +53,30 @@ function Logs({ logProps, idx, switchPage }) {
   };
 
   const { setSelectedComponents } = useEditorActions();
-  const { handleErrorClick, selectedError } = useDebugger({}); // Initialize the useDebugger hook and extract handleErrorClick
+  const { handleErrorClick } = useDebugger({
+    currentPageId: useEditorStore.getState().currentPageId,
+    isDebuggerOpen: true,
+  });
 
-  console.log('selectedError---', selectedError);
+  const selectedError = useDebuggerStore((state) => state.selectedError);
+  const events = useAppDataStore.getState().events;
 
-  const handleSelectComponentOnEditor = (componentId) => {
-    const isAlreadySelected = useEditorStore
-      .getState()
-      ?.selectedComponents.find((component) => component.id === componentId);
+  const handleSelectComponentOnEditor = useCallback(
+    (componentId) => {
+      const isAlreadySelected = useEditorStore
+        .getState()
+        ?.selectedComponents.find((component) => component.id === componentId);
 
-    if (!isAlreadySelected) {
-      const currentPageId = useEditorStore.getState()?.currentPageId;
-      const currentPageComponents = useEditorStore.getState()?.appDefinition[currentPageId]?.components;
-      const component = currentPageComponents?.find((comp) => comp.id === componentId);
+      if (!isAlreadySelected) {
+        const currentPageId = useEditorStore.getState()?.currentPageId;
+        const currentPageComponents = useEditorStore.getState()?.appDefinition[currentPageId]?.components;
+        const component = currentPageComponents?.find((comp) => comp.id === componentId);
 
-      setSelectedComponents([{ id: componentId, component }], false);
-    }
-  };
-
+        setSelectedComponents([{ id: componentId, component }], false);
+      }
+    },
+    [setSelectedComponents]
+  );
   const callbackActions = [
     {
       for: 'all',
@@ -80,7 +94,6 @@ function Logs({ logProps, idx, switchPage }) {
 
   const handleSelectQueryOnEditor = (queryId) => {
     const isAlreadySelected = queryId == selectedQuery.id;
-    console.log('isAlreadySelected----', isAlreadySelected);
     if (!isAlreadySelected) {
       setSelectedQuery(queryId);
     }
@@ -114,9 +127,82 @@ function Logs({ logProps, idx, switchPage }) {
     });
   }, []);
 
-  const handleClick = useCallback(async () => {
-    handleErrorClick(logProps);
+  const pageSwitch = async () => {
+    if (logProps?.page?.id && logProps?.page?.id !== currentPageId && logProps.type === 'component') {
+      try {
+        await switchPage(logProps.page.id);
+      } catch (error) {
+        console.error('Error switching page:', error);
+      }
+    }
+  };
 
+  // const handleClick = useCallback(async () => {
+  //   // ... other code ...
+  //   handleErrorClick(logProps);
+  //   // ... other code ...
+  // }, [logProps, handleErrorClick /* other dependencies */]);
+
+  // function findEventSourceType=(logProps, id) {
+  //   console.log('logProps--', logProps);
+  //   const selectedEvent = events.find((event) => {
+  //     return event.id == id;
+  //   });
+  //   //pageSwitch();
+  //   handleErrorClick(selectedEvent);
+  //   if (selectedEvent.target == 'data_query') {
+  //     if (!isExpanded) {
+  //       setQueryPanelExpansion(true);
+  //     }
+  //     setSelectedQuery(selectedEvent.sourceId);
+  //   } else if (selectedEvent.target == 'component') {
+  //     handleSelectComponentOnEditor(selectedEvent.sourceId);
+  //   } else {
+  //     console.log('its pages');
+  //   }
+  // }
+
+  const findEventSourceType = useCallback(
+    async (logProps, id) => {
+      const selectedEvent = events.find((event) => event.id == id);
+      if (logProps?.page?.id && logProps?.page?.id !== currentPageId && logProps.type === 'component') {
+        try {
+          await switchPage(logProps.page.id);
+        } catch (error) {
+          console.error('Error switching page:', error);
+        }
+      }
+      handleErrorClick(selectedEvent);
+      if (selectedEvent.target == 'data_query') {
+        if (!isExpanded) {
+          setQueryPanelExpansion(true);
+        }
+        await setSelectedQuery(selectedEvent.sourceId);
+        await setActiveQueryHeaderTab(3);
+      } else if (selectedEvent.target == 'component') {
+        await handleSelectComponentOnEditor(selectedEvent.sourceId);
+      } else if (selectedEvent.target == 'page') {
+        console.log('its pages', selectedEvent);
+        setSelectedSidebarItem('page');
+        setCurrentPageId(selectedEvent.sourceId);
+        setShowSettingsModal(true);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      events,
+      currentPageId,
+      switchPage,
+      handleErrorClick,
+      isExpanded,
+      setQueryPanelExpansion,
+      setSelectedQuery,
+      handleSelectComponentOnEditor,
+    ]
+  );
+
+  const handleClick = useCallback(async () => {
+    // debugger;
     if (logProps?.page?.id && logProps?.page?.id !== currentPageId && logProps.type === 'component') {
       try {
         await switchPage(logProps.page.id);
@@ -127,17 +213,27 @@ function Logs({ logProps, idx, switchPage }) {
     switch (logProps.type) {
       case 'component':
         onSelect(logProps.error.componentId, 'componentId', ['componentId']);
+        handleErrorClick(logProps);
+        handleSelectComponentOnEditor(logProps.error.componentId);
         break;
       case 'query':
-        // if (!isExpanded) {
-        setQueryPanelExpansion(true);
-        // }
+        if (!isExpanded) {
+          setQueryPanelExpansion(true);
+        }
         await setSelectedQuery(logProps.id);
         await onSelect(logProps.id, 'queries', ['queries']);
+        handleErrorClick(logProps);
+        break;
+      case 'event':
+        findEventSourceType(logProps, logProps.id);
+        // if (!isExpanded) {
+        //   setQueryPanelExpansion(true);
+        // }
+        // await setSelectedQuery(logProps.id);
+        // await onSelect(logProps.id, 'queries', ['queries']);
         break;
       default:
         console.warn(`Unhandled logProps type: ${logProps.type}`);
-        onSelect(logProps.error.componentId, 'componentId', ['componentId']);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logProps, currentPageId, onSelect]);
