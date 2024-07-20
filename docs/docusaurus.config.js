@@ -160,6 +160,10 @@ module.exports = {
             to: '/docs/',
             from: '/',
           },
+          {
+            to: '/docs/widgets/table/table-properties',
+            from: '/docs/widgets/table/',
+          }
         ],
       },
     ],
