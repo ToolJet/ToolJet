@@ -37,7 +37,7 @@ You can use the `Tab` key to navigate through cells on the table.
 
 ### Pagination
 
-The table component supports both **[client-side pagination](/docs/widgets/table#client-side-pagination)** and **[server-side pagination](/docs/widgets/table#server-side-pagination)**. The `<<` and `>>` button skips to the first and last page respectively. The `<` and `>` button takes the user to the previous and next page respectively. You can also **[hide the pagination buttons](/docs/widgets/table#show-pagination-buttons)** in the table properties.
+The table component supports both **[client-side pagination](/docs/widgets/table#client-side-pagination)** and **[server-side pagination](/docs/widgets/table#server-side-pagination)**. The `<<` and `>>` button skips to the first and last page respectively. The `<` and `>` button takes the user to the previous and next page respectively. You can also **[hide the pagination buttons](/docs/widgets/table#pagination)** in the table properties.
 
 ### Add New Rows
 
