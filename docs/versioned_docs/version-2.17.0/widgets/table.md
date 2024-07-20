@@ -35,7 +35,7 @@ You have the option to **[hide the filter button](/docs/widgets/table#show-filte
 
 ### Search
 
-At the top-right corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table#show-search-box)** from the table from the table properties.
+At the top-right corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table#show-search)** from the table from the table properties.
 
 :::tip
 You can use the `Tab` key to navigate through cells on the table.
