@@ -12,7 +12,6 @@ export default class Portkey implements QueryService {
     if (config) {
       sourceOptions.config = config;
     }
-    console.log(sourceOptions);
     const portkey: PortKeyAi.Portkey = await this.getConnection(sourceOptions);
     let result = {};
     try {
@@ -28,8 +27,10 @@ export default class Portkey implements QueryService {
           break;
         case Operation.CreateEmbedding:
           result = await createEmbedding(portkey, queryOptions as EmbeddingQueryOptions);
+          break;
         default:
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
+          break;
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error?.message, {});

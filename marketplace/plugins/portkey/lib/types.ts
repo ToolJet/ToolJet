@@ -28,8 +28,8 @@ interface CompletionQueryBase extends CredentialsBase {
   temperature?: number | string;
   max_tokens?: number | string;
   stop_sequences?: string;
-  metadata?: Record<string, any> | null;
-  other_parameters?: Record<string, any> | null;
+  metadata?: string | null;
+  other_parameters?: string | null;
 }
 
 interface Message {

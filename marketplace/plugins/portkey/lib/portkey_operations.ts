@@ -1,11 +1,12 @@
 import * as PortkeyAi from 'portkey-ai';
 import { ChatCompletionQueryOptions, EmbeddingQueryOptions, PromptCompletionQueryOptions, TextCompletionQueryOptions } from './types';
+import { safeParseJSON } from './utils';
 
 export async function getCompletion(
     portkey: PortkeyAi.Portkey,
     options: TextCompletionQueryOptions
 ): Promise<Record<string, any> | { error: string; statusCode: number }> {
-    const { model, prompt, max_tokens, temperature, stop_sequences, metadata } = options;
+    const { model, prompt, max_tokens, temperature, stop_sequences, metadata, other_parameters } = options;
 
     try {
         const data = await portkey.completions.create({
@@ -14,8 +15,8 @@ export async function getCompletion(
             temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 1,
             max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 256,
             stop_sequences: typeof stop_sequences === 'string' ? stop_sequences.split(',') : [],
-            ...JSON.parse(typeof options.other_parameters === 'string' ? options.other_parameters : '{}'),
-        }, JSON.parse(typeof options.metadata === 'string' ? options.metadata : '{}'));
+            ...safeParseJSON(metadata, {}),
+        }, safeParseJSON(metadata, {}));
         return data;
     } catch (error) {
         return {
@@ -29,8 +30,7 @@ export async function getChatCompletion(
     portkey: PortkeyAi.Portkey,
     options: ChatCompletionQueryOptions
 ): Promise<Record<string, any> | { error: string; statusCode: number }> {
-    const { model, messages, max_tokens, temperature, stop_sequences } = options;
-    console.log(messages);
+    const { model, messages, max_tokens, temperature, stop_sequences, metadata, other_parameters } = options;
     try {
         const data = await portkey.chat.completions.create({
             model: typeof model === 'string' ? model : 'gpt-3.5-turbo',
@@ -38,9 +38,8 @@ export async function getChatCompletion(
             max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 256,
             stop_sequences: typeof stop_sequences === 'string' ? stop_sequences.split(',') : [],
             messages: typeof messages === 'string' ? JSON.parse(messages) : messages,
-            ...JSON.parse(typeof options.other_parameters === 'string' ? options.other_parameters : '{}'),
-        }, JSON.parse(typeof options.metadata === 'string' ? options.metadata : '{}'));
-        console.log(data.choices[0]['message']);
+            ...safeParseJSON(other_parameters, {}),
+        }, safeParseJSON(metadata, {}));
         return data;
     } catch (error) {
         return {
