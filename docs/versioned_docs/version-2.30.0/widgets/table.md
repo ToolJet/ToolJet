@@ -74,7 +74,7 @@ You can choose which columns to show or hide in the Table using this option. You
 
 ### Sorting
 
-You can sort the table data in ascending or descending order by clicking on the column header. You can also **[disable the sorting](/docs/widgets/table#disable-sorting)** from the table properties.
+You can sort the table data in ascending or descending order by clicking on the column header. You can also **[disable the sorting](/docs/widgets/table#enable-column-sorting)** from the table properties.
 
 ## Table data
 
