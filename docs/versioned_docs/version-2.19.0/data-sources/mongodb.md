@@ -63,11 +63,11 @@ Query results can be transformed using transformations. Read our transformations
 
 Returns list of collections
 
-#### Fine One
+#### Find One
 
 Return a document which satisfy the given filter and options. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/findOne)
 
-#### Fine Many
+#### Find Many
 
 Return list of documents which satisfy the given filter and options. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/find/)
 
