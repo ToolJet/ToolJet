@@ -29,7 +29,7 @@ Switch the canvas mode in Mobile or Desktop layout from the topbar.
 
 #### Showing component on mobile layout
 
-Click on the component handle to open [component config inspector](/docs/app-builder/components-library#component-config-inspector) on the right sidebar. Scroll down to the **Layout** section and toggle on the Mobile Layout option. The width of the components will be adjusted to fit the Mobile Layout.
+Click on the component handle to open [properties panel](/docs/app-builder/components-library#properties-panel) on the right sidebar. Scroll down to the **Layout** section and toggle on the Mobile Layout option. The width of the components will be adjusted to fit the Mobile Layout.
 
 #### Adding a new component to mobile layout
 
