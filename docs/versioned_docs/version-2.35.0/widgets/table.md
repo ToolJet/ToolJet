@@ -64,7 +64,7 @@ You can utilize **[Component Specific Actions](#component-specific-actions-csa)*
 
 ### Hide Columns
 
-You can choose which columns to show or hide in the table using this option. You also have the option to **[hide the column selector button](/docs/widgets/table#show-column-selector-button)** in the table properties.
+You can choose which columns to show or hide in the Table using this option. You also have the option to **[hide the column selector button](/docs/widgets/table#hide-column-selector-button)** in the Table properties.
 
 ### Sorting
 
