@@ -31,7 +31,7 @@ The table data can be filtered using the Filter data option on its top-left. You
 - **less than**
 - **less than or equal to**
 
-You also have the option to **[hide the filter button](/docs/widgets/table#show-filter-button)** in the table properties.
+You also have the option to **[hide the filter button](/docs/widgets/table##enable-filtering)** in the table properties.
 
 ### Search
 
