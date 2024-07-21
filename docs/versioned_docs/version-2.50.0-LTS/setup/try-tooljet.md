@@ -29,12 +29,15 @@ docker run \
 
 #### Using the Correct Platform with Docker
 
-- macOS
-  Intel-based Macs: Use `linux/amd64`.
-  Apple Silicon (M1 and M2): Use `linux/arm64`.
+- macOS:
 
-- Windows
-  Most modern Windows systems use `linux/amd64`.
+Intel-based Macs: Use `linux/amd64`.
+
+Apple Silicon (M1 and M2): Use `linux/arm64`.
+
+- Windows:
+
+Most modern Windows systems use `linux/amd64`.
 
 #### Setup information
 
