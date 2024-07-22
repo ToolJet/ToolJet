@@ -153,39 +153,54 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(object, defaultValue, customObjects = {}, withError = false, forPreviewBox = false) {
+export function resolveReferences(
+  object,
+  _state,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false
+) {
   if (object === '{{{}}}') return '';
 
   object = _.clone(object);
-  const currentState = useCurrentStateStore.getState();
   const objectType = typeof object;
   let error;
+
+  const state = _state ?? useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
+
+  if (_state?.parameters) {
+    state.parameters = { ..._state.parameters };
+  }
+
   switch (objectType) {
     case 'string': {
       if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
-        object = resolveString(object, currentState, customObjects, reservedKeyword, withError, forPreviewBox);
+        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
       }
 
       if (object.startsWith('{{') && object.endsWith('}}')) {
         if ((object.match(/{{/g) || []).length === 1) {
           const code = object.replace('{{', '').replace('}}', '');
 
-          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
-          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+          //Will be remove in next release
 
-          if (code.match(keywordRegex)) {
-            error = `${code} is a reserved keyword`;
-            return [{}, error];
+          const { status, data } = validateMultilineCode(code);
+
+          if (status === 'failed') {
+            const errMessage = `${data.message} -  ${data.description}`;
+
+            return [{}, errMessage];
           }
 
-          return resolveCode(code, currentState, customObjects, withError, reservedKeyword, true);
+          return resolveCode(code, state, customObjects, withError, [], true);
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
           for (const dynamicVariable of dynamicVariables) {
             const value = resolveString(
               dynamicVariable,
-              currentState,
+              state,
               customObjects,
               reservedKeyword,
               withError,
@@ -205,7 +220,7 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
           return [{}, error];
         }
 
-        return resolveCode(code, currentState, customObjects, withError, reservedKeyword, false);
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
       }
 
       const dynamicVariables = getDynamicVariables(object);
@@ -303,6 +318,29 @@ export function validateQueryName(name) {
   return nameRegex.test(name);
 }
 
+export function validateKebabCase(slug) {
+  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  if (slug === '') {
+    return { isValid: false, error: 'Handle cannot be empty.' };
+  }
+  if (!/^[a-zA-Z0-9]/.test(slug)) {
+    return { isValid: false, error: 'Handle must start with a letter or number.' };
+  }
+  if (/[^a-zA-Z0-9-]/.test(slug)) {
+    return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
+  }
+  if (/--/.test(slug)) {
+    return { isValid: false, error: 'Handle cannot contain consecutive hyphens.' };
+  }
+  if (slug.endsWith('-')) {
+    return { isValid: false, error: 'Handle cannot end with a hyphen.' };
+  }
+  if (!pattern.test(slug)) {
+    return { isValid: false, error: 'Handle does not match the kebab-case pattern.' };
+  }
+  return { isValid: true, error: null };
+}
+
 export const convertToKebabCase = (string) =>
   string
     .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -329,7 +367,8 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   const widgetFieldValue = prop;
 
   try {
-    return resolveReferences(widgetFieldValue, _default, customResolveObjects);
+    const state = getCurrentState();
+    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }

@@ -51,6 +51,17 @@ export const customToggles = {
   },
 };
 
+export const RestAPIToggles = {
+  retryOnNetworkError: {
+    dataCy: 'retry-on-network-error',
+    action: 'retry_network_errors', // This is the key for restapi query options
+    label: 'Retry on network errors',
+    subLabel:
+      'By default, ToolJet tries to hit the API endpoint 3 times before declaring the query failed as the server did not respond.',
+    translatedLabel: 'editor.queryManager.retryOnNetworkError',
+  },
+};
+
 export const mockDataQueryAsComponent = (events) => {
   return {
     component: { component: { definition: { events: events } } },
@@ -69,9 +80,11 @@ export const schemaUnavailableOptions = {
     url: '',
     url_params: [['', '']],
     headers: [['', '']],
+    cookies: [['', '']],
     body: [['', '']],
     json_body: null,
     body_toggle: false,
+    retry_network_errors: null,
   },
   stripe: {},
   tooljetdb: {
