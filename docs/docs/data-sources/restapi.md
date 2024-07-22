@@ -26,10 +26,11 @@ To establish a connection with the REST API data source, you can either click on
 - __SSL Certificate__: SSL certificate to use with REST API requests. Supported Types: None, CA Certificate, and Client Certificate
   - **CA Certificate**: Requires a CA certificate to verify the server certificate
   - **Client Certificate**: Requires a client certificate to authenticate with the server
+- **Cookies**: Key-value pairs to include as cookies with REST API requests. These cookies will be sent with every query created using this data source instance.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/oauth.png" alt="ToolJet - Data source - REST API" />
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/oauth-v2.png" alt="ToolJet - Data source - REST API" />
 
 </div>
 
@@ -106,6 +107,26 @@ Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is a
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/header.png" alt="ToolJet - Data source - REST API" width='500'/>
 
 </div>
+
+## Cookies
+
+In addition to the data source level cookies, you can add query-specific cookies in the Query builder. These cookies will be sent only with the specific query created using this data source instance.
+
+To add cookies:
+
+1. In the Query builder, navigate to the **Setup** tab.
+2. Find the **Cookies** section.
+3. Add your cookies as key-value pairs.
+
+You can use both static values and dynamic values for cookie values.
+
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/query-cookies.png" alt="ToolJet - Query Builder - REST API Cookies" />
+</div>
+
+ :::info
+Query-specific cookies will override data source level cookies with the same name for that particular query.
+:::
 
 ## Request types
 
