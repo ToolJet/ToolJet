@@ -25,19 +25,12 @@ export class ImportExportResourcesService {
 
   async export(user: User, exportResourcesDto: ExportResourcesDto) {
     const resourcesExport = {};
-    if (exportResourcesDto.tooljet_database) {
-      resourcesExport['tooljet_database'] = [];
 
-      for (const tjdb of exportResourcesDto.tooljet_database) {
-        !isEmpty(tjdb) &&
-          resourcesExport['tooljet_database'].push(
-            await this.tooljetDbImportExportService.export(
-              exportResourcesDto.organization_id,
-              tjdb,
-              exportResourcesDto.tooljet_database
-            )
-          );
-      }
+    if (exportResourcesDto.tooljet_database) {
+      resourcesExport['tooljet_database'] = await this.tooljetDbImportExportService.exportAll(
+        exportResourcesDto.organization_id,
+        exportResourcesDto.tooljet_database
+      );
     }
 
     if (exportResourcesDto.app) {

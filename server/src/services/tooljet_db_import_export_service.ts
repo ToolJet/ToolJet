@@ -19,11 +19,38 @@ export class TooljetDbImportExportService {
     private readonly tooljetDbManager: EntityManager
   ) {}
 
-  async export(
-    organizationId: string,
-    tjDbDto: ExportTooljetDatabaseDto,
-    tjdbTableExportList: Array<ExportTooljetDatabaseDto>
-  ) {
+  async exportAll(organizationId: string, tjDbDtos: ExportTooljetDatabaseDto[]) {
+    const tablesToExport = new Set(tjDbDtos.map((dto) => dto.table_id));
+    const processedTables = new Set<string>();
+    const exportedTables = [];
+
+    const processAndExportTable = async (tableId: string) => {
+      if (processedTables.has(tableId)) return;
+
+      const exportedTable = await this.export(organizationId, { table_id: tableId });
+      exportedTables.push(exportedTable);
+      processedTables.add(tableId);
+    };
+
+    for (const tableId of tablesToExport) await processAndExportTable(tableId);
+
+    // Infer and export tables referenced by foreign keys
+    for (const exportedTable of exportedTables) {
+      const newForeignKeyTables: string = (exportedTable.schema.foreign_keys || [])
+        .filter((fk) => !processedTables.has(fk.referenced_table_id))
+        .map((fk) => fk.referenced_table_id);
+
+      for (const tableId of newForeignKeyTables) {
+        if (processedTables.has(tableId)) return;
+
+        await processAndExportTable(tableId);
+      }
+    }
+
+    return exportedTables;
+  }
+
+  async export(organizationId: string, tjDbDto: ExportTooljetDatabaseDto) {
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, id: tjDbDto.table_id },
     });
@@ -33,10 +60,6 @@ export class TooljetDbImportExportService {
     const { columns, foreign_keys } = await this.tooljetDbService.perform(organizationId, 'view_table', {
       id: tjDbDto.table_id,
     });
-
-    if (foreign_keys.length) {
-      foreign_keys.forEach((foreign_key) => tjdbTableExportList.push({ table_id: foreign_key.referenced_table_id }));
-    }
 
     return {
       id: internalTable.id,
