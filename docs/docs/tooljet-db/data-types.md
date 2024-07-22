@@ -1,6 +1,6 @@
 ---
 id: data-types
-title: Data Types in ToolJet Database
+title: Data Types
 ---
 
 ToolJet Database supports several data types to accommodate various kinds of information. Each data type has its own characteristics and uses.
