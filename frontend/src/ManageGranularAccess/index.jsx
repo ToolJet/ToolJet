@@ -11,6 +11,7 @@ import AppResourcePermissions from '@/ManageGranularAccess/AppResourcePermission
 import AddResourcePermissionsMenu from '@/ManageGranularAccess/AddResourcePermissionsMenu';
 import { ConfirmDialog } from '@/_components';
 import AddEditResourcePermissionsModal from '@/ManageGranularAccess/AddEditResourceModal/AddEditResourcePermissionsModal';
+import Spinner from 'react-bootstrap/Spinner';
 
 import { ToolTip } from '@/_components/ToolTip';
 class ManageGranularAccessComponent extends React.Component {
@@ -468,7 +469,7 @@ class ManageGranularAccessComponent extends React.Component {
           addableApps={addableApps}
           darkMode={this.props.darkMode}
         />
-        {!granularPermissions.length ? (
+        {!granularPermissions.length && !isLoading ? (
           <div className="empty-container">
             <div className="icon-container">
               <SolidIcon name="granularaccess" />
@@ -501,19 +502,12 @@ class ManageGranularAccessComponent extends React.Component {
             </div>
             <div className={showPermissionInfo ? 'permission-body-one' : 'permission-body-two'}>
               {isLoading ? (
-                <tr>
-                  <td className="col-auto">
-                    <div className="row">
-                      <div className="skeleton-line w-10 col mx-3"></div>
-                    </div>
-                  </td>
-                  <td className="col-auto">
-                    <div className="skeleton-line w-10"></div>
-                  </td>
-                  <td className="col-auto">
-                    <div className="skeleton-line w-10"></div>
-                  </td>
-                </tr>
+                <div
+                  className="d-flex justify-content-center align-items-center"
+                  style={{ height: 'calc(100vh - 470px)' }}
+                >
+                  <Spinner variant="primary" />
+                </div>
               ) : (
                 <>
                   {granularPermissions.map((permissions, index) => (
