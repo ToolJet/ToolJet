@@ -35,7 +35,7 @@ To create a new table in the ToolJet Database:
 | **Option** | **Description** |
 | --- | --- |
 | **Column name** | Enter a unique name for the column. |
-| **Data type** | Select the appropriate data type for the column from the dropdown menu. |
+| **Data type** | Select the appropriate data type for the column from the dropdown menu. For more information on available data types, see the [Supported Data Types](./data-types#supported-data-types) section. |
 | **Default value (optional)** | Specify any default value to be assigned to the column. If left blank, the column will allow null values. |
 | **Primary Key** | Check this box to designate the column as the [Primary Key](#primary-key). Multiple columns can be selected, creating a composite primary key. |
 | **NULL/NOT NULL toggle** | Use this toggle to determine whether the column should allow null values or require a value. By default, null values are permitted. |
@@ -60,16 +60,7 @@ ToolJet Database supports several column constraints to maintain data integrity 
 
 **Not Null**: The not null constraint ensures that the designated column(s) cannot have null values, requiring a value for every row in the table.
 
-### Permissible Constraints per Data Type
-
-| Data Type | Primary Key | Foreign Key | Unique | Not Null |
-|:-----------:|:--------------:|:-------------:|:--------:|:----------:|
-| serial    |  ✅          |       ❌     | ✅      | ✅        |
-| varchar   |  ✅          | ✅           | ✅      | ✅        |
-| int       |  ✅          | ✅           | ✅      | ✅        |
-| bigint    |  ✅          | ✅           | ✅      | ✅        |
-| float     |  ✅          | ✅           | ✅      | ✅        |
-| boolean   |  ❌          |     ❌       | ❌      | ✅        |
+For a detailed overview of which constraints are allowed for each data type, refer to the [Permissible Constraints per Data Type](./data-types#permissible-constraints-per-data-type) table.
 
 ## Primary Key
 
@@ -254,24 +245,6 @@ We want to create a foreign key relationship between the `customer_id` column in
 
 Now, whenever you try to insert or update a record in the `Orders` table, the `customer_id` value must correspond to an existing `customer_id` value in the `Customers` table. This is also prevent you from deleting a customer that has associated orders. This ensures that orders are always associated with a valid customer, maintaining data integrity and consistency.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Supported Data Types
-
-| <div style={{ width:"100px"}}> Data Type </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Example </div> |
-|:--------- |:----------- |:------- |
-| **serial**    | **serial** is used to generate a sequence of integers which are often used as the Primary key of a table. Whenever a new table is created in the ToolJet database, a column **id** with the serial data type is automatically created as the **primary key** of the table. | Numbers starting from 1, 2, 3, 4, 5, etc. |
-| **varchar**   | **varchar** data type is used to store characters of indefinite length | Any string value |
-| **int**       | **int** is a numeric data type used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -2147483648 to 2147483647 |
-| **bigint**    | **bigint** is a numeric data type that is used to store whole numbers, that is, numbers without fractional components. | Numbers ranging from -9223372036854775808 to 9223372036854775807 |
-| **float**     | **float** is also a numeric data type that is used to store inexact, variable-precision values. | Any floating-point number, ex: 3.14 |
-| **boolean**   | **boolean** data type can hold true, false, and null values. | `true` or `false` |
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/datatypes-v2.png" alt="ToolJet database" />
-</div>
-
-</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -308,7 +281,7 @@ To add a new column to a table, either click on the kebab menu icon on the right
 A drawer from the right will open up where you can enter the details for the new column:
 
 - **Column Name**: Enter a unique name for the new column, serving as its key identifier.
-- **Data Type**: Choose the appropriate data type for the column from the [available options](#supported-data-types).
+- **Data Type**: Choose the appropriate data type for the column from the [available options](./data-types#supported-data-types). For more information on data types and their associated constraints, see the [Supported Data Types](./data-types#supported-data-types) and [Permissible Constraints per Data Type](./data-types#permissible-constraints-per-data-type) sections.
 - **Default Value**: Specify any default value that should be assigned to the column. Optionally, users can leave this field blank. When a table contains rows and NOT NULL is applied to one of its existing or new columns, specifying a default value becomes compulsory.
 - **Foreign Key Relation**: Click on the toggle to add a foreign key relationship to the column. This will open a menu where you can select the target table and column to reference.
 
