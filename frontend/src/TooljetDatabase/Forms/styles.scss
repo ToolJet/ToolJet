@@ -9,6 +9,12 @@
   padding: 20px;
 }
 
+.header-label-timestamp {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .drawer-card-wrapper {
 
   .tj-base-btn {
@@ -766,4 +772,8 @@
 .tj-select-text {
   font-size: 12px;
   line-height: 20px;
+}
+
+.tooltip-inner {
+  max-width: 100%;
 }

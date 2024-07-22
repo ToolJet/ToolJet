@@ -16,6 +16,7 @@ const {
 
 import { validateMultilineCode } from '@/_helpers/utility';
 import _ from 'lodash';
+import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 export const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) => {
   let schema;
@@ -106,7 +107,7 @@ export const validate = (value, schema, _defaultValue, codePreviewValidator = fa
       let errMsg = `Expected a value of type ${structError.type}, but received`;
       errMsg = codePreviewValidator
         ? errMsg + ` ${typeof structError.value}`
-        : errMsg + ` ${JSON.stringify(structError.value)}`;
+        : errMsg + ` ${JSON.stringify(structError.value, reservedKeywordReplacer)}`;
 
       errors.push(errMsg);
     }
