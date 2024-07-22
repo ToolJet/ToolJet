@@ -711,7 +711,7 @@ export class OrganizationsService {
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.name);
     csv
       .parseString(fileStream.toString(), {
-        headers: ['first_name', 'last_name', 'email', 'groups', 'user_role'],
+        headers: ['first_name', 'last_name', 'email', 'user_role', 'groups'],
         renameHeaders: true,
         ignoreEmpty: true,
       })
