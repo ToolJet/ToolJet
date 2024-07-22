@@ -1,6 +1,6 @@
 ---
 id: querying-tooljet-db
-title: Querying Data From ToolJet Database
+title: Querying Data
 ---
 
 Querying the ToolJet database is as easy as querying any other data source on ToolJet.
