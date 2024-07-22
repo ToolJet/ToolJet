@@ -4,7 +4,11 @@ import _, { isEmpty } from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
-import { hasCircularDependency, removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
+import {
+  hasCircularDependency,
+  resolveReferences as olderResolverMethod,
+  removeNestedDoubleCurlyBraces,
+} from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
 
 const acorn = require('acorn');

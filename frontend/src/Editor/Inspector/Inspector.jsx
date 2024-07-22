@@ -430,6 +430,8 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  console.log('componentMeta', componentMeta);
+
   return (
     <div className="inspector">
       <ConfirmDialog

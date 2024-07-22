@@ -82,6 +82,18 @@ jobs:
                 "value": "5432"
               },
               {
+                "key": "TOOLJET_DB_STATEMENT_TIMEOUT",
+                "value": "60000"
+              },
+              {
+                "key": "TOOLJET_DB_RECONFIG",
+                "value": "true"
+              },
+              {
+                "key": "PGRST_DB_PRE_CONFIG",
+                "value": "postgrest.pre_config"
+              },
+              {
                 "key": "PGRST_DB_URI",
                 "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}"
               },
