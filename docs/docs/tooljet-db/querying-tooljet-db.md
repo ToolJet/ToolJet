@@ -67,7 +67,7 @@ This operation deletes a record in the table. You can delete a single record or 
 
 </div>
 
-### Modifying Tables with Foreign Key Constraints
+## Modifying Tables with Foreign Key Constraints
 
 When you are creating, updating, or deleting records in a table that has a foreign key constraint, you need to ensure that the foreign key constraint is not violated. 
 - If you are trying to create/update a new row in the source table, you need to ensure that the foreign key value exists in the target table. Otherwise, the operation will fail with an error message.
@@ -80,7 +80,7 @@ When you are creating, updating, or deleting records in a table that has a forei
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Join Tables
+## Join Tables
 
 You can join two or more tables in the ToolJet database by using the **Join** operation.
 
@@ -110,6 +110,28 @@ You can join two or more tables in the ToolJet database by using the **Join** op
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/v2-beta/database/newui/join2.png" alt="ToolJet Database editor" />
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Mapping Date with Time Column to Table Component
+
+The date with time column stores data in the ISO 8601 format. When querying a table with a date with time column, the column is displayed in the ISO 8601 format by default. To display the date with time column in a more readable format in the Table Component, follow these steps:
+
+1. Connect the query to the Table Component and navigate to its properties panel.
+2. In the Columns section, select the column that stores the date with time.
+3. Change the column type from String to **Date Picker**.
+4. In the **Parse format** section, enable the **Parse in unix timestamp** and **Unix timestamp** options as needed.
+5. Under the date format section, toggle on the **Enable date** and **Enable time** options accordingly.
+6. In the transformation field, the `{{cellValue}}` variable contains the ISO 8601 formatted date. Convert it to a Date object using `{{new Date(cellValue)}}`, then format the Date object to meet your requirements.
+
+
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/date-with-time-column.png" alt="ToolJet Database Date" />
+</div>
+
+</div>
+
+
 
 :::info
 If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com/slack)**
