@@ -344,7 +344,8 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   const widgetFieldValue = prop;
 
   try {
-    return resolveReferences(widgetFieldValue, _default, customResolveObjects);
+    const state = getCurrentState();
+    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }
