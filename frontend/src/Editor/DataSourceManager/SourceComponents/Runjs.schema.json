@@ -9,8 +9,8 @@
     "kind": "runjs",
     "exposedVariables": {
       "isLoading": false,
-      "data": {},
-      "rawData": {}
+      "data": [],
+      "rawData": []
     },
     "customTesting": true,
     "disableTransformations": true

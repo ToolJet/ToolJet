@@ -1172,6 +1172,10 @@ $border-radius: 4px;
     border-color: var(--slate5) !important;
   }
 
+  .query-manager-settings-toggles {
+    margin: 12px 0;
+  }
+
   .query-details {
     .form-label {
       color: var(--text-placeholder) !important;
@@ -1613,6 +1617,7 @@ $border-radius: 4px;
   /* Rounded sliders */
   .slider.round {
     border-radius: 12px;
+    width: 28px;
   }
 
   .slider.round:before {
@@ -1802,6 +1807,10 @@ $border-radius: 4px;
   .cm-scroller {
     border-bottom-left-radius: 4px;
   }
+}
+
+.staticToggle {
+  opacity: 0.5;
 }
 
 .preview-header {
