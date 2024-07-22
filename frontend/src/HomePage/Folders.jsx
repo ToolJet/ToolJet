@@ -301,7 +301,9 @@ export const Folders = function Folders({
                 'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
               }
             )}
-            onClick={() => handleFolderChange(folder)}
+            onClick={() => {
+              handleFolderChange(folder);
+            }}
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >
             <ToolTip message={folder.name}>
@@ -313,14 +315,20 @@ export const Folders = function Folders({
               </div>
             </ToolTip>
             {(canDeleteFolder || canUpdateFolder) && (
-              <FolderMenu
-                canDeleteFolder={canDeleteFolder}
-                canUpdateFolder={canUpdateFolder}
-                deleteFolder={() => deleteFolder(folder)}
-                editFolder={() => updateFolder(folder)}
-                darkMode={darkMode}
-                dataCy={folder.name}
-              />
+              <div
+                onClick={(e) => {
+                  e.stopPropagation(); // Stop the click event from bubbling up to the <a> tag
+                }}
+              >
+                <FolderMenu
+                  canDeleteFolder={canDeleteFolder}
+                  canUpdateFolder={canUpdateFolder}
+                  deleteFolder={() => deleteFolder(folder)}
+                  editFolder={() => updateFolder(folder)}
+                  darkMode={darkMode}
+                  dataCy={folder.name}
+                />
+              </div>
             )}
           </a>
         ))}

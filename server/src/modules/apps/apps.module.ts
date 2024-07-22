@@ -43,6 +43,7 @@ import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { AppsServiceSep } from '@apps/services/apps.service.sep';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
   ],
   providers: [
     AppsService,
+    AppsServiceSep,
     AppUsersService,
     UsersService,
     FoldersService,
