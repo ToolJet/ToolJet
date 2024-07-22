@@ -92,8 +92,6 @@ export function onComponentOptionsChanged(component, options, id) {
   let componentName = component.name;
   const { isEditorReady, page } = useCurrentStateStore.getState();
 
-  if (!isEditorReady || !useEditorStore.getState().appDefinition.pages[page.id]) return;
-
   if (id) {
     const _component = useEditorStore.getState()?.appDefinition?.pages[page.id]?.components[id];
     const _componentName = _component?.component?.name || componentName;
@@ -199,8 +197,6 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   }
 
   const { isEditorReady, components: currentComponents } = getCurrentState();
-
-  if (!currentComponents) return;
 
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
   let componentData = deepClone(components[componentName]) || {};
@@ -1145,6 +1141,12 @@ export function runQuery(
   shouldSetPreviewData = false,
   isOnLoad = false
 ) {
+  //for resetting the hints when the query is run for large number of items
+  if (mode == 'edit') {
+    const resolveStoreActions = useResolveStore.getState().actions;
+    resolveStoreActions.resetHintsByQueryName(queryName);
+  }
+
   let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   const queryEvents = useAppDataStore

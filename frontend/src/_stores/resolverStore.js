@@ -79,6 +79,38 @@ export const useResolveStore = create(
       resetStore: () => {
         set(() => ({ ...initialState, referenceMapper: new ReferencesBiMap() }));
       },
+      resetHintsByQueryName: (queryName) => {
+        set((state) => {
+          // Filter out app hints related to the specified query
+          const newAppHints = state.suggestions.appHints.filter(
+            (hint) => !hint.hint.startsWith(`queries.${queryName}.`)
+          );
+
+          const newHints = new Map(state.lookupTable.hints);
+          const newResolvedRefs = new Map(state.lookupTable.resolvedRefs);
+
+          // Remove entries from hints and resolvedRefs
+          for (const [key, value] of newHints) {
+            if (key.startsWith(`queries.${queryName}.`)) {
+              newHints.delete(key);
+              newResolvedRefs.delete(value);
+            }
+          }
+
+          return {
+            suggestions: {
+              ...state.suggestions,
+              appHints: newAppHints,
+            },
+            lookupTable: {
+              hints: newHints,
+              resolvedRefs: newResolvedRefs,
+            },
+            lastUpdatedRefs: state.lastUpdatedRefs.filter((ref) => !ref.startsWith(`queries.${queryName}.`)),
+          };
+        });
+      },
+
       pageSwitched: (bool) => set(() => ({ isPageSwitched: bool })),
       updateAppSuggestions: (refState) => {
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
