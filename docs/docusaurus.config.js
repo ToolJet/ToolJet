@@ -129,6 +129,9 @@ module.exports = {
             },
             '2.62.0': {
               banner: 'none'
+            },
+            '2.65.0': {
+              banner: 'none'
             }
           }
         },
