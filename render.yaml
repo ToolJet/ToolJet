@@ -21,7 +21,7 @@ services:
         fromService:
           type: web
           name: ToolJet
-          envVarKey: RENDER_EXTERNAL_URL
+          envVarKey: RENDER_EXTERNAL_URL #justtocheck
       - key: PGRST_HOST
         fromService:
           type: web
