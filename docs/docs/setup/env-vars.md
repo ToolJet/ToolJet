@@ -94,16 +94,18 @@ Use this environment variable to enable/disable the developement mode that allow
 
 ### Enable ToolJet Database ( optional )
 
-| variable          | description                                  |
-| ----------------- | -------------------------------------------- |
-| ENABLE_TOOLJET_DB | `true` or `false`                            |
-| TOOLJET_DB        | Default value is `tooljet_db`                |
-| TOOLJET_DB_HOST   | database host                                |
-| TOOLJET_DB_USER   | database username                            |
-| TOOLJET_DB_PASS   | database password                            |
-| TOOLJET_DB_PORT   | database port                                |
-| PGRST_JWT_SECRET  | JWT token client provided for authentication |
-| PGRST_HOST        | postgrest database host                      |
+| variable                     | description                                  |
+| -----------------------------| -------------------------------------------- |
+| ENABLE_TOOLJET_DB            | `true` or `false`                            |
+| TOOLJET_DB                   | Default value is `tooljet_db`                |
+| TOOLJET_DB_HOST              | database host                                |
+| TOOLJET_DB_USER              | database username                            |
+| TOOLJET_DB_PASS              | database password                            |
+| TOOLJET_DB_PORT              | database port                                |
+| PGRST_JWT_SECRET             | JWT token client provided for authentication |
+| PGRST_HOST                   | postgrest database host                      |
+| TOOLJET_DB_RECONFIG          | `true` or `false`                            |
+| TOOLJET_DB_STATEMENT_TIMEOUT | statement timeout in milliseconds            |
 
 Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
 

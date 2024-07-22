@@ -32,10 +32,12 @@ If this parameter is not specified, then PostgREST refuses authentication reques
 :::
 
 | <div style={{ width:"100px"}}> Variable  </div>         | <div style={{ width:"100px"}}> Description  </div>                                   |
-| ------------------ | ----------------------------------------------- |
-| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
-| PGRST_DB_URI       | database connection string for tooljet database |
-| PGRST_LOG_LEVEL    | `info`                                          |
+| ---------------------------- | ----------------------------------------------- |
+| PGRST_JWT_SECRET             | JWT token client provided for authentication    |
+| PGRST_DB_URI                 | database connection string for tooljet database |
+| PGRST_LOG_LEVEL              | `info`                                          |
+| TOOLJET_DB_RECONFIG          | `true` or `false`                               |
+| TOOLJET_DB_STATEMENT_TIMEOUT | statement timeout in milliseconds               |
 
 :::info
 Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
