@@ -2,6 +2,7 @@ import React from 'react';
 import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
+import Cookies from './TabCookies';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
 
@@ -18,7 +19,7 @@ function ControlledTabs({
   bodyToggle,
 }) {
   const [key, setKey] = React.useState('headers');
-  const tabs = ['Headers', 'Params', 'Body'];
+  const tabs = ['Headers', 'Params', 'Body', 'Cookies'];
 
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
@@ -82,6 +83,17 @@ function ControlledTabs({
                 jsonBody={options['json_body']}
                 theme={theme}
                 bodyToggle={bodyToggle}
+                darkMode={darkMode}
+                componentName={componentName}
+              />
+            </Tab.Pane>
+            <Tab.Pane eventKey="cookies" bsPrefix="rest-api-tabpanes" transition={false}>
+              <Cookies
+                removeKeyValuePair={removeKeyValuePair}
+                addNewKeyValuePair={addNewKeyValuePair}
+                onChange={onChange}
+                options={options['cookies']}
+                theme={theme}
                 darkMode={darkMode}
                 componentName={componentName}
               />

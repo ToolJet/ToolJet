@@ -336,9 +336,20 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     ]
   );
 
+  const triggerTooljetDBStatus = (key) => {
+    if (window.public_config?.ENABLE_TOOLJET_DB !== 'true') {
+      toast('Tooljet database is not enabled.', {
+        icon: '⚠️',
+      });
+    } else if (key === 'addTJDBTable') {
+      navigate(getPrivateRoute('database'));
+    }
+  };
+
   const fetchTables = async () => {
     const { error, data } = await tooljetDatabaseService.findAll(organizationId);
 
+    triggerTooljetDBStatus();
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
       return;
@@ -425,7 +436,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const handleTableNameSelect = (tableId) => {
     setSelectedTableId(tableId);
     fetchTableInformation(tableId, true, tables);
-    optionchanged('organization_id', organizationId);
     optionchanged('table_id', tableId);
 
     setJoinTableOptions(() => {
@@ -485,7 +495,15 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       <div className={cx({ row: !isHorizontalLayout })}>
         <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
           <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
+          <div
+            className={cx(
+              { 'flex-grow-1': isHorizontalLayout },
+              'border',
+              'rounded',
+              'overflow-hidden',
+              'minw-400px-maxw-45perc'
+            )}
+          >
             <DropDownSelect
               customBorder={false}
               showPlaceHolder
@@ -494,7 +512,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
               onChange={(value) => {
                 value?.value && handleTableNameSelect(value?.value);
               }}
-              onAdd={() => navigate(getPrivateRoute('database'))}
+              onAdd={() => triggerTooljetDBStatus('addTJDBTable')}
               addBtnLabel={'Add new table'}
               value={generateListForDropdown(tables).find((val) => val?.value === selectedTableId)}
             />
@@ -509,7 +527,15 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
         >
           <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
+          <div
+            className={cx(
+              { 'flex-grow-1': isHorizontalLayout },
+              'border',
+              'rounded',
+              'overflow-hidden',
+              'minw-400px-maxw-45perc'
+            )}
+          >
             <DropDownSelect
               showPlaceHolder
               options={tooljetDbOperationList}

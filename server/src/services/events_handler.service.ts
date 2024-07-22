@@ -51,6 +51,40 @@ export class EventsService {
     }
 
     return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+      if (
+        eventHandler.eventType === 'component' ||
+        eventHandler.eventType === 'table_column' ||
+        eventHandler.eventType === 'table_action'
+      ) {
+        const componentExists = await manager.findOne('Component', {
+          id: eventHandler.attachedTo,
+        });
+
+        if (!componentExists) {
+          throw new BadRequestException('Component does not exist');
+        }
+      }
+
+      if (eventHandler.eventType === 'data_query') {
+        const dataQueryExists = await manager.findOne('DataQuery', {
+          id: eventHandler.attachedTo,
+        });
+
+        if (!dataQueryExists) {
+          throw new BadRequestException('Data Query does not exist');
+        }
+      }
+
+      if (eventHandler.eventType === 'page') {
+        const pageExists = await manager.findOne('Page', {
+          id: eventHandler.attachedTo,
+        });
+
+        if (!pageExists) {
+          throw new BadRequestException('Page does not exist');
+        }
+      }
+
       const newEvent = new EventHandler();
       newEvent.name = eventHandler.event.eventId;
       newEvent.sourceId = eventHandler.attachedTo;

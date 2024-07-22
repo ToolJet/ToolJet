@@ -1995,5 +1995,5 @@ const isChildOfKanbanModal = (
     return parentComponent.component.component === 'Kanban';
   }
 
-  return parentComponent.type === 'Kanban';
+  return parentComponent?.type === 'Kanban';
 };

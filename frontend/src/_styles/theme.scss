@@ -12055,7 +12055,7 @@ tbody {
       }
 
       .text-widget[style*="font-size: 14px;"] {
-        height: 21px !important;
+        // height: 21px !important;
 
         div {
           overflow-y: visible !important;
@@ -12063,7 +12063,7 @@ tbody {
       }
 
       .text-widget[style*="font-size: 20px;"] {
-        height: 30px !important;
+        // height: 30px !important;
         background-color: red;
 
         div {
@@ -13230,6 +13230,21 @@ tbody {
   background-color: #1E823B;
   @extend .widget-version-identifier
 }
+
+.tjdb-display-time-pill{
+  height: 12px;
+  gap: 10px;
+  border-radius: 100px 100px 100px 100px;
+  padding: 8px 8px ;
+  background: var(--Slate-07, #D7DBDF);
+  color:  var(--Slate-11, #687076);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 10px !important;
+  line-height: 12px;
+}
+
 .tjdb-table-tooltip {
   width: max-content !important;
 
