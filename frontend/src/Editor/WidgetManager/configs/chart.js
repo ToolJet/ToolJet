@@ -179,9 +179,9 @@ export const chartConfig = {
   },
   exposedVariables: {
     show: null,
-    chartTitle: undefined,
-    xAxisTitle: undefined,
-    yAxisTitle: undefined,
+    chartTitle: null,
+    xAxisTitle: null,
+    yAxisTitle: null,
     clickedDataPoint: {},
   },
   definition: {
