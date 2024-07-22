@@ -32,6 +32,22 @@ This operation returns all the records from the table.
 - **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records.
 - **Sort**: Sort the query response by choosing a column and the order (ascending or descending).
 - **Limit**: Limit the number of records to be returned by entering a number.
+- **Aggregate**: Perform calculations on a set of values and return a single result.
+  - Available functions: Count, Sum
+  - Limitations:
+    - Sum only for numeric columns.
+    - Count only for non-null values.
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/aggregate.png" alt="ToolJet Database editor" />
+</div>
+
+- **Group By**: Group rows with the same values in specified columns.
+  - Can only be used after adding at least one aggregate condition.
+  - Select one or more columns to group by.
+  - Results are grouped based on unique combinations of values in selected columns.
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/group-by.png" alt="ToolJet Database editor" />
+</div>
 
 </div>
 
