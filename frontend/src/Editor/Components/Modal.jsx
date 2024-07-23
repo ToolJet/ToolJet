@@ -79,7 +79,7 @@ export const Modal = function Modal({
     };
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setShowModal]);
+  }, [isInitialRender.current, setShowModal]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -92,12 +92,11 @@ export const Modal = function Modal({
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exposedVariables.show]);
+  }, [!!exposedVariables.show]);
 
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false);
-    fireEvent('onClose');
   }
 
   useEffect(() => {
