@@ -79,38 +79,6 @@ export const useResolveStore = create(
       resetStore: () => {
         set(() => ({ ...initialState, referenceMapper: new ReferencesBiMap() }));
       },
-      resetHintsByQueryName: (queryName) => {
-        set((state) => {
-          // Filter out app hints related to the specified query
-          const newAppHints = state.suggestions.appHints.filter(
-            (hint) => !hint.hint.startsWith(`queries.${queryName}.`)
-          );
-
-          const newHints = new Map(state.lookupTable.hints);
-          const newResolvedRefs = new Map(state.lookupTable.resolvedRefs);
-
-          // Remove entries from hints and resolvedRefs
-          for (const [key, value] of newHints) {
-            if (key.startsWith(`queries.${queryName}.`)) {
-              newHints.delete(key);
-              newResolvedRefs.delete(value);
-            }
-          }
-
-          return {
-            suggestions: {
-              ...state.suggestions,
-              appHints: newAppHints,
-            },
-            lookupTable: {
-              hints: newHints,
-              resolvedRefs: newResolvedRefs,
-            },
-            lastUpdatedRefs: state.lastUpdatedRefs.filter((ref) => !ref.startsWith(`queries.${queryName}.`)),
-          };
-        });
-      },
-
       resetHintsByKey: (hintKey) => {
         set((state) => {
           // Filter out app hints related to the specified query
@@ -230,13 +198,19 @@ export const useResolveStore = create(
       },
 
       removeAppSuggestions: (suggestionsArray) => {
+        console.log('suggestionsArray', suggestionsArray);
         if (suggestionsArray?.length === 0) return new Promise((resolve) => resolve({ status: '' }));
+
+        if (!isIterable(get().lookupTable.hints) || !isIterable(get().lookupTable.resolvedRefs)) {
+          return new Promise((resolve) => resolve({ status: '' }));
+        }
 
         const lookupHintsMap = new Map([...get().lookupTable.hints]);
         const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
         const currentSuggestions = get().suggestions.appHints;
 
         suggestionsArray?.forEach((suggestion) => {
+          console.log('suggestionsArray=>suggestion', suggestion, currentSuggestions);
           const index = currentSuggestions.findIndex((s) => s.hint === suggestion);
 
           if (index === -1) return;
@@ -246,6 +220,10 @@ export const useResolveStore = create(
 
           lookupHintsMap.delete(suggestion);
           lookupResolvedRefs.delete(lookUpId);
+          console.log(
+            'currentSuggestions->',
+            currentSuggestions.filter((s) => s.hint.startsWith(suggestion))
+          );
         });
 
         return new Promise((resolve) => {

@@ -90,7 +90,7 @@ const debouncedChange = _.debounce(() => {
 
 export function onComponentOptionsChanged(component, options, id) {
   const resolveStoreActions = useResolveStore.getState().actions;
-  options.forEach((option) => resolveStoreActions.resetHintsByKey(`components.${component?.name}.${option[0]}`));
+  options.forEach((option) => resolveStoreActions.removeAppSuggestions([`components.${component?.name}.${option[0]}`]));
   let componentName = component.name;
   const { isEditorReady, page } = useCurrentStateStore.getState();
 
@@ -1148,7 +1148,7 @@ export function runQuery(
   //for resetting the hints when the query is run for large number of items
   if (mode == 'edit') {
     const resolveStoreActions = useResolveStore.getState().actions;
-    resolveStoreActions.resetHintsByQueryName(queryName);
+    resolveStoreActions.resetHintsByKey(`queries.${queryName}`);
   }
 
   let parameters = userSuppliedParameters;
