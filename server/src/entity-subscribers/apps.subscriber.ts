@@ -1,5 +1,4 @@
-import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent } from 'typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { App } from 'src/entities/app.entity';
