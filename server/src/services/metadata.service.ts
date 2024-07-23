@@ -17,11 +17,10 @@ export class MetadataService {
     private metadataRepository: Repository<Metadata>,
     private configService: ConfigService,
     private readonly _dataSource: TypeORMDatasource
-
   ) {}
 
   async getMetaData() {
-    let metadata = await this.metadataRepository.findOne({});
+    let [metadata] = await this.metadataRepository.find();
 
     if (!metadata) {
       metadata = await this.metadataRepository.save(
@@ -37,7 +36,7 @@ export class MetadataService {
   }
 
   async updateMetaData(newOptions: any) {
-    const metadata = await this.metadataRepository.findOne({});
+    const [metadata] = await this.metadataRepository.find();
 
     return await this.metadataRepository.update(metadata.id, {
       data: { ...metadata.data, ...newOptions },
@@ -150,7 +149,12 @@ export class MetadataService {
     ).map((record) => record.id);
 
     const userIdsOfAppOwners = (
-      await this._dataSource.createQueryBuilder(User, 'users').innerJoin('users.apps', 'apps').select('users.id').distinct().getMany()
+      await this._dataSource
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.apps', 'apps')
+        .select('users.id')
+        .distinct()
+        .getMany()
     ).map((record) => record.id);
 
     const totalEditorCount = await manager.count(User, {
