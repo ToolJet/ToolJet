@@ -77,7 +77,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       !(field === 'slug'),
       field === 'slug'
     );
-
     /* If the basic validation is passing. then check the uniqueness */
     if (error?.status === true) {
       try {
@@ -129,6 +128,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const delayedSlugChange = _.debounce(async (value) => {
+    console.log(value);
     setSlugProgress(true);
     await handleInputChange(value, 'slug');
   }, 300);
@@ -136,6 +136,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const delayedNameChange = _.debounce(async (value) => {
     setWorkspaceNameProgress(true);
     await handleInputChange(value, 'name');
+    console.log(name, slug);
   }, 300);
 
   const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
@@ -154,6 +155,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               <input
                 type="text"
                 onChange={async (e) => {
+                  console.log(e);
                   e.persist();
                   await delayedNameChange(e.target.value);
                 }}
@@ -184,7 +186,13 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
                 disabled={isCreating}
                 maxLength={50}
+                defaultValue={
+                  !slugProgress && !workspaceNameProgress
+                    ? name?.value?.toLowerCase().replace(/[^a-z0-9\s]/g, '') || ''
+                    : ''
+                }
                 onChange={async (e) => {
+                  console.log(e);
                   e.persist();
                   await delayedSlugChange(e.target.value);
                 }}
@@ -203,6 +211,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                   </svg>
                 </div>
               )}
+
               {slug?.error ? (
                 <label className="label tj-input-error" data-cy="input-label-error">
                   {slug?.error || ''}
@@ -221,7 +230,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <div className="col modal-main tj-app-input">
               <label data-cy="workspace-link-label">Workspace link</label>
               <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="slug-field">
-                {!slugProgress ? (
+                {!workspaceNameProgress ? (
+                  `${getHostURL()}/${name?.value || '<workspace-slug>'}`
+                ) : !slugProgress ? (
                   `${getHostURL()}/${slug?.value || '<workspace-slug>'}`
                 ) : (
                   <div className="d-flex gap-2">
