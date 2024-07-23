@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: 18.18.2
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentialss
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
