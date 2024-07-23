@@ -111,6 +111,42 @@ export const useResolveStore = create(
         });
       },
 
+      resetHintsByKey: (hintKey) => {
+        set((state) => {
+          // Filter out app hints related to the specified query
+          const newAppHints = state.suggestions.appHints.filter((hint) => !hint.hint.startsWith(`${hintKey}.`));
+
+          console.log(hintKey, 'newAppHints', state.lookupTable.hints);
+
+          if (!isIterable(state.lookupTable.hints) || !isIterable(state.lookupTable.resolvedRefs)) {
+            return { ...state };
+          }
+
+          const newHints = new Map(state.lookupTable.hints);
+          const newResolvedRefs = new Map(state.lookupTable.resolvedRefs);
+
+          // Remove entries from hints and resolvedRefs
+          for (const [key, value] of newHints) {
+            if (key.startsWith(`${hintKey}.`)) {
+              newHints.delete(key);
+              newResolvedRefs.delete(value);
+            }
+          }
+
+          return {
+            suggestions: {
+              ...state.suggestions,
+              appHints: newAppHints,
+            },
+            lookupTable: {
+              hints: newHints,
+              resolvedRefs: newResolvedRefs,
+            },
+            lastUpdatedRefs: state.lastUpdatedRefs.filter((ref) => !ref.startsWith(`${hintKey}.`)),
+          };
+        });
+      },
+
       pageSwitched: (bool) => set(() => ({ isPageSwitched: bool })),
       updateAppSuggestions: (refState) => {
         const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
@@ -262,6 +298,8 @@ export const useResolveStore = create(
             lastUpdatedRefs: updatedList,
           }));
         }
+
+        console.log(lookupResolvedRefs, 'lookupResolvedRefs', hintsMap);
       },
 
       updateJSHints: () => {
@@ -432,3 +470,11 @@ async function batchUpdateComponents(componentIds) {
 }
 
 export const useResolverStoreActions = () => useResolveStore.getState().actions;
+
+function isIterable(obj) {
+  // checks for null and undefined
+  if (obj == null) {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === 'function';
+}

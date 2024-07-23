@@ -89,6 +89,8 @@ const debouncedChange = _.debounce(() => {
 }, 100);
 
 export function onComponentOptionsChanged(component, options, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  options.forEach((option) => resolveStoreActions.resetHintsByKey(`components.${component?.name}.${option[0]}`));
   let componentName = component.name;
   const { isEditorReady, page } = useCurrentStateStore.getState();
 
@@ -183,6 +185,8 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByKey(`components.${component?.name}.${option_name}`);
   if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
 
   let componentName = component.name;
