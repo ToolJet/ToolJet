@@ -58,6 +58,7 @@ export const DropdownV2 = ({
   component,
   exposedVariables,
   dataCy,
+  isEditorReady,
 }) => {
   const {
     label,
@@ -225,8 +226,11 @@ export const DropdownV2 = ({
         setIsDropdownDisabled(value);
       },
     };
-    setExposedVariables(exposedVariables);
-  }, []);
+
+    if (isEditorReady) {
+      setExposedVariables(exposedVariables);
+    }
+  }, [isEditorReady]);
 
   const customStyles = {
     container: (base) => ({
