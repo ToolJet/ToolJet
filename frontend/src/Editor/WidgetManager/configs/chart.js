@@ -89,7 +89,8 @@ export const chartConfig = {
       displayName: 'Json Description',
       validation: {
         schema: {
-          type: 'string',
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'object' }],
         },
         defaultValue: '{ "data": [ { "x": [ "Jan", "Feb", "Mar" ], "y": [ 100, 80, 40 ], "type": "bar" } ] }',
       },
