@@ -84,8 +84,6 @@ export const useResolveStore = create(
           // Filter out app hints related to the specified query
           const newAppHints = state.suggestions.appHints.filter((hint) => !hint.hint.startsWith(`${hintKey}.`));
 
-          console.log(hintKey, 'newAppHints', state.lookupTable.hints);
-
           if (!isIterable(state.lookupTable.hints) || !isIterable(state.lookupTable.resolvedRefs)) {
             return { ...state };
           }
@@ -198,7 +196,6 @@ export const useResolveStore = create(
       },
 
       removeAppSuggestions: (suggestionsArray) => {
-        console.log('suggestionsArray', suggestionsArray);
         if (suggestionsArray?.length === 0) return new Promise((resolve) => resolve({ status: '' }));
 
         if (!isIterable(get().lookupTable.hints) || !isIterable(get().lookupTable.resolvedRefs)) {
@@ -210,7 +207,6 @@ export const useResolveStore = create(
         const currentSuggestions = get().suggestions.appHints;
 
         suggestionsArray?.forEach((suggestion) => {
-          console.log('suggestionsArray=>suggestion', suggestion, currentSuggestions);
           const index = currentSuggestions.findIndex((s) => s.hint === suggestion);
 
           if (index === -1) return;
@@ -220,10 +216,6 @@ export const useResolveStore = create(
 
           lookupHintsMap.delete(suggestion);
           lookupResolvedRefs.delete(lookUpId);
-          console.log(
-            'currentSuggestions->',
-            currentSuggestions.filter((s) => s.hint.startsWith(suggestion))
-          );
         });
 
         return new Promise((resolve) => {
@@ -276,8 +268,6 @@ export const useResolveStore = create(
             lastUpdatedRefs: updatedList,
           }));
         }
-
-        console.log(lookupResolvedRefs, 'lookupResolvedRefs', hintsMap);
       },
 
       updateJSHints: () => {
