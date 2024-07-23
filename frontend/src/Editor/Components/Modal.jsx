@@ -96,12 +96,12 @@ export const Modal = function Modal({
     setShowModal(canShowModal);
     prevShowValue.current = canShowModal;
 
-    return () => {
-      if (shouldFireCloseEvent.current) {
-        fireEvent('onClose');
-        shouldFireCloseEvent.current = false;
-      }
-    };
+    // return () => {
+    //   if (shouldFireCloseEvent.current) {
+    //     fireEvent('onClose');
+    //     shouldFireCloseEvent.current = false;
+    //   }
+    // };
   }, [exposedVariables.show]);
   function hideModal() {
     setShowModal(false);
