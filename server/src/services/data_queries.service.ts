@@ -185,7 +185,11 @@ export class DataQueriesService {
         dataSourceOptions.updatedAt,
         {
           user: { id: user?.id },
-          app: { id: app?.id, isPublic: app?.isPublic },
+          app: {
+            id: app?.id,
+            isPublic: app?.isPublic,
+            ...(dataSource.kind === 'tooljetdb' && { organization_id: app.organizationId }),
+          },
         }
       );
     } catch (api_error) {
