@@ -431,8 +431,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
           value={prettyPrintedJson}
           displayDataTypes={false}
           displaySize={false}
-          maxDisplayLength={50}
-          // defaultInspectDepth={isLargeDataset ? 1 : 2}
           displayObjectSize={false}
           enableClipboard={false}
           rootName={false}
