@@ -198,10 +198,6 @@ export const useResolveStore = create(
       removeAppSuggestions: (suggestionsArray) => {
         if (suggestionsArray?.length === 0) return new Promise((resolve) => resolve({ status: '' }));
 
-        if (!isIterable(get().lookupTable.hints) || !isIterable(get().lookupTable.resolvedRefs)) {
-          return new Promise((resolve) => resolve({ status: '' }));
-        }
-
         const lookupHintsMap = new Map([...get().lookupTable.hints]);
         const lookupResolvedRefs = new Map([...get().lookupTable.resolvedRefs]);
         const currentSuggestions = get().suggestions.appHints;
