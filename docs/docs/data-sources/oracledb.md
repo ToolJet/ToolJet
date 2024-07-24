@@ -5,21 +5,22 @@ title: Oracle DB
 
 # Oracle DB
 
-ToolJet can connect to Oracle databases to read and write data. 
+ToolJet can connect to Oracle databases to read and write data.
 
 ## Connection
 
-To establish a connection with the Oracle DB data source, click on the `+Add new` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the Oracle DB data source you can either click on the `+Add new` button in the query panel, or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
-A Oracle DB can be connected with the following credentials:
+### Required Credentials
+
 - **Host**
 - **Port**
-- **SID / Service Name** ( Database name must be a SID / Service Name )
+- **SID / Service Name** (Database name must be a SID / Service Name)
 - **Database Name**
 - **SSL**
 - **Username**
 - **Password**
-- **Client Library Path** ( Only required for local setup )
+- **Client Library Path** (Only required for local setup)
 
 <div style={{textAlign: 'center'}}>
 
@@ -27,27 +28,58 @@ A Oracle DB can be connected with the following credentials:
 
 </div>
 
-Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
+Click on **Test connection** to verify if the credentials are correct and the database is accessible to ToolJet server. Click on **Save** button to save the data source.
+
+### Client Versions and Compatibility
+
+ToolJet runs Oracle DB connections in thick mode. By default, ToolJet includes Oracle instant client versions 21.10 and 11.2. These client versions determine which Oracle Database versions you can connect to.
+
+#### Available Client Versions
+- Oracle Instant Client 21.10
+- Oracle Instant Client 11.2
+
+#### Compatibility
+The instant client version affects which Oracle Database versions you can connect to:
+
+- Oracle Instant Client 21.10 is compatible with Oracle Database 11.2 and later versions.
+- Oracle Instant Client 11.2 is compatible with Oracle Database 10.2 and later versions.
+
 
 ## Querying Oracle DB
 
-Once you have added a Oracle DB data source, click on `+` button of the query manager to create a new query. There are two modes by which you can query SQL:
+OOnce you have added an Oracle DB data source, click on the  `+` button of the query manager to create a new query. There are two modes by which you can query SQL:
 
   1. **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
   2. **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
 
 #### SQL mode
 
-SQL mode can be used to write raw SQL queries. Select SQL mode from the dropdown and enter the SQL query in the editor. Click on the `run` button to run the query.
-
+SQL mode can be used to write raw SQL queries.
+  1. Select SQL mode from the dropdown.
+  2. Enter the SQL query in the editor.
+  3. Click on the `run` button to execute the query.
 
 #### GUI mode
 
-GUI mode can be used to query Oracle database without writing queries. Select GUI mode from the dropdown and then choose the operation **Bulk update using primary key**. Enter the **Table** name and **Primary key column** name. Now, in the editor enter the records in the form of an array of objects. 
+GUI mode can be used to query Oracle database without writing queries.
 
-**Example**: `{{ [ {id: 1, channel: 33}, {id:2, channel:24} ] }}`
-
-Click on the **run** button to run the query. **NOTE**: Query should be saved before running.
+  1. Select GUI mode from the dropdown.
+  2. Choose the operation **Bulk update using primary key**.
+  3. Enter the **Table** name and **Primary key** column name.
+  4. In the editor, enter the records in the form of an array of objects. Example:
+  ```json
+  [
+    {
+      "id": 1,
+      "channel": 33
+    },
+    {
+      "id": 2,
+      "channel": 24
+    }
+  ]
+  ```
+  5. Click on the `run` button to execute the query.
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
