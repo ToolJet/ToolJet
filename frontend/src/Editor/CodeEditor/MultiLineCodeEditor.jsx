@@ -16,6 +16,7 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import { debounce } from 'lodash';
 
 const langSupport = Object.freeze({
@@ -87,7 +88,7 @@ const MultiLineCodeEditor = (props) => {
 
     const inputStr = currentString.join(' ');
     const currentCurosorPos = currentCursor;
-    const nearestSubstring = findNearestSubstring(inputStr, currentCurosorPos).replace(/{{|}}/g, '');
+    const nearestSubstring = removeNestedDoubleCurlyBraces(findNearestSubstring(inputStr, currentCurosorPos));
 
     let JSLangHints = [];
     if (lang === 'javascript') {

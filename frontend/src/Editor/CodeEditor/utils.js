@@ -4,7 +4,11 @@ import _, { isEmpty } from 'lodash';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
-import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
+import {
+  hasCircularDependency,
+  resolveReferences as olderResolverMethod,
+  removeNestedDoubleCurlyBraces,
+} from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
 
 const acorn = require('acorn');
@@ -191,7 +195,7 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
 
   if (!isJSCodeResolver) {
     allDynamicVariables.forEach((variable) => {
-      const variableToResolve = variable.replace(/{{|}}/g, '').trim();
+      const variableToResolve = removeNestedDoubleCurlyBraces(variable);
 
       const { toResolveReference } = inferJSExpAndReferences(variableToResolve, lookupTable.hints);
 
@@ -207,8 +211,7 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
       }
     });
   } else {
-    const variableToResolve = code.replace(/{{|}}/g, '').trim();
-
+    const variableToResolve = removeNestedDoubleCurlyBraces(code);
     const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
     resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
@@ -272,7 +275,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   if (useJSResolvers) {
     resolvedValue = resolveMultiDynamicReferences(query, lookupTable, queryHasJSCode);
   } else {
-    let value = query?.replace(/{{|}}/g, '').trim();
+    let value = removeNestedDoubleCurlyBraces(query);
 
     if (value.startsWith('#') || value.includes('table-')) {
       value = JSON.stringify(value);

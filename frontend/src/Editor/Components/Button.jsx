@@ -5,7 +5,9 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables, isEditorReady } =
+    props;
+
   const {
     backgroundColor,
     textColor,
@@ -93,31 +95,33 @@ export const Button = function Button(props) {
   };
 
   useEffect(() => {
-    const exposedVariables = {
-      click: async function () {
-        if (!disable) {
-          fireEvent('onClick');
-        }
-      },
-      setText: async function (text) {
-        setLabel(text);
-        setExposedVariable('buttonText', text);
-      },
-      disable: async function (value) {
-        setDisable(value);
-      },
-      visibility: async function (value) {
-        setVisibility(value);
-      },
-      loading: async function (value) {
-        setLoading(value);
-      },
-    };
+    if (isEditorReady) {
+      const exposedVariables = {
+        click: async function () {
+          if (!disable) {
+            fireEvent('onClick');
+          }
+        },
+        setText: async function (text) {
+          setLabel(text);
+          setExposedVariable('buttonText', text);
+        },
+        disable: async function (value) {
+          setDisable(value);
+        },
+        visibility: async function (value) {
+          setVisibility(value);
+        },
+        loading: async function (value) {
+          setLoading(value);
+        },
+      };
 
-    setExposedVariables(exposedVariables);
+      setExposedVariables(exposedVariables);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
+  }, [disable, isEditorReady]);
 
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
