@@ -29,6 +29,7 @@
       },
       "items": [
         "setup/try-tooljet",
+        "setup/choose-your-tooljet",
         "setup/digitalocean",
         "setup/docker",
         "setup/ec2",

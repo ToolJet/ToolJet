@@ -34,7 +34,7 @@ module.exports = {
     },
     navbar: {
       logo: {
-        href: '/docs',
+        href: '/docs/',
         alt: 'ToolJet Logo',
         src: 'img/Logomark.svg',
         srcDark: `img/Logomark_white.svg`,
@@ -129,6 +129,9 @@ module.exports = {
             },
             '2.62.0': {
               banner: 'none'
+            },
+            '2.65.0': {
+              banner: 'none'
             }
           }
         },
@@ -143,7 +146,7 @@ module.exports = {
         },
         googleTagManager: isProd
           ? {
-            containerId: process.env.GTM,
+            containerId: process.env.GTM || 'development',
           }
           : undefined,
       },
@@ -151,6 +154,17 @@ module.exports = {
   ],
   plugins: [
     devServerPlugin,
-    'plugin-image-zoom'
+    'plugin-image-zoom',
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            to: '/docs/',
+            from: '/',
+          },
+        ],
+      },
+    ],
   ],
 };

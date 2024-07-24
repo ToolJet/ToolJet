@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react'
 import styles from './DocsCard.css'
 
 export const DocsCard = ({ label, imgSrc, link, height = 40, width = 40, title }) => {
-    console.log(title);
     const kubernetesSvg = '/img/setup/icons/kubernetes.svg'
 
     const imagePath = imgSrc.includes('kubernetes') ? kubernetesSvg : `/img/setup/icons/${imgSrc}.svg`
 
     const description = {
         "Try ToolJet": "Try out ToolJet with single docker command",
+        "Choose Your ToolJet": "Important information on which version of ToolJet to use.",
         "System Requirements": "Learn about system requirements for running ToolJet",
         DigitalOcean: "Quickly deploy ToolJet using the Deploy to DigitalOcean button",
         Docker: "Deploy ToolJet on a server using docker-compose",
