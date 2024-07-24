@@ -4,23 +4,16 @@ title: Calendar
 ---
 # Calendar
 
-**Calendar** widget comes with the following features:  
-- **Day, month and week level views**
-- **Events**
-- **Resource scheduling**
+The **Calendar** component allows you to visually organize and schedule events. You can set the default view (day, week, or month), enable/disable various display options, and bind data to events and resources.
 
 <div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/calendar/calendar.png" alt="ToolJet - Widget Reference - Calendar" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/calendar/calendar-component-v2.png" alt="ToolJet - Widget Reference - Calendar" />
 
 </div>
 
-:::caution Restricted components
-In order to avoid excessively complex situations, certain components, namely **Calendar**, and **Kanban** are restricted from being placed within the Calendar component using drag-and-drop functionality.
-
-If the builder attempts to add any of the aforementioned components inside the Calendar, an error message will be displayed:
-
-`<Restricted component> cannot be used as a child component within the Calendar.`
+:::info Restricted components
+Certain components are restricted from being placed within the **Popout** of the **Calendar** component:
+- Calendar, Kanban.
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -44,12 +37,12 @@ Assuming that you set the date format to `MM-DD-YYYY HH:mm:ss A Z`, setting the 
 ```javascript
 {{[
   {
-	  title: 'Sample event',
-      start: `${moment().startOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,
-      end: `${moment().endOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,
-      allDay: false,
-      tooltip: 'Sample event',
-      color: 'lightgreen',
+    title: 'Sample event',
+    start: `${moment().startOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,
+    end: `${moment().endOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,
+    allDay: false,
+    tooltip: 'Sample event',
+    color: 'lightgreen',
   }
 ]}}
 ```
