@@ -27,6 +27,7 @@ const TrailingBtn = ({ size, type, className, disabled, ...restProps }) => {
       variant="ghost"
       className={cn(iconVariants({ size }), className)}
       size="default"
+      onClick={type === 'clear' && restProps.onClear && restProps.onClear}
       {...restProps}
     />
   );

@@ -25,6 +25,7 @@ InputComponent.propTypes = {
   required: PropTypes.bool,
   leadingIcon: PropTypes.string,
   trailingAction: PropTypes.oneOf(['clear', 'loading']),
+  onClear: PropTypes.func,
   trailingActionDisabled: PropTypes.bool,
   helperText: PropTypes.string,
 };
@@ -44,6 +45,7 @@ InputComponent.defaultProps = {
   required: false,
   leadingIcon: '',
   trailingAction: '',
+  onClear: () => {},
   trailingActionDisabled: false,
   helperText: '',
 };

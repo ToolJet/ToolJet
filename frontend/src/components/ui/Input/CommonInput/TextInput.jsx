@@ -44,6 +44,7 @@ const TextInput = ({
           type={trailingAction}
           disabled={trailingActionDisabled || disabled}
           className={`tw-absolute tw-right-[5px] ${size === 'small' ? 'tw-top-[5px]' : 'tw-top-[4px]'}`}
+          onClear={restProps.onClear}
         />
       )}
     </div>

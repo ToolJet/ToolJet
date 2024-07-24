@@ -64,6 +64,10 @@ export default {
       options: ['clear', 'loading'],
       control: 'radio',
     },
+    onClear: {
+      if: { arg: 'trailingAction', eq: 'clear' },
+      control: 'function',
+    },
     trailingActionDisabled: {
       if: { arg: 'trailingAction', eq: 'clear' },
       control: 'boolean',
