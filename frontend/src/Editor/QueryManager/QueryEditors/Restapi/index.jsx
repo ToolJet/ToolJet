@@ -39,10 +39,29 @@ class Restapi extends React.Component {
           this.addNewKeyValuePair('body');
         }
       }, 1000);
+      setTimeout(() => {
+        this.initizalizeRetryNetworkErrorsToggle();
+      }, 1000);
     } catch (error) {
       console.log(error);
     }
   }
+
+  initizalizeRetryNetworkErrorsToggle = () => {
+    const isRetryNetworkErrorToggleUnused = this.props.options.retry_network_errors === null;
+    if (isRetryNetworkErrorToggleUnused) {
+      console.log('this.props.selectedDataSourceid: ', this.props.selectedDataSource.id);
+      const isStaticRestapi = this.props.selectedDataSource.id == 'null';
+      if (!isStaticRestapi) {
+        console.log('ToggleValue', this.props.selectedDataSource.options.retry_network_errors.value);
+      }
+      const retryNetworkErrors = isStaticRestapi
+        ? true
+        : this.props.selectedDataSource.options.retry_network_errors.value;
+
+      changeOption(this, 'retry_network_errors', retryNetworkErrors);
+    }
+  };
 
   onBodyToggleChanged = (value) => {
     const { options } = this.state;
