@@ -90,7 +90,7 @@ const debouncedChange = _.debounce(() => {
 
 export function onComponentOptionsChanged(component, options, id) {
   const resolveStoreActions = useResolveStore.getState().actions;
-  options.forEach((option) => resolveStoreActions.removeAppSuggestions([`components.${component?.name}.${option[0]}`]));
+  options.forEach((option) => resolveStoreActions.resetHintsByKey([`components.${component?.name}.${option[0]}`]));
   let componentName = component.name;
   const { isEditorReady, page } = useCurrentStateStore.getState();
 
