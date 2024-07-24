@@ -7,7 +7,7 @@ title: Kanban
 
 The **Kanban** component allows you to visually organize and prioritize your tasks with a transparent workflow. You can set the number of columns to display, enable/disable the add cards button, and bind data to the cards.
 
-:::caution Restricted components
+:::info Restricted components
 Certain components are restricted from being placed within the **Card** and **Popout** of the **Kanban** component.
 - **Card**: Calendar, Kanban, Form, Tabs, Modal, ListView, Container
 - **Popout**: Calendar, Kanban
@@ -32,9 +32,9 @@ For instance, you can set the `Data` property of a Text component on a card usin
 
 ## Properties
 
-:::caution
-- It is mandatory to provide `id` for each column in the `column data` field. The `id` can be of type `string` or `number`.
-- It is mandatory to provide `id`, and `columnId` for each card in the `Card data` field. The `id` and `columnId` can be of type `string` or `number`.
+:::info
+- It is mandatory to provide an `id` for each column in the `column data` field. The `id` can be of type `string` or `number`.
+- It is mandatory to provide an `id` and a `columnId` for each card in the `Card data` field. Both `id` and `columnId` can be of type `string` or `number`.
 :::
 
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
