@@ -20,13 +20,20 @@ To establish a connection with the Oracle DB data source you can either click on
 - **SSL**
 - **Username**
 - **Password**
-- **Client Library Path** (Only required for local setup)
+- **Client Library Path**
+
 
 <div style={{textAlign: 'center'}}>
-
-![ToolJet - Data source - OracleDB](/img/datasource-reference/oracledb/oracleauth-v2.png)
-
+![ToolJet - Data source - OracleDB](/img/datasource-reference/oracledb/oracleauth-v3.png)
 </div>
+
+:::info
+ToolJet includes Oracle Instant Client versions 21.10 and 11.2. If you need to use a different client library version:
+- For cloud deployments: You can add a custom client library to a directory of your choice or mount it as a volume in the container.
+- For local setups: You can specify the path to your custom Oracle Client Library.
+
+This allows ToolJet to locate and use the specific drivers for Oracle database connections.
+:::
 
 Click on **Test connection** to verify if the credentials are correct and the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
