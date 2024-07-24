@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -18,6 +17,7 @@ export const TextInput = function TextInput({
   darkMode,
   dataCy,
   isResizing,
+  isEditorReady,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -172,9 +172,9 @@ export const TextInput = function TextInput({
         setVisibility(value);
       },
     };
-    setExposedVariables(exposedVariables);
+    if (isEditorReady) setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isEditorReady]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -189,9 +189,9 @@ export const TextInput = function TextInput({
         fireEvent('onChange');
       },
     };
-    setExposedVariables(exposedVariables);
+    if (isEditorReady) setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue]);
+  }, [setValue, isEditorReady]);
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];

@@ -5,6 +5,7 @@ import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import { v4 as uuid } from 'uuid';
 
 export const zustandDevTools = (fn, options = {}) =>

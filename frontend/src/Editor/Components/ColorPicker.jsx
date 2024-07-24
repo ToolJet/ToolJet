@@ -11,6 +11,7 @@ export const ColorPicker = function ({
   height,
   fireEvent,
   dataCy,
+  isEditorReady,
 }) {
   const { visibility, boxShadow } = styles;
   const defaultColor = properties.defaultColor;
@@ -57,8 +58,9 @@ export const ColorPicker = function ({
             selectedColorRGB: hexToRgb(colorCode),
             selectedColorRGBA: hexToRgba(colorCode),
           };
-          setExposedVariables(exposedVariables);
-
+          if (isEditorReady) {
+            setExposedVariables(exposedVariables);
+          }
           fireEvent('onChange');
         }
       } else {
@@ -67,14 +69,15 @@ export const ColorPicker = function ({
           selectedColorRGB: undefined,
           selectedColorRGBA: undefined,
         };
-        setExposedVariables(exposedVariables);
-
+        if (isEditorReady) {
+          setExposedVariables(exposedVariables);
+        }
         fireEvent('onChange');
         setColor('Invalid Color');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setColor]);
+  }, [setColor, isEditorReady]);
 
   useEffect(() => {
     let exposedVariables = {};
@@ -85,8 +88,9 @@ export const ColorPicker = function ({
           selectedColorRGB: hexToRgb(defaultColor),
           selectedColorRGBA: hexToRgba(defaultColor),
         };
-        setExposedVariables(exposedVariables);
-
+        if (isEditorReady) {
+          setExposedVariables(exposedVariables);
+        }
         setColor(defaultColor);
       }
     } else {
@@ -95,12 +99,13 @@ export const ColorPicker = function ({
         selectedColorRGB: undefined,
         selectedColorRGBA: undefined,
       };
-      setExposedVariables(exposedVariables);
-
+      if (isEditorReady) {
+        setExposedVariables(exposedVariables);
+      }
       setColor(`Invalid Color`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultColor]);
+  }, [defaultColor, isEditorReady]);
 
   const handleColorChange = (colorCode) => {
     let exposedVariables = {};
@@ -113,7 +118,9 @@ export const ColorPicker = function ({
         selectedColorRGB: `rgb(${r},${g},${b})`,
         selectedColorRGBA: `rgb(${r},${g},${b},${a})`,
       };
-      setExposedVariables(exposedVariables);
+      if (isEditorReady) {
+        setExposedVariables(exposedVariables);
+      }
       fireEvent('onChange');
     }
   };

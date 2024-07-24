@@ -7,26 +7,32 @@ export const TextArea = function TextArea({
   setExposedVariable,
   setExposedVariables,
   dataCy,
+  isEditorReady,
 }) {
   const [value, setValue] = useState(properties.value);
 
   useEffect(() => {
     setValue(properties.value);
+    setExposedVariable('value', properties.value);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value]);
+
+  useEffect(() => {
     const exposedVariables = {
-      value: properties.value,
       setText: async function (text) {
         setValue(text);
         setExposedVariable('value', text);
       },
-      clear: async function (text) {
+      clear: async function () {
         setValue('');
         setExposedVariable('value', '');
       },
     };
-    setExposedVariables(exposedVariables);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value, setValue]);
+    if (isEditorReady) {
+      setExposedVariables(exposedVariables);
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value, setValue, isEditorReady]);
 
   return (
     <textarea
