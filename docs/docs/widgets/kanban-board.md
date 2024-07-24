@@ -54,14 +54,12 @@ For instance, you can set the `Data` property of a Text component on a card usin
 
 To add an event, click on the component handle to open the component properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
 
-|  <div style={{ width:"100px"}}> Event </div> |  <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| On Update | On update event is triggered whenever the card data (id, title, description, or columnID) is updated using the component specific actions. |
-| On add card click | This event is triggered whenever the **Add card** button on the Kanban is clicked. |
-| Card removed | This event is triggered whenever the card is **deleted** from the Kanban by dragging it into the bottom delete box or using component specific action. |
-| Card added | This event is triggered whenever a card is **added** on the Kanban using the component specific action. |
-| Card moved | This event is triggered whenever the card's position is changed on the Kanban or using the component specific action. |
-| Card selected | This event is triggered whenever a card is clicked to open the modal. |
+- **[On update](#on-update)**
+- **[On add card click](#on-add-card-click)**
+- **[Card removed](#card-removed)**
+- **[Card added](#card-added)**
+- **[Card moved](#card-moved)**
+- **[Card selected](#card-selected)**
 
 Just like any other event on ToolJet, you can set multiple handlers for any of the above mentioned events.
 
@@ -70,6 +68,15 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 Check the **[Component Specific Action](#component-specific-actions-csa)** available for Kanban.
 :::
+
+|  <div style={{ width:"100px"}}> Event </div> |  <div style={{ width:"100px"}}> Description </div> |
+|:----------- |:----------- |
+| On Update | On update event is triggered whenever the card data (id, title, description, or columnID) is updated using the component specific actions. |
+| On add card click | This event is triggered whenever the **Add card** button on the Kanban is clicked. |
+| Card removed | This event is triggered whenever the card is **deleted** from the Kanban by dragging it into the bottom delete box or using component specific action. |
+| Card added | This event is triggered whenever a card is **added** on the Kanban using the component specific action. |
+| Card moved | This event is triggered whenever the card's position is changed on the Kanban or using the component specific action. |
+| Card selected | This event is triggered whenever a card is clicked to open the modal. |
 
 </div>
 
