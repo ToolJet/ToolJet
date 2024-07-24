@@ -359,8 +359,8 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               title={item.title}
               src={item?.src}
               usePluginIcon={isEmpty(item?.iconFile?.data)}
-              height={type == 'Plugins' ? '25px' : '35px'}
-              width={type == 'Plugins' ? '25px' : '35px'}
+              height={'35px'}
+              width={'35px'}
               actionButton={addDataSourceBtn(item)}
               className="datasource-card"
               titleClassName={'datasource-card-title'}
