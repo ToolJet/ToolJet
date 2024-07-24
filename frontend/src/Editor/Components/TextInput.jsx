@@ -336,7 +336,7 @@ export const TextInput = function TextInput({
           type="text"
           placeholder={placeholder}
           style={computedStyles}
-          value={value ?? ''}
+          value={value}
           disabled={disable || loading}
         />
         {loading && <Loader style={{ ...loaderStyle }} width="16" />}
