@@ -56,6 +56,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
+    console.log(isDisabled, isCreating, isNameDisabled, isSlugDisabled, slugProgress, workspaceNameProgress);
     if (field === 'slug') {
       setSlug({
         ...slug,
@@ -91,7 +92,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         };
       }
     }
-
+    console.log(isDisabled, isCreating, isNameDisabled, isSlugDisabled, slugProgress, workspaceNameProgress);
     const disabled = !error?.status;
     const updatedValue = {
       value,
@@ -139,7 +140,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     console.log(name, slug);
   }, 300);
 
-  const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
+  const isDisabled = isCreating || isNameDisabled || slugProgress || workspaceNameProgress;
 
   return (
     <AlertDialog
@@ -230,8 +231,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <div className="col modal-main tj-app-input">
               <label data-cy="workspace-link-label">Workspace link</label>
               <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="slug-field">
-                {!workspaceNameProgress ? (
-                  `${getHostURL()}/${name?.value || '<workspace-slug>'}`
+                {!workspaceNameProgress && slug.value == null ? (
+                  `${getHostURL()}/${name?.value?.toLowerCase().replace(/[^a-z0-9\s]/g, '') || '<workspace-slug>'}`
                 ) : !slugProgress ? (
                   `${getHostURL()}/${slug?.value || '<workspace-slug>'}`
                 ) : (
