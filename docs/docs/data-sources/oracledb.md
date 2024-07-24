@@ -47,7 +47,7 @@ The instant client version affects which Oracle Database versions you can connec
 
 ## Querying Oracle DB
 
-OOnce you have added an Oracle DB data source, click on the  `+` button of the query manager to create a new query. There are two modes by which you can query SQL:
+Once you have added an Oracle DB data source, click on the  `+` button of the query manager to create a new query. There are two modes by which you can query SQL:
 
   1. **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
   2. **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
