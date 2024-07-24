@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isSlugDisabled, setSlugDisabled] = useState(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { t } = useTranslation();
+  const isSlugSet = useRef(false); // Flag to track if slug has been initially set
 
   const createOrganization = () => {
     let emptyError = false;
@@ -56,7 +57,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
-    console.log(isDisabled, isCreating, isNameDisabled, isSlugDisabled, slugProgress, workspaceNameProgress);
     if (field === 'slug') {
       setSlug({
         ...slug,
@@ -92,7 +92,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         };
       }
     }
-    console.log(isDisabled, isCreating, isNameDisabled, isSlugDisabled, slugProgress, workspaceNameProgress);
     const disabled = !error?.status;
     const updatedValue = {
       value,
@@ -126,21 +125,29 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setShowCreateOrg(false);
     setNameDisabled(true);
     setSlugDisabled(true);
+    isSlugSet.current = false;
   };
 
   const delayedSlugChange = _.debounce(async (value) => {
-    console.log(value);
     setSlugProgress(true);
     await handleInputChange(value, 'slug');
   }, 300);
-
   const delayedNameChange = _.debounce(async (value) => {
     setWorkspaceNameProgress(true);
     await handleInputChange(value, 'name');
-    console.log(name, slug);
   }, 300);
+  useEffect(() => {
+    if (!isSlugSet.current && name.value && !slugProgress && !workspaceNameProgress) {
+      const defaultValue = name.value.toLowerCase().replace(/[^a-z0-9\s]/g, '') || '';
+      setSlug({ value: defaultValue, error: '' });
+      setSlugDisabled(false);
+    }
+    if (slugProgress) {
+      isSlugSet.current = true;
+    }
+  }, [name.value, slugProgress, workspaceNameProgress]);
 
-  const isDisabled = isCreating || isNameDisabled || slugProgress || workspaceNameProgress;
+  const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
 
   return (
     <AlertDialog
@@ -156,7 +163,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               <input
                 type="text"
                 onChange={async (e) => {
-                  console.log(e);
                   e.persist();
                   await delayedNameChange(e.target.value);
                 }}
@@ -187,13 +193,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
                 disabled={isCreating}
                 maxLength={50}
-                defaultValue={
-                  !slugProgress && !workspaceNameProgress
-                    ? name?.value?.toLowerCase().replace(/[^a-z0-9\s]/g, '') || ''
-                    : ''
-                }
+                defaultValue={slug.value || ''}
                 onChange={async (e) => {
-                  console.log(e);
                   e.persist();
                   await delayedSlugChange(e.target.value);
                 }}
