@@ -47,13 +47,13 @@ export const dropdownConfig = {
         key: 'advanced',
         value: false,
       },
-      // validation: {
-      //   schema: {
-      //     type: 'union',
-      //     schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-      //   },
-      //   defaultValue: 2,
-      // },
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+        },
+        defaultValue: 2,
+      },
     },
     values: {
       type: 'code',
