@@ -54,7 +54,7 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
     }
     case 'union': {
       schema = union(
-        definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema, recursionDepth))
+        definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema, recursionDepth + 1))
       );
       break;
     }
