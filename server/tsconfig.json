@@ -20,7 +20,10 @@
       "@repositories/*": ["src/repositories/*"],
       "@dto/*": ["src/dto/*"],
       "@module/*": ["src/modules/*"],
-      "@helpers/*": ["src/helpers/*"]
+      "@helpers/*": ["src/helpers/*"],
+      "@licensing/*": ["ce/licensing/*"],
+      "@instance_settings/*": ["ce/instance_settings/*"],
+      "@audit_logs/*": ["ce/audit_logs/*"]
     },
   },
   "exclude": ["node_modules", "dist"]
