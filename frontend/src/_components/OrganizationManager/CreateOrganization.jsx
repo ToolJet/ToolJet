@@ -22,7 +22,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
 
   const createOrganization = () => {
     let emptyError = false;
-
     [name, slug].map((field, index) => {
       if (!field?.value?.trim()) {
         index === 0
@@ -57,6 +56,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
+    console.log('Value', value);
     if (field === 'slug') {
       setSlug({
         ...slug,
@@ -69,6 +69,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         error: null,
       });
     }
+    console.log('ErrorTest');
     let error = validateName(
       value,
       `Workspace ${field}`,
@@ -78,6 +79,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       !(field === 'slug'),
       field === 'slug'
     );
+    console.log('Error', error);
     /* If the basic validation is passing. then check the uniqueness */
     if (error?.status === true) {
       try {
@@ -90,8 +92,10 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           status: false,
           errorMsg: errResponse?.error,
         };
+        console.log(errResponse);
       }
     }
+    console.log('Error', error, 'slugdisabled', isSlugDisabled);
     const disabled = !error?.status;
     const updatedValue = {
       value,
@@ -129,6 +133,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const delayedSlugChange = _.debounce(async (value) => {
+    console.log(value);
     setSlugProgress(true);
     await handleInputChange(value, 'slug');
   }, 300);
@@ -144,7 +149,22 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           .toLowerCase()
           .replace(/[^a-z0-9-\s]/g, '') || '';
       setSlug({ value: defaultValue, error: '' });
+
+      const checkWorkspaceUniqueness = async () => {
+        try {
+          await organizationService.checkWorkspaceUniqueness(null, defaultValue);
+        } catch (errResponse) {
+          let error = {
+            status: false,
+            errorMsg: errResponse?.error,
+          };
+          setSlug({ value: defaultValue, error: error?.errorMsg });
+          console.log(error);
+        }
+      };
+      checkWorkspaceUniqueness();
       setSlugDisabled(false);
+      setSlugProgress(false);
     }
     if (slugProgress) {
       isSlugSet.current = true;
@@ -199,6 +219,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 maxLength={50}
                 defaultValue={slug.value || ''}
                 onChange={async (e) => {
+                  console.log(e);
                   e.persist();
                   await delayedSlugChange(e.target.value);
                 }}
@@ -236,9 +257,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <div className="col modal-main tj-app-input">
               <label data-cy="workspace-link-label">Workspace link</label>
               <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="slug-field">
-                {!workspaceNameProgress && slug.value == null ? (
-                  `${getHostURL()}/${name?.value?.toLowerCase().replace(/[^a-z0-9\s]/g, '') || '<workspace-slug>'}`
-                ) : !slugProgress ? (
+                {!slugProgress ? (
                   `${getHostURL()}/${slug?.value || '<workspace-slug>'}`
                 ) : (
                   <div className="d-flex gap-2">
