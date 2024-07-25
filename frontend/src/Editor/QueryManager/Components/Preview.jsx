@@ -1,10 +1,11 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 import RemoveRectangle from '@/_ui/Icon/solidIcons/RemoveRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 const Preview = ({ darkMode }) => {
   const [key, setKey] = useState('raw');
@@ -41,9 +42,17 @@ const Preview = ({ darkMode }) => {
     if (!queryPreviewData) {
       return queryPreviewData === null ? '' : `${queryPreviewData}`;
     } else {
-      return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
+      return isJson
+        ? JSON.stringify(queryPreviewData, reservedKeywordReplacer).toString()
+        : queryPreviewData.toString();
     }
   };
+
+  const queryPreviewDataWithCircularDependenciesRemoved = useMemo(() => {
+    const stringifiedValue = JSON.stringify(queryPreviewData, reservedKeywordReplacer);
+
+    return stringifiedValue ? JSON.parse(stringifiedValue) : undefined;
+  }, [queryPreviewData]);
 
   return (
     <div className="preview-header preview-section d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
@@ -104,7 +113,7 @@ const Preview = ({ darkMode }) => {
                   <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
                     <JSONTree
                       theme={theme}
-                      data={queryPreviewData}
+                      data={queryPreviewDataWithCircularDependenciesRemoved}
                       invertTheme={!darkMode}
                       collectionLimit={100}
                       hideRoot={true}
