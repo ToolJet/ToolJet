@@ -5,7 +5,6 @@ import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
 import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
-import { validateMultilineCode } from '@/_helpers/utility';
 
 const acorn = require('acorn');
 
@@ -239,16 +238,6 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   //Todo : remove resolveWorkspaceVariables when workspace variables are removed
   if (query?.startsWith('%%') && query?.endsWith('%%')) {
     return resolveWorkspaceVariables(query);
-  }
-
-  if (query?.startsWith('{{') && query?.endsWith('}}')) {
-    const { status, data } = validateMultilineCode(query);
-
-    if (status === 'failed') {
-      const errMessage = `${data.message} -  ${data.description}`;
-
-      return [false, errMessage, query, query];
-    }
   }
 
   if ((!validationSchema || isEmpty(validationSchema)) && (!query?.includes('{{') || !query?.includes('}}'))) {

@@ -56,17 +56,12 @@ export class TooljetDbService {
     private readonly tooljetDbManager: EntityManager
   ) {}
 
-  async perform(
-    organizationId: string,
-    action: string,
-    params = {},
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
+  async perform(organizationId: string, action: string, params = {}) {
     const actionHandler = this.getActionHandler(action);
     if (!actionHandler) {
       throw new BadRequestException('Action not defined');
     }
-    return await actionHandler.call(this, organizationId, params, connectionManagers);
+    return await actionHandler.call(this, organizationId, params);
   }
 
   private getActionHandler(action: string): ((organizationId: string, params: any) => Promise<any>) | undefined {
@@ -89,13 +84,11 @@ export class TooljetDbService {
 
   private async viewTable(
     organizationId: string,
-    params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
+    params
   ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[] }> {
     const { table_name: tableName, id: id } = params;
-    const { appManager, tjdbManager } = connectionManagers;
 
-    const internalTable = await appManager.findOne(InternalTable, {
+    const internalTable = await this.manager.findOne(InternalTable, {
       where: {
         organizationId,
         ...(tableName && { tableName }),
@@ -105,7 +98,7 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    let foreign_keys = await tjdbManager.query(`
+    let foreign_keys = await this.tooljetDbManager.query(`
       select
         pgc.confrelid::regclass as referenced_table_name, 
         pgc.conname as constraint_name,
@@ -146,8 +139,7 @@ export class TooljetDbService {
     const referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
       referenced_table_list,
       organizationId,
-      'TABLEID',
-      appManager
+      'TABLEID'
     );
 
     foreign_keys = foreign_keys.map((foreign_key_detail) => {
@@ -158,7 +150,7 @@ export class TooljetDbService {
       };
     });
 
-    const columns = await tjdbManager.query(`
+    const columns = await this.tooljetDbManager.query(`
     SELECT c.COLUMN_NAME,
         c.DATA_TYPE,
         CASE
@@ -235,11 +227,7 @@ export class TooljetDbService {
     return value;
   }
 
-  private async createTable(
-    organizationId: string,
-    params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
+  private async createTable(organizationId: string, params) {
     const primaryKeyColumnList = params.columns
       .filter((column) => column.constraints_type.is_primary_key)
       .map((column) => column.column_name);
@@ -247,9 +235,8 @@ export class TooljetDbService {
     if (isEmpty(primaryKeyColumnList)) throw new BadRequestException('Primary key is mandatory');
 
     const { table_name: tableName, foreign_keys = [] } = params;
-    const { appManager, tjdbManager } = connectionManagers;
 
-    const tableWithSameName = await appManager.findOne(InternalTable, {
+    const tableWithSameName = await this.manager.findOne(InternalTable, {
       tableName,
       organizationId,
     });
@@ -262,15 +249,13 @@ export class TooljetDbService {
       referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
         referenced_table_list,
         organizationId,
-        'TABLENAME',
-        appManager
+        'TABLENAME'
       );
     }
 
     const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
       foreign_keys,
-      organizationId,
-      connectionManagers
+      organizationId
     );
 
     if (isFKfromCompositePK)
@@ -278,11 +263,11 @@ export class TooljetDbService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
-    const queryRunner = appManager?.queryRunner || appManager.connection.createQueryRunner();
-    const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
-
+    const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
 
@@ -303,15 +288,14 @@ export class TooljetDbService {
           }),
         })
       );
+
       await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
+
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-
-      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
-      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
+      await queryRunner.release();
+      await tjdbQueryRunner.release();
 
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
@@ -901,10 +885,9 @@ export class TooljetDbService {
   private async fetchAndCheckIfValidForeignKeyTables(
     referenced_table_list,
     organisation_id,
-    type: 'TABLEID' | 'TABLENAME',
-    manager: EntityManager = this.manager
+    type: 'TABLEID' | 'TABLENAME'
   ) {
-    const valid_referenced_table_details = await manager.find(InternalTable, {
+    const valid_referenced_table_details = await this.manager.find(InternalTable, {
       where: {
         organizationId: organisation_id,
         ...(type === 'TABLENAME' && { tableName: In(referenced_table_list) }),
@@ -942,16 +925,11 @@ export class TooljetDbService {
     return referenced_tables_info;
   }
 
-  private async createForeignKey(
-    organizationId: string,
-    params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
+  private async createForeignKey(organizationId: string, params) {
     const { table_name, foreign_keys } = params;
-    const { appManager, tjdbManager } = connectionManagers;
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
-    const internalTable = await appManager.findOne(InternalTable, {
+    const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId: organizationId, tableName: table_name },
     });
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
@@ -961,14 +939,12 @@ export class TooljetDbService {
     referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
       referenced_table_list,
       organizationId,
-      'TABLENAME',
-      appManager
+      'TABLENAME'
     );
 
     const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
       foreign_keys,
-      organizationId,
-      connectionManagers
+      organizationId
     );
 
     if (isFKfromCompositePK)
@@ -976,7 +952,7 @@ export class TooljetDbService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
-    const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
 
@@ -988,8 +964,7 @@ export class TooljetDbService {
 
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
+      await tjdbQueryRunner.release();
       return { statusCode: 200, message: 'Foreign key relation created successfully!' };
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
@@ -1106,20 +1081,12 @@ export class TooljetDbService {
     }
   }
 
-  private async checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
-    foreignKeys,
-    organizationId,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
+  private async checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(foreignKeys, organizationId) {
     if (!foreignKeys.length) return;
     let isFKfromCompositePK = false;
     for (const foreignKeyDetails of foreignKeys) {
       const { referenced_table_name = '', referenced_column_names = [] } = foreignKeyDetails;
-      const referencedTableMetaData = await this.viewTable(
-        organizationId,
-        { table_name: referenced_table_name },
-        connectionManagers
-      );
+      const referencedTableMetaData = await this.viewTable(organizationId, { table_name: referenced_table_name });
       const { columns = [] } = referencedTableMetaData;
       const pkColumnList = [];
 

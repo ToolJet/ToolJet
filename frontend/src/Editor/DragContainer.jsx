@@ -790,11 +790,16 @@ function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
+  const type = widgets.find(({ id }) => id === parentId)?.component?.component;
+  let pid = parentId;
+  if (type === 'Kanban') {
+    pid = pid + '-modal';
+  }
+  const children = widgets.filter((widget) => widget?.component?.parent === pid);
   let result = [];
   for (const child of children) {
     result.push(child.id);
-    result = result.concat(...findChildrenAndGrandchildren(child.id, widgets));
+    result = result.concat(...findChildrenAndGrandchildren(child.id));
   }
   return result;
 }

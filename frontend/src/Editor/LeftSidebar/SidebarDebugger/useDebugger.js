@@ -4,7 +4,6 @@ import { shallow } from 'zustand/shallow';
 import { debuggerActions } from '@/_helpers/appUtils';
 import { flow } from 'lodash';
 import moment from 'moment';
-import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   const [errorLogs, setErrorLogs] = useState([]);
@@ -48,14 +47,14 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
     const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
     if (newErrorLogs) {
       setErrorLogs((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors, reservedKeywordReplacer));
+        const copy = JSON.parse(JSON.stringify(prevErrors));
         return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
       });
 
       setAllLog((prevLog) => [...newErrorLogs, ...prevLog]);
 
       setErrorHistory((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors, reservedKeywordReplacer));
+        const copy = JSON.parse(JSON.stringify(prevErrors));
         return {
           appLevel: [...newAppLevelErrorLogs, ...copy.appLevel],
           pageLevel: {
@@ -66,7 +65,7 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
     }
     debuggerActions.flush();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ errors }, reservedKeywordReplacer)]);
+  }, [JSON.stringify({ errors })]);
 
   useEffect(() => {
     const successQueryLogs = debuggerActions.generateQuerySuccessLogs(succededQuery);

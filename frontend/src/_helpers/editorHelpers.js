@@ -139,40 +139,6 @@ export function isOnlyLayoutUpdate(diffState) {
   return componentDiff.length > 0;
 }
 
-function findNotations(jsString) {
-  const dotNotationRegex = /(\w+)\.(\w+(\.\w+)*)/g;
-  const matches = [];
-  let match;
-
-  while ((match = dotNotationRegex.exec(jsString)) !== null) {
-    matches.push({
-      base: match[1],
-      accessors: match[2].split('.'),
-    });
-  }
-
-  return matches;
-}
-
-function convertToBracketNotation(base, accessors) {
-  return `${base}${accessors.map((accessor) => `['${accessor}']`).join('')}`;
-}
-
-function verifyDotAndBracketNotations(jsString) {
-  const notations = findNotations(jsString);
-
-  for (const { base, accessors } of notations) {
-    const dotNotation = `${base}.${accessors.join('.')}`;
-    const bracketNotation = convertToBracketNotation(base, accessors);
-
-    if (jsString.includes(dotNotation) && !jsString.includes(bracketNotation)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 function findReferenceInComponent(node, changedCurrentState) {
   if (!node) return false;
 
@@ -185,8 +151,7 @@ function findReferenceInComponent(node, changedCurrentState) {
           ((value.includes('{{') && value.includes('}}')) || value.includes('%%client'))
         ) {
           // Check if the referenced entity is in the state
-
-          if (changedCurrentState.some((state) => value.includes(state) || verifyDotAndBracketNotations(value))) {
+          if (changedCurrentState.some((state) => value.includes(state))) {
             return true;
           }
         } else if (typeof value === 'object') {
@@ -321,18 +286,3 @@ export const updateCanvasBackground = ({ canvasBackgroundColor, backgroundFxQuer
     }
   }
 };
-
-export function checkAndExtractEntityId(errorString) {
-  const regex = /"([a-f0-9-]+)"/;
-  const match = errorString.match(regex);
-  if (match && match[1]) {
-    return {
-      entityId: match[1],
-      message: 'The last component is not saved, so the last action is also not saved.',
-    };
-  }
-  return {
-    entityId: null,
-    message: 'No entity ID found in the error message.',
-  };
-}

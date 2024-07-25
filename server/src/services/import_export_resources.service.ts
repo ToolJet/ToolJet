@@ -7,6 +7,7 @@ import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { AppsService } from './apps.service';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { isEmpty } from 'lodash';
+import { transformTjdbImportDto } from 'src/helpers/tjdb_dto_transforms';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 
@@ -25,12 +26,15 @@ export class ImportExportResourcesService {
 
   async export(user: User, exportResourcesDto: ExportResourcesDto) {
     const resourcesExport = {};
-
     if (exportResourcesDto.tooljet_database) {
-      resourcesExport['tooljet_database'] = await this.tooljetDbImportExportService.exportAll(
-        exportResourcesDto.organization_id,
-        exportResourcesDto.tooljet_database
-      );
+      resourcesExport['tooljet_database'] = [];
+
+      for (const tjdb of exportResourcesDto.tooljet_database) {
+        !isEmpty(tjdb) &&
+          resourcesExport['tooljet_database'].push(
+            await this.tooljetDbImportExportService.export(exportResourcesDto.organization_id, tjdb)
+          );
+      }
     }
 
     if (exportResourcesDto.app) {
@@ -47,18 +51,27 @@ export class ImportExportResourcesService {
   }
 
   async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false) {
-    let tableNameMapping = {};
+    const tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
     const importingVersion = importResourcesDto.tooljet_version;
-    const isTJDBEnabled = process.env.ENABLE_TOOLJET_DB === 'true';
 
-    if (isTJDBEnabled && !isEmpty(importResourcesDto.tooljet_database)) {
-      const res = await this.tooljetDbImportExportService.bulkImport(importResourcesDto, importingVersion, cloning);
-      tableNameMapping = res.tableNameMapping;
-      imports.tooljet_database = res.tooljet_database;
+    if (importResourcesDto.tooljet_database) {
+      for (const tjdbImportDto of importResourcesDto.tooljet_database) {
+        const transformedDto = transformTjdbImportDto(tjdbImportDto, importingVersion);
+
+        const createdTable = await this.tooljetDbImportExportService.import(
+          importResourcesDto.organization_id,
+          transformedDto,
+          cloning
+        );
+        tableNameMapping[tjdbImportDto.id] = createdTable;
+        imports.tooljet_database.push(createdTable);
+      }
+
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     }
 
-    if (!isEmpty(importResourcesDto.app)) {
+    if (importResourcesDto.app) {
       for (const appImportDto of importResourcesDto.app) {
         user.organizationId = importResourcesDto.organization_id;
         const createdApp = await this.appImportExportService.import(

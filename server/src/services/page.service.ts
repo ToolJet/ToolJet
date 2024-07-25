@@ -11,8 +11,6 @@ import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class PageService {
@@ -102,6 +100,33 @@ export class PageService {
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
 
+      // Clone events
+      await Promise.all(
+        pageEvents.map(async (event) => {
+          const eventDefinition = event.event;
+
+          if (eventDefinition?.actionId === 'control-component') {
+            eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
+          }
+
+          if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+            eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+          }
+
+          event.event = eventDefinition;
+
+          const clonedEvent = new EventHandler();
+          clonedEvent.event = event.event;
+          clonedEvent.index = event.index;
+          clonedEvent.name = event.name;
+          clonedEvent.sourceId = clonePageId;
+          clonedEvent.target = event.target;
+          clonedEvent.appVersionId = event.appVersionId;
+
+          await manager.save(EventHandler, clonedEvent);
+        })
+      );
+
       // Clone components
       const clonedComponents = await Promise.all(
         pageComponents.map(async (component) => {
@@ -119,7 +144,7 @@ export class PageService {
           // Clone component events
           const clonedComponentEvents = await this.eventHandlerService.findAllEventsWithSourceId(component.id);
           const clonedEvents = clonedComponentEvents.map((event) => {
-            const eventDefinition = updateEntityReferences(event.event, componentsIdMap);
+            const eventDefinition = event.event;
 
             if (eventDefinition?.actionId === 'control-component') {
               eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
@@ -146,33 +171,6 @@ export class PageService {
           await manager.save(EventHandler, clonedEvents);
 
           return newComponent;
-        })
-      );
-
-      // Clone events
-      await Promise.all(
-        pageEvents.map(async (event) => {
-          const eventDefinition = updateEntityReferences(event.event, componentsIdMap);
-
-          if (eventDefinition?.actionId === 'control-component') {
-            eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
-          }
-
-          if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
-            eventDefinition.modal = componentsIdMap[eventDefinition.modal];
-          }
-
-          event.event = eventDefinition;
-
-          const clonedEvent = new EventHandler();
-          clonedEvent.event = event.event;
-          clonedEvent.index = event.index;
-          clonedEvent.name = event.name;
-          clonedEvent.sourceId = clonePageId;
-          clonedEvent.target = event.target;
-          clonedEvent.appVersionId = event.appVersionId;
-
-          await manager.save(EventHandler, clonedEvent);
         })
       );
 
@@ -208,20 +206,6 @@ export class PageService {
         if (parentId) {
           await manager.update(Component, component.id, { parent: parentId });
         }
-      }
-
-      const toUpdateComponents = clonedComponents.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, componentsIdMap);
-        }
-      });
-
-      if (!isEmpty(toUpdateComponents)) {
-        await manager.save(toUpdateComponents);
       }
     });
   }

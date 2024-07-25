@@ -91,7 +91,6 @@ import {
   handleLowPriorityWork,
   updateCanvasBackground,
   clearAllQueuedTasks,
-  checkAndExtractEntityId,
 } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
@@ -288,6 +287,7 @@ const EditorComponent = (props) => {
     if (didAppDefinitionChanged) {
       prevAppDefinition.current = appDefinition;
     }
+
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
@@ -295,7 +295,7 @@ const EditorComponent = (props) => {
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      autoSave();
+      handleLowPriorityWork(() => autoSave());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
@@ -365,14 +365,12 @@ const EditorComponent = (props) => {
       if (isPageSwitched) {
         const currentStateObj = useCurrentStateStore.getState();
 
-        handleLowPriorityWork(() => {
-          useResolveStore.getState().actions.addAppSuggestions({
-            queries: currentStateObj.queries,
-            components: currentStateObj.components,
-            page: currentStateObj.page,
-          });
-          useResolveStore.getState().actions.pageSwitched(false);
+        useResolveStore.getState().actions.addAppSuggestions({
+          queries: currentStateObj.queries,
+          components: currentStateObj.components,
+          page: currentStateObj.page,
         });
+        useResolveStore.getState().actions.pageSwitched(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1091,24 +1089,26 @@ const EditorComponent = (props) => {
           }
 
           //Todo: Move this to a separate function or as a middleware of the api to createing a component
-          if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
-            const componentsFromCurrentState = getCurrentState().components;
-            const newComponentIds = Object.keys(updateDiff?.updateDiff);
-            const newComponentsExposedData = {};
-            const componentEntityArray = [];
-            Object.values(componentsFromCurrentState).filter((component) => {
-              if (newComponentIds.includes(component.id)) {
-                const componentName = updateDiff?.updateDiff[component.id]?.name;
-                newComponentsExposedData[componentName] = component;
-                componentEntityArray.push({ id: component.id, name: componentName });
-              }
-            });
+          handleLowPriorityWork(() => {
+            if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
+              const componentsFromCurrentState = getCurrentState().components;
+              const newComponentIds = Object.keys(updateDiff?.updateDiff);
+              const newComponentsExposedData = {};
+              const componentEntityArray = [];
+              Object.values(componentsFromCurrentState).filter((component) => {
+                if (newComponentIds.includes(component.id)) {
+                  const componentName = updateDiff?.updateDiff[component.id]?.name;
+                  newComponentsExposedData[componentName] = component;
+                  componentEntityArray.push({ id: component.id, name: componentName });
+                }
+              });
 
-            useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-            useResolveStore.getState().actions.addAppSuggestions({
-              components: newComponentsExposedData,
-            });
-          }
+              useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+              useResolveStore.getState().actions.addAppSuggestions({
+                components: newComponentsExposedData,
+              });
+            }
+          });
 
           if (
             updateDiff?.type === 'components' &&
@@ -1131,24 +1131,12 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
         })
-        .catch((e) => {
-          const entityNotSaved =
-            e?.data?.statusCode === 500 && e?.error
-              ? checkAndExtractEntityId(e.error)
-              : { entityId: null, message: 'App could not be saved.' };
-
-          let errMessage = e?.data?.message || 'App could not be saved.';
-          if (entityNotSaved.entityId) {
-            const componentName =
-              appDefinition.pages[currentPageId].components[entityNotSaved.entityId]?.component?.name;
-            errMessage = `The component "${componentName}" could not be saved, so the last action is also not saved.`;
-          }
-
+        .catch(() => {
           updateEditorState({
             saveError: true,
             isUpdatingEditorStateInProcess: false,
           });
-          toast.error(errMessage);
+          toast.error('App could not save.');
         })
         .finally(() => {
           if (appDiffOptions?.cloningComponent) {
@@ -1761,7 +1749,6 @@ const EditorComponent = (props) => {
     const pageHandle = useCurrentStateStore.getState().page?.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
-      useEditorStore.getState().actions.setPageProgress(false);
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];

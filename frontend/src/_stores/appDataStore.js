@@ -7,7 +7,6 @@ import { useDataQueriesStore } from './dataQueriesStore';
 import _ from 'lodash';
 import { dfs, handleReferenceTransactions } from './handleReferenceTransactions';
 import { isValidUUID } from '@/_helpers/utils';
-import toast from 'react-hot-toast';
 
 const initialState = {
   editingVersion: null,
@@ -138,22 +137,13 @@ export const useAppDataStore = create(
           const versionId = get().currentVersionId;
 
           const updatedEvents = get().events;
-          appVersionService
-            .createAppVersionEventHandler(appId, versionId, event)
-            .then((response) => {
-              get().actions.setIsSaving(false);
-              set({ eventsCreatedLoader: false });
+          const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+          get().actions.setIsSaving(false);
+          set({ eventsCreatedLoader: false });
 
-              updatedEvents.push(response);
+          updatedEvents.push(response);
 
-              set(() => ({ events: updatedEvents }));
-            })
-            .catch((err) => {
-              get().actions.setIsSaving(false);
-              set({ eventsCreatedLoader: false });
-
-              toast.error(err?.error || 'An error occurred while creating the event handler');
-            });
+          set(() => ({ events: updatedEvents }));
         },
 
         deleteAppVersionEventHandler: async (eventId) => {

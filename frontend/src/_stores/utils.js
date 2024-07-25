@@ -4,7 +4,6 @@ import { devtools } from 'zustand/middleware';
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
-import { v4 as uuid } from 'uuid';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -382,7 +381,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
     keys.forEach((key, index) => {
-      const uniqueId = uuid();
+      const uniqueId = _.uniqueId();
       const value = data[key];
       const _type = Object.prototype.toString.call(value).slice(8, -1);
       const prevType = map.get(path)?.type;
@@ -438,43 +437,24 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   return { suggestionList, hintsMap, resolvedRefs };
 }
 
-function containsBracketNotation(queryString) {
-  const bracketNotationRegex = /\[\s*['"][^'"]+['"]\s*\]/;
-  return bracketNotationRegex.test(queryString);
-}
-
 export function findAllEntityReferences(node, allRefs) {
-  const extractReferencesFromString = (str) => {
-    const regex = /{{(components|queries)\.[^{}]*}}/g;
-    const matches = str.match(regex);
-    if (matches) {
-      matches.forEach((match) => {
-        const ref = match.replace('{{', '').replace('}}', '');
-        const entityName = ref.split('.')[1];
-        allRefs.push(entityName);
-      });
-    }
-  };
-
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
+      if (
+        typeof value === 'string' &&
+        value.includes('{{') &&
+        value.includes('}}') &&
+        (value.startsWith('{{components') || value.startsWith('{{queries'))
+      ) {
+        const referenceExists = value;
 
-      if (typeof value === 'string') {
-        if (containsBracketNotation(value)) {
-          // Skip if the value is a bracket notation
-          break;
-        }
+        if (referenceExists) {
+          const ref = value.replace('{{', '').replace('}}', '');
 
-        if (
-          value.includes('{{') &&
-          value.includes('}}') &&
-          (value.startsWith('{{components') || value.startsWith('{{queries'))
-        ) {
-          extractReferencesFromString(value);
-        } else {
-          // Handle cases where references are embedded within strings
-          extractReferencesFromString(value);
+          const entityName = ref.split('.')[1];
+
+          allRefs.push(entityName);
         }
       } else if (typeof value === 'object') {
         findAllEntityReferences(value, allRefs);

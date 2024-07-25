@@ -90,10 +90,12 @@ export default class OracledbQueryService implements QueryService {
   }
 
   async buildConnection(sourceOptions: SourceOptions) {
+    // we should add this to our datasource documentation
     try {
-      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version);
+      oracledb.oracleClientVersion;
     } catch (err) {
       console.log('Oracle client is not initailized');
+      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version);
     }
 
     const config: Knex.Config = {
@@ -103,7 +105,7 @@ export default class OracledbQueryService implements QueryService {
         password: sourceOptions.password,
         connectString: `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${sourceOptions.host})(PORT=${sourceOptions.port}))(CONNECT_DATA=(SERVER=DEDICATED)(${sourceOptions.database_type}=${sourceOptions.database})))`,
         multipleStatements: true,
-        ssl: sourceOptions.ssl_enabled,
+        ssl: sourceOptions.ssl_enabled, // Disabling by default for backward compatibility
       },
     };
 

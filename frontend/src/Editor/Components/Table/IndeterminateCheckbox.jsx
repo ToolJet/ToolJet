@@ -15,13 +15,10 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, ...r
         type="checkbox"
         ref={resolvedRef}
         onClick={(event) => {
-          event.stopPropagation();
           if (fireEvent) {
-            //! This is a hack to make sure the event is fired after exposed values are updated
-            setTimeout(() => {
-              fireEvent('onRowClicked');
-            }, 0);
+            fireEvent('onRowClicked');
           }
+          event.stopPropagation();
         }}
         {...rest}
         style={{
