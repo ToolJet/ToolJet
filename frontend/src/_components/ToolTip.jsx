@@ -1,8 +1,8 @@
-import React, { cloneElement, useEffect, useRef, useState } from "react";
-import PropTypes from "prop-types";
-import OverlayTrigger from "react-bootstrap/esm/OverlayTrigger";
-import Tooltip from "react-bootstrap/esm/Tooltip";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { cloneElement, useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
+import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
+import Tooltip from 'react-bootstrap/esm/Tooltip';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export function ToolTip({
   message,
