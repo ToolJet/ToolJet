@@ -138,7 +138,11 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   }, 300);
   useEffect(() => {
     if (!isSlugSet.current && name.value && !slugProgress && !workspaceNameProgress) {
-      const defaultValue = name.value.toLowerCase().replace(/[^a-z0-9\s]/g, '') || '';
+      const defaultValue =
+        name.value
+          .replace(/\s+/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '') || '';
       setSlug({ value: defaultValue, error: '' });
       setSlugDisabled(false);
     }
