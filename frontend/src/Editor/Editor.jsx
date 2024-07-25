@@ -28,6 +28,7 @@ import {
   buildComponentMetaDefinition,
   getAllChildComponents,
   runQueries,
+  updateSuggestionsFromCurrentState,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
@@ -308,14 +309,8 @@ const EditorComponent = (props) => {
       const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
       if (isPageSwitched) {
-        const currentStateObj = useCurrentStateStore.getState();
-
         handleLowPriorityWork(() => {
-          useResolveStore.getState().actions.addAppSuggestions({
-            queries: currentStateObj.queries,
-            components: currentStateObj.components,
-            page: currentStateObj.page,
-          });
+          updateSuggestionsFromCurrentState();
           useResolveStore.getState().actions.pageSwitched(false);
         });
       }
@@ -733,6 +728,7 @@ const EditorComponent = (props) => {
 
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
       handleLowPriorityWork(() => {
+        updateSuggestionsFromCurrentState();
         useResolveStore.getState().actions.updateLastUpdatedRefs(['constants', 'client']);
         commonLowPriorityActions(events, { homePageId });
       });
@@ -825,6 +821,7 @@ const EditorComponent = (props) => {
       });
       processNewAppDefinition(appData, null, true, ({ homePageId }) => {
         handleLowPriorityWork(async () => {
+          updateSuggestionsFromCurrentState();
           await fetchDataSources(editing_version?.id);
           commonLowPriorityActions(events, homePageId);
         });

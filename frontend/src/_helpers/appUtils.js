@@ -2342,3 +2342,12 @@ export const calculateMoveableBoxHeight = (componentType, layoutData, stylesDefi
 
   return newHeight;
 };
+
+export const updateSuggestionsFromCurrentState = () => {
+  const currentStateObj = useCurrentStateStore.getState();
+  useResolveStore.getState().actions.addAppSuggestions({
+    queries: currentStateObj.queries,
+    components: currentStateObj.components,
+    page: currentStateObj.page,
+  });
+};
