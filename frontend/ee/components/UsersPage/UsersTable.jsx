@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '@/_ui/Avatar';
-import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -51,8 +50,15 @@ const UsersTable = ({
               </tr>
             </thead>
             {isLoading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 'calc(100vh - 270px)' }}>
-                <Spinner variant="primary"/>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: 'calc(100vh - 270px)',
+                }}
+              >
+                <Spinner variant="primary" />
               </div>
             ) : (
               <tbody>
