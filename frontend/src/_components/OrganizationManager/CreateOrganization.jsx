@@ -142,7 +142,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         name.value
           .replace(/\s+/g, '')
           .toLowerCase()
-          .replace(/[^a-z0-9\s]/g, '') || '';
+          .replace(/[^a-z0-9-\s]/g, '') || '';
       setSlug({ value: defaultValue, error: '' });
       setSlugDisabled(false);
     }
