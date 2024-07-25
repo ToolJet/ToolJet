@@ -359,6 +359,8 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  console.log('componentMeta', componentMeta);
+
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -447,7 +449,7 @@ export const Inspector = ({
       </div>
       <span className="widget-documentation-link">
         <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
+          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.component ?? '')}`}
           target="_blank"
           rel="noreferrer"
           data-cy="widget-documentation-link"
@@ -456,7 +458,7 @@ export const Inspector = ({
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
+                componentMeta: componentMeta.component,
               })}
             </small>
           </span>
