@@ -7,16 +7,14 @@ import { App } from './app.type';
 import { User } from './user.type';
 import { CookieJar } from 'tough-cookie';
 
-export function checkIfContentTypeIsURLenc(headers: [] = []) {
-  const objectHeaders = Object.fromEntries(headers);
-  const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-  return contentType === 'application/x-www-form-urlencoded';
+export function checkIfContentTypeIsURLenc(headers: [string, string][] = []): boolean {
+  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
+  return contentType?.toLowerCase() === 'application/x-www-form-urlencoded';
 }
 
-export function checkIfContentTypeIsMultipartFormData(headers: [] = []) {
-  const objectHeaders = Object.fromEntries(headers);
-  const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-  return contentType === 'multipart/form-data';
+export function checkIfContentTypeIsMultipartFormData(headers: [string, string][] = []): boolean {
+  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
+  return contentType?.toLowerCase().startsWith('multipart/form-data') ?? false;
 }
 
 export function sanitizeCustomParams(customArray: any) {

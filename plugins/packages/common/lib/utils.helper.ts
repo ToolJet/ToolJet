@@ -79,9 +79,9 @@ export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, use
 };
 
 export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSource = true): Headers => {
-  const _headers = (queryOptions.headers || []).filter((o) => {
-    return o.some((e) => !isEmpty(e));
-  });
+  const _headers = (queryOptions.headers || [])
+    .filter(([_, v]) => !isEmpty(v))
+    .map(([k, v]) => [k.trim().toLowerCase(), v]);
 
   if (!hasDataSource) return Object.fromEntries(_headers);
 
