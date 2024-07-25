@@ -225,10 +225,17 @@ const queryHasStringOtherThanVariable = (query) => {
   const endsWithDoubleCurly = query.endsWith('}}');
 
   if (startsWithDoubleCurly && endsWithDoubleCurly) {
-    // Extract the content within the curly braces
     const content = query.slice(2, -2).trim();
-    // Check if there is a space within the content
-    return content.includes(' ');
+
+    if (content.includes(' ')) {
+      return true;
+    }
+
+    //* Check if the content includes a template literal
+    //!Note: Do not delete this regex, it is used to check if the content includes a template literal
+    //used for cases like {{queries.runjs1.data[0][`${components.textinput1.value}`]}}
+    const templateLiteralRegex = /\$\{[^}]+\}/;
+    return templateLiteralRegex.test(content);
   }
 
   return false;
