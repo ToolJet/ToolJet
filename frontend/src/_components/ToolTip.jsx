@@ -1,4 +1,4 @@
-import React, { cloneElement, useEffect, useRef, useState } from 'react';
+import React, { cloneElement, useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
@@ -18,12 +18,13 @@ export function ToolTip({
   const [isOverflow, setIsOverflow] = useState(false);
   const childRef = useRef(null);
 
+  const checkOverflowCondition = useCallback(() => {
+    if (childRef.current) setIsOverflow(childRef.current.scrollWidth > childRef.current.clientWidth);
+  }, [childRef]);
+  
   useEffect(() => {
-    const checkOverflowCondition = () => {
-      if (childRef.current) setIsOverflow(childRef.current.scrollWidth > childRef.current.clientWidth);
-    };
-    if (checkOverflow) checkOverflowCondition();
-  }, [checkOverflow, children]);
+    if (checkOverflow)checkOverflowCondition();
+  }, [checkOverflow, checkOverflowCondition, children]);
 
   if (!show || (checkOverflow && !isOverflow)) return cloneElement(children, { ref: childRef });
 
