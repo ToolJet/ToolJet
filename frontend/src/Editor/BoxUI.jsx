@@ -58,6 +58,7 @@ const BoxUI = (props) => {
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   const currentState = useCurrentState();
+  const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
   const validate = (value) =>
     validateWidget({
@@ -97,8 +98,6 @@ const BoxUI = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
   return (
     <OverlayTrigger
