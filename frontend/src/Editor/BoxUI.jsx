@@ -77,6 +77,7 @@ const BoxUI = (props) => {
 
   let exposedVariables = !_.isEmpty(currentState?.components) ? currentState?.components[component.name] ?? {} : {};
   const fireEvent = (eventName, options) => {
+    if (!isEditorReady) return;
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
