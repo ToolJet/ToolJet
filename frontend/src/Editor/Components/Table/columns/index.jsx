@@ -691,7 +691,7 @@ export default function generateColumnsData({
           }
           case 'link': {
             const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}');
-            const displayText = resolveReferences(column?.displayText);
+            const displayText = column?.displayText ? resolveReferences(column.displayText) : '';
             column = {
               ...column,
               linkColor: column?.linkColor ?? '#1B1F24',
