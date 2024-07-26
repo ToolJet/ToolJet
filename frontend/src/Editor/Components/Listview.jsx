@@ -62,7 +62,9 @@ export const Listview = function Listview({
     if (isEditorReady) {
       setExposedVariables(exposedVariables);
     }
-    fireEvent('onRecordClicked');
+    setTimeout(() => {
+      fireEvent('onRecordClicked');
+    }, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
   function onRowClicked(index) {
@@ -74,7 +76,9 @@ export const Listview = function Listview({
     if (isEditorReady) {
       setExposedVariables(exposedVariables);
     }
-    fireEvent('onRowClicked');
+    setTimeout(() => {
+      fireEvent('onRowClicked');
+    }, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
 
