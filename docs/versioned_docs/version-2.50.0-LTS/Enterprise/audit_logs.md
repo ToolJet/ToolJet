@@ -34,19 +34,19 @@ Pagination at the bottom allows navigation through the pages, with each page dis
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Filter Audit Logs
+## Filter Audit Logs
 
 You can apply filters to the audited events based on the following criteria.
 
-#### Select Users
+### Select Users
 
 Choose a specific user from the dropdown list to view all their activities.
 
-#### Select Apps
+### Select Apps
 
 The dropdown will display all the apps associated with your account. Select an app to filter the logs related to that particular app.
 
-#### Select Resources
+### Select Resources
 
 | <div style={{ width:"100px"}}> Resources </div> | <div style={{ width:"100px"}}> Description </div> |
 | ----------- | ----------- |
@@ -56,7 +56,7 @@ The dropdown will display all the apps associated with your account. Select an a
 | Group Permission | All the events associated with Group Permissions will be filtered. Group Permissions include `GROUP_CREATE`, `GROUP_UPDATE`, `GROUP_DELETE`. |
 | App Group Permission | Within each group, you can set apps for read or edit privileges. These events get recorded as App Group Permissions. |
 
-#### Select Actions
+### Select Actions
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
@@ -81,7 +81,7 @@ The dropdown will display all the apps associated with your account. Select an a
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Understanding Log Information
+## Understanding Log Information
 
 <div style={{textAlign: 'center'}}>
 
@@ -112,11 +112,35 @@ The file will contain all the data from audit logs. The log file can be created 
 
 Learn more about **setting up the log file generation** [here](/docs/how-to/setup-rsyslog).
 
-#### Log Rotation
+### Log Rotation
 
 The log file is configured to rotate on a daily basis. This means that a new log file will be created every day, ensuring efficient management and organization of audit data.
 
-#### Log File Path
+### Log Redaction
+
+ToolJet implements log redaction to protect sensitive information. By default, the following headers are masked in the logs:
+
+- authorization
+- cookie
+- set-cookie
+- x-api-key
+- proxy-authorization
+- www-authenticate
+- authentication-info
+- x-forwarded-for
+
+Additionally, you can specify custom fields to be masked using the `LOGGER_REDACT` environment variable.
+
+| <div style={{ width:"100px"}}> Variable </div>| <div style={{ width:"100px"}}> Description </div>                                                                |
+| -------- | --------------------------------------------------------------------------- |
+| LOGGER_REDACT | Comma-separated list of additional fields to be masked in logs (e.g., req.headers.x-api-key, res.body.sensitive-data) |
+
+For example:
+```bash
+LOGGER_REDACT=req.headers.x-custom-auth,req.headers.x-session-token
+```
+
+### Log File Path
 
 The path for the log file is defined using the `LOG_FILE_PATH` variable in the environment. It's important to understand that this path is relative to the home directory of the machine. For instance, if `LOG_FILE_PATH` is set to `hsbc/dashboard/log`, the resulting log file path will be structured as follows:
 ```

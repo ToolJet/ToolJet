@@ -116,6 +116,30 @@ Learn more about **setting up the log file generation** [here](/docs/how-to/setu
 
 The log file is configured to rotate on a daily basis. This means that a new log file will be created every day, ensuring efficient management and organization of audit data.
 
+#### Log Redaction
+
+ToolJet implements log redaction to protect sensitive information. By default, the following headers are masked in the logs:
+
+- authorization
+- cookie
+- set-cookie
+- x-api-key
+- proxy-authorization
+- www-authenticate
+- authentication-info
+- x-forwarded-for
+
+Additionally, you can specify custom fields to be masked using the `LOGGER_REDACT` environment variable.
+
+| <div style={{ width:"100px"}}> Variable </div>| <div style={{ width:"100px"}}> Description </div>                                                                |
+| -------- | --------------------------------------------------------------------------- |
+| LOGGER_REDACT | Comma-separated list of additional fields to be masked in logs (e.g., req.headers.x-api-key) |
+
+For example:
+```bash
+LOGGER_REDACT=req.headers.x-custom-token,res.body.sensitive-data
+```
+
 #### Log File Path
 
 The path for the log file is defined using the `LOG_FILE_PATH` variable in the environment. It's important to understand that this path is relative to the home directory of the machine. For instance, if `LOG_FILE_PATH` is set to `hsbc/dashboard/log`, the resulting log file path will be structured as follows:
