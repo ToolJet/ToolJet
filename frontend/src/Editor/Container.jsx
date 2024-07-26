@@ -878,12 +878,14 @@ export const Container = ({
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
-              const canShowInCurrentLayout =
-                box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+              // const canShowInCurrentLayout =
+              //   box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
 
-              if (box.parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
-                return '';
-              }
+              //   console.log("canShowInCurrentLayout", canShowInCurrentLayout, resolveWidgetFieldValue(canShowInCurrentLayout));
+
+              // if (box.parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
+              //   return '';
+              // }
               return (
                 <WidgetWrapper
                   isResizing={resizingComponentId === id}
@@ -895,6 +897,7 @@ export const Container = ({
                   mode={mode}
                   propertiesDefinition={box?.component?.definition?.properties}
                   stylesDefinition={box?.component?.definition?.styles}
+                  otherDefinition={box?.component?.definition?.others}
                   componentType={box?.component?.component}
                 >
                   <DraggableBox
@@ -1018,19 +1021,35 @@ const WidgetWrapper = ({
   propertiesDefinition,
   stylesDefinition,
   componentType,
+  otherDefinition,
 }) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
     layouts,
   } = widget;
-  const { isSelected, isHovered } = useEditorStore((state) => {
+  const { isSelected, isHovered, shouldRerender } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
     const isHovered = state?.hoveredComponent == id;
-    return { isSelected, isHovered };
+    /*
+     `shouldRerender` is added only for re-rendering the component when visibility/showOnMobile/showOnDesktop 
+     updates since these attributes need update or WidgetWrapper rather than actual Widget itself
+     */
+    const shouldRerender = state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id);
+    return { isSelected, isHovered, shouldRerender };
   }, shallow);
 
+  useEditorStore((state) => state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id));
+
+  console.log('shouldRerender-' + widget.component.name, shouldRerender);
+
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
+
+  const canShowInCurrentLayout = otherDefinition[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+
+  if (parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
+    return '';
+  }
 
   let layoutData = layouts?.[currentLayout];
   if (isEmpty(layoutData)) {
