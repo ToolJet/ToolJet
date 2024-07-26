@@ -96,7 +96,7 @@ export const Tabs = function Tabs({
   useEffect(() => {
     const exposedVariables = {
       setTab: async function (id) {
-        if (id) {
+        if (id && currentTab !== id) {
           setCurrentTab(id);
           setExposedVariable('currentTab', id);
           fireEvent('onTabSwitch');
@@ -162,6 +162,7 @@ export const Tabs = function Tabs({
             className="nav-item"
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
+              if (currentTab === tab.id) return;
               setTabSwitchingOnProgress(true);
 
               !tab?.disabled && setCurrentTab(tab.id);
