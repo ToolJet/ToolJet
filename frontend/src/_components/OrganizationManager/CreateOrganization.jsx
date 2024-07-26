@@ -162,7 +162,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     if (slugProgress && !isSlugSet.current) {
       isSlugSet.current = true;
     }
-  }, [name.value, slugProgress, workspaceNameProgress]);
+  }, [name.value, slugProgress, workspaceNameProgress, isSlugSet]);
 
   const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
 
