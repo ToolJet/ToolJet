@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
+import debounce from 'lodash/debounce';
 
 export const TextInput = function TextInput({
   height,
@@ -104,6 +104,19 @@ export const TextInput = function TextInput({
       ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
       ' translateY(-50%)',
     zIndex: 3,
+  };
+
+  const debouncedOnChange = useCallback(
+    debounce((value) => {
+      setExposedVariable('value', value);
+      fireEvent('onChange');
+    }, 0),
+    []
+  );
+
+  const onChange = (e) => {
+    setValue(e.target.value);
+    debouncedOnChange(e.target.value);
   };
   useEffect(() => {
     if (labelRef?.current) {
@@ -313,11 +326,7 @@ export const TextInput = function TextInput({
               fireEvent('onEnterPressed');
             }
           }}
-          onChange={(e) => {
-            setValue(e.target.value);
-            setExposedVariable('value', e.target.value);
-            fireEvent('onChange');
-          }}
+          onChange={onChange}
           onBlur={(e) => {
             setShowValidationError(true);
             setIsFocused(false);
