@@ -1041,8 +1041,6 @@ const WidgetWrapper = ({
 
   useEditorStore((state) => state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id));
 
-  console.log('shouldRerender-' + widget.component.name, shouldRerender);
-
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
 
   const canShowInCurrentLayout = otherDefinition[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
