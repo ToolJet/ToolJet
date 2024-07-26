@@ -117,6 +117,8 @@ export default class RestapiQueryService implements QueryService {
     };
 
     const hasFiles = (json) => {
+      if (isEmpty(json)) return false;
+
       return Object.values(json || {}).some((item) => {
         return isFileObject(item);
       });
