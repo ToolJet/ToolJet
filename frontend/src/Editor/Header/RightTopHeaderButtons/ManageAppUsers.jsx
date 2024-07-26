@@ -11,6 +11,8 @@ import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes
 import { validateName } from '@/_helpers/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
+import { ToolTip } from '@/_components/ToolTip';
+import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
@@ -217,7 +219,7 @@ class ManageAppUsersComponent extends React.Component {
               <div class="shareable-link-container">
                 <div className="make-public mb-3">
                   <div className="form-check form-switch d-flex align-items-center">
-                    <input
+                    {/* <input
                       className="form-check-input"
                       type="checkbox"
                       onClick={this.toggleAppVisibility}
@@ -227,7 +229,39 @@ class ManageAppUsersComponent extends React.Component {
                     />
                     <span className="form-check-label field-name" data-cy="make-public-app-label">
                       {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
-                    </span>
+                    </span> */}
+
+                    {this.props.isVersionReleased ? (
+                      <>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          onClick={this.toggleAppVisibility}
+                          checked={this?.props?.isPublic}
+                          disabled={this.state.ischangingVisibility}
+                          data-cy="make-public-app-toggle"
+                        />
+                        <span className="form-check-label field-name" data-cy="make-public-app-label">
+                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          disabled={true}
+                          data-cy="make-public-app-toggle"
+                        />
+                        <span
+                          style={{ opacity: 0.3 }}
+                          className="form-check-label field-name"
+                          data-cy="make-public-app-label"
+                        >
+                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
 
