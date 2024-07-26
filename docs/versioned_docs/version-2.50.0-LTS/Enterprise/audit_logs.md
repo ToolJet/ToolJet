@@ -133,11 +133,11 @@ Additionally, you can specify custom fields to be masked using the `LOGGER_REDAC
 
 | <div style={{ width:"100px"}}> Variable </div>| <div style={{ width:"100px"}}> Description </div>                                                                |
 | -------- | --------------------------------------------------------------------------- |
-| LOGGER_REDACT | Comma-separated list of additional fields to be masked in logs (e.g., req.headers.x-api-key, res.body.sensitive-data) |
+| LOGGER_REDACT | Comma-separated list of additional fields to be masked in logs (e.g., req.headers.x-session-id,req.headers.x-device-fingerprint) |
 
 For example:
 ```bash
-LOGGER_REDACT=req.headers.x-custom-auth,req.headers.x-session-token
+LOGGER_REDACT=res.headers.x-rate-limit-remaining,res.headers.x-request-id
 ```
 
 ### Log File Path
