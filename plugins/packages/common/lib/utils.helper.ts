@@ -1,5 +1,4 @@
 import { QueryError } from './query.error';
-import { Headers } from 'got';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
 
@@ -78,7 +77,11 @@ export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, use
   }
 };
 
-export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSource = true): Headers => {
+export const sanitizeHeaders = (
+  sourceOptions: any,
+  queryOptions: any,
+  hasDataSource = true
+): { [k: string]: string } => {
   const cleanHeaders = (headers) =>
     headers.filter(([_, v]) => !isEmpty(v)).map(([k, v]) => [k.trim().toLowerCase(), v]);
 
