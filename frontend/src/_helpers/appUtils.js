@@ -2342,3 +2342,31 @@ export const calculateMoveableBoxHeight = (componentType, layoutData, stylesDefi
 
   return newHeight;
 };
+
+// Used for updating suggestion list on query renaming
+export const updateQuerySuggestions = (oldName, newName) => {
+  const currentState = useCurrentStateStore.getState();
+  const { queries } = currentState;
+
+  if (!queries[oldName]) {
+    return;
+  }
+
+  const updatedQueries = {
+    ...queries,
+    [newName]: {
+      ...queries[oldName],
+      name: newName,
+    },
+  };
+
+  delete updatedQueries[oldName];
+
+  const oldSuggestions = Object.keys(queries[oldName]).map((key) => `queries.${oldName}.${key}`);
+  useResolveStore.getState().actions.removeAppSuggestions(oldSuggestions);
+
+  useCurrentStateStore.getState().actions.setCurrentState({
+    ...currentState,
+    queries: updatedQueries,
+  });
+};
