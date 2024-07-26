@@ -26,6 +26,9 @@ export default {
     onChange: {
       control: 'function',
     },
+    disabled: {
+      control: 'boolean',
+    },
     className: {
       control: 'text',
     },
@@ -44,6 +47,7 @@ RocketTabs.args = {
   },
   defaultValue: '',
   onChange: (value) => {},
+  disabled: false,
   className: '',
 };
 

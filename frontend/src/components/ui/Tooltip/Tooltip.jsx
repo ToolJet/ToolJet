@@ -14,7 +14,7 @@ const Tooltip = ({ tooltipLabel, supportingText, theme, arrow, children, width, 
         )}
         style={{ width: width }}
       >
-        {children && children}
+        {children}
         {!children && (
           <div
             className={`tw-text-[12px] ${

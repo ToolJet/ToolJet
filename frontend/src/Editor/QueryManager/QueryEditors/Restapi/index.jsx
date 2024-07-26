@@ -8,6 +8,7 @@ import { changeOption } from '../utils';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import CodeHinter from '@/Editor/CodeEditor';
+import DropdownComponent from '@/components/ui/Dropdown/Index';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -145,26 +146,23 @@ class Restapi extends React.Component {
         {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
         <div className="flex-grow-1 overflow-hidden">
           <div className="rest-api-methods-select-element-container">
-            <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
-              <label className="font-weight-medium color-slate12">Method</label>
-              <Select
-                options={[
-                  { label: 'GET', value: 'get' },
-                  { label: 'POST', value: 'post' },
-                  { label: 'PUT', value: 'put' },
-                  { label: 'PATCH', value: 'patch' },
-                  { label: 'DELETE', value: 'delete' },
-                ]}
+
+            <div className="tw-pe-2 tw-pl-[2px] tw-pb-[2px]">
+              <DropdownComponent
+                label="Method"
                 onChange={(value) => {
                   changeOption(this, 'method', value);
                 }}
-                value={currentValue}
-                defaultValue={{ label: 'GET', value: 'get' }}
+                options={{
+                  GET: { value: 'get' },
+                  POST: { value: 'post' },
+                  PUT: { value: 'put' },
+                  PATCH: { value: 'patch' },
+                  DELETE: { value: 'delete' },
+                }}
+                defaultValue="get"
                 placeholder="Method"
-                width={100}
-                height={32}
-                styles={this.customSelectStyles(this.props.darkMode, 91)}
-                useCustomStyles={true}
+                width="100px"
               />
             </div>
 

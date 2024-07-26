@@ -12,8 +12,10 @@ const CommonInput = ({ label, helperText, disabled, required, ...restProps }) =>
     let validateObj;
     if (restProps.validation) {
       validateObj = restProps.validation(e);
-      setIsValid(validateObj.valid);
-      setMessage(validateObj.message);
+      if (validateObj !== undefined && 'valid' in validateObj && 'message' in validateObj) {
+        setIsValid(validateObj.valid);
+        setMessage(validateObj.message);
+      }
     }
     restProps.onChange(e, validateObj);
   };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Constraints, FileUploadIcon, InputFileLabel, UploadIcon } from '../FileUploaderUtils/FileUploaderUtils';
 
 const FileUpload = ({
@@ -14,6 +14,7 @@ const FileUpload = ({
   maxSize,
 }) => {
   const [isHovering, setIsHovering] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleDragEnter = (event) => {
     event.preventDefault();
@@ -47,7 +48,7 @@ const FileUpload = ({
   };
 
   const handleClick = () => {
-    document.getElementById('browse').click();
+    fileInputRef.current.click();
   };
 
   return (
@@ -100,6 +101,7 @@ const FileUpload = ({
           <input
             type="file"
             id="browse"
+            ref={fileInputRef}
             className="tw-hidden"
             multiple={type === 'multiple'}
             onChange={handleFileChange}

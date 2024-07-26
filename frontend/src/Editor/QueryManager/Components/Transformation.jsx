@@ -7,6 +7,7 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import CodeHinter from '@/Editor/CodeEditor';
+import TabsComponent from '@/components/ui/Tabs/Index';
 const noop = () => {};
 
 const defaultValue = {
@@ -182,43 +183,20 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
         <div className="col flex-grow-1">
           <div style={{ borderRadius: '6px', marginBottom: '20px', background: darkMode ? '#272822' : '#F8F9FA' }}>
             <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
-              <Tab.Container
-                activeKey={lang}
-                onSelect={(value) => {
+              <TabsComponent
+                onChange={(value) => {
                   setLang(value);
                   changeOption('transformationLanguage', value);
                   changeOption('transformation', state[value]);
                 }}
-                defaultActiveKey="javascript"
-              >
-                <Row className="m-0">
-                  <Col className="keys text-center d-flex align-items-center">
-                    <ListGroup
-                      className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
-                      variant="flush"
-                      style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
-                    >
-                      {['JavaScript', 'Python'].map((tab) => (
-                        <ListGroup.Item
-                          key={tab}
-                          eventKey={tab.toLowerCase()}
-                          style={{ minWidth: '74px', textAlign: 'center' }}
-                          className="rounded"
-                          disabled={!enableTransformation}
-                        >
-                          <span
-                            data-cy={`preview-tab-${tab.toLowerCase()}`}
-                            className="rounded"
-                            style={{ width: '100%' }}
-                          >
-                            {tab}
-                          </span>
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  </Col>
-                </Row>
-              </Tab.Container>
+                tabs={{
+                  JavaScript: 'javascript',
+                  Python: 'python',
+                }}
+                defaultValue="javascript"
+                value={lang}
+                disabled={!enableTransformation}
+              />
             </div>
             <div className="codehinter-border-bottom mx-3"></div>
             <CodeHinter

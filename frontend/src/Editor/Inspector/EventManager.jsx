@@ -27,6 +27,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { Button } from '@/components/ui/Button/Button';
 
 export const EventManager = ({
   sourceId,
@@ -1044,9 +1045,16 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" isLoading={eventsCreatedLoader}>
-        {t('editor.inspector.eventManager.addHandler', 'New event handler')}
-      </AddNewButton>
+      <Button
+        leadingIcon="plusrectangle"
+        onClick={addHandler}
+        variant="outline"
+        dataCy="add-event-handler"
+        isLoading={eventsCreatedLoader}
+        className="tw-mt-2 tw-w-full"
+      >
+        New event handler
+      </Button>
     );
   };
 

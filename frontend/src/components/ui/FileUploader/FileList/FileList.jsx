@@ -21,7 +21,7 @@ const FileList = ({ type, files, onRemove, width, onRetry }) => {
             key={index}
             className="tw-bg-background-surface-layer-02 tw-flex tw-items-center tw-justify-between tw-p-[8px] tw-rounded-[6px] tw-mb-[8px]"
           >
-            <div className="tw-w-full tw-flex tw-items-start tw-flex-[1_0%_0%] tw-gap-[8px]">
+            <div className="tw-w-full tw-flex tw-items-start tw-flex-[1_0%_0%] tw-gap-[8px] tw-overflow-hidden">
               <div className="tw-bg-background-surface-layer-01 tw-flex tw-h-[36px] tw-w-[36px] tw-py-[7px] tw-px-[9px] tw-justify-center tw-items-center tw-rounded-[6px]">
                 <FileTypeIcon filetype={file.type} />
               </div>

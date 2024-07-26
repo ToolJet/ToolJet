@@ -21,6 +21,8 @@ import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import InputComponent from '@/components/ui/Input/Index';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setActiveTab, activeTab }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -107,25 +109,20 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
           'data-tooltip-content': 'Connect a data source to run',
         })}
       >
-        <button
+        <ButtonComponent
+          leadingIcon="rightarrrow"
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-          className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)}`}
+          variant="ghostBrand"
           data-cy="query-run-button"
           disabled={isInDraft}
+          isLoading={isLoading}
           {...(isInDraft && {
             'data-tooltip-id': 'query-header-btn-run',
             'data-tooltip-content': 'Publish the query to run',
           })}
         >
-          <span
-            className={cx({
-              invisible: isLoading,
-            })}
-          >
-            <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
-          </span>
-          <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
-        </button>
+          {isLoading ? ' ' : 'Run'}
+        </ButtonComponent>
         {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
       </span>
     );
@@ -189,38 +186,27 @@ const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
   const { t } = useTranslation();
 
   return (
-    <button
+    <ButtonComponent
+      leadingIcon="eye"
       onClick={onClick}
-      className={`default-tertiary-button  ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
+      variant="outline"
       data-cy={'query-preview-button'}
+      isLoading={previewLoading && !isRunButtonLoading}
     >
-      <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
-        <Eye1 width={14} fill="var(--slate9)" />
-      </span>
-      <span>{t('editor.queryManager.preview', 'Preview')}</span>
-    </button>
+      Preview
+    </ButtonComponent>
   );
 };
 
 const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
-  const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
   const [name, setName] = useState(value);
-  const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased);
-  const inputRef = useRef();
 
   useEffect(() => {
     setName(value);
   }, [value]);
 
-  useEffect(() => {
-    if (isFocussed) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [isFocussed]);
-
-  const handleChange = (event) => {
-    const sanitizedValue = event.target.value.replace(/[ \t&]/g, '');
+  const handleChange = (e) => {
+    const sanitizedValue = e.target.value.replace(/[ \t&]/g, '');
     setName(sanitizedValue);
   };
 
@@ -238,45 +224,23 @@ const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
         data-cy={`query-name-label`}
         style={{ width: '150px' }}
       >
-        {isFocussed ? (
-          <input
-            data-cy={`query-rename-input`}
-            type="text"
-            className={cx('border-indigo-09 bg-transparent query-rename-input py-1 px-2 rounded', {
-              'text-white': darkMode,
-            })}
-            autoFocus
-            ref={inputRef}
-            onChange={handleChange}
-            value={name}
-            onKeyDown={(event) => {
-              event.persist();
-              if (event.keyCode === 13) {
-                setIsFocussed(false);
-                handleInput(event.target.value);
-              }
-            }}
-            onBlur={({ target }) => {
-              setIsFocussed(false);
-              handleInput(target.value);
-            }}
-          />
-        ) : (
-          <Button
-            size="sm"
-            onClick={isDiabled ? null : () => setIsFocussed(true)}
-            disabled={isDiabled}
-            className={'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500'}
-          >
-            <span className="text-truncate">{decodeEntities(name)} </span>
-            <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
-              style={{ minWidth: 14 }}
-            >
-              {!isDiabled && <RenameIcon />}
-            </span>
-          </Button>
-        )}
+        <InputComponent
+          value={name}
+          onChange={handleChange}
+          size="small"
+          type="editable title"
+          data-cy={`query-rename-input`}
+          disabled={isDiabled}
+          onKeyDown={(event) => {
+            event.persist();
+            if (event.keyCode === 13) {
+              handleInput(event.target.value);
+            }
+          }}
+          onBlur={({ target }) => {
+            handleInput(target.value);
+          }}
+        />
       </span>
     </div>
   );

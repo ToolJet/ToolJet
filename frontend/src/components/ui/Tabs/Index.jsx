@@ -6,16 +6,16 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 const TabsComponent = ({ tabs = {}, onChange, ...props }) => {
   return (
     <Tabs onValueChange={onChange} {...props}>
-      <TabsList>
+      <TabsList className="tw-gap-[2px]">
         {props.type === 'text' &&
           Object.keys(tabs).map((key) => (
-            <TabsTrigger key={key} value={tabs[key]}>
+            <TabsTrigger disabled={props.disabled} key={key} value={tabs[key]}>
               {key}
             </TabsTrigger>
           ))}
         {props.type === 'icon' &&
           Object.keys(tabs).map((key) => (
-            <TabsTrigger key={key} value={tabs[key]}>
+            <TabsTrigger disabled={props.disabled} key={key} value={tabs[key]}>
               <SolidIcon name={key} className="tw-h-[18px] tw-w-[18px]" />
             </TabsTrigger>
           ))}
@@ -32,6 +32,7 @@ TabsComponent.propTypes = {
   defaultValue: PropTypes.string,
   value: PropTypes.string,
   onChange: PropTypes.func,
+  disabled: PropTypes.bool,
   className: PropTypes.string,
 };
 
@@ -44,5 +45,6 @@ TabsComponent.defaultProps = {
   },
   defaultValue: '',
   onChange: (value) => {},
+  disabled: false,
   className: '',
 };

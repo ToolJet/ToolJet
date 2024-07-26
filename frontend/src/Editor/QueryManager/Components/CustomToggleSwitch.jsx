@@ -1,3 +1,4 @@
+import SwitchComponent from '@/components/ui/Switch/Index';
 import React from 'react';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 
@@ -16,23 +17,19 @@ export const CustomToggleSwitch = ({
       data-tooltip-content="Only workspace admins can enable or disable Copilot."
       className={`custom-toggle-switch d-flex col gap-2 align-items-center`}
     >
-      <label className="switch">
-        <input
-          type="checkbox"
-          id={action}
-          checked={isChecked}
-          onClick={() => {
-            if (action === 'bodyToggle') {
-              toggleSwitchFunction(!isChecked);
-            } else {
-              toggleSwitchFunction(action);
-            }
-          }}
-          data-cy={`${dataCy}-toggle-switch`}
-          disabled={disabled}
-        />
-        <label htmlFor={action} className="slider round"></label>
-      </label>
+      <SwitchComponent
+        checked={isChecked}
+        id={action}
+        onClick={() => {
+          if (action === 'bodyToggle') {
+            toggleSwitchFunction(!isChecked);
+          } else {
+            toggleSwitchFunction(action);
+          }
+        }}
+        data-cy={`${dataCy}-toggle-switch`}
+        disabled={disabled}
+      />
       {label && (
         <span className={`text-default`} data-cy={`${dataCy}-toggle-label`}>
           {label}

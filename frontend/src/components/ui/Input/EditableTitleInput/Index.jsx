@@ -14,8 +14,10 @@ const EditableTitleInput = ({ size, disabled, helperText, onChange, ...restProps
     let validateObj;
     if (restProps.validation) {
       validateObj = restProps.validation(e);
-      setIsValid(validateObj.valid);
-      setMessage(validateObj.message);
+      if (validateObj !== undefined && 'valid' in validateObj && 'message' in validateObj) {
+        setIsValid(validateObj.valid);
+        setMessage(validateObj.message);
+      }
     }
     onChange(e, validateObj);
   };
