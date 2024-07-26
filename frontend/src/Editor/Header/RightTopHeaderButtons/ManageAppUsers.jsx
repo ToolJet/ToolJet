@@ -178,7 +178,7 @@ class ManageAppUsersComponent extends React.Component {
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
-    const shouldWeDisableShareModal = !this.props.isVersionReleased;
+    const shouldWeDisableShareModal = false;
 
     return (
       <ToolTip
@@ -259,6 +259,7 @@ class ManageAppUsersComponent extends React.Component {
                           style={{ maxWidth: '150px' }}
                           defaultValue={this.props.slug}
                           data-cy="app-name-slug-input"
+                          disabled={!this.props.isVersionReleased}
                         />
                         {isSlugVerificationInProgress && (
                           <div className="icon-container">
@@ -315,6 +316,7 @@ class ManageAppUsersComponent extends React.Component {
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                             data-cy="copy-app-link-button"
+                            style={!this.props.isVersionReleased ? { pointerEvents: 'none' } : {}}
                           >
                             <path
                               d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
