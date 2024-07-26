@@ -84,8 +84,8 @@ export default class RestapiQueryService implements QueryService {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
-    const isUrlEncoded = checkIfContentTypeIsURLenc(queryOptions['headers']);
-    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(queryOptions['headers']);
+    const isUrlEncoded = checkIfContentTypeIsURLenc(headers);
+    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(headers);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
