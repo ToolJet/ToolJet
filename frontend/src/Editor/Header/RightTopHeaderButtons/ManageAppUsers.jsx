@@ -181,7 +181,7 @@ class ManageAppUsersComponent extends React.Component {
     return (
       <div
         title={!shouldWeDisableShareModal ? 'Share' : ''}
-        className="manage-app-users editor-header-icon tj-secondary-btn"
+        className="manage-app-users editor-header-icon tj-secondary-btn cursor-pointer"
         data-cy="share-button-link"
       >
         <span
