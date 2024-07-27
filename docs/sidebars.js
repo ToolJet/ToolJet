@@ -309,6 +309,7 @@ const sidebars = {
       'items': [
         'tooljet-db/tooljet-database',
         'tooljet-db/database-editor',
+        'tooljet-db/data-types',
         'tooljet-db/querying-tooljet-db',
       ]
     },
