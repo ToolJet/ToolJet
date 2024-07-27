@@ -41,15 +41,14 @@ export class EmailService {
     });
   }
 
-  mailTransport(smtp: any) {
+  mailTransport() {
     const transporter = nodemailer.createTransport({
-      host: smtp,
-      port: 587,
-      ignoreTLS: true,
-      secure: false, // Use `true` for port 465, `false` for all other ports
+      host: process.env.SMTP_DOMAIN,
+      port: process.env.SMTP_PORT,
+      secure: +process.env.SMTP_PORT == 465, // Use `true` for port 465, `false` for all other ports
       auth: {
-        user: '',
-        pass: '',
+        user: process.env.SMTP_USERNAME,
+        pass: process.env.SMTP_PASSWORD,
       },
     });
 
@@ -57,8 +56,6 @@ export class EmailService {
   }
 
   private async sendEmail(to: string, subject: string, templateData: any) {
-    //Add if cases for TESTING AND development
-    const transport = this.mailTransport('localhost');
     this.registerPartials();
 
     // Load the main template file
@@ -120,6 +117,7 @@ export class EmailService {
         const result = await transport.sendMail(mailOptions);
         previewEmail(JSON.parse(result.message)).then(console.log).catch(console.error);
       } else {
+        const transport = this.mailTransport();
         const result = await transport.sendMail(mailOptions);
         console.log('Message sent: %s', result);
         return result;
