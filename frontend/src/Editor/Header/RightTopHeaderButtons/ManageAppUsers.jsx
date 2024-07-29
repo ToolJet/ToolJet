@@ -359,7 +359,6 @@ class ManageAppUsersComponent extends React.Component {
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                             data-cy="copy-app-link-button"
-                            style={!this.props.isVersionReleased ? { pointerEvents: 'none' } : {}}
                           >
                             <path
                               d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
@@ -394,14 +393,16 @@ class ManageAppUsersComponent extends React.Component {
                     <label data-cy="shareable-app-link-label" className="field-name">
                       {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
                     </label>
-                    <div className="empty-key-value">
+                    <div className="empty-version">
                       <InfoIcon style={{ width: '12px', marginRight: '5px' }} />
                       <span>App does not have a released version</span>
                     </div>
                   </div>
                 )}
 
-                {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                {(this?.props?.isVersionReleased ||
+                  this?.props?.isPublic ||
+                  window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                   <div className="tj-app-input">
                     <label className="field-name" data-cy="iframe-link-label">
                       Embedded app link
@@ -418,7 +419,6 @@ class ManageAppUsersComponent extends React.Component {
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                             data-cy="iframe-link-copy-button"
-                            style={!this.props.isVersionReleased ? { pointerEvents: 'none' } : {}}
                           >
                             <path
                               d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
