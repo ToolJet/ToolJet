@@ -179,15 +179,6 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   render() {
-    const wrapperStyle = {
-      display: 'inline-block', // Keeps the wrapper inline
-      position: 'relative', // For correct tooltip placement
-      pointerEvents: 'none', // Disable pointer events on the wrapper
-    };
-
-    const inputStyle = {
-      opacity: 0.6, // Indicate visually that it's disabled
-    };
     const { appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
     const appLink = `${getHostURL()}/applications/`;
