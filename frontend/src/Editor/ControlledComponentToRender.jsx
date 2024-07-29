@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { getComponentToRender } from '@/_helpers/editorHelpers';
 import _ from 'lodash';
-import { getComponentsToRenders } from '@/_stores/editorStore';
+import { getComponentsToRenders, flushComponentsToRender } from '@/_stores/editorStore';
 
 function deepEqualityCheckusingLoDash(obj1, obj2) {
   return _.isEqual(obj1, obj2);
@@ -24,6 +24,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
       needToRender = true;
     }
   }
+
+  // Flushing the component after the function is called from ControlledComponentToRender component
+  if (nextProps?.componentName) flushComponentsToRender([prevProps?.id]);
 
   // Added to render the default child components
   if (prevProps?.childComponents === null && nextProps?.childComponents) return false;

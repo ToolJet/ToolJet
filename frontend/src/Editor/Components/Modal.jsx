@@ -108,6 +108,7 @@ export const Modal = function Modal({
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false);
+    console.log('Trigger close event =>', exposedVariables.show);
     fireEvent('onClose');
   }
   useEffect(() => {
