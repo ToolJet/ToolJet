@@ -86,6 +86,10 @@ export const Modal = function Modal({
   const prevShowValue = useRef(exposedVariables.show);
   const shouldFireCloseEvent = useRef(false);
 
+  const isInitialRender = useRef(true);
+  const prevShowValue = useRef(exposedVariables.show);
+  const shouldFireCloseEvent = useRef(false);
+
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
 
@@ -108,6 +112,7 @@ export const Modal = function Modal({
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false);
+    console.log('Trigger close event =>', exposedVariables.show);
     fireEvent('onClose');
   }
   useEffect(() => {
