@@ -1028,7 +1028,7 @@ const WidgetWrapper = ({
     component: { parent },
     layouts,
   } = widget;
-  const { isSelected, isHovered, shouldRerender } = useEditorStore((state) => {
+  const { isSelected, isHovered } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
     const isHovered = state?.hoveredComponent == id;
     /*
@@ -1038,10 +1038,6 @@ const WidgetWrapper = ({
     const shouldRerender = state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id);
     return { isSelected, isHovered, shouldRerender };
   }, shallow);
-
-  useEditorStore((state) => state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id));
-
-  console.log('shouldRerender-' + widget.component.name, shouldRerender);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
 
