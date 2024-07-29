@@ -34,7 +34,7 @@ export default function ModalBase({
           <SolidIcon name="remove" width="20" />
         </div>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body data-cy="modal-body">
         {children ? (
           children
         ) : (

@@ -38,7 +38,9 @@ function AddEditResourcePermissionsModal({
       darkMode={darkMode}
     >
       <div className="form-group mb-3">
-        <label className="form-label bold-text">Permission name</label>
+        <label className="form-label bold-text" data-cy="permission-name-label">
+          Permission name
+        </label>
         <div className="tj-app-input">
           <input
             type="text"
@@ -55,16 +57,21 @@ function AddEditResourcePermissionsModal({
                 newPermissionName: value,
               }));
             }}
+            data-cy="permission-name-input"
           />
-          <span className="text-danger">{errors['permissionName']}</span>
+          <span className="text-danger" data-cy="permission-name-error">
+            {errors['permissionName']}
+          </span>
         </div>
         <div className={`mt-1 tj-text-xxsm ${newPermissionName?.length > 50 ? 'error-text' : ''}`}>
-          <div data-cy="workspace-login-help-text">Permission name must be unique and max 50 characters</div>
+          <div data-cy="permission-name-help-text">Permission name must be unique and max 50 characters</div>
         </div>
       </div>
       {/* Till here */}
       <div className="form-group mb-3">
-        <label className="form-label bold-text">Permission</label>
+        <label className="form-label bold-text" data-cy="permission-label">
+          Permission
+        </label>
         <AppPermissionsActions
           handleClickEdit={() => {
             updateParentState((prevState) => ({
@@ -100,8 +107,10 @@ function AddEditResourcePermissionsModal({
       </div>
 
       <div className="form-group mb-3">
-        <label className="form-label bold-text">Resources</label>
-        <div className="resources-container">
+        <label className="form-label bold-text" data-cy="resource-label">
+          Resources
+        </label>
+        <div className="resources-container" data-cy="resources-container">
           <label className="form-check form-check-inline">
             <input
               className="form-check-input"
@@ -110,10 +119,13 @@ function AddEditResourcePermissionsModal({
               onClick={() => {
                 !isAll && updateParentState((prevState) => ({ isAll: !prevState.isAll, isCustom: !!prevState.isAll }));
               }}
+              data-cy="all-apps-radio"
             />
             <div>
-              <span className="form-check-label">All apps</span>
-              <span className="tj-text-xsm">
+              <span className="form-check-label" data-cy="all-apps-label">
+                All apps
+              </span>
+              <span className="tj-text-xsm" data-cy="all-apps-info-text">
                 This will select all apps in the workspace including any new apps created
               </span>
             </div>
@@ -138,17 +150,20 @@ function AddEditResourcePermissionsModal({
                   !isCustom &&
                     updateParentState((prevState) => ({ isCustom: !prevState.isCustom, isAll: prevState.isCustom }));
                 }}
+                data-cy="custom-radio"
               />
               <div>
                 <span
                   className="form-check-label"
                   style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+                  data-cy="custom-label"
                 >
                   Custom
                 </span>
                 <span
                   className="tj-text-xsm"
                   style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
+                  data-cy="custom-info-text"
                 >
                   Select specific applications you want to add to the group
                 </span>
@@ -161,6 +176,7 @@ function AddEditResourcePermissionsModal({
             value={selectedApps}
             onChange={setSelectedApps}
             options={addableApps}
+            data-value="test"
           />
         </div>
       </div>

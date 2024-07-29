@@ -435,7 +435,7 @@ class ManageGranularAccessComponent extends React.Component {
               <span className="font-weight-500">
                 <SolidIcon name="apps" />
               </span>
-              <div className="tj-text-md font-weight-500" data-cy="user-email">
+              <div className="tj-text-md font-weight-500" data-cy="modal-title">
                 {modalTitle}
               </div>
               {modalType === 'edit' && !isRoleGroup && (
@@ -451,6 +451,7 @@ class ManageGranularAccessComponent extends React.Component {
                         showAddPermissionModal: false,
                       });
                     }}
+                    data-cy="delete-button"
                   />
                 </div>
               )}
@@ -470,11 +471,13 @@ class ManageGranularAccessComponent extends React.Component {
         />
         {!granularPermissions.length ? (
           <div className="empty-container">
-            <div className="icon-container">
+            <div className="icon-container" data-cy="empty-page-svg">
               <SolidIcon name="granularaccess" />
             </div>
-            <p className="my-2 tj-text-md font-weight-500">No permissions added yet</p>
-            <p className="tj-text-xsm mb-2">
+            <p className="my-2 tj-text-md font-weight-500" data-cy="empty-page-title">
+              No permissions added yet
+            </p>
+            <p className="tj-text-xsm mb-2" data-cy="empty-page-info-text">
               Add assets to configure granular, asset-level permissions for this user group
             </p>
             <div className="menu">
@@ -489,13 +492,13 @@ class ManageGranularAccessComponent extends React.Component {
           <>
             {showPermissionInfo && this.showPermissionText(currentGroupPermission)}
             <div className="manage-granular-permission-header">
-              <p data-cy="resource-header" className="tj-text-xsm">
+              <p data-cy="name-header" className="tj-text-xsm">
                 {'Name'}
               </p>
               <p data-cy="permissions-header" className="tj-text-xsm">
                 {'Permission'}
               </p>
-              <p data-cy="permissions-header" className="tj-text-xsm">
+              <p data-cy="resource-header" className="tj-text-xsm">
                 {'Resource'}
               </p>
             </div>
