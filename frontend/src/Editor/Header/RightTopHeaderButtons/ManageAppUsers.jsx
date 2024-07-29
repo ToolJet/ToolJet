@@ -261,7 +261,7 @@ class ManageAppUsersComponent extends React.Component {
                         </span>
                       </div>
                     ) : (
-                      <div>
+                      <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>
                         <ToolTip
                           message={TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE}
                           placement={'top'}
@@ -271,8 +271,9 @@ class ManageAppUsersComponent extends React.Component {
                             onMouseEnter={this.handleMouseEnter}
                             onMouseLeave={this.handleMouseLeave}
                             style={{
-                              width: '30px', // Match input width
-                              height: '18px', // Match input height
+                              width: '32px',
+                              height: '18px',
+                              marginLeft: '-40px',
                             }}
                           >
                             <input
