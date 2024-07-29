@@ -633,12 +633,15 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const value = resolveReferences(event.value, state, undefined, customVariables);
         const customAppVariables = { ...state.variables };
         customAppVariables[key] = value;
+        const resp = useCurrentStateStore.getState().actions.setCurrentState({
+          variables: customAppVariables,
+        });
+
         useResolveStore.getState().actions.addAppSuggestions({
           variables: customAppVariables,
         });
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+
+        return resp;
       }
 
       case 'get-custom-variable': {
