@@ -626,7 +626,9 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
+  const handleRunQuery = (queryId, queryName, ...additionalArgs) => {
+    runQuery(getEditorRef(), queryId, queryName, ...additionalArgs);
+  };
 
   const dataSourceModalHandler = () => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
@@ -2068,7 +2070,9 @@ const EditorComponent = (props) => {
                 }}
                 setSelectedComponent={setSelectedComponent}
                 removeComponent={removeComponent}
-                runQuery={(queryId, queryName) => handleRunQuery(queryId, queryName)}
+                runQuery={(queryId, queryName, ...additionalArgs) =>
+                  handleRunQuery(queryId, queryName, ...additionalArgs)
+                }
                 ref={dataSourceModalRef}
                 currentPageId={currentPageId}
                 addNewPage={addNewPage}
