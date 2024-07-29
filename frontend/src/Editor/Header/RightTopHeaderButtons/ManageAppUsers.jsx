@@ -400,8 +400,7 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 )}
 
-                {(this?.props?.isVersionReleased ||
-                  this?.props?.isPublic ||
+                {((this?.props?.isVersionReleased && this?.props?.isPublic) ||
                   window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                   <div className="tj-app-input">
                     <label className="field-name" data-cy="iframe-link-label">
