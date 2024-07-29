@@ -427,10 +427,6 @@ async function batchUpdateComponents(componentIds) {
 
     useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender(batch);
   }
-
-  // Flush only updated components
-
-  flushComponentsToRender(updatedComponentIds);
 }
 
 export const useResolverStoreActions = () => useResolveStore.getState().actions;
