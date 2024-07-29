@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { appService, appsService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from 'react-hot-toast';
@@ -33,6 +33,7 @@ class ManageAppUsersComponent extends React.Component {
         value: null,
         error: '',
       },
+      isHovered: false,
       isSlugUpdated: false,
     };
   }
@@ -87,7 +88,7 @@ class ManageAppUsersComponent extends React.Component {
       });
   };
   handleClick = (event) => {
-    console.log('rohan', 'Checkbox clicked');
+    console.log('rohan', 'Checkbox clicked11');
     event.stopPropagation(); // Prevent the click from propagating
     event.preventDefault(); // Prevent any default action
     // Add any additional logic here
@@ -176,7 +177,14 @@ class ManageAppUsersComponent extends React.Component {
       });
     }
   };
+  handleMouseEnter = () => {
+    console.log(1000);
+    this.setState({ isHovered: true });
+  };
 
+  handleMouseLeave = () => {
+    this.setState({ isHovered: false });
+  };
   render() {
     const { appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
@@ -185,6 +193,7 @@ class ManageAppUsersComponent extends React.Component {
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
     const shouldWeDisableShareModal = false;
+    const { isHovered } = this.state.isHovered;
 
     return (
       <div
@@ -256,18 +265,30 @@ class ManageAppUsersComponent extends React.Component {
                         <ToolTip
                           message={TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE}
                           placement={'top'}
-                          show={true}
+                          show={isHovered}
                         >
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            readOnly // Make input non-editable
-                            onClick={this.handleClick} // Prevent clicks
-                            checked={false}
-                            data-cy="make-public-app-toggle"
-                            style={{ opacity: 0.6, pointerEvents: 'none' }} // Visually indicate disabled state
-                          />
+                          <div
+                            onMouseEnter={this.handleMouseEnter}
+                            onMouseLeave={this.handleMouseLeave}
+                            style={{
+                              width: '30px', // Match input width
+                              height: '18px', // Match input height
+                            }}
+                          >
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              disabled
+                              style={{
+                                opacity: 0.3,
+                                cursor: 'default',
+                                margin: 0,
+                                padding: 0,
+                              }}
+                            />
+                          </div>
                         </ToolTip>
+
                         <span
                           className="form-check-label field-name"
                           data-cy="make-public-app-label"
