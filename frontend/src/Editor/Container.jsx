@@ -878,6 +878,14 @@ export const Container = ({
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
+              // const canShowInCurrentLayout =
+              //   box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+
+              //   console.log("canShowInCurrentLayout", canShowInCurrentLayout, resolveWidgetFieldValue(canShowInCurrentLayout));
+
+              // if (box.parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
+              //   return '';
+              // }
               return (
                 <WidgetWrapper
                   isResizing={resizingComponentId === id}
