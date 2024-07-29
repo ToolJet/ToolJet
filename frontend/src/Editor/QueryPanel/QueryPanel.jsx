@@ -11,6 +11,7 @@ import { isEmpty, isEqual } from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import cx from 'classnames';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { Button } from '@/components/ui/Button/Button';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -165,19 +166,13 @@ const QueryPanel = ({
         }}
       >
         <div style={{ width: '288px', padding: '5px 12px' }} className="d-flex justify-content align-items-center">
-          <button
-            className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
-            onClick={toggleQueryEditor}
-          >
+          <Button onClick={toggleQueryEditor} variant="ghost">
             {isExpanded ? 'Collapse' : 'Expand'}
-          </button>
+          </Button>
           <div className="vr" />
-          <button
-            onClick={toggleQueryEditor}
-            className="mb-0 font-weight-500 text-dark select-none query-manager-toggle-button"
-          >
+          <Button onClick={toggleQueryEditor} variant="ghost">
             Queries
-          </button>
+          </Button>
         </div>
       </div>
       <div

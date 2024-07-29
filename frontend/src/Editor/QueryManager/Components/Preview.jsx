@@ -12,6 +12,7 @@ import {
 import { getTheme, tabs } from '../constants';
 import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';
+import TabsComponent from '@/components/ui/Tabs/Index';
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
@@ -165,35 +166,15 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
         </div>
         {previewPanelExpanded && (
           <div className="right">
-            <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
-              <Row className="m-0">
-                <Col className="keys text-center d-flex align-items-center">
-                  <ListGroup
-                    className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
-                    variant="flush"
-                    style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
-                  >
-                    {tabs.map((tab) => (
-                      <ListGroup.Item
-                        key={tab}
-                        eventKey={tab.toLowerCase()}
-                        disabled={!queryPreviewData || (tab == 'JSON' && !isJson)}
-                        style={{ minWidth: '74px', textAlign: 'center' }}
-                        className="rounded"
-                      >
-                        <span
-                          data-cy={`preview-tab-${String(tab).toLowerCase()}`}
-                          style={{ width: '100%' }}
-                          className="rounded"
-                        >
-                          {tab}
-                        </span>
-                      </ListGroup.Item>
-                    ))}
-                  </ListGroup>
-                </Col>
-              </Row>
-            </Tab.Container>
+            <TabsComponent
+              onChange={(value) => setKey(value)}
+              defaultValue="raw"
+              tabs={tabs.reduce((acc, tab) => {
+                acc[tab] = tab.toLowerCase();
+                return acc;
+              }, {})}
+              disabled={!queryPreviewData || (key == 'JSON' && !isJson)}
+            />
           </div>
         )}
       </div>
