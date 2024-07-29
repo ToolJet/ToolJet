@@ -188,7 +188,7 @@ function getDynamicVariables(text) {
 const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
   let resolvedValue = code;
 
-  const isComponentValue = code.includes('components.') || false;
+  const isComponentValue = code.includes('components.') || code.includes('queries.') || false;
 
   const allDynamicVariables = getDynamicVariables(code) || [];
   let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
