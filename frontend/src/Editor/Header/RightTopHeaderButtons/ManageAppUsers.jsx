@@ -87,12 +87,6 @@ class ManageAppUsersComponent extends React.Component {
         toast.error(error);
       });
   };
-  handleClick = (event) => {
-    console.log('rohan', 'Checkbox clicked11');
-    event.stopPropagation(); // Prevent the click from propagating
-    event.preventDefault(); // Prevent any default action
-    // Add any additional logic here
-  };
   toggleAppVisibility = () => {
     const newState = !this.props.isPublic;
     this.setState({
@@ -178,7 +172,6 @@ class ManageAppUsersComponent extends React.Component {
     }
   };
   handleMouseEnter = () => {
-    console.log(1000);
     this.setState({ isHovered: true });
   };
 
@@ -233,18 +226,6 @@ class ManageAppUsersComponent extends React.Component {
               <div class="shareable-link-container">
                 <div className="make-public mb-3">
                   <div className="form-check form-switch d-flex align-items-center">
-                    {/* <input
-                      className="form-check-input"
-                      type="checkbox"
-                      onClick={this.toggleAppVisibility}
-                      checked={this?.props?.isPublic}
-                      disabled={this.state.ischangingVisibility}
-                      data-cy="make-public-app-toggle"
-                    />
-                    <span className="form-check-label field-name" data-cy="make-public-app-label">
-                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
-                    </span> */}
-
                     {this.props.isVersionReleased ? (
                       <div>
                         <input
