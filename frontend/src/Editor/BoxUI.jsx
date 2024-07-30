@@ -11,6 +11,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import _ from 'lodash';
 
 const shouldAddBoxShadowAndVisibility = [
+  'Table',
   'TextInput',
   'PasswordInput',
   'NumberInput',
