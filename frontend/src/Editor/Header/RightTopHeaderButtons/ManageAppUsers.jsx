@@ -416,7 +416,7 @@ class ManageAppUsersComponent extends React.Component {
                     </label>
                     <div className="empty-version">
                       <InfoIcon style={{ width: '12px', marginRight: '5px' }} />
-                      <span>App does not have a released version</span>
+                      <span>This version has not been released yet</span>
                     </div>
                   </div>
                 )}
