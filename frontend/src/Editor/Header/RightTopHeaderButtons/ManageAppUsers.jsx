@@ -195,17 +195,21 @@ class ManageAppUsersComponent extends React.Component {
     const { isHovered } = this.state.isHovered;
 
     return (
-      <div title={'Share'} className="manage-app-users editor-header-icon tj-secondary-btn" data-cy="share-button-link">
+      <div title={'Share'} className="manage-app-users" data-cy="share-button-link">
         <span
-          className={cx('d-flex', {
-            'share-disabled': false,
-          })}
+          className="manage-app-users tj-secondary-btn editor-header-icon cursor-pointer"
           onClick={() => {
             this.validateThePreExistingSlugs();
             this.setState({ showModal: true });
           }}
         >
-          <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+          <span
+            className={cx('d-flex', {
+              'share-disabled': false,
+            })}
+          >
+            <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+          </span>
         </span>
         <Modal
           show={this.state.showModal}
