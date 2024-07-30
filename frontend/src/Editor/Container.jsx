@@ -19,7 +19,7 @@ import {
   calculateMoveableBoxHeight,
 } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, flushComponentsToRender } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import _, { isEmpty } from 'lodash';
@@ -1020,7 +1020,7 @@ const WidgetWrapper = ({
     component: { parent },
     layouts,
   } = widget;
-  const { isSelected, isHovered } = useEditorStore((state) => {
+  const { isSelected, isHovered, shouldRerender } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
     const isHovered = state?.hoveredComponent == id;
     /*
@@ -1036,6 +1036,12 @@ const WidgetWrapper = ({
   const canShowInCurrentLayout = otherDefinition[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
 
   if (parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
+    /*
+      Remove the component from the re-render queue
+      This is necessary because child components are not rendered,
+      so their flush functions won't be called from ControlledComponentToRender
+    */
+    shouldRerender && flushComponentsToRender(id);
     return '';
   }
 
