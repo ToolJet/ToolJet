@@ -69,7 +69,7 @@ export function setCurrentStateAsync(_ref, changes) {
   });
 }
 
-const debouncedChange = _.debounce(() => {
+const debouncedChange = _.debounce((duplicateCurrentState) => {
   const newComponentsState = {};
   for (const [key, value] of Object.entries(getCurrentState().components)) {
     if (duplicateCurrentState[key]) {
@@ -179,7 +179,7 @@ export function onComponentOptionsChanged(component, options, id) {
 
     duplicateCurrentState = { ...components, [componentName]: componentData };
 
-    debouncedChange();
+    debouncedChange(duplicateCurrentState);
   }
   return Promise.resolve();
 }
@@ -250,7 +250,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   } else {
     // Update the duplicate state if editor is not ready
     duplicateCurrentState = { ...components, [componentName]: componentData };
-    debouncedChange();
+    debouncedChange(duplicateCurrentState);
   }
 
   return Promise.resolve();

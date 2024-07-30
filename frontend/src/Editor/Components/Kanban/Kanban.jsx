@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { KanbanBoard } from './KanbanBoard';
 
 export const Kanban = (props) => {
-  const { height, width, properties, styles, id, mode, isEditorReady } = props;
+  const { height, width, properties, styles, id, mode } = props;
   const { showDeleteButton } = properties;
   const { visibility, disabledState, boxShadow } = styles;
 

@@ -38,7 +38,7 @@ const dropAnimation = {
 const TRASH_ID = 'void';
 
 export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) {
-  const { properties, fireEvent, setExposedVariable, setExposedVariables, styles, isEditorReady } = kanbanProps;
+  const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
   const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
   const { accentColor } = styles;
   const [lastSelectedCard, setLastSelectedCard] = useState({});
@@ -112,20 +112,17 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) 
       cardDataAsObj[cardId] = value;
       const diffKeys = Object.keys(diff(cardToBeUpdated, value));
       if (lastSelectedCard?.id === cardId) {
-        if (isEditorReady) {
-          setExposedVariables({
-            lastSelectedCard: cardDataAsObj[cardId],
+        setExposedVariables({
+          lastSelectedCard: cardDataAsObj[cardId],
 
-            lastUpdatedCard: cardDataAsObj[cardId],
-            lastCardUpdate: diffKeys.map((key) => {
-              return {
-                [key]: { oldValue: cardToBeUpdated[key], newValue: value[key] },
-              };
-            }),
-            updatedCardData: getData(cardDataAsObj),
-          });
-        }
-
+          lastUpdatedCard: cardDataAsObj[cardId],
+          lastCardUpdate: diffKeys.map((key) => {
+            return {
+              [key]: { oldValue: cardToBeUpdated[key], newValue: value[key] },
+            };
+          }),
+          updatedCardData: getData(cardDataAsObj),
+        });
         fireEvent('onUpdate');
       } else {
         setExposedVariable('updatedCardData', getData(cardDataAsObj));
@@ -133,7 +130,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) 
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastSelectedCard, JSON.stringify(cardDataAsObj), isEditorReady]);
+  }, [lastSelectedCard, JSON.stringify(cardDataAsObj)]);
 
   useEffect(() => {
     setExposedVariable('moveCard', async function (cardId, columnId) {
@@ -172,13 +169,11 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) 
         ...items,
         [columnId]: [...items[columnId], cardDetails.id],
       }));
-      if (isEditorReady) {
-        setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) });
-      }
+      setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) });
       fireEvent('onCardAdded');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, JSON.stringify(cardDataAsObj), isEditorReady]);
+  }, [items, JSON.stringify(cardDataAsObj)]);
 
   useEffect(() => {
     setExposedVariable('deleteCard', async function (cardId) {
@@ -191,13 +186,11 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, mode, id }) 
         ...items,
         [columnId]: items[columnId].filter((id) => id !== cardId),
       }));
-      if (isEditorReady) {
-        setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) });
-      }
+      setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) });
       fireEvent('onCardRemoved');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, JSON.stringify(cardDataAsObj), isEditorReady]);
+  }, [showModal, JSON.stringify(cardDataAsObj)]);
 
   const [clonedItems, setClonedItems] = useState(null);
   const sensors = useSensors(

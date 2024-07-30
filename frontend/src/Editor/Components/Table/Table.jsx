@@ -108,7 +108,6 @@ export function Table({
   setProperty,
   mode,
   exposedVariables,
-  isEditorReady,
 }) {
   const {
     color,
@@ -484,7 +483,7 @@ export function Table({
           // Single-level nested property
           const [nestedKey, subKey] = nestedKeys;
           const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
-          const newValue = resolveReferences(transformation, row[key], {
+          const newValue = resolveReferences(transformation, undefined, row[key], {
             cellValue: row?.[nestedKey]?.[subKey],
             rowData: row,
           });
@@ -496,7 +495,7 @@ export function Table({
           transformedObject[nestedKey] = nestedObject;
         } else {
           // Non-nested property
-          transformedObject[key] = resolveReferences(transformation, row[key], {
+          transformedObject[key] = resolveReferences(transformation, undefined, row[key], {
             cellValue: row[key],
             rowData: row,
           });
@@ -511,13 +510,11 @@ export function Table({
   }, [JSON.stringify([tableData, transformations, currentState])]);
 
   useEffect(() => {
-    if (isEditorReady) {
-      setExposedVariables({
-        currentData: tableData,
-        updatedData: tableData,
-      });
-    }
-  }, [JSON.stringify(tableData), isEditorReady]);
+    setExposedVariables({
+      currentData: tableData,
+      updatedData: tableData,
+    });
+  }, [JSON.stringify(tableData)]);
 
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
@@ -778,7 +775,7 @@ export function Table({
         fireEvent('onRowClicked');
       }
     });
-  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow), isEditorReady]);
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
 
   useEffect(() => {
     setExposedVariable('deselectRow', async function () {
@@ -790,7 +787,7 @@ export function Table({
       }
       return;
     });
-  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow), isEditorReady]);
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
 
   useEffect(() => {
     setExposedVariable('discardChanges', async function () {
@@ -802,7 +799,7 @@ export function Table({
         mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
       }
     });
-  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet), isEditorReady]);
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
 
   useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
@@ -821,7 +818,6 @@ export function Table({
     JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
     tableDetails.addNewRowsDetails.addingNewRows,
     JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
-    isEditorReady,
   ]);
 
   useEffect(() => {
@@ -845,7 +841,7 @@ export function Table({
       setExposedVariables({ selectedRow, selectedRowId });
       mergeToTableDetails({ selectedRow, selectedRowId });
     }
-  }, [selectedFlatRows.length, selectedFlatRows, isEditorReady]);
+  }, [selectedFlatRows.length, selectedFlatRows]);
 
   useEffect(() => {
     setExposedVariable('downloadTableData', async function (format) {
@@ -859,7 +855,7 @@ export function Table({
       mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
       toggleAllRowsSelected(false);
     }
-  }, [showBulkSelector, highlightSelectedRow, allowSelection, isEditorReady]);
+  }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
   React.useEffect(() => {
     if (enablePagination) {
@@ -975,7 +971,7 @@ export function Table({
     }
 
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
-  }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data), isEditorReady]);
+  }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
   useEffect(() => {
     // csa for select all rows in table

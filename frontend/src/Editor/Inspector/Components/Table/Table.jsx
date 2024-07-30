@@ -704,7 +704,7 @@ class TableComponent extends React.Component {
                   property="isAllColumnsEditable"
                   props={{ isAllColumnsEditable: `{{${this.state.isAllColumnsEditable}}}` }}
                   component={this.props.component}
-                  paramMeta={{ type: 'toggle', displayName: 'Make all columns editable' }}
+                  paramMeta={{ type: 'toggle', displayName: 'Make all columns editable', isFxNotRequired: true }}
                   paramType="properties"
                 />
               </div>

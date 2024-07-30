@@ -20,7 +20,6 @@ export const Modal = function Modal({
   dataCy,
   height,
   mode,
-  isEditorReady,
 }) {
   const [showModal, setShowModal] = useState(false);
 
@@ -77,10 +76,9 @@ export const Modal = function Modal({
         setExposedVariable('show', false);
       },
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    } // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setShowModal, isEditorReady]);
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setShowModal]);
 
   const isInitialRender = useRef(true);
   const prevShowValue = useRef(exposedVariables.show);
