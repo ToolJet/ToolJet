@@ -192,22 +192,17 @@ class ManageAppUsersComponent extends React.Component {
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
-    const shouldWeDisableShareModal = false;
     const { isHovered } = this.state.isHovered;
 
     return (
-      <div
-        title={!shouldWeDisableShareModal ? 'Share' : ''}
-        className="manage-app-users editor-header-icon tj-secondary-btn cursor-pointer"
-        data-cy="share-button-link"
-      >
+      <div title={'Share'} className="manage-app-users editor-header-icon tj-secondary-btn" data-cy="share-button-link">
         <span
           className={cx('d-flex', {
-            'share-disabled': shouldWeDisableShareModal,
+            'share-disabled': false,
           })}
           onClick={() => {
             this.validateThePreExistingSlugs();
-            !shouldWeDisableShareModal && this.setState({ showModal: true });
+            this.setState({ showModal: true });
           }}
         >
           <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
