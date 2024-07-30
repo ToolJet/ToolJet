@@ -91,8 +91,9 @@ export const Datepicker = function Datepicker({
     >
       <DatePickerComponent
         // portalId="real-canvas"
-        className={`input-field form-control ${!isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
+        className={`input-field form-control ${
+          !isValid && showValidationError ? 'is-invalid' : ''
+        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
@@ -107,8 +108,12 @@ export const Datepicker = function Datepicker({
         excludeDates={excludedDates}
         customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
-        onCalendarOpen={() => (document.querySelector(`.ele-${id}`) ? document.querySelector(`.ele-${id}`).style.zIndex = 3 : null)}
-        onCalendarClose={() => (document.querySelector(`.ele-${id}`) ? document.querySelector(`.ele-${id}`).style.zIndex = '' : null)}
+        onCalendarOpen={() =>
+          document.querySelector(`.ele-${id}`) ? (document.querySelector(`.ele-${id}`).style.zIndex = 3) : null
+        }
+        onCalendarClose={() =>
+          document.querySelector(`.ele-${id}`) ? (document.querySelector(`.ele-${id}`).style.zIndex = '') : null
+        }
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
