@@ -76,7 +76,7 @@ export const TextInput = function TextInput({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
+    padding: styles?.iconVisibility
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
@@ -117,7 +117,7 @@ export const TextInput = function TextInput({
     width,
     auto,
     defaultAlignment,
-    component?.definition?.styles?.iconVisibility?.value,
+    styles?.iconVisibility,
     label?.length,
     isMandatory,
     padding,
@@ -271,7 +271,7 @@ export const TextInput = function TextInput({
           isMandatory={isMandatory}
           _width={_width}
         />
-        {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
+        {styles?.iconVisibility && !isResizing && (
           <IconElement
             data-cy={'text-input-icon'}
             style={{
