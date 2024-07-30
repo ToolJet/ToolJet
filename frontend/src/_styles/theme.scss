@@ -2947,7 +2947,10 @@ input:focus-visible {
     background: var(--tblr-btn-color-clicked) !important;
 
   }
+}
 
+.jet-tabs{
+  overflow-y: auto
 }
 
 .jet-button {
