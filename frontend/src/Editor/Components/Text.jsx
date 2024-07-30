@@ -11,7 +11,16 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   bottom: 'flex-end',
 };
 
-export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
+export const Text = function Text({
+  height,
+  properties,
+  fireEvent,
+  styles,
+  darkMode,
+  setExposedVariable,
+  dataCy,
+  isEditorReady,
+}) {
   let {
     textSize,
     textColor,
@@ -48,40 +57,43 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   }, [properties.visibility, loadingState, disabledState]);
 
   useEffect(() => {
-    const text = computeText();
-    setText(text);
-    setExposedVariable('text', text);
-
-    setExposedVariable('setText', async function (text) {
+    if (isEditorReady) {
+      const text = computeText();
       setText(text);
       setExposedVariable('text', text);
-    });
-    setExposedVariable('clear', async function (text) {
-      setText('');
-      setExposedVariable('text', '');
-    });
-    setExposedVariable('isVisible', properties.visibility);
-    setExposedVariable('isLoading', loadingState);
-    setExposedVariable('isDisabled', disabledState);
 
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
+      setExposedVariable('setText', async function (text) {
+        setText(text);
+        setExposedVariable('text', text);
+      });
+      setExposedVariable('clear', async function (text) {
+        setText('');
+        setExposedVariable('text', '');
+      });
+      setExposedVariable('isVisible', properties.visibility);
+      setExposedVariable('isLoading', loadingState);
+      setExposedVariable('isDisabled', disabledState);
 
-    setExposedVariable('setVisibility', async function (value) {
-      setVisibility(value);
-    });
+      setExposedVariable('visibility', async function (value) {
+        setVisibility(value);
+      });
 
-    setExposedVariable('setLoading', async function (value) {
-      setLoading(value);
-    });
+      setExposedVariable('setVisibility', async function (value) {
+        setVisibility(value);
+      });
 
-    setExposedVariable('setDisable', async function (value) {
-      setIsDisabled(value);
-    });
+      setExposedVariable('setLoading', async function (value) {
+        setLoading(value);
+      });
+
+      setExposedVariable('setDisable', async function (value) {
+        setIsDisabled(value);
+      });
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    isEditorReady,
     properties.text,
     setText,
     setVisibility,
