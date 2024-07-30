@@ -35,7 +35,10 @@ function AppResourcePermissions({
     >
       <div className="resource-name d-flex">
         <SolidIcon name="app" width="20px" className="resource-icon" />
-        <div className="resource-text">{`  ${permissions.name}`}</div>
+        <div
+          className="resource-text"
+          data-cy={`${permissions.name.toLowerCase().replace(/\s+/g, '-')}-text`}
+        >{`  ${permissions.name}`}</div>
       </div>
       <div className="text-muted">
         <div className="d-flex apps-permission-wrap flex-column">
@@ -71,13 +74,15 @@ function AppResourcePermissions({
                   }}
                   checked={appsPermissions.canEdit}
                   disabled={isRoleGroup || disableEditUpdate}
-                  data-cy="app-create-checkbox"
+                  data-cy="app-edit-radio"
                 />
-                <span className="form-check-label" data-cy="app-create-label">
+                <span className="form-check-label" data-cy="app-edit-label">
                   {'Edit'}
                 </span>
                 {/* <span class={`text-muted tj-text-xxsm ${isRoleGroup && 'check-label-disable'}`}>Create apps in this workspace</span> */}
-                <span class={`tj-text-xxsm`}>Access to app builder</span>
+                <span class={`tj-text-xxsm`} data-cy="app-edit-helper-text">
+                  Access to app builder
+                </span>
               </label>
             </div>
           </OverlayTrigger>
@@ -102,12 +107,14 @@ function AppResourcePermissions({
                 }}
                 checked={appsPermissions.canView}
                 disabled={isRoleGroup || disableEditUpdate}
-                data-cy="app-delete-checkbox"
+                data-cy="app-view-radio"
               />
-              <span className="form-check-label" data-cy="app-delete-label">
+              <span className="form-check-label" data-cy="app-view-label">
                 {'View'}
               </span>
-              <span class={`tj-text-xxsm`}>Only access released version of apps</span>
+              <span class={`tj-text-xxsm`} data-cy="app-view-helper-text">
+                Only access released version of apps
+              </span>
             </label>
           </div>
           <div
@@ -129,12 +136,14 @@ function AppResourcePermissions({
                 }}
                 checked={appsPermissions.hideFromDashboard}
                 disabled={isRoleGroup || !appsPermissions.canView}
-                data-cy="app-delete-checkbox"
+                data-cy="app-hide-from-dashboard-radio"
               />
-              <span className="form-check-label" data-cy="app-delete-label">
+              <span className="form-check-label" data-cy="app-hide-from-dashboard-label">
                 {'Hide from dashbaord'}
               </span>
-              <span class={`tj-text-xxsm`}>App will be accessible by URL only</span>
+              <span class={`tj-text-xxsm`} data-cy="app-hide-from-dashboard-helper-text">
+                App will be accessible by URL only
+              </span>
             </label>
           </div>
         </div>
@@ -152,6 +161,7 @@ function AppResourcePermissions({
               openEditPermissionModal(permissions);
             }}
             disabled={isRoleGroup}
+            data-cy="edit-permission-button"
           />
         )}
       </div>

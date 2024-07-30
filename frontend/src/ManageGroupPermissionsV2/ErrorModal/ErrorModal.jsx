@@ -33,11 +33,13 @@ function EditRoleErrorModal({
             iconWidth="20"
           />
         </div>
-        <div className="icon-class">
+        <div className="icon-class" data-cy="modal-icon">
           <SolidIcon name={iconName} width="32" fill="#E54D2E" />
         </div>
-        <span className="header-text">{errorTitle}</span>
-        <p>{errorMessage}</p>
+        <span className="header-text" data-cy="modal-header">
+          {errorTitle}
+        </span>
+        <p data-cy="modal-message">{errorMessage}</p>
       </Modal.Header>
       <Modal.Body>
         <div className="item-list">

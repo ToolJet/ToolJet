@@ -477,7 +477,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
             <div>{EDIT_ROLE_MESSAGE?.[groupPermission?.name]?.[selectedNewRole](isPaidPlan)}</div>
           ) : (
             <div>
-              <label className="form-label">User role</label>
+              <label className="form-label" data-cy="user-role-label">
+                User role
+              </label>
               <Select
                 options={this.props.roleOptions.filter((group) => group.value !== groupPermission?.name)}
                 value={selectedNewRole}
@@ -526,7 +528,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
               <div className="justify-content-between d-flex groups-main-header-wrap">
                 <p
                   className="font-weight-500 tj-text-md"
-                  // data-cy={`${this.props.selectedGroup.toLowerCase().replace(/\s+/g, '-')}-title`}
+                  data-cy={`${this.props.selectedGroup.toLowerCase().replace(/\s+/g, '-')}-title`}
                 >
                   {`${this.props.selectedGroup} (${usersInGroup.length})`}
                 </p>
@@ -544,9 +546,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <div className="user-group-actions">
                     <Link
                       onClick={() => this.props.updateGroupName(groupPermission)}
-                      data-cy={`${String(groupPermission.group)
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}-group-name-update-link`}
+                      data-cy="group-name-update-link"
                       className="tj-text-xsm font-weight-500 edit-group"
                     >
                       <SolidIcon name="editrectangle" width="14" />
@@ -677,7 +677,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       {showUserSearchBox ? (
                         <div className="searchbox-custom">
                           <SearchBox
-                            dataCy={`query-manager`}
+                            dataCy={`user-group`}
                             width="600px !important"
                             callBack={this.handleUserSearchInGroup}
                             placeholder={'Search'}
@@ -756,6 +756,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           leftIcon="remove"
                                           fill="#F3B0A2"
                                           iconWidth="18"
+                                          data-cy="remove-button"
                                         >
                                           {this.props.t('globals.remove', 'Remove')}
                                         </ButtonSolid>
@@ -773,6 +774,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         onClick={() => {
                                           this.openChangeRoleModal(user);
                                         }}
+                                        data-cy="edit-role-button"
                                       >
                                         Edit role
                                       </ButtonSolid>
@@ -784,13 +786,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           })
                         ) : (
                           <div className="manage-groups-no-apps-wrap">
-                            <div className="manage-groups-no-apps-icon">
+                            <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
                               <BulkIcon name="users" fill="#3E63DD" width="48" />
                             </div>
-                            <p className="tj-text-md font-weight-500" data-cy="helper-text-no-apps-added">
+                            <p className="tj-text-md font-weight-500" data-cy="user-empty-page">
                               No users added yet
                             </p>
-                            <span className="tj-text-sm text-center" data-cy="helper-text-user-groups-permissions">
+                            <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
                               Add users to this group to configure
                               <br /> permissions for them!
                             </span>
@@ -868,6 +870,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         </span>
                                         <span
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          data-cy="app-create-helper-text"
                                         >
                                           Create apps in this workspace
                                         </span>
@@ -893,6 +896,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         </span>
                                         <span
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          data-cy="app-delete-helper-text"
                                         >
                                           Delete any app in this workspace
                                         </span>
@@ -934,6 +938,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         </span>
                                         <span
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          data-cy="folder-helper-text"
                                         >
                                           All operations on folders
                                         </span>
@@ -971,6 +976,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         </span>
                                         <span
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          data-cy="workspace-constants-helper-text"
                                         >
                                           All operations on workspace constants
                                         </span>

@@ -51,6 +51,7 @@ function AddResourcePermissionsMenu({ openAddPermissionModal, resourcesOptions, 
         onClick={() => {
           openAddPermissionModal();
         }}
+        data-cy="add-apps-buton"
       >
         Add apps
       </ButtonSolid>
