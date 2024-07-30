@@ -175,6 +175,20 @@ export const Multiselect = function Multiselect({
           ItemRenderer={ItemRenderer}
           filterOptions={filterOptions}
           debounceDuration={0}
+          onMenuToggle={(isOpen) => {
+            /* 
+            This is a hack added so that elememt shows up above the other sibling elements. 
+            This is needed since dropdown is added attached to the widget itself and not the body.
+            */
+            if (!document.querySelector(`.ele-${id}`)) {
+              return;
+            }
+            if (isOpen) {
+              document.querySelector(`.ele-${id}`).style.zIndex = 3;
+            } else {
+              document.querySelector(`.ele-${id}`).style.zIndex = '';
+            }
+          }}
         />
       </div>
     </div>
