@@ -38,7 +38,7 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
       if (recursionDepth === 0) {
         schema = coerce(schema, string(), (value) => {
           const parsedValue = parseFloat(value);
-          const finalValue = isNumber(parsedValue) ? parsedValue : value;
+          const finalValue = isNumber(parsedValue) && Number.isFinite(parsedValue) ? parsedValue : value;
           return finalValue;
         });
       }
