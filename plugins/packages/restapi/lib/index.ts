@@ -83,8 +83,10 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
-    const isUrlEncoded = checkIfContentTypeIsURLenc(queryOptions['headers']);
-    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(queryOptions['headers']);
+    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
+    const headerEntries = Object.entries(headers);
+    const isUrlEncoded = checkIfContentTypeIsURLenc(headerEntries);
+    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(headerEntries);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
@@ -110,12 +112,14 @@ export default class RestapiQueryService implements QueryService {
     const _requestOptions: OptionsOfTextResponseBody = {
       method,
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
-      headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
+      headers,
       searchParams,
       ...(retryOnNetworkError ? {} : { retry: 0 }),
     };
 
     const hasFiles = (json) => {
+      if (isEmpty(json)) return false;
+
       return Object.values(json || {}).some((item) => {
         return isFileObject(item);
       });
@@ -139,6 +143,7 @@ export default class RestapiQueryService implements QueryService {
         }
       }
       _requestOptions.body = form;
+      _requestOptions.headers = { ..._requestOptions.headers, ...form.getHeaders() };
     } else {
       _requestOptions.json = json;
     }
@@ -264,12 +269,6 @@ export default class RestapiQueryService implements QueryService {
       console.error('Error while parsing response', error);
     }
     return response.body;
-  }
-
-  checkIfContentTypeIsURLenc(headers: [] = []) {
-    const objectHeaders = Object.fromEntries(headers);
-    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-    return contentType === 'application/x-www-form-urlencoded';
   }
 
   authUrl(sourceOptions: SourceOptions): string {
