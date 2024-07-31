@@ -296,34 +296,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   };
 
   const renderCardGroup = (source, type) => {
-    if (type === 'Plugins' && source.length === 0) {
-      return (
-        <div className="add-plugins-container">
-          <div className="warning-container mb-2">
-            <SolidIcon name="warning" />
-          </div>
-          <div className="tj-text-sm font-weight-500 tj-text">No plugins added</div>
-          {admin && (
-            <>
-              <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
-                Browse through plugins in marketplace to add them as a Data Source.{' '}
-              </div>
-              <ButtonSolid
-                onClick={() => {
-                  marketplaceEnabled
-                    ? navigate('/integrations')
-                    : toast.error('Please enable marketplace to add plugins');
-                }}
-                style={{ margin: 'auto' }}
-                variant="secondary"
-              >
-                Add plugins
-              </ButtonSolid>
-            </>
-          )}
-        </div>
-      );
-    }
     const addDataSourceBtn = (item) => (
       <ButtonSolid
         disabled={addingDataSource}
@@ -366,6 +338,31 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               titleClassName={'datasource-card-title'}
             />
           ))}
+          {type === 'Plugins' && (
+            <div style={{ height: '112px', width: '164px' }} className={`col-md-2  mb-4 `}>
+              <div
+                className="card add-plugin-card"
+                role="button"
+                onClick={() => {
+                  if (marketplaceEnabled) {
+                    window.open('/integrations', '_blank');
+                  } else {
+                    toast.error('Please enable marketplace to add plugins');
+                  }
+                }}
+                data-cy={`data-source-add-plugin`}
+              >
+                <div className="card-body">
+                  <center>
+                    <SolidIcon name="plus" fill={'var(--icon-default)'} width={35} height={35} />
+                    <br></br>
+                    <br></br>
+                    <span className={`datasource-card-title add-plugin-card-title`}>Add plugin</span>
+                  </center>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </>
     );
