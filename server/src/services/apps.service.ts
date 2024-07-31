@@ -517,6 +517,9 @@ export class AppsService {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
+      if (eventDefinition?.actionId === 'set-table-page') {
+        eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
+      }
       event.event = eventDefinition;
 
       await manager.save(event);

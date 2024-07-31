@@ -17,7 +17,6 @@ export const Tabs = function Tabs({
   styles,
   darkMode,
   dataCy,
-  isEditorReady,
 }) {
   const { tabWidth, boxShadow } = styles;
 
@@ -104,11 +103,10 @@ export const Tabs = function Tabs({
       },
       currentTab: currentTab,
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
+    setExposedVariables(exposedVariables);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setCurrentTab, currentTab, isEditorReady]);
+  }, [setCurrentTab, currentTab]);
 
   const renderTabContent = (id, tab) => (
     <div
@@ -143,7 +141,7 @@ export const Tabs = function Tabs({
   return (
     <div
       data-disabled={parsedDisabledState}
-      className="jet-tabs card"
+      className="jet-tabs card tabs-component"
       style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
       data-cy={dataCy}
     >

@@ -36,7 +36,6 @@ export const Multiselect = function Multiselect({
   darkMode,
   fireEvent,
   dataCy,
-  isEditorReady,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
@@ -165,11 +164,10 @@ export const Multiselect = function Multiselect({
       },
     };
 
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
+    setExposedVariables(exposedVariables);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, setSelected, isEditorReady]);
+  }, [selected, setSelected]);
 
   const filterOptions = (options, filter) => {
     setSearched(filter);

@@ -14,7 +14,6 @@ export const Checkbox = ({
   component,
   validate,
   width,
-  isEditorReady,
 }) => {
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultValue] = useState(defaultValueFromProperties);
@@ -69,10 +68,10 @@ export const Checkbox = ({
     setDefaultValue(defaultValueFromProperties);
     setChecked(defaultValueFromProperties);
     setValue(defaultValueFromProperties);
-    if (isEditorReady) setExposedVariables(exposedVariables);
+    setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultValueFromProperties, isEditorReady]);
+  }, [defaultValueFromProperties]);
 
   useEffect(() => {
     if (disable !== disabledState) setDisable(properties.disabledState);

@@ -15,7 +15,7 @@ const {
 } = require('superstruct');
 
 import { validateMultilineCode } from '@/_helpers/utility';
-import _ from 'lodash';
+import _, { isNumber } from 'lodash';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 export const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) => {
@@ -38,7 +38,7 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
       if (recursionDepth === 0) {
         schema = coerce(schema, string(), (value) => {
           const parsedValue = parseFloat(value);
-          const finalValue = parsedValue ? parsedValue : value;
+          const finalValue = isNumber(parsedValue) && Number.isFinite(parsedValue) ? parsedValue : value;
           return finalValue;
         });
       }
@@ -54,7 +54,7 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
     }
     case 'union': {
       schema = union(
-        definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema, recursionDepth))
+        definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema, recursionDepth + 1))
       );
       break;
     }
