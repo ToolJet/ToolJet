@@ -154,7 +154,7 @@ export const ColorPicker = function ({
           >
             <SketchPicker color={color} onChangeComplete={handleColorChange} />
           </div>
-          <div className="comment-overlay" onClick={() => setShowColorPicker(false)}></div>
+          <div onClick={() => setShowColorPicker(false)}></div>
         </>
       )}
     </div>
