@@ -588,11 +588,15 @@ export const Container = ({
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
         const parentId = copyOfBoxes[parent] ? parent : parent?.split('-').slice(0, -1).join('-');
-        const compoenentType = copyOfBoxes[parentId]?.component.component;
+        const componentType = copyOfBoxes[parentId]?.component.component;
         var parentHeight = parentElem?.clientHeight || _height;
-        if (_height > parentHeight && ['Tabs', 'Listview'].includes(compoenentType)) {
+        if (_height > parentHeight && ['Tabs', 'Listview'].includes(componentType)) {
           _height = parentHeight;
           y = 0;
+        }
+
+        if (componentType === 'Listview' && y > parentHeight) {
+          y = y % parentHeight;
         }
       }
 
