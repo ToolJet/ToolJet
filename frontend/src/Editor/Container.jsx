@@ -19,7 +19,7 @@ import {
   calculateMoveableBoxHeight,
 } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, flushComponentsToRender } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import _, { isEmpty } from 'lodash';
@@ -878,12 +878,6 @@ export const Container = ({
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
-              const canShowInCurrentLayout =
-                box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-
-              if (box.parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
-                return '';
-              }
               return (
                 <WidgetWrapper
                   isResizing={resizingComponentId === id}
@@ -895,6 +889,7 @@ export const Container = ({
                   mode={mode}
                   propertiesDefinition={box?.component?.definition?.properties}
                   stylesDefinition={box?.component?.definition?.styles}
+                  otherDefinition={box?.component?.definition?.others}
                   componentType={box?.component?.component}
                 >
                   <DraggableBox
@@ -1018,19 +1013,37 @@ const WidgetWrapper = ({
   propertiesDefinition,
   stylesDefinition,
   componentType,
+  otherDefinition,
 }) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
     layouts,
   } = widget;
-  const { isSelected, isHovered } = useEditorStore((state) => {
+  const { isSelected, isHovered, shouldRerender } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
     const isHovered = state?.hoveredComponent == id;
-    return { isSelected, isHovered };
+    /*
+     `shouldRerender` is added only for re-rendering the component when visibility/showOnMobile/showOnDesktop 
+     updates since these attributes need update or WidgetWrapper rather than actual Widget itself
+     */
+    const shouldRerender = state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id);
+    return { isSelected, isHovered, shouldRerender };
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
+
+  const canShowInCurrentLayout = otherDefinition[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+
+  if (parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
+    /*
+      Remove the component from the re-render queue
+      This is necessary because child components are not rendered,
+      so their flush functions won't be called from ControlledComponentToRender
+    */
+    shouldRerender && flushComponentsToRender(id);
+    return '';
+  }
 
   let layoutData = layouts?.[currentLayout];
   if (isEmpty(layoutData)) {

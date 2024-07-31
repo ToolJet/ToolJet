@@ -9,11 +9,11 @@ export const Icon = ({
   fireEvent,
   width,
   height,
+  setExposedVariable,
   setExposedVariables,
   darkMode,
   dataCy,
   component,
-  isEditorReady,
 }) => {
   const { icon } = properties;
   const { iconColor, visibility, boxShadow } = styles;
@@ -40,11 +40,9 @@ export const Icon = ({
         fireEvent('onClick');
       },
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setIconVisibility, isEditorReady]);
+  }, [setIconVisibility]);
 
   return (
     <div

@@ -18,7 +18,6 @@ export const Chart = function Chart({
   setExposedVariable,
   setExposedVariables,
   dataCy,
-  isEditorReady,
 }) {
   const [loadingState, setLoadingState] = useState(false);
 
@@ -81,9 +80,8 @@ export const Chart = function Chart({
       xAxisTitle: xAxisTitle,
       yAxisTitle: yAxisTitle,
     };
-    if (isEditorReady) setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(chartLayout, chartTitle), isEditorReady]);
+    setExposedVariables(exposedVariables);
+  }, [JSON.stringify(chartLayout, chartTitle)]);
 
   const layout = {
     width: width - 4,
