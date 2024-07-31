@@ -222,8 +222,6 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
   } catch (error) {
     console.error('FATAL: Error resolving code', error);
   }
-
-  return code;
 };
 
 const queryHasStringOtherThanVariable = (query) => {
