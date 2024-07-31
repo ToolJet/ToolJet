@@ -186,38 +186,44 @@ function getDynamicVariables(text) {
   return matchedParams;
 }
 const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
-  let resolvedValue = code;
+  try {
+    let resolvedValue = code;
 
-  const isComponentValue = code.includes('components.') || code.includes('queries.') || false;
+    const isComponentValue = code.includes('components.') || code.includes('queries.') || false;
 
-  const allDynamicVariables = getDynamicVariables(code) || [];
-  let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
+    const allDynamicVariables = getDynamicVariables(code) || [];
+    let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
 
-  if (!isJSCodeResolver) {
-    allDynamicVariables.forEach((variable) => {
-      const variableToResolve = removeNestedDoubleCurlyBraces(variable);
+    if (!isJSCodeResolver) {
+      allDynamicVariables.forEach((variable) => {
+        const variableToResolve = removeNestedDoubleCurlyBraces(variable);
 
-      const { toResolveReference } = inferJSExpAndReferences(variableToResolve, lookupTable.hints);
+        const { toResolveReference } = inferJSExpAndReferences(variableToResolve, lookupTable.hints);
 
-      if (!isComponentValue && toResolveReference && lookupTable.hints.has(toResolveReference)) {
-        const idToLookUp = lookupTable.hints.get(variableToResolve);
-        const res = lookupTable.resolvedRefs.get(idToLookUp);
+        if (!isComponentValue && toResolveReference && lookupTable.hints.has(toResolveReference)) {
+          const idToLookUp = lookupTable.hints.get(variableToResolve);
+          const res = lookupTable.resolvedRefs.get(idToLookUp);
 
-        resolvedValue = resolvedValue.replace(variable, res);
-      } else {
-        const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+          resolvedValue = resolvedValue.replace(variable, res);
+        } else {
+          const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
-        resolvedValue = resolvedValue.replace(variable, resolvedCode);
-      }
-    });
-  } else {
-    const variableToResolve = removeNestedDoubleCurlyBraces(code);
-    const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+          resolvedValue = resolvedValue.replace(variable, resolvedCode);
+        }
+      });
+    } else {
+      const variableToResolve = removeNestedDoubleCurlyBraces(code);
+      const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
-    resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
+      resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
+    }
+
+    return resolvedValue;
+  } catch (error) {
+    console.error('FATAL: Error resolving code', error);
   }
 
-  return resolvedValue;
+  return code;
 };
 
 const queryHasStringOtherThanVariable = (query) => {
@@ -225,28 +231,17 @@ const queryHasStringOtherThanVariable = (query) => {
   const endsWithDoubleCurly = query.endsWith('}}');
 
   if (startsWithDoubleCurly && endsWithDoubleCurly) {
+    // Extract the content within the curly braces
     const content = query.slice(2, -2).trim();
-
-    if (content.includes(' ')) {
-      return true;
-    }
-
-    //* Check if the content includes a template literal
-    //!Note: Do not delete this regex, it is used to check if the content includes a template literal
-    //used for cases like {{queries.runjs1.data[0][`${components.textinput1.value}`]}}
-    const templateLiteralRegex = /\$\{[^}]+\}/;
-    return templateLiteralRegex.test(content);
+    // Check if there is a space within the content
+    return content.includes(' ');
   }
 
   return false;
 };
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
-  if (query !== '' && (!query || typeof query !== 'string')) {
-    // fallback to old resolver for non-string values
-    const resolvedValue = olderResolverMethod(query);
-    return [true, null, resolvedValue];
-  }
+  if (query !== '' && (!query || typeof query !== 'string')) return [false, null, null];
   let resolvedValue = query;
   let error = null;
 
