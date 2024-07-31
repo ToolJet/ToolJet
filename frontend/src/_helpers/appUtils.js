@@ -645,6 +645,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           variables: customAppVariables,
         });
 
+        useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
+
         return resp;
       }
 
@@ -683,12 +685,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           },
         });
 
-        return useCurrentStateStore.getState().actions.setCurrentState({
+        const resp = useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
             variables: customPageVariables,
           },
         });
+
+        useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
+
+        return resp;
       }
 
       case 'get-page-variable': {
@@ -1148,11 +1154,9 @@ export function runQuery(
   shouldSetPreviewData = false,
   isOnLoad = false
 ) {
-  //for resetting the hints when the query is run for large number of items
-  if (mode == 'edit') {
-    const resolveStoreActions = useResolveStore.getState().actions;
-    resolveStoreActions.resetHintsByKey(`queries.${queryName}`);
-  }
+  //for resetting the hints when the query is run for large number of items and also child attributes
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByKey(`queries.${queryName}`);
 
   let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
