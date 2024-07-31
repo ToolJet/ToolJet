@@ -4,7 +4,6 @@ import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import DOMPurify from 'dompurify';
-import NullRenderer from './NullRenderer/NullRenderer';
 
 export default function GenerateEachCellValue({
   cellValue,
