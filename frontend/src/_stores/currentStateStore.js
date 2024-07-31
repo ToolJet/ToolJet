@@ -109,7 +109,7 @@ useCurrentStateStore.subscribe((state) => {
         const currentState = useCurrentStateStore.getState();
         useResolveStore.getState().actions.addAppSuggestions(
           {
-            // get queries from current state so that we can get the latest queries
+            // get state directly to prevent consuming stale data
             queries: currentState.queries,
             components: !isPageSwitched ? currentState.components : {},
             globals: currentState.globals,
