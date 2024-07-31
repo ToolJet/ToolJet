@@ -6,7 +6,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { EditorContext } from './Context/EditorContextWrapper';
 import { validateWidget } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import _ from 'lodash';
 
