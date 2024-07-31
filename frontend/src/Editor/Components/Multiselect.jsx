@@ -56,12 +56,10 @@ export const Multiselect = function Multiselect({
 
   const handleDropdownOpen = () => {
     setIsOpen(true);
-    fireEvent('onOpen');
   };
 
   const handleDropdownClose = () => {
     setIsOpen(false);
-    fireEvent('onClose');
   };
 
   const toggleDropdown = () => {

@@ -231,12 +231,10 @@ export const DropDown = function DropDown({
 
   const handleDropdownOpen = () => {
     setIsOpen(true);
-    fireEvent('onOpen');
   };
 
   const handleDropdownClose = () => {
     setIsOpen(false);
-    fireEvent('onClose');
   };
 
   const DropdownIndicator = (props) => {
