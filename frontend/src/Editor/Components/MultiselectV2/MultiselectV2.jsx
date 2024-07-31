@@ -394,8 +394,8 @@ export const MultiselectV2 = ({
         onClick={() => {
           if (!isMultiSelectDisabled) {
             fireEvent('onFocus');
+            setIsMultiselectOpen(!isMultiselectOpen);
           }
-          setIsMultiselectOpen(!isMultiselectOpen);
         }}
       >
         <Label
