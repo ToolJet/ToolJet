@@ -1,11 +1,24 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
+import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
     <input type="checkbox" onClick={onClick} checked={checked} tabIndex={-1} disabled={disabled} />
     <span>{option.label}</span>
+  </div>
+);
+
+const DropdownIndicator = ({ isOpen, toggleDropdown }) => (
+  <div onClick={toggleDropdown}>
+    {isOpen ? (
+      <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+    ) : (
+      <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+    )}
   </div>
 );
 
@@ -28,6 +41,7 @@ export const Multiselect = function Multiselect({
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const [selected, setSelected] = useState([]);
   const [searched, setSearched] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
 
   let selectOptions = [];
   try {
@@ -39,6 +53,34 @@ export const Multiselect = function Multiselect({
   } catch (err) {
     console.log(err);
   }
+
+  const handleDropdownOpen = () => {
+    setIsOpen(true);
+    fireEvent('onOpen');
+  };
+
+  const handleDropdownClose = () => {
+    setIsOpen(false);
+    fireEvent('onClose');
+  };
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+    fireEvent(isOpen ? 'onClose' : 'onOpen');
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && !event.target.closest('.multiselect-widget')) {
+        handleDropdownClose();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     let newValues = [];
@@ -74,6 +116,7 @@ export const Multiselect = function Multiselect({
       items.map((item) => item.value)
     );
     fireEvent('onSelect');
+    setIsOpen(false); // Close dropdown after selection
   };
 
   useEffect(() => {
@@ -144,14 +187,14 @@ export const Multiselect = function Multiselect({
       ({ label, value }) => label != null && value != null && label.toLowerCase().includes(filter.toLowerCase())
     );
   };
-
   return (
     <div
       className="multiselect-widget row g-0"
       data-cy={dataCy}
       style={{ height, display: visibility ? '' : 'none' }}
-      onFocus={() => {
-        onComponentClick(this, id, component);
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id, component, event);
       }}
     >
       <div className="col-auto my-auto d-flex align-items-center">
@@ -175,6 +218,11 @@ export const Multiselect = function Multiselect({
           ItemRenderer={ItemRenderer}
           filterOptions={filterOptions}
           debounceDuration={0}
+          isOpen={isOpen}
+          onMenuOpen={handleDropdownOpen}
+          onMenuClose={handleDropdownClose}
+          ArrowRenderer={({ isOpen }) => <DropdownIndicator isOpen={isOpen} toggleDropdown={toggleDropdown} />}
+          menuPortalTarget={document.body}
         />
       </div>
     </div>
