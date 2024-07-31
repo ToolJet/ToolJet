@@ -116,7 +116,6 @@ export const Multiselect = function Multiselect({
       items.map((item) => item.value)
     );
     fireEvent('onSelect');
-    setIsOpen(false); // Close dropdown after selection
   };
 
   useEffect(() => {
@@ -222,7 +221,6 @@ export const Multiselect = function Multiselect({
           onMenuOpen={handleDropdownOpen}
           onMenuClose={handleDropdownClose}
           ArrowRenderer={({ isOpen }) => <DropdownIndicator isOpen={isOpen} toggleDropdown={toggleDropdown} />}
-          menuPortalTarget={document.body}
         />
       </div>
     </div>
