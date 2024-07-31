@@ -69,7 +69,7 @@ export function setCurrentStateAsync(_ref, changes) {
   });
 }
 
-const debouncedChange = _.debounce(() => {
+const debouncedChange = _.debounce((duplicateCurrentState) => {
   const newComponentsState = {};
   for (const [key, value] of Object.entries(getCurrentState().components)) {
     if (duplicateCurrentState[key]) {
@@ -89,6 +89,8 @@ const debouncedChange = _.debounce(() => {
 }, 100);
 
 export function onComponentOptionsChanged(component, options, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  options.forEach((option) => resolveStoreActions.resetHintsByKey([`components.${component?.name}.${option[0]}`]));
   let componentName = component.name;
   const { isEditorReady, page } = useCurrentStateStore.getState();
 
@@ -177,12 +179,14 @@ export function onComponentOptionsChanged(component, options, id) {
 
     duplicateCurrentState = { ...components, [componentName]: componentData };
 
-    debouncedChange();
+    debouncedChange(duplicateCurrentState);
   }
   return Promise.resolve();
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByKey(`components.${component?.name}.${option_name}`);
   if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
 
   let componentName = component.name;
@@ -246,7 +250,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   } else {
     // Update the duplicate state if editor is not ready
     duplicateCurrentState = { ...components, [componentName]: componentData };
-    debouncedChange();
+    debouncedChange(duplicateCurrentState);
   }
 
   return Promise.resolve();
@@ -633,12 +637,15 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const value = resolveReferences(event.value, state, undefined, customVariables);
         const customAppVariables = { ...state.variables };
         customAppVariables[key] = value;
+        const resp = useCurrentStateStore.getState().actions.setCurrentState({
+          variables: customAppVariables,
+        });
+
         useResolveStore.getState().actions.addAppSuggestions({
           variables: customAppVariables,
         });
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+
+        return resp;
       }
 
       case 'get-custom-variable': {
@@ -1144,7 +1151,7 @@ export function runQuery(
   //for resetting the hints when the query is run for large number of items
   if (mode == 'edit') {
     const resolveStoreActions = useResolveStore.getState().actions;
-    resolveStoreActions.resetHintsByQueryName(queryName);
+    resolveStoreActions.resetHintsByKey(`queries.${queryName}`);
   }
 
   let parameters = userSuppliedParameters;
@@ -2368,5 +2375,14 @@ export const updateQuerySuggestions = (oldName, newName) => {
   useCurrentStateStore.getState().actions.setCurrentState({
     ...currentState,
     queries: updatedQueries,
+  });
+};
+
+export const updateSuggestionsFromCurrentState = () => {
+  const currentStateObj = useCurrentStateStore.getState();
+  useResolveStore.getState().actions.addAppSuggestions({
+    queries: currentStateObj.queries,
+    components: currentStateObj.components,
+    page: currentStateObj.page,
   });
 };

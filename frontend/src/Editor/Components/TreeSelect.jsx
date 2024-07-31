@@ -14,7 +14,6 @@ export const TreeSelect = ({
   fireEvent,
   darkMode,
   dataCy,
-  isEditorReady,
 }) => {
   const { label } = properties;
   const { visibility, disabledState, checkboxColor, boxShadow } = styles;
@@ -52,11 +51,10 @@ export const TreeSelect = ({
       checkedPathStrings: checkedPathString,
       checked: checkedArr,
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
+    setExposedVariables(exposedVariables);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(checkedData), JSON.stringify(data), isEditorReady]);
+  }, [JSON.stringify(checkedData), JSON.stringify(data)]);
 
   useEffect(() => {
     setExposedVariable('expanded', expandedData);
@@ -92,9 +90,8 @@ export const TreeSelect = ({
       checkedPathStrings: checkedPathString,
       checked: checked,
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
+    setExposedVariables(exposedVariables);
+
     updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
     fireEvent('onChange');
     setChecked(checked);

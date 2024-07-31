@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { getComponentToRender } from '@/_helpers/editorHelpers';
 import _ from 'lodash';
-import { getComponentsToRenders } from '@/_stores/editorStore';
+import { getComponentsToRenders, flushComponentsToRender } from '@/_stores/editorStore';
 
 function deepEqualityCheckusingLoDash(obj1, obj2) {
   return _.isEqual(obj1, obj2);
@@ -16,6 +16,7 @@ export const shouldUpdate = (prevProps, nextProps) => {
 
   if (componentId) {
     const componentToRender = listToRender.find((item) => item === componentId);
+
     const parentReRendered = listToRender.find((item) => item === prevProps?.parentId);
 
     const grandParentReRendered = listToRender.find((item) => item === prevProps?.grandParentId);
@@ -24,6 +25,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
       needToRender = true;
     }
   }
+
+  // Flushing the component after the function is called from ControlledComponentToRender component
+  if (nextProps?.componentName) flushComponentsToRender([prevProps?.id]);
 
   // Added to render the default child components
   if (prevProps?.childComponents === null && nextProps?.childComponents) return false;
@@ -38,7 +42,6 @@ export const shouldUpdate = (prevProps, nextProps) => {
     prevProps?.height === nextProps?.height &&
     prevProps?.darkMode === nextProps?.darkMode &&
     prevProps?.childComponents === nextProps?.childComponents &&
-    prevProps?.isEditorReady === nextProps?.isEditorReady &&
     !needToRender
   );
 };

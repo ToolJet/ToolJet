@@ -188,7 +188,7 @@ function getDynamicVariables(text) {
 const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
   let resolvedValue = code;
 
-  const isComponentValue = code.includes('components.') || false;
+  const isComponentValue = code.includes('components.') || code.includes('queries.') || false;
 
   const allDynamicVariables = getDynamicVariables(code) || [];
   let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
@@ -225,17 +225,28 @@ const queryHasStringOtherThanVariable = (query) => {
   const endsWithDoubleCurly = query.endsWith('}}');
 
   if (startsWithDoubleCurly && endsWithDoubleCurly) {
-    // Extract the content within the curly braces
     const content = query.slice(2, -2).trim();
-    // Check if there is a space within the content
-    return content.includes(' ');
+
+    if (content.includes(' ')) {
+      return true;
+    }
+
+    //* Check if the content includes a template literal
+    //!Note: Do not delete this regex, it is used to check if the content includes a template literal
+    //used for cases like {{queries.runjs1.data[0][`${components.textinput1.value}`]}}
+    const templateLiteralRegex = /\$\{[^}]+\}/;
+    return templateLiteralRegex.test(content);
   }
 
   return false;
 };
 
 export const resolveReferences = (query, validationSchema, customResolvers = {}) => {
-  if (query !== '' && (!query || typeof query !== 'string')) return [false, null, null];
+  if (query !== '' && (!query || typeof query !== 'string')) {
+    // fallback to old resolver for non-string values
+    const resolvedValue = olderResolverMethod(query);
+    return [true, null, resolvedValue];
+  }
   let resolvedValue = query;
   let error = null;
 
@@ -290,10 +301,16 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
       resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
 
       if (jsExpression) {
-        let jscode = value.replace(toResolveReference, resolvedValue);
-        jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
+        let jscode = value;
+        if (!Array.isArray(resolvedValue) && typeof resolvedValue !== 'object' && resolvedValue !== null) {
+          jscode = value.replace(toResolveReference, resolvedValue).replace(toResolveReference, `'${resolvedValue}'`);
+          resolvedValue = resolveCode(jscode, customResolvers);
+        } else {
+          const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);
 
-        resolvedValue = resolveCode(jscode, customResolvers);
+          resolvedValue = resolvedCode;
+          error = errorRef || null;
+        }
       }
     } else {
       const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);

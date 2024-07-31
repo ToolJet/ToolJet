@@ -79,19 +79,21 @@ export const useResolveStore = create(
       resetStore: () => {
         set(() => ({ ...initialState, referenceMapper: new ReferencesBiMap() }));
       },
-      resetHintsByQueryName: (queryName) => {
+      resetHintsByKey: (hintKey) => {
         set((state) => {
           // Filter out app hints related to the specified query
-          const newAppHints = state.suggestions.appHints.filter(
-            (hint) => !hint.hint.startsWith(`queries.${queryName}.`)
-          );
+          const newAppHints = state.suggestions.appHints.filter((hint) => !hint.hint.startsWith(`${hintKey}.`));
+
+          if (!isIterable(state.lookupTable.hints) || !isIterable(state.lookupTable.resolvedRefs)) {
+            return { ...state };
+          }
 
           const newHints = new Map(state.lookupTable.hints);
           const newResolvedRefs = new Map(state.lookupTable.resolvedRefs);
 
           // Remove entries from hints and resolvedRefs
           for (const [key, value] of newHints) {
-            if (key.startsWith(`queries.${queryName}.`)) {
+            if (key.startsWith(`${hintKey}.`)) {
               newHints.delete(key);
               newResolvedRefs.delete(value);
             }
@@ -106,7 +108,7 @@ export const useResolveStore = create(
               hints: newHints,
               resolvedRefs: newResolvedRefs,
             },
-            lastUpdatedRefs: state.lastUpdatedRefs.filter((ref) => !ref.startsWith(`queries.${queryName}.`)),
+            lastUpdatedRefs: state.lastUpdatedRefs.filter((ref) => !ref.startsWith(`${hintKey}.`)),
           };
         });
       },
@@ -425,10 +427,14 @@ async function batchUpdateComponents(componentIds) {
 
     useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender(batch);
   }
-
-  // Flush only updated components
-
-  flushComponentsToRender(updatedComponentIds);
 }
 
 export const useResolverStoreActions = () => useResolveStore.getState().actions;
+
+function isIterable(obj) {
+  // checks for null and undefined
+  if (obj == null) {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === 'function';
+}

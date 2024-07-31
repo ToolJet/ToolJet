@@ -2947,7 +2947,10 @@ input:focus-visible {
     background: var(--tblr-btn-color-clicked) !important;
 
   }
+}
 
+.jet-tabs{
+  overflow-y: auto
 }
 
 .jet-button {
@@ -13325,3 +13328,8 @@ div.ds-svg-container svg {
   }
 }
 
+  .tabs-component{
+    .tab-pane{
+      top: initial !important;
+    }
+  }

@@ -11,6 +11,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import _ from 'lodash';
 
 const shouldAddBoxShadowAndVisibility = [
+  'Table',
   'TextInput',
   'PasswordInput',
   'NumberInput',
@@ -58,6 +59,7 @@ const BoxUI = (props) => {
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   const currentState = useCurrentState();
+  const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
   const validate = (value) =>
     validateWidget({
@@ -77,6 +79,7 @@ const BoxUI = (props) => {
 
   let exposedVariables = !_.isEmpty(currentState?.components) ? currentState?.components[component.name] ?? {} : {};
   const fireEvent = (eventName, options) => {
+    if (!isEditorReady) return;
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
@@ -96,8 +99,6 @@ const BoxUI = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const isEditorReady = useCurrentStateStore((state) => state.isEditorReady);
 
   return (
     <OverlayTrigger
@@ -185,7 +186,6 @@ const BoxUI = (props) => {
           currentPageId={currentPageId}
           getContainerProps={component.component === 'Form' ? getContainerProps : null}
           childComponents={childComponents}
-          isEditorReady={isEditorReady}
         />
       </div>
     </OverlayTrigger>

@@ -22,7 +22,6 @@ export const Multiselect = function Multiselect({
   darkMode,
   fireEvent,
   dataCy,
-  isEditorReady,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
@@ -125,11 +124,10 @@ export const Multiselect = function Multiselect({
       },
     };
 
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
+    setExposedVariables(exposedVariables);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, setSelected, isEditorReady]);
+  }, [selected, setSelected]);
 
   const filterOptions = (options, filter) => {
     setSearched(filter);
@@ -175,6 +173,20 @@ export const Multiselect = function Multiselect({
           ItemRenderer={ItemRenderer}
           filterOptions={filterOptions}
           debounceDuration={0}
+          onMenuToggle={(isOpen) => {
+            /* 
+            This is a hack added so that elememt shows up above the other sibling elements. 
+            This is needed since dropdown is added attached to the widget itself and not the body.
+            */
+            if (!document.querySelector(`.ele-${id}`)) {
+              return;
+            }
+            if (isOpen) {
+              document.querySelector(`.ele-${id}`).style.zIndex = 3;
+            } else {
+              document.querySelector(`.ele-${id}`).style.zIndex = '';
+            }
+          }}
         />
       </div>
     </div>

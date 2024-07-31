@@ -462,6 +462,9 @@ export const useDataQueriesStore = create(
                   useAppDataStore.getState().actions?.createAppVersionEventHandlers(newEvent);
                 })
               );
+            })
+            .finally(() => {
+              useAppDataStore.getState().actions.setIsSaving(false);
             });
         },
 
