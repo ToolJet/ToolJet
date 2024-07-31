@@ -1,24 +1,8 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select, { components } from 'react-select';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-
-const { DropdownIndicator } = components;
-
-export const CustomDropdownIndicator = (props) => {
-  const {
-    selectProps: { menuIsOpen },
-  } = props;
-  return (
-    <DropdownIndicator {...props}>
-      {menuIsOpen ? (
-        <SolidIcon name="cheveronup" width={'20'} className="cursor-pointer" fill={'var(--borders-strong)'} />
-      ) : (
-        <SolidIcon name="cheverondown" width={'20'} className="cursor-pointer" fill={'var(--borders-strong)'} />
-      )}
-    </DropdownIndicator>
-  );
-};
+import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
+import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 export const DropDown = function DropDown({
   height,
@@ -253,6 +237,20 @@ export const DropDown = function DropDown({
     setIsOpen(false);
   };
 
+  const DropdownIndicator = (props) => {
+    return (
+      <components.DropdownIndicator {...props}>
+        <div onClick={() => (isOpen ? handleDropdownClose() : handleDropdownOpen())}>
+          {isOpen ? (
+            <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+          ) : (
+            <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+          )}
+        </div>
+      </components.DropdownIndicator>
+    );
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isOpen && !event.target.closest('.dropdown-widget')) {
@@ -295,9 +293,6 @@ export const DropDown = function DropDown({
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
             }}
-            components={{
-              DropdownIndicator: CustomDropdownIndicator,
-            }}
             options={selectOptions}
             styles={customStyles}
             isLoading={properties.loadingState}
@@ -308,6 +303,7 @@ export const DropDown = function DropDown({
             onMenuOpen={handleDropdownOpen}
             onMenuClose={handleDropdownClose}
             menuIsOpen={isOpen}
+            components={{ DropdownIndicator }}
           />
         </div>
       </div>
