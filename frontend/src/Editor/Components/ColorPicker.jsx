@@ -11,6 +11,7 @@ export const ColorPicker = function ({
   height,
   fireEvent,
   dataCy,
+  id,
 }) {
   const { visibility, boxShadow } = styles;
   const defaultColor = properties.defaultColor;
@@ -45,6 +46,13 @@ export const ColorPicker = function ({
     const rgbaArray = getRGBAValueFromHex(hex);
     return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
   };
+
+  useEffect(() => {
+    const element = document.querySelector(`.ele-${id}`);
+    if (element) {
+      element.style.zIndex = showColorPicker ? '3' : '';
+    }
+  }, [showColorPicker, id]);
 
   useEffect(() => {
     let exposedVariables = {};
