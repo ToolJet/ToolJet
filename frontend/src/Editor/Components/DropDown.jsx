@@ -291,7 +291,6 @@ export const DropDown = function DropDown({
                 setExposedVariable('value', selectedOption.value);
                 fireEvent('onSelect');
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
-                handleDropdownClose(); // Close dropdown after selection
               }
             }}
             options={selectOptions}
