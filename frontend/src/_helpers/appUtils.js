@@ -645,6 +645,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           variables: customAppVariables,
         });
 
+        useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
+
         return resp;
       }
 
@@ -683,12 +685,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           },
         });
 
-        return useCurrentStateStore.getState().actions.setCurrentState({
+        const resp = useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
             variables: customPageVariables,
           },
         });
+
+        useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
+
+        return resp;
       }
 
       case 'get-page-variable': {
