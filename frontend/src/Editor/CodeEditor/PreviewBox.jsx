@@ -431,7 +431,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
           value={prettyPrintedJson}
           displayDataTypes={false}
           displaySize={false}
-          displayObjectSize={false}
           enableClipboard={false}
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}
