@@ -106,16 +106,18 @@ useCurrentStateStore.subscribe((state) => {
 
     handleLowPriorityWork(
       () => {
+        const currentState = useCurrentStateStore.getState();
         useResolveStore.getState().actions.addAppSuggestions(
           {
-            queries: state.queries,
-            components: !isPageSwitched ? state.components : {},
-            globals: state.globals,
-            page: state.page,
-            variables: state.variables,
-            client: state.client,
-            server: state.server,
-            constants: state.constants,
+            // get queries from current state so that we can get the latest queries
+            queries: currentState.queries,
+            components: !isPageSwitched ? currentState.components : {},
+            globals: currentState.globals,
+            page: currentState.page,
+            variables: currentState.variables,
+            client: currentState.client,
+            server: currentState.server,
+            constants: currentState.constants,
           },
           true
         );
