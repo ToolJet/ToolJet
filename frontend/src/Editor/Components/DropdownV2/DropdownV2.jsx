@@ -438,6 +438,7 @@ export const DropdownV2 = ({
           fontSize: '11px',
           fontWeight: '400',
           lineHeight: '16px',
+          display: visibility ? 'block' : 'none',
         }}
       >
         {!isValid && validationError}
