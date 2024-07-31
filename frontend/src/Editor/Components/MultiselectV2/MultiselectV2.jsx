@@ -27,7 +27,7 @@ export const MultiselectV2 = ({
   darkMode,
   fireEvent,
   validate,
-  isEditorReady,
+  width,
 }) => {
   let {
     label,
@@ -179,10 +179,8 @@ export const MultiselectV2 = ({
         setIsMultiSelectDisabled(value);
       },
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
-  }, [isEditorReady]);
+    setExposedVariables(exposedVariables);
+  }, []);
 
   useEffect(() => {
     // Expose selectOption
@@ -393,12 +391,6 @@ export const MultiselectV2 = ({
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
         }}
-        onClick={() => {
-          if (!isMultiSelectDisabled) {
-            fireEvent('onFocus');
-          }
-          setIsMultiselectOpen(!isMultiselectOpen);
-        }}
       >
         <Label
           label={label}
@@ -412,7 +404,15 @@ export const MultiselectV2 = ({
           isMandatory={isMandatory}
           _width={_width}
         />
-        <div className="w-100 px-0 h-100">
+        <div
+          className="w-100 px-0 h-100"
+          onClick={() => {
+            if (!isMultiSelectDisabled) {
+              fireEvent('onFocus');
+            }
+            setIsMultiselectOpen(!isMultiselectOpen);
+          }}
+        >
           <Select
             menuId={id}
             isDisabled={isMultiSelectDisabled}
@@ -467,6 +467,7 @@ export const MultiselectV2 = ({
           fontSize: '11px',
           fontWeight: '400',
           lineHeight: '16px',
+          display: visibility ? 'block' : 'none',
         }}
       >
         {!isValid && validationError}

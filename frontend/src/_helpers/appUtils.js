@@ -89,6 +89,8 @@ const debouncedChange = _.debounce((duplicateCurrentState) => {
 }, 100);
 
 export function onComponentOptionsChanged(component, options, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  options.forEach((option) => resolveStoreActions.resetHintsByKey([`components.${component?.name}.${option[0]}`]));
   let componentName = component.name;
   const { isEditorReady, page } = useCurrentStateStore.getState();
 
@@ -183,6 +185,8 @@ export function onComponentOptionsChanged(component, options, id) {
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByKey(`components.${component?.name}.${option_name}`);
   if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
 
   let componentName = component.name;
@@ -633,12 +637,17 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const value = resolveReferences(event.value, state, undefined, customVariables);
         const customAppVariables = { ...state.variables };
         customAppVariables[key] = value;
+        const resp = useCurrentStateStore.getState().actions.setCurrentState({
+          variables: customAppVariables,
+        });
+
         useResolveStore.getState().actions.addAppSuggestions({
           variables: customAppVariables,
         });
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+
+        useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
+
+        return resp;
       }
 
       case 'get-custom-variable': {
@@ -676,12 +685,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           },
         });
 
-        return useCurrentStateStore.getState().actions.setCurrentState({
+        const resp = useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
             variables: customPageVariables,
           },
         });
+
+        useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
+
+        return resp;
       }
 
       case 'get-page-variable': {
@@ -1141,11 +1154,9 @@ export function runQuery(
   shouldSetPreviewData = false,
   isOnLoad = false
 ) {
-  //for resetting the hints when the query is run for large number of items
-  if (mode == 'edit') {
-    const resolveStoreActions = useResolveStore.getState().actions;
-    resolveStoreActions.resetHintsByQueryName(queryName);
-  }
+  //for resetting the hints when the query is run for large number of items and also child attributes
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByKey(`queries.${queryName}`);
 
   let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
@@ -2341,4 +2352,41 @@ export const calculateMoveableBoxHeight = (componentType, layoutData, stylesDefi
   }
 
   return newHeight;
+};
+
+// Used for updating suggestion list on query renaming
+export const updateQuerySuggestions = (oldName, newName) => {
+  const currentState = useCurrentStateStore.getState();
+  const { queries } = currentState;
+
+  if (!queries[oldName]) {
+    return;
+  }
+
+  const updatedQueries = {
+    ...queries,
+    [newName]: {
+      ...queries[oldName],
+      name: newName,
+    },
+  };
+
+  delete updatedQueries[oldName];
+
+  const oldSuggestions = Object.keys(queries[oldName]).map((key) => `queries.${oldName}.${key}`);
+  useResolveStore.getState().actions.removeAppSuggestions(oldSuggestions);
+
+  useCurrentStateStore.getState().actions.setCurrentState({
+    ...currentState,
+    queries: updatedQueries,
+  });
+};
+
+export const updateSuggestionsFromCurrentState = () => {
+  const currentStateObj = useCurrentStateStore.getState();
+  useResolveStore.getState().actions.addAppSuggestions({
+    queries: currentStateObj.queries,
+    components: currentStateObj.components,
+    page: currentStateObj.page,
+  });
 };

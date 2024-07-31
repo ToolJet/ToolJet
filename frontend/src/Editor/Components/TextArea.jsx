@@ -7,7 +7,6 @@ export const TextArea = function TextArea({
   setExposedVariable,
   setExposedVariables,
   dataCy,
-  isEditorReady,
 }) {
   const [value, setValue] = useState(properties.value);
 
@@ -29,10 +28,10 @@ export const TextArea = function TextArea({
         setExposedVariable('value', '');
       },
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    } // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value, setValue, isEditorReady]);
+    setExposedVariables(exposedVariables);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setValue]);
 
   return (
     <textarea

@@ -58,7 +58,6 @@ export const DropdownV2 = ({
   component,
   exposedVariables,
   dataCy,
-  isEditorReady,
 }) => {
   const { label, value, advanced, schema, placeholder, loadingState: dropdownLoadingState, disabledState } = properties;
   const {
@@ -218,11 +217,8 @@ export const DropdownV2 = ({
         setIsDropdownDisabled(value);
       },
     };
-
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
-  }, [isEditorReady]);
+    setExposedVariables(exposedVariables);
+  }, []);
 
   const customStyles = {
     container: (base) => ({
@@ -442,6 +438,7 @@ export const DropdownV2 = ({
           fontSize: '11px',
           fontWeight: '400',
           lineHeight: '16px',
+          display: visibility ? 'block' : 'none',
         }}
       >
         {!isValid && validationError}

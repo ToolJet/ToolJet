@@ -17,7 +17,6 @@ export const Tabs = function Tabs({
   styles,
   darkMode,
   dataCy,
-  isEditorReady,
 }) {
   const { tabWidth, boxShadow } = styles;
 
@@ -104,11 +103,10 @@ export const Tabs = function Tabs({
       },
       currentTab: currentTab,
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
+    setExposedVariables(exposedVariables);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setCurrentTab, currentTab, isEditorReady]);
+  }, [setCurrentTab, currentTab]);
 
   const renderTabContent = (id, tab) => (
     <div

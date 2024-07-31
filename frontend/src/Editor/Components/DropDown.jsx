@@ -243,12 +243,36 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleDropdownOpen = () => {
+    setIsOpen(true);
+  };
+
+  const handleDropdownClose = () => {
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && !event.target.closest('.dropdown-widget')) {
+        handleDropdownClose();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
     <>
       <div
         className="dropdown-widget row g-0"
         style={{ height, display: visibility ? '' : 'none' }}
-        onMouseDown={(event) => {
+        onClick={(event) => {
+          event.stopPropagation();
           onComponentClick(id, component, event);
         }}
         data-cy={dataCy}
@@ -281,6 +305,9 @@ export const DropDown = function DropDown({
             onFocus={(event) => onComponentClick(event, component, id)}
             menuPortalTarget={document.body}
             placeholder={placeholder}
+            onMenuOpen={handleDropdownOpen}
+            onMenuClose={handleDropdownClose}
+            menuIsOpen={isOpen}
           />
         </div>
       </div>
