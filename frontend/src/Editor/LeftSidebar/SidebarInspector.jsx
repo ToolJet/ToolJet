@@ -230,7 +230,13 @@ export const LeftSidebarInspector = ({
 
   const handleRunQuery = (query, currentNode) => {
     setSelectedQuery(query.id);
-    runQuery(query.id, currentNode, undefined, 'edit', {}, true);
+    const additionalArgs = {
+      confirmed: undefined,
+      mode: 'edit',
+      userSuppliedParameters: {},
+      shouldSetPreviewData: true,
+    };
+    runQuery(query.id, currentNode, additionalArgs);
   };
 
   const copyToClipboard = (data) => {
