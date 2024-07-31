@@ -11,16 +11,17 @@ const ItemRenderer = ({ checked, option, onClick, disabled }) => (
     <span>{option.label}</span>
   </div>
 );
-
-const DropdownIndicator = ({ isOpen, toggleDropdown }) => (
-  <div onClick={toggleDropdown}>
-    {isOpen ? (
-      <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
-    ) : (
-      <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
-    )}
-  </div>
-);
+const DropdownIndicator = ({ isOpen, toggleDropdown }) => {
+  return (
+    <div onClick={toggleDropdown}>
+      {isOpen ? (
+        <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+      ) : (
+        <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+      )}
+    </div>
+  );
+};
 
 export const Multiselect = function Multiselect({
   id,
@@ -63,8 +64,7 @@ export const Multiselect = function Multiselect({
   };
 
   const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-    fireEvent(isOpen ? 'onClose' : 'onOpen');
+    setIsOpen((prevState) => !prevState);
   };
 
   useEffect(() => {
@@ -218,7 +218,7 @@ export const Multiselect = function Multiselect({
           isOpen={isOpen}
           onMenuOpen={handleDropdownOpen}
           onMenuClose={handleDropdownClose}
-          ArrowRenderer={({ isOpen }) => <DropdownIndicator isOpen={isOpen} toggleDropdown={toggleDropdown} />}
+          ArrowRenderer={() => <DropdownIndicator isOpen={isOpen} toggleDropdown={toggleDropdown} />}
         />
       </div>
     </div>
