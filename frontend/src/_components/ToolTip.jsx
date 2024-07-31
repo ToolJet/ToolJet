@@ -38,5 +38,4 @@ ToolTip.propTypes = {
   children: PropTypes.object.isRequired,
   placement: PropTypes.string,
   trigger: PropTypes.array,
-  checkOverflow: PropTypes.bool,
 };
