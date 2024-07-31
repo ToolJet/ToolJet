@@ -626,7 +626,7 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRunQuery = (queryId, queryName, additionalArgs) => {
+  const handleRunQuery = (queryId, queryName, additionalArgs = {}) => {
     const {
       confirmed = undefined,
       mode = 'edit',
@@ -2076,7 +2076,9 @@ const EditorComponent = (props) => {
                 }}
                 setSelectedComponent={setSelectedComponent}
                 removeComponent={removeComponent}
-                runQuery={(queryId, queryName, additionalArgs) => handleRunQuery(queryId, queryName, additionalArgs)}
+                runQuery={(queryId, queryName, additionalArgs = {}) =>
+                  handleRunQuery(queryId, queryName, additionalArgs)
+                }
                 ref={dataSourceModalRef}
                 currentPageId={currentPageId}
                 addNewPage={addNewPage}
