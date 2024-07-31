@@ -1,6 +1,24 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+
+const { DropdownIndicator } = components;
+
+export const CustomDropdownIndicator = (props) => {
+  const {
+    selectProps: { menuIsOpen },
+  } = props;
+  return (
+    <DropdownIndicator {...props}>
+      {menuIsOpen ? (
+        <SolidIcon name="cheveronup" width={'20'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+      ) : (
+        <SolidIcon name="cheverondown" width={'20'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+      )}
+    </DropdownIndicator>
+  );
+};
 
 export const DropDown = function DropDown({
   height,
@@ -252,6 +270,9 @@ export const DropDown = function DropDown({
                 fireEvent('onSelect');
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
+            }}
+            components={{
+              DropdownIndicator: CustomDropdownIndicator,
             }}
             options={selectOptions}
             styles={customStyles}
