@@ -13,6 +13,11 @@ import {
 import { Organization } from './organization.entity';
 import { OrgEnvironmentConstantValue } from './org_environment_constant_values.entity';
 
+export enum OrganizationConstantType {
+  CONSTANT = 'Global',
+  SECRET = 'Secret',
+}
+
 @Entity({ name: 'organization_constants' })
 export class OrganizationConstant extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -29,6 +34,13 @@ export class OrganizationConstant extends BaseEntity {
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
+
+  @Column({
+    type: 'enum',
+    enum: OrganizationConstantType,
+    default: OrganizationConstantType.CONSTANT,
+  })
+  type: OrganizationConstantType;
 
   @OneToMany(() => OrgEnvironmentConstantValue, (oe) => oe.organizationConstant)
   orgEnvironmentConstantValues: OrgEnvironmentConstantValue[];

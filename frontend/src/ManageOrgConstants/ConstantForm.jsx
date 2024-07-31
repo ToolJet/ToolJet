@@ -6,6 +6,7 @@ import { Tooltip } from 'react-tooltip';
 import { FormWrapper, textAreaEnterOnSave } from '@/_components/FormWrapper';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
+import './ConstantFormStyle.scss';
 
 const ConstantForm = ({
   selectedConstant,
@@ -18,6 +19,7 @@ const ConstantForm = ({
 }) => {
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
+    type: selectedConstant?.type,
     environments: [{ label: currentEnvironment?.name, value: currentEnvironment?.id }],
   }));
 
@@ -109,6 +111,7 @@ const ConstantForm = ({
 
     setFields((fields) => ({
       ...fields,
+      [name]: name === 'type' ? value : fields['type'],
       [name]: value,
     }));
   };
@@ -193,6 +196,40 @@ const ConstantForm = ({
                 <span className="text-danger" data-cy="name-error-text">
                   {error['name']}
                 </span>
+                <small className="text-muted">Name must be unique and max 50 characters</small>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label" data-cy="name-label">
+                Type
+              </label>
+              <div className="radio-group">
+                <div className="radio-item">
+                  <label>
+                    <input
+                      type="radio"
+                      name="type"
+                      value="Global"
+                      checked={fields['type'] === 'Global'}
+                      onChange={handleFieldChange}
+                    />
+                    Global constants
+                  </label>
+                  <small>The values can be used anywhere in the product</small>
+                </div>
+                <div className="radio-item">
+                  <label>
+                    <input
+                      type="radio"
+                      name="type"
+                      value="Secret"
+                      checked={fields['type'] === 'Secret'}
+                      onChange={handleFieldChange}
+                    />
+                    Secrets
+                  </label>
+                  <small>The values are hidden and can only be used in data sources and queries</small>
+                </div>
               </div>
             </div>
             <div className="col tj-app-input">

@@ -41,6 +41,7 @@ export const PreviewBox = ({
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
+  let isSecretConstant = currentValue.includes('{{') && currentValue.includes('secrets.');
 
   if (hasCircularDependency(resolvedValue)) {
     previewContent = JSON.stringify(resolvedValue, handleCircularStructureToJSON());
@@ -118,6 +119,7 @@ export const PreviewBox = ({
         coersionData={coersionData}
         withValidation={!isEmpty(validationSchema)}
         isWorkspaceVariable={isWorkspaceVariable}
+        isSecretConstant={isSecretConstant}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -135,6 +137,7 @@ const RenderResolvedValue = ({
   coersionData,
   withValidation,
   isWorkspaceVariable,
+  isSecretConstant,
 }) => {
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
@@ -158,7 +161,11 @@ const RenderResolvedValue = ({
       }`
     : previewType;
 
-  const previewContent = !withValidation ? resolvedValue : computeCoersionPreview(resolvedValue, coersionData);
+  const previewContent = isSecretConstant
+    ? 'Values of secret constants are hidden'
+    : !withValidation
+    ? resolvedValue
+    : computeCoersionPreview(resolvedValue, coersionData);
 
   const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 

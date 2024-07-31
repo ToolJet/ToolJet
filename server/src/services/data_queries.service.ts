@@ -534,7 +534,7 @@ export class DataQueriesService {
   async resolveConstants(str: string, organization_id: string, environmentId: string) {
     const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
     let result = tempStr;
-    if (new RegExp('^constants.').test(tempStr)) {
+    if (new RegExp('^constants.').test(tempStr) || new RegExp('^secrets.').test(tempStr)) {
       const splitArray = tempStr.split('.');
       const constantName = splitArray[splitArray.length - 1];
 
@@ -602,9 +602,12 @@ export class DataQueriesService {
       }
 
       // check if more than two types of variables are present in a single line
-      if (object.match(/\{\{(.*?)\}\}/g)?.length > 1 && object.includes('{{constants.')) {
+      if (
+        object.match(/\{\{(.*?)\}\}/g)?.length > 1 &&
+        (object.includes('{{constants.') || object.includes('{{secrets.'))
+      ) {
         // find the constant variable from the string, {{constants.}} keyword
-        const constantVariables = object.match(/\{\{(constants.*?)\}\}/g);
+        const constantVariables = object.match(/\{\{(constants|secrets)\..*?\}\}/g);
 
         if (constantVariables.length > 0) {
           for (const variable of constantVariables) {
@@ -614,7 +617,7 @@ export class DataQueriesService {
           }
         }
       }
-      if (object.includes('{{constants.')) {
+      if (object.includes('{{constants.') || object.includes('{{secrets.')) {
         const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
 
         options[object] = resolvingConstant;

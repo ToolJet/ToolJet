@@ -5996,7 +5996,7 @@ div#driver-page-overlay {
 
   &:focus-visible {
     background: var(--slate1);
-    border: 1px solid var(--slate8);
+    border: 1px solid var(--indigo9);
     outline: none;
   }
 
@@ -6011,6 +6011,10 @@ div#driver-page-overlay {
     border: 1px solid var(--slate8);
     color: var(--slate9);
     cursor: not-allowed;
+  }
+  &::placeholder {
+    color: var(--slate9);
+    font-weight: 400;
   }
 }
 

@@ -53,9 +53,16 @@ const DynamicForm = ({
   React.useEffect(() => {
     if (isGDS) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
-        const constants = {};
-        data.constants.map((constant) => {
-          constants[constant.name] = constant.value;
+        const constants = {
+          globals: {},
+          secrets: {},
+        };
+        data.constants.forEach((constant) => {
+          if (constant.type === 'Secret') {
+            constants.secrets[constant.name] = constant.value;
+          } else {
+            constants.globals[constant.name] = constant.value;
+          }
         });
 
         setCurrentOrgEnvironmentConstants(constants);
