@@ -31,7 +31,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
   const [modalProps, setModalProps] = useState({
@@ -339,7 +338,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             />
           ))}
           {type === 'Plugins' && (
-            <div style={{ height: '112px', width: '164px' }} className={`col-md-2  mb-4 `}>
+            <div style={{ height: '122px', width: '164px' }} className={`col-md-2  mb-4 `}>
               <div
                 className="card add-plugin-card"
                 role="button"
@@ -353,9 +352,14 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
                 data-cy={`data-source-add-plugin`}
               >
                 <div className="card-body">
-                  <center>
-                    <SolidIcon name="plus" fill={'var(--icon-default)'} width={35} height={35} />
-                    <br></br>
+                  <center style={{ paddingTop: '5px' }}>
+                    <SolidIcon
+                      name="plus"
+                      fill={'var(--icon-default)'}
+                      width={35}
+                      height={35}
+                      style={{ marginBottom: '8px' }}
+                    />
                     <br></br>
                     <span className={`datasource-card-title add-plugin-card-title`}>Add plugin</span>
                   </center>
