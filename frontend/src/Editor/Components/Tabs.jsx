@@ -143,7 +143,7 @@ export const Tabs = function Tabs({
   return (
     <div
       data-disabled={parsedDisabledState}
-      className="jet-tabs card"
+      className="jet-tabs card tabs-component"
       style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
       data-cy={dataCy}
     >

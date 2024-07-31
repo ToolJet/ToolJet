@@ -13328,3 +13328,8 @@ div.ds-svg-container svg {
   }
 }
 
+  .tabs-component{
+    .tab-pane{
+      top: initial !important;
+    }
+  }
