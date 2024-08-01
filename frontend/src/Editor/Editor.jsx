@@ -1712,6 +1712,7 @@ const EditorComponent = (props) => {
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       useEditorStore.getState().actions.setPageProgress(false);
+      useCurrentStateStore.getState().actions.setEditorReady(true);
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];

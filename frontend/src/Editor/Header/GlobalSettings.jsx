@@ -168,7 +168,11 @@ export const GlobalSettings = ({
               <div className="row">
                 <div className="col">
                   <InputComponent
-                    helperText="URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+                    helperText={
+                      !slug?.error && !isSlugUpdated
+                        ? "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+                        : undefined
+                    }
                     label="Unique app slug"
                     placeholder={t('editor.appSlug', 'Unique app slug')}
                     maxLength={50}
@@ -177,7 +181,7 @@ export const GlobalSettings = ({
                       delayedSlugChange(e.target.value, 'slug');
                     }}
                     data-cy="app-slug-input-field"
-                    value={slug?.value || oldSlug || ''}
+                    defaultValue={slug?.value || oldSlug || ''}
                   />
                   {slug?.error ? (
                     <label className="label tj-input-error" data-cy="app-slug-error-label">
