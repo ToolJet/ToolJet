@@ -177,7 +177,7 @@ export const GlobalSettings = ({
                       delayedSlugChange(e.target.value, 'slug');
                     }}
                     data-cy="app-slug-input-field"
-                    value={slug?.value || oldSlug || ''}
+                    defaultValue={slug?.value || oldSlug || ''}
                   />
                   {slug?.error ? (
                     <label className="label tj-input-error" data-cy="app-slug-error-label">
