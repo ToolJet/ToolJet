@@ -7,6 +7,7 @@ import { FormWrapper, textAreaEnterOnSave } from '@/_components/FormWrapper';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import './ConstantFormStyle.scss';
+import { Constants } from '@/_helpers/utils';
 
 const ConstantForm = ({
   selectedConstant,
@@ -209,7 +210,7 @@ const ConstantForm = ({
                       type="radio"
                       name="type"
                       value="Global"
-                      checked={fields['type'] === 'Global'}
+                      checked={fields['type'] === Constants.Global}
                       onChange={handleFieldChange}
                     />
                     Global constants
@@ -222,7 +223,7 @@ const ConstantForm = ({
                       type="radio"
                       name="type"
                       value="Secret"
-                      checked={fields['type'] === 'Secret'}
+                      checked={fields['type'] === Constants.Secret}
                       onChange={handleFieldChange}
                     />
                     Secrets

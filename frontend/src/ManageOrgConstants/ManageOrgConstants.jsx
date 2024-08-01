@@ -14,6 +14,7 @@ import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { BreadCrumbContext } from '@/App';
 import './ConstantFormStyle.scss';
+import { Constants } from '@/_helpers/utils';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -41,7 +42,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [selectedConstant, setSelectedConstant] = useState(null);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const [activeTab, setActiveTab] = useState('Global');
+  const [activeTab, setActiveTab] = useState(Constants.Global);
   const [searchTerm, setSearchTerm] = useState('');
   const [globalCount, setGlobalCount] = useState(0);
   const [secretCount, setSecretCount] = useState(0);
@@ -99,10 +100,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         const envConstant = constant?.values.find((value) => value.environmentName === envName);
 
         // Filter based on the active tab: 'Global' or 'Secret'
-        if (tab === 'Global') {
-          return envConstant && envConstant.value !== '' && constant.type === 'Global';
-        } else if (tab === 'Secret') {
-          return envConstant && envConstant.value !== '' && constant.type === 'Secret';
+        if (tab === Constants.Global) {
+          return envConstant && envConstant.value !== '' && constant.type === Constants.Global;
+        } else if (tab === Constants.Secret) {
+          return envConstant && envConstant.value !== '' && constant.type === Constants.Secret;
         }
         return envConstant && envConstant.value !== '';
       })
@@ -210,8 +211,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     setConstants(orgConstants?.constants);
 
     // Calculate counts for Global and Secret constants
-    const globalCount = orgConstants.constants.filter((constant) => constant.type === 'Global').length;
-    const secretCount = orgConstants.constants.filter((constant) => constant.type === 'Secret').length;
+    const globalCount = orgConstants.constants.filter((constant) => constant.type === Constants.Global).length;
+    const secretCount = orgConstants.constants.filter((constant) => constant.type === Constants.Secret).length;
 
     setGlobalCount(globalCount);
     setSecretCount(secretCount);
@@ -379,25 +380,29 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
               <div className="tabs-and-search">
                 <div className="tabs">
                   <button
-                    className={`tab ${activeTab === 'Global' ? 'active' : ''}`}
-                    onClick={() => handleTabChange('Global')}
+                    className={`tab ${activeTab === Constants.Global ? 'active' : ''}`}
+                    onClick={() => handleTabChange(Constants.Global)}
                   >
                     Global constants
-                    <span className={`tab-count ${activeTab === 'Global' ? 'active' : ''}`}>({globalCount})</span>
+                    <span className={`tab-count ${activeTab === Constants.Global ? 'active' : ''}`}>
+                      ({globalCount})
+                    </span>
                   </button>
                   <button
-                    className={`tab ${activeTab === 'Secret' ? 'active' : ''}`}
-                    onClick={() => handleTabChange('Secret')}
+                    className={`tab ${activeTab === Constants.Secret ? 'active' : ''}`}
+                    onClick={() => handleTabChange(Constants.Secret)}
                   >
                     Secrets
-                    <span className={`tab-count ${activeTab === 'Secret' ? 'active' : ''}`}>({secretCount})</span>
+                    <span className={`tab-count ${activeTab === constants.Secret ? 'active' : ''}`}>
+                      ({secretCount})
+                    </span>
                   </button>
                 </div>
 
                 <div className="search-bar">
                   <input
                     type="text"
-                    placeholder={activeTab === 'Global' ? 'Search global constants' : 'Search secrets'}
+                    placeholder={activeTab === Constants.Global ? 'Search global constants' : 'Search secrets'}
                     value={searchTerm}
                     onChange={handleSearchChange}
                     className="search-input"

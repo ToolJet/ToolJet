@@ -17,6 +17,11 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 
 const reservedKeyword = ['app', 'window'];
 
+export const Constants = {
+  Global: 'Global',
+  Secret: 'Secret',
+};
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');

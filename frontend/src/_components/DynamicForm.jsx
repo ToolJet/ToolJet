@@ -18,6 +18,7 @@ import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatab
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
+import { Constants } from '@/_helpers/utils';
 
 const DynamicForm = ({
   schema,
@@ -58,7 +59,7 @@ const DynamicForm = ({
           secrets: {},
         };
         data.constants.forEach((constant) => {
-          if (constant.type === 'Secret') {
+          if (constant.type === Constants.Secret) {
             constants.secrets[constant.name] = constant.value;
           } else {
             constants.globals[constant.name] = constant.value;

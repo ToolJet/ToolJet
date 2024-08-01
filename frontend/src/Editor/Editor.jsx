@@ -46,7 +46,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, isValidUUID } from '@/_helpers/utils';
+import { getWorkspaceId, isValidUUID, Constants } from '@/_helpers/utils';
 import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
@@ -406,7 +406,7 @@ const EditorComponent = (props) => {
 
       constants.forEach((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        if (constant.type === 'Global') {
+        if (constant.type === Constants.Global) {
           globalConstants[constant.name] = constantValue;
         }
       });

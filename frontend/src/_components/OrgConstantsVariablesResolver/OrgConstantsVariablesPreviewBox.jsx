@@ -94,8 +94,9 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     ? 'HiddenEnvironmentVariable'
     : error?.toString();
   const isValidError = error && errorMessage !== 'HiddenEnvironmentVariable';
+  const isUndefinedConstantsError = error && errorMessage.includes('Undefined constants:');
 
-  if (error && (!isValidError || error?.toString().includes('Undefined constants:'))) {
+  if (error && (!isValidError || isUndefinedConstantsError)) {
     resolvedValue = errorMessage;
   }
 
