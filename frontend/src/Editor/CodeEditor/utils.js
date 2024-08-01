@@ -186,38 +186,42 @@ function getDynamicVariables(text) {
   return matchedParams;
 }
 const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
-  let resolvedValue = code;
+  try {
+    let resolvedValue = code;
 
-  const isComponentValue = code.includes('components.') || code.includes('queries.') || false;
+    const isComponentValue = code.includes('components.') || code.includes('queries.') || false;
 
-  const allDynamicVariables = getDynamicVariables(code) || [];
-  let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
+    const allDynamicVariables = getDynamicVariables(code) || [];
+    let isJSCodeResolver = queryHasJSCode && (allDynamicVariables.length === 1 || allDynamicVariables.length === 0);
 
-  if (!isJSCodeResolver) {
-    allDynamicVariables.forEach((variable) => {
-      const variableToResolve = removeNestedDoubleCurlyBraces(variable);
+    if (!isJSCodeResolver) {
+      allDynamicVariables.forEach((variable) => {
+        const variableToResolve = removeNestedDoubleCurlyBraces(variable);
 
-      const { toResolveReference } = inferJSExpAndReferences(variableToResolve, lookupTable.hints);
+        const { toResolveReference } = inferJSExpAndReferences(variableToResolve, lookupTable.hints);
 
-      if (!isComponentValue && toResolveReference && lookupTable.hints.has(toResolveReference)) {
-        const idToLookUp = lookupTable.hints.get(variableToResolve);
-        const res = lookupTable.resolvedRefs.get(idToLookUp);
+        if (!isComponentValue && toResolveReference && lookupTable.hints.has(toResolveReference)) {
+          const idToLookUp = lookupTable.hints.get(variableToResolve);
+          const res = lookupTable.resolvedRefs.get(idToLookUp);
 
-        resolvedValue = resolvedValue.replace(variable, res);
-      } else {
-        const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+          resolvedValue = resolvedValue.replace(variable, res);
+        } else {
+          const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
-        resolvedValue = resolvedValue.replace(variable, resolvedCode);
-      }
-    });
-  } else {
-    const variableToResolve = removeNestedDoubleCurlyBraces(code);
-    const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+          resolvedValue = resolvedValue.replace(variable, resolvedCode);
+        }
+      });
+    } else {
+      const variableToResolve = removeNestedDoubleCurlyBraces(code);
+      const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
 
-    resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
+      resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
+    }
+
+    return resolvedValue;
+  } catch (error) {
+    console.error('Error resolving code', error);
   }
-
-  return resolvedValue;
 };
 
 const queryHasStringOtherThanVariable = (query) => {
