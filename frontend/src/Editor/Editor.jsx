@@ -398,11 +398,13 @@ const EditorComponent = (props) => {
     });
   };
 
-  const fetchOrgEnvironmentConstants = () => {
-    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+  const fetchOrgEnvironmentConstants = async () => {
+    try {
+      //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+      const { constants } = await orgEnvironmentConstantService.getAll();
       const globalConstants = {};
-      constants.map((constant) => {
+
+      constants.forEach((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
         if (constant.type === 'Global') {
           globalConstants[constant.name] = constantValue;
@@ -412,7 +414,11 @@ const EditorComponent = (props) => {
       useCurrentStateStore.getState().actions.setCurrentState({
         constants: globalConstants,
       });
-    });
+    } catch (error) {
+      toast.error('Failed to fetch organization environment constants', {
+        position: 'top-center',
+      });
+    }
   };
 
   const initComponentVersioning = () => {

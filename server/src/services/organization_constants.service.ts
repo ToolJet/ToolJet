@@ -183,14 +183,16 @@ export class OrganizationConstantsService {
       await manager.save(constantToUpdate);
 
       const environmentToUpdate = await this.appEnvironmentService.get(organizationId, environment_id, false, manager);
-      const encryptedValue = await this.encryptSecret(organizationId, value);
+      if (value) {
+        const encryptedValue = await this.encryptSecret(organizationId, value);
 
-      await this.appEnvironmentService.updateOrgEnvironmentConstant(
-        encryptedValue,
-        environmentToUpdate.id,
-        constantToUpdate.id,
-        manager
-      );
+        await this.appEnvironmentService.updateOrgEnvironmentConstant(
+          encryptedValue,
+          environmentToUpdate.id,
+          constantToUpdate.id,
+          manager
+        );
+      }
 
       return constantToUpdate;
     });

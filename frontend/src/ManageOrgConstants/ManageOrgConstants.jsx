@@ -31,7 +31,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const [mode, setMode] = useState(MODES.NULL);
 
-  const perPage = 7;
+  const perPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [currentTableData, setTableData] = useState([]);
@@ -53,7 +53,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const handleSearchChange = (e) => {
-    const searchTerm = e.target.value.toLowerCase();
+    const searchTerm = e?.target?.value.toLowerCase();
     setSearchTerm(searchTerm);
 
     // Re-filter the constants based on the current search term and active tab
@@ -120,30 +120,28 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     if (activeTabChanged) {
       computeTotalPages(filteredConstants.length || 1);
     }
-
-    const paginatedConstants = filteredConstants.slice(start, end);
-
+    const paginatedConstants = filteredConstants ? filteredConstants.slice(start, end) : filteredConstants;
     setTableData(paginatedConstants);
   };
 
   const goToNextPage = () => {
     setCurrentPage(currentPage + 1);
 
-    const start = (currentPage + 1 - 1) * perPage;
+    const start = currentPage * perPage;
     const end = start + perPage;
 
     const envName = activeTabEnvironment.name;
-    updateTableData(constants, envName, start, end, activeTab, searchTerm);
+    updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
   const goToPreviousPage = () => {
     setCurrentPage(currentPage - 1);
 
-    const start = (currentPage - 1 - 1) * perPage;
+    const start = (currentPage - 2) * perPage;
     const end = start + perPage;
 
     const envName = activeTabEnvironment.name;
-    updateTableData(constants, envName, start, end, activeTab);
+    updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
   const canAnyGroupPerformAction = (action, permissions) => {
@@ -360,7 +358,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           {canCreateVariable() && (
             <ButtonSolid
               data-cy="add-new-constant-button"
-              vaiant="primary"
+              variant="primary"
               onClick={() => {
                 setMode(MODES.CREATE);
                 setIsManageVarDrawerOpen(true);

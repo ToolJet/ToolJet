@@ -111,7 +111,6 @@ const ConstantForm = ({
 
     setFields((fields) => ({
       ...fields,
-      [name]: name === 'type' ? value : fields['type'],
       [name]: value,
     }));
   };
@@ -331,7 +330,11 @@ const ConstantForm = ({
         <ButtonSolid
           type="submit"
           isLoading={isLoading}
-          disabled={isLoading || shouldDisableButton || selectedConstant?.value === fields['value']}
+          disabled={
+            isLoading ||
+            shouldDisableButton ||
+            (selectedConstant?.value === fields['value'] && selectedConstant?.type === fields['type'])
+          }
           data-cy="add-constant-button"
           form="variable-form"
         >
