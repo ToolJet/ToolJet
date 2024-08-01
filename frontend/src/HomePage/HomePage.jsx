@@ -25,8 +25,9 @@ import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
-import Skeleton from 'react-loading-skeleton';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
+import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 
 const { iconList, defaultIcon } = configs;
 
@@ -849,16 +850,7 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
-                {isLoading && (
-                  <Skeleton
-                    count={1}
-                    height={20}
-                    width={880}
-                    baseColor="#ECEEF0"
-                    className="mb-3"
-                    style={{ marginTop: '2rem' }}
-                  />
-                )}
+                {isLoading && !appSearchKey && <HeaderSkeleton />}
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />

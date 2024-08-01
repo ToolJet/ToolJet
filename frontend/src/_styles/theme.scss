@@ -8549,9 +8549,14 @@ tbody {
   }
 }
 
+.react-loading-skeleton {
+  background-color: var(--interactive-default) ;
+  // background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
+}
+
 .theme-dark {
   .react-loading-skeleton {
-    background-color: #2F3C4C !important;
+    background-color: var(--interactive-default) ;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
 
