@@ -773,13 +773,6 @@ export class AppsService {
 
       newComponents.forEach((component) => {
         let parentId = component.parent ? component.parent : null;
-
-        if (component?.properties?.buttonToSubmit) {
-          const newButtonToSubmitValue =
-            oldComponentToNewComponentMapping[component?.properties?.buttonToSubmit?.value];
-          component.properties.buttonToSubmit.value = newButtonToSubmitValue;
-        }
-
         if (!parentId) return;
 
         const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
