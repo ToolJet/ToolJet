@@ -109,7 +109,7 @@ export const Icon = ({ value, onChange, onVisibilityChange, styleDefinition, com
                       color: 'var(--slate12)',
                     }}
                   >
-                    {value}
+                    {String(value)}
                   </div>
                   <Visibility
                     value={value}
