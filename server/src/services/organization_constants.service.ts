@@ -79,32 +79,37 @@ export class OrganizationConstantsService {
     organizationId: string,
     environmentId: string,
     type: OrganizationConstantType | null
-  ): Promise<OrganizationConstant[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  ): Promise<any[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
         .leftJoinAndSelect('organization_constants.orgEnvironmentConstantValues', 'org_environment_constant_values')
         .where('organization_constants.organization_id = :organizationId', { organizationId })
         .andWhere('org_environment_constant_values.environment_id = :environmentId', { environmentId });
+
       if (type) {
         query.andWhere('organization_constants.type = :type', { type });
       }
+
       const result = await query.getMany();
 
-      const constantsWithValues = result.map(async (constant) => {
-        const resolvedValue =
-          constant.type === OrganizationConstantType.SECRET
-            ? constant.orgEnvironmentConstantValues[0].value
-            : await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value);
-        return {
-          id: constant.id,
-          name: constant.constantName,
-          type: constant.type,
-          value: resolvedValue,
-        };
-      });
+      const constantsWithValues = await Promise.all(
+        result.map(async (constant) => {
+          const resolvedValue =
+            constant.type === OrganizationConstantType.SECRET
+              ? await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value)
+              : constant.orgEnvironmentConstantValues[0].value;
 
-      return Promise.all(constantsWithValues);
+          return {
+            id: constant.id,
+            name: constant.constantName,
+            type: constant.type,
+            value: resolvedValue,
+          };
+        })
+      );
+
+      return constantsWithValues;
     });
   }
 
