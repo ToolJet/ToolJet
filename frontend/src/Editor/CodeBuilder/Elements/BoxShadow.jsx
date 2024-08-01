@@ -46,7 +46,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
       setDebouncedShadow(newValue);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [value]);
 
   useEffect(() => {
     if (boxShadow !== debouncedShadow) {
