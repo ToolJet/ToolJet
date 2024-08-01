@@ -168,7 +168,11 @@ export const GlobalSettings = ({
               <div className="row">
                 <div className="col">
                   <InputComponent
-                    helperText="URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+                    helperText={
+                      !slug?.error && !isSlugUpdated
+                        ? "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+                        : undefined
+                    }
                     label="Unique app slug"
                     placeholder={t('editor.appSlug', 'Unique app slug')}
                     maxLength={50}
