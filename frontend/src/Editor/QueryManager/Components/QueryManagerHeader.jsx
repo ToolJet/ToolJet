@@ -19,10 +19,8 @@ import { useSelectedQueryLoadingState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
-import { Button } from 'react-bootstrap';
-import { decodeEntities } from '@/_helpers/utils';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import InputComponent from '@/components/ui/Input/Index';
+import ButtonComponent from '@/components/ui/Button/Index';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setActiveTab, activeTab }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -120,6 +118,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
             'data-tooltip-id': 'query-header-btn-run',
             'data-tooltip-content': 'Publish the query to run',
           })}
+          className="tw-w-[80px]"
         >
           {isLoading ? ' ' : 'Run'}
         </ButtonComponent>
@@ -192,6 +191,7 @@ const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
       variant="outline"
       data-cy={'query-preview-button'}
       isLoading={previewLoading && !isRunButtonLoading}
+      className="tw-w-[100px]"
     >
       Preview
     </ButtonComponent>

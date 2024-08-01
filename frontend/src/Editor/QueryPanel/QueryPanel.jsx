@@ -6,12 +6,10 @@ import QueryManager from '../QueryManager/QueryManager';
 import useWindowResize from '@/_hooks/useWindowResize';
 import { useQueryPanelActions, useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
-import Maximize from '@/_ui/Icon/solidIcons/Maximize';
 import { isEmpty, isEqual } from 'lodash';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import cx from 'classnames';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { Button } from '@/components/ui/Button/Button';
+import ButtonComponent from '@/components/ui/Button/Index';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -166,13 +164,13 @@ const QueryPanel = ({
         }}
       >
         <div style={{ width: '288px', padding: '5px 12px' }} className="d-flex justify-content align-items-center">
-          <Button onClick={toggleQueryEditor} variant="ghost">
+          <ButtonComponent onClick={toggleQueryEditor} variant="ghost" className="tw-w-[75px]">
             {isExpanded ? 'Collapse' : 'Expand'}
-          </Button>
+          </ButtonComponent>
           <div className="vr" />
-          <Button onClick={toggleQueryEditor} variant="ghost">
+          <ButtonComponent onClick={toggleQueryEditor} variant="ghost">
             Queries
-          </Button>
+          </ButtonComponent>
         </div>
       </div>
       <div

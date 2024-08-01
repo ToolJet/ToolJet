@@ -2,10 +2,6 @@ import React, { useContext } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
-import Remove from '@/_ui/Icon/solidIcons/Remove';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import set from 'lodash/set';
@@ -14,6 +10,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 import useConfirm from './Confirm';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import ButtonComponent from '@/components/ui/Button/Index';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =
@@ -222,10 +219,9 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         </Col>
         {index !== 0 && (
           <Col sm="1" className="justify-content-end d-flex pe-0">
-            <ButtonSolid
-              variant="ghostBlack"
-              size="sm"
-              className="p-0"
+            <ButtonComponent
+              iconOnly
+              leadingIcon="remove"
               onClick={async () => {
                 const result = await confirm(
                   'Deleting a join will also delete its associated conditions. Are you sure you want to continue ?',
@@ -233,9 +229,9 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 );
                 if (result) onRemove();
               }}
-            >
-              <Remove style={{ height: '16px' }} />
-            </ButtonSolid>
+              variant="ghost"
+              size="medium"
+            />
           </Col>
         )}
       </Row>
@@ -367,18 +363,18 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
       ))}
       <Row className="mb-2 mx-1">
         <Col className="p-0">
-          <ButtonSolid
-            variant="ghostBlue"
-            size="sm"
+          <ButtonComponent
+            leadingIcon="plusrectangle"
             onClick={() => {
               const newData = { ...data };
               set(newData, 'conditions.conditionsList', [...conditionsList, { operator: '=' }]);
               onChange(newData);
             }}
+            variant="ghostBrand"
+            size="medium"
           >
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp; Add more
-          </ButtonSolid>
+            Add more
+          </ButtonComponent>
         </Col>
       </Row>
       <ConfirmDialog confirmButtonText="Continue" darkMode={darkMode} />
@@ -549,17 +545,7 @@ const JoinOn = ({
             }}
           />
         </div>
-        {index > 0 && (
-          <ButtonSolid
-            customStyles={{ height: '30px' }}
-            size="sm"
-            variant="ghostBlack"
-            className="px-1 rounded-0 border border-start-0 rounded-end"
-            onClick={onRemove}
-          >
-            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
-          </ButtonSolid>
-        )}
+        {index > 0 && <ButtonComponent iconOnly leadingIcon="trash" fill="var(--slate9)" onClick={onRemove} size="medium" variant="ghost" />}
       </Col>
 
       {/* {index > 0 && (

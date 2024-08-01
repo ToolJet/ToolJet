@@ -17,9 +17,9 @@ import { useEditorStore } from '@/_stores/editorStore';
 import CodeHinter from '../CodeEditor';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import AppModeToggle from './AppModeToggle';
-import { Button } from '@/components/ui/Button/Button';
 import SwitchComponent from '@/components/ui/Switch/Index';
 import InputComponent from '@/components/ui/Input/Index';
+import ButtonComponent from '@/components/ui/Button/Index';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -365,7 +365,7 @@ export const GlobalSettings = ({
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
                 <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
                 <div>
-                  <Button
+                  <ButtonComponent
                     fill="var(--indigo9)"
                     leadingIcon="fileupload"
                     className="tw-w-[158px] !tw-text-[var(--indigo9)] !tw-bg-[var(--indigo3)] hover:!tw-text-[var(--indigo10)] hover:!tw-bg-[var(--indigo4)] active:!tw-text-[var(--indigo9)] active:!tw-bg-[var(--indigo5) focus-visible:!tw-text-[var(--indigo10)] focus-visible:!tw-bg-[var(--indigo3)]"
@@ -376,7 +376,7 @@ export const GlobalSettings = ({
                     data-cy="button-user-status-change"
                   >
                     Export this app
-                  </Button>
+                  </ButtonComponent>
                 </div>
               </div>
             </div>

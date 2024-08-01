@@ -2,11 +2,9 @@ import React, { useContext } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
-import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import ButtonComponent from '@/components/ui/Button/Index';
 
 export default function JoinSort({ darkMode }) {
   const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, joinOptions, findTableDetails } =
@@ -125,17 +123,15 @@ export default function JoinSort({ darkMode }) {
                     }}
                   />
                 </div>
-                <ButtonSolid
-                  size="sm"
-                  variant="ghostBlack"
-                  className="px-1 rounded-0 border rounded-end"
-                  customStyles={{
-                    height: '30px',
-                  }}
+                <ButtonComponent
+                  fill="var(--slate9)"
+                  iconOnly
+                  className="rounded-0 border rounded-end"
+                  leadingIcon="trash"
                   onClick={() => setJoinOrderByOptions(joinOrderByOptions.filter((opt, idx) => idx !== i))}
-                >
-                  <Trash fill="var(--slate9)" style={{ height: '16px' }} />
-                </ButtonSolid>
+                  size="medium"
+                  variant="ghost"
+                />
               </Col>
             </Row>
           );
@@ -144,10 +140,15 @@ export default function JoinSort({ darkMode }) {
       {/* Dynamically render below Row */}
       <Row className="mx-1 mb-1">
         <Col className="p-0">
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={() => setJoinOrderByOptions([...joinOrderByOptions, {}])}>
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp; Add more
-          </ButtonSolid>
+          <ButtonComponent
+            fill="#3E63DD"
+            leadingIcon="addrectangle"
+            onClick={() => setJoinOrderByOptions([...joinOrderByOptions, {}])}
+            size="medium"
+            variant="ghostBrand"
+          >
+            Add more
+          </ButtonComponent>
         </Col>
       </Row>
     </Container>

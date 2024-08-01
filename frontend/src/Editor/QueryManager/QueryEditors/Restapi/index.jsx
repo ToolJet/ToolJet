@@ -3,7 +3,6 @@
 import React from 'react';
 import { isEmpty, defaults } from 'lodash';
 import Tabs from './Tabs';
-import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';

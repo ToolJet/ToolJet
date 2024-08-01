@@ -1,8 +1,5 @@
 import React, { useContext } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
-import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { clone } from 'lodash';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
@@ -12,6 +9,7 @@ import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/Editor/CodeEditor';
+import ButtonComponent from '@/components/ui/Button/Index';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -103,9 +101,9 @@ const SelectTableMenu = ({ darkMode }) => {
             />
           ))}
           <Row className="mx-0">
-            <ButtonSolid
-              variant="secondary"
-              size="sm"
+            <ButtonComponent
+              fill="#3E63DD"
+              leadingIcon="addrectangle"
               onClick={() =>
                 setJoins([
                   ...joins,
@@ -124,10 +122,11 @@ const SelectTableMenu = ({ darkMode }) => {
                   },
                 ])
               }
+              size="medium"
+              variant="secondary"
             >
-              <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-              &nbsp;&nbsp; Add another table
-            </ButtonSolid>
+              Add another table
+            </ButtonComponent>
           </Row>
         </div>
       </div>
@@ -460,18 +459,14 @@ const RenderFilterSection = ({ darkMode }) => {
               />
             )}
           </div>
-
-          <ButtonSolid
-            customStyles={{
-              height: '30px',
-            }}
-            size="sm"
-            variant="ghostBlack"
-            className="px-1 rounded-0 border rounded-end col-2"
+          <ButtonComponent
+            fill="var(--slate9)"
+            iconOnly
+            leadingIcon="trash"
             onClick={() => removeFilterConditionEntry(index)}
-          >
-            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
-          </ButtonSolid>
+            size="medium"
+            variant="ghost"
+          />
         </Col>
       </Row>
     );
@@ -497,10 +492,15 @@ const RenderFilterSection = ({ darkMode }) => {
       {filterComponents}
       <Row className="mx-1 mb-1">
         <Col className="p-0">
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewFilterConditionEntry()}>
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp; Add more
-          </ButtonSolid>
+          <ButtonComponent
+            fill="#3E63DD"
+            leadingIcon="addrectangle"
+            onClick={() => addNewFilterConditionEntry()}
+            size="medium"
+            variant="ghostBrand"
+          >
+            Add more
+          </ButtonComponent>
         </Col>
       </Row>
     </Container>

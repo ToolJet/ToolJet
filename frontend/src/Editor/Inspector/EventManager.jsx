@@ -27,7 +27,8 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { Button } from '@/components/ui/Button/Button';
+import ButtonComponent from '@/components/ui/Button/Index';
+
 
 export const EventManager = ({
   sourceId,
@@ -1045,7 +1046,7 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <Button
+      <ButtonComponent
         leadingIcon="plusrectangle"
         onClick={addHandler}
         variant="outline"
@@ -1054,7 +1055,7 @@ export const EventManager = ({
         className="tw-mt-2 tw-w-full"
       >
         New event handler
-      </Button>
+      </ButtonComponent>
     );
   };
 
