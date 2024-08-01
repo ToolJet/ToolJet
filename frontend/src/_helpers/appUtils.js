@@ -522,7 +522,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, undefined, customVariables);
+        let message = resolveReferences(event.message, undefined, customVariables);
+        if (typeof message === 'object') message = JSON.stringify(message);
+
         switch (event.alertType) {
           case 'success':
           case 'error':
