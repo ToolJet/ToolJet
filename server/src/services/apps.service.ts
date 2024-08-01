@@ -773,7 +773,6 @@ export class AppsService {
 
       newComponents.forEach((component) => {
         let parentId = component.parent ? component.parent : null;
-
         if (!parentId) return;
 
         const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
