@@ -41,7 +41,7 @@ export const PreviewBox = ({
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
-  let isSecretConstant = currentValue.includes('{{') && currentValue.includes('secrets.');
+  let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
 
   if (hasCircularDependency(resolvedValue)) {
     previewContent = JSON.stringify(resolvedValue, handleCircularStructureToJSON());
@@ -119,7 +119,7 @@ export const PreviewBox = ({
         coersionData={coersionData}
         withValidation={!isEmpty(validationSchema)}
         isWorkspaceVariable={isWorkspaceVariable}
-        isSecretConstant={isSecretConstant}
+        isSecretConstant={isSecretConstant || false}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -137,7 +137,7 @@ const RenderResolvedValue = ({
   coersionData,
   withValidation,
   isWorkspaceVariable,
-  isSecretConstant,
+  isSecretConstant = false,
 }) => {
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;

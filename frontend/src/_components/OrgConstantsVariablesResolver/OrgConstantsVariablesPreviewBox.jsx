@@ -40,7 +40,11 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
     <ResolvedValue
       value={value}
       isFocused={isFocused}
-      state={{ ...workspaceVariables, constants: workspaceConstants.globals, secrets: workspaceConstants.secrets }}
+      state={{
+        ...workspaceVariables,
+        constants: workspaceConstants?.globals || {},
+        secrets: workspaceConstants?.secrets || {},
+      }}
       type={valueType}
     />
   );
@@ -121,7 +125,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     }
   };
 
-  const isConstant = type === 'Workspace global constant' || 'Workspace secret constant';
+  const isConstant = type === 'Workspace global constant' || type === 'Workspace secret constant';
 
   const [heightRef, currentHeight] = useHeight();
 

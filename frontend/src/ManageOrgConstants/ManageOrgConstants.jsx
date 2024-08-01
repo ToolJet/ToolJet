@@ -361,8 +361,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
               data-cy="add-new-constant-button"
               variant="primary"
               onClick={() => {
-                setMode(MODES.CREATE);
-                setIsManageVarDrawerOpen(true);
+                setMode(() => MODES.CREATE);
+                setIsManageVarDrawerOpen(() => true);
               }}
               className="add-new-constant-button"
               customStyles={{ minWidth: '200px', height: '32px' }}
