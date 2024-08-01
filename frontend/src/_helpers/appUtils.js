@@ -465,7 +465,6 @@ function showModal(_ref, modal, show) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
   }
-  useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([modalId]);
   const modalMeta = _ref.appDefinition.pages[_ref.currentPageId].components[modalId]; //! NeedToFix
 
   const _components = {
@@ -478,6 +477,7 @@ function showModal(_ref, modal, show) {
   useCurrentStateStore.getState().actions.setCurrentState({
     components: _components,
   });
+  useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([modalId]);
   return Promise.resolve();
 }
 
