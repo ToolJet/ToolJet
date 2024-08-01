@@ -185,7 +185,7 @@ function getDynamicVariables(text) {
   const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
   return matchedParams;
 }
-const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
+const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode, customResolvers = {}) => {
   try {
     let resolvedValue = code;
 
@@ -206,14 +206,14 @@ const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
 
           resolvedValue = resolvedValue.replace(variable, res);
         } else {
-          const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+          const [resolvedCode] = resolveCode(variableToResolve, customResolvers, true, [], true);
 
           resolvedValue = resolvedValue.replace(variable, resolvedCode);
         }
       });
     } else {
       const variableToResolve = removeNestedDoubleCurlyBraces(code);
-      const [resolvedCode] = resolveCode(variableToResolve, {}, true, [], true);
+      const [resolvedCode] = resolveCode(variableToResolve, customResolvers, true, [], true);
 
       resolvedValue = typeof resolvedCode === 'string' ? resolvedValue.replace(code, resolvedCode) : resolvedCode;
     }
@@ -288,7 +288,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   const { lookupTable } = useResolveStore.getState();
 
   if (useJSResolvers) {
-    resolvedValue = resolveMultiDynamicReferences(query, lookupTable, queryHasJSCode);
+    resolvedValue = resolveMultiDynamicReferences(query, lookupTable, queryHasJSCode, customResolvers);
   } else {
     let value = removeNestedDoubleCurlyBraces(query);
 
