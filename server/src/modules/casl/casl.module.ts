@@ -19,9 +19,10 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
 import { TooljetDbAbilityFactory } from './abilities/tooljet-db-ability.factory';
 import { GlobalDataSourceAbilityFactory } from './abilities/global-datasource-ability.factory';
 import { OrganizationConstantsAbilityFactory } from './abilities/organization-constants-ability.factory';
+import { InstanceSettingsModule } from '@instance-settings/module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App])],
+  imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App]), InstanceSettingsModule],
   providers: [
     CaslAbilityFactory,
     OrganizationUsersService,

@@ -24,6 +24,9 @@ export class App extends BaseEntity {
   @Column({ name: 'name' })
   name: string;
 
+  @Column({ name: 'type' })
+  type: string;
+
   @Column({ name: 'slug', unique: true })
   slug: string;
 
