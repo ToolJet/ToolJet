@@ -9,6 +9,8 @@ function deepEqualityCheckusingLoDash(obj1, obj2) {
 
 export const shouldUpdate = (prevProps, nextProps) => {
   const listToRender = getComponentsToRenders();
+  // evaluate change in exposedVariables only for Modal component, because open/close in modal relies on exposedVariables
+  const compareExposedVariables = nextProps.componentName === 'Modal';
 
   let needToRender = false;
 
@@ -38,6 +40,9 @@ export const shouldUpdate = (prevProps, nextProps) => {
     deepEqualityCheckusingLoDash(prevProps?.customResolvables, nextProps?.customResolvables) &&
     deepEqualityCheckusingLoDash(prevProps?.properties, nextProps?.properties) &&
     deepEqualityCheckusingLoDash(prevProps?.styles, nextProps?.styles) &&
+    (compareExposedVariables
+      ? deepEqualityCheckusingLoDash(prevProps?.exposedVariables, nextProps?.exposedVariables)
+      : true) &&
     prevProps?.width === nextProps?.width &&
     prevProps?.height === nextProps?.height &&
     prevProps?.darkMode === nextProps?.darkMode &&
