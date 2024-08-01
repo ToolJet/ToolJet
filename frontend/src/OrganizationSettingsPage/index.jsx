@@ -9,6 +9,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
+import workspaceSettingsLinks from './constant';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -18,7 +19,22 @@ export function OrganizationSettings(props) {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const { workspaceId } = useParams();
 
-  const sideBarNavs = ['Users', 'Groups', 'Workspace login', 'Workspace variables'];
+  const conditionObj = { admin: true, hide: false };
+
+  const checkConditions = (conditions, conditionsObj) => {
+    for (const condition of conditions) {
+      if (!(condition in conditionsObj) || conditionsObj[condition] === false) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  //Filterd Links from the workspace settings links array
+  const filteredLinks = workspaceSettingsLinks.filter((item) => {
+    return checkConditions(item.conditions, conditionObj);
+  });
+
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'users':
@@ -59,12 +75,12 @@ export function OrganizationSettings(props) {
         <div className="row gx-0">
           <div className="organization-page-sidebar col ">
             <div className="workspace-nav-list-wrap">
-              {sideBarNavs.map((item, index) => {
+              {filteredLinks.map((item, index) => {
                 const Wrapper = ({ children }) => <>{children}</>;
                 return (
                   <Wrapper key={index}>
                     <Link
-                      to={`/${workspaceId}/workspace-settings/${item.toLowerCase().replace(/\s+/g, '-')}`} // Update the URL path here
+                      to={`/${workspaceId}/workspace-settings/${item.route}`} // Update the URL path here
                       key={index}
                       style={{
                         textDecoration: 'none',
@@ -79,11 +95,11 @@ export function OrganizationSettings(props) {
                           className="workspace-settings-nav-items"
                           key={index}
                           onClick={() => {
-                            setSelectedTab(defaultOrgName(item));
-                            if (item == 'Users') updateSidebarNAV('Users');
-                            else updateSidebarNAV(item);
+                            setSelectedTab(defaultOrgName(item.name));
+                            if (item.name == 'Users') updateSidebarNAV('Users');
+                            else updateSidebarNAV(item.name);
                           }}
-                          selectedItem={selectedTab == defaultOrgName(item)}
+                          selectedItem={selectedTab == defaultOrgName(item.name)}
                           renderBadgeForItems={['Workspace constants']}
                           renderBadge={() => (
                             <span
@@ -93,9 +109,9 @@ export function OrganizationSettings(props) {
                               new
                             </span>
                           )}
-                          dataCy={item.toLowerCase().replace(/\s+/g, '-')}
+                          dataCy={item.name.toLowerCase().replace(/\s+/g, '-')}
                         >
-                          {item}
+                          {item.name}
                         </FolderList>
                       )}
                     </Link>
