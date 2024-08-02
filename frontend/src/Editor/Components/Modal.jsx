@@ -22,7 +22,6 @@ export const Modal = function Modal({
   mode,
 }) {
   const [showModal, setShowModal] = useState(false);
-
   const {
     closeOnClickingOutside = false,
     hideOnEsc,
@@ -45,6 +44,7 @@ export const Modal = function Modal({
   } = styles;
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
+  const isInitialRender = useRef(true);
 
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
@@ -80,39 +80,33 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setShowModal]);
 
-  const isInitialRender = useRef(true);
-  const prevShowValue = useRef(exposedVariables.show);
-  const shouldFireCloseEvent = useRef(false);
-
   useEffect(() => {
-    const canShowModal = exposedVariables.show ?? false;
-
     if (isInitialRender.current) {
       isInitialRender.current = false;
-    } else if (!canShowModal && prevShowValue.current) {
-      shouldFireCloseEvent.current = true;
+      return;
     }
+    const canShowModal = exposedVariables.show ?? false;
+    fireEvent(!canShowModal && 'onClose');
+    setShowModal(exposedVariables.show ?? false);
+    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
+    inputRef?.blur();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exposedVariables]);
 
-    setShowModal(canShowModal);
-    prevShowValue.current = canShowModal;
-
-    // return () => {
-    //   if (shouldFireCloseEvent.current) {
-    //     fireEvent('onClose');
-    //     shouldFireCloseEvent.current = false;
-    //   }
-    // };
-  }, [exposedVariables.show]);
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false);
-    console.log('Trigger close event =>', exposedVariables.show);
     fireEvent('onClose');
   }
+
+  function openModal() {
+    setExposedVariable('show', true);
+    fireEvent('onOpen');
+  }
+
   useEffect(() => {
     const handleModalOpen = () => {
-      fireEvent('onOpen');
-      setExposedVariable('show', true);
+      openModal();
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
@@ -233,8 +227,6 @@ export const Modal = function Modal({
 
             event.stopPropagation();
             setShowModal(true);
-            // setExposedVariable('show', true);
-            // fireEvent('onOpen');
           }}
           data-cy={`${dataCy}-launch-button`}
         >
