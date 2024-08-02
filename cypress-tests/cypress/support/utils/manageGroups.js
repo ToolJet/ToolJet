@@ -7,7 +7,7 @@ import {
   createGroup,
   navigateToManageGroups,
 } from "Support/utils/common";
-import { cyParamName } from "../../constants/selectors/common";
+import { cyParamName } from "Selectors/common";
 
 export const manageGroupsElements = () => {
   cy.get('[data-cy="page-title"]').should(($el) => {

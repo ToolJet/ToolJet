@@ -23,7 +23,7 @@ describe("Manage Groups", () => {
       " Groups"
     );
 
-    // groups.manageGroupsElements();
+    groups.manageGroupsElements();
     cy.get(groupsSelector.createNewGroupButton).should("be.visible").click();
     cy.get(groupsSelector.addNewGroupModalTitle).verifyVisibleElement(
       "have.text",
@@ -306,62 +306,107 @@ describe("Manage Groups", () => {
 
     cy.clearAndType('[data-cy="permission-name-input"]', groupName)
     cy.get('[data-cy="confim-button"]').click()
+    cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
 
-    // cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
-    //   "have.text",
-    //   "Name"
-    // );
+    cy.get('[data-cy="modal-title"]:eq(2)').verifyVisibleElement(
+      "have.text",
+      "Edit app permissions"
+    );
+    cy.get('[data-cy="delete-button"]').should('be.visible');
+    cy.get('[data-cy="modal-close-button"]').should("be.visible").click();
+    cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
+    cy.get('[data-cy="modal-title"]:eq(2)').verifyVisibleElement(
+      "have.text",
+      "Edit app permissions"
+    );
 
-    // cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
-    //   "have.text",
-    //   "Permission"
-    // );
-    // cy.get('[data-cy="resource-header"]:eq(1)').verifyVisibleElement(
-    //   "have.text",
-    //   "Resource"
-    // );
-    // cy.get('[data-cy="empty-page-svg"]').should('be.visible');
-    // cy.get('[data-cy="empty-page-title"]').verifyVisibleElement('hev.text', "No permissions added yet")
-    // cy.get('[data-cy="empty-page-info-text"]').verifyVisibleElement('hev.text', "Add assets to configure granular, asset-level permissions for this user group")
-    // cy.get('[data-cy="add-apps-buton"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Add apps"
-    // );
-    // cy.get('[data-cy="apps-text"]').verifyVisibleElement("have.text", "  Apps");
-    // cy.get('[data-cy="app-edit-radio"]').should("be.visible").and("be.checked");
-    // cy.get('[data-cy="app-edit-label"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Edit"
-    // );
-    // cy.get('[data-cy="app-edit-helper-text"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Access to app builder"
-    // );
+    cy.get('[data-cy="permission-name-label"]').verifyVisibleElement(
+      "have.text",
+      "Permission name"
+    );
+    cy.get('[data-cy="permission-name-input"]')
+      .should("be.visible")
+      .and("have.value", groupName);
+    cy.get('[data-cy="permission-name-help-text"]').verifyVisibleElement(
+      "have.text",
+      "Permission name must be unique and max 50 characters"
+    );
 
-    // cy.get('[data-cy="app-view-radio"]').should("be.visible");
-    // cy.get('[data-cy="app-view-label"]').verifyVisibleElement(
-    //   "have.text",
-    //   "View"
-    // );
-    // cy.get('[data-cy="app-view-helper-text"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Only access released version of apps"
-    // );
-    // cy.get('[data-cy="app-hide-from-dashboard-radio"]').should("be.visible");
+    cy.get('[data-cy="permission-label"]').verifyVisibleElement(
+      "have.text",
+      "Permission"
+    );
+    cy.get('[data-cy="edit-permission-radio"]').should("be.visible").check();
+    cy.get('[data-cy="edit-permission-label"]').verifyVisibleElement(
+      "have.text",
+      "Edit"
+    );
+    cy.get('[data-cy="edit-permission-info-text"]').verifyVisibleElement(
+      "have.text",
+      "Access to app builder"
+    );
 
-    // cy.get(
-    //   '[data-cy="app-hide-from-dashboard-helper-text"]'
-    // ).verifyVisibleElement("have.text", "App will be accessible by URL only");
-    // cy.get('[data-cy="group-chip"]').verifyVisibleElement(
-    //   "have.text",
-    //   "All apps"
-    // );
-    // cy.get('[data-cy="add-apps-buton"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Add apps"
-    // );
+    cy.get('[data-cy="view-permission-radio"]')
+      .should("be.visible")
+      .and("not.be.checked");
+    cy.get('[data-cy="view-permission-label"]').verifyVisibleElement(
+      "have.text",
+      "View"
+    );
+    cy.get('[data-cy="view-permission-info-text"]').verifyVisibleElement(
+      "have.text",
+      "Only access released version of apps"
+    );
 
-    cy.get(groupsSelector.updateGroupNameLink(groupName)).click();
+    cy.get('[data-cy="hide-from-dashboard-permission-input"]').should(
+      "be.visible"
+    );
+    cy.get(
+      '[data-cy="hide-from-dashboard-permission-label"]'
+    ).verifyVisibleElement("have.text", "Hide from dashboard");
+    cy.get(
+      '[data-cy="hide-from-dashboard-permission-info-text"]'
+    ).verifyVisibleElement("have.text", "App will be accessible by URL only");
+
+    cy.get('[data-cy="resource-label"]').verifyVisibleElement(
+      "have.text",
+      "Resources"
+    );
+    cy.get('[data-cy="all-apps-radio"]').should("be.visible").and("be.checked");
+    cy.get('[data-cy="all-apps-label"]').verifyVisibleElement(
+      "have.text",
+      "All apps"
+    );
+    cy.get('[data-cy="all-apps-info-text"]').verifyVisibleElement(
+      "have.text",
+      "This will select all apps in the workspace including any new apps created"
+    );
+
+    cy.get('[ data-cy="custom-radio"]').should("be.visible");
+    cy.get('[data-cy="custom-label"]').verifyVisibleElement(
+      "have.text",
+      "Custom"
+    );
+    cy.get('[data-cy="custom-info-text"]').verifyVisibleElement(
+      "have.text",
+      "Select specific applications you want to add to the group"
+    );
+    cy.get('[data-cy="resources-container"]>>>>').should("be.visible");
+    cy.get('[data-cy="confim-button"]').verifyVisibleElement(
+      "have.text",
+      "Update"
+    );
+    cy.get('[data-cy="confim-button"]').should('be.enabled')
+    cy.get('[data-cy="cancel-button"]')
+      .verifyVisibleElement("have.text", "Cancel")
+      .click();
+
+    cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
+    cy.clearAndType('[data-cy="permission-name-input"]', groupName)
+    cy.get('[data-cy="edit-permission-radio"]').check();
+    cy.get('[data-cy="confim-button"]').click()
+
+    cy.get('[data-cy="group-name-update-link"]').click();
     cy.get(groupsSelector.updateGroupNameModalTitle).verifyVisibleElement(
       "have.text",
       groupsText.updateGroupNameModalTitle
@@ -377,7 +422,7 @@ describe("Manage Groups", () => {
     );
     cy.get(groupsSelector.cancelButton).click();
 
-    cy.get(groupsSelector.updateGroupNameLink(groupName)).click();
+    cy.get('[data-cy="group-name-update-link"]').click();
 
     cy.clearAndType(groupsSelector.groupNameInput, newGroupname);
 
