@@ -258,6 +258,21 @@ export default function generateColumnsData({
               color: textColor ?? '',
               overflow: 'hidden',
             };
+
+            const allowedDecimalPlaces = column?.decimalPlaces ?? null;
+
+            const removingExcessDecimalPlaces = (cellValue, allowedDecimalPlaces) => {
+              allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces);
+              if (cellValue?.toString()?.includes('.')) {
+                const splittedCellValue = cellValue?.toString()?.split('.');
+                const decimalPlacesUnderLimit = splittedCellValue[1].split('').splice(0, allowedDecimalPlaces).join('');
+                cellValue = Number(`${splittedCellValue[0]}.${decimalPlacesUnderLimit}`);
+              }
+              return cellValue;
+            };
+
+            cellValue = allowedDecimalPlaces ? removingExcessDecimalPlaces(cellValue, allowedDecimalPlaces) : cellValue;
+
             if (isEditable) {
               const validationData = validateWidget({
                 validationObject: {
@@ -300,23 +315,6 @@ export default function generateColumnsData({
                   handleCellValueChange(cell.row.index, column.key || column.name, Number(newValue), cell.row.original);
                 }
               };
-
-              const allowedDecimalPlaces = column?.decimalPlaces ?? null;
-              const removingExcessDecimalPlaces = (cellValue, allowedDecimalPlaces) => {
-                allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces);
-                if (cellValue?.toString()?.includes('.')) {
-                  const splittedCellValue = cellValue?.toString()?.split('.');
-                  const decimalPlacesUnderLimit = splittedCellValue[1]
-                    .split('')
-                    .splice(0, allowedDecimalPlaces)
-                    .join('');
-                  cellValue = Number(`${splittedCellValue[0]}.${decimalPlacesUnderLimit}`);
-                }
-                return cellValue;
-              };
-              cellValue = allowedDecimalPlaces
-                ? removingExcessDecimalPlaces(cellValue, allowedDecimalPlaces)
-                : cellValue;
 
               return (
                 <div className="h-100 d-flex flex-column justify-content-center position-relative">
@@ -691,6 +689,7 @@ export default function generateColumnsData({
           }
           case 'link': {
             const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}');
+            const displayText = column?.displayText ? resolveReferences(column.displayText) : '';
             column = {
               ...column,
               linkColor: column?.linkColor ?? '#1B1F24',
@@ -704,7 +703,7 @@ export default function generateColumnsData({
                   linkColor={column.linkColor}
                   underlineColor={column.underlineColor}
                   underline={column.underline}
-                  displayText={column.displayText}
+                  displayText={displayText}
                   darkMode={darkMode}
                 />
               </div>

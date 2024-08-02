@@ -19,7 +19,7 @@ import {
   calculateMoveableBoxHeight,
 } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, flushComponentsToRender } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import _, { isEmpty } from 'lodash';
@@ -588,11 +588,15 @@ export const Container = ({
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
         const parentId = copyOfBoxes[parent] ? parent : parent?.split('-').slice(0, -1).join('-');
-        const compoenentType = copyOfBoxes[parentId]?.component.component;
+        const componentType = copyOfBoxes[parentId]?.component.component;
         var parentHeight = parentElem?.clientHeight || _height;
-        if (_height > parentHeight && ['Tabs', 'Listview'].includes(compoenentType)) {
+        if (_height > parentHeight && ['Tabs', 'Listview'].includes(componentType)) {
           _height = parentHeight;
           y = 0;
+        }
+
+        if (componentType === 'Listview' && y > parentHeight) {
+          y = y % parentHeight;
         }
       }
 
@@ -655,7 +659,7 @@ export const Container = ({
       }
       if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) => {
-          // Ensure boxes[id] exists
+          // Ensure boxes[id] exists. This can happen is page is already switched and the component attributes change gets triggered after that
           if (!boxes[id]) {
             console.error(`Box with id ${id} does not exist`);
             return boxes;
@@ -677,7 +681,6 @@ export const Container = ({
             },
           });
         });
-
         if (!_.isEmpty(opts)) {
           paramUpdatesOptsRef.current = opts;
         }
@@ -879,12 +882,6 @@ export const Container = ({
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
-              const canShowInCurrentLayout =
-                box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-
-              if (box.parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
-                return '';
-              }
               return (
                 <WidgetWrapper
                   isResizing={resizingComponentId === id}
@@ -896,6 +893,7 @@ export const Container = ({
                   mode={mode}
                   propertiesDefinition={box?.component?.definition?.properties}
                   stylesDefinition={box?.component?.definition?.styles}
+                  otherDefinition={box?.component?.definition?.others}
                   componentType={box?.component?.component}
                 >
                   <DraggableBox
@@ -1019,19 +1017,37 @@ const WidgetWrapper = ({
   propertiesDefinition,
   stylesDefinition,
   componentType,
+  otherDefinition,
 }) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
     layouts,
   } = widget;
-  const { isSelected, isHovered } = useEditorStore((state) => {
+  const { isSelected, isHovered, shouldRerender } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
     const isHovered = state?.hoveredComponent == id;
-    return { isSelected, isHovered };
+    /*
+     `shouldRerender` is added only for re-rendering the component when visibility/showOnMobile/showOnDesktop 
+     updates since these attributes need update or WidgetWrapper rather than actual Widget itself
+     */
+    const shouldRerender = state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id);
+    return { isSelected, isHovered, shouldRerender };
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
+
+  const canShowInCurrentLayout = otherDefinition[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+
+  if (parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
+    /*
+      Remove the component from the re-render queue
+      This is necessary because child components are not rendered,
+      so their flush functions won't be called from ControlledComponentToRender
+    */
+    shouldRerender && flushComponentsToRender(id);
+    return '';
+  }
 
   let layoutData = layouts?.[currentLayout];
   if (isEmpty(layoutData)) {

@@ -110,10 +110,8 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
   }, [lang]);
 
   useEffect(() => {
-    if (options.enableTransformation) {
-      lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
-      setState({ ...state, [lang]: options.transformation ?? defaultValue[lang] });
-    }
+    lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
+    setState({ ...state, [lang]: options.transformation ?? state[lang] ?? defaultValue[lang] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(options.transformation)]);
 
@@ -140,6 +138,10 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
     setEnableTransformation(newEnableTransformation);
     changeOption('enableTransformation', newEnableTransformation);
   };
+
+  useEffect(() => {
+    setEnableTransformation(options.enableTransformation);
+  }, [options.enableTransformation]);
 
   return (
     <div className="field transformation-editor">
@@ -178,7 +180,6 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
       </div>
       <br />
       <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
-        {/* <div className="form-label"></div> */}
         <div className="col flex-grow-1">
           <div style={{ borderRadius: '6px', marginBottom: '20px', background: darkMode ? '#272822' : '#F8F9FA' }}>
             <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
@@ -228,7 +229,9 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
               lineNumbers={true}
               height={400}
               className="query-hinter"
-              onChange={(value) => changeOption('transformation', value)}
+              onChange={(value) => {
+                changeOption('transformation', value);
+              }}
               componentName={`transformation`}
               cyLabel={'transformation-input'}
               callgpt={noop}

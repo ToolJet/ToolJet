@@ -28,11 +28,6 @@
     display: none !important;
 }
 
-.inspector {
-    .cm-base-autocomplete {
-        left: auto !important;
-    }
-}
 
 .cm-base-hint-info {
     color: var(--text-default, #1B1F24) !important;
@@ -135,9 +130,6 @@
             }
 
 
-
-
-
         }
 
         li[aria-selected="true"] {
@@ -148,12 +140,13 @@
 
         // li > :first-child,
         li> :nth-child(2) {
-            display: flex !important;
+            display: inline !important;
             align-self: flex-start !important;
             width: 100% !important;
             text-wrap: nowrap !important;
-            // if the text is too long, it will be cut off
-            overflow: hidden !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         li> :last-child {
