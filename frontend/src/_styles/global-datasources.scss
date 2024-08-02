@@ -301,3 +301,36 @@
         margin: auto;
     }
 }
+
+
+.add-plugin-card{
+    border: 1px dashed var(--border-default, #CCD1D5);
+    background-color: var(--interactive-weak);
+
+    &:hover{
+        border: 1px dashed var(--border-strong, #CCD1D5);
+        background-color: var(--interactive-default);
+    }
+}
+
+
+
+.add-plugin-card-title{
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--text-default);
+}
+
+
+.dark-theme{
+    .add-plugin-card{
+        border: 1px dashed var(--border-default, #CCD1D5);
+    background-color: var(--interactive-weak);
+
+    &:hover{
+        border: 1px dashed var(--border-strong, #CCD1D5);
+        background-color: var(--interactive-default);
+    }
+    }
+}
