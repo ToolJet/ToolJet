@@ -294,10 +294,15 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
       resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
 
       if (jsExpression) {
-        let jscode = value.replace(toResolveReference, resolvedValue);
-        jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
-
-        resolvedValue = resolveCode(jscode, customResolvers);
+        let jscode = value;
+        if (!Array.isArray(resolvedValue) && typeof resolvedValue !== 'object' && resolvedValue !== null) {
+          jscode = value.replace(toResolveReference, resolvedValue).replace(toResolveReference, `'${resolvedValue}'`);
+          resolvedValue = resolveCode(jscode, customResolvers);
+        } else {
+          const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);
+          resolvedValue = resolvedCode;
+          error = errorRef || null;
+        }
       }
     } else {
       const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);
