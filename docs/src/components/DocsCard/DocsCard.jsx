@@ -20,6 +20,7 @@ export const DocsCard = ({ label, imgSrc, link, height = 40, width = 40, title }
         Kubernetes: "Deploy ToolJet on a Kubernetes cluster",
         "Kubernetes (GKE)": "Deploy ToolJet on a GKE Kubernetes cluster",
         "Kubernetes (AKS)": "Deploy ToolJet on a AKS Kubernetes cluster",
+        "Kubernetes (EKS)": "Deploy ToolJet on a EKS Kubernetes cluster",
         "Azure container apps": "Deploy ToolJet on a Azure Container Apps",
         "Google Cloud Run": "Deploy ToolJet on Cloud Run with GCloud CLI",
         "Deploying ToolJet client": "Deploy ToolJet Client on static website hosting services",
