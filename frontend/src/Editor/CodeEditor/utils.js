@@ -311,7 +311,6 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
           resolvedValue = resolveCode(jscode, customResolvers);
         } else {
           const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);
-
           resolvedValue = resolvedCode;
           error = errorRef || null;
         }
