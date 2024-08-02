@@ -22,7 +22,6 @@ export const Modal = function Modal({
   mode,
 }) {
   const [showModal, setShowModal] = useState(false);
-
   const {
     closeOnClickingOutside = false,
     hideOnEsc,
@@ -87,12 +86,12 @@ export const Modal = function Modal({
       return;
     }
     const canShowModal = exposedVariables.show ?? false;
-    fireEvent(canShowModal ? 'onOpen' : 'onClose');
+    fireEvent(!canShowModal && 'onClose');
     setShowModal(exposedVariables.show ?? false);
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exposedVariables.show]);
+  }, [exposedVariables]);
 
   function hideModal() {
     setShowModal(false);
@@ -100,8 +99,14 @@ export const Modal = function Modal({
     fireEvent('onClose');
   }
 
+  function openModal() {
+    setExposedVariable('show', true);
+    fireEvent('onOpen');
+  }
+
   useEffect(() => {
     const handleModalOpen = () => {
+      openModal();
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
@@ -222,7 +227,6 @@ export const Modal = function Modal({
 
             event.stopPropagation();
             setShowModal(true);
-            setExposedVariable('show', true);
           }}
           data-cy={`${dataCy}-launch-button`}
         >

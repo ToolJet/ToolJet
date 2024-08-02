@@ -260,6 +260,7 @@ export const Form = function Form(props) {
                 currentPageId={props.currentPageId}
                 {...props}
                 {...containerProps}
+                height={'100%'} // This height is required since Subcontainer has a issue if height is provided, it stores it in the ref and never updates that ref
               />
               <SubCustomDragLayer
                 containerCanvasWidth={width}
