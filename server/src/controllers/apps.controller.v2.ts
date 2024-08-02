@@ -34,6 +34,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@dto/event-handler.dto';
 import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 import { VersionReleaseDto } from '@dto/version-release.dto';
+import { AppsServiceSep } from '@apps/services/apps.service.sep';
 
 @Controller({
   path: 'apps',
@@ -42,6 +43,7 @@ import { VersionReleaseDto } from '@dto/version-release.dto';
 export class AppsControllerV2 {
   constructor(
     private appsService: AppsService,
+    private appsServiceSep: AppsServiceSep,
     private componentsService: ComponentsService,
     private pageService: PageService,
     private eventsService: EventsService,
@@ -97,11 +99,19 @@ export class AppsControllerV2 {
     console.log({ app });
 
     //! if editing version exists, camelize the definition
-    if (app.editingVersion && app.editingVersion.definition) {
-      response['editing_version'] = {
-        ...response['editing_version'],
-        definition: camelizeKeys(app.editingVersion.definition),
-      };
+    if (app.editingVersion) {
+      const appTheme = await this.appsServiceSep.getTheme(
+        user.organizationId,
+        response['editing_version']['global_settings']?.['theme']?.['id']
+      );
+      response['editing_version']['global_settings']['theme'] = appTheme;
+
+      if (app.editingVersion.definition) {
+        response['editing_version'] = {
+          ...response['editing_version'],
+          definition: camelizeKeys(app.editingVersion.definition),
+        };
+      }
     }
 
     return response;
@@ -128,6 +138,7 @@ export class AppsControllerV2 {
 
     const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
     const eventsForVersion = app.editingVersion ? await this.eventsService.findEventsForVersion(versionToLoad.id) : [];
+    const appTheme = await this.appsServiceSep.getTheme(app.organizationId, versionToLoad?.globalSettings?.theme?.id);
 
     // serialize
     return {
@@ -141,7 +152,7 @@ export class AppsControllerV2 {
       events: eventsForVersion,
       pages: pagesForVersion,
       homePageId: versionToLoad.homePageId,
-      globalSettings: versionToLoad.globalSettings,
+      globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
       showViewerNavigation: versionToLoad.showViewerNavigation,
     };
   }
@@ -179,9 +190,16 @@ export class AppsControllerV2 {
 
     delete appData['editingVersion'];
 
+    const editingVersion = camelizeKeys(appCurrentEditingVersion);
+
+    // Inject app theme
+    const appTheme = await this.appsServiceSep.getTheme(user.organizationId, editingVersion?.globalSettings?.theme?.id);
+
+    editingVersion['globalSettings']['theme'] = appTheme;
+
     return {
       ...appData,
-      editing_version: camelizeKeys(appCurrentEditingVersion),
+      editing_version: editingVersion,
       pages: pagesForVersion,
       events: eventsForVersion,
     };

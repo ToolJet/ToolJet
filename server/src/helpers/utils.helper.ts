@@ -324,3 +324,7 @@ export const isValidDomain = (email: string, restrictedDomain: string): boolean 
   }
   return true;
 };
+
+export const isSuperAdmin = (user?: any) => {
+  return false;
+};

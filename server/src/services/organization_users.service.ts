@@ -104,6 +104,16 @@ export class OrganizationUsersService {
     });
   }
 
+  async isTheUserIsAnActiveMemberOfTheWorkspace(userId: string, organizationId: string) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        userId,
+        organizationId,
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      },
+    });
+  }
+
   async updateOrgUser(organizationUserId: string, updateUserDto) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
     return await this.usersService.update(

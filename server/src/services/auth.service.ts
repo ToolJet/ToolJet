@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -8,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
-import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
 import { UserSessions } from '../entities/user_sessions.entity';
 import { OrganizationUsersService } from './organization_users.service';
@@ -18,18 +18,10 @@ import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, EntityManager, Repository } from 'typeorm';
+import { DeepPartial, EntityManager, Repository, getManager } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import {
-  dbTransactionWrap,
-  fullName,
-  generateInviteURL,
-  generateNextNameAndSlug,
-  generateOrgInviteURL,
-  isValidDomain,
-} from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -39,27 +31,37 @@ import {
   SOURCE,
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
+  WORKSPACE_STATUS,
   WORKSPACE_USER_SOURCE,
 } from 'src/helpers/user_lifecycle';
+import {
+  dbTransactionWrap,
+  isSuperAdmin,
+  fullName,
+  generateInviteURL,
+  generateNextNameAndSlug,
+  generateOrgInviteURL,
+  isValidDomain,
+} from 'src/helpers/utils.helper';
+import { InstanceSettingsService } from '@instance_settings/instance_settings.service';
 import { MetadataService } from './metadata.service';
 import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
-import {
-  GROUP_PERMISSIONS_TYPE,
-  USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { uuid4 } from '@sentry/utils';
+import got from 'got/dist/source';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { AppAuthenticationDto, AppSignupDto } from '@dto/app-authentication.dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
-import { UserRoleService } from './user-role.service';
-import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
-import { AbilityService } from './permissions-ability.service';
-import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+import { INSTANCE_USER_SETTINGS, INSTANCE_SYSTEM_SETTINGS } from '@instance_settings/constants';
 import { ResendInviteDto } from '@dto/resend-invite.dto';
+import { JwtService } from './jwt.service';
+import { App } from 'src/entities/app.entity';
+import { AuditLoggerService } from '@audit_logs/audit_logger.service';
+import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 
 @Injectable()
 export class AuthService {
@@ -73,19 +75,16 @@ export class AuthService {
     private organizationsService: OrganizationsService,
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
+    private auditLoggerService: AuditLoggerService,
+    private instanceSettingsService: InstanceSettingsService,
     private metadataService: MetadataService,
     private configService: ConfigService,
-    private sessionService: SessionService,
-    private userRoleService: UserRoleService,
-    private groupPermissionsService: GroupPermissionsServiceV2,
-    private abilityService: AbilityService,
-    @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>
+    private sessionService: SessionService
   ) {}
 
   verifyToken(token: string) {
     try {
-      const signedJwt = this.jwtService.verify(token);
+      const signedJwt = this.jwtService.verifyToken(token);
       return signedJwt;
     } catch (err) {
       return null;
@@ -93,7 +92,10 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
+    const user = await this.jwtService.findByEmail(email, organizationId, [
+      WORKSPACE_USER_STATUS.ACTIVE,
+      WORKSPACE_USER_STATUS.ARCHIVED,
+    ]);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -101,6 +103,17 @@ export class AuthService {
 
     if (user.status !== USER_STATUS.ACTIVE) {
       throw new UnauthorizedException(getUserErrorMessages(user.status));
+    }
+
+    if (organizationId) {
+      const organizationUser = user.organizationUsers.find(
+        (organizationUser) => organizationUser.organizationId === organizationId
+      );
+      if (organizationUser && organizationUser.status === WORKSPACE_USER_STATUS.ARCHIVED) {
+        throw new UnauthorizedException(
+          'You have been archived from this workspace. Sign in to another workspace or contact admin to know more.'
+        );
+      }
     }
 
     const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');
@@ -123,6 +136,34 @@ export class AuthService {
     return user;
   }
 
+  async getSessionDetails(user: User, appId?: string, workspaceSlug?: string) {
+    let appData: { organizationId: string; isPublic: boolean; isReleased: boolean };
+    let currentOrganization: Organization;
+    if (appId) {
+      appData = await this.retrieveAppDataUsingSlug(appId);
+    }
+
+    if (workspaceSlug || appData?.organizationId) {
+      const organization = await this.jwtService.fetchOrganization(workspaceSlug || appData.organizationId);
+      if (!organization) {
+        throw new NotFoundException("Couldn't found workspace. workspace id or slug is incorrect!.");
+      }
+      const activeMemberOfOrganization = await this.organizationUsersService.isTheUserIsAnActiveMemberOfTheWorkspace(
+        user.id,
+        organization.id
+      );
+      if (activeMemberOfOrganization) currentOrganization = organization;
+      const alreadyWorkspaceSessionAvailable = user.organizationIds?.includes(appData?.organizationId);
+      const orgIdNeedsToBeUpdatedForApplicationSession =
+        appData && appData.organizationId !== user.defaultOrganizationId && alreadyWorkspaceSessionAvailable;
+      if (orgIdNeedsToBeUpdatedForApplicationSession) {
+        /* If the app's organization id is there in the JWT and user default organization id is different, then update it */
+        await this.usersService.updateUser(user.id, { defaultOrganizationId: appData.organizationId });
+      }
+    }
+    return await this.generateSessionPayload(user, currentOrganization, appData);
+  }
+
   async login(response: Response, appAuthDto: AppAuthenticationDto, organizationId?: string, loggedInUser?: User) {
     let organization: Organization;
     const { email, password, redirectTo } = appAuthDto;
@@ -133,7 +174,7 @@ export class AuthService {
     let user: User;
     if (isInviteRedirect) {
       /* give access to the default organization */
-      user = await this.usersService.findByEmail(email, organizationId, [WORKSPACE_USER_STATUS.INVITED]);
+      user = await this.jwtService.findByEmail(email, organizationId, [WORKSPACE_USER_STATUS.INVITED]);
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');
       }
@@ -141,6 +182,10 @@ export class AuthService {
     } else {
       user = await this.validateUser(email, password, organizationId);
     }
+
+    const allowPersonalWorkspace =
+      isSuperAdmin(user) ||
+      (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!organizationId) {
@@ -159,13 +204,14 @@ export class AuthService {
         } else if (organizationList?.length > 0) {
           // default organization form login not enabled, picking first one from form enabled list
           organization = organizationList[0];
-        } else {
+        } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
-          if (!isInviteRedirect) {
-            const { name, slug } = generateNextNameAndSlug('My workspace');
-            organization = await this.organizationsService.create(name, slug, user, manager);
-          }
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          organization = await this.organizationsService.create(name, slug, user, manager);
+        } else {
+          if (!isInviteRedirect) throw new UnauthorizedException('User is not assigned to any workspaces');
         }
+
         if (organization) user.organizationId = organization.id;
       } else {
         // organization specific login
@@ -173,6 +219,7 @@ export class AuthService {
         user.organizationId = organizationId;
 
         organization = await this.organizationsService.get(user.organizationId);
+
         const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
         if (!formConfigs?.enabled) {
@@ -190,6 +237,20 @@ export class AuthService {
 
       await this.usersService.updateUser(user.id, updateData, manager);
 
+      if (!isInviteRedirect) {
+        await this.auditLoggerService.perform(
+          {
+            userId: user.id,
+            organizationId: organization.id,
+            resourceId: user.id,
+            resourceType: ResourceTypes.USER,
+            resourceName: user.email,
+            actionType: ActionTypes.USER_LOGIN,
+          },
+          manager
+        );
+      }
+
       return await this.generateLoginResultPayload(response, user, organization, false, true, loggedInUser);
     });
   }
@@ -198,10 +259,10 @@ export class AuthService {
     if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
       throw new UnauthorizedException();
     }
-    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
+    const newUser = await this.jwtService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
     /* User doesn't have access to this workspace */
-    if (!newUser) {
+    if (!newUser && !isSuperAdmin(newUser)) {
       throw new UnauthorizedException("User doesn't have access to this workspace");
     }
     newUser.organizationId = newOrganizationId;
@@ -210,7 +271,10 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
+    if (
+      !isSuperAdmin(newUser) && // bypassing login mode checks for super admin
+      ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO))
+    ) {
       // no configurations in organization side or Form login disabled for the organization
       throw new UnauthorizedException('Please log in to continue');
     }
@@ -230,38 +294,29 @@ export class AuthService {
     });
   }
 
-  //TODO:this function is not used now
   async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (user.defaultOrganizationId !== user.organizationId)
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
       const organization = await this.organizationsService.get(user.organizationId);
-      const permissions = await this.groupPermissionsService.getAllUserGroups(user.id, user.organizationId);
-      const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-        organizationId: user.organizationId,
-        resources: [{ resource: TOOLJET_RESOURCE.APP }],
-      });
-      const isAdmin = !!permissions.find((permission) => permission.name === USER_ROLE.ADMIN);
-      const appGroupPermissions = userPermissions?.[TOOLJET_RESOURCE.APP];
-      delete userPermissions?.[TOOLJET_RESOURCE.APP];
+
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
         currentOrganizationName: organization.name,
-        admin: isAdmin,
-        userPermissions: userPermissions,
-        groupPermissions: permissions.filter(
-          (group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP || group.name === USER_ROLE.ADMIN
-        ),
-        role: permissions.find((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT),
-        appGroupPermissions: appGroupPermissions,
+        admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+        super_admin: user.userType === 'instance',
+        groupPermissions: await this.usersService.groupPermissions(user, manager),
+        appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
         currentUser: {
           id: user.id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
           avatarId: user.avatarId,
+          ssoUserInfo: user.userDetails?.ssoUserInfo,
         },
       });
     });
@@ -272,7 +327,7 @@ export class AuthService {
     if (!email) {
       throw new BadRequestException();
     }
-    const existingUser = await this.usersService.findByEmail(email);
+    const existingUser = await this.jwtService.findByEmail(email);
 
     if (existingUser?.status === USER_STATUS.ARCHIVED) {
       throw new NotAcceptableException('User has been archived, please contact the administrator');
@@ -297,10 +352,7 @@ export class AuthService {
     }
 
     if (organizationUser) {
-      const invitedOrganization = await this.organizationsRepository.findOne({
-        where: { id: organizationUser.organizationId },
-        select: ['name', 'id'],
-      });
+      const invitedOrganization = await this.organizationsService.get(organizationUser.organizationId);
       if (existingUser.invitationToken) {
         /* Not activated. */
         this.emailService
@@ -350,7 +402,7 @@ export class AuthService {
         throw new NotAcceptableException();
       }
 
-      const existingUser = await this.usersService.findByEmail(email);
+      const existingUser = await this.jwtService.findByEmail(email);
       let signingUpOrganization: Organization;
 
       if (organizationId) {
@@ -411,8 +463,17 @@ export class AuthService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
       /* Create personal workspace */
-      const { name, slug } = generateNextNameAndSlug('My workspace');
-      const personalWorkspace = await this.organizationsService.create(name, slug, null, manager);
+      const isPersonalWorkspaceEnabled =
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
+
+      let personalWorkspace: Organization;
+      if (isPersonalWorkspaceEnabled) {
+        const { name, slug } = generateNextNameAndSlug('My workspace');
+        personalWorkspace = await this.organizationsService.create(name, slug, null, manager);
+      }
+
+      const organizationId = personalWorkspace ? personalWorkspace.id : signingUpOrganization.id;
+      const organizationGroups = personalWorkspace ? ['all_users', 'admin'] : ['all_users'];
       /* Create the user or attach user groups to the user */
       const lifeCycleParms = signingUpOrganization
         ? getUserStatusAndSource(lifecycleEvents.USER_WORKSPACE_SIGN_UP)
@@ -425,14 +486,15 @@ export class AuthService {
           ...(lastName && { lastName }),
           ...lifeCycleParms,
         },
-        personalWorkspace.id,
-        USER_ROLE.ADMIN,
+        organizationId,
+        organizationGroups,
         existingUser,
         true,
         null,
-        manager
+        manager,
+        !isPersonalWorkspaceEnabled
       );
-      await this.organizationUsersService.create(user, personalWorkspace, true, manager);
+      if (personalWorkspace) await this.organizationUsersService.create(user, personalWorkspace, true, manager);
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUsersService.create(
@@ -442,12 +504,11 @@ export class AuthService {
           manager,
           WORKSPACE_USER_SOURCE.SIGNUP
         );
-        await this.userRoleService.addUserRole(
-          { userId: user.id, role: USER_ROLE.END_USER },
-          signingUpOrganization.id,
-          manager
-        );
+        if (signingUpOrganization.id !== organizationId)
+          /* To avoid creating the groups again. */
+          await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, user.id, false, manager);
 
+        await this.usersService.validateLicense(manager);
         this.emailService
           .sendWelcomeEmail(
             user.email,
@@ -460,11 +521,35 @@ export class AuthService {
             redirectTo
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
+
+        await this.auditLoggerService.perform(
+          {
+            userId: user.id,
+            organizationId: signingUpOrganization.id,
+            resourceId: user.id,
+            resourceType: ResourceTypes.USER,
+            resourceName: user.email,
+            actionType: ActionTypes.USER_SIGNUP,
+          },
+          manager
+        );
         return {};
       } else {
+        await this.usersService.validateLicense(manager);
         this.emailService
           .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
           .catch((err) => console.error('Error while sending welcome mail', err));
+        await this.auditLoggerService.perform(
+          {
+            userId: user.id,
+            organizationId: personalWorkspace?.id,
+            resourceId: user.id,
+            resourceType: ResourceTypes.USER,
+            resourceName: user.email,
+            actionType: ActionTypes.USER_SIGNUP,
+          },
+          manager
+        );
         return {};
       }
     }, manager);
@@ -583,6 +668,7 @@ export class AuthService {
             Response: Add the user to the workspace and send the organization and account invite again (eg: /invitations/<>/workspaces/<>).
           */
           organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
+          await this.usersService.validateLicense(manager);
         }
         this.emailService
           .sendWelcomeEmail(
@@ -612,6 +698,7 @@ export class AuthService {
         } else {
           /* Create new organizations_user entry and send an invite */
           organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
+          await this.usersService.validateLicense(manager);
         }
         return this.sendOrgInvite(
           { email: existingUser.email, firstName: existingUser.firstName },
@@ -626,6 +713,30 @@ export class AuthService {
         const firstTimeSignup = ![SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(existingUser.source as SOURCE);
         if (firstTimeSignup) {
           /* Invite user doing instance signup. So reset name fields and set password */
+          let defaultOrganizationId = existingUser.defaultOrganizationId;
+          const isPersonalWorkspaceAllowed =
+            (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
+            'true';
+          if (!existingUser.defaultOrganizationId && isPersonalWorkspaceAllowed) {
+            const personalWorkspaces = await this.organizationUsersService.personalWorkspaces(existingUser.id);
+            if (personalWorkspaces.length) {
+              defaultOrganizationId = personalWorkspaces[0].organizationId;
+            } else {
+              /* Create a personal workspace for the user */
+              const { name, slug } = generateNextNameAndSlug('My workspace');
+              const defaultOrganization = await this.organizationsService.create(name, slug, null, manager);
+              defaultOrganizationId = defaultOrganization.id;
+              await this.organizationUsersService.create(existingUser, defaultOrganization, true, manager);
+              await this.usersService.attachUserGroup(
+                ['all_users', 'admin'],
+                defaultOrganizationId,
+                existingUser.id,
+                false,
+                manager
+              );
+            }
+          }
+
           await this.usersService.updateUser(
             existingUser.id,
             {
@@ -633,10 +744,12 @@ export class AuthService {
               ...(lastName && { lastName }),
               password,
               source: SOURCE.SIGNUP,
+              defaultOrganizationId,
             },
             manager
           );
         }
+        await this.usersService.validateLicense(manager);
         this.emailService
           .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
           .catch((err) => console.error('Error while sending welcome mail', err));
@@ -654,11 +767,7 @@ export class AuthService {
   };
 
   async addUserToTheWorkspace(existingUser: User, signingUpOrganization: Organization, manager: EntityManager) {
-    await this.userRoleService.addUserRole(
-      { userId: existingUser.id, role: USER_ROLE.END_USER },
-      signingUpOrganization.id,
-      manager
-    );
+    await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, existingUser.id, false, manager);
     return this.organizationUsersService.create(
       existingUser,
       signingUpOrganization,
@@ -670,7 +779,7 @@ export class AuthService {
 
   async activateAccountWithToken(activateAccountWithToken: ActivateAccountWithTokenDto, response: any) {
     const { email, password, organizationToken } = activateAccountWithToken;
-    const signupUser = await this.usersService.findByEmail(email);
+    const signupUser = await this.jwtService.findByEmail(email);
     const invitedUser = await this.organizationUsersService.findByWorkspaceInviteToken(organizationToken);
 
     /* Server level check for this API */
@@ -700,7 +809,7 @@ export class AuthService {
       let defaultOrganization: Organization;
       if (defaultOrganizationUser) {
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
-        defaultOrganization = await this.organizationsService.fetchOrganization(defaultOrganizationUser.organizationId);
+        defaultOrganization = await this.jwtService.fetchOrganization(defaultOrganizationUser.organizationId);
       }
 
       await this.usersService.updateUser(
@@ -720,6 +829,7 @@ export class AuthService {
         CASE: user redirected to signup to activate his account with password. 
         Till now user doesn't have an organization.
       */
+      await this.usersService.validateLicense(manager);
       return this.processOrganizationSignup(
         response,
         signupUser,
@@ -731,7 +841,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.jwtService.findByEmail(email);
     if (!user) {
       throw new BadRequestException('Email address not found');
     }
@@ -782,7 +892,6 @@ export class AuthService {
         null,
         manager
       );
-
       const user = await this.usersService.create(
         {
           email,
@@ -802,12 +911,11 @@ export class AuthService {
         null,
         manager
       );
-
       await this.organizationUsersService.create(user, organization, false, manager);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
-    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    await this.metadataService.finishOnboarding(new TelemetryDataDto(userCreateDto));
     return result;
   }
 
@@ -833,12 +941,25 @@ export class AuthService {
       let organizationUser: OrganizationUser;
       let isSSOVerify: boolean;
 
+      const allowPersonalWorkspace =
+        (await this.usersService.count()) === 0 ||
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
+
+      if (!(allowPersonalWorkspace || organizationToken)) {
+        throw new BadRequestException('Invalid invitation link');
+      }
       if (organizationToken) {
         organizationUser = await manager.findOne(OrganizationUser, {
           where: { invitationToken: organizationToken },
           relations: ['user'],
         });
       }
+
+      if (!password && source === URL_SSO_SOURCE) {
+        /* For SSO we don't need password. let us set uuid as a password. */
+        password = uuid4();
+      }
+
       if (user?.organizationUsers) {
         if (!password && source === 'sso') {
           /* For SSO we don't need password. let us set uuid as a password. */
@@ -848,16 +969,28 @@ export class AuthService {
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
         }
-        // Getting default workspace
-        const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
-          (ou) => ou.organizationId === user.defaultOrganizationId
-        );
 
-        if (!defaultOrganizationUser) {
-          throw new BadRequestException('Invalid invitation link');
+        if (allowPersonalWorkspace) {
+          // Getting default workspace
+          const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
+            (ou) => ou.organizationId === user.defaultOrganizationId
+          );
+
+          if (!defaultOrganizationUser) {
+            throw new BadRequestException('Invalid invitation link');
+          }
+
+          // Activate default workspace
+          await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
         }
 
-        isSSOVerify = source === URL_SSO_SOURCE && (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT);
+        isSSOVerify =
+          source === URL_SSO_SOURCE &&
+          (user.source === SOURCE.GOOGLE ||
+            user.source === SOURCE.GIT ||
+            user.source === SOURCE.OPENID ||
+            user.source === SOURCE.SAML ||
+            user.source === SOURCE.LDAP);
 
         const lifecycleParams = getUserStatusAndSource(
           isSSOVerify ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,
@@ -878,9 +1011,6 @@ export class AuthService {
           },
           manager
         );
-
-        // Activate default workspace
-        await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
       } else {
         throw new BadRequestException('Invalid invitation link');
       }
@@ -905,6 +1035,19 @@ export class AuthService {
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
 
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+          resourceType: ResourceTypes.USER,
+          actionType: ActionTypes.USER_INVITE_REDEEM,
+        },
+        manager
+      );
+
+      await this.usersService.validateLicense(manager);
       return this.generateLoginResultPayload(response, user, organization, isInstanceSSOLogin, !isSSOVerify);
     });
   }
@@ -953,6 +1096,7 @@ export class AuthService {
         await this.organizationUsersService.activateOrganization(organizationUser, manager);
       }
       const isWorkspaceSignup = organizationUser.source === WORKSPACE_USER_SOURCE.SIGNUP;
+      await this.usersService.validateLicense(manager);
       return this.generateLoginResultPayload(
         response,
         user,
@@ -1013,7 +1157,7 @@ export class AuthService {
         questions:
           (this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true' &&
             !organizationUser) || // Should ask onboarding questions if first user of the instance. If ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true, then will ask questions to all signup users
-          (await this.usersRepository.count({ where: { status: USER_STATUS.ACTIVE } })) === 0,
+          (await this.usersService.count({ status: USER_STATUS.ACTIVE })) === 0,
       },
     };
   }
@@ -1032,6 +1176,15 @@ export class AuthService {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
+    await this.auditLoggerService.perform({
+      userId: user.id,
+      organizationId: organizationUser.organizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+      resourceType: ResourceTypes.USER,
+      actionType: ActionTypes.USER_INVITE_REDEEM,
+    });
+
     return {
       email: user.email,
       name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
@@ -1041,7 +1194,7 @@ export class AuthService {
     };
   }
 
-  async generateSessionPayload(user: User, currentOrganization: Organization) {
+  async generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const currentOrganizationId = currentOrganization?.id
         ? currentOrganization?.id
@@ -1057,14 +1210,21 @@ export class AuthService {
             })
         : null;
 
+      const activeWorkspacesCount = await this.organizationUsersService.getActiveWorkspacesCount(user.id);
+      const noWorkspaceAttachedInTheSession = activeWorkspacesCount === 0;
+      const isAllWorkspacesArchived = await this.organizationUsersService.isAllWorkspacesArchivedBySuperAdmin(user.id);
+
       return decamelizeKeys({
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        noWorkspaceAttachedInTheSession,
+        isAllWorkspacesArchived,
+        currentOrganizationId,
         currentOrganizationSlug: organizationDetails?.slug,
         currentOrganizationName: organizationDetails?.name,
-        currentOrganizationId,
+        ...(appData && { appData }),
       });
     });
   }
@@ -1088,9 +1248,10 @@ export class AuthService {
 
     // logged in user and new user are different -> creating session
     if (loggedInUser?.id !== user.id) {
+      const clientIp = (request as any)?.clientIp;
       const session: UserSessions = await this.sessionService.createSession(
         user.id,
-        `IP: ${request?.clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
+        `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
           request?.headers['user-agent'] || 'unknown'
         }`,
         manager
@@ -1122,13 +1283,24 @@ export class AuthService {
       cookieOptions.secure = true;
     }
 
-    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
+    response.cookie('tj_auth_token', this.jwtService.generateToken(JWTPayload), cookieOptions);
 
+    const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
     const responsePayload = {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatar_id: user.avatarId,
+      sso_user_info: user.userDetails?.ssoUserInfo,
+      organizationId: organization?.id,
+      organization: organization?.name,
+      superAdmin: isSuperAdmin(user),
+      admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+      groupPermissions: await this.usersService.groupPermissions(user, manager),
+      appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+      dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
+      isCurrentOrganizationArchived,
       ...(organization
         ? { currentOrganizationId: organization.id, currentOrganizationSlug: organization.slug }
         : { noWorkspaceAttachedInTheSession: true }),
@@ -1153,7 +1325,7 @@ export class AuthService {
     const accountYetToActive =
       organizationAndAccountInvite &&
       [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(invitedUserStatus as USER_STATUS);
-    const invitedOrganization = await this.organizationsService.fetchOrganization(invitedUser['invitedOrganizationId']);
+    const invitedOrganization = await this.jwtService.fetchOrganization(invitedUser['invitedOrganizationId']);
     const { name: invitedOrganizationName, slug: invitedOrganizationSlug } = invitedOrganization;
 
     if (accountYetToActive) {
@@ -1204,7 +1376,7 @@ export class AuthService {
       : null;
 
     const organzationId = user?.organizationId || user?.defaultOrganizationId;
-    const activeOrganization = organzationId ? await this.organizationsService.fetchOrganization(organzationId) : null;
+    const activeOrganization = organzationId ? await this.jwtService.fetchOrganization(organzationId) : null;
     const payload = await this.generateSessionPayload(user, activeOrganization);
     const responseObj = {
       ...payload,
@@ -1222,11 +1394,12 @@ export class AuthService {
     manager?: EntityManager
   ): Promise<any> {
     const request = RequestContext?.currentContext?.req;
+    const clientIp = (request as any)?.clientIp;
     const { id, email, firstName, lastName } = user;
 
     const session: UserSessions = await this.sessionService.createSession(
       user.id,
-      `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
         request?.headers['user-agent'] || 'unknown'
       }`,
       manager
@@ -1253,13 +1426,34 @@ export class AuthService {
       cookieOptions.sameSite = 'none';
       cookieOptions.secure = true;
     }
-    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
+    response.cookie('tj_auth_token', this.jwtService.generateToken(JWTPayload), cookieOptions);
 
     return decamelizeKeys({
       id,
       email,
       firstName,
       lastName,
+    });
+  }
+
+  async retrieveAppDataUsingSlug(
+    slug: string
+  ): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      let app: App;
+      try {
+        app = await manager.findOneOrFail(App, slug);
+      } catch (error) {
+        app = await manager.findOne(App, {
+          slug,
+        });
+      }
+
+      return {
+        organizationId: app?.organizationId,
+        isPublic: app?.isPublic,
+        isReleased: app?.currentVersionId ? true : false,
+      };
     });
   }
 }

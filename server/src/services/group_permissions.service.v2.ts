@@ -70,8 +70,8 @@ export class GroupPermissionsServiceV2 {
     return response;
   }
 
-  async getGroup(id: string, manager?: EntityManager): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  getGroup(id: string, manager?: EntityManager): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
       const [group, isBuilderLevelResourcePermissions] = await Promise.all([
         manager.findOne(GroupPermissions, {
           where: { id },
@@ -86,8 +86,8 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto, manager?: EntityManager) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto, manager?: EntityManager) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
       const { group } = await this.getGroup(id);
       if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
 
@@ -138,8 +138,8 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async deleteGroup(id: string): Promise<void> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  deleteGroup(id: string): Promise<void> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
       const { group } = await this.getGroup(id, manager);
       if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
         throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_UPDATE_NOT_ALLOWED);
@@ -156,33 +156,33 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async getAllGroupUsers(
+  getAllGroupUsers(
     getGroupUsersObject: GetGroupUsersObject,
     searchInput?: string,
     manager?: EntityManager
   ): Promise<GroupUsers[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await getUserInGroupQuery(getGroupUsersObject, manager, searchInput).getMany();
+    return dbTransactionWrap((manager: EntityManager) => {
+      return getUserInGroupQuery(getGroupUsersObject, manager, searchInput).getMany();
     }, manager);
   }
 
-  async getGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(GroupUsers, id, {
+  getGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.findOne(GroupUsers, id, {
         relations: ['group'],
       });
     }, manager);
   }
 
-  async getAllUserGroups(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await getAllUserGroupsQuery(userId, organizationId, manager).getMany();
+  getAllUserGroups(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions[]> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return getAllUserGroupsQuery(userId, organizationId, manager).getMany();
     }, manager);
   }
 
-  async deleteGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.delete(GroupUsers, id);
+  deleteGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.delete(GroupUsers, id);
     }, manager);
   }
 

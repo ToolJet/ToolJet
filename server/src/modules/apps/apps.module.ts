@@ -41,6 +41,7 @@ import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { AppsServiceSep } from '@apps/services/apps.service.sep';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
   ],
   providers: [
     AppsService,
+    AppsServiceSep,
     AppUsersService,
     UsersService,
     FoldersService,

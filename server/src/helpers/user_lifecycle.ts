@@ -32,6 +32,11 @@ export enum USER_STATUS {
   ARCHIVED = 'archived',
 }
 
+export enum WORKSPACE_STATUS {
+  ACTIVE = 'active',
+  ARCHIVE = 'archived',
+}
+
 export const URL_SSO_SOURCE = 'sso';
 
 export function getUserErrorMessages(status: any) {
