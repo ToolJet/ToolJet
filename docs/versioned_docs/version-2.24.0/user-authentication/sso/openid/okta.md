@@ -17,7 +17,7 @@ title: Okta
 <img className="screenshot-full" src="/img/sso/okta/create-app-s1.png" alt="Okta: SSO" width="700"/>
 </div>
 
-4. Enter an **App integration name** and set the **Sign-in redirect URIs** to `<YOUR-DOMAIN>/sso/okta`.
+4. Enter an **App integration name** and set the **Sign-in redirect URIs** to `<YOUR-DOMAIN>/sso/openid`.
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/sso/okta/create-app-s2.png" alt="Okta: SSO" width="700"/>
   </div>
