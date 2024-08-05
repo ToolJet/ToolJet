@@ -3,6 +3,9 @@ import { getLastDepth, getLastSubstring } from './autocompleteUtils';
 
 export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, originalQueryInput = null) => {
   if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
+  if (!hasBalancedBraces(input)) {
+    return [];
+  }
 
   const actualInput = removeNestedDoubleCurlyBraces(input);
 
@@ -68,6 +71,17 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
   );
   return orderSuggestions(suggestions, fieldType);
 };
+
+// Helper function to check for balanced braces  - {{}} else dont show suggestions
+export function hasBalancedBraces(input) {
+  let count = 0;
+  for (let char of input) {
+    if (char === '{') count++;
+    if (char === '}') count--;
+    if (count < 0) return false;
+  }
+  return count === 0;
+}
 
 function orderSuggestions(suggestions, validationType) {
   if (!validationType) return suggestions;
@@ -149,33 +163,46 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
         let exprStart = fullText.lastIndexOf('{{', cursorPos);
         let exprEnd = fullText.indexOf('}}', cursorPos);
 
-        // Handle case where there's no closing braces
-        if (exprEnd === -1) {
-          exprEnd = fullText.length;
-        }
-
-        // If no opening brace found, use the 'from' position
+        // Handle case where there's no opening brace found
         if (exprStart === -1) {
-          exprStart = from;
+          exprStart = from; // Use the 'from' position provided by CodeMirror
         }
 
-        const beforeCursor = fullText.substring(exprStart + 2, cursorPos); // +2 to skip '{{'
-        const afterCursor = fullText.substring(cursorPos, exprEnd);
+        // Handle case where there's no closing brace found
+        if (exprEnd === -1) {
+          exprEnd = fullText.length; // Set to end of document
+        }
+
+        // Ensure exprStart and cursorPos are within valid range
+        const safeExprStart = Math.max(0, Math.min(exprStart, fullText.length));
+        const safeCursorPos = Math.max(0, Math.min(cursorPos, fullText.length));
+
+        // Adjust the substring call with bounds checking
+        const beforeCursor = fullText.substring(Math.min(safeExprStart + 2, fullText.length), safeCursorPos);
+
+        const safeExprEnd = Math.max(0, Math.min(exprEnd, fullText.length));
+        const afterCursor = fullText.substring(safeCursorPos, safeExprEnd);
 
         // Use findNearestSubstring to get the current input
         const currentInput = findNearestSubstring(beforeCursor, beforeCursor.length);
 
-        // Determine the range to replace
-        let replaceStart, replaceEnd;
+        let replaceStart = cursorPos;
+        let replaceEnd = cursorPos;
 
         if (completion.type === 'js_methods') {
           replaceStart = from;
           replaceEnd = to;
         } else {
-          replaceStart = exprStart + 2 + beforeCursor.lastIndexOf(currentInput); // +2 to account for '{{'
+          const lastIndex = beforeCursor.lastIndexOf(currentInput);
+          if (lastIndex !== -1) {
+            replaceStart = exprStart + 2 + lastIndex; // +2 to account for '{{'
+          } else {
+            // If currentInput is not found, set replaceStart to the cursor position
+            // This will effectively insert the completion at the cursor
+            replaceStart = cursorPos;
+          }
           replaceEnd = cursorPos;
         }
-
         // Create the new content
         let newContent;
         if (completion.type === 'js_methods') {
@@ -215,16 +242,16 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
               fullText.substring(replaceEnd, exprEnd);
           }
         }
-
         // Ensure the expression ends with closing braces if it was originally present
-        if (exprEnd < fullText.length && fullText.substring(exprEnd, exprEnd + 2) === '}}') {
+
+        if (exprEnd >= 0 && exprEnd + 2 <= fullText.length && fullText.substring(exprEnd, exprEnd + 2) === '}}') {
           newContent += '}}';
         }
-
         // Apply the change
         view.dispatch({
           changes: { from: exprStart, to: exprEnd + 2, insert: newContent },
           selection: { anchor: exprStart + newContent.length - (newContent.endsWith('}}') ? 2 : 0) },
+          // ...dispatchConfig
         });
       },
     };

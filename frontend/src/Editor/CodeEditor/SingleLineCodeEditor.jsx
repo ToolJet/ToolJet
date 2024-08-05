@@ -15,7 +15,7 @@ import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { getAutocompletion } from './autocompleteExtensionConfig';
+import { getAutocompletion, hasBalancedBraces } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { EditorContext } from '../Context/EditorContextWrapper';
@@ -163,9 +163,12 @@ const EditorInput = ({
   function autoCompleteExtensionConfig(context) {
     let word = context.matchBefore(/\w*/); // finds the word before cursor
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length; //totalReferences will be set to the number of times '{{' appears in the document
-
     let queryInput = context.state.doc.toString(); // gives the whole input
     const originalQueryInput = queryInput;
+
+    if (!hasBalancedBraces(queryInput)) {
+      return null; // Return null to prevent showing suggestions
+    }
 
     if (totalReferences > 0) {
       //currentCursor is the start position of current typed word and currentCursorPos is current position of cursor
