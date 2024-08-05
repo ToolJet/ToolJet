@@ -90,7 +90,7 @@ export const CustomComponent = (props) => {
           {
             message: 'INIT_RESPONSE',
             componentId: id,
-            data: customProps,
+            data: customPropRef.current,
             code: code,
           },
           '*'
