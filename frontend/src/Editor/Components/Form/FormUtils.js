@@ -55,7 +55,8 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
-            if (value?.label) uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            // prevent label from showing up in text input, because it is already shown in the text component. (Defaults to "Label" if not updated explicitly with an empty string)
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             break;
           case 'DropDown':
             if (value?.styles?.disabled)
@@ -156,7 +157,7 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['minValue']['value'] = value?.minValue;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
-            if (value?.label) uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             break;
 
           case 'PasswordInput':
@@ -187,7 +188,7 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['regex']['value'] = value?.validation?.regex;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
-            if (value?.label) uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
 
             break;
           case 'Datepicker':
@@ -274,8 +275,7 @@ export function generateUIComponents(JSONSchema, advanced) {
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
-            if (value?.label)
-              uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             break;
 
           case 'TextArea':

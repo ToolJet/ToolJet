@@ -27,12 +27,10 @@ export const MultiselectV2 = ({
   darkMode,
   fireEvent,
   validate,
-  isEditorReady,
+  width,
 }) => {
   let {
     label,
-    values,
-    options,
     showAllOption,
     disabledState,
     advanced,
@@ -62,6 +60,8 @@ export const MultiselectV2 = ({
   const [selected, setSelected] = useState([]);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const options = component?.definition?.properties?.options?.value;
+  const values = component?.definition?.properties?.values?.value;
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
   const validationData = validate(selected?.length ? selected?.map((option) => option.value) : null);
@@ -87,10 +87,12 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible?.value)
-          .map((value) => ({
-            ...value,
-            isDisabled: value?.disable?.value,
+          .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
+          .map((data) => ({
+            ...data,
+            label: resolveReferences(data?.label, currentState),
+            value: resolveReferences(data?.value, currentState),
+            isDisabled: resolveReferences(advanced ? data?.disable : data?.disable?.value, currentState),
           }))
       : [];
     return _selectOptions;
@@ -177,10 +179,8 @@ export const MultiselectV2 = ({
         setIsMultiSelectDisabled(value);
       },
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    }
-  }, [isEditorReady]);
+    setExposedVariables(exposedVariables);
+  }, []);
 
   useEffect(() => {
     // Expose selectOption
@@ -365,6 +365,7 @@ export const MultiselectV2 = ({
     }),
   };
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+
   return (
     <>
       <div
@@ -390,12 +391,6 @@ export const MultiselectV2 = ({
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
         }}
-        onClick={() => {
-          if (!isMultiSelectDisabled) {
-            fireEvent('onFocus');
-          }
-          setIsMultiselectOpen(!isMultiselectOpen);
-        }}
       >
         <Label
           label={label}
@@ -409,7 +404,15 @@ export const MultiselectV2 = ({
           isMandatory={isMandatory}
           _width={_width}
         />
-        <div className="w-100 px-0 h-100">
+        <div
+          className="w-100 px-0 h-100"
+          onClick={() => {
+            if (!isMultiSelectDisabled) {
+              fireEvent('onFocus');
+              setIsMultiselectOpen(!isMultiselectOpen);
+            }
+          }}
+        >
           <Select
             menuId={id}
             isDisabled={isMultiSelectDisabled}
@@ -464,6 +467,7 @@ export const MultiselectV2 = ({
           fontSize: '11px',
           fontWeight: '400',
           lineHeight: '16px',
+          display: visibility ? 'block' : 'none',
         }}
       >
         {!isValid && validationError}

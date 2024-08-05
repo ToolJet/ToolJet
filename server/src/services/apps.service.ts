@@ -345,25 +345,12 @@ export class AppsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let versionFrom: AppVersion;
       const { organizationId } = user;
+
       if (versionFromId) {
         versionFrom = await manager.findOneOrFail(AppVersion, {
           where: { id: versionFromId },
           relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
         });
-
-        if (defaultAppEnvironments.length > 1) {
-          const environmentWhereUserCreatingVersion = await this.appEnvironmentService.get(
-            app.organizationId,
-            environmentId,
-            false,
-            manager
-          );
-
-          //check if the user is creating version from development environment only
-          if (environmentWhereUserCreatingVersion.priority !== 1) {
-            throw new BadRequestException('New versions can only be created in development environment');
-          }
-        }
       }
 
       const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
@@ -517,6 +504,9 @@ export class AppsService {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
+      if (eventDefinition?.actionId === 'set-table-page') {
+        eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
+      }
       event.event = eventDefinition;
 
       await manager.save(event);

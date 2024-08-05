@@ -166,6 +166,19 @@ function convertToBracketNotation(base, accessors) {
 }
 
 function verifyDotAndBracketNotations(jsString) {
+  if (
+    !(
+      jsString.includes('components.') ||
+      jsString.includes('globals.') ||
+      jsString.includes('queries.') ||
+      jsString.includes('page.') ||
+      jsString.includes('variables.') ||
+      jsString.includes('constants.')
+    )
+  ) {
+    return false;
+  }
+
   const notations = findNotations(jsString);
 
   for (const { base, accessors } of notations) {

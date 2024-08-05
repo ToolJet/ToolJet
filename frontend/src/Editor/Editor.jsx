@@ -28,6 +28,7 @@ import {
   buildComponentMetaDefinition,
   getAllChildComponents,
   runQueries,
+  updateSuggestionsFromCurrentState,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
@@ -308,14 +309,8 @@ const EditorComponent = (props) => {
       const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
       if (isPageSwitched) {
-        const currentStateObj = useCurrentStateStore.getState();
-
         handleLowPriorityWork(() => {
-          useResolveStore.getState().actions.addAppSuggestions({
-            queries: currentStateObj.queries,
-            components: currentStateObj.components,
-            page: currentStateObj.page,
-          });
+          updateSuggestionsFromCurrentState();
           useResolveStore.getState().actions.pageSwitched(false);
         });
       }
@@ -626,7 +621,15 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
+  const handleRunQuery = (queryId, queryName, additionalArgs = {}) => {
+    const {
+      confirmed = undefined,
+      mode = 'edit',
+      userSuppliedParameters = {},
+      shouldSetPreviewData = false,
+    } = additionalArgs;
+    runQuery(getEditorRef(), queryId, queryName, confirmed, mode, userSuppliedParameters, shouldSetPreviewData);
+  };
 
   const dataSourceModalHandler = () => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
@@ -733,6 +736,7 @@ const EditorComponent = (props) => {
 
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
       handleLowPriorityWork(() => {
+        updateSuggestionsFromCurrentState();
         useResolveStore.getState().actions.updateLastUpdatedRefs(['constants', 'client']);
         commonLowPriorityActions(events, { homePageId });
       });
@@ -825,6 +829,7 @@ const EditorComponent = (props) => {
       });
       processNewAppDefinition(appData, null, true, ({ homePageId }) => {
         handleLowPriorityWork(async () => {
+          updateSuggestionsFromCurrentState();
           await fetchDataSources(editing_version?.id);
           commonLowPriorityActions(events, homePageId);
         });
@@ -1707,6 +1712,7 @@ const EditorComponent = (props) => {
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       useEditorStore.getState().actions.setPageProgress(false);
+      useCurrentStateStore.getState().actions.setEditorReady(true);
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];
@@ -2068,7 +2074,9 @@ const EditorComponent = (props) => {
                 }}
                 setSelectedComponent={setSelectedComponent}
                 removeComponent={removeComponent}
-                runQuery={(queryId, queryName) => handleRunQuery(queryId, queryName)}
+                runQuery={(queryId, queryName, additionalArgs = {}) =>
+                  handleRunQuery(queryId, queryName, additionalArgs)
+                }
                 ref={dataSourceModalRef}
                 currentPageId={currentPageId}
                 addNewPage={addNewPage}

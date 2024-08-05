@@ -21,6 +21,7 @@ import {
   runQuery,
   computeComponentState,
   buildAppDefinition,
+  updateSuggestionsFromCurrentState,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
@@ -45,7 +46,7 @@ import MobileHeader from './Viewer/MobileHeader';
 import DesktopHeader from './Viewer/DesktopHeader';
 import './Viewer/viewer.scss';
 import { useResolveStore } from '@/_stores/resolverStore';
-import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
+import { findComponentsWithReferences, handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
@@ -265,6 +266,7 @@ class ViewerComponent extends React.Component {
       useCurrentStateStore.getState().actions.setEditorReady(true);
 
       if (loadType === 'appload') {
+        updateSuggestionsFromCurrentState();
         this.runQueries(dataQueries);
       }
 
@@ -807,6 +809,8 @@ class ViewerComponent extends React.Component {
         isSwitchingPage: true,
       },
     });
+
+    useResolveStore.getState().actions.pageSwitched(true);
     this.onViewerLoadUpdateEntityReferences(id, 'page-switch');
   };
 
@@ -1093,6 +1097,10 @@ const withStore = (Component) => (props) => {
     if (isPageSwitched) {
       const currentComponentsDef = appDefinition?.pages?.[currentPageId]?.components || {};
       const currentComponents = Object.keys(currentComponentsDef);
+      handleLowPriorityWork(() => {
+        updateSuggestionsFromCurrentState();
+        useResolveStore.getState().actions.pageSwitched(false);
+      });
 
       setTimeout(() => {
         if (currentComponents.length > 0) {

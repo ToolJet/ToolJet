@@ -11,7 +11,6 @@ export const RadioButton = function RadioButton({
   setExposedVariables,
   darkMode,
   dataCy,
-  isEditorReady,
 }) {
   const { label, value, values, display_values } = properties;
   const { visibility, disabledState, activeColor, boxShadow } = styles;
@@ -44,10 +43,9 @@ export const RadioButton = function RadioButton({
         onSelect(option);
       },
     };
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    } // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, setValue, isEditorReady]);
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, setValue]);
 
   return (
     <div

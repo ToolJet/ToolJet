@@ -38,7 +38,6 @@ export const Form = function Form(props) {
     getContainerProps,
     containerProps,
     childComponents,
-    isEditorReady,
   } = props;
 
   const { events: allAppEvents } = useAppInfo();
@@ -133,9 +132,7 @@ export const Form = function Form(props) {
         ...(!advanced && { children: formattedChildData }),
       };
 
-      if (isEditorReady) {
-        setExposedVariables(exposedVariables);
-      }
+      setExposedVariables(exposedVariables);
       return setValidation(childValidation);
     }
 
@@ -161,10 +158,9 @@ export const Form = function Form(props) {
       isValid: childValidation,
     };
     setValidation(childValidation);
-    if (isEditorReady) {
-      setExposedVariables(exposedVariables);
-    } // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData, childComponents, advanced, JSON.stringify(JSONSchema), isEditorReady]);
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childrenData, childComponents, advanced, JSON.stringify(JSONSchema)]);
 
   useEffect(() => {
     const childIds = Object.keys(childrenData);

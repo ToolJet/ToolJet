@@ -2947,7 +2947,10 @@ input:focus-visible {
     background: var(--tblr-btn-color-clicked) !important;
 
   }
+}
 
+.jet-tabs{
+  overflow-y: auto
 }
 
 .jet-button {
@@ -8546,9 +8549,14 @@ tbody {
   }
 }
 
+.react-loading-skeleton {
+  background-color: var(--interactive-default) ;
+  // background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
+}
+
 .theme-dark {
   .react-loading-skeleton {
-    background-color: #2F3C4C !important;
+    background-color: var(--interactive-default) ;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
 
@@ -13325,3 +13333,8 @@ div.ds-svg-container svg {
   }
 }
 
+  .tabs-component{
+    .tab-pane{
+      top: initial !important;
+    }
+  }

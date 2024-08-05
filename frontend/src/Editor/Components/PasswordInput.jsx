@@ -55,7 +55,7 @@ export const PasswordInput = function PasswordInput({
   const tinycolor = require('tinycolor2');
 
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
-
+  console.log('style---', styles);
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
@@ -67,7 +67,7 @@ export const PasswordInput = function PasswordInput({
         : 'var(--surfaces-surface-03)'
       : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
+    padding: styles?.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
@@ -120,7 +120,7 @@ export const PasswordInput = function PasswordInput({
     width,
     auto,
     defaultAlignment,
-    component?.definition?.styles?.iconVisibility?.value,
+    styles?.iconVisibility,
     label?.length,
     isMandatory,
     padding,
@@ -277,7 +277,7 @@ export const PasswordInput = function PasswordInput({
           _width={_width}
           labelWidth={labelWidth}
         />
-        {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
+        {styles?.iconVisibility && !isResizing && (
           <IconElement
             data-cy={'text-input-icon'}
             style={{

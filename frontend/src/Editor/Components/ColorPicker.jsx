@@ -11,7 +11,7 @@ export const ColorPicker = function ({
   height,
   fireEvent,
   dataCy,
-  isEditorReady,
+  id,
 }) {
   const { visibility, boxShadow } = styles;
   const defaultColor = properties.defaultColor;
@@ -48,6 +48,13 @@ export const ColorPicker = function ({
   };
 
   useEffect(() => {
+    const element = document.querySelector(`.ele-${id}`);
+    if (element) {
+      element.style.zIndex = showColorPicker ? '3' : '';
+    }
+  }, [showColorPicker, id]);
+
+  useEffect(() => {
     let exposedVariables = {};
     setExposedVariable('setColor', async function (colorCode) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(colorCode)) {
@@ -58,9 +65,8 @@ export const ColorPicker = function ({
             selectedColorRGB: hexToRgb(colorCode),
             selectedColorRGBA: hexToRgba(colorCode),
           };
-          if (isEditorReady) {
-            setExposedVariables(exposedVariables);
-          }
+          setExposedVariables(exposedVariables);
+
           fireEvent('onChange');
         }
       } else {
@@ -69,15 +75,14 @@ export const ColorPicker = function ({
           selectedColorRGB: undefined,
           selectedColorRGBA: undefined,
         };
-        if (isEditorReady) {
-          setExposedVariables(exposedVariables);
-        }
+        setExposedVariables(exposedVariables);
+
         fireEvent('onChange');
         setColor('Invalid Color');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setColor, isEditorReady]);
+  }, [setColor]);
 
   useEffect(() => {
     let exposedVariables = {};
@@ -88,9 +93,8 @@ export const ColorPicker = function ({
           selectedColorRGB: hexToRgb(defaultColor),
           selectedColorRGBA: hexToRgba(defaultColor),
         };
-        if (isEditorReady) {
-          setExposedVariables(exposedVariables);
-        }
+        setExposedVariables(exposedVariables);
+
         setColor(defaultColor);
       }
     } else {
@@ -99,13 +103,12 @@ export const ColorPicker = function ({
         selectedColorRGB: undefined,
         selectedColorRGBA: undefined,
       };
-      if (isEditorReady) {
-        setExposedVariables(exposedVariables);
-      }
+      setExposedVariables(exposedVariables);
+
       setColor(`Invalid Color`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultColor, isEditorReady]);
+  }, [defaultColor]);
 
   const handleColorChange = (colorCode) => {
     let exposedVariables = {};
@@ -118,9 +121,7 @@ export const ColorPicker = function ({
         selectedColorRGB: `rgb(${r},${g},${b})`,
         selectedColorRGBA: `rgb(${r},${g},${b},${a})`,
       };
-      if (isEditorReady) {
-        setExposedVariables(exposedVariables);
-      }
+      setExposedVariables(exposedVariables);
       fireEvent('onChange');
     }
   };
@@ -161,7 +162,7 @@ export const ColorPicker = function ({
           >
             <SketchPicker color={color} onChangeComplete={handleColorChange} />
           </div>
-          <div className="comment-overlay" onClick={() => setShowColorPicker(false)}></div>
+          <div onClick={() => setShowColorPicker(false)}></div>
         </>
       )}
     </div>

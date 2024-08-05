@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
+
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
@@ -17,7 +18,6 @@ export const TextInput = function TextInput({
   darkMode,
   dataCy,
   isResizing,
-  isEditorReady,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
@@ -76,7 +76,7 @@ export const TextInput = function TextInput({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
+    padding: styles?.iconVisibility
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
@@ -117,7 +117,7 @@ export const TextInput = function TextInput({
     width,
     auto,
     defaultAlignment,
-    component?.definition?.styles?.iconVisibility?.value,
+    styles?.iconVisibility,
     label?.length,
     isMandatory,
     padding,
@@ -172,9 +172,9 @@ export const TextInput = function TextInput({
         setVisibility(value);
       },
     };
-    if (isEditorReady) setExposedVariables(exposedVariables);
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditorReady]);
+  }, []);
 
   useEffect(() => {
     const exposedVariables = {
@@ -189,9 +189,9 @@ export const TextInput = function TextInput({
         fireEvent('onChange');
       },
     };
-    if (isEditorReady) setExposedVariables(exposedVariables);
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue, isEditorReady]);
+  }, [setValue]);
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
@@ -271,7 +271,7 @@ export const TextInput = function TextInput({
           isMandatory={isMandatory}
           _width={_width}
         />
-        {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
+        {styles?.iconVisibility && !isResizing && (
           <IconElement
             data-cy={'text-input-icon'}
             style={{
