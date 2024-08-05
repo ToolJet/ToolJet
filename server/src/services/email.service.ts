@@ -25,7 +25,6 @@ handlebars.registerHelper('eq', (a, b) => a == b);
 
 @Injectable()
 export class EmailService {
-  private FROM_EMAIL;
   private TOOLJET_HOST;
   private NODE_ENV;
   private WHITE_LABEL_TEXT;
@@ -37,11 +36,11 @@ export class EmailService {
     [INSTANCE_SYSTEM_SETTINGS.SMTP_PORT]: string;
     [INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME]: string;
     [INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD]: string;
+    [INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]: string;
   };
-  private defaultWhiteLabelState: boolean;
+  private defaultWhiteLabelState;
 
   constructor(private readonly instanceSettingsService: InstanceSettingsService) {
-    this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.SUB_PATH = process.env.SUB_PATH;
     this.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -61,12 +60,12 @@ export class EmailService {
 
   mailTransport(smtp) {
     const transporter = nodemailer.createTransport({
-      host: smtp['SMTP_DOMAIN'],
-      port: smtp['SMTP_PORT'],
-      secure: smtp['SMTP_PORT'] == 465, // Use `true` for port 465, `false` for all other ports
+      host: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN],
+      port: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_PORT],
+      secure: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_PORT] == 465, // Use `true` for port 465, `false` for all other ports
       auth: {
-        user: smtp['SMTP_USERNAME'],
-        pass: smtp['SMTP_PASSWORD'],
+        user: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME],
+        pass: smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD],
       },
     });
 
@@ -90,7 +89,7 @@ export class EmailService {
       to,
       subject,
       html: htmlToSend,
-      from: `"${this.WHITE_LABEL_TEXT}" <${this.FROM_EMAIL}>`,
+      from: `"${this.WHITE_LABEL_TEXT}" <${this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]}>`,
       ...(templateData?.whiteLabelText === 'ToolJet' && {
         attachments: [
           {
@@ -326,11 +325,14 @@ export class EmailService {
         INSTANCE_SYSTEM_SETTINGS.SMTP_PORT,
         INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME,
         INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD,
+        INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL,
       ],
       false,
       INSTANCE_SETTINGS_TYPE.SYSTEM
     );
     smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED] = smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED] === 'true';
+    smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL] =
+      smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL] || 'hello@tooljet.io';
     return smtpSetting;
   }
 
