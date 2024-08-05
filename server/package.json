@@ -30,7 +30,7 @@
     "db:setup": "npm run db:create && npm run db:migrate",
     "db:setup:prod": "npm run db:create:prod && npm run db:migrate:prod",
     "db:reset": "npm run db:drop && npm run db:setup",
-    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.ts"
+    "typeorm": "typeorm-ts-node-commonjs"
   },
   "dependencies": {
     "@casl/ability": "^5.3.1",
