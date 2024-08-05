@@ -5,7 +5,7 @@ import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
+import { previewQuery, checkExistingQueryName, runQuery, updateQuerySuggestions } from '@/_helpers/appUtils';
 import { posthog } from 'posthog-js';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -69,6 +69,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, ap
 
     if (newName) {
       renameQuery(selectedQuery?.id, newName, editorRef);
+      updateQuerySuggestions(name, newName);
       return true;
     }
   };
