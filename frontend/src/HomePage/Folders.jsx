@@ -6,7 +6,6 @@ import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { useTranslation } from 'react-i18next';
-import Skeleton from 'react-loading-skeleton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -14,7 +13,7 @@ import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
 import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
-
+import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 export const Folders = function Folders({
   folders,
   foldersLoading,
@@ -288,7 +287,7 @@ export const Folders = function Folders({
           </a>
         </div>
       )}
-      {isLoading && <Skeleton count={3} height={22} className="mb-1" />}
+      {isLoading && <FolderSkeleton />}
       {!isLoading &&
         filteredData &&
         filteredData.length > 0 &&
@@ -302,7 +301,9 @@ export const Folders = function Folders({
                 'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
               }
             )}
-            onClick={() => handleFolderChange(folder)}
+            onClick={() => {
+              handleFolderChange(folder);
+            }}
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >
             <ToolTip message={folder.name}>
@@ -314,14 +315,20 @@ export const Folders = function Folders({
               </div>
             </ToolTip>
             {(canDeleteFolder || canUpdateFolder) && (
-              <FolderMenu
-                canDeleteFolder={canDeleteFolder}
-                canUpdateFolder={canUpdateFolder}
-                deleteFolder={() => deleteFolder(folder)}
-                editFolder={() => updateFolder(folder)}
-                darkMode={darkMode}
-                dataCy={folder.name}
-              />
+              <div
+                onClick={(e) => {
+                  e.stopPropagation(); // Stop the click event from bubbling up to the <a> tag
+                }}
+              >
+                <FolderMenu
+                  canDeleteFolder={canDeleteFolder}
+                  canUpdateFolder={canUpdateFolder}
+                  deleteFolder={() => deleteFolder(folder)}
+                  editFolder={() => updateFolder(folder)}
+                  darkMode={darkMode}
+                  dataCy={folder.name}
+                />
+              </div>
             )}
           </a>
         ))}

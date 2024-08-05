@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
+import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
+import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 export const DropDown = function DropDown({
   height,
@@ -225,12 +227,50 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleDropdownOpen = () => {
+    setIsOpen(true);
+  };
+
+  const handleDropdownClose = () => {
+    setIsOpen(false);
+  };
+
+  const DropdownIndicator = (props) => {
+    return (
+      <components.DropdownIndicator {...props}>
+        <div onClick={() => (isOpen ? handleDropdownClose() : handleDropdownOpen())}>
+          {isOpen ? (
+            <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+          ) : (
+            <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+          )}
+        </div>
+      </components.DropdownIndicator>
+    );
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && !event.target.closest('.dropdown-widget')) {
+        handleDropdownClose();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
     <>
       <div
         className="dropdown-widget row g-0"
         style={{ height, display: visibility ? '' : 'none' }}
-        onMouseDown={(event) => {
+        onClick={(event) => {
+          event.stopPropagation();
           onComponentClick(id, component, event);
         }}
         data-cy={dataCy}
@@ -260,6 +300,10 @@ export const DropDown = function DropDown({
             onFocus={(event) => onComponentClick(event, component, id)}
             menuPortalTarget={document.body}
             placeholder={placeholder}
+            onMenuOpen={handleDropdownOpen}
+            onMenuClose={handleDropdownClose}
+            menuIsOpen={isOpen}
+            components={{ DropdownIndicator }}
           />
         </div>
       </div>

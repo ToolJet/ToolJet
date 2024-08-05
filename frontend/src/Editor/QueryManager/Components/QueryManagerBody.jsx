@@ -11,7 +11,7 @@ import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
-import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
+import { staticDataSources, customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
@@ -274,6 +274,17 @@ export const QueryManagerBody = ({
                 darkMode={darkMode}
               />
             ))}
+            {selectedQuery?.kind === 'restapi' &&
+              Object.keys(RestAPIToggles).map((toggle, index) => (
+                <CustomToggleFlag
+                  {...RestAPIToggles[toggle]}
+                  toggleOption={toggleOption}
+                  value={selectedQuery?.options?.[RestAPIToggles[toggle]?.action]}
+                  index={index}
+                  key={toggle}
+                  darkMode={darkMode}
+                />
+              ))}
           </div>
         </div>
         <div className="d-flex">
@@ -357,7 +368,17 @@ export const QueryManagerBody = ({
   );
 };
 
-const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggleOption, darkMode, index }) => {
+const CustomToggleFlag = ({
+  dataCy,
+  action,
+  translatedLabel,
+  label,
+  subLabel,
+  value,
+  toggleOption,
+  darkMode,
+  index,
+}) => {
   const [flag, setFlag] = useState(false);
 
   const { t } = useTranslation();
@@ -367,7 +388,7 @@ const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggl
   }, [value]);
 
   return (
-    <div className={cx({ 'pb-3 pt-3': index === 1 })}>
+    <div className="query-manager-settings-toggles">
       <CustomToggleSwitch
         dataCy={dataCy}
         isChecked={flag}
@@ -378,6 +399,7 @@ const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggl
         action={action}
         darkMode={darkMode}
         label={t(translatedLabel, label)}
+        subLabel={subLabel}
       />
     </div>
   );

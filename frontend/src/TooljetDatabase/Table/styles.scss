@@ -15,14 +15,20 @@
 //   margin-right: 6px !important;
 // }
 
+.tj-database-column-header:hover{
+  .primaryKeyTooltip{
+    width: 88% !important;
+  }
+}
+
 .primaryKeyTooltip {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100% !important;
+  height: 100% !important;
 
   .table-header-container {
-    width: 140px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -416,7 +422,7 @@
 .create-table-list-items {
   .popover-body {
     padding: 0px !important;
-    width: 240px !important;
+    min-width: 240px !important;
 
     .unique-constraint-parent {
       padding: 16px 16px 0px 16px !important;

@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import {
@@ -12,6 +12,7 @@ import {
 import { getTheme, tabs } from '../constants';
 import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';
+import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
@@ -66,7 +67,9 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
     if (!queryPreviewData) {
       return queryPreviewData === null ? '' : `${queryPreviewData}`;
     } else {
-      return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
+      return isJson
+        ? JSON.stringify(queryPreviewData, reservedKeywordReplacer).toString()
+        : queryPreviewData.toString();
     }
   };
 
@@ -127,6 +130,11 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
 
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
+  const queryPreviewDataWithCircularDependenciesRemoved = useMemo(() => {
+    const stringifiedValue = JSON.stringify(queryPreviewData, reservedKeywordReplacer);
+
+    return stringifiedValue ? JSON.parse(stringifiedValue) : undefined;
+  }, [queryPreviewData]);
 
   return (
     <div
@@ -217,7 +225,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                 <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
                   <JSONTree
                     theme={theme}
-                    data={queryPreviewData}
+                    data={queryPreviewDataWithCircularDependenciesRemoved}
                     invertTheme={!darkMode}
                     collectionLimit={100}
                     hideRoot={true}

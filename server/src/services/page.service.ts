@@ -102,10 +102,61 @@ export class PageService {
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
 
+      // Clone components
+      const clonedComponents = await Promise.all(
+        pageComponents.map(async (component) => {
+          const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
+          const newComponent = await manager.save(manager.create(Component, clonedComponent));
+
+          componentsIdMap[component.id] = newComponent.id;
+          const componentLayouts = await manager.find(Layout, { componentId: component.id });
+          const clonedLayouts = componentLayouts.map((layout) => ({
+            ...layout,
+            id: undefined,
+            componentId: newComponent.id,
+          }));
+
+          // Clone component events
+          const clonedComponentEvents = await this.eventHandlerService.findAllEventsWithSourceId(component.id);
+          const clonedEvents = clonedComponentEvents.map((event) => {
+            const eventDefinition = updateEntityReferences(event.event, componentsIdMap);
+
+            if (eventDefinition?.actionId === 'control-component') {
+              eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
+            }
+
+            if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+              eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+            }
+
+            if (eventDefinition?.actionId === 'set-table-page') {
+              eventDefinition.table = componentsIdMap[eventDefinition.table];
+            }
+
+            event.event = eventDefinition;
+
+            const clonedEvent = new EventHandler();
+            clonedEvent.event = event.event;
+            clonedEvent.index = event.index;
+            clonedEvent.name = event.name;
+            clonedEvent.sourceId = newComponent.id;
+            clonedEvent.target = event.target;
+            clonedEvent.appVersionId = event.appVersionId;
+
+            return clonedEvent;
+          });
+
+          await manager.save(Layout, clonedLayouts);
+          await manager.save(EventHandler, clonedEvents);
+
+          return newComponent;
+        })
+      );
+
       // Clone events
       await Promise.all(
         pageEvents.map(async (event) => {
-          const eventDefinition = event.event;
+          const eventDefinition = updateEntityReferences(event.event, componentsIdMap);
 
           if (eventDefinition?.actionId === 'control-component') {
             eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
@@ -126,53 +177,6 @@ export class PageService {
           clonedEvent.appVersionId = event.appVersionId;
 
           await manager.save(EventHandler, clonedEvent);
-        })
-      );
-
-      // Clone components
-      const clonedComponents = await Promise.all(
-        pageComponents.map(async (component) => {
-          const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
-          const newComponent = await manager.save(manager.create(Component, clonedComponent));
-
-          componentsIdMap[component.id] = newComponent.id;
-          const componentLayouts = await manager.find(Layout, { componentId: component.id });
-          const clonedLayouts = componentLayouts.map((layout) => ({
-            ...layout,
-            id: undefined,
-            componentId: newComponent.id,
-          }));
-
-          // Clone component events
-          const clonedComponentEvents = await this.eventHandlerService.findAllEventsWithSourceId(component.id);
-          const clonedEvents = clonedComponentEvents.map((event) => {
-            const eventDefinition = event.event;
-
-            if (eventDefinition?.actionId === 'control-component') {
-              eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
-            }
-
-            if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
-              eventDefinition.modal = componentsIdMap[eventDefinition.modal];
-            }
-
-            event.event = eventDefinition;
-
-            const clonedEvent = new EventHandler();
-            clonedEvent.event = event.event;
-            clonedEvent.index = event.index;
-            clonedEvent.name = event.name;
-            clonedEvent.sourceId = newComponent.id;
-            clonedEvent.target = event.target;
-            clonedEvent.appVersionId = event.appVersionId;
-
-            return clonedEvent;
-          });
-
-          await manager.save(Layout, clonedLayouts);
-          await manager.save(EventHandler, clonedEvents);
-
-          return newComponent;
         })
       );
 

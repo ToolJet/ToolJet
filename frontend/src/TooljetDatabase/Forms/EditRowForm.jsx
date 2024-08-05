@@ -11,12 +11,15 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
+import cx from 'classnames';
 // import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 // import { Link } from 'react-router-dom';
 // import { getPrivateRoute } from '@/_helpers/routes';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { getLocalTimeZone, getUTCOffset } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 
 const EditRowForm = ({
   onEdit,
@@ -27,7 +30,8 @@ const EditRowForm = ({
   initiator,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
+    useContext(TooljetDatabaseContext);
   const inputRefs = useRef({});
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
@@ -95,7 +99,7 @@ const EditRowForm = ({
     editRowColumns.forEach(({ accessor }) => {
       if (rowData[accessor] != '') {
         const inputElement = inputRefs.current[accessor];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF');
         setErrorMap((prev) => {
           return { ...prev, [accessor]: '' };
         });
@@ -213,7 +217,7 @@ const EditRowForm = ({
           acc.newErrorMap[accessor] = 'Cannot be empty';
 
           const inputElement = inputRefs.current?.[accessor];
-          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
         }
         return acc;
       },
@@ -247,7 +251,14 @@ const EditRowForm = ({
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
+      } else if (error?.code === postgresErrorCode.NotNullViolation) {
+        const columnName = error?.message.split('.')[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Cannot be Null' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       } else if (error?.code === postgresErrorCode.DataTypeMismatch) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
@@ -262,7 +273,7 @@ const EditRowForm = ({
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
           }
         });
       }
@@ -297,11 +308,11 @@ const EditRowForm = ({
                   </div>
                 }
                 loader={
-                  <div className="mx-2">
+                  <>
                     <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
                     <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
                     <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-                  </div>
+                  </>
                 }
                 isLoading={true}
                 value={inputValues[index]?.value !== null && inputValues[index]}
@@ -394,6 +405,47 @@ const EditRowForm = ({
           </label>
         );
 
+      case 'timestamp with time zone':
+        return (
+          <div style={{ position: 'relative' }}>
+            <DateTimePicker
+              timestamp={inputValues[index]?.value}
+              setTimestamp={(value) => handleInputChange(index, value, columnName)}
+              isOpenOnStart={false}
+              isClearable={activeTab[index] === 'Custom'}
+              isPlaceholderEnabled={activeTab[index] === 'Custom'}
+              errorMessage={errorMap[columnName]}
+              timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
+              isDisabled={inputValues[index]?.disabled || shouldInputBeDisabled}
+            />
+            {(inputValues[index]?.disabled || shouldInputBeDisabled) && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    currentValue[columnName]
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 4,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
+          </div>
+        );
+
       default:
         break;
     }
@@ -482,12 +534,41 @@ const EditRowForm = ({
                         <span style={{ width: '24px' }}>
                           {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                         </span>
-                        <span style={{ marginRight: '5px' }}>{headerText}</span>
+                        <ToolTip
+                          message={<span>{headerText}</span>}
+                          show={dataType === 'timestamp with time zone' && headerText.length >= 20}
+                          placement="top"
+                          tooltipClassName="tjdb-table-tooltip"
+                        >
+                          <span
+                            style={{ marginRight: '5px' }}
+                            className={cx({
+                              'header-label-timestamp': dataType === 'timestamp with time zone',
+                            })}
+                          >
+                            {headerText}
+                          </span>
+                        </ToolTip>
                         {constraints_type?.is_primary_key === true && (
                           <span style={{ marginRight: '3px' }}>
                             <SolidIcon name="primarykey" />
                           </span>
                         )}
+                        {dataType === 'timestamp with time zone' && (
+                          <div
+                            style={{
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              marginLeft: '2px',
+                              marginTop: '1px',
+                            }}
+                          >
+                            <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                              getConfigurationProperty(accessor, 'timezone', getLocalTimeZone())
+                            )}`}</span>
+                          </div>
+                        )}
+
                         <ToolTip
                           message={
                             isMatchingForeignKeyColumn(Header) ? (
