@@ -21,8 +21,7 @@ export const EDIT_ROLE_MESSAGE = {
       return (
         <div>
           <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-            Changing your user group from admin to end-user will revoke your access to settings. This will also remove
-            the user from any custom groups with builder-like permissions.
+            Changing your user group from admin to end-user will revoke your access to settings.
             {isPaidPlan && 'This will also affect the count of users covered by your plan.'}
           </p>
           <p className="tj-text-sm">Are you sure you want to continue?</p>
