@@ -28,6 +28,7 @@ class ManageOrgUsersComponent extends React.Component {
       errors: {},
       meta: {
         total_count: 0,
+        currentPage: 1,
       },
       currentPage: 1,
       options: {},
