@@ -152,6 +152,7 @@ export function Table({
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
+  const initialPageCountRef = useRef(null);
   const { events: allAppEvents } = useAppInfo();
 
   const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
@@ -575,6 +576,8 @@ export function Table({
       highlightSelectedRow,
       JSON.stringify(tableActionEvents),
       JSON.stringify(tableColumnEvents),
+      maxRowHeightValue,
+      isMaxRowHeightAuto,
     ] // Hack: need to fix
   );
 
@@ -661,8 +664,8 @@ export function Table({
       data,
       defaultColumn,
       initialState: { pageIndex: 0, pageSize: 1 },
-      pageCount: -1,
-      manualPagination: false,
+      pageCount: initialPageCountRef.current,
+      manualPagination: serverSidePagination,
       getExportFileBlob,
       getExportFileName,
       disableSortBy: !enabledSort,
@@ -869,6 +872,15 @@ export function Table({
       setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
+
+  useEffect(() => {
+    if (!initialPageCountRef.current && serverSidePagination && data?.length && totalRecords) {
+      initialPageCountRef.current = Math.ceil(totalRecords / data?.length);
+    }
+    if (!serverSidePagination) {
+      initialPageCountRef.current = Math.ceil(data?.length / rowsPerPage);
+    }
+  }, [serverSidePagination, totalRecords, data?.length, rowsPerPage]);
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
@@ -1763,7 +1775,7 @@ export function Table({
                   serverSide={serverSidePagination}
                   autoGotoPage={gotoPage}
                   autoCanNextPage={canNextPage}
-                  autoPageCount={pageCount}
+                  autoPageCount={initialPageCountRef.current}
                   autoPageOptions={pageOptions}
                   onPageIndexChanged={onPageIndexChanged}
                   pageIndex={paginationInternalPageIndex}

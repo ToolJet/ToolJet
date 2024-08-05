@@ -1,6 +1,8 @@
 import * as React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import * as SwitchPrimitives from '@radix-ui/react-switch';
 import { cn } from '@/lib/utils';
+// eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 import { HelperText, SwitchLabel } from './SwitchUtils/SwitchUtils';
 

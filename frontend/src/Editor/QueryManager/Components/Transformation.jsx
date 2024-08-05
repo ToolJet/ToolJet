@@ -113,7 +113,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
     lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
     setState({ ...state, [lang]: options.transformation ?? state[lang] ?? defaultValue[lang] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(options.transformation)]);
+  }, [JSON.stringify(options.transformation), options.transformationLanguage]);
 
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
