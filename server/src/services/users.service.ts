@@ -9,7 +9,7 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject } from 'src/helpers/utils.helper';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper'; 
 import { CreateFileDto } from '@dto/create-file.dto';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';

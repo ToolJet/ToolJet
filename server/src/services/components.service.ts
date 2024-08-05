@@ -72,17 +72,23 @@ export class ComponentsService {
       for (const componentId in componentDiff) {
         const { component } = componentDiff[componentId];
 
-        const componentData: Component = await manager.findOne(Component, {
-          where: { id: componentId },
+        const doesComponentExist = await manager.findOneOrFail(Component, {
+          where: {
+            id: componentId
+          }
         });
 
-        if (!componentData) {
+        if (doesComponentExist[1] === 0) {
           return {
             error: {
               message: `Component with id ${componentId} does not exist`,
             },
           };
         }
+
+        const componentData: Component = await manager.findOne(Component, {
+          where: { id: componentId },
+        });
 
         const isComponentDefinitionChanged = component.definition ? true : false;
 
@@ -155,9 +161,9 @@ export class ComponentsService {
   ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
-        const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
+        const doesComponentExist = await manager.findOneOrFail(Component, { where: { id: componentId } });
 
-        if (!doesComponentExist[1]) {
+        if (doesComponentExist[1] === 0) {
           return {
             error: {
               message: `Component with id ${componentId} does not exist`,

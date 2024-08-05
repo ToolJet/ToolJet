@@ -48,7 +48,7 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
       console.error('Error during processing batches: ', error);
       throw error;
     } finally {
-      await tooljetDbConnection.close();
+      await tooljetDbConnection.destroy();
     }
   }
 

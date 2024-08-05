@@ -10,6 +10,74 @@ import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
 import { JsonViewer } from '@textea/json-viewer';
+import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
+
+const sanitizeLargeDataset = (data, callback) => {
+  const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
+
+  const estimateSizeOfObject = (object) => {
+    let bytes = 0;
+
+    function getSizeOfPrimitive(value) {
+      switch (typeof value) {
+        case 'boolean':
+          return 4;
+        case 'number':
+          return 8;
+        case 'string':
+          return value.length * 2;
+        case 'object':
+          if (value === null) {
+            return 0;
+          } else if (Array.isArray(value)) {
+            return value.length * getSizeOfPrimitive(value[0]);
+          } else {
+            return estimateSizeOfObject(value);
+          }
+        default:
+          return 0;
+      }
+    }
+
+    for (let key in object) {
+      if (object.hasOwnProperty(key)) {
+        bytes += key.length * 2; // key size
+        bytes += getSizeOfPrimitive(object[key]);
+      }
+    }
+
+    return bytes;
+  };
+
+  const sanitize = (input) => {
+    if (typeof input !== 'object' || input === null) return input;
+
+    if (Array.isArray(input)) {
+      const size = estimateSizeOfObject(input);
+      callback(size > SIZE_LIMIT_KB);
+
+      return data.length > 10 && size > SIZE_LIMIT_KB
+        ? [input[0], `Too large to display: ${input.length - 1} more items`]
+        : input;
+    } else {
+      const sanitizedData = Object.entries(input).reduce((acc, [key, value]) => {
+        const sizeOfEachElement = estimateSizeOfObject(value);
+
+        if (Array.isArray(value) && (data.length > 10 || sizeOfEachElement > SIZE_LIMIT_KB)) {
+          acc[key] = [value[0], `Too large to display: ${value.length - 1} more items`];
+        } else {
+          acc[key] = sanitize(value);
+        }
+
+        return acc;
+      }, {});
+
+      return sanitizedData;
+    }
+  };
+
+  return sanitize(data);
+};
 
 export const PreviewBox = ({
   currentValue,
@@ -22,6 +90,8 @@ export const PreviewBox = ({
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
+  const [largeDataset, setLargeDataset] = useState(false);
+
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;
     try {
@@ -41,11 +111,6 @@ export const PreviewBox = ({
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
-
-  if (hasCircularDependency(resolvedValue)) {
-    previewContent = JSON.stringify(resolvedValue, handleCircularStructureToJSON());
-    previewType = typeof previewContent;
-  }
 
   const ifCoersionErrorHasCircularDependency = (value) => {
     if (hasCircularDependency(value)) {
@@ -74,9 +139,13 @@ export const PreviewBox = ({
       return setResolvedValue(newValue);
     }
 
+    // we dont need to add or update the resolved value if the value has deep children
+    const _resolveValue = sanitizeLargeDataset(resolvedValue, setLargeDataset);
+
     if (valid) {
       const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(resolvedValue, newValue);
-      setResolvedValue(resolvedValue);
+
+      setResolvedValue(_resolveValue);
 
       setCoersionData({
         coercionPreview,
@@ -96,11 +165,11 @@ export const PreviewBox = ({
         ? 'SyntaxError'
         : 'Invalid';
 
-      const errValue = ifCoersionErrorHasCircularDependency(resolvedValue);
+      const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
       setError({
         message: _error,
-        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue) : resolvedValue,
+        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue, reservedKeywordReplacer) : resolvedValue,
         type: jsErrorType,
       });
       setCoersionData(null);
@@ -118,6 +187,7 @@ export const PreviewBox = ({
         coersionData={coersionData}
         withValidation={!isEmpty(validationSchema)}
         isWorkspaceVariable={isWorkspaceVariable}
+        isLargeDataset={largeDataset}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -135,6 +205,7 @@ const RenderResolvedValue = ({
   coersionData,
   withValidation,
   isWorkspaceVariable,
+  isLargeDataset,
 }) => {
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
@@ -168,7 +239,7 @@ const RenderResolvedValue = ({
         <span className={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
       </div>
 
-      <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
+      <PreviewBox.CodeBlock code={error ? error.value : previewContent} isLargeDataset={isLargeDataset} />
     </div>
   );
 };
@@ -321,7 +392,7 @@ const PreviewContainer = ({
   );
 };
 
-const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
+const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
   let preview = code && code.trim ? code?.trim() : `${code}`;
 
   const shouldTrim = preview.length > 35;
@@ -360,7 +431,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           value={prettyPrintedJson}
           displayDataTypes={false}
           displaySize={false}
-          displayObjectSize={false}
           enableClipboard={false}
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}

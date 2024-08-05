@@ -1789,6 +1789,10 @@ export class AppImportExportService {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
+      if (eventDefinition?.actionId == 'set-table-page' && oldComponentToNewComponentMapping[eventDefinition.table]) {
+        eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -1996,5 +2000,5 @@ const isChildOfKanbanModal = (
     return parentComponent.component.component === 'Kanban';
   }
 
-  return parentComponent.type === 'Kanban';
+  return parentComponent?.type === 'Kanban';
 };
