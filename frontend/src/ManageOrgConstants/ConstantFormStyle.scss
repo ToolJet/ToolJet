@@ -41,12 +41,12 @@
     color: #666;
   }
   
-  .wrapper {
+  .constant-wrapper {
     background-color: #f8f9fa;
     padding: 20px;
   }
   
-  .page-wrapper {
+  .constant-page-wrapper {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
@@ -70,13 +70,14 @@
   }
   
   .workspace-constant-table-card {
-    padding: 20px;
+    width: 880px;
+    height: 540px;
   }
   
   .manage-sso-wrapper-card {
     width: 100%;
+    outline: none
   }
-  
   .manage-sso-container {
     width: 100%;
   }
@@ -102,8 +103,6 @@
   
   .workspace-constant-card-body {
     background-color: #ffffff;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
     overflow: hidden;
   }
   

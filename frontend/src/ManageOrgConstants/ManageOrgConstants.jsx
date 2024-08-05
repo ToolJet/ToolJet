@@ -95,6 +95,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const updateTableData = (orgConstants, envName, start, end, activeTabChanged = false, tab = null, search = '') => {
+    if (!Array.isArray(orgConstants)) {
+      return;
+    }
     const filteredConstants = orgConstants
       .filter((constant) => {
         const envConstant = constant?.values.find((value) => value.environmentName === envName);
@@ -260,9 +263,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
         })
-        .catch(({ error }) => {
+        .catch((error) => {
           setErrors(error);
-          toast.error(error);
+          toast.error(error || 'Constant could not be updated');
         })
         .finally(() => fetchConstantsAndEnvironments());
     }
@@ -275,7 +278,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       })
       .catch(({ error }) => {
         setErrors(error);
-        toast.error('Constant could not be created');
+        toast.error(error || 'Constant could not be created');
       })
       .finally(() => fetchConstantsAndEnvironments());
   };
@@ -328,7 +331,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     </span>
   );
   return (
-    <div className="wrapper org-constant-page org-variables-page animation-fade">
+    <div className="constant-wrapper org-constant-page org-variables-page animation-fade">
       <ConfirmDialog
         show={showConstantDeleteConfirmation}
         message={confirmMessage}
@@ -373,7 +376,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           )}
         </div>
       </div>
-      <div className="page-wrapper">
+      <div className="constant-page-wrapper">
         <div className="container-xl">
           <div>
             <div className="workspace-constant-header">
@@ -393,7 +396,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     onClick={() => handleTabChange(Constants.Secret)}
                   >
                     Secrets
-                    <span className={`tab-count ${activeTab === constants.Secret ? 'active' : ''}`}>
+                    <span className={`tab-count ${activeTab === Constants.Secret ? 'active' : ''}`}>
                       ({secretCount})
                     </span>
                   </button>
@@ -427,9 +430,19 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     }}
                   >
                     <div className="text-muted" data-cy="workspace-constant-helper-text">
-                      To resolve a Workspace constant use{' '}
-                      <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
+                      {activeTab === Constants.Global ? (
+                        <>
+                          To resolve a global workspace constant use{' '}
+                          <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
+                        </>
+                      ) : (
+                        <>
+                          To resolve a secret workspace constant use{' '}
+                          <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{secrets.access_token}}'}</strong>
+                        </>
+                      )}
                     </div>
+
                     <div>
                       <Button
                         // Todo: Update link to documentation: workspace constants
@@ -462,7 +475,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     isLoading={isLoading}
                     allConstants={constants}
                   />
-                  {constants.length > 0 ? (
+                  {(activeTab === Constants.Global && globalCount > 0) ||
+                  (activeTab === Constants.Secret && secretCount > 0) ? (
                     <div className="w-100 workspace-constant-card-body">
                       <ConstantTable
                         constants={currentTableData}

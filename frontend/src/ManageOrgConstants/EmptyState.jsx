@@ -1,5 +1,6 @@
 import React from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import './ConstantFormStyle.scss';
 
 const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading }) => {
   if (isLoading) return null;

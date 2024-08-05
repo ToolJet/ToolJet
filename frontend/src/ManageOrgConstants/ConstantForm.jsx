@@ -15,7 +15,6 @@ const ConstantForm = ({
   onCancelBtnClicked,
   isLoading,
   currentEnvironment,
-  checkIfConstantNameExists,
   mode,
 }) => {
   const [fields, setFields] = useState(() => ({
@@ -50,7 +49,7 @@ const ConstantForm = ({
     name_already_exists: `Constant with this name already exists in ${capitalize(
       currentEnvironment?.name
     )} environment`,
-    invalid_name_length: 'Constant name should be between 1 and 32 characters',
+    invalid_name_length: 'Constant name has exceeded 50 characters',
     max_name_length_reached: 'Maximum length has been reached',
     invalid_name:
       'Constant name should start with a letter or underscore and can only contain letters, numbers and underscores',
@@ -63,16 +62,10 @@ const ConstantForm = ({
 
     if (name !== 'name') return;
 
-    const isNameAlreadyExists = checkIfConstantNameExists(value, currentEnvironment?.id);
-    const invalidNameLength = value.length > 32;
-    const maxNameLengthReached = value.length === 32;
+    const invalidNameLength = value.length > 50;
+    const maxNameLengthReached = value.length === 50;
     const invalidName = !isValidPropertyName(value);
 
-    if (isNameAlreadyExists) {
-      return setError({
-        name: ERROR_MESSAGES.name_already_exists,
-      });
-    }
     if (invalidNameLength) {
       return setError({
         name: ERROR_MESSAGES.invalid_name_length,

@@ -8,6 +8,7 @@ import {
   JoinColumn,
   BaseEntity,
   OneToMany,
+  Unique,
 } from 'typeorm';
 
 import { Organization } from './organization.entity';
@@ -19,6 +20,7 @@ export enum OrganizationConstantType {
 }
 
 @Entity({ name: 'organization_constants' })
+@Unique(['constantName', 'organizationId', 'type'])
 export class OrganizationConstant extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
