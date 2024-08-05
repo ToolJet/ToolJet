@@ -4,12 +4,14 @@ import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 import _, { isEmpty } from 'lodash';
-import { handleCircularStructureToJSON, hasCircularDependency } from '@/_helpers/utils';
+import { handleCircularStructureToJSON, hasCircularDependency, verifyConstant } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
 import { JsonViewer } from '@textea/json-viewer';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 export const PreviewBox = ({
   currentValue,
@@ -41,7 +43,19 @@ export const PreviewBox = ({
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
+  let isGlobalConstant = currentValue && currentValue.includes('{{constants.');
   let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
+  let invalidConstants = null;
+  let undefinedError = null;
+  if (isGlobalConstant || isSecretConstant) {
+    const secrets = useDataQueriesStore.getState().secrets;
+    const globals = useCurrentStateStore.getState().constants;
+
+    invalidConstants = verifyConstant(currentValue, globals, secrets);
+  }
+  if (invalidConstants?.length) {
+    undefinedError = { type: 'Invalid constants' };
+  }
 
   if (hasCircularDependency(resolvedValue)) {
     previewContent = JSON.stringify(resolvedValue, handleCircularStructureToJSON());
@@ -112,7 +126,7 @@ export const PreviewBox = ({
   return (
     <>
       <PreviewBox.RenderResolvedValue
-        error={error}
+        error={error || undefinedError}
         currentValue={currentValue}
         previewType={previewType}
         resolvedValue={content}

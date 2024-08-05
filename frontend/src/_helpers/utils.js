@@ -22,6 +22,32 @@ export const Constants = {
   Secret: 'Secret',
 };
 
+export const verifyConstant = (value, definedConstants = {}, definedSecrets = {}) => {
+  const globalConstantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
+  const secretConstantRegex = /{{secrets\.([a-zA-Z0-9_]+)}}/g;
+  if (typeof value !== 'string') {
+    return [];
+  }
+  const matches = [...(value.match(globalConstantRegex) || []), ...(value.match(secretConstantRegex) || [])];
+  if (!matches) {
+    return [];
+  }
+  const resolvedMatches = matches.map((match) => {
+    const cleanedMatch = match
+      .replace(/{{constants\./, '')
+      .replace(/{{secrets\./, '')
+      .replace(/}}/, '');
+
+    return Object.keys(definedConstants).includes(cleanedMatch) || Object.keys(definedSecrets).includes(cleanedMatch)
+      ? null
+      : cleanedMatch;
+  });
+  const invalidConstants = resolvedMatches?.filter((item) => item != null);
+  if (invalidConstants?.length) {
+    return invalidConstants;
+  }
+};
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -105,10 +131,8 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       );
     } catch (err) {
       error = err;
-      // console.log('eval_error', err);
     }
   }
-
   if (withError) return [result, error];
   return result;
 }
@@ -160,11 +184,18 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(object, defaultValue, customObjects = {}, withError = false, forPreviewBox = false) {
+export function resolveReferences(
+  object,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false,
+  state = null
+) {
   if (object === '{{{}}}') return '';
 
   object = _.clone(object);
-  const currentState = useCurrentStateStore.getState();
+  const currentState = state || useCurrentStateStore.getState();
   const objectType = typeof object;
   let error;
   switch (objectType) {
@@ -219,10 +250,10 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], null, customObjects);
+          object = resolveReferences(dynamicVariables[0], null, customObjects, false, false, state);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, null, customObjects);
+            const value = resolveReferences(dynamicVariable, null, customObjects, false, false, state);
             if (typeof value !== 'function') {
               object = object.replace(dynamicVariable, value);
             }

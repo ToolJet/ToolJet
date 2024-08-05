@@ -210,7 +210,8 @@ const DynamicForm = ({
         return {
           type,
           placeholder: useEncrypted ? '**************' : description,
-          className: `form-control${handleToggle(controller)}`,
+          className: `form-control${handleToggle(controller)} mb-0`,
+          style: { marginBottom: '0px !important' },
           value: options?.[key]?.value || '',
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),

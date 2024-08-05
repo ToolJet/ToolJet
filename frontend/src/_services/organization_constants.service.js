@@ -10,11 +10,13 @@ export const orgEnvironmentConstantService = {
   getConstantsFromPublicApp,
 };
 
-function getAll(decryptSecretValue = false) {
+function getAll(decryptSecretValue = false, type = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organization-constants?decryptValue=${decryptSecretValue}`, requestOptions).then(
-    handleResponse
-  );
+  let queryParams = `?decryptValue=${decryptSecretValue}`;
+  if (type) {
+    queryParams += `&type=${type}`;
+  }
+  return fetch(`${config.apiUrl}/organization-constants${queryParams}`, requestOptions).then(handleResponse);
 }
 
 function create(name, value, type, environments) {

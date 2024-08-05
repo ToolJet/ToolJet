@@ -401,14 +401,12 @@ const EditorComponent = (props) => {
   const fetchOrgEnvironmentConstants = async () => {
     try {
       //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-      const { constants } = await orgEnvironmentConstantService.getAll();
+      const { constants } = await orgEnvironmentConstantService.getAll(false, Constants.Global);
       const globalConstants = {};
 
       constants.forEach((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        if (constant.type === Constants.Global) {
-          globalConstants[constant.name] = constantValue;
-        }
+        globalConstants[constant.name] = constantValue;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({

@@ -1,5 +1,5 @@
 import { useSpring, config, animated } from 'react-spring';
-import { resolveReferences } from '../../_helpers/utils';
+import { resolveReferences, verifyConstant } from '../../_helpers/utils';
 import { Alert } from '../../_ui/Alert';
 import useHeight from '@/_hooks/use-height-transition';
 import React from 'react';
@@ -50,32 +50,6 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
   );
 };
 
-const verifyConstant = (value, definedConstants = {}, definedSecrets = {}) => {
-  const globalConstantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
-  const secretConstantRegex = /{{secrets\.([a-zA-Z0-9_]+)}}/g;
-  if (typeof value !== 'string') {
-    return [];
-  }
-  const matches = [...(value.match(globalConstantRegex) || []), ...(value.match(secretConstantRegex) || [])];
-  if (!matches) {
-    return [];
-  }
-  const resolvedMatches = matches.map((match) => {
-    const cleanedMatch = match
-      .replace(/{{constants\./, '')
-      .replace(/{{secrets\./, '')
-      .replace(/}}/, '');
-
-    return Object.keys(definedConstants).includes(cleanedMatch) || Object.keys(definedSecrets).includes(cleanedMatch)
-      ? null
-      : cleanedMatch;
-  });
-  const invalidConstants = resolvedMatches?.filter((item) => item != null);
-  if (invalidConstants?.length) {
-    return invalidConstants;
-  }
-};
-
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   const isSecret = type === 'Workspace secret constant';
   const hiddenSecretText = 'Values of secret constants are hidden';
@@ -85,7 +59,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   if (invalidConstants?.length) {
     [preview, error] = [value, `Undefined constants: ${invalidConstants}`];
   } else {
-    [preview, error] = resolveReferences(value, null, {}, true, true);
+    [preview, error] = resolveReferences(value, null, {}, true, true, state);
     if (isSecret) {
       preview = hiddenSecretText;
     }

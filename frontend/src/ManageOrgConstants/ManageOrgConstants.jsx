@@ -249,13 +249,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const createOrUpdate = (variable, shouldUpdate = false) => {
     const currentEnv = activeTabEnvironment;
 
-    const constantExistsInDiffEnv = checkIfConstantNameExists(variable.name);
-    const shouldUpdateConstant = mode === 'edit' && shouldUpdate ? true : constantExistsInDiffEnv;
+    const shouldUpdateConstant = mode === 'edit' && shouldUpdate ? true : false;
 
     if (shouldUpdateConstant) {
-      const variableId = constantExistsInDiffEnv
-        ? constants.find((constant) => constant.name === variable.name).id
-        : variable.id;
+      const variableId = variable.id;
 
       return orgEnvironmentConstantService
         .update(variableId, variable.value, variable.type, currentEnv['id'])
