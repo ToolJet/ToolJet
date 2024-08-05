@@ -9,7 +9,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
-import workspaceSettingsLinks from './constant';
+import { workspaceSettingsLinks } from './constant';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -19,7 +19,7 @@ export function OrganizationSettings(props) {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const { workspaceId } = useParams();
 
-  const conditionObj = { admin: true, hide: false };
+  const conditionObj = { admin: admin };
 
   const checkConditions = (conditions, conditionsObj) => {
     for (const condition of conditions) {
