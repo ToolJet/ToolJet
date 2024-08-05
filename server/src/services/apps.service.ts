@@ -12,7 +12,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -26,13 +26,14 @@ import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
 import { Component } from 'src/entities/component.entity';
-import { EventHandler } from 'src/entities/event_handler.entity';
+import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 
 const uuid = require('uuid');
 
@@ -222,7 +223,8 @@ export class AppsService {
   }
 
   async count(user: User, searchKey): Promise<number> {
-    return await viewableAppsQuery(user, searchKey).getCount();
+    const query =  await viewableAppsQuery(user, searchKey);
+    return await query.getCount();
   }
 
   getAppVersionsCount = async (appId: string) => {
@@ -232,7 +234,7 @@ export class AppsService {
   };
 
   async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+    const viewableAppsQb = await viewableAppsQuery(user, searchKey);
 
     if (page) {
       return await viewableAppsQb
@@ -747,7 +749,7 @@ export class AppsService {
       const dataSourceMapping = {};
       const newDataQueries = [];
       const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId: versionFrom?.id, target: 'data_query' },
+        where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
       });
 
       if (dataSources?.length > 0 || globalDataSources?.length > 0) {

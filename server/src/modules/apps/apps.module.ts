@@ -43,6 +43,7 @@ import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { AppsSubscriber } from 'src/entity-subscribers/apps.subscriber';
 import { AppsServiceSep } from '@apps/services/apps.service.sep';
 
 @Module({
@@ -89,6 +90,7 @@ import { AppsServiceSep } from '@apps/services/apps.service.sep';
     ComponentsService,
     PageService,
     EventsService,
+    AppsSubscriber,
   ],
   controllers: [AppsController, AppsControllerV2, AppUsersController, AppsImportExportController],
 })

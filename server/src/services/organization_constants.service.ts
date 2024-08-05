@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrganizationConstant } from '../entities/organization_constants.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EncryptionService } from './encryption.service';
 import { AppEnvironmentService } from './app_environments.service';
 

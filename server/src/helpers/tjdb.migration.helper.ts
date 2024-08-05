@@ -1,11 +1,11 @@
 import { tooljetDbOrmconfig } from 'ormconfig';
-import { EntityManager, createConnection, Connection } from 'typeorm';
+import { EntityManager, DataSource } from 'typeorm';
 
 export async function createMigrationConnectionForToolJetDatabase(
   connectionName: string
-): Promise<{ tooljetDbManager: EntityManager; tooljetDbConnection: Connection }> {
+): Promise<{ tooljetDbManager: EntityManager; tooljetDbConnection: DataSource }> {
   try {
-    const tooljetDbConnection = await createConnection({
+    const tooljetDbConnection = await new DataSource({
       ...tooljetDbOrmconfig,
       name: connectionName,
     } as any);

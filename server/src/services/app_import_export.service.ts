@@ -9,10 +9,9 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { User } from 'src/entities/user.entity';
-import { EntityManager, In } from 'typeorm';
+import { DeepPartial, EntityManager, In } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
 import {
-  dbTransactionWrap,
   defaultAppEnvironments,
   catchDbException,
   extractMajorVersion,
@@ -33,6 +32,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -463,7 +463,7 @@ export class AppImportExportService {
 
       if (!isNormalizedAppDefinitionSchema) {
         for (const importingAppVersion of importingAppVersions) {
-          const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
+          const updatedDefinition: DeepPartial<any> = this.replaceDataQueryIdWithinDefinitions(
             importingAppVersion.definition,
             appResourceMappings.dataQueryMapping
           );
@@ -1421,7 +1421,8 @@ export class AppImportExportService {
   }
 
   replaceDataQueryIdWithinDefinitions(
-    definition: QueryDeepPartialEntity<any>,
+    /* TODO: we need more accurate entity / type for definition instead of using partials or any */
+    definition: DeepPartial<any>,
     dataQueryMapping: Record<string, string>
   ): QueryDeepPartialEntity<any> {
     if (definition?.pages) {

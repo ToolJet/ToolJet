@@ -4,7 +4,7 @@ import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { getFolderQuery, viewableAppsQuery } from 'src/helpers/queries';
-import { createQueryBuilder, Repository, UpdateResult } from 'typeorm';
+import { DataSource, Repository, UpdateResult } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
@@ -21,7 +21,8 @@ export class FoldersService {
     private folderAppsRepository: Repository<FolderApp>,
     @InjectRepository(App)
     private appsRepository: Repository<App>,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private readonly _dataSource: DataSource
   ) {}
 
   async create(user: User, folderName): Promise<Folder> {
@@ -44,17 +45,20 @@ export class FoldersService {
   }
 
   async allFolders(user: User, searchKey?: string): Promise<Folder[]> {
-    const allViewableApps = await viewableAppsQuery(user, searchKey, ['id']).getMany();
+    const allViewableAppsQuery = await viewableAppsQuery(user, searchKey, ['id']);
+    const allViewableApps = await allViewableAppsQuery.getMany();
 
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
     if (await this.usersService.userCan(user, 'create', 'Folder')) {
-      return await getFolderQuery(true, allViewableAppIds, user.organizationId).distinct().getMany();
+      const folderQuery = await getFolderQuery(true, allViewableAppIds, user.organizationId);
+      return await folderQuery.distinct().getMany();
     }
 
     if (allViewableAppIds.length === 0) return [];
 
-    return await getFolderQuery(false, allViewableAppIds, user.organizationId).distinct().getMany();
+    const folderQuery = await getFolderQuery(false, allViewableAppIds, user.organizationId);
+    return await folderQuery.distinct().getMany();
   }
 
   async all(user: User, searchKey: string): Promise<Folder[]> {
@@ -76,7 +80,7 @@ export class FoldersService {
   }
 
   async findOne(folderId: string): Promise<Folder> {
-    return await this.foldersRepository.findOneOrFail(folderId);
+    return await this.foldersRepository.findOneOrFail({ where: { id: folderId }});
   }
 
   async userAppCount(user: User, folder: Folder, searchKey: string) {
@@ -91,11 +95,11 @@ export class FoldersService {
       return 0;
     }
 
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+    const viewableAppsQb = await viewableAppsQuery(user, searchKey);
 
-    const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
+    const folderAppsQb = this._dataSource.createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
-    return await createQueryBuilder(App, 'apps')
+    return await this._dataSource.createQueryBuilder(App, 'apps')
       .innerJoin(
         '(' + viewableAppsQb.getQuery() + ')',
         'viewable_apps_join',
@@ -126,11 +130,11 @@ export class FoldersService {
       return [];
     }
 
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+    const viewableAppsQb = await viewableAppsQuery(user, searchKey);
 
-    const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
+    const folderAppsQb = this._dataSource.createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
-    const viewableAppsInFolder = await createQueryBuilder(AppBase, 'apps')
+    const viewableAppsInFolder = await this._dataSource.createQueryBuilder(AppBase, 'apps')
       .innerJoin(
         '(' + viewableAppsQb.getQuery() + ')',
         'viewable_apps_join',
@@ -156,8 +160,8 @@ export class FoldersService {
   }
 
   async delete(user: User, id: string) {
-    const folder = await this.foldersRepository.findOneOrFail({ id, organizationId: user.organizationId });
-    const allViewableApps = await createQueryBuilder(App, 'apps')
+    const folder = await this.foldersRepository.findOneOrFail({  where: { id, organizationId: user.organizationId } });
+    const allViewableApps = await this._dataSource.createQueryBuilder(App, 'apps')
       .select('apps.id')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoin('apps.appGroupPermissions', 'app_group_permissions')

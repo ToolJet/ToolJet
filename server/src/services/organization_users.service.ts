@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, DeepPartial, EntityManager, getRepository, Repository } from 'typeorm';
+import { DataSource, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
-import { ConfigService } from '@nestjs/config';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { WORKSPACE_USER_SOURCE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 
@@ -27,7 +26,7 @@ export class OrganizationUsersService {
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private readonly _dataSource: DataSource
   ) {}
 
   async create(
@@ -72,7 +71,8 @@ export class OrganizationUsersService {
   }
 
   async findByWorkspaceInviteToken(invitationToken: string): Promise<InvitedUserType> {
-    const organizationUser = await getRepository(OrganizationUser)
+    const organizationUser = await this._dataSource
+      .getRepository(OrganizationUser)
       .createQueryBuilder('organizationUser')
       .select([
         'organizationUser.organizationId',
@@ -246,7 +246,8 @@ export class OrganizationUsersService {
   }
 
   async activeAdminCount(organizationId: string) {
-    return await createQueryBuilder(GroupPermission, 'group_permissions')
+    return await this._dataSource
+      .createQueryBuilder(GroupPermission, 'group_permissions')
       .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
       .where('group_permissions.group = :admin', { admin: 'admin' })
       .andWhere('group_permissions.organization = :organizationId', { organizationId })

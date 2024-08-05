@@ -2,10 +2,12 @@ import { AppBase } from 'src/entities/app_base.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { User } from 'src/entities/user.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { Brackets, createQueryBuilder, SelectQueryBuilder } from 'typeorm';
+import { Brackets, SelectQueryBuilder } from 'typeorm';
+import { getGetConnectionInstance } from './database.helper';
 
-export function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): SelectQueryBuilder<AppBase> {
-  const viewableAppsQb = createQueryBuilder(AppBase, 'viewable_apps');
+export async function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): Promise<SelectQueryBuilder<AppBase>> {
+  const connection = await getGetConnectionInstance();
+  const viewableAppsQb = connection.dataSource.createQueryBuilder(AppBase, 'viewable_apps');
 
   if (select) {
     viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));
@@ -47,12 +49,13 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
   return viewableAppsQb;
 }
 
-export function getFolderQuery(
+export async function getFolderQuery(
   getAllFolders: boolean,
   allViewableAppIds: Array<string>,
   organizationId: string
-): SelectQueryBuilder<Folder> {
-  const query = createQueryBuilder(Folder, 'folders');
+): Promise<SelectQueryBuilder<Folder>> {
+  const connection = await getGetConnectionInstance();
+  const query = connection.dataSource.createQueryBuilder(Folder, 'folders');
   if (getAllFolders) {
     query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.app_id IN(:...allViewableAppIds)', {
       allViewableAppIds: [null, ...allViewableAppIds],

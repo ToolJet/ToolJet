@@ -1,7 +1,6 @@
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
-import { createConnection } from 'typeorm';
+import { DataSource, EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { tooljetDbOrmconfig } from 'ormconfig';
 
 // With the new changes in TJDB for primary and foreign keys, we are using
@@ -14,10 +13,11 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
     if (process.env.ENABLE_TOOLJET_DB !== 'true') return;
     const batchSize = 1000;
     const entityManager = queryRunner.manager;
-    const tooljetDbConnection = await createConnection({
+    const tooljetDbConnection = new DataSource({
       ...tooljetDbOrmconfig,
       name: 'tooljetDbMigration',
     } as any);
+    await tooljetDbConnection.initialize();
     const tooljetDbManager = tooljetDbConnection.createEntityManager();
     const totalTables = await entityManager.count(InternalTable);
     console.log(`Tables to migrate: ${totalTables}`);
@@ -48,7 +48,7 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
       console.error('Error during processing batches: ', error);
       throw error;
     } finally {
-      await tooljetDbConnection.close();
+      await tooljetDbConnection.destroy();
     }
   }
 

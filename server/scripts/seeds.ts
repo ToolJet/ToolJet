@@ -10,6 +10,7 @@ async function bootstrap() {
 
   await seedsService.perform();
   await app.close();
+  process.exit(0);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

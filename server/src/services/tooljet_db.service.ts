@@ -278,8 +278,10 @@ export class TooljetDbService {
     const { table_name: tableName, foreign_keys = [] } = params;
     const { appManager, tjdbManager } = connectionManagers;
     const tableWithSameName = await appManager.findOne(InternalTable, {
+      where: {
       tableName,
       organizationId,
+      }
     });
 
     if (!isEmpty(tableWithSameName)) throw new ConflictException(`Table with with name "${tableName}" already exists`);

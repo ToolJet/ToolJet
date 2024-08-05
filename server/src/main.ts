@@ -4,7 +4,6 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
 import * as compression from 'compression';
 import { AppModule } from './app.module';
-import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './filters/all-exceptions-filter';
@@ -46,8 +45,6 @@ async function bootstrap() {
     abortOnError: false,
   });
   const configService = app.get<ConfigService>(ConfigService);
-  const host = new URL(process.env.TOOLJET_HOST);
-  const domain = host.hostname;
 
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
@@ -68,51 +65,10 @@ async function bootstrap() {
     exclude: pathsToExclude,
   });
   app.enableCors({
-    origin: true,
+    origin: process.env.ENABLE_CORS === 'true' || process.env.TOOLJET_HOST,
     credentials: true,
   });
   app.use(compression());
-
-  app.use(
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        upgradeInsecureRequests: null,
-        'img-src': ['*', 'data:', 'blob:'],
-        'script-src': [
-          'maps.googleapis.com',
-          'storage.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
-          "'self'",
-          "'unsafe-inline'",
-          "'unsafe-eval'",
-          'blob:',
-          'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
-          'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
-          'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
-          'cdn.skypack.dev',
-          'cdn.jsdelivr.net',
-          'https://esm.sh',
-          'www.googletagmanager.com',
-        ],
-        'default-src': [
-          'maps.googleapis.com',
-          'storage.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
-          '*.sentry.io',
-          "'self'",
-          'blob:',
-          'www.googletagmanager.com',
-        ],
-        'connect-src': ['ws://' + domain, "'self'", '*'],
-        'frame-ancestors': ['*'],
-        'frame-src': ['*'],
-      },
-    })
-  );
-
   app.use(cookieParser());
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
@@ -136,7 +92,8 @@ async function bootstrap() {
 
   await app.listen(port, listen_addr, function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
-    console.log(`Ready to use at ${tooljetHost} 🚀`);
+    const subPath = configService.get<string>('SUB_PATH');
+    console.log(`Ready to use at ${tooljetHost}${subPath || ''} 🚀`);
   });
 }
 
