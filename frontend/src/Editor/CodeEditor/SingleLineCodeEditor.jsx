@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +34,14 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const customVariables = variablesExposedForPreview?.[componentId] ?? {};
+
+  // This is to remove the component's CSA as a suggestion from the appHints
+  const _suggestions = useMemo(() => {
+    return {
+      ...suggestions,
+      appHints: suggestions.appHints.filter((suggestion) => suggestion.type !== 'Function'),
+    };
+  }, [suggestions]);
 
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
@@ -98,7 +106,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
             <SingleLineCodeEditor.Editor
               currentValue={currentValue}
               setCurrentValue={setCurrentValue}
-              hints={suggestions}
+              hints={_suggestions}
               isFocused={isFocused}
               setFocus={setIsFocused}
               validationType={validation?.schema?.type}
