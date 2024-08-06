@@ -19,7 +19,11 @@ export class TooljetDbImportExportService {
     private readonly tooljetDbManager: EntityManager
   ) {}
 
-  async export(organizationId: string, tjDbDto: ExportTooljetDatabaseDto) {
+  async export(
+    organizationId: string,
+    tjDbDto: ExportTooljetDatabaseDto,
+    tjdbTableExportList: Array<ExportTooljetDatabaseDto>
+  ) {
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, id: tjDbDto.table_id },
     });
@@ -36,6 +40,10 @@ export class TooljetDbImportExportService {
       column.configurations = configurations?.columns?.configurations?.[columnUuid];
     });
 
+    if (foreign_keys.length) {
+      foreign_keys.forEach((foreign_key) => tjdbTableExportList.push({ table_id: foreign_key.referenced_table_id }));
+    }
+
     return {
       id: internalTable.id,
       table_name: internalTable.tableName,
@@ -48,6 +56,7 @@ export class TooljetDbImportExportService {
     const tjdbDatabase = [];
     const tableNameForeignKeyMapping = {};
     const transformedTableNameMapping = {};
+    const transformedTableIdMapping = {};
     const queryRunner = this.manager.connection.createQueryRunner();
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     const connectionManagers = { appManager: queryRunner.manager, tjdbManager: tjdbQueryRunner.manager };
@@ -67,18 +76,24 @@ export class TooljetDbImportExportService {
           connectionManagers
         );
         transformedTableNameMapping[tjdbImportDto.table_name] = createdTable.table_name;
+        transformedTableIdMapping[tjdbImportDto.id] = createdTable.id;
         if (foreign_keys.length) tableNameForeignKeyMapping[createdTable.table_name] = foreign_keys;
         tableNameMapping[tjdbImportDto.id] = createdTable;
         tjdbDatabase.push(createdTable);
       }
+
       for (const tableName in tableNameForeignKeyMapping) {
-        const foreignKeys = tableNameForeignKeyMapping[tableName].map((ele) => {
+        const foreignKeys = tableNameForeignKeyMapping[tableName].map((foreignKeyDetail) => {
           return {
-            ...ele,
+            ...foreignKeyDetail,
+            referenced_table_id:
+              transformedTableIdMapping?.[foreignKeyDetail.referenced_table_id] || foreignKeyDetail.referenced_table_id,
             referenced_table_name:
-              transformedTableNameMapping?.[ele.referenced_table_name] || ele.referenced_table_name,
+              transformedTableNameMapping?.[foreignKeyDetail.referenced_table_name] ||
+              foreignKeyDetail.referenced_table_name,
           };
         });
+
         await this.tooljetDbService.perform(
           importResourcesDto.organization_id,
           'create_foreign_key',
@@ -149,7 +164,7 @@ export class TooljetDbImportExportService {
     const internalTableColumnSchema = await this.tooljetDbService.perform(internalTable.organizationId, 'view_table', {
       id: internalTable.id,
     });
-    const internalTableColumns = new Set<string>(internalTableColumnSchema.map((c) => c.column_name));
+    const internalTableColumns = new Set<string>(internalTableColumnSchema.columns.map((c) => c.column_name));
     const isSubset = (subset: Set<string>, superset: Set<string>) => [...subset].every((item) => superset.has(item));
 
     return isSubset(dtoColumns, internalTableColumns);

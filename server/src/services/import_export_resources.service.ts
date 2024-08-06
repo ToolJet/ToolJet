@@ -31,7 +31,11 @@ export class ImportExportResourcesService {
       for (const tjdb of exportResourcesDto.tooljet_database) {
         !isEmpty(tjdb) &&
           resourcesExport['tooljet_database'].push(
-            await this.tooljetDbImportExportService.export(exportResourcesDto.organization_id, tjdb)
+            await this.tooljetDbImportExportService.export(
+              exportResourcesDto.organization_id,
+              tjdb,
+              exportResourcesDto.tooljet_database
+            )
           );
       }
     }
