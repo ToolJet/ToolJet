@@ -140,7 +140,7 @@ export const NumberInput = function NumberInput({
     width,
     auto,
     defaultAlignment,
-    component?.definition?.styles?.iconVisibility?.value,
+    styles?.iconVisibility,
     labelRef?.current?.getBoundingClientRect()?.width,
     isMandatory,
     padding,
@@ -157,7 +157,7 @@ export const NumberInput = function NumberInput({
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
+    padding: styles?.iconVisibility
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
@@ -316,7 +316,7 @@ export const NumberInput = function NumberInput({
             _width={_width}
             labelWidth={labelWidth}
           />
-          {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
+          {styles?.iconVisibility && !isResizing && (
             <IconElement
               data-cy={'text-input-icon'}
               style={{

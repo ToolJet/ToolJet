@@ -483,7 +483,7 @@ export function Table({
           // Single-level nested property
           const [nestedKey, subKey] = nestedKeys;
           const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
-          const newValue = resolveReferences(transformation, row[key], {
+          const newValue = resolveReferences(transformation, undefined, row[key], {
             cellValue: row?.[nestedKey]?.[subKey],
             rowData: row,
           });
@@ -495,7 +495,7 @@ export function Table({
           transformedObject[nestedKey] = nestedObject;
         } else {
           // Non-nested property
-          transformedObject[key] = resolveReferences(transformation, row[key], {
+          transformedObject[key] = resolveReferences(transformation, undefined, row[key], {
             cellValue: row[key],
             rowData: row,
           });

@@ -172,6 +172,34 @@
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
+.transparent-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 50px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #E4E7EB;
+    border-radius: 10px;
+    border: 3px solid transparent;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #E4E7EB;
+  }
+}
+
+@layer base {
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number'] {
+    -webkit-appearance: none;
+    margin: 0;
+    -moz-appearance: textfield !important;
+  }
+}
+
 // variables
 $border-radius: 4px;
 
@@ -554,6 +582,7 @@ button {
     background-color: var(--base);
     background-clip: border-box;
     height: 100vh;
+    z-index: 11;
 
 
     .inspector {
@@ -2918,7 +2947,10 @@ input:focus-visible {
     background: var(--tblr-btn-color-clicked) !important;
 
   }
+}
 
+.jet-tabs{
+  overflow-y: auto
 }
 
 .jet-button {
@@ -12036,7 +12068,7 @@ tbody {
       }
 
       .text-widget[style*="font-size: 14px;"] {
-        height: 21px !important;
+        // height: 21px !important;
 
         div {
           overflow-y: visible !important;
@@ -12044,7 +12076,7 @@ tbody {
       }
 
       .text-widget[style*="font-size: 20px;"] {
-        height: 30px !important;
+        // height: 30px !important;
         background-color: red;
 
         div {
@@ -13309,3 +13341,8 @@ div.ds-svg-container svg {
   margin-bottom: 0px !important;
 }
 
+.tabs-component{
+  .tab-pane{
+    top: initial !important;
+  }
+}
