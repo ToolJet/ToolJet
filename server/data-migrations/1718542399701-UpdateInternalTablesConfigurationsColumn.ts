@@ -5,11 +5,12 @@ import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helpe
 
 export class UpdateInternalTablesConfigurationsColumn1718542399701 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const tooljetDbConnection = await new DataSource({
+    const tooljetDbConnection = new DataSource({
       ...tooljetDbOrmconfig,
       name: 'tooljetDbMigration',
     } as any);
 
+    await tooljetDbConnection.initialize();
     const tooljetDbQueryRunner = tooljetDbConnection.createQueryRunner();
     try {
       // Fetches Table IDs
