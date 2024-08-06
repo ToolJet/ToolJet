@@ -370,7 +370,7 @@
             "org-management/licensing/self-hosted"
           ]
         },
-        "org-management/smtp"
+        "org-management/smtp-configuration"
       ]
     },
     {

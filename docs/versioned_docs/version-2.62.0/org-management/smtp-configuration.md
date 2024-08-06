@@ -1,7 +1,9 @@
 ---
-id: smtp
+id: smtp-configuration
 title: SMTP Configuration
 ---
+
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
 # Configuring SMTP
 
