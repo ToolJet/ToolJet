@@ -192,7 +192,7 @@ export const Listview = function Listview({
       {enablePagination && _.isArray(data) && (
         <div
           className="fixed-bottom position-fixed"
-          style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0 }}
+          style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0, left: '1px', right: '1px' }}
         >
           <div style={{ backgroundColor }}>
             {data?.length > 0 ? (

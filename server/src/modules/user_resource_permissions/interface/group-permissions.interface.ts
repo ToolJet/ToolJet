@@ -19,6 +19,15 @@ export interface ValidateEditUserGroupAdditionObject {
   organizationId: string;
 }
 
+export interface UpdateGroupObject {
+  id: string;
+  organizationId: string;
+}
+export interface DuplicateGroupObject {
+  groupId: string;
+  organizationId: string;
+}
+
 export interface GetGroupUsersObject {
   groupId: string;
   organizationId: string;

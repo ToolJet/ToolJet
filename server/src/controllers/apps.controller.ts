@@ -25,7 +25,7 @@ import { AppUpdateDto } from '@dto/app-update.dto';
 import { AppCreateDto } from '@dto/app-create.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
 import { VersionEditDto } from '@dto/version-edit.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';

@@ -18,7 +18,7 @@ import {
   WORKSPACE_USER_STATUS,
   WORKSPACE_USER_SOURCE,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, generateNextNameAndSlug, isValidDomain } from 'src/helpers/utils.helper';
+import { generateInviteURL, generateNextNameAndSlug, isValidDomain } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -26,6 +26,7 @@ import UserResponse from './models/user_response';
 import { Response } from 'express';
 import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 const uuid = require('uuid');
 
 @Injectable()

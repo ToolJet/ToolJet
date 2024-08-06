@@ -94,7 +94,7 @@ const WidgetIcon = (props) => {
       return <DividerHorizondal {...props} />;
     case 'downstatistics':
       return <Downstatistics {...props} />;
-    case 'dropdown':
+    case 'dropdownlegacy':
       return <Dropdown {...props} />;
     case 'dropdownV2':
       return <DropdownV2 {...props} />;
@@ -126,7 +126,7 @@ const WidgetIcon = (props) => {
       return <Map {...props} />;
     case 'modal':
       return <Modal {...props} />;
-    case 'multiselect':
+    case 'multiselectlegacy':
       return <Multiselect {...props} />;
     case 'multiselectV2':
       return <MultiselectV2 {...props} />;
@@ -174,7 +174,7 @@ const WidgetIcon = (props) => {
       return <Timeline {...props} />;
     case 'timer':
       return <Timer {...props} />;
-    case 'toggleswitch':
+    case 'toggleswitchlegacy':
       return <Toggleswitch {...props} />;
     case 'toggleswitchv2':
       return <ToggleSwitchV2 {...props} />;

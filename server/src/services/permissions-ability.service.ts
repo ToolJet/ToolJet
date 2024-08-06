@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from '@helpers/utils.helper';
+import { dbTransactionWrap } from '@helpers/database.helper';
 import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import {

@@ -2,10 +2,15 @@ import { UserAppsPermissions } from '@module/permissions/interface/permissions-a
 import { AppBase } from 'src/entities/app_base.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { User } from 'src/entities/user.entity';
-import { createQueryBuilder, EntityManager, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, SelectQueryBuilder } from 'typeorm';
 
-export function getFolderQuery(organizationId: string, searchKey?: string): SelectQueryBuilder<Folder> {
-  const query = createQueryBuilder(Folder, 'folders')
+export function getFolderQuery(
+  organizationId: string,
+  manager: EntityManager,
+  searchKey?: string
+): SelectQueryBuilder<Folder> {
+  const query = manager
+    .createQueryBuilder(Folder, 'folders')
     .leftJoinAndSelect('folders.folderApps', 'folder_apps')
     .leftJoin('folder_apps.app', 'app');
   if (searchKey) {

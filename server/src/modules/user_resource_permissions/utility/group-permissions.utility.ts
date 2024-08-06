@@ -106,9 +106,8 @@ export function validateUpdateGroupOperation(
   }
 }
 
-export function validateDeleteGroupUserOperation(group: GroupPermissions) {
-  if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
-
+export function validateDeleteGroupUserOperation(group: GroupPermissions, organizationId: string) {
+  if (!group || group?.organizationId !== organizationId) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
   if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
     throw new MethodNotAllowedException(ERROR_HANDLER.DELETING_DEFAULT_GROUP_USER);
 }

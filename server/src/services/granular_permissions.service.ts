@@ -15,7 +15,8 @@ import {
   GranularPermissionQuerySearchParam,
   UpdateGranularPermissionObject,
 } from '@module/user_resource_permissions/interface/granular-permissions.interface';
-import { catchDbException, dbTransactionWrap } from '@helpers/utils.helper';
+import { catchDbException } from '@helpers/utils.helper';
+import { dbTransactionWrap } from '@helpers/database.helper';
 import {
   DATA_BASE_CONSTRAINTS,
   USER_ROLE,

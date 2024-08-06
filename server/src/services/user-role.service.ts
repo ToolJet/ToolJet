@@ -7,7 +7,7 @@ import {
   ERROR_HANDLER,
   DEFAULT_GROUP_PERMISSIONS,
 } from '@module/user_resource_permissions/constants/group-permissions.constant';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import { GranularPermissionsService } from './granular_permissions.service';
@@ -115,7 +115,11 @@ export class UserRoleService {
           },
         });
         if (userCreatedApps.length > 0) {
-          const user = await manager.findOne(User, userGroup.userId);
+          const user = await manager.findOne(User, {
+            where: {
+              id: userGroup.userId,
+            },
+          });
           throw new BadRequestException({
             message: {
               error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),

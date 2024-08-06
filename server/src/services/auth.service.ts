@@ -23,12 +23,12 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
-  dbTransactionWrap,
   fullName,
   generateInviteURL,
   generateNextNameAndSlug,
   generateOrgInviteURL,
   isValidDomain,
+  isHttpsEnabled,
 } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
@@ -57,6 +57,7 @@ import { UserRoleService } from './user-role.service';
 import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { AbilityService } from './permissions-ability.service';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 import { ResendInviteDto } from '@dto/resend-invite.dto';
@@ -733,7 +734,8 @@ export class AuthService {
   async forgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Email address not found');
+      // No need to throw error - To prevent Username Enumeration vulnerability
+      return;
     }
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
@@ -1111,6 +1113,7 @@ export class AuthService {
     if (organization) user.organizationId = organization.id;
 
     const cookieOptions: CookieOptions = {
+      secure: isHttpsEnabled(),
       httpOnly: true,
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
@@ -1244,6 +1247,7 @@ export class AuthService {
 
     const cookieOptions: CookieOptions = {
       httpOnly: true,
+      secure: isHttpsEnabled(),
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
     };

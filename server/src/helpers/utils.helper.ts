@@ -1,6 +1,6 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
-import { EntityManager, getManager } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
@@ -79,35 +79,14 @@ export function lowercaseString(value: string) {
   return value?.toLowerCase()?.trim();
 }
 
-export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {
-  if (manager) {
-    return await operation(manager);
-  } else {
-    return await getManager().transaction(async (manager) => {
-      return await operation(manager);
-    });
-  }
-}
-
 export const updateTimestampForAppVersion = async (manager, appVersionId) => {
-  const appVersion = await manager.findOne('app_versions', appVersionId);
+  const appVersion = await manager.findOne('app_versions', {
+    where: { id: appVersionId },
+  });
   if (appVersion) {
     await manager.update('app_versions', appVersionId, { updatedAt: new Date() });
   }
 };
-
-export async function dbTransactionForAppVersionAssociationsUpdate(
-  operation: (...args) => any,
-  appVersionId: string
-): Promise<any> {
-  return await getManager().transaction(async (manager) => {
-    const result = await operation(manager);
-
-    await updateTimestampForAppVersion(manager, appVersionId);
-
-    return result;
-  });
-}
 
 type DbContraintAndMsg = {
   dbConstraint: DataBaseConstraints;
@@ -323,4 +302,8 @@ export const isValidDomain = (email: string, restrictedDomain: string): boolean 
     return false;
   }
   return true;
+};
+
+export const isHttpsEnabled = () => {
+  return !!process.env.TOOLJET_HOST?.startsWith('https');
 };

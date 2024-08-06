@@ -13,12 +13,15 @@ import {
   DATA_BASE_CONSTRAINTS,
   GROUP_PERMISSIONS_TYPE,
 } from '@module/user_resource_permissions/constants/group-permissions.constant';
-import { dbTransactionWrap, catchDbException } from 'src/helpers/utils.helper';
-import { EntityManager, getManager } from 'typeorm';
+import { catchDbException } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { EntityManager } from 'typeorm';
 import {
   CreateDefaultGroupObject,
+  DuplicateGroupObject,
   GetGroupUsersObject,
   GetUsersResponse,
+  UpdateGroupObject,
 } from '@module/user_resource_permissions/interface/group-permissions.interface';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import {
@@ -58,23 +61,28 @@ export class GroupPermissionsServiceV2 {
   }
 
   async getAllGroup(organizationId: string): Promise<GetUsersResponse> {
-    const manager: EntityManager = getManager();
-    const result = await manager.findAndCount(GroupPermissions, {
-      where: { organizationId },
-      order: { type: 'DESC' },
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const result = await manager.findAndCount(GroupPermissions, {
+        where: { organizationId },
+        order: { type: 'DESC' },
+      });
+      const response: GetUsersResponse = {
+        groupPermissions: result[0],
+        length: result[1],
+      };
+      return response;
     });
-    const response: GetUsersResponse = {
-      groupPermissions: result[0],
-      length: result[1],
-    };
-    return response;
   }
 
-  async getGroup(id: string, manager?: EntityManager): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
+  async getGroup(
+    organizationId: string,
+    id: string,
+    manager?: EntityManager
+  ): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const [group, isBuilderLevelResourcePermissions] = await Promise.all([
         manager.findOne(GroupPermissions, {
-          where: { id },
+          where: { id, organizationId },
         }),
         await this.groupPermissionsUtilityService.checkIfBuilderLevelResourcesPermissions(id, manager),
       ]);
@@ -86,9 +94,14 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async updateGroup(id: string, updateGroupPermissionDto: UpdateGroupPermissionDto, manager?: EntityManager) {
+  async updateGroup(
+    updateGroupObject: UpdateGroupObject,
+    updateGroupPermissionDto: UpdateGroupPermissionDto,
+    manager?: EntityManager
+  ) {
+    const { id, organizationId } = updateGroupObject;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { group } = await this.getGroup(id);
+      const { group } = await this.getGroup(organizationId, id);
       if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
 
       validateUpdateGroupOperation(group, updateGroupPermissionDto);
@@ -138,9 +151,9 @@ export class GroupPermissionsServiceV2 {
     }, manager);
   }
 
-  async deleteGroup(id: string): Promise<void> {
+  async deleteGroup(id: string, organizationId: string): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { group } = await this.getGroup(id, manager);
+      const { group } = await this.getGroup(organizationId, id, manager);
       if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
         throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_UPDATE_NOT_ALLOWED);
       return await manager.delete(GroupPermissions, id);
@@ -168,7 +181,10 @@ export class GroupPermissionsServiceV2 {
 
   async getGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(GroupUsers, id, {
+      return await manager.findOne(GroupUsers, {
+        where: {
+          id,
+        },
         relations: ['group'],
       });
     }, manager);
@@ -189,7 +205,7 @@ export class GroupPermissionsServiceV2 {
   async addGroupUsers(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager) {
     const { userIds, groupId, allowRoleChange } = addGroupUserDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { group, isBuilderLevel } = await this.getGroup(groupId, manager);
+      const { group, isBuilderLevel } = await this.getGroup(organizationId, groupId, manager);
       validateAddGroupUserOperation(group);
       const editorRoleUsers = await this.groupPermissionsUtilityService.getRoleUsersList(
         USER_ROLE.END_USER,
@@ -234,13 +250,14 @@ export class GroupPermissionsServiceV2 {
   }
 
   async duplicateGroup(
-    groupId: string,
+    duplicateGroupObject: DuplicateGroupObject,
     duplicateGroupDto: DuplicateGroupDto,
     manager?: EntityManager
   ): Promise<GroupPermissions> {
     const { addApps, addPermission, addUsers } = duplicateGroupDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { group } = await this.getGroup(groupId, manager);
+      const { groupId, organizationId } = duplicateGroupObject;
+      const { group } = await this.getGroup(organizationId, groupId, manager);
       if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
       const newGroup = await this.groupPermissionsUtilityService.duplicateGroup(group, addPermission, manager);
       if (addUsers) {

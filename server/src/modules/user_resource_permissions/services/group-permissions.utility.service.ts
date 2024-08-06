@@ -12,7 +12,8 @@ import {
   getUserRoleQuery,
 } from '@module/user_resource_permissions/utility/group-permissions.utility';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap, getMaxCopyNumber } from '@helpers/utils.helper';
+import { getMaxCopyNumber } from '@helpers/utils.helper';
+import { dbTransactionWrap } from '@helpers/database.helper';
 import { App } from 'src/entities/app.entity';
 import { getAllGranularPermissionQuery } from '../utility/granular-permissios.utility';
 import { ResourceType } from '../constants/granular-permissions.constant';
@@ -107,7 +108,11 @@ export class GroupPermissionsUtilityService {
       if (userRole.name === USER_ROLE.END_USER) {
         return await Promise.all(
           groupsToAddIds.map(async (id) => {
-            const group = await manager.findOne(GroupPermissions, id);
+            const group = await manager.findOne(GroupPermissions, {
+              where: {
+                id,
+              },
+            });
             if (!group) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
             const isEditableGroup = await this.isEditableGroup(group, manager);
             if (isEditableGroup) {

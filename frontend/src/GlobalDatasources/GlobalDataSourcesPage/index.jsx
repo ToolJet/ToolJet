@@ -21,7 +21,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
-
+import HeaderSkeleton from '../../_ui/FolderSkeleton/HeaderSkeleton';
+import Skeleton from 'react-loading-skeleton';
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
   const [plugins, setPlugins] = useState([]);
@@ -191,6 +192,32 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     }
   };
 
+  const loadingState = () => {
+    return (
+      <div className="datasource-list-container">
+        <div className="datasource-list">
+          <div className="mb-2">
+            <HeaderSkeleton />
+          </div>
+          <Skeleton count={1} height={20} width={120} className="mb-2" />
+          {Array.from(Array(2)).map((_, rowIndex) => (
+            <div className="row skeleton-container mb-3 mt-3" key={rowIndex}>
+              {Array.from(Array(6)).map((_, index) => (
+                <div className="col" key={rowIndex * 3 + index}>
+                  {rowIndex === 1 && index > 2 ? (
+                    <></>
+                  ) : (
+                    <Skeleton count={1} height={104} width={128} className="mb-1" />
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const segregateDataSources = () => {
     const datasources = queryString && queryString.length > 0 ? filteredDataSources : datasourcesGroups();
 
@@ -332,8 +359,8 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               title={item.title}
               src={item?.src}
               usePluginIcon={isEmpty(item?.iconFile?.data)}
-              height="35px"
-              width="35px"
+              height={'35px'}
+              width={'35px'}
               actionButton={addDataSourceBtn(item)}
               className="datasource-card"
               titleClassName={'datasource-card-title'}
@@ -412,6 +439,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             updateSelectedDatasource={updateSelectedDatasource}
           />
         )}
+        {isLoading && loadingState()}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
       </div>
     </div>

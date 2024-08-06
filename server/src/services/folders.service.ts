@@ -2,22 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { getFolderQuery } from 'src/helpers/queries';
-import { createQueryBuilder, EntityManager, Repository, UpdateResult } from 'typeorm';
+
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
-import { catchDbException, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { catchDbException } from 'src/helpers/utils.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { AppBase } from 'src/entities/app_base.entity';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { AbilityService } from './permissions-ability.service';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { EntityManager, Repository, UpdateResult } from 'typeorm';
 
 @Injectable()
 export class FoldersService {
   constructor(
     @InjectRepository(Folder)
     private foldersRepository: Repository<Folder>,
-    @InjectRepository(FolderApp)
-    private folderAppsRepository: Repository<FolderApp>,
 
     private abilityService: AbilityService
   ) {}
@@ -42,7 +42,9 @@ export class FoldersService {
   }
 
   async allFolders(user: User, searchKey?: string): Promise<Folder[]> {
-    return await getFolderQuery(user.organizationId, searchKey).distinct().getMany();
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await getFolderQuery(user.organizationId, manager, searchKey).distinct().getMany();
+    });
   }
 
   async all(user: User, searchKey: string): Promise<Folder[]> {
@@ -64,7 +66,7 @@ export class FoldersService {
   }
 
   async findOne(folderId: string): Promise<Folder> {
-    return await this.foldersRepository.findOneOrFail(folderId);
+    return await this.foldersRepository.findOneOrFail({ where: { id: folderId } });
   }
 
   async getAppsFor(
@@ -117,7 +119,8 @@ export class FoldersService {
 
       const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
 
-      const viewableAppsInFolder = createQueryBuilder(AppBase, 'apps')
+      const viewableAppsInFolder = manager
+        .createQueryBuilder(AppBase, 'apps')
         .innerJoin('apps.user', 'user')
         .addSelect(['user.firstName', 'user.lastName']);
 
@@ -142,7 +145,7 @@ export class FoldersService {
   }
 
   async delete(user: User, id: string) {
-    const folder = await this.foldersRepository.findOneOrFail({ id, organizationId: user.organizationId });
+    const folder = await this.foldersRepository.findOneOrFail({ where: { id, organizationId: user.organizationId } });
     return await this.foldersRepository.delete({ id: folder.id, organizationId: user.organizationId });
   }
 }

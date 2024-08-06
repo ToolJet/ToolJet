@@ -89,7 +89,7 @@ export class TooljetDatabaseError extends QueryFailedError {
   ) {
     super(message, errorObj.parameters, errorObj.driverError);
     this.context = context;
-    this.code = errorObj.driverError.code;
+    this.code = errorObj.driverError['code'];
     this.queryError = errorObj;
   }
 
@@ -153,14 +153,14 @@ export class TooljetDatabaseError extends QueryFailedError {
         return { table, column: matches[1], value: matches[2] };
       },
       [PostgresErrorCode.UniqueViolation]: () => {
-        const errorMessage = this.queryError.driverError.details;
+        const errorMessage = this.queryError.driverError['details'];
         const regex = /Key \((.*?)\)=\((.*?)\) already exists\./;
         const matches = regex.exec(errorMessage);
         const table = this.context.internalTables[0].tableName;
         return { table, column: matches[1], value: matches[2] };
       },
       [PostgresErrorCode.ForeignKeyViolation]: () => {
-        const errorMessage = this.queryError.driverError.details;
+        const errorMessage = this.queryError.driverError['details'];
         const regex = /Key \((.*?)\)=\((.*?)\) (is still referenced from table|is not present in table) "(.*?)"\./;
         const matches = regex.exec(errorMessage);
         const table = this.context.internalTables[0].tableName;

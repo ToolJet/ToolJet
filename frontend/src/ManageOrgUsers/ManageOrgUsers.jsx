@@ -12,6 +12,7 @@ import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
+import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -388,24 +389,30 @@ class ManageOrgUsersComponent extends React.Component {
 
           <div className="page-wrapper">
             <div>
-              <div className="page-header workspace-page-header">
-                <div className="align-items-center d-flex">
-                  <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
-                    {meta?.total_count} users
-                  </div>
-                  <div className=" workspace-setting-buttons-wrap">
-                    <ButtonSolid
-                      data-cy="button-invite-new-user"
-                      className="singleuser-btn"
-                      onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
-                      leftIcon="usergroup"
-                      fill={'#FDFDFE'}
-                    >
-                      {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
-                    </ButtonSolid>
+              {isLoading ? (
+                <div className="page-header workspace-page-header">
+                  <HeaderSkeleton />
+                </div>
+              ) : (
+                <div className="page-header workspace-page-header">
+                  <div className="align-items-center d-flex">
+                    <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
+                      {meta?.total_count} users
+                    </div>
+                    <div className=" workspace-setting-buttons-wrap">
+                      <ButtonSolid
+                        data-cy="button-invite-new-user"
+                        className="singleuser-btn"
+                        onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                        leftIcon="usergroup"
+                        fill={'#FDFDFE'}
+                      >
+                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
+                      </ButtonSolid>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="page-body">
                 <UsersFilter

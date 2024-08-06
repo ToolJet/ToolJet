@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
@@ -8,6 +8,7 @@ import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 import { App } from 'src/entities/app.entity';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 
 interface ExtendedEnvironment extends AppEnvironment {
   appVersionsCount?: number;
@@ -171,7 +172,9 @@ export class AppEnvironmentService {
             /* Add extra things to respons */
           } else if (isUserDeletedTheCurrentVersion) {
             const selectedEnvironment = await manager.findOneOrFail(AppEnvironment, {
-              id: editorEnvironmentId,
+              where: {
+                id: editorEnvironmentId,
+              },
             });
             /* User deleted current editor version. Client needs new editor version */
             if (selectedEnvironment) {

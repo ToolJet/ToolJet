@@ -7,7 +7,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, environmentId }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
-  const [buttonText, setButtonText] = useState('Test Connection');
+  const [buttonText, setButtonText] = useState('Test connection');
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
     } else if (connectionStatus === 'success') {
       setButtonText('Connection verified');
     } else {
-      setButtonText('Test Connection');
+      setButtonText('Test connection');
     }
   }, [isTesting, connectionStatus]);
 

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
 import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 
 import { EventsService } from './events_handler.service';
@@ -22,7 +22,7 @@ export class ComponentsService {
   ) {}
 
   async findOne(id: string): Promise<Component> {
-    return this.componentsRepository.findOne(id);
+    return this.componentsRepository.findOne({ where: { id } });
   }
 
   async create(componentDiff: object, pageId: string, appVersionId: string) {
@@ -68,19 +68,27 @@ export class ComponentsService {
   }
 
   async update(componentDiff: object, appVersionId: string) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componentDiff) {
         const { component } = componentDiff[componentId];
 
-        const componentData: Component = await manager.findOne(Component, componentId);
+        const doesComponentExist = await manager.findOneOrFail(Component, {
+          where: {
+            id: componentId,
+          },
+        });
 
-        if (!componentData) {
+        if (doesComponentExist[1] === 0) {
           return {
             error: {
               message: `Component with id ${componentId} does not exist`,
             },
           };
         }
+
+        const componentData: Component = await manager.findOne(Component, {
+          where: { id: componentId },
+        });
 
         const isComponentDefinitionChanged = component.definition ? true : false;
 
@@ -125,7 +133,9 @@ export class ComponentsService {
 
   async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const components = await manager.findByIds(Component, componentIds);
+      const components = await manager.find(Component, {
+        where: { id: In(componentIds) },
+      });
 
       if (!components.length) {
         return {
@@ -141,7 +151,7 @@ export class ComponentsService {
         });
       }
 
-      await manager.delete(Component, componentIds);
+      await manager.delete(Component, { id: In(componentIds) });
     }, appVersionId);
   }
 
@@ -151,9 +161,9 @@ export class ComponentsService {
   ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
-        const doesComponentExist = await manager.findAndCount(Component, { id: componentId });
+        const doesComponentExist = await manager.findOneOrFail(Component, { where: { id: componentId } });
 
-        if (!doesComponentExist[1]) {
+        if (doesComponentExist[1] === 0) {
           return {
             error: {
               message: `Component with id ${componentId} does not exist`,
@@ -164,7 +174,7 @@ export class ComponentsService {
         const { layouts, component } = componenstLayoutDiff[componentId];
 
         for (const type in layouts) {
-          const componentLayout = await manager.findOne(Layout, { componentId, type });
+          const componentLayout = await manager.findOne(Layout, { where: { componentId, type } });
 
           if (componentLayout) {
             const layout = {

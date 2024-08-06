@@ -10,7 +10,7 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQueryUsingPermissions } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -24,7 +24,7 @@ import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
 import { Component } from 'src/entities/component.entity';
-import { EventHandler } from 'src/entities/event_handler.entity';
+import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -33,6 +33,7 @@ import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 import { AbilityService } from './permissions-ability.service';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 
 const uuid = require('uuid');
 
@@ -331,25 +332,12 @@ export class AppsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let versionFrom: AppVersion;
       const { organizationId } = user;
+
       if (versionFromId) {
         versionFrom = await manager.findOneOrFail(AppVersion, {
           where: { id: versionFromId },
           relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
         });
-
-        if (defaultAppEnvironments.length > 1) {
-          const environmentWhereUserCreatingVersion = await this.appEnvironmentService.get(
-            app.organizationId,
-            environmentId,
-            false,
-            manager
-          );
-
-          //check if the user is creating version from development environment only
-          if (environmentWhereUserCreatingVersion.priority !== 1) {
-            throw new BadRequestException('New versions can only be created in development environment');
-          }
-        }
       }
 
       const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
@@ -503,6 +491,9 @@ export class AppsService {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
+      if (eventDefinition?.actionId === 'set-table-page') {
+        eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
+      }
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -743,7 +734,7 @@ export class AppsService {
       const dataSourceMapping = {};
       const newDataQueries = [];
       const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId: versionFrom?.id, target: 'data_query' },
+        where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
       });
 
       if (dataSources?.length > 0 || globalDataSources?.length > 0) {

@@ -33,6 +33,7 @@ import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { InstanceSettingsService } from '@instance-settings/service';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { UserResourcePermissionsModule } from '@module/user_resource_permissions
     MetadataService,
     AppEnvironmentService,
     SessionService,
+    InstanceSettingsService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
   exports: [OrganizationsService, OrganizationUsersService],

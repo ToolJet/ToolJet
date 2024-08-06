@@ -5,7 +5,8 @@ import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
@@ -207,7 +208,7 @@ export class UsersService {
       const groupsToRemove = groupPermissions.filter((permission) => removeGroups.includes(permission.id));
       await Promise.all(
         groupsToRemove.map(async (group) => {
-          validateDeleteGroupUserOperation(group);
+          validateDeleteGroupUserOperation(group, user.organizationId);
           const groupUser = group.groupUsers[0];
           this.groupPermissionsService.deleteGroupUser(groupUser.id, manager);
         })
@@ -226,19 +227,23 @@ export class UsersService {
   async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
     let app: App;
     try {
-      app = await this.appsRepository.findOneOrFail(slug);
+      app = await this.appsRepository.findOneOrFail({
+        where: { slug },
+      });
     } catch (error) {
       app = await this.appsRepository.findOne({
-        slug,
+        where: {
+          slug,
+        },
       });
     }
 
     return { organizationId: app?.organizationId, isPublic: app?.isPublic };
   }
 
-  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+  async addAvatar(userId: string, imageBuffer: Buffer, filename: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user = await manager.findOne(User, userId);
+      const user = await manager.findOne(User, { where: { id: userId } });
       const currentAvatarId = user.avatarId;
       const createFileDto = new CreateFileDto();
       createFileDto.filename = filename;

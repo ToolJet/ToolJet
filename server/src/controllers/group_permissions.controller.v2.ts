@@ -59,7 +59,7 @@ export class GroupPermissionsControllerV2 {
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
   @Get(':id')
   async get(@User() user, @Param('id') id: string) {
-    return await this.groupPermissionsService.getGroup(id);
+    return await this.groupPermissionsService.getGroup(user.organizationId, id);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -80,21 +80,24 @@ export class GroupPermissionsControllerV2 {
       2. EE/Cloud - Basic Plan - No'one can update custom and default group
             - Paid Plan - Can update only custom and default -builder custom group
     */
-    return await this.groupPermissionsService.updateGroup(id, updateGroupDto);
+    return await this.groupPermissionsService.updateGroup({ id, organizationId: user.organizationId }, updateGroupDto);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
   @Delete(':id')
   async delete(@User() user, @Param('id') id: string) {
-    return await this.groupPermissionsService.deleteGroup(id);
+    return await this.groupPermissionsService.deleteGroup(id, user.organizationId);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
   @Post(':id/duplicate')
   async duplicateGroup(@User() user, @Param('id') groupId: string, @Body() duplicateGroupDto: DuplucateGroupDto) {
-    return await this.groupPermissionsService.duplicateGroup(groupId, duplicateGroupDto);
+    return await this.groupPermissionsService.duplicateGroup(
+      { groupId, organizationId: user.organizationId },
+      duplicateGroupDto
+    );
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -120,7 +123,7 @@ export class GroupPermissionsControllerV2 {
   @Delete('group-user/:id')
   async deleteGroupUser(@User() user, @Param('id') id: string) {
     const groupUser = await this.groupPermissionsService.getGroupUser(id);
-    validateDeleteGroupUserOperation(groupUser?.group);
+    validateDeleteGroupUserOperation(groupUser?.group, user.organizationId);
     return await this.groupPermissionsService.deleteGroupUser(id);
   }
 
@@ -142,27 +145,16 @@ export class GroupPermissionsControllerV2 {
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
   @Put('user-role/edit')
   async updateUserRole(@User() user, @Body() editRoleDto: EditUserRoleDto) {
-    /* 
-
-     What are license thing for this
-    License Validation check - 
-      1. CE - Anyone can create update custom groups but no'one can update defaul group
-      2. EE/Cloud - Basic Plan - No'one can update custom and default group
-            - Paid Plan - Can update only custom and default -builder custom group
-    */
     const { organizationId } = user;
     return await this.userRoleService.editDefaultGroupUserRole(editRoleDto, organizationId);
   }
 
-  //Should be not be part of current CE
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
   @Post('granular-permissions')
   async createGranularPermissions(@User() user, @Body() createGranularPermissionsDto: CreateGranularPermissionDto) {
-    //Check for license validation first here
-    // What are license validation for this
     const { groupId, createAppsPermissionsObject } = createGranularPermissionsDto;
-    const { group } = await this.groupPermissionsService.getGroup(groupId);
+    const { group } = await this.groupPermissionsService.getGroup(user.organizationId, groupId);
     validateGranularPermissionCreateOperation(group);
     return await this.granularPermissionsService.create(
       {
@@ -197,7 +189,7 @@ export class GroupPermissionsControllerV2 {
 
     const granularPermissions = await this.granularPermissionsService.get(granularPermissionsId);
     const group = granularPermissions.group;
-    validateGranularPermissionUpdateOperation(group);
+    validateGranularPermissionUpdateOperation(group, user.organizationId);
     return await this.granularPermissionsService.update(granularPermissionsId, {
       group: group,
       organizationId: group.organizationId,
