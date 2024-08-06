@@ -115,6 +115,10 @@ export class PageService {
             eventDefinition.modal = componentsIdMap[eventDefinition.modal];
           }
 
+          if (eventDefinition?.actionId == 'set-table-page' && componentsIdMap[eventDefinition.table]) {
+            eventDefinition.table = componentsIdMap[eventDefinition.table];
+          }
+
           event.event = eventDefinition;
 
           const clonedEvent = new EventHandler();
