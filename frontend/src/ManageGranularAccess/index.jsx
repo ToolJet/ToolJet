@@ -132,6 +132,7 @@ class ManageGranularAccessComponent extends React.Component {
       .then(() => {
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
+        toast.success('Permission created successfully!');
       })
       .catch(({ error }) => {
         this.closeAddPermissionModal();
