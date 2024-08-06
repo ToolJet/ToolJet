@@ -1,5 +1,4 @@
 import { QueryError } from './query.error';
-import { Headers } from 'got';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
 
@@ -78,18 +77,23 @@ export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, use
   }
 };
 
-export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSource = true): Headers => {
-  const _headers = (queryOptions.headers || []).filter((o) => {
-    return o.some((e) => !isEmpty(e));
-  });
+export const sanitizeHeaders = (
+  sourceOptions: any,
+  queryOptions: any,
+  hasDataSource = true
+): { [k: string]: string } => {
+  const cleanHeaders = (headers) =>
+    headers.filter(([_, v]) => !isEmpty(v)).map(([k, v]) => [k.trim().toLowerCase(), v]);
 
-  if (!hasDataSource) return Object.fromEntries(_headers);
+  const _queryHeaders = cleanHeaders(queryOptions.headers || []);
+  const queryHeaders = Object.fromEntries(_queryHeaders);
 
-  const headerData = _headers.concat(sourceOptions.headers || []);
-  const headers = Object.fromEntries(headerData);
-  Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
+  if (!hasDataSource) return queryHeaders;
 
-  return headers;
+  const _sourceHeaders = cleanHeaders(sourceOptions.headers || []);
+  const sourceHeaders = Object.fromEntries(_sourceHeaders);
+
+  return { ...queryHeaders, ...sourceHeaders };
 };
 
 export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasDataSource = true): Array<string> => {

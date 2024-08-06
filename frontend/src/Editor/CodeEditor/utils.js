@@ -5,6 +5,7 @@ import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '../component-properties-validation';
 import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
+import { validateMultilineCode } from '@/_helpers/utility';
 
 const acorn = require('acorn');
 
@@ -243,6 +244,16 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
     return resolveWorkspaceVariables(query);
   }
 
+  if (query?.startsWith('{{') && query?.endsWith('}}')) {
+    const { status, data } = validateMultilineCode(query);
+
+    if (status === 'failed') {
+      const errMessage = `${data.message} -  ${data.description}`;
+
+      return [false, errMessage, query, query];
+    }
+  }
+
   if ((!validationSchema || isEmpty(validationSchema)) && (!query?.includes('{{') || !query?.includes('}}'))) {
     return [true, error, resolvedValue];
   }
@@ -286,10 +297,15 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
       resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
 
       if (jsExpression) {
-        let jscode = value.replace(toResolveReference, resolvedValue);
-        jscode = value.replace(toResolveReference, `'${resolvedValue}'`);
-
-        resolvedValue = resolveCode(jscode, customResolvers);
+        let jscode = value;
+        if (!Array.isArray(resolvedValue) && typeof resolvedValue !== 'object' && resolvedValue !== null) {
+          jscode = value.replace(toResolveReference, resolvedValue).replace(toResolveReference, `'${resolvedValue}'`);
+          resolvedValue = resolveCode(jscode, customResolvers);
+        } else {
+          const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);
+          resolvedValue = resolvedCode;
+          error = errorRef || null;
+        }
       }
     } else {
       const [resolvedCode, errorRef] = resolveCode(value, customResolvers, true, [], true);

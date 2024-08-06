@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
+import debounce from 'lodash/debounce';
 
 export const TextInput = function TextInput({
   height,
@@ -76,7 +77,7 @@ export const TextInput = function TextInput({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
+    padding: component?.definition?.styles?.iconVisibility?.value
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
@@ -241,6 +242,19 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
+  const debouncedOnChange = useCallback(
+    debounce((value) => {
+      setExposedVariable('value', value);
+      fireEvent('onChange');
+    }, 0),
+    []
+  );
+
+  const onChange = (e) => {
+    setValue(e.target.value);
+    debouncedOnChange(e.target.value);
+  };
+
   return (
     <>
       <div
@@ -313,11 +327,7 @@ export const TextInput = function TextInput({
               fireEvent('onEnterPressed');
             }
           }}
-          onChange={(e) => {
-            setValue(e.target.value);
-            setExposedVariable('value', e.target.value);
-            fireEvent('onChange');
-          }}
+          onChange={onChange}
           onBlur={(e) => {
             setShowValidationError(true);
             setIsFocused(false);

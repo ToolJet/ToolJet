@@ -14,7 +14,9 @@ const {
   never,
 } = require('superstruct');
 
+import { validateMultilineCode } from '@/_helpers/utility';
 import _ from 'lodash';
+import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 export const generateSchemaFromValidationDefinition = (definition, recursionDepth = 0) => {
   let schema;
@@ -52,7 +54,7 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
     }
     case 'union': {
       schema = union(
-        definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema, recursionDepth))
+        definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema, recursionDepth + 1))
       );
       break;
     }
@@ -105,7 +107,7 @@ export const validate = (value, schema, _defaultValue, codePreviewValidator = fa
       let errMsg = `Expected a value of type ${structError.type}, but received`;
       errMsg = codePreviewValidator
         ? errMsg + ` ${typeof structError.value}`
-        : errMsg + ` ${JSON.stringify(structError.value)}`;
+        : errMsg + ` ${JSON.stringify(structError.value, reservedKeywordReplacer)}`;
 
       errors.push(errMsg);
     }
@@ -129,17 +131,17 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
         ? any()
         : generateSchemaFromValidationDefinition(validationDefinition);
 
-      const reservedKeyword = ['app', 'window']; // Case-sensitive reserved keywords
-      const keywordRegex = new RegExp(`\\b(${reservedKeyword.join('|')})\\b`, 'i');
-      const hasReservedkeyword = keywordRegex.test(value);
+      if (typeof value === string && value.startsWith('{{') && value.endsWith('}}')) {
+        const { status, data } = validateMultilineCode(value);
 
-      if (hasReservedkeyword) {
-        allErrors.push({
-          property: propertyDefinitions[propertyName]?.displayName,
-          message: 'Code contains reserved keywords',
-        });
+        if (status === 'failed') {
+          allErrors.push({
+            property: propertyDefinitions[propertyName]?.displayName,
+            message: data,
+          });
 
-        return [propertyName, defaultValue];
+          return [propertyName, defaultValue];
+        }
       }
 
       const [_valid, errors, newValue] = propertyName ? validate(value, schema, defaultValue) : [true, []];

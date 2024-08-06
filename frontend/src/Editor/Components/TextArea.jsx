@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import debounce from 'lodash/debounce';
 
 export const TextArea = function TextArea({
   height,
@@ -28,13 +29,22 @@ export const TextArea = function TextArea({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value, setValue]);
 
+  const debouncedOnChange = useCallback(
+    debounce((value) => {
+      setExposedVariable('value', value);
+    }, 0),
+    []
+  );
+
+  const onChange = (e) => {
+    setValue(e.target.value);
+    debouncedOnChange(e.target.value);
+  };
+
   return (
     <textarea
       disabled={styles.disabledState}
-      onChange={(e) => {
-        setValue(e.target.value);
-        setExposedVariable('value', e.target.value);
-      }}
+      onChange={onChange}
       type="text"
       className="form-control textarea"
       placeholder={properties.placeholder}

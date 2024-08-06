@@ -65,21 +65,6 @@ export const Form = function Form(props) {
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
-  useEffect(() => {
-    setExposedVariable('resetForm', async function () {
-      resetComponent();
-    });
-    setExposedVariable('submitForm', async function () {
-      if (isValid) {
-        onEvent('onSubmit', formEvents).then(() => resetComponent());
-      } else {
-        fireEvent('onInvalid');
-      }
-    });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const extractData = (data) => {
     const result = {};
 
@@ -186,9 +171,14 @@ export const Form = function Form(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
   };
+
   const fireSubmissionEvent = () => {
     if (isValid) {
-      onEvent('onSubmit', formEvents).then(() => resetComponent());
+      onEvent('onSubmit', formEvents);
+      // setTimeout is required to make sure that resetting happens after event is completed executing
+      setTimeout(() => {
+        resetComponent();
+      }, 100);
     } else {
       fireEvent('onInvalid');
     }
@@ -222,6 +212,17 @@ export const Form = function Form(props) {
     childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
     setChildrenData(childDataRef.current);
   };
+
+  useEffect(() => {
+    const exposedVariables = {
+      resetForm: async function () {
+        resetComponent();
+      },
+      submitForm: fireSubmissionEvent,
+    };
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid, JSON.stringify(formEvents)]);
 
   return (
     <form
@@ -259,6 +260,7 @@ export const Form = function Form(props) {
                 currentPageId={props.currentPageId}
                 {...props}
                 {...containerProps}
+                height={'100%'} // This height is required since Subcontainer has a issue if height is provided, it stores it in the ref and never updates that ref
               />
               <SubCustomDragLayer
                 containerCanvasWidth={width}

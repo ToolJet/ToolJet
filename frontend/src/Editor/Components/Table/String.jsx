@@ -83,6 +83,7 @@ const StringColumn = ({
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
+          ref.current.blur();
           if (cellValue !== e.target.textContent) {
             handleCellValueChange(cell.row.index, column.key || column.name, e.target.textContent, cell.row.original);
           }
@@ -93,7 +94,7 @@ const StringColumn = ({
         e.stopPropagation();
       }}
     >
-      <span> {String(cellValue)}</span>
+      {String(cellValue)}
     </div>
   );
 
