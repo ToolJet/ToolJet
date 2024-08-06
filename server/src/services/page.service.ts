@@ -13,6 +13,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'class-validator';
+import * as _ from 'lodash';
 
 @Injectable()
 export class PageService {
@@ -103,12 +104,19 @@ export class PageService {
       const componentsIdMap = {};
 
       // Clone components
+      const mappingsToUpdate = [];
       const clonedComponents = await Promise.all(
         pageComponents.map(async (component) => {
           const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
           const newComponent = await manager.save(manager.create(Component, clonedComponent));
 
           componentsIdMap[component.id] = newComponent.id;
+          if (component?.properties?.buttonToSubmit?.value) {
+            mappingsToUpdate.push({
+              component: newComponent,
+              pathToUpdate: 'properties.buttonToSubmit.value',
+            });
+          }
           const componentLayouts = await manager.find(Layout, { componentId: component.id });
           const clonedLayouts = componentLayouts.map((layout) => ({
             ...layout,
@@ -148,7 +156,17 @@ export class PageService {
           return newComponent;
         })
       );
-
+      await Promise.all(
+        mappingsToUpdate.map((itemToUpdate) => {
+          const { component, pathToUpdate: path } = itemToUpdate;
+          const oldId = _.get(component, path);
+          const newId = componentsIdMap[oldId];
+          if (newId) {
+            _.set(component, path, newId);
+          }
+          manager.save(component);
+        })
+      );
       // Clone events
       await Promise.all(
         pageEvents.map(async (event) => {

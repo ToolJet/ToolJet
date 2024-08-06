@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { isEmpty } from 'lodash';
+import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
@@ -785,6 +785,10 @@ export class AppImportExportService {
           const newComponent = new Component();
 
           let parentId = component.parent ? component.parent : null;
+          if (component?.properties?.buttonToSubmit) {
+            const newButtonToSubmitValue = newComponentIdsMap[component?.properties?.buttonToSubmit?.value];
+            if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
+          }
 
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
 
