@@ -49,14 +49,22 @@ function remove(id, environmentId) {
   );
 }
 
-function getConstantsFromEnvironment(environmentId) {
+function getConstantsFromEnvironment(environmentId, type = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organization-constants/environment/${environmentId}`, requestOptions).then(
-    handleResponse
-  );
+  const url = new URL(`${config.apiUrl}/organization-constants/environment/${environmentId}`);
+  if (type) {
+    url.searchParams.append('type', type);
+  }
+  return fetch(url.toString(), requestOptions).then(handleResponse);
 }
 
-function getConstantsFromPublicApp(slug) {
-  const requestOptions = { method: 'GET' };
-  return fetch(`${config.apiUrl}/organization-constants/${slug}`, requestOptions).then(handleResponse);
+function getConstantsFromPublicApp(slug, type = null) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const url = new URL(`${config.apiUrl}/organization-constants/${slug}`);
+
+  if (type) {
+    url.searchParams.append('type', type);
+  }
+
+  return fetch(url.toString(), requestOptions).then(handleResponse);
 }
