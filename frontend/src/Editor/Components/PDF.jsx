@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css'; // Required to fix duplicate text appearing at the bottom from the previous page
 import { debounce } from 'lodash';
 
 export const PDF = React.memo(({ styles, properties, width, height, component, dataCy }) => {
