@@ -15,6 +15,7 @@ import { Input } from '../CodeBuilder/Elements/Input';
 import { Icon } from '../CodeBuilder/Elements/Icon';
 import { Visibility } from '../CodeBuilder/Elements/Visibility';
 import { NumberInput } from '../CodeBuilder/Elements/NumberInput';
+import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
 
 const AllElements = {
   Color,
@@ -32,6 +33,7 @@ const AllElements = {
   Icon,
   Visibility,
   NumberInput,
+  TableRowHeightInput,
 };
 
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {
