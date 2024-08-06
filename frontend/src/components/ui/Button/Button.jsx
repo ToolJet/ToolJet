@@ -1,6 +1,5 @@
 import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
-import './Button.scss';
 import {
   getDefaultIconFillColor,
   defaultButtonFillColour,

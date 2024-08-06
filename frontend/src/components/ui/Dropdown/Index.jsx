@@ -7,6 +7,8 @@ const DropdownComponent = ({ options = {}, ...props }) => {
   const [open, setOpen] = useState(false);
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
+  const [value, setValue] = useState('');
+  const [avatarObj, setAvatarObj] = useState({});
 
   const dropdownStyle = `${
     isValid === true ? '!tw-border-border-success-strong' : isValid === false ? '!tw-border-border-danger-strong' : ''
@@ -16,7 +18,21 @@ const DropdownComponent = ({ options = {}, ...props }) => {
     setOpen(!open);
   };
 
+  const handleAvatar = (e) => {
+    if (Object.keys(options).length !== 0) {
+      for (const [key, valueObj] of Object.entries(options)) {
+        if (valueObj.value === e) {
+          setAvatarObj(valueObj);
+        }
+      }
+    }
+  };
+
   const handleChange = (e) => {
+    setValue(e);
+    if (props.leadingIcon) {
+      handleAvatar(e);
+    }
     let validateObj;
     if (props.validation) {
       validateObj = props.validation(e);
@@ -30,7 +46,7 @@ const DropdownComponent = ({ options = {}, ...props }) => {
     <div>
       {props.label && <DropdownLabel label={props.label} disabled={props.disabled} required={props.required} />}
       <Select {...props} onOpenChange={handleOpenChange} onValueChange={handleChange}>
-        <SelectTrigger open={open} className={dropdownStyle} {...props}>
+        <SelectTrigger open={open} className={dropdownStyle} value={value} avatarObj={avatarObj} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
         <SelectContent>

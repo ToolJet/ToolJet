@@ -5,7 +5,6 @@ import CodeHinter from '@/Editor/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 import ButtonComponent from '@/components/ui/Button/Index';
 
-
 export default ({
   options = [],
   theme,
@@ -84,7 +83,11 @@ export default ({
         </div>
       ) : (
         <div className="d-flex mb-2" style={{ maxHeight: '32px', marginTop: '4px' }}>
-          <ButtonComponent leadingIcon="plusrectangle" onClick={() => addNewKeyValuePair(paramType)} variant="ghostBrand">
+          <ButtonComponent
+            leadingIcon="plusrectangle"
+            onClick={() => addNewKeyValuePair(paramType)}
+            variant="ghostBrand"
+          >
             Add more
           </ButtonComponent>
         </div>

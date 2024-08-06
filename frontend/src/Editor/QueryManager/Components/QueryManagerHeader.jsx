@@ -110,7 +110,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
         <ButtonComponent
           leadingIcon="rightarrrow"
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-          variant="ghostBrand"
+          variant="secondary"
           data-cy="query-run-button"
           disabled={isInDraft}
           isLoading={isLoading}
@@ -186,7 +186,7 @@ const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
 
   return (
     <ButtonComponent
-      leadingIcon="eye"
+      leadingIcon="eye1"
       onClick={onClick}
       variant="outline"
       data-cy={'query-preview-button'}

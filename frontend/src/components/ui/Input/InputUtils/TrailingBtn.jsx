@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '../../Button/Button';
 import { cn } from '@/lib/utils';
+// eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 
 const iconVariants = cva('!tw-rounded-[6px]', {

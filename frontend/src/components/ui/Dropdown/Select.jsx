@@ -1,4 +1,5 @@
 import * as React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -17,18 +18,27 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
-const SelectTrigger = React.forwardRef(({ className, children, open, size, ...props }, ref) => {
+const SelectTrigger = React.forwardRef(({ className, children, open, size, value, avatarObj, ...props }, ref) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  const isKeyValid = (key) => {
+    return key in avatarObj && avatarObj[key] !== null && avatarObj[key] !== '' && avatarObj[key] !== undefined;
+  };
 
   return (
     <SelectPrimitive.Trigger
       ref={ref}
       className={cn(
         dropdownVariants({ size }),
-        `tw-flex tw-items-center tw-justify-between tw-gap-[12px] tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-border-border-default hover:tw-border-border-strong tw-bg-background-surface-layer-01 tw-text-[12px]/[18px] tw-font-normal tw-text-text-placeholder focus:tw-border-transparent focus:tw-outline-none focus:tw-ring-[1px] focus:tw-ring-interactive-focus-outline focus:tw-ring-offset-[1px] focus:tw-ring-offset-interactive-focus-outline disabled:tw-cursor-not-allowed disabled:tw-bg-[#CCD1D5]/30 disabled:tw-border-transparent ${
-          open &&
-          'tw-border-transparent tw-outline-none tw-ring-[1px] tw-ring-interactive-focus-outline tw-ring-offset-[1px] tw-ring-offset-interactive-focus-outline'
-        }`,
+        `tw-flex tw-items-center tw-justify-between tw-gap-[12px] tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-border-border-default hover:tw-border-border-strong tw-bg-background-surface-layer-01 tw-text-[12px]/[18px] tw-font-normal ${
+          value === '' ? 'tw-text-text-placeholder' : 'tw-text-text-default'
+        } tw-outline-none disabled:tw-cursor-not-allowed disabled:tw-bg-[#CCD1D5]/30 disabled:tw-border-transparent`,
+        {
+          'tw-border-transparent tw-ring-[1px] tw-ring-interactive-focus-outline tw-ring-offset-[1px] tw-ring-offset-interactive-focus-outline':
+            open,
+          'focus-visible:tw-border-transparent focus-visible:tw-ring-[1px] focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-offset-interactive-focus-outline':
+            !open,
+        },
         className
       )}
       style={{ width: props.width }}
@@ -38,7 +48,11 @@ const SelectTrigger = React.forwardRef(({ className, children, open, size, ...pr
     >
       <div className="tw-flex tw-items-center tw-gap-[6px]">
         {props.leadingIcon && (
-          <LeadingIcon avatarSrc={props.avatarSrc} avatarAlt={props.avatarAlt} avatarFall={props.avatarFall} />
+          <LeadingIcon
+            {...(isKeyValid('avatarSrc') && { avatarSrc: avatarObj['avatarSrc'] })}
+            {...(isKeyValid('avatarAlt') && { avatarAlt: avatarObj['avatarAlt'] })}
+            {...(isKeyValid('avatarFall') && { avatarFall: avatarObj['avatarFall'] })}
+          />
         )}
         <div
           className={`${
@@ -112,7 +126,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'tw-relative tw-flex tw-w-full tw-h-[30px] tw-items-center tw-rounded-[6px] tw-py-[6px] tw-pl-[30px] tw-pr-[8px] tw-text-[12px]/[18px] tw-font-normal tw-text-text-default tw-outline-none focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-interactive-focus-outline hover:tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/35 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-text-text-placeholder [&>span]:tw-w-[50px] [&>span]:tw-text-left [&>span]:tw-line-clamp-1',
+      'tw-relative tw-flex tw-w-full tw-h-[30px] tw-items-center tw-rounded-[6px] tw-py-[6px] tw-pl-[30px] tw-pr-[8px] tw-text-[12px]/[18px] tw-font-normal tw-text-text-default tw-outline-none hover:tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/35 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-text-text-placeholder [&>span]:tw-w-[50px] [&>span]:tw-text-left [&>span]:tw-line-clamp-1',
       className
     )}
     {...props}
@@ -136,11 +150,6 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
-const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => (
-  <SelectPrimitive.Separator ref={ref} className={cn('-tw-mx-1 tw-my-1 tw-h-px tw-bg-muted', className)} {...props} />
-));
-SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
-
 export {
   Select,
   SelectGroup,
@@ -149,7 +158,6 @@ export {
   SelectContent,
   SelectLabel,
   SelectItem,
-  SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
 };
