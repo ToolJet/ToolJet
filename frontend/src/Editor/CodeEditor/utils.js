@@ -132,9 +132,9 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
   // dont resolve if code starts with "queries." and ends with "run()"
   if (code.startsWith('queries.') && code.endsWith('run()')) {
     error = `Cannot resolve function call ${code}`;
-  } else if (code == 'components.table1.selectRow()') {
-    error = `Cannot resolve function call ${code}`;
     // dont resolve if code is Table's CSA selectRow() function since its breaking the app
+  } else if (code.startsWith('components.') && code.endsWith('selectRow()')) {
+    error = `Cannot resolve function call ${code}`;
   } else {
     try {
       const state = useCurrentStateStore.getState();
