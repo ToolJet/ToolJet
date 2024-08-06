@@ -34,12 +34,7 @@ export function getAllGranularPermissionQuery(
       'appsGroupPermissions.granularPermissionId = granularPermissions.id'
     )
     .leftJoinAndSelect('appsGroupPermissions.groupApps', 'groupApps')
-    .leftJoinAndSelect('groupApps.app', 'app')
-    .leftJoinAndSelect(
-      'granularPermissions.appsGroupPermissions',
-      'appsGroupPermissions',
-      'appsGroupPermissions.granularPermissionId = granularPermissions.id'
-    );
+    .leftJoinAndSelect('groupApps.app', 'app');
   const { name, type, groupId } = searchParam;
   if (groupId) {
     query.where('granularPermissions.groupId = :groupId', {

@@ -415,24 +415,24 @@
   padding: 12px;
   gap: 10px;
 
+  .resource-name {
+      display: flex;
+      gap: 5px;
+      width: 195px;
+      padding-right: 10px;
+
+        .resource-icon {
+        }
+
+        .resource-text{
+          max-width: 160px;
+          padding-top: 1px;
+          overflow-x: auto;
+        }
+    }
+
   div {
     width: 206px;
-
-
-    .resource-name {
-      display: flex;
-      flex-direction: row !important;
-      gap: 10px;
-      
-
-      .resource-icon {
-        margin-right: 200px;
-      }
-      .resource-text {
-        margin-left: 10px;
-        padding-left: 20px;
-      }
-    }
   }
 
   &:hover {
