@@ -174,10 +174,9 @@ const EditorInput = ({
       //currentCursor is the start position of current typed word and currentCursorPos is current position of cursor
       const currentCursor = context.state.selection.main.head;
       const currentCursorPos = context.pos;
-      //currentWord is the currently typed word The quick brown {{fo|x}} jumps over the lazy dog. means current word in 'fo'
+      //currentWord is the currently typed word Building{{inter|al}} tools. means current word in 'inter'
       let currentWord = queryInput.substring(currentCursor, currentCursorPos);
 
-      console.log('try--', currentCursorPos, currentCursor, currentWord);
       if (currentWord?.length === 0) {
         const lastBracesFromPos = queryInput.lastIndexOf('{{', currentCursorPos);
         currentWord = queryInput.substring(lastBracesFromPos, currentCursorPos);
@@ -192,12 +191,10 @@ const EditorInput = ({
 
       // remove \n from the current word if it is present
       currentWord = currentWord.replace(/\n/g, '');
-      console.log('queryInput---', queryInput, currentWord);
       queryInput = '{{' + currentWord + '}}';
     }
 
     let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
-    console.log('completions--', completions);
     return {
       from: word.from,
       options: completions,
