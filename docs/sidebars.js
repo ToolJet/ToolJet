@@ -60,6 +60,7 @@ const sidebars = {
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
+        'setup/kubernetes-eks',
         'setup/azure-container',
         'setup/google-cloud-run',
         'setup/client',
