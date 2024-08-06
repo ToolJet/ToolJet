@@ -32,7 +32,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const [mode, setMode] = useState(MODES.NULL);
 
-  const perPage = 5;
+  const perPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [currentTableData, setTableData] = useState([]);
@@ -474,7 +474,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                   />
                   {(activeTab === Constants.Global && globalCount > 0) ||
                   (activeTab === Constants.Secret && secretCount > 0) ? (
-                    <div className="w-100 workspace-constant-card-body">
+                    <div className="w-100">
                       <ConstantTable
                         constants={currentTableData}
                         onEditBtnClicked={onEditBtnClicked}

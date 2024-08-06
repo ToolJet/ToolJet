@@ -11518,8 +11518,10 @@ tbody {
   }
 
   .constant-table-card {
-    min-height: 400px;
+    min-height: 440px;
     padding: 16px;
+    padding-top: 0px;
+    padding-bottom: 0px;
   }
 
   .card-footer {
