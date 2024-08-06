@@ -208,7 +208,7 @@ export class UsersService {
       const groupsToRemove = groupPermissions.filter((permission) => removeGroups.includes(permission.id));
       await Promise.all(
         groupsToRemove.map(async (group) => {
-          validateDeleteGroupUserOperation(group, user.organizationId);
+          validateDeleteGroupUserOperation(group, orgId);
           const groupUser = group.groupUsers[0];
           this.groupPermissionsService.deleteGroupUser(groupUser.id, manager);
         })
