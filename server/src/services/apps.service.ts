@@ -191,13 +191,20 @@ export class AppsService {
       resources: [{ resource: TOOLJET_RESOURCE.APP }],
       organizationId: user.organizationId,
     });
+    console.log(userPermission);
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await viewableAppsQueryUsingPermissions(
+      const apps = await viewableAppsQueryUsingPermissions(
         user,
         userPermission[TOOLJET_RESOURCE.APP],
         manager,
         searchKey
       ).getCount();
+
+      console.log('Apps are to show');
+      console.log(apps);
+
+      return apps;
     });
   }
 
