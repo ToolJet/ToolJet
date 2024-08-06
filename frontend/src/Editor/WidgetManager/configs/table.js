@@ -349,7 +349,7 @@ export const tableConfig = {
       type: 'tableRowHeightInput',
       showLabel: false,
       validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
       },
       accordian: 'Data',
       conditionallyRender: [
