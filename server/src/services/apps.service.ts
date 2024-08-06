@@ -30,7 +30,7 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { isEmpty } from 'lodash';
+import { isEmpty, set } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 
@@ -542,9 +542,9 @@ export class AppsService {
 
     let homePageId = prevHomePagePage;
 
-    const newComponents = [];
+    let newComponents = [];
     const newComponentLayouts = [];
-    const oldComponentToNewComponentMapping = {};
+    let oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
@@ -673,6 +673,11 @@ export class AppsService {
 
       newComponents.forEach((component) => {
         let parentId = component.parent ? component.parent : null;
+        if (component?.properties?.buttonToSubmit) {
+          const newButtonToSubmitValue =
+            oldComponentToNewComponentMapping[component?.properties?.buttonToSubmit?.value];
+          if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
+        }
 
         if (!parentId) return;
 
@@ -698,6 +703,8 @@ export class AppsService {
 
       await manager.save(newComponents);
       await manager.save(newComponentLayouts);
+      newComponents = [];
+      oldComponentToNewComponentMapping = {};
     }
 
     await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
