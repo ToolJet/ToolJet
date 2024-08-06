@@ -7,13 +7,15 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import update from 'immutability-helper';
 const { diff } = require('deep-object-diff');
-
+import { useAppDataStore } from './appDataStore';
+import { authenticationService } from '@/_services';
 const initialState = {
   queries: {},
   components: {},
   globals: {
     theme: { name: 'light' },
     urlparams: null,
+    currentUser: {},
   },
   errors: {},
   variables: {},
@@ -53,9 +55,22 @@ export const useCurrentStateStore = create(
         },
         setEditorReady: (isEditorReady) => set({ isEditorReady }),
         initializeCurrentStateOnVersionSwitch: () => {
+          //fetch user for current app
+          const currentUser = useAppDataStore.getState().currentUser;
+          const userVars = {
+            email: currentUser?.email,
+            firstName: currentUser?.first_name,
+            lastName: currentUser?.last_name,
+            groups: authenticationService.currentSessionValue.group_permissions?.map((group) => group.group),
+            ssoUserInfo: currentUser?.sso_user_info,
+          };
           const newInitialState = {
             ...initialState,
             constants: get().constants,
+            globals: {
+              ...get().globals,
+              currentUser: userVars,
+            },
           };
           set({ ...newInitialState }, false, {
             type: 'INITIALIZE_CURRENT_STATE_ON_VERSION_SWITCH',
