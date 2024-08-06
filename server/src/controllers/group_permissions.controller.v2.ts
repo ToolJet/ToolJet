@@ -189,6 +189,10 @@ export class GroupPermissionsControllerV2 {
 
     const granularPermissions = await this.granularPermissionsService.get(granularPermissionsId);
     const group = granularPermissions.group;
+    console.log('logging user');
+
+    console.log(user);
+
     validateGranularPermissionUpdateOperation(group, user.organizationId);
     return await this.granularPermissionsService.update(granularPermissionsId, {
       group: group,
