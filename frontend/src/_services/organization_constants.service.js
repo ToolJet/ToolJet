@@ -31,10 +31,9 @@ function create(name, value, type, environments) {
   return fetch(`${config.apiUrl}/organization-constants`, requestOptions).then(handleResponse);
 }
 
-function update(id, value, type, environmentId) {
+function update(id, value, environmentId) {
   const body = {
     value,
-    type,
     environment_id: environmentId,
   };
 

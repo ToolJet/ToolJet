@@ -32,7 +32,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const [mode, setMode] = useState(MODES.NULL);
 
-  const perPage = 6;
+  const perPage = 5;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [currentTableData, setTableData] = useState([]);
@@ -255,7 +255,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       const variableId = variable.id;
 
       return orgEnvironmentConstantService
-        .update(variableId, variable.value, variable.type, currentEnv['id'])
+        .update(variableId, variable.value, currentEnv['id'])
         .then(() => {
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
@@ -457,7 +457,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                           fontWeight: 500,
                         }}
                       >
-                        <Button.Content title={'Read Documentation'} iconSrc="assets/images/icons/student.svg" />
+                        <Button.Content title={'Read documentation'} iconSrc="assets/images/icons/student.svg" />
                       </Button>
                     </div>
                   </div>

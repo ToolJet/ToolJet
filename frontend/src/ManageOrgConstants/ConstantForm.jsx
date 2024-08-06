@@ -175,7 +175,7 @@ const ConstantForm = ({
                 <input
                   type="text"
                   className={`tj-input-element ${error['name'] ? 'tj-input-error-state' : ''}`}
-                  placeholder={'Enter Constant Name'}
+                  placeholder={'Enter constant name'}
                   name="name"
                   onChange={handleFieldChange}
                   value={fields['name']}
@@ -189,41 +189,52 @@ const ConstantForm = ({
                 <span className="text-danger" data-cy="name-error-text">
                   {error['name']}
                 </span>
-                <small className="text-muted">Name must be unique and max 50 characters</small>
+                {!error['name'] && <small className="text-muted">Name must be unique and max 50 characters</small>}
               </div>
             </div>
             <div className="form-group">
               <label className="form-label" data-cy="name-label">
                 Type
               </label>
-              <div className="radio-group">
+              <div className="radio-group" data-tooltip-id="type-tooltip">
                 <div className="radio-item">
-                  <label>
+                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
                     <input
                       type="radio"
                       name="type"
                       value="Global"
                       checked={fields['type'] === Constants.Global}
                       onChange={handleFieldChange}
+                      disabled={mode === 'edit'}
                     />
                     Global constants
                   </label>
-                  <small>The values can be used anywhere in the product</small>
+                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                    The values can be used anywhere in the product
+                  </small>
                 </div>
                 <div className="radio-item">
-                  <label>
+                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
                     <input
                       type="radio"
                       name="type"
                       value="Secret"
                       checked={fields['type'] === Constants.Secret}
                       onChange={handleFieldChange}
+                      disabled={mode === 'edit'}
                     />
                     Secrets
                   </label>
-                  <small>The values are hidden and can only be used in data sources and queries</small>
+                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                    The values are hidden and can only be used in data sources and queries
+                  </small>
                 </div>
               </div>
+              {mode === 'edit' && (
+                <Tooltip id="type-tooltip" place="top">
+                  Cannot edit constant type
+                </Tooltip>
+              )}
             </div>
             <div className="col tj-app-input">
               <div className="d-flex justify-content-between align-items-center w-100">

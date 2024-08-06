@@ -32,10 +32,10 @@ const ConstantTable = ({
   };
 
   return (
-    <div className="container-xl">
+    <div>
       <div className="card constant-table-card" style={{ border: 'none' }}>
         <div
-          className="fixedHeader table-responsive constant-table-wrapper px-2"
+          className="fixedHeader table-responsive px-2"
           ref={tableRef}
           style={{ maxHeight: tableRef.current && calculateOffset() }}
         >

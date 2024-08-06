@@ -172,7 +172,10 @@ export const PreviewBox = ({
       const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${_error}`;
       setError({ message: err, value: resolvedValue, type: 'Invalid' });
     } else {
-      const jsErrorType = _error?.includes('ReferenceError')
+      const isSecretError = _error?.includes('ReferenceError: secrets is not defined');
+      const jsErrorType = isSecretError
+        ? 'Error'
+        : _error?.includes('ReferenceError')
         ? 'ReferenceError'
         : _error?.includes('TypeError')
         ? 'TypeError'
@@ -183,9 +186,13 @@ export const PreviewBox = ({
       const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
       setError({
-        message: _error,
-        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue, reservedKeywordReplacer) : resolvedValue,
-        type: jsErrorType,
+        message: isSecretError ? 'secrets cannot be used in apps' : _error,
+        value: isSecretError
+          ? 'Undefined'
+          : jsErrorType === 'Invalid'
+          ? JSON.stringify(errValue, reservedKeywordReplacer)
+          : resolvedValue,
+        type: isSecretError ? 'Error' : jsErrorType,
       });
       setCoersionData(null);
     }

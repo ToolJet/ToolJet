@@ -157,9 +157,9 @@ export class OrganizationConstantsService {
     organizationId: string,
     params: UpdateOrganizationConstantDto
   ): Promise<OrganizationConstant> {
-    const { constant_name, environment_id, value, type } = params;
+    const { constant_name, environment_id, value } = params;
 
-    if (!constant_name && !value && !type) {
+    if (!constant_name && !value) {
       throw new Error('Nothing to update');
     }
 
@@ -174,10 +174,6 @@ export class OrganizationConstantsService {
 
       if (constant_name) {
         constantToUpdate.constantName = constant_name;
-      }
-
-      if (type) {
-        constantToUpdate.type = type;
       }
 
       await manager.save(constantToUpdate);
