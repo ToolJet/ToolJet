@@ -560,7 +560,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                         data-cy="group-name-input"
                         autoFocus
                       />
-                      <span className="tj-text-xxsm" style={grounNameErrorStyle}>
+                      <span className="tj-text-xxsm" style={grounNameErrorStyle} data-cy="group-name-info-text">
                         {this.state.groupNameMessage}
                       </span>
                     </div>
@@ -602,7 +602,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                 <div className="default-group-list-container">
                   <div className="mb-2 d-flex align-items-center">
                     <SolidIcon name="usergear" />
-                    <span className="ml-1 group-title">USER ROLE</span>
+                    <span className="ml-1 group-title" data-cy="user-role-title">
+                      USER ROLE
+                    </span>
                   </div>
                   {defaultGroups.map((permissionGroup) => {
                     return (
@@ -639,7 +641,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                   {!showGroupSearchBar ? (
                     <div className="mb-2 d-flex align-items-center">
                       <SolidIcon name="usergroup" width="18px" fill="#889096" />
-                      <span className="ml-1 group-title">CUSTOM GROUPS</span>
+                      <span className="ml-1 group-title" data-cy="custom-groups-title">
+                        CUSTOM GROUPS
+                      </span>
                       <div className="create-group-cont">
                         <ButtonSolid
                           onClick={(e) => {
@@ -651,6 +655,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                           iconWidth="15"
                           fill="#889096"
                           className="create-group-custom"
+                          data-cy="custom-group-search"
                         />
                         <ButtonSolid
                           onClick={(e) => {
@@ -662,13 +667,14 @@ class ManageGroupPermissionsComponent extends React.Component {
                           rightIcon="plus"
                           iconWidth="20"
                           className="create-group-custom"
+                          data-cy="create-custom-group-button"
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="searchbox-custom">
                       <SearchBox
-                        dataCy={`query-manager`}
+                        dataCy={`custom-group`}
                         width="70px !important"
                         callBack={this.handleGroupSearch}
                         placeholder={'Search'}
@@ -715,7 +721,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                   ) : (
                     <div className="empty-custom-group-info">
                       <SolidIcon className="info-icon" name="information" width="18px" />
-                      <span className="tj-text-xsm text-center info-label">No custom groups added</span>
+                      <span className="tj-text-xsm text-center info-label" data-cy="empty-custom-group-info">
+                        No custom groups added
+                      </span>
                     </div>
                   )}
                 </div>

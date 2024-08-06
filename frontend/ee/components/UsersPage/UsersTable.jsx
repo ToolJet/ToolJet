@@ -35,7 +35,7 @@ const UsersTable = ({
                 <th data-cy="users-table-name-column-header">
                   {translator('header.organization.menus.manageUsers.name', 'Name')}
                 </th>
-                <th data-cy="users-table-groups-column-header" data-name="role-header">
+                <th data-cy="users-table-roles-column-header" data-name="role-header">
                   User role
                 </th>
                 <th data-cy="users-table-groups-column-header">Custom groups</th>
@@ -67,7 +67,7 @@ const UsersTable = ({
                 {Array.isArray(users) &&
                   users.length > 0 &&
                   users.map((user) => (
-                    <tr key={user.id}>
+                    <tr key={user.id} data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-row`}>
                       <td>
                         <Avatar
                           avatarId={user.avatar_id}
@@ -82,7 +82,11 @@ const UsersTable = ({
                           >
                             {decodeEntities(user.name)}
                           </span>
-                          <span style={{ color: '#687076' }} className="user-email mx-3  tj-text-xsm">
+                          <span
+                            style={{ color: '#687076' }}
+                            className="user-email mx-3  tj-text-xsm"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-email`}
+                          >
                             {user.email}
                           </span>
                         </div>
