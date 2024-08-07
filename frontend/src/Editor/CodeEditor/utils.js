@@ -126,6 +126,15 @@ const resolveWorkspaceVariables = (query) => {
   return [valid, error, resolvedStr];
 };
 
+function checkIfResolvedResultIsFunction(result) {
+  switch (typeof result) {
+    case 'function':
+      return undefined;
+    default:
+      return result;
+  }
+}
+
 function resolveCode(code, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
@@ -171,6 +180,8 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
       error = err.toString();
     }
   }
+
+  result = checkIfResolvedResultIsFunction(result);
 
   if (withError) return [result, error];
   return result;
