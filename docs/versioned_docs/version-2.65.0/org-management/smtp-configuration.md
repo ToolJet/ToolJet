@@ -14,6 +14,13 @@ Before you begin, ensure you have:
 - Admin access to ToolJet
 - SMTP server details from your email service provider
 
+:::info
+If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI.
+For versions v2.62.0 and later, SMTP configuration will no longer be picked up from the .env file for Enterprise Edition. You must configure SMTP through the UI. You can safely remove these variables from your .env file after ensuring that the configuration is properly set up in the UI.
+
+For Community Edition, SMTP configuration will still be managed via environment variables.
+:::
+
 ## Configuration
 
 1. Navigate to the **Settings** section in ToolJet.
