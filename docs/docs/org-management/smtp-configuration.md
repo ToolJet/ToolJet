@@ -8,27 +8,11 @@ title: SMTP Configuration
 # Configuring SMTP
 
 ToolJet uses SMTP (Simple Mail Transfer Protocol) to send emails for various purposes, including invitations and password reset requests. This guide will walk you through the process of configuring SMTP settings in ToolJet.
-
 ## Prerequisites
 
 Before you begin, ensure you have:
 - Admin access to ToolJet
 - SMTP server details from your email service provider
-
-The SMTP configuration details like host and port can usually be obtained from your email service provider. Here are some general settings for the most commonly used email providers:
-
-| Provider           | Host                 | Port             | Username      | Password  | Sender's email |
-|--------------------|----------------------|------------------|---------------|-----------|----------------|
-| Gmail              | smtp.gmail.com       | 587 or 465 (SSL) | Email         | Password  | Email          |
-| Yahoo Mail         | smtp.mail.yahoo.com  | 465 (SSL)        | Email         | Password  | Email          |
-| Outlook.com/Hotmail| smtp.office365.com   | 587 or 465 (SSL) | Email         | Password  | Email          |
-| Zoho Mail          | smtp.zoho.com        | 587 or 465 (SSL) | Email         | Password  | Email          |
-| SendGrid           | smtp.sendgrid.net    | 587 or 465 (SSL) | apikey        | API key   | Email          |
-| Mailgun            | smtp.mailgun.org     | 587 or 465 (SSL) | SMTP username | Password  | Email          |
-
-:::info
-For SendGrid and Mailgun, the sender's email can be different from the username, subject to the provider's verification requirements. The username for SendGrid is **apikey**, and the password is your API key. For Mailgun, you usually use a specific SMTP username and password provided by Mailgun, not your regular email credentials.
-:::
 
 ## Configuration
 
@@ -49,3 +33,20 @@ For SendGrid and Mailgun, the sender's email can be different from the username,
 | Sender's email| Email address of the sender | example@gmail.com              |
 
 5. Click **Save changes** to apply the new SMTP configuration.
+
+## Commonly Used Email Providers
+
+Here are some general settings for the most commonly used email providers:
+
+| Provider           | Host                 | Port             | Username      | Password  | Sender's email |
+|--------------------|----------------------|------------------|---------------|-----------|----------------|
+| Gmail              | smtp.gmail.com       | 587 or 465 (SSL) | Email         | Password  | Email          |
+| Yahoo Mail         | smtp.mail.yahoo.com  | 465 (SSL)        | Email         | Password  | Email          |
+| Outlook.com/Hotmail| smtp.office365.com   | 587 or 465 (SSL) | Email         | Password  | Email          |
+| Zoho Mail          | smtp.zoho.com        | 587 or 465 (SSL) | Email         | Password  | Email          |
+| SendGrid           | smtp.sendgrid.net    | 587 or 465 (SSL) | apikey        | API key   | Email          |
+| Mailgun            | smtp.mailgun.org     | 587 or 465 (SSL) | SMTP username | Password  | Email          |
+
+:::info
+For SendGrid and Mailgun, the sender's email can be different from the username, subject to the provider's verification requirements. The username for SendGrid is **apikey**, and the password is your API key. For Mailgun, you usually use a specific SMTP username and password provided by Mailgun, not your regular email credentials.
+:::
