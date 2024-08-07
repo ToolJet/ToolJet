@@ -14,5 +14,10 @@
     "composite": true,
     "resolveJsonModule": true
   },
-  "exclude": ["plugins/*/lib/*.json", "<rootDir>/__tests__/*", "<rootDir>/scripts/*","dist"]
+  "exclude": [
+    "plugins/*/lib/*.json",
+    "<rootDir>/__tests__/*",
+    "<rootDir>/scripts/*",
+    "dist"
+  ]
 }
