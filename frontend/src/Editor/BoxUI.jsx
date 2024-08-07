@@ -81,9 +81,7 @@ const BoxUI = (props) => {
   };
 
   useEffect(() => {
-    if (!component?.parent) {
-      onComponentOptionChanged(component, 'id', id);
-    }
+    onComponentOptionChanged(component, 'id', id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
