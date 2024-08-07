@@ -4,6 +4,7 @@ import '../ManageGroupPermissionsV2/groupPermissions.theme.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 function AppResourcePermissions({
   updateOnlyGranularPermissions,
   permissions,
@@ -35,11 +36,12 @@ function AppResourcePermissions({
     >
       <div className="resource-name d-flex">
         <SolidIcon name="app" width="20px" className="resource-icon" />
-        <div
-          className="resource-text"
-          data-cy={`${permissions.name.toLowerCase().replace(/\s+/g, '-')}-text`}
-        >{`  ${permissions.name}`}</div>
+
+        <div className="resource-text" data-cy={`${permissions.name.toLowerCase().replace(/\s+/g, '-')}-text`}>
+          <OverflowTooltip width={160}>{`  ${permissions.name}`}</OverflowTooltip>
+        </div>
       </div>
+
       <div className="text-muted">
         <div className="d-flex apps-permission-wrap flex-column">
           <OverlayTrigger
