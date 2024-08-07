@@ -24,6 +24,9 @@
       "password": {
         "type": "string",
         "encrypted": true
+      },
+      "connection_options": {
+        "type": "array"
       }
     }
   },
@@ -39,6 +42,9 @@
     },
     "password": {
       "value": ""
+    },
+    "tls": {
+      "value": false
     }
   },
   "properties": {
@@ -65,6 +71,17 @@
       "key": "password",
       "type": "password",
       "description": "Enter password"
+    },
+    "tls": {
+      "label": "TLS",
+      "key": "tls",
+      "type": "toggle",
+      "description": "Toggle for TLS"
+    },
+    "connection_options": {
+      "label": "Connection Options",
+      "key": "connection_options",
+      "type": "react-component-headers"
     }
   },
   "required": [
