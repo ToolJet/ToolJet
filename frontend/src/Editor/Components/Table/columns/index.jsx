@@ -15,6 +15,30 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Text from '../Text';
 import StringColumn from '../String';
 
+const runTransformations = (column, row, currentState, cellValue) => {
+  if (!column.transformation || column.transformation === '{{cellValue}}') {
+    return cellValue;
+  }
+  const key = column.key ? column.key : column.name;
+  const nestedKeys = key.includes('.') && key.split('.');
+  let cellValueAfterTransformation = cellValue;
+  if (nestedKeys) {
+    // Handle nested property
+    const [nestedKey, subKey] = nestedKeys;
+    cellValueAfterTransformation = resolveReferences(column.transformation, currentState, row[key], {
+      cellValue: row?.[nestedKey]?.[subKey],
+      rowData: row,
+    });
+  } else {
+    // Handle non-nested property
+    cellValueAfterTransformation = resolveReferences(column.transformation, currentState, row[key], {
+      cellValue: row[key],
+      rowData: row,
+    });
+  }
+  return cellValueAfterTransformation;
+};
+
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -145,7 +169,11 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
+        cellValue =
+          cellValue === undefined || cellValue === null
+            ? ''
+            : runTransformations(column, rowData, currentState, cellValue);
+
         switch (columnType) {
           case 'string':
           case undefined:
