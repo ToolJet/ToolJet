@@ -7568,6 +7568,13 @@ tbody {
   border-right: 1px solid var(--slate5) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
+  position: fixed;  
+}
+
+.marketplace-page-plugins{
+  margin-left: 288px;
+  padding-top: 30px;
+  padding-left: 120px;
 }
 
 .home-page-sidebar {
