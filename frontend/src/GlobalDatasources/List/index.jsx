@@ -9,6 +9,7 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { SearchBox } from '@/_components/SearchBox';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { useTranslation } from 'react-i18next';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -100,12 +101,12 @@ export const List = ({ updateSelectedDatasource }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
-          {filteredData?.length === 0 && dataSources?.length !== 0 ? 'No results found' : 'No datasources added'}
+          {filteredData?.length === 0 && dataSources?.length !== 0 ? t('widgetManager.noResults', 'No results found') : `${t('dataSources.noDataSourcesAdded', 'No datasources added')}`}
         </div>
       </div>
     );
   };
-
+  const { t } = useTranslation();
   return (
     <>
       <div style={{ overflow: 'hidden' }}>
@@ -118,7 +119,7 @@ export const List = ({ updateSelectedDatasource }) => {
                 {!showInput ? (
                   <>
                     <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
-                      Data sources added{' '}
+                      {t('dataSources.dataSourceAdded', 'Data sources added')}{' '}
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
                     <div

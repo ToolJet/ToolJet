@@ -17,6 +17,7 @@ import { isEmpty } from 'lodash';
 import LogoNavDropdown from '@/_components/LogoNavDropdown';
 import RightTopHeaderButtons from './RightTopHeaderButtons';
 import EnvironmentManager from './EnvironmentManager';
+import { useTranslation } from 'react-i18next';
 
 export default function EditorHeader({
   M,
@@ -50,7 +51,7 @@ export default function EditorHeader({
   );
 
   const updatePresence = useUpdatePresence();
-
+  const { t } = useTranslation();
   useEffect(() => {
     const initialPresence = {
       firstName: currentUser?.first_name ?? '',
@@ -128,12 +129,14 @@ export default function EditorHeader({
                       ) : saveError ? (
                         <div className="d-flex align-items-center" style={{ gap: '4px' }}>
                           <SolidIcon name="cloudinvalid" width="14" />
-                          <p className="mb-0 text-center tj-text-xxsm">Could not save changes</p>
+                          <p className="mb-0 text-center tj-text-xxsm">
+                            {t('editor.header.changesNotSaved', 'Could not save changes')}
+                          </p>
                         </div>
                       ) : (
                         <div className="d-flex align-items-center" style={{ gap: '4px' }}>
                           <SolidIcon name="cloudvalid" width="14" />
-                          <p className="mb-0 text-center">Changes saved</p>
+                          <p className="mb-0 text-center">{t('editor.header.changesSaved', 'Changes saved')}</p>
                         </div>
                       )}
                     </span>

@@ -33,6 +33,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getSubpath } from '@/_helpers/routes';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { useTranslation } from 'react-i18next';
 
 const deviceWindowWidth = EditorConstants.deviceWindowWidth;
 
@@ -815,10 +816,14 @@ export const Container = ({
     createDataQuery(source, true, { query });
     setPreviewData(null);
   };
+  const { t } = useTranslation();
 
   const queryBoxText = sampleDataSource
-    ? 'Connect to your data source or use our sample data source to start playing around!'
-    : 'Connect to a data source to be able to create a query';
+    ? t(
+        'editor.container.queryBoxText1',
+        'Connect to your data source or use our sample data source to start playing around!'
+      )
+    : t('editor.container.queryBoxText2', 'Connect to a data source to be able to create a query');
 
   const showEmptyContainer = !appLoading && !isDragging && mode !== 'view';
 
@@ -942,17 +947,20 @@ export const Container = ({
                 <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
               </div>
               <div className={`title-text`} data-cy="empty-editor-text">
-                Drag and drop a component
+                {t('editor.container.dndHeader', 'Drag and drop a component')}
               </div>
               <div className="title-desc">
-                Choose a component from the right side panel or use our pre-built templates to get started quickly!
+                {t(
+                  'editor.container.dndSubText',
+                  'Choose a component from the right side panel or use our pre-built templates to get started quickly!'
+                )}
               </div>
             </div>
             <div className="col-md-4 dotted-cont">
               <div className="box-icon">
                 <SolidIcon name="datasource" fill="#3E63DD" width="25" />
               </div>
-              <div className={`title-text`}>Create a Query</div>
+              <div className={`title-text`}>{t('editor.container.queryHeader', 'Create a Query')}</div>
               <div className="title-desc">{queryBoxText}</div>
               {!!sampleDataSource && (
                 <div className="box-link">
@@ -973,14 +981,19 @@ export const Container = ({
               <div className="box-icon">
                 <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
               </div>
-              <div className={`title-text `}>Share your application!</div>
+              <div className={`title-text `}>
+                {t('editor.container.shareApplicationHeader', 'Share your application!')}
+              </div>
               <div className="title-desc">
-                Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
+                {t(
+                  'editor.container.shareApplicationSubText',
+                  'Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.'
+                )}
               </div>
               <div className="box-link">
                 <div className="child">
                   <a className="link-but" onClick={openAddUserWorkspaceSetting}>
-                    Invite collaborators{' '}
+                    {t('editor.container.shareApplicationLink', 'Invite collaborators')}{' '}
                   </a>
                 </div>
                 <div>

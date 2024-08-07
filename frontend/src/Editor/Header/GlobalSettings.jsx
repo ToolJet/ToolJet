@@ -166,7 +166,7 @@ export const GlobalSettings = ({
               <div className="row">
                 <div className="col tj-app-input input-with-icon">
                   <label className="field-name" data-cy="app-slug-label">
-                    Unique app slug
+                    {t('editor.appSlug', 'Unique app slug')}
                   </label>
                   <input
                     type="text"
@@ -209,7 +209,7 @@ export const GlobalSettings = ({
               <div className="row">
                 <div className="col modal-main tj-app-input">
                   <label className="field-name" data-cy="app-link-label">
-                    App link
+                    {t('editor.appLink', 'App link')}
                   </label>
                   <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="app-link-field">
                     {!slugProgress ? (
@@ -387,7 +387,9 @@ export const GlobalSettings = ({
               </div>
               <AppModeToggle globalSettingsChanged={globalSettingsChanged} />
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
-                <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
+                <p className="tj-text-xsm color-slate12 w-full m-auto">
+                  {t('leftSidebar.Settings.exportApp', 'Export app')}
+                </p>
                 <div>
                   <ButtonSolid
                     variant="secondary"
@@ -402,7 +404,7 @@ export const GlobalSettings = ({
                     iconWidth="16"
                     data-cy="button-user-status-change"
                   >
-                    Export this app
+                    {t('leftSidebar.Settings.exportThisApp', 'Export this app')}
                   </ButtonSolid>
                 </div>
               </div>

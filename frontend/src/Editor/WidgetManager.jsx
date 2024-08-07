@@ -94,7 +94,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const formSection = { title: t('widgetManager.forms', 'forms'), items: [] };
     const integrationSection = { title: t('widgetManager.integrations', 'integrations'), items: [] };
     const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
-    const legacySection = { title: 'Legacy', items: [] };
+    const legacySection = { title: t('widgetManager.legacy', 'Legacy'), items: [] };
 
     const allWidgets = [];
 
@@ -148,7 +148,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
   return (
     <div className={`components-container ${(isVersionReleased || disabled) && 'disabled'}`}>
-      <p className="widgets-manager-header">Components</p>
+      <p className="widgets-manager-header">{t('globals.components', 'Components')}</p>
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}

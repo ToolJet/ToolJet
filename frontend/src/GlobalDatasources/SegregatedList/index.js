@@ -1,14 +1,16 @@
 import React from 'react';
 import cx from 'classnames';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
+import { useTranslation } from 'react-i18next';
 
 export const SegregatedList = ({ dataSources, activeDatasourceList, handleOnSelect }) => {
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
   const totalDataSources = dataSources.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []).length;
+  const { t } = useTranslation();
   return (
     <>
       <div className="datasources-info tj-text-xsm datasource-list-header" data-cy="datasource-list-header">
-        All data sources {totalDataSources > 0 && `(${totalDataSources - 5})`}
+        {t('dataSources.allDataSources', 'All data sources')} {totalDataSources > 0 && `(${totalDataSources - 5})`}
       </div>
       {dataSources
         .filter((ds) => ds.list.length > 0 || ds.type === 'Plugins')

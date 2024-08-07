@@ -113,7 +113,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     let arr = [];
 
     const filtered = datasourcesGroups().map((datasourceGroup) => {
-      if (datasourceGroup.type === 'Commonly used') {
+      if (datasourceGroup.type === t('dataSources.commonlyUsed', 'Commonly used')) {
         return {
           ...datasourceGroup,
           list: [],
@@ -202,7 +202,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               dataCy={`home-page`}
               className="border-0 homepage-search"
               darkMode={darkMode}
-              placeholder={`Search data sources`}
+              placeholder={`${t('dataSources.searchDataSources', 'Search data sources')} `}
               initialValue={queryString}
               width={'100%'}
               callBack={handleSearch}
@@ -275,11 +275,16 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
           <div className="warning-container mb-2">
             <SolidIcon name="warning" />
           </div>
-          <div className="tj-text-sm font-weight-500 tj-text">No plugins added</div>
+          <div className="tj-text-sm font-weight-500 tj-text">
+            {t('dataSources.noPluginsAdded', 'No plugins added')}
+          </div>
           {admin && (
             <>
               <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
-                Browse through plugins in marketplace to add them as a Data Source.{' '}
+                {t(
+                  'dataSources.browsePluginsSubText',
+                  'Browse through plugins in marketplace to add them as a Data Source.'
+                )}{' '}
               </div>
               <ButtonSolid
                 onClick={() => {
@@ -290,7 +295,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
                 style={{ margin: 'auto' }}
                 variant="secondary"
               >
-                Add plugins
+                {t('dataSources.addPlugins', 'Add plugins')}
               </ButtonSolid>
             </>
           )}
@@ -355,7 +360,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     };
     const dataSourceList = [
       {
-        type: 'Commonly used',
+        type: t('dataSources.commonlyUsed', 'Commonly used'),
         key: '#commonlyused',
         list: allDataSourcesList.common,
         renderDatasources: () => renderCardGroup(allDataSourcesList.common, 'Commonly used'),

@@ -122,7 +122,7 @@ export default function AppCard({
         <div className="appcard-buttons-wrap">
           {canUpdate && (
             <div>
-              <ToolTip message="Open in app builder">
+              <ToolTip message={t('homePage.appCard.openInAppBuilder', `Open in app builder`)}>
                 <Link
                   to={getPrivateRoute('editor', {
                     slug: isValidSlug(app.slug) ? app.slug : app.id,

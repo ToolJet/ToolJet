@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 import { capitalizeFirstLetter } from './utils';
 import { ConfirmDialog } from '@/_components';
+import { useTranslation } from 'react-i18next';
 
 export const InstalledPlugins = ({
   allPlugins = [],
@@ -13,6 +14,7 @@ export const InstalledPlugins = ({
   fetchPlugins,
   ENABLE_MARKETPLACE_DEV_MODE,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="col-9">
       {fetching && (
@@ -38,7 +40,7 @@ export const InstalledPlugins = ({
           })}
           {!fetching && installedPlugins?.length === 0 && (
             <div className="empty">
-              <p className="empty-title">No results found</p>
+              <p className="empty-title">{t('integrations.noResultsFound', 'No results found')}</p>
             </div>
           )}
         </div>

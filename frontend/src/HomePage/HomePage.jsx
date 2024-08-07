@@ -610,8 +610,10 @@ class HomePageComponent extends React.Component {
               closeModal={this.closeCreateAppModal}
               processApp={(name) => this.createApp(name, showCreateAppModal ? 'front-end' : 'module')}
               show={this.openCreateAppModal}
-              title={showCreateAppModal ? 'Create app' : 'Create module'}
-              actionButton={showCreateAppModal ? '+ Create app' : '+ Create module'}
+              title={showCreateAppModal ? this.props.t('homePage.createApp', 'Create app') : 'Create module'}
+              actionButton={
+                showCreateAppModal ? `+ ${this.props.t('homePage.createApp', 'Create app')}` : '+ Create module'
+              }
               actionLoadingButton={'Creating'}
             />
           )}

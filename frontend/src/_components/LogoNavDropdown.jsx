@@ -5,6 +5,7 @@ import { authenticationService } from '@/_services';
 import { getPrivateRoute, redirectToDashboard, dashboardUrl } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from './AppLogo';
+import { useTranslation } from 'react-i18next';
 
 export default function LogoNavDropdown({ darkMode }) {
   const handleBackClick = (e) => {
@@ -12,7 +13,7 @@ export default function LogoNavDropdown({ darkMode }) {
     // Force a reload for clearing interval triggers
     redirectToDashboard();
   };
-
+  const { t } = useTranslation();
   const getOverlay = () => {
     const { admin } = authenticationService?.currentSessionValue ?? {};
     return (
@@ -24,7 +25,7 @@ export default function LogoNavDropdown({ darkMode }) {
           to={getPrivateRoute('dashboard')}
         >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
-          <span>Back to apps</span>
+          <span>{t('globals.back2Apps', 'Back to apps')}</span>
         </Link>
         <div className="divider"></div>
         {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
