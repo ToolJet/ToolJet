@@ -52,7 +52,7 @@ class ManageGroupPermissionsComponent extends React.Component {
 
   findCurrentGroupDetails = (data) => {
     let currentUpdatedGroup = data.find((item) => {
-      return item.name == this.state.newGroupName;
+      return item.name?.trim() == this.state.newGroupName?.trim();
     });
     this.setState({ selectedGroup: currentUpdatedGroup.name });
     return currentUpdatedGroup.id;
@@ -231,7 +231,7 @@ class ManageGroupPermissionsComponent extends React.Component {
   changeNewGroupName = (value) => {
     if (value.length > 50) {
       this.setState({
-        newGroupName: value?.slice(0, 50),
+        newGroupName: value?.slice(0, 50).trim(),
         isSaveBtnDisabled: false,
       });
       return;
