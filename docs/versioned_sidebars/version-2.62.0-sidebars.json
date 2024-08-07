@@ -369,7 +369,8 @@
             "org-management/licensing/tooljet-cloud",
             "org-management/licensing/self-hosted"
           ]
-        }
+        },
+        "org-management/smtp-configuration"
       ]
     },
     {

@@ -86,15 +86,15 @@ const sidebars = {
           'type': 'category',
           'label': 'Layout Guide',
           'items': [
-           'app-builder/components-library',
-           'app-builder/query-panel',
-           'tutorial/pages',
-           'app-builder/topbar',
-           'app-builder/left-sidebar',
-           'app-builder/canvas',
-           'app-builder/preview',
-           'app-builder/share',
-           'app-builder/customstyles',
+            'app-builder/components-library',
+            'app-builder/query-panel',
+            'tutorial/pages',
+            'app-builder/topbar',
+            'app-builder/left-sidebar',
+            'app-builder/canvas',
+            'app-builder/preview',
+            'app-builder/share',
+            'app-builder/customstyles',
           ],
         },
         {
@@ -381,7 +381,8 @@ const sidebars = {
             "org-management/licensing/tooljet-cloud",
             "org-management/licensing/self-hosted"
           ]
-        }
+        },
+        "org-management/smtp-configuration"
       ],
     },
     {
