@@ -69,11 +69,6 @@
     color: #495057;
   }
   
-  .workspace-constant-table-card {
-    width: 880px;
-    height: 540px;
-  }
-  
   .manage-sso-wrapper-card {
     width: 100%;
     outline: none
@@ -234,6 +229,7 @@
     border-radius: 4px;
     background-color: #ffffff;
     color: #495057;
+    padding: 10px;
   }
   
   .search-input::placeholder {
