@@ -427,7 +427,7 @@ class ManageOrgUsersComponent extends React.Component {
                     <div className="d-flex justify-content-center flex-column tj-user-table-wrapper">
                       <div className="d-flex justify-content-center align-items-center mb-2">
                         <div className="user-not-found-svg">
-                          <SolidIcon name="warning" fill="var(--icon-strong)" />
+                          <SolidIcon name="warning-user-notfound" fill="var(--icon-strong)" />
                         </div>
                       </div>
                       <span className="text-center font-weight-bold" data-cy="text-no-result-found">
