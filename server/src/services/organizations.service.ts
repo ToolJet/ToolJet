@@ -985,6 +985,7 @@ export class OrganizationsService {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
+          isInvited: true,
         });
       } else {
         this.emailService
