@@ -433,7 +433,7 @@ class ManageOrgUsersComponent extends React.Component {
                       <span className="text-center font-weight-bold" data-cy="text-no-result-found">
                         No result found
                       </span>
-                      <small className="text-center text-muted" data-cy="text-try-changing-filters">
+                      <small className="text-center text-secondary" data-cy="text-try-changing-filters">
                         There were no results found for your search. Please
                         <br />
                         try changing the filters and try again.
