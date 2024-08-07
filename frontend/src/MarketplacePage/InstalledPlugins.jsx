@@ -14,7 +14,7 @@ export const InstalledPlugins = ({
   ENABLE_MARKETPLACE_DEV_MODE,
 }) => {
   return (
-    <div className="col-9">
+    <div className="col-9 pb-3">
       {fetching && (
         <div className="m-auto text-center">
           <Spinner />
