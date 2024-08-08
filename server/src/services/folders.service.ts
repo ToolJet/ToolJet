@@ -12,6 +12,7 @@ import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { AbilityService } from './permissions-ability.service';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EntityManager, Repository, UpdateResult } from 'typeorm';
+import { UserAppsPermissions } from '@module/permissions/interface/permissions-ability.interface';
 
 @Injectable()
 export class FoldersService {
@@ -41,25 +42,40 @@ export class FoldersService {
     }, [{ dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE, message: 'This folder name is already taken.' }]);
   }
 
-  async allFolders(user: User, searchKey?: string): Promise<Folder[]> {
+  async allFolders(user: User, userAppPermissions: UserAppsPermissions, searchKey?: string): Promise<Folder[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await getFolderQuery(user.organizationId, manager, searchKey).distinct().getMany();
+      console.log('running folder query');
+
+      return await getFolderQuery(user.organizationId, manager, userAppPermissions, searchKey).distinct().getMany();
     });
   }
 
   async all(user: User, searchKey: string): Promise<Folder[]> {
-    const allFolderList = await this.allFolders(user);
+    const userAppPermissions = (
+      await this.abilityService.resourceActionsPermission(user, {
+        resources: [{ resource: TOOLJET_RESOURCE.APP }],
+        organizationId: user.organizationId,
+      })
+    ).App;
+
+    const allFolderList = await this.allFolders(user, userAppPermissions);
     if (!searchKey || allFolderList.length === 0) {
       return allFolderList;
     }
-    const folders = await this.allFolders(user, searchKey);
+
+    const folders = await this.allFolders(user, userAppPermissions, searchKey);
+
     allFolderList.forEach((folder, index) => {
       const currentFolder = folders.find((f) => f.id === folder.id);
       if (currentFolder) {
         allFolderList[index] = currentFolder;
+        allFolderList[index].folderApps;
+        allFolderList[index].generateCount();
+        console.log('folder found');
       } else {
         allFolderList[index].folderApps = [];
         allFolderList[index].generateCount();
+        console.log('folder  not found');
       }
     });
     return allFolderList;

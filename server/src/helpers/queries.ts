@@ -7,12 +7,37 @@ import { EntityManager, SelectQueryBuilder } from 'typeorm';
 export function getFolderQuery(
   organizationId: string,
   manager: EntityManager,
+  userAppPermissions: UserAppsPermissions,
   searchKey?: string
 ): SelectQueryBuilder<Folder> {
-  const query = manager
-    .createQueryBuilder(Folder, 'folders')
-    .leftJoinAndSelect('folders.folderApps', 'folder_apps')
-    .leftJoin('folder_apps.app', 'app');
+  const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+  const viewableApps = userAppPermissions.hideAll
+    ? [null, ...userAppPermissions.editableAppsId]
+    : [
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+          ])
+        ),
+      ];
+  const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
+  const query = manager.createQueryBuilder(Folder, 'folders');
+  if (!isAllEditable) {
+    if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll))
+      query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.appId IN (:...viewableApps)', {
+        viewableApps,
+      });
+    else if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0)
+      query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.appId NOT IN (:...hiddenApps)', {
+        hiddenApps,
+      });
+  } else {
+    query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
+  }
+
+  query.leftJoin('folder_apps.app', 'app');
   if (searchKey) {
     query.where('LOWER(app.name) like :searchKey', {
       searchKey: `%${searchKey && searchKey.toLowerCase()}%`,

@@ -16,7 +16,13 @@ export class FoldersController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@Request() req, @Query() query) {
+    console.log('this is running folder');
+
     const folders = await this.foldersService.all(req.user, query.searchKey);
+    console.log('pritning folders');
+
+    console.log(folders);
+
     return decamelizeKeys({ folders });
   }
 
