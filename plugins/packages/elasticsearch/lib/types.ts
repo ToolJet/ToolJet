@@ -13,9 +13,12 @@ export type SourceOptions = {
 };
 
 export type QueryOptions = {
-  index: string;
-  query: string;
-  body: string;
-  id: string;
   operation: string;
+  index?: string;
+  query?: string;
+  body?: string;
+  id?: string;
+  operations?: string;
+  scroll_id?: string;
+  scroll?: string;
 };
