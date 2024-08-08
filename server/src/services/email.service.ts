@@ -337,14 +337,15 @@ export class EmailService {
   }
 
   async retrieveWhiteLabelText(whiteLabelSetting) {
-    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT] !== ''
-      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT]
+    const whiteLabelText = whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT];
+    return whiteLabelText !== '' && whiteLabelText !== null
+      ? whiteLabelText
       : defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
   }
-
   async retrieveWhiteLabelLogo(whiteLabelSetting) {
-    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO] !== ''
-      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO]
+    const whiteLabelLogo = whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO];
+    return whiteLabelLogo !== '' && whiteLabelLogo !== null
+      ? whiteLabelLogo
       : defaultWhiteLabellingSettings.WHITE_LABEL_LOGO;
   }
 
