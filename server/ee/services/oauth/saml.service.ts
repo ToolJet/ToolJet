@@ -31,7 +31,7 @@ export class SAMLService {
   }
 
   async signIn(samlResponseId: string, configs: any, configId: string): Promise<UserResponse> {
-    if (!this._saml) this.#initSAMLSetup(configId, configs);
+    this.#initSAMLSetup(configId, configs);
     const result = await getManager().findOneOrFail(SSOResponse, samlResponseId);
     const samlResponse: any = await this.getSAMLAssert(result.response);
 
