@@ -123,11 +123,7 @@ async function bootstrap() {
     defaultVersion: VERSION_NEUTRAL,
   });
 
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: VERSION_NEUTRAL,
-  });
-
+  
   const listen_addr = process.env.LISTEN_ADDR || '::';
   const port = parseInt(process.env.PORT) || 3000;
 
