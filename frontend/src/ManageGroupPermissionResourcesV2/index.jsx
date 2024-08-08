@@ -724,7 +724,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               <div className="skeleton-line w-10"></div>
                             </td>
                           </tr>
-                        ) : usersInGroup.length > 0 || showUserSearchBox ? (
+                        ) : usersInGroup.length > 0 ? (
                           usersInGroup.map((item) => {
                             const user = item.user;
                             const groupUserId = item.id;
@@ -784,7 +784,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               </div>
                             );
                           })
-                        ) : (
+                        ) : !showUserSearchBox ? (
                           <div className="manage-groups-no-apps-wrap">
                             <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
                               <BulkIcon name="users" fill="#3E63DD" width="48" />
@@ -795,6 +795,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
                               Add users to this group to configure
                               <br /> permissions for them!
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="manage-groups-no-apps-wrap">
+                            <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
+                              <SolidIcon name="warning-user-notfound" width="48" />
+                            </div>
+                            <p className="tj-text-md font-weight-500" data-cy="user-empty-page">
+                              No results found
+                            </p>
+                            <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
+                              There were no results found for your search. Please <br /> try changing the filters and
+                              try again.permissions for them!
                             </span>
                           </div>
                         )}
