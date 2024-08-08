@@ -427,6 +427,7 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-salesforce',
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
+            'marketplace/plugins/marketplace-plugin-portkey',
           ],
         },
       ],
