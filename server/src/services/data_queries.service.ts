@@ -432,7 +432,7 @@ export class DataQueriesService {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
     const variablesMatcher = /(%%.+?%%)/g;
-    const constantMatcher = /{{constants\..+?}}/g;
+    const constantMatcher = /\{\{(constants|secrets)\..*?\}\}/g;
 
     for (const key of Object.keys(options)) {
       const currentOption = options[key]?.['value'];
