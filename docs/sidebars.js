@@ -363,7 +363,24 @@ const sidebars = {
                   ],
                 },
                 'user-authentication/sso/ldap',
-                'user-authentication/sso/saml',
+                {
+                  'type': 'category',
+                  'label': 'SAML',
+                  'link': {
+                    'type': 'generated-index',
+                    'title': 'SAML',
+                    'description': ' ',
+                    'keywords': [
+                      'saml',
+                      'okta',
+                    ],
+                  },
+                  'collapsed': true,
+                  'items': [
+                    'user-authentication/sso/general-saml',
+                    'user-authentication/sso/okta-saml-configuration',
+                  ],
+                },
               ],
             },
           ],
