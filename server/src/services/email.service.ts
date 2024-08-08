@@ -338,15 +338,11 @@ export class EmailService {
 
   async retrieveWhiteLabelText(whiteLabelSetting) {
     const whiteLabelText = whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT];
-    return whiteLabelText !== '' && whiteLabelText !== null
-      ? whiteLabelText
-      : defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+    return whiteLabelText ? whiteLabelText : defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
   }
   async retrieveWhiteLabelLogo(whiteLabelSetting) {
     const whiteLabelLogo = whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO];
-    return whiteLabelLogo !== '' && whiteLabelLogo !== null
-      ? whiteLabelLogo
-      : defaultWhiteLabellingSettings.WHITE_LABEL_LOGO;
+    return whiteLabelLogo ? whiteLabelLogo : defaultWhiteLabellingSettings.WHITE_LABEL_LOGO;
   }
 
   checkDefaultWhiteLabelState() {

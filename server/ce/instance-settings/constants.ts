@@ -43,9 +43,7 @@ export function getDefaultInstanceSettings() {
     [INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN]: process.env.SMTP_DOMAIN,
     [INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME]: process.env.SMTP_USERNAME,
     [INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD]: process.env.SMTP_PASSWORD,
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]: process.env.SMTP_ENABLED === undefined
-      ? process.env.SMTP_DISABLED === 'true' ? 'false' : 'true'
-      : process.env.SMTP_ENABLED,
+    [INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]: process.env.SMTP_DISABLED === 'true' ? 'false' : 'true',
     [INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]: process.env.DEFAULT_FROM_EMAIL,
   };
 }
