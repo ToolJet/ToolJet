@@ -25,6 +25,18 @@
         "type": "string",
         "encrypted": true
       },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      },
+      "root_cert": {
+        "encrypted": true
+      },
       "connection_options": {
         "type": "array"
       }
@@ -43,45 +55,102 @@
     "password": {
       "value": ""
     },
-    "tls": {
+    "tls_enabled": {
       "value": false
+    },
+    "tls_certificate": {
+      "value": "none"
     }
   },
   "properties": {
-    "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": "Enter host"
+    "tls_certificate": {
+      "label": "TLS Certificate",
+      "key": "tls_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "self_signed",
+          "name": "Self-signed certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields": {
+        "host": {
+          "label": "Host",
+          "key": "host",
+          "type": "text",
+          "description": "Enter host"
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
+        },
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        },
+        "tls_enabled": {
+          "label": "TLS",
+          "key": "tls_enabled",
+          "type": "toggle",
+          "description": "Toggle for TLS"
+        },
+        "connection_options": {
+          "label": "Connection Options",
+          "key": "connection_options",
+          "type": "react-component-headers"
+        }
+      }
     },
-    "port": {
-      "label": "Port",
-      "key": "port",
-      "type": "text",
-      "description": "Enter port"
+    "ca_certificate": {
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
     },
-    "username": {
-      "label": "Username",
-      "key": "username",
-      "type": "text",
-      "description": "Enter username"
-    },
-    "password": {
-      "label": "Password",
-      "key": "password",
-      "type": "password",
-      "description": "Enter password"
-    },
-    "tls": {
-      "label": "TLS",
-      "key": "tls",
-      "type": "toggle",
-      "description": "Toggle for TLS"
-    },
-    "connection_options": {
-      "label": "Connection Options",
-      "key": "connection_options",
-      "type": "react-component-headers"
+    "self_signed": {
+      "client_key": {
+        "label": "Client Key",
+        "key": "client_key",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "client_cert": {
+        "label": "Client Cert",
+        "key": "client_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "root_cert": {
+        "label": "Root Cert",
+        "key": "root_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter root certificate"
+      }
     }
   },
   "required": [
