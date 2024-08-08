@@ -191,7 +191,6 @@ export class AppsService {
       resources: [{ resource: TOOLJET_RESOURCE.APP }],
       organizationId: user.organizationId,
     });
-    console.log(userPermission);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const apps = await viewableAppsQueryUsingPermissions(
@@ -200,9 +199,6 @@ export class AppsService {
         manager,
         searchKey
       ).getCount();
-
-      console.log('Apps are to show');
-      console.log(apps);
 
       return apps;
     });

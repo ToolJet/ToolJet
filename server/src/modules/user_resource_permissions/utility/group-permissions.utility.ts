@@ -138,8 +138,6 @@ export function validateCreateGroupOperation(createGroupPermissionDto: CreateGro
   const humanizeList = ['End-user', 'Builder', 'Admin'];
 
   if (humanizeList.includes(createGroupPermissionDto.name)) {
-    console.log('this is running');
-
     throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_NAME);
   }
 
