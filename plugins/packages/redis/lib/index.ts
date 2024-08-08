@@ -1,16 +1,6 @@
-import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { ConnectionTestResult, isEmpty, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import Redis from 'ioredis';
 import { SourceOptions, QueryOptions } from './types';
-
-function isEmpty(value: number | null | undefined | string) {
-  return (
-    value === undefined ||
-    value === null ||
-    !isNaN(value as number) ||
-    (typeof value === 'object' && Object.keys(value).length === 0) ||
-    (typeof value === 'string' && value.trim().length === 0)
-  );
-}
 
 export default class RedisQueryService implements QueryService {
   connectionOptions(sourceOptions: SourceOptions) {
