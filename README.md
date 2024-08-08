@@ -52,6 +52,7 @@ You can deploy ToolJet on DigitalOcean using one-click-deployment.
 
 <p align="center">
   <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main"><img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DigitalOcean" height=32></a>
+  <a href="https://repocloud.io/details/?app_id=192"><img src="https://d16t0pc4846x52.cloudfront.net/deploy-md.png" alt="Deploy to RepoCloud" height=32></a>
 </p>
 
 ### Try using Docker
