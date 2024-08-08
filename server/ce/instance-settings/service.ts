@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { defaultInstanceSettings } from './constants';
+import { getDefaultInstanceSettings } from './constants';
 
 @Injectable()
 export class InstanceSettingsService {
   async getSettings(key?: string | string[], getAllData = false, type?: any): Promise<any> {
+    const defaultInstanceSettings = getDefaultInstanceSettings();
     let settings = Object.keys(defaultInstanceSettings)
       .filter((e) => (Array.isArray(key) ? key.includes(e) : key === e))
       .map((e) => ({ key: e, value: defaultInstanceSettings[e] }));
@@ -16,7 +17,7 @@ export class InstanceSettingsService {
         // Key is not included on settings, adding empty value
         settings.push({ key: s, value: null });
       }
-    })
+    });
 
     const instanceConfigs = {};
     settings?.forEach((config) => {
