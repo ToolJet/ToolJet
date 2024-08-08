@@ -806,8 +806,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               No results found
                             </p>
                             <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
-                              There were no results found for your search. Please <br /> try changing the filters and
-                              try again.permissions for them!
+                              There were no results found for your search. Please <br />
+                              try changing the filters and try again.
                             </span>
                           </div>
                         )}

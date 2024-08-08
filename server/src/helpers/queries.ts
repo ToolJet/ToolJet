@@ -22,14 +22,17 @@ export function getFolderQuery(
           ])
         ),
       ];
-  const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
+  const hiddenApps = [
+    null,
+    ...userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id)),
+  ];
   const query = manager.createQueryBuilder(Folder, 'folders');
   if (!isAllEditable) {
     if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll))
       query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.appId IN (:...viewableApps)', {
         viewableApps,
       });
-    else if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0)
+    else if (!userAppPermissions.hideAll && isAllViewable)
       query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.appId NOT IN (:...hiddenApps)', {
         hiddenApps,
       });

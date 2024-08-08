@@ -44,8 +44,6 @@ export class FoldersService {
 
   async allFolders(user: User, userAppPermissions: UserAppsPermissions, searchKey?: string): Promise<Folder[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log('running folder query');
-
       return await getFolderQuery(user.organizationId, manager, userAppPermissions, searchKey).distinct().getMany();
     });
   }
