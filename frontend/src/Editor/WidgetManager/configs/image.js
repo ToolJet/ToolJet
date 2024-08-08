@@ -82,10 +82,7 @@ export const imageConfig = {
     padding: {
       type: 'code',
       displayName: 'Padding',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 0,
-      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 0 },
     },
     visibility: {
       type: 'toggle',

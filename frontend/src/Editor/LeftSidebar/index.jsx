@@ -14,7 +14,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, useSelectedSidebarItem } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
@@ -59,9 +59,21 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const dataSources = useDataSources();
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState(
-    dataSources?.length === 0 && prevSelectedSidebarItem === 'datasource' ? 'inspect' : prevSelectedSidebarItem
-  );
+  // const [selectedSidebarItem, setSelectedSidebarItem] = useState(
+  //   dataSources?.length === 0 && prevSelectedSidebarItem === 'datasource' ? 'inspect' : prevSelectedSidebarItem
+  // );
+
+  const [selectedSidebarItem, setSelectedSidebarItem] = useSelectedSidebarItem();
+
+  useEffect(() => {
+    const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
+    if (dataSources?.length === 0 && prevSelectedSidebarItem === 'datasource') {
+      setSelectedSidebarItem('inspect');
+    } else {
+      setSelectedSidebarItem(prevSelectedSidebarItem);
+    }
+  }, [dataSources, setSelectedSidebarItem]);
+
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
@@ -106,6 +118,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
     },
   }));
 
+  // const handleSelectedSidebarItem = (item) => {
+  //   if (item === selectedSidebarItem && !pinned) {
+  //     setSelectedSidebarItem(null);
+  //   } else {
+  //     setSelectedSidebarItem(item);
+  //     pinned && localStorage.setItem('selectedSidebarItem', item);
+  //   }
+  // };
   const handleSelectedSidebarItem = (item) => {
     if (item === selectedSidebarItem && !pinned) {
       setSelectedSidebarItem(null);
@@ -214,6 +234,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
             setPinned={handlePin}
             pinned={pinned}
             allLog={allLog}
+            switchPage={switchPage}
           />
         );
       case 'settings':

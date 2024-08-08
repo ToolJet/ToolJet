@@ -132,10 +132,7 @@ export const buttonConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
-      validation: {
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-        defaultValue: false,
-      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
       accordian: 'button',
     },
     boxShadow: {

@@ -20,10 +20,7 @@ export const numberinputConfig = {
     value: {
       type: 'code',
       displayName: 'Default value',
-      validation: {
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-        defaultValue: 0,
-      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 0 },
     },
     placeholder: {
       type: 'code',

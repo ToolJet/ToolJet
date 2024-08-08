@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { debuggerActions } from '@/_helpers/appUtils';
-import { flow } from 'lodash';
 import moment from 'moment';
+import useDebuggerStore from '@/_stores/debuggerStore';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
@@ -11,7 +11,7 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = useState({ read: 0, unread: 0 });
   const [allLog, setAllLog] = useState([]);
-
+  // const [selectedError, setSelectedError] = useState(null); // New state for selected error
   const { errors, succededQuery } = useCurrentStateStore(
     (state) => ({
       errors: state.errors,
@@ -37,12 +37,13 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   }, [currentPageId]);
 
   useEffect(() => {
-    const newError = flow([
-      Object.entries,
-      // eslint-disable-next-line no-unused-vars
-      (arr) => arr.filter(([key, value]) => value.data?.status),
-      Object.fromEntries,
-    ])(errors);
+    const newError = Object.entries(errors).reduce((acc, [key, value]) => {
+      // Include errors with data.status OR of type 'event'
+      if (value.data?.status || value.type === 'event') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
     const newErrorLogs = debuggerActions.generateErrorLogs(newError);
     const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
     const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
@@ -96,12 +97,27 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorLogs.length]);
+  // const handleErrorClick = useCallback((selectedError) => {
+  //   console.log('here---', selectedError);
+  //   setSelectedError(selectedError);
+  // }, []);
 
+  const setSelectedError = useDebuggerStore((state) => state.setSelectedError);
+
+  const handleErrorClick = useCallback(
+    (error) => {
+      console.log('Setting error:', error);
+      setSelectedError(error);
+    },
+    [setSelectedError]
+  );
   return {
     errorLogs,
     clearErrorLogs,
     unReadErrorCount,
     allLog,
+    handleErrorClick,
+    // selectedError,
   };
 };
 

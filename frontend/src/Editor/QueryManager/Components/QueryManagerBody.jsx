@@ -30,7 +30,7 @@ export const QueryManagerBody = ({
   apps,
   appDefinition,
   setOptions,
-  activeTab,
+  activeQueryHeaderTab,
 }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
@@ -357,10 +357,10 @@ export const QueryManagerBody = ({
         renderDataSourcesList()
       ) : (
         <>
-          {selectedQuery?.data_source_id && activeTab === 1 && renderChangeDataSource()}
-          {activeTab === 1 && renderQueryElement()}
-          {activeTab === 2 && renderTransformation()}
-          {activeTab === 3 && renderQueryOptions()}
+          {selectedQuery?.data_source_id && activeQueryHeaderTab === 1 && renderChangeDataSource()}
+          {activeQueryHeaderTab === 1 && renderQueryElement()}
+          {activeQueryHeaderTab === 2 && renderTransformation()}
+          {activeQueryHeaderTab === 3 && renderQueryOptions()}
           <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
         </>
       )}

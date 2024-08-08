@@ -10,7 +10,7 @@ import {
   useLoadingDataSources,
   useSampleDataSource,
 } from '@/_stores/dataSourcesStore';
-import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions, useActiveTab } from '@/_stores/queryPanelStore';
 import { CodeHinterContext } from '@/Editor/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 
@@ -23,11 +23,11 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
   const [options, setOptions] = useState({});
-  const [activeTab, setActiveTab] = useState(1);
+  const [activeQueryHeaderTab, setActiveQueryHeaderTab] = useActiveTab(1); // Get activeQueryHeaderTab and setActiveQueryHeaderTab from the store
 
   useEffect(() => {
     if (selectedQuery?.kind == 'runjs' || selectedQuery?.kind == 'runpy') {
-      setActiveTab(1);
+      setActiveQueryHeaderTab(1);
     }
   }, [selectedQuery?.id]);
 
@@ -73,8 +73,8 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
         editorRef={editorRef}
         appId={appId}
         setOptions={setOptions}
-        setActiveTab={setActiveTab}
-        activeTab={activeTab}
+        setActiveQueryHeaderTab={setActiveQueryHeaderTab}
+        activeQueryHeaderTab={activeQueryHeaderTab}
       />
       <CodeHinterContext.Provider
         value={{
@@ -95,7 +95,7 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
           appId={appId}
           appDefinition={appDefinition}
           setOptions={setOptions}
-          activeTab={activeTab}
+          activeQueryHeaderTab={activeQueryHeaderTab}
         />
       </CodeHinterContext.Provider>
     </div>

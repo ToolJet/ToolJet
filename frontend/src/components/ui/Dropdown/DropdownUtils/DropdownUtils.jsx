@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 import { Avatar, AvatarFallback, AvatarImage } from '../../Avatar/avatar';
 import SolidIcon from '@/_ui/Icon/SolidIcons';

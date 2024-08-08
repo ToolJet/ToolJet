@@ -1,5 +1,4 @@
 import { create, zustandDevTools } from './utils';
-import { shallow } from 'zustand/shallow';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 
@@ -15,6 +14,8 @@ const initialState = {
   showCreateQuery: false,
   nameInputFocussed: false,
   previewPanelExpanded: false,
+  isQueryPanelExpanded: queryManagerPreferences?.isExpanded ?? true,
+  activeQueryHeaderTab: 1,
 };
 
 export const useQueryPanelStore = create(
@@ -22,6 +23,7 @@ export const useQueryPanelStore = create(
     (set, get) => ({
       ...initialState,
       actions: {
+        setActiveQueryHeaderTab: (tabIndex) => set({ activeQueryHeaderTab: tabIndex }),
         updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
         updatePreviewPanelHeight: (newHeight) => set(() => ({ previewPanelHeight: newHeight })),
         setSelectedQuery: (queryId) => {
@@ -41,6 +43,16 @@ export const useQueryPanelStore = create(
         setShowCreateQuery: (showCreateQuery) => set({ showCreateQuery }),
         setNameInputFocussed: (nameInputFocussed) => set({ nameInputFocussed }),
         setPreviewPanelExpanded: (previewPanelExpanded) => set({ previewPanelExpanded }),
+        toggleQueryPanelExpansion: () =>
+          set((state) => {
+            const newExpandedState = !state.isQueryPanelExpanded;
+            // Update localStorage
+            const preferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+            preferences.isExpanded = newExpandedState;
+            localStorage.setItem('queryManagerPreferences', JSON.stringify(preferences));
+            return { isQueryPanelExpanded: newExpandedState };
+          }),
+        setQueryPanelExpansion: (isExpanded) => set({ isQueryPanelExpanded: isExpanded }),
       },
     }),
     { name: 'Query Panel Store' }
@@ -60,3 +72,12 @@ export const useShowCreateQuery = () =>
 export const useNameInputFocussed = () =>
   useQueryPanelStore((state) => [state.nameInputFocussed, state.actions.setNameInputFocussed]);
 export const usePreviewPanelExpanded = () => useQueryPanelStore((state) => state.previewPanelExpanded);
+export const useQueryPanelExpansion = () =>
+  useQueryPanelStore((state) => [
+    state.isQueryPanelExpanded,
+    state.actions.toggleQueryPanelExpansion,
+    state.actions.setQueryPanelExpansion,
+  ]);
+
+export const useActiveTab = () =>
+  useQueryPanelStore((state) => [state.activeQueryHeaderTab, state.actions.setActiveQueryHeaderTab]);

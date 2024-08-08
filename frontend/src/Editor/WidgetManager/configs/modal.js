@@ -20,6 +20,19 @@ export const modalConfig = {
         defaultValue: 'This title can be changed',
       },
     },
+    titleAlignment: {
+      type: 'select',
+      displayName: 'Title alignment',
+      options: [
+        { name: 'left', value: 'left' },
+        { name: 'center', value: 'center' },
+        { name: 'right', value: 'right' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -157,6 +170,7 @@ export const modalConfig = {
     },
     properties: {
       title: { value: 'This title can be changed' },
+      titleAlignment: { value: 'left' },
       loadingState: { value: `{{false}}` },
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },

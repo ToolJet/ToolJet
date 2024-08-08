@@ -11,6 +11,7 @@ import { shallow } from 'zustand/shallow';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import FileRemove from '@/_ui/Icon/solidIcons/FIleRemove';
 import Home from '@/_ui/Icon/solidIcons/Home';
+import { useShowSettingsModal } from '@/_stores/editorStore';
 
 export const PageHandler = ({
   darkMode,
@@ -25,7 +26,6 @@ export const PageHandler = ({
   currentPageId,
   updateHomePage,
   updatePageHandle,
-
   apps,
   pages,
   components,
@@ -41,7 +41,9 @@ export const PageHandler = ({
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  // const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useShowSettingsModal();
+
   const [isHovered, setIsHovered] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -64,6 +66,7 @@ export const PageHandler = ({
   };
 
   const handleCallback = (id) => {
+    console.log('id---', id);
     setIsHovered(false);
     switch (id) {
       case 'delete-page':
