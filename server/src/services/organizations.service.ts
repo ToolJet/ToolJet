@@ -573,9 +573,6 @@ export class OrganizationsService {
       email: inviteNewUserDto.email,
       ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
-    console.log('user is');
-
-    console.log(inviteNewUserDto);
 
     const groups = inviteNewUserDto?.groups;
     const role = inviteNewUserDto.role;
@@ -640,10 +637,8 @@ export class OrganizationsService {
         true,
         manager
       );
-      console.log('good till here');
 
       await this.usersService.attachUserGroup(groups, currentOrganization.id, user.id, manager);
-      console.log('not good till here');
       const name = fullName(currentUser.firstName, currentUser.lastName);
       if (shouldSendWelcomeMail) {
         this.emailService

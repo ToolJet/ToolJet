@@ -54,8 +54,6 @@ export class AbilityService {
     if (resources && resources.some((item) => item.resource === TOOLJET_RESOURCE.APP)) {
       userPermissions[TOOLJET_RESOURCE.APP] = await this.createUserAppsPermissions(appsGranularPermissions, user);
     }
-    console.log(userPermissions);
-
     return userPermissions;
   }
 
