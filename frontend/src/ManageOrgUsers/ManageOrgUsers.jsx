@@ -189,7 +189,7 @@ class ManageOrgUsersComponent extends React.Component {
             this.setState({ creatingUser: false, uploadingUsers: false });
             return;
           }
-          toast.error(error, {
+          toast.error(error || 'Please check the format of CSV file', {
             position: 'top-center',
             style: {
               minWidth: '200px',
