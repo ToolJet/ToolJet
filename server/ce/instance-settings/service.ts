@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { getDefaultInstanceSettings } from "./constants";
+import { Injectable } from '@nestjs/common';
+import { getDefaultInstanceSettings } from './constants';
 
 @Injectable()
 export class InstanceSettingsService {
