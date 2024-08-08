@@ -47,7 +47,7 @@ export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count
 
 export function resolve(data, state) {
   if (data.startsWith('{{queries.') || data.startsWith('{{globals.') || data.startsWith('{{components.')) {
-    let prop = data.replace('{{', '').replace('}}', '');
+    let prop = removeNestedDoubleCurlyBraces(data);
     return findProp(state, prop, '');
   }
 }
@@ -114,7 +114,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
 
   if (codeMatches) {
     codeMatches.forEach((codeMatch) => {
-      const code = codeMatch.replace('{{', '').replace('}}', '');
+      const code = removeNestedDoubleCurlyBraces(codeMatch);
 
       if (reservedKeyword.includes(code)) {
         resolvedStr = resolvedStr.replace(codeMatch, '');
@@ -153,39 +153,54 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(object, defaultValue, customObjects = {}, withError = false, forPreviewBox = false) {
+export function resolveReferences(
+  object,
+  _state,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false
+) {
   if (object === '{{{}}}') return '';
 
   object = _.clone(object);
-  const currentState = useCurrentStateStore.getState();
   const objectType = typeof object;
   let error;
+
+  const state = _state ?? useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
+
+  if (_state?.parameters) {
+    state.parameters = { ..._state.parameters };
+  }
+
   switch (objectType) {
     case 'string': {
       if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
-        object = resolveString(object, currentState, customObjects, reservedKeyword, withError, forPreviewBox);
+        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
       }
 
       if (object.startsWith('{{') && object.endsWith('}}')) {
         if ((object.match(/{{/g) || []).length === 1) {
-          const code = object.replace('{{', '').replace('}}', '');
+          const code = removeNestedDoubleCurlyBraces(object);
 
-          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
-          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+          //Will be remove in next release
 
-          if (code.match(keywordRegex)) {
-            error = `${code} is a reserved keyword`;
-            return [{}, error];
+          const { status, data } = validateMultilineCode(code);
+
+          if (status === 'failed') {
+            const errMessage = `${data.message} -  ${data.description}`;
+
+            return [{}, errMessage];
           }
 
-          return resolveCode(code, currentState, customObjects, withError, reservedKeyword, true);
+          return resolveCode(code, state, customObjects, withError, [], true);
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
           for (const dynamicVariable of dynamicVariables) {
             const value = resolveString(
               dynamicVariable,
-              currentState,
+              state,
               customObjects,
               reservedKeyword,
               withError,
@@ -205,7 +220,7 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
           return [{}, error];
         }
 
-        return resolveCode(code, currentState, customObjects, withError, reservedKeyword, false);
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
       }
 
       const dynamicVariables = getDynamicVariables(object);
@@ -303,6 +318,29 @@ export function validateQueryName(name) {
   return nameRegex.test(name);
 }
 
+export function validateKebabCase(slug) {
+  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  if (slug === '') {
+    return { isValid: false, error: 'Handle cannot be empty.' };
+  }
+  if (!/^[a-zA-Z0-9]/.test(slug)) {
+    return { isValid: false, error: 'Handle must start with a letter or number.' };
+  }
+  if (/[^a-zA-Z0-9-]/.test(slug)) {
+    return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
+  }
+  if (/--/.test(slug)) {
+    return { isValid: false, error: 'Handle cannot contain consecutive hyphens.' };
+  }
+  if (slug.endsWith('-')) {
+    return { isValid: false, error: 'Handle cannot end with a hyphen.' };
+  }
+  if (!pattern.test(slug)) {
+    return { isValid: false, error: 'Handle does not match the kebab-case pattern.' };
+  }
+  return { isValid: true, error: null };
+}
+
 export const convertToKebabCase = (string) =>
   string
     .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -329,7 +367,8 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   const widgetFieldValue = prop;
 
   try {
-    return resolveReferences(widgetFieldValue, _default, customResolveObjects);
+    const state = getCurrentState();
+    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }
@@ -1301,3 +1340,66 @@ export const triggerKeyboardShortcut = (keyCallbackFnArray, initiator) => {
 export function decodeEntities(encodedString) {
   return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
 }
+
+export const removeNestedDoubleCurlyBraces = (str) => {
+  const transformedInput = str.split('');
+  let iter = 0;
+  const stack = [];
+
+  while (iter < str.length - 1) {
+    if (transformedInput[iter] === '{' && transformedInput[iter + 1] === '{') {
+      transformedInput[iter] = 'le';
+      transformedInput[iter + 1] = 'le';
+      stack.push(2);
+      iter += 2;
+    } else if (transformedInput[iter] === '{') {
+      stack.push(1);
+      iter++;
+    } else if (transformedInput[iter] === '}' && stack.length > 0 && stack[stack.length - 1] === 1) {
+      stack.pop();
+      iter++;
+    } else if (
+      transformedInput[iter] === '}' &&
+      stack.length > 0 &&
+      transformedInput[iter + 1] === '}' &&
+      stack[stack.length - 1] === 2
+    ) {
+      stack.pop();
+      transformedInput[iter] = 'ri';
+      transformedInput[iter + 1] = 'ri';
+      iter += 2;
+    } else {
+      iter++;
+    }
+  }
+
+  iter = 0;
+  let shouldRemoveSpace = true;
+  while (iter < str.length) {
+    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+      transformedInput[iter] = '';
+    } else if (transformedInput[iter] === 'le') {
+      shouldRemoveSpace = true;
+      transformedInput[iter] = '';
+    } else {
+      shouldRemoveSpace = false;
+    }
+    iter++;
+  }
+
+  iter = str.length - 1;
+  shouldRemoveSpace = true;
+  while (iter >= 0) {
+    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+      transformedInput[iter] = '';
+    } else if (transformedInput[iter] === 'ri') {
+      shouldRemoveSpace = true;
+      transformedInput[iter] = '';
+    } else {
+      shouldRemoveSpace = false;
+    }
+    iter--;
+  }
+
+  return transformedInput.join('');
+};

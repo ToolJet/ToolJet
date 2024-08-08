@@ -15,6 +15,8 @@ import {
   isEmpty,
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
+  sanitizeCookies,
+  cookiesToString,
   sanitizeSearchParams,
   getAuthUrl,
 } from '@tooljet-plugins/common';
@@ -90,6 +92,7 @@ export default class RestapiQueryService implements QueryService {
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
+    const retryOnNetworkError = queryOptions['retry_network_errors'] === true;
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
     const searchParams = new URLSearchParams();
@@ -111,7 +114,14 @@ export default class RestapiQueryService implements QueryService {
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
       headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
       searchParams,
+      ...(retryOnNetworkError ? {} : { retry: 0 }),
     };
+
+    const sanitizedCookies = sanitizeCookies(sourceOptions, queryOptions, hasDataSource);
+    const cookieString = cookiesToString(sanitizedCookies);
+    if (cookieString) {
+      _requestOptions.headers['Cookie'] = cookieString;
+    }
 
     const hasFiles = (json) => {
       return Object.values(json || {}).some((item) => {
@@ -159,8 +169,9 @@ export default class RestapiQueryService implements QueryService {
     try {
       const response = await got(url, requestOptions);
       result = this.getResponse(response);
+      const requestUrl = response?.request?.options?.url?.origin + response?.request?.options?.url?.pathname;
       requestObject = {
-        requestUrl: response.request.requestUrl,
+        requestUrl,
         method: response.request.options.method,
         headers: response.request.options.headers,
         params: urrl.parse(response.request.requestUrl, true).query,
@@ -178,12 +189,12 @@ export default class RestapiQueryService implements QueryService {
       );
 
       if (error instanceof HTTPError) {
+        const requestUrl = error?.request?.options?.url?.origin + error?.request?.options?.url?.pathname;
+        const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, ['authorization']);
         result = {
           requestObject: {
-            requestUrl: sourceOptions.password // Remove password from error object
-              ? error.request.requestUrl?.replace(`${sourceOptions.password}@`, '<password>@')
-              : error.request.requestUrl,
-            requestHeaders: error.request.options.headers,
+            requestUrl,
+            requestHeaders,
             requestParams: urrl.parse(error.request.requestUrl, true).query,
           },
           responseObject: {

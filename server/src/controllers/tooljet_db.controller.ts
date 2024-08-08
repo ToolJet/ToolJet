@@ -77,7 +77,9 @@ export class TooljetDbController {
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTable, 'all'))
   async table(@Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
     const result = await this.tooljetDbService.perform(organizationId, 'view_table', { table_name: tableName });
-    return decamelizeKeys({ result });
+    const decamelizedResult = decamelizeKeys({ result });
+    decamelizedResult['result']['configurations'] = result.configurations || {};
+    return decamelizedResult;
   }
 
   @Post('/organizations/:organizationId/table')

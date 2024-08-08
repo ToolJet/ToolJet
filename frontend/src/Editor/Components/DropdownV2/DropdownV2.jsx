@@ -59,16 +59,7 @@ export const DropdownV2 = ({
   exposedVariables,
   dataCy,
 }) => {
-  const {
-    label,
-    value,
-    advanced,
-    schema,
-    placeholder,
-    loadingState: dropdownLoadingState,
-    disabledState,
-    options,
-  } = properties;
+  const { label, value, advanced, schema, placeholder, loadingState: dropdownLoadingState, disabledState } = properties;
   const {
     selectedTextColor,
     fieldBorderRadius,
@@ -92,6 +83,7 @@ export const DropdownV2 = ({
   const { value: exposedValue } = exposedVariables;
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const options = component?.definition?.properties?.options?.value;
   const validationData = validate(currentValue);
   const { isValid, validationError } = validationData;
   const ref = React.useRef(null);
@@ -102,7 +94,6 @@ export const DropdownV2 = ({
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
-
   function findDefaultItem(schema) {
     let _schema = schema;
     if (!Array.isArray(schema)) {
@@ -111,15 +102,16 @@ export const DropdownV2 = ({
     const foundItem = _schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
-
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => data?.visible?.value)
-        .map((value) => ({
-          ...value,
-          isDisabled: value?.disable?.value,
+        .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
+        .map((data) => ({
+          ...data,
+          label: resolveReferences(data?.label, currentState),
+          value: resolveReferences(data?.value, currentState),
+          isDisabled: resolveReferences(advanced ? data?.disable : data?.disable?.value, currentState),
         }));
       return _selectOptions;
     } else {
@@ -446,6 +438,7 @@ export const DropdownV2 = ({
           fontSize: '11px',
           fontWeight: '400',
           lineHeight: '16px',
+          display: visibility ? 'block' : 'none',
         }}
       >
         {!isValid && validationError}

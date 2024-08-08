@@ -102,7 +102,7 @@ export const tabsConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: true,
+        defaultValue: false,
       },
     },
   },
@@ -170,7 +170,7 @@ export const tabsConfig = {
       },
       defaultTab: { value: '0' },
       hideTabs: { value: false },
-      renderOnlyActiveTab: { value: true },
+      renderOnlyActiveTab: { value: false },
     },
     events: [],
     styles: {
