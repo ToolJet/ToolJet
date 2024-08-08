@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-enum INSTANCE_SYSTEM_SETTINGS  {
+enum INSTANCE_SYSTEM_SETTINGS {
   WHITE_LABEL_LOGO = 'WHITE_LABEL_LOGO',
   WHITE_LABEL_TEXT = 'WHITE_LABEL_TEXT',
   WHITE_LABEL_FAVICON = 'WHITE_LABEL_FAVICON',
@@ -25,7 +25,6 @@ enum INSTANCE_USER_SETTINGS {
 
 @Injectable()
 export class InstanceSettingsService {
-
   async getSettings(key?: string | string[], getAllData = false, type?: any): Promise<any> {
     const defaultInstanceSettings = {
       [INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP]: process.env.SSO_DISABLE_SIGNUPS,
@@ -41,7 +40,6 @@ export class InstanceSettingsService {
       [INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]: process.env.DEFAULT_FROM_EMAIL,
     };
 
-
     let settings = Object.keys(defaultInstanceSettings)
       .filter((e) => (Array.isArray(key) ? key.includes(e) : key === e))
       .map((e) => ({ key: e, value: defaultInstanceSettings[e] }));
@@ -54,7 +52,7 @@ export class InstanceSettingsService {
         // Key is not included on settings, adding empty value
         settings.push({ key: s, value: null });
       }
-    })
+    });
 
     const instanceConfigs = {};
     settings?.forEach((config) => {
