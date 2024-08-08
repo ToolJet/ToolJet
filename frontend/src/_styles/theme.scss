@@ -13420,3 +13420,14 @@ div.ds-svg-container svg {
       top: initial !important;
     }
   }
+
+
+.user-not-found-svg{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--slate3);
+  width: 36px;
+  height: 36px;
+  padding: 4px;
+}

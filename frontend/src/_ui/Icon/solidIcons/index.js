@@ -172,6 +172,7 @@ import GranularAccess from './GranularAccess.jsx';
 import Search01 from './Search01.jsx';
 import ShiftButtonIcon from './ShiftButtonIcon.jsx';
 import Unpin01 from './Unpin01.jsx';
+import WarningUserNotFound from './WarningUserNotFound.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -459,6 +460,8 @@ const Icon = (props) => {
       return <Variable {...props} />;
     case 'warning':
       return <Warning {...props} />;
+    case 'warning-user-notfound':
+      return <WarningUserNotFound {...props} />;
     case 'workspaceconstants':
       return <WorkspaceConstants {...props} />;
     case 'zoomin':

@@ -13,6 +13,7 @@ import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -424,11 +425,18 @@ class ManageOrgUsersComponent extends React.Component {
                 {users?.length === 0 && (
                   <div className="workspace-settings-table-wrap">
                     <div className="d-flex justify-content-center flex-column tj-user-table-wrapper">
+                      <div className="d-flex justify-content-center align-items-center mb-2">
+                        <div className="user-not-found-svg">
+                          <SolidIcon name="warning-user-notfound" fill="var(--icon-strong)" />
+                        </div>
+                      </div>
                       <span className="text-center font-weight-bold" data-cy="text-no-result-found">
                         No result found
                       </span>
-                      <small className="text-center text-muted" data-cy="text-try-changing-filters">
-                        Try changing the filters
+                      <small className="text-center text-secondary" data-cy="text-try-changing-filters">
+                        There were no results found for your search. Please
+                        <br />
+                        try changing the filters and try again.
                       </small>
                     </div>
                   </div>
