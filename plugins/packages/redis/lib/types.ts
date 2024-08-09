@@ -9,7 +9,6 @@ export type SourceOptions = {
   client_cert: string;
   client_key: string;
   root_cert: string;
-  connection_options: string[][];
 };
 export type QueryOptions = {
   operation: string;

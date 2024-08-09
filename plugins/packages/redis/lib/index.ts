@@ -1,22 +1,9 @@
-import { ConnectionTestResult, isEmpty, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import Redis from 'ioredis';
 import { SourceOptions, QueryOptions } from './types';
 import { ConnectionOptions } from 'tls';
 
 export default class RedisQueryService implements QueryService {
-  connectionOptions(sourceOptions: SourceOptions) {
-    const _connectionOptions = (sourceOptions.connection_options || []).filter((o) => {
-      return o.some((e) => !isEmpty(e));
-    });
-
-    const connectionOptions = Object.fromEntries(_connectionOptions);
-    Object.keys(connectionOptions).forEach((key) =>
-      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
-    );
-
-    return connectionOptions;
-  }
-
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     const query = queryOptions.query;
@@ -53,10 +40,7 @@ export default class RedisQueryService implements QueryService {
     let tls: ConnectionOptions = undefined;
 
     if (sourceOptions.tls_enabled) {
-      tls = {
-        ...this.connectionOptions(sourceOptions),
-      };
-
+      tls = {};
       tls.rejectUnauthorized = (sourceOptions.tls_certificate ?? 'none') != 'none';
       if (sourceOptions.tls_certificate === 'ca_certificate') {
         tls.ca = sourceOptions.ca_cert;
