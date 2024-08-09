@@ -5,13 +5,25 @@ title: Managing Users and Groups
 
 # Managing Users and Groups
 
-This guide explains how to manage users and groups in your ToolJet workspace. For an overview of the permission system, please refer to the [Permissions](../org-management/permissions.md) documentation.
+This guide explains how to manage users and groups in ToolJet. For an overview of the permission system, please refer to the [Permissions](../org-management/permissions.md) documentation.
 
-## Managing Users
+## Managing Users Across Workspaces
+
+Admins can view and manage users across all workspaces in their ToolJet instance. To view users across workspaces:
+
+1. Go to **Settings** > **All Users**.
+2. This will let you view all users in your instance across all workspaces.
+3. The total users and builder count will be displayed on the top right corner of the page.
+
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/manage-all-users.png" alt="User Count" />
+</div>
+
+## Managing Users in a Workspace
 
 Admins of a workspace can invite users to the workspace or archive/unarchive the existing users of a workspace. To manage users in a workspace:
 
- 1. Go to the **Workspace Settings** from the left sidebar on the dashboard.
+ 1. Go to the **Workspace Settings**.
  2. Click on the **Users** tab.
 
 <div style={{textAlign: 'center'}}>
@@ -98,9 +110,9 @@ An archived user from a workspace can still be invited to other workspaces unles
 
 By default, every workspace has three default groups corresponding to user roles:
 
-1. Admin
-2. Builder
-3. End-user
+1. **Admin**: Full access to manage the workspace, including users, groups, and all resources.
+2. **Builder**: Can create and edit apps, data sources, and other resources.
+3. **End-user**: Can only view and use apps they have been given access to.
 
 These groups have predefined permissions. The **Admin** and **End-user** groups cannot be modified, while the **Builder** group can be edited to change permissions. A user can be added to only one default group at a time.
 
@@ -170,18 +182,6 @@ To duplicate a group:
 
 <div style={{textAlign: 'center', paddingBottom:'24px'}}>
 <img className="screenshot-full" src="/img/tutorial/manage-users-groups/duplicate-group.png" alt="Duplicate Group" />
-</div>
-
-## Managing Users Across Workspaces
-
-Admins can view and manage users across all workspaces in their ToolJet instance. To view users across workspaces:
-
-1. Go to **Settings** > **All Users**.
-2. This will let you view all users in your instance across all workspaces.
-3. The total users and builder count will be displayed on the top right corner of the page.
-
-<div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/manage-all-users.png" alt="User Counts" />
 </div>
 
 :::tip
