@@ -160,7 +160,7 @@ actions.goToApp('slug',queryparams)
 ```
 
 - `slug` can be found in URL of the released app after the `application/`, or in the `Share` modal
-- `queryparams` can be provided like this `[{"key":"value"}, {"key2":"value2"}]`
+- `queryparams` can be provided like this `[ ['key1','value1' ], ['key2','value2'] ]`
 
 <div style={{textAlign: 'center'}}>
 
