@@ -40,6 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (isGetUserSession) {
       const user: User = await this.usersService.findByEmail(payload.sub);
       user.organizationIds = payload.organizationIds;
+      user.sessionId = payload.sessionId;
       return user;
     }
 

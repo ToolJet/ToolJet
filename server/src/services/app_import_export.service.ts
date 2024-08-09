@@ -2,17 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { isEmpty } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { User } from 'src/entities/user.entity';
-import { EntityManager, In } from 'typeorm';
+import { DeepPartial, EntityManager, In } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
 import {
-  dbTransactionWrap,
   defaultAppEnvironments,
   catchDbException,
   extractMajorVersion,
@@ -33,6 +30,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -258,7 +256,6 @@ export class AppImportExportService {
       isNormalizedAppDefinitionSchema,
       currentTooljetVersion
     );
-    await this.createAdminGroupPermissions(this.entityManager, importedApp);
     await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
 
     // NOTE: App slug updation callback doesn't work while wrapped in transaction
@@ -463,7 +460,7 @@ export class AppImportExportService {
 
       if (!isNormalizedAppDefinitionSchema) {
         for (const importingAppVersion of importingAppVersions) {
-          const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
+          const updatedDefinition: DeepPartial<any> = this.replaceDataQueryIdWithinDefinitions(
             importingAppVersion.definition,
             appResourceMappings.dataQueryMapping
           );
@@ -1350,31 +1347,6 @@ export class AppImportExportService {
     await manager.update(AppVersion, { id: lastVersionIdToUpdate }, { updatedAt: new Date() });
   }
 
-  async createAdminGroupPermissions(manager: EntityManager, app: App) {
-    const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
-      where: {
-        organizationId: app.organizationId,
-        group: 'admin',
-      },
-    });
-
-    const adminPermissions = {
-      read: true,
-      update: true,
-      delete: true,
-    };
-
-    for (const groupPermission of orgDefaultGroupPermissions) {
-      const appGroupPermission = manager.create(AppGroupPermission, {
-        groupPermissionId: groupPermission.id,
-        appId: app.id,
-        ...adminPermissions,
-      });
-
-      return await manager.save(AppGroupPermission, appGroupPermission);
-    }
-  }
-
   async createDatasourceOption(
     manager: EntityManager,
     options: Record<string, unknown>,
@@ -1421,7 +1393,8 @@ export class AppImportExportService {
   }
 
   replaceDataQueryIdWithinDefinitions(
-    definition: QueryDeepPartialEntity<any>,
+    /* TODO: we need more accurate entity / type for definition instead of using partials or any */
+    definition: DeepPartial<any>,
     dataQueryMapping: Record<string, string>
   ): QueryDeepPartialEntity<any> {
     if (definition?.pages) {

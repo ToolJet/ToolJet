@@ -341,7 +341,7 @@ class OrganizationLogin extends React.Component {
                           </label>
                           <div className="help-text danger-text-login">
                             <div data-cy="enable-sign-up-helper-text">
-                              Users will be able to sign up without being invited
+                              Users will be able to sign up as end-users without being invited
                             </div>
                           </div>
                         </div>

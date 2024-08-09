@@ -4,7 +4,6 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
 import * as compression from 'compression';
 import { AppModule } from './app.module';
-import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './filters/all-exceptions-filter';
@@ -12,6 +11,7 @@ import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
+import * as helmet from 'helmet';
 
 const fs = require('fs');
 
@@ -40,41 +40,18 @@ function replaceSubpathPlaceHoldersInStaticAssets() {
   }
 }
 
-async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    bufferLogs: true,
-    abortOnError: false,
-  });
-  const configService = app.get<ConfigService>(ConfigService);
-  const host = new URL(process.env.TOOLJET_HOST);
+function setSecurityHeaders(app, configService) {
+  const tooljetHost = configService.get('TOOLJET_HOST');
+  const host = new URL(tooljetHost);
   const domain = host.hostname;
 
-  app.useLogger(app.get(Logger));
-  app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useWebSocketAdapter(new WsAdapter(app));
-  const hasSubPath = process.env.SUB_PATH !== undefined;
-  const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
-
-  // Exclude these endpoints from prefix. These endpoints are required for health checks.
-  const pathsToExclude = [];
-  if (hasSubPath) {
-    pathsToExclude.push({ path: '/', method: RequestMethod.GET });
-  }
-  pathsToExclude.push({ path: '/health', method: RequestMethod.GET });
-  pathsToExclude.push({ path: '/api/health', method: RequestMethod.GET });
-
-  app.setGlobalPrefix(UrlPrefix + 'api', {
-    exclude: pathsToExclude,
-  });
   app.enableCors({
-    origin: true,
+    origin: configService.get('ENABLE_CORS') === 'true' || tooljetHost,
     credentials: true,
   });
-  app.use(compression());
 
-  app.use(
-    helmet.contentSecurityPolicy({
+  app.use(helmet({
+    contentSecurityPolicy: {
       useDefaults: true,
       directives: {
         upgradeInsecureRequests: null,
@@ -110,22 +87,56 @@ async function bootstrap() {
         'frame-ancestors': ['*'],
         'frame-src': ['*'],
       },
-    })
-  );
+    },
+    frameguard: configService.get('DISABLE_APP_EMBED') !== 'true' ? false : { action: 'deny' },
+    hidePoweredBy: true,
+    referrerPolicy: {
+      policy: 'no-referrer',
+    },
+  }));
 
+  app.use((req, res, next) => {
+    res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    return next();
+  });
+}
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    abortOnError: false,
+  });
+  const configService = app.get<ConfigService>(ConfigService);
+
+  app.useLogger(app.get(Logger));
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useWebSocketAdapter(new WsAdapter(app));
+  const hasSubPath = process.env.SUB_PATH !== undefined;
+  const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  // Exclude these endpoints from prefix. These endpoints are required for health checks.
+  const pathsToExclude = [];
+  if (hasSubPath) {
+    pathsToExclude.push({ path: '/', method: RequestMethod.GET });
+  }
+  pathsToExclude.push({ path: '/health', method: RequestMethod.GET });
+  pathsToExclude.push({ path: '/api/health', method: RequestMethod.GET });
+
+  app.setGlobalPrefix(UrlPrefix + 'api', {
+    exclude: pathsToExclude,
+  });
+  app.use(compression());
   app.use(cookieParser());
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
-  app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: VERSION_NEUTRAL,
   });
 
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: VERSION_NEUTRAL,
-  });
+  setSecurityHeaders(app, configService);
 
   const listen_addr = process.env.LISTEN_ADDR || '::';
   const port = parseInt(process.env.PORT) || 3000;
@@ -136,7 +147,8 @@ async function bootstrap() {
 
   await app.listen(port, listen_addr, function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
-    console.log(`Ready to use at ${tooljetHost} 🚀`);
+    const subPath = configService.get<string>('SUB_PATH');
+    console.log(`Ready to use at ${tooljetHost}${subPath || ''} 🚀`);
   });
 }
 

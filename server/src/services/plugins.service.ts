@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { InjectRepository } from '@nestjs/typeorm';
 import { File } from 'src/entities/file.entity';
 import { Plugin } from 'src/entities/plugin.entity';
-import { Repository, Connection, EntityManager } from 'typeorm';
+import { Repository, EntityManager, DataSource } from 'typeorm';
 import { CreateFileDto } from '../dto/create-file.dto';
 import { CreatePluginDto } from '../dto/create-plugin.dto';
 import { UpdatePluginDto } from '../dto/update-plugin.dto';
@@ -10,7 +10,7 @@ import { FilesService } from './files.service';
 import { encode } from 'js-base64';
 import { ConfigService } from '@nestjs/config';
 import * as jszip from 'jszip';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { UpdateFileDto } from '@dto/update-file.dto';
 
 const jszipInstance = new jszip();
@@ -20,10 +20,10 @@ const fs = require('fs');
 export class PluginsService {
   constructor(
     private readonly filesService: FilesService,
-    private connection: Connection,
     @InjectRepository(Plugin)
     private pluginsRepository: Repository<Plugin>,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private readonly _dataSource: DataSource
   ) {}
   async create(
     createPluginDto: CreatePluginDto,
@@ -35,7 +35,7 @@ export class PluginsService {
       manifest: ArrayBuffer;
     }
   ) {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner = this._dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -85,7 +85,7 @@ export class PluginsService {
       manifest: ArrayBuffer;
     }
   ) {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner = this._dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -265,7 +265,7 @@ export class PluginsService {
   }
 
   async reload(id: string) {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner = this._dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();

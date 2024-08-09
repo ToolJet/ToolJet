@@ -1,29 +1,37 @@
 import { User } from 'src/entities/user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from 'src/services/users.service';
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
+import { AbilityService } from '@services/permissions-ability.service';
+import { ORGANIZATION_CONSTANT_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
-type Actions = 'createOrganizationConstant' | 'deleteOrganizationConstant';
 type Subjects = InferSubjects<typeof User | typeof OrganizationConstant> | 'all';
 
-export type OrganizationConstantsAbility = Ability<[Actions, Subjects]>;
+export type OrganizationConstantsAbility = Ability<[ORGANIZATION_CONSTANT_RESOURCE_ACTIONS, Subjects]>;
 
 @Injectable()
 export class OrganizationConstantsAbilityFactory {
-  constructor(private usersService: UsersService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async organizationConstantActions(user: User, params: any) {
-    const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(
+    const { can, build } = new AbilityBuilder<Ability<[ORGANIZATION_CONSTANT_RESOURCE_ACTIONS, Subjects]>>(
       Ability as AbilityClass<OrganizationConstantsAbility>
     );
 
-    if (await this.usersService.userCan(user, 'create', 'OrganizationConstant')) {
-      can('createOrganizationConstant', OrganizationConstant);
-    }
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      organizationId: user.organizationId,
+    });
+    const constantPermissions = userPermission.orgConstantCRUD;
 
-    if (await this.usersService.userCan(user, 'delete', 'OrganizationConstant')) {
-      can('deleteOrganizationConstant', OrganizationConstant);
+    if (constantPermissions) {
+      can(
+        [
+          ORGANIZATION_CONSTANT_RESOURCE_ACTIONS.CREATE,
+          ORGANIZATION_CONSTANT_RESOURCE_ACTIONS.DELETE,
+          ORGANIZATION_CONSTANT_RESOURCE_ACTIONS.UPDATE,
+        ],
+        OrganizationConstant
+      );
     }
 
     return build({

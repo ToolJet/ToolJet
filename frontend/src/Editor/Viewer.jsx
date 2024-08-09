@@ -283,13 +283,16 @@ class ViewerComponent extends React.Component {
 
     const currentUser = this.state.currentUser;
     let userVars = {};
-
+    const currentSessionValue = authenticationService.currentSessionValue;
     if (currentUser) {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
-        groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
+        groups: currentSessionValue?.group_permissions
+          ? ['All Users', ...currentSessionValue.group_permissions.map((group) => group.name)]
+          : ['All Users'],
+        role: currentSessionValue?.role?.name,
       };
     }
 
@@ -564,15 +567,18 @@ class ViewerComponent extends React.Component {
         const versionId = this.props.versionId;
 
         if (currentSession?.load_app && slug) {
-          if (currentSession?.group_permissions) {
+          if (currentSession?.group_permissions || currentSession?.role) {
             useAppDataStore.getState().actions.setAppId(appId);
 
             const currentUser = currentSession.current_user;
+            const currentSessionValue = authenticationService.currentSessionValue;
             const userVars = {
               email: currentUser.email,
               firstName: currentUser.first_name,
               lastName: currentUser.last_name,
-              groups: currentSession?.group_permissions?.map((group) => group.group),
+              groups: currentSessionValue?.group_permissions
+                ? ['All Users', ...currentSessionValue.group_permissions.map((group) => group.name)]
+                : ['All Users'],
             };
             this.props.setCurrentState({
               globals: {

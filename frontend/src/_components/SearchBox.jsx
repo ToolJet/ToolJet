@@ -38,12 +38,24 @@ export const SearchBox = forwardRef(
       onClearCallback?.();
     };
 
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        clearSearchText();
+        // Your function to be triggered
+      }
+    };
+
     const mounted = useMounted();
 
     useEffect(() => {
+      document.addEventListener('mousedown', handleClickOutside);
       if (mounted) {
         onSubmit?.(debouncedSearchTerm);
       }
+      return () => {
+        // Cleanup event listener on component unmount
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchTerm, onSubmit]);
 

@@ -333,7 +333,7 @@ class SignupPageComponent extends React.Component {
                               <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
                                 Terms of Service{' '}
                               </a>
-                              &
+                              <span>& </span>
                               <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
                                 {' '}
                                 Privacy Policy

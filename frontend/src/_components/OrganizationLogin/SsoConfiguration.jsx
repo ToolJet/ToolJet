@@ -80,11 +80,13 @@ class SSOConfiguration extends React.Component {
 
   componentDidMount() {
     const initialState = this.initializeOptionStates(this.props.ssoOptions);
+    const enabledSSOCount = this.getCountOfEnabledSSO();
     this.setState({ ...initialState });
     this.setState({ ssoOptions: this.props.ssoOptions });
     this.setState({ defaultSSO: this.props.defaultSSO });
     this.setState({ isAnySSOEnabled: this.props.isAnySSOEnabled });
     this.setState({ instanceSSO: this.props.instanceSSO });
+    this.setState({ inheritedInstanceSSO: enabledSSOCount });
   }
 
   componentDidUpdate(prevProps) {

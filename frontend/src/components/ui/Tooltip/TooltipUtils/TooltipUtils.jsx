@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import { cva } from 'class-variance-authority';
 
 export const arrowVariants = cva('tw-flex', {

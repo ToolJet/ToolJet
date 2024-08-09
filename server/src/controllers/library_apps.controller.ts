@@ -5,6 +5,7 @@ import { App } from 'src/entities/app.entity';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { TemplateAppManifests } from '../../templates';
+import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller('library_apps')
 export class LibraryAppsController {
@@ -18,7 +19,7 @@ export class LibraryAppsController {
   async create(@User() user, @Body('identifier') identifier, @Body('appName') appName) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
-    if (!ability.can('createApp', App)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.CREATE, App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const newApp = await this.libraryAppCreationService.perform(user, identifier, appName);

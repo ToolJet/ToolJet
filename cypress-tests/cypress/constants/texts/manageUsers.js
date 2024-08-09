@@ -1,7 +1,8 @@
 export const usersText = {
   usersElements: {
     usersTableNameColumnHeader: "NAME",
-    usersTableEmailColumnHeader: "EMAIL",
+    usersTableRolesColumnHeader: "User role",
+    usersTableGroupsColumnHeader: "Custom groups",
     usersTableStatusColumnHeader: "STATUS",
     usersFilterLabel: "Showing",
   },

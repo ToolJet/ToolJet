@@ -38,16 +38,17 @@ export default function LogoNavDropdown({ darkMode }) {
             <span>Database</span>
           </Link>
         )}
-        <Link
-          to={getPrivateRoute('data_sources')}
-          className="dropdown-item tj-text tj-text-xsm"
-          target="_blank"
-          data-cy="data-source-option"
-        >
-          <SolidIcon name="datasource" width="20" />
-          <span>Data sources</span>
-        </Link>
-
+        {admin && (
+          <Link
+            to={getPrivateRoute('data_sources')}
+            className="dropdown-item tj-text tj-text-xsm"
+            target="_blank"
+            data-cy="data-source-option"
+          >
+            <SolidIcon name="datasource" width="20" />
+            <span>Data sources</span>
+          </Link>
+        )}
         <Link
           to={getPrivateRoute('workspace_constants')}
           className="dropdown-item tj-text tj-text-xsm"

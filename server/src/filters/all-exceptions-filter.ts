@@ -71,8 +71,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = 'Already exists!';
         break;
       case PostgresErrorCode.NotNullViolation: {
-        const column = (exception as QueryFailedError).driverError.column;
-        message = `${column.replace(/_/g, ' ')} is empty`;
+        const driverError: any = (exception as QueryFailedError).driverError;
+        if (typeof driverError === 'string') {
+          message = driverError;
+        } else {
+          const column = driverError.column;
+          message = `${column.replace(/_/g, ' ')} is required`;
+        }
         break;
       }
     }

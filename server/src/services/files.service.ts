@@ -26,7 +26,7 @@ export class FilesService {
   }
 
   async findOne(id: string) {
-    const file = await this.fileRepository.findOne(id);
+    const file = await this.fileRepository.findOne({ where: { id } });
     if (!file) {
       throw new NotFoundException();
     }

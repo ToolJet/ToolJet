@@ -31,7 +31,7 @@
         -webkit-text-size-adjust: none !important;
         -ms-text-size-adjust: none !important;
         mso-line-height-rule: exactly !important;
-        text-decoration: none !important;
+        text-decoration: none;
         font-size: 14px !important;
       }
       table {
@@ -74,7 +74,6 @@
         line-height: 21px;
         font-size: 14px;
       }
-
       /* COMMON */
       .max-w-340 {
         max-width: 340px !important;
@@ -137,41 +136,35 @@
         background-repeat: repeat;
         background-position: center top;
       }
-
-
       /* WRAPPER */
       .wrapper {
         height: 100%;
       }
-
       /* HEADER */
-
      .logo-container {
         display: flex;
         align-items: flex-end;
       }
-
       .company-name {
         font-size: 20px;
       }
-
       .company-logo {
         margin-right: 10px;
-        width: 120px;
+        height: 30px;
       }
-
+      .white-label-logo {
+        width: 30px;
+        height: 30px;
+      }
 
       /* BODY */
       .content-body {
         background-color: #FFFFFF;
       }
-
-
       .text-bold {
         color: #11181C;
         font-weight: 600;
       }
-
       .primary-btn {
         outline: none;
         border: none;
@@ -183,34 +176,29 @@
         padding-right: 15px;
         font-weight: 500;
         font-size: 13px;
+        cursor: pointer !important;
       }
-
       /* FOOTER */
       .footer-body {
         background-color: #ffffff;
       }
-
       .address, .notif-purpose {
         color: #687076;
         font-size: 12px;
       }
-
       .address {
         border-top: 1px solid #E6E8EB;
         padding-top: 10px;
       }
-
       .url {
         text-decoration: underline !important;
         color: #4368E3 !important;
       }
-
       .social-links {
         display: flex;
         align-items: center;
         margin-top: 4px;
       }
-
       .social-icons {
         width: unset;
         margin-right: 10px;
@@ -225,7 +213,6 @@
         .es-column-fixed_width {
           width: 125px !important;
         }
-
         h2 {
           font-size: 24px !important;
         }
@@ -242,9 +229,11 @@
       <table class="wrapper">
         <tr>
           <td>
-            {{> header }}
+            {{> header whiteLabelText=whiteLabelText whiteLabelLogo=whiteLabelLogo }}
             {{> body bodyHeader=bodyHeader bodyContent=bodyContent}}
-            {{> footer footerText=footerText }}
+            {{#if (eq whiteLabelText "ToolJet")}}
+              {{> footer footerText=footerText }}
+            {{/if}}
           </td>
         </tr>
       </table>

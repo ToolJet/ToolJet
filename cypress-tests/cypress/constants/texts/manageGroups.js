@@ -4,7 +4,7 @@ export const groupsText = {
   tableHeader: "Name",
   allUsers: "All users",
   admin: "Admin",
-  cardTitle: "Add new group",
+  cardTitle: "Create new group",
   cancelButton: "Cancel",
   createGroupButton: "Create Group",
   groupNameExistToast: "Group name already exist",

@@ -21,7 +21,7 @@ export class AddUniqueConstraintToWorkspaceName1683136077244 implements Migratio
     );
     for (const workspace of workspaces) {
       const { name } = workspace;
-      const sameNameWorkspaces = await entityManager.find(Organization, { name });
+      const sameNameWorkspaces = await entityManager.find(Organization, { where: { name } });
       for (const workspaceToChange of sameNameWorkspaces.slice(1)) {
         await entityManager.update(
           Organization,

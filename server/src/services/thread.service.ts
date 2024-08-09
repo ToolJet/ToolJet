@@ -3,13 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Thread } from '../entities/thread.entity';
 import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 import { ThreadRepository } from '../repositories/thread.repository';
-import { createQueryBuilder } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class ThreadService {
   constructor(
     @InjectRepository(ThreadRepository)
-    private threadRepository: ThreadRepository
+    private threadRepository: ThreadRepository,
+    private readonly _dataSource: DataSource
   ) {}
 
   public async createThread(createThreadDto: CreateThreadDto, userId: string, orgId: string): Promise<Thread> {
@@ -23,7 +24,8 @@ export class ThreadService {
     appVersionsId: string,
     threadId?: string
   ): Promise<Thread[]> {
-    const query = createQueryBuilder(Thread, 'thread')
+    const query = this._dataSource
+      .createQueryBuilder(Thread, 'thread')
       .innerJoin('thread.user', 'user')
       .addSelect(['user.id', 'user.firstName', 'user.lastName'])
       .andWhere('thread.appId = :appId', {
@@ -44,15 +46,15 @@ export class ThreadService {
     return await query.getMany();
   }
 
-  public async getOrganizationThreads(orgId: string): Promise<Thread[]> {
+  public async getOrganizationThreads(organizationId: string): Promise<Thread[]> {
     return await this.threadRepository.find({
       where: {
-        orgId,
+        organizationId,
       },
     });
   }
 
-  public async getThread(threadId: number): Promise<Thread> {
+  public async getThread(threadId: string): Promise<Thread> {
     const foundThread = await this.threadRepository.findOne({ where: { id: threadId } });
     if (!foundThread) {
       throw new NotFoundException('Thread not found');

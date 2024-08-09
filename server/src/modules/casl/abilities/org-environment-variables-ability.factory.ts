@@ -1,8 +1,8 @@
 import { User } from 'src/entities/user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from 'src/services/users.service';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { AbilityService } from '@services/permissions-ability.service';
 
 type Actions =
   | 'createOrgEnvironmentVariable'
@@ -16,23 +16,27 @@ export type OrgEnvironmentVariablesAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class OrgEnvironmentVariablesAbilityFactory {
-  constructor(private usersService: UsersService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async orgEnvironmentVariableActions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(
       Ability as AbilityClass<OrgEnvironmentVariablesAbility>
     );
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      organizationId: user.organizationId,
+    });
+    const constantPermissions = userPermission.orgConstantCRUD;
 
-    if (await this.usersService.userCan(user, 'create', 'OrgEnvironmentVariable')) {
+    if (constantPermissions) {
       can('createOrgEnvironmentVariable', OrgEnvironmentVariable);
       can('fetchEnvironments', OrgEnvironmentVariable);
     }
 
-    if (await this.usersService.userCan(user, 'update', 'OrgEnvironmentVariable')) {
+    if (constantPermissions) {
       can('updateOrgEnvironmentVariable', OrgEnvironmentVariable);
     }
 
-    if (await this.usersService.userCan(user, 'delete', 'OrgEnvironmentVariable')) {
+    if (constantPermissions) {
       can('deleteOrgEnvironmentVariable', OrgEnvironmentVariable);
     }
 

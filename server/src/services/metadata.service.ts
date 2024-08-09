@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createQueryBuilder, EntityManager, getManager, In, Repository } from 'typeorm';
+import { EntityManager, In, Repository, DataSource as TypeORMDatasource } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
 import got from 'got';
@@ -9,17 +9,22 @@ import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import {
+  GROUP_PERMISSIONS_TYPE,
+  USER_ROLE,
+} from '@module/user_resource_permissions/constants/group-permissions.constant';
 
 @Injectable()
 export class MetadataService {
   constructor(
     @InjectRepository(Metadata)
     private metadataRepository: Repository<Metadata>,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private readonly _dataSource: TypeORMDatasource
   ) {}
 
   async getMetaData() {
-    let metadata = await this.metadataRepository.findOne({});
+    let [metadata] = await this.metadataRepository.find();
 
     if (!metadata) {
       metadata = await this.metadataRepository.save(
@@ -35,7 +40,7 @@ export class MetadataService {
   }
 
   async updateMetaData(newOptions: any) {
-    const metadata = await this.metadataRepository.findOne({});
+    const [metadata] = await this.metadataRepository.find();
 
     return await this.metadataRepository.update(metadata.id, {
       data: { ...metadata.data, ...newOptions },
@@ -80,7 +85,7 @@ export class MetadataService {
   }
 
   async sendTelemetryData(metadata: Metadata) {
-    const manager = getManager();
+    const manager = this._dataSource.manager;
     const totalUserCount = await manager.count(User);
     const totalAppCount = await manager.count(App);
     const totalInternalTableCount = await manager.count(InternalTable);
@@ -139,16 +144,27 @@ export class MetadataService {
     const userIdsWithEditPermissions = (
       await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions')
-        .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-        .where('app_group_permissions.read = true AND app_group_permissions.update = true')
+        .innerJoin('users.userPermissions', 'userPermissions', 'userPermissions.type = :type', {
+          type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+        })
+        .where('userPermissions.name = :role', {
+          role: USER_ROLE.BUILDER,
+        })
+        .orWhere('userPermissions.name = :role', {
+          role: USER_ROLE.ADMIN,
+        })
         .select('users.id')
         .distinct()
         .getMany()
     ).map((record) => record.id);
 
     const userIdsOfAppOwners = (
-      await createQueryBuilder(User, 'users').innerJoin('users.apps', 'apps').select('users.id').distinct().getMany()
+      await this._dataSource
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.apps', 'apps')
+        .select('users.id')
+        .distinct()
+        .getMany()
     ).map((record) => record.id);
 
     const totalEditorCount = await manager.count(User, {
@@ -158,12 +174,16 @@ export class MetadataService {
     return totalEditorCount;
   }
 
+  //change as per new permissions
   async fetchTotalViewerCount(manager: EntityManager) {
     return await manager
       .createQueryBuilder(User, 'users')
-      .innerJoin('users.groupPermissions', 'group_permissions')
-      .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-      .where('app_group_permissions.read = true AND app_group_permissions.update = false')
+      .innerJoin('users.userPermissions', 'userPermissions', 'userPermissions.type = :type', {
+        type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+      })
+      .where('userPermissions.name = :role', {
+        role: USER_ROLE.END_USER,
+      })
       .select('users.id')
       .distinct()
       .getCount();

@@ -19,7 +19,7 @@
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2",
-    "twilio": "^3.84.1"
+    "twilio": "^5.2.0"
   },
   "overrides": {
     "url-parse": ">=1.5.9"

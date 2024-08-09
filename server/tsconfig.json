@@ -18,7 +18,11 @@
       "@services/*": ["src/services/*"],
       "@controllers/*": ["src/controllers/*"],
       "@repositories/*": ["src/repositories/*"],
-      "@dto/*": ["src/dto/*"]
+      "@dto/*": ["src/dto/*"],
+      "@module/*": ["src/modules/*"],
+      "@helpers/*": ["src/helpers/*"],
+      "@instance-settings/*": ["ce/instance-settings/*"],
+      "@licensing/*": ["ce/licensing/*"],
     },
   },
   "exclude": ["node_modules", "dist"]

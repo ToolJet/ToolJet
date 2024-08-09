@@ -11,7 +11,9 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
+import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -28,6 +30,7 @@ class ManageOrgUsersComponent extends React.Component {
       errors: {},
       meta: {
         total_count: 0,
+        currentPage: 1,
       },
       currentPage: 1,
       options: {},
@@ -37,6 +40,11 @@ class ManageOrgUsersComponent extends React.Component {
       userDrawerMode: USER_DRAWER_MODES.CREATE,
       newSelectedGroups: [],
       existingGroupsToRemove: [],
+      showErrorModal: false,
+      errorModalMessage: '',
+      errorItemList: [],
+      errorTitle: '',
+      errorIconName: 'usergear',
     };
   }
 
@@ -74,7 +82,6 @@ class ManageOrgUsersComponent extends React.Component {
     if (!this.state.file) {
       errors['file'] = 'This field is required';
     }
-
     this.setState({ errors: errors });
     return Object.keys(errors).length === 0;
   }
@@ -97,11 +104,22 @@ class ManageOrgUsersComponent extends React.Component {
 
   changeNewUserOption = (name, e) => {
     let fields = this.state.fields;
+    let errors = {};
     fields[name] = e.target.value;
 
     this.setState({
       fields,
     });
+
+    if (name === 'email') {
+      if (!this.validateEmail(fields['email'])) {
+        errors['email'] = 'Email is not valid';
+        this.setState({ errors });
+      } else {
+        errors['email'] = '';
+        this.setState({ errors });
+      }
+    }
   };
 
   archiveOrgUser = (id) => {
@@ -136,6 +154,7 @@ class ManageOrgUsersComponent extends React.Component {
       });
   };
 
+  //Need to work on that
   inviteBulkUsers = (event) => {
     event.preventDefault();
     if (this.handleFileValidation()) {
@@ -159,7 +178,25 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error, { position: 'top-center' });
+          if (error?.error) {
+            this.setState({
+              showErrorModal: true,
+              errorModalMessage: error.error,
+              errorTitle: error?.title || 'Conflicting permissions',
+              errorItemList: error?.data,
+              errorIconName: 'usergear',
+            });
+            this.setState({ creatingUser: false, uploadingUsers: false });
+            return;
+          }
+          toast.error(error || 'Please check the format of CSV file', {
+            position: 'top-center',
+            style: {
+              minWidth: '200px',
+              whiteSpace: 'nowrap', // Prevent text from wrapping to the next line
+              wordBreak: 'keep-all', // Prevent word breaks
+            },
+          });
           this.setState({ uploadingUsers: false });
         });
     }
@@ -179,7 +216,7 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
-  manageUser = (currentOrgUserId, selectedGroups, groupsToAdd, groupsToRemove) => {
+  manageUser = (currentOrgUserId, selectedGroups, role, groupsToAdd, groupsToRemove) => {
     const isEditing = this.state.userDrawerMode === USER_DRAWER_MODES.EDIT;
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
@@ -202,11 +239,13 @@ class ManageOrgUsersComponent extends React.Component {
         last_name: this.state.fields.lastName,
         email: this.state.fields.email,
         groups: selectedGroups,
+        role: role,
       };
 
       const updateUserBody = {
         addGroups: groupsToAdd,
         removeGroups: groupsToRemove,
+        ...(role && { role: role }),
       };
       service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
         .then(() => {
@@ -221,8 +260,18 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
+          if (error?.error) {
+            this.setState({
+              showErrorModal: true,
+              errorModalMessage: error.error,
+              errorTitle: error?.title || 'Conflicting permissions',
+              errorItemList: error?.data,
+              errorIconName: 'usergear',
+            });
+            this.setState({ creatingUser: false });
+            return;
+          }
           toast.error(error);
-          this.setState({ creatingUser: false });
         });
     } else {
       this.setState({ creatingUser: false, file: null, isInviteUsersDrawerOpen: true });
@@ -250,6 +299,16 @@ class ManageOrgUsersComponent extends React.Component {
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied');
+  };
+
+  clearErrorState = () => {
+    this.setState({
+      showErrorModal: false,
+      errorModalMessage: '',
+      errorItemList: [],
+      errorTitle: '',
+      errorIconName: '',
+    });
   };
 
   pageChanged = (page) => {
@@ -291,10 +350,24 @@ class ManageOrgUsersComponent extends React.Component {
       meta,
       currentEditingUser,
       userDrawerMode,
+      showErrorModal,
+      errorModalMessage,
+      errorItemList,
+      errorTitle,
+      errorIconName,
     } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
+          <EditRoleErrorModal
+            darkMode={this.props.darkMode}
+            show={showErrorModal}
+            errorMessage={errorModalMessage}
+            errorTitle={errorTitle}
+            listItems={errorItemList}
+            iconName={errorIconName}
+            onClose={this.clearErrorState}
+          />
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}
@@ -311,6 +384,7 @@ class ManageOrgUsersComponent extends React.Component {
               currentEditingUser={currentEditingUser}
               setUserValues={this.setUserValues}
               creatingUser={this.state.creatingUser}
+              darkMode={this.props.darkMode}
             />
           )}
 
@@ -351,11 +425,18 @@ class ManageOrgUsersComponent extends React.Component {
                 {users?.length === 0 && (
                   <div className="workspace-settings-table-wrap">
                     <div className="d-flex justify-content-center flex-column tj-user-table-wrapper">
+                      <div className="d-flex justify-content-center align-items-center mb-2">
+                        <div className="user-not-found-svg">
+                          <SolidIcon name="warning-user-notfound" fill="var(--icon-strong)" />
+                        </div>
+                      </div>
                       <span className="text-center font-weight-bold" data-cy="text-no-result-found">
                         No result found
                       </span>
-                      <small className="text-center text-muted" data-cy="text-try-changing-filters">
-                        Try changing the filters
+                      <small className="text-center text-secondary" data-cy="text-try-changing-filters">
+                        There were no results found for your search. Please
+                        <br />
+                        try changing the filters and try again.
                       </small>
                     </div>
                   </div>
