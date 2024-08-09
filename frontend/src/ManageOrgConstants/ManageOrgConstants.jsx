@@ -351,7 +351,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           />
         </Drawer>
       )}
-      <div className="align-items-center d-flex p-3 justify-content-between">
+      <div className="align-items-center d-flex justify-content-between" style={{ marginBottom: '10px' }}>
         <div className="tj-text-sm font-weight-500" data-cy="env-name">
           {capitalize(activeTabEnvironment?.name)} ({globalCount + secretCount})
         </div>
@@ -374,7 +374,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         </div>
       </div>
       <div className="constant-page-wrapper">
-        <div className="container-xl" style={{ width: '880px' }}>
+        <div className="container-xl">
           <div>
             <div className="workspace-constant-header">
               <div className="tabs-and-search">
