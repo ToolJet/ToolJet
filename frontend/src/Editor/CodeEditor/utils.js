@@ -281,7 +281,11 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
   const queryHasJSCode = queryHasStringOtherThanVariable(query);
   let useJSResolvers = queryHasJSCode || getDynamicVariables(query)?.length > 1;
 
-  if (!queryHasJSCode && getDynamicVariables(query)?.length === 1 && !query.startsWith('{{') && query.includes('{{')) {
+  if (
+    !queryHasJSCode &&
+    getDynamicVariables(query)?.length === 1 &&
+    ((!query.startsWith('{{') && query.includes('{{')) || (query.startsWith('{{') && !query.endsWith('}}')))
+  ) {
     useJSResolvers = true;
   }
 

@@ -6,6 +6,8 @@ import { Tooltip } from 'react-tooltip';
 import { FormWrapper, textAreaEnterOnSave } from '@/_components/FormWrapper';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
+import './ConstantFormStyle.scss';
+import { Constants } from '@/_helpers/utils';
 
 const ConstantForm = ({
   selectedConstant,
@@ -13,11 +15,11 @@ const ConstantForm = ({
   onCancelBtnClicked,
   isLoading,
   currentEnvironment,
-  checkIfConstantNameExists,
   mode,
 }) => {
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
+    type: selectedConstant?.type,
     environments: [{ label: currentEnvironment?.name, value: currentEnvironment?.id }],
   }));
 
@@ -47,7 +49,7 @@ const ConstantForm = ({
     name_already_exists: `Constant with this name already exists in ${capitalize(
       currentEnvironment?.name
     )} environment`,
-    invalid_name_length: 'Constant name should be between 1 and 32 characters',
+    invalid_name_length: 'Constant name has exceeded 50 characters',
     max_name_length_reached: 'Maximum length has been reached',
     invalid_name:
       'Constant name should start with a letter or underscore and can only contain letters, numbers and underscores',
@@ -60,16 +62,10 @@ const ConstantForm = ({
 
     if (name !== 'name') return;
 
-    const isNameAlreadyExists = checkIfConstantNameExists(value, currentEnvironment?.id);
-    const invalidNameLength = value.length > 32;
-    const maxNameLengthReached = value.length === 32;
+    const invalidNameLength = value.length > 50;
+    const maxNameLengthReached = value.length === 50;
     const invalidName = !isValidPropertyName(value);
 
-    if (isNameAlreadyExists) {
-      return setError({
-        name: ERROR_MESSAGES.name_already_exists,
-      });
-    }
     if (invalidNameLength) {
       return setError({
         name: ERROR_MESSAGES.invalid_name_length,
@@ -179,7 +175,7 @@ const ConstantForm = ({
                 <input
                   type="text"
                   className={`tj-input-element ${error['name'] ? 'tj-input-error-state' : ''}`}
-                  placeholder={'Enter Constant Name'}
+                  placeholder={'Enter constant name'}
                   name="name"
                   onChange={handleFieldChange}
                   value={fields['name']}
@@ -193,7 +189,52 @@ const ConstantForm = ({
                 <span className="text-danger" data-cy="name-error-text">
                   {error['name']}
                 </span>
+                {!error['name'] && <small className="text-muted">Name must be unique and max 50 characters</small>}
               </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label" data-cy="name-label">
+                Type
+              </label>
+              <div className="radio-group" data-tooltip-id="type-tooltip">
+                <div className="radio-item">
+                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                    <input
+                      type="radio"
+                      name="type"
+                      value="Global"
+                      checked={fields['type'] === Constants.Global}
+                      onChange={handleFieldChange}
+                      disabled={mode === 'edit'}
+                    />
+                    Global constants
+                  </label>
+                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                    The values can be used anywhere in the product
+                  </small>
+                </div>
+                <div className="radio-item">
+                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                    <input
+                      type="radio"
+                      name="type"
+                      value="Secret"
+                      checked={fields['type'] === Constants.Secret}
+                      onChange={handleFieldChange}
+                      disabled={mode === 'edit'}
+                    />
+                    Secrets
+                  </label>
+                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                    The values are hidden and can only be used in data sources and queries
+                  </small>
+                </div>
+              </div>
+              {mode === 'edit' && (
+                <Tooltip id="type-tooltip" place="top">
+                  Cannot edit constant type
+                </Tooltip>
+              )}
             </div>
             <div className="col tj-app-input">
               <div className="d-flex justify-content-between align-items-center w-100">
@@ -294,7 +335,11 @@ const ConstantForm = ({
         <ButtonSolid
           type="submit"
           isLoading={isLoading}
-          disabled={isLoading || shouldDisableButton || selectedConstant?.value === fields['value']}
+          disabled={
+            isLoading ||
+            shouldDisableButton ||
+            (selectedConstant?.value === fields['value'] && selectedConstant?.type === fields['type'])
+          }
           data-cy="add-constant-button"
           form="variable-form"
         >

@@ -119,6 +119,9 @@ export class OrgEnvironmentVariablesService {
   }
 
   private async decryptSecret(workspaceId: string, value: string) {
+    if (!value) {
+      return value;
+    }
     return await this.encryptionService.decryptColumnValue('org_environment_variables', workspaceId, value);
   }
 }

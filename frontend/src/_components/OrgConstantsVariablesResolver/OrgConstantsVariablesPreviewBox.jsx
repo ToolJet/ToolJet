@@ -1,5 +1,5 @@
 import { useSpring, config, animated } from 'react-spring';
-import { resolveReferences } from '../../_helpers/utils';
+import { resolveReferences, verifyConstant } from '../../_helpers/utils';
 import { Alert } from '../../_ui/Alert';
 import useHeight from '@/_hooks/use-height-transition';
 import React from 'react';
@@ -9,7 +9,11 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
     if (!currentValue) return null;
 
     if (currentValue.includes('constants')) {
-      return 'Workspace Constant';
+      return 'Workspace global constant';
+    }
+
+    if (currentValue.includes('secrets')) {
+      return 'Workspace secret constant';
     }
 
     if (currentValue.includes('client')) {
@@ -25,7 +29,8 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
   const shouldResolve =
     typeof value === 'string' &&
     ((value.includes('%%') && (value.includes('client.') || value.includes('server.'))) ||
-      (value.includes('{{') && value.includes('constants.')));
+      (value.includes('{{') && value.includes('constants.')) ||
+      (value.includes('{{') && value.includes('secrets.')));
 
   if (!shouldResolve) return null;
 
@@ -35,34 +40,30 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
     <ResolvedValue
       value={value}
       isFocused={isFocused}
-      state={{ ...workspaceVariables, constants: workspaceConstants }}
+      state={{
+        ...workspaceVariables,
+        constants: workspaceConstants?.globals || {},
+        secrets: workspaceConstants?.secrets || {},
+      }}
       type={valueType}
     />
   );
 };
 
-const verifyConstant = (value, definedConstants) => {
-  const constantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
-  if (typeof value !== 'string') {
-    return [];
-  }
-  const matches = value.match(constantRegex);
-  if (!matches) {
-    return [];
-  }
-  const resolvedMatches = matches.map((match) => {
-    const cleanedMatch = match.replace(/{{constants\./, '').replace(/}}/, '');
-    return Object.keys(definedConstants).includes(cleanedMatch) ? null : cleanedMatch;
-  });
-  const invalidConstants = resolvedMatches?.filter((item) => item != null);
-  if (invalidConstants?.length) {
-    return invalidConstants;
-  }
-};
-
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
-  const [preview, error] = resolveReferences(value, null, {}, true, true);
-
+  const isSecret = type === 'Workspace secret constant';
+  const hiddenSecretText = 'Values of secret constants are hidden';
+  const invalidConstants = verifyConstant(value, state.constants, state.secrets);
+  let preview;
+  let error;
+  if (invalidConstants?.length) {
+    [preview, error] = [value, `Undefined constants: ${invalidConstants}`];
+  } else {
+    [preview, error] = resolveReferences(value, state, null, {}, true, true);
+    if (isSecret && !error) {
+      preview = hiddenSecretText;
+    }
+  }
   const previewType = typeof preview;
 
   let resolvedValue = preview;
@@ -71,8 +72,9 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     ? 'HiddenEnvironmentVariable'
     : error?.toString();
   const isValidError = error && errorMessage !== 'HiddenEnvironmentVariable';
+  const isUndefinedConstantsError = error && errorMessage.includes('Undefined constants:');
 
-  if (error && !isValidError) {
+  if (error && (!isValidError || isUndefinedConstantsError)) {
     resolvedValue = errorMessage;
   }
 
@@ -97,7 +99,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     }
   };
 
-  const isConstant = type === 'Workspace Constant';
+  const isConstant = type === 'Workspace global constant' || type === 'Workspace secret constant';
 
   const [heightRef, currentHeight] = useHeight();
 
@@ -120,7 +122,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
           <div className="alert-banner-type-text">
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 800, textTransform: 'capitalize' }}>
-                {isValidError ? 'Error' : ` ${type} - ${previewType}`}
+                {isValidError ? 'Error' : isConstant ? null : ` ${type} - ${previewType}`}
               </div>
             </div>
             {getPreviewContent(resolvedValue, previewType)}

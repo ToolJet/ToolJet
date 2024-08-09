@@ -7,6 +7,7 @@ import { AppEnvironmentService } from './app_environments.service';
 
 import { DeleteResult, EntityManager, Repository } from 'typeorm';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
+import { OrganizationConstantType } from '../entities/organization_constants.entity';
 
 @Injectable()
 export class OrganizationConstantsService {
@@ -17,12 +18,21 @@ export class OrganizationConstantsService {
     private appEnvironmentService: AppEnvironmentService
   ) {}
 
-  async allEnvironmentConstants(organizationId: string): Promise<OrganizationConstant[]> {
+  async allEnvironmentConstants(
+    organizationId: string,
+    decryptSecretValue: boolean,
+    type: OrganizationConstantType | null
+  ): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
         .leftJoinAndSelect('organization_constants.orgEnvironmentConstantValues', 'org_environment_constant_values')
         .where('organization_constants.organization_id = :organizationId', { organizationId });
+
+      if (type) {
+        query.andWhere('organization_constants.type = :type', { type });
+      }
+
       const result = await query.getMany();
 
       const appEnvironments = await this.appEnvironmentService.getAll(organizationId, manager);
@@ -32,11 +42,21 @@ export class OrganizationConstantsService {
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
               const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
+              let resolvedValue = '';
+              if (value) {
+                if (constant.type === OrganizationConstantType.SECRET) {
+                  resolvedValue = decryptSecretValue
+                    ? await this.decryptSecret(organizationId, value.value)
+                    : value.value;
+                } else {
+                  resolvedValue = await this.decryptSecret(organizationId, value.value); // Constant type values are always decrypted
+                }
+              }
 
               return {
                 environmentName: env.name,
-                value: value && value.value.length > 0 ? await this.decryptSecret(organizationId, value.value) : '',
-                id: value.environmentId,
+                value: resolvedValue,
+                id: value?.environmentId,
               };
             })
           );
@@ -46,6 +66,7 @@ export class OrganizationConstantsService {
             name: constant.constantName,
             values,
             createdAt: constant.createdAt,
+            type: constant.type,
           };
         })
       );
@@ -54,25 +75,41 @@ export class OrganizationConstantsService {
     });
   }
 
-  async getConstantsForEnvironment(organizationId: string, environmentId: string): Promise<OrganizationConstant[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  async getConstantsForEnvironment(
+    organizationId: string,
+    environmentId: string,
+    type: OrganizationConstantType | null
+  ): Promise<any[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
         .createQueryBuilder(OrganizationConstant, 'organization_constants')
         .leftJoinAndSelect('organization_constants.orgEnvironmentConstantValues', 'org_environment_constant_values')
         .where('organization_constants.organization_id = :organizationId', { organizationId })
         .andWhere('org_environment_constant_values.environment_id = :environmentId', { environmentId });
+
+      if (type) {
+        query.andWhere('organization_constants.type = :type', { type });
+      }
+
       const result = await query.getMany();
 
-      const constantsWithValues = result.map(async (constant) => {
-        const decryptedValue = await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value);
-        return {
-          id: constant.id,
-          name: constant.constantName,
-          value: decryptedValue,
-        };
-      });
+      const constantsWithValues = await Promise.all(
+        result.map(async (constant) => {
+          const resolvedValue =
+            constant.type === OrganizationConstantType.SECRET
+              ? await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value)
+              : constant.orgEnvironmentConstantValues[0].value;
 
-      return Promise.all(constantsWithValues);
+          return {
+            id: constant.id,
+            name: constant.constantName,
+            type: constant.type,
+            value: resolvedValue,
+          };
+        })
+      );
+
+      return constantsWithValues;
     });
   }
 
@@ -83,6 +120,7 @@ export class OrganizationConstantsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newOrganizationConstant = manager.create(OrganizationConstant, {
         constantName: organizationConstant.constant_name,
+        type: organizationConstant.type,
         organizationId,
       });
 
@@ -146,14 +184,16 @@ export class OrganizationConstantsService {
       await manager.save(constantToUpdate);
 
       const environmentToUpdate = await this.appEnvironmentService.get(organizationId, environment_id, false, manager);
-      const encryptedValue = await this.encryptSecret(organizationId, value);
+      if (value) {
+        const encryptedValue = await this.encryptSecret(organizationId, value);
 
-      await this.appEnvironmentService.updateOrgEnvironmentConstant(
-        encryptedValue,
-        environmentToUpdate.id,
-        constantToUpdate.id,
-        manager
-      );
+        await this.appEnvironmentService.updateOrgEnvironmentConstant(
+          encryptedValue,
+          environmentToUpdate.id,
+          constantToUpdate.id,
+          manager
+        );
+      }
 
       return constantToUpdate;
     });

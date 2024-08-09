@@ -6028,7 +6028,7 @@ div#driver-page-overlay {
 
   &:focus-visible {
     background: var(--slate1);
-    border: 1px solid var(--slate8);
+    border: 1px solid var(--indigo9);
     outline: none;
   }
 
@@ -6043,6 +6043,10 @@ div#driver-page-overlay {
     border: 1px solid var(--slate8);
     color: var(--slate9);
     cursor: not-allowed;
+  }
+  &::placeholder {
+    color: var(--slate9);
+    font-weight: 400;
   }
 }
 
@@ -10890,7 +10894,7 @@ tbody {
     background: var(--base) !important;
     border: 1px solid var(--slate7) !important;
     border-radius: 6px !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 0px !important;
     color: var(--slate12) !important;
     transition: none;
     font-weight: 400;
@@ -11514,7 +11518,10 @@ tbody {
   }
 
   .constant-table-card {
-    min-height: 370px;
+    min-height: 420px;
+    padding: 16px;
+    padding-top: 0px;
+    padding-bottom: 0px;
   }
 
   .card-footer {
@@ -13333,8 +13340,12 @@ div.ds-svg-container svg {
   }
 }
 
-  .tabs-component{
-    .tab-pane{
-      top: initial !important;
-    }
+.mb-0 {
+  margin-bottom: 0px !important;
+}
+
+.tabs-component{
+  .tab-pane{
+    top: initial !important;
   }
+}

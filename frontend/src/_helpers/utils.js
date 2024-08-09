@@ -17,6 +17,37 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 
 const reservedKeyword = ['app', 'window'];
 
+export const Constants = {
+  Global: 'Global',
+  Secret: 'Secret',
+};
+
+export const verifyConstant = (value, definedConstants = {}, definedSecrets = {}) => {
+  const globalConstantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
+  const secretConstantRegex = /{{secrets\.([a-zA-Z0-9_]+)}}/g;
+  if (typeof value !== 'string') {
+    return [];
+  }
+  const matches = [...(value.match(globalConstantRegex) || []), ...(value.match(secretConstantRegex) || [])];
+  if (!matches) {
+    return [];
+  }
+  const resolvedMatches = matches.map((match) => {
+    const cleanedMatch = match
+      .replace(/{{constants\./, '')
+      .replace(/{{secrets\./, '')
+      .replace(/}}/, '');
+
+    return Object.keys(definedConstants).includes(cleanedMatch) || Object.keys(definedSecrets).includes(cleanedMatch)
+      ? null
+      : cleanedMatch;
+  });
+  const invalidConstants = resolvedMatches?.filter((item) => item != null);
+  if (invalidConstants?.length) {
+    return invalidConstants;
+  }
+};
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -73,6 +104,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'client',
           'server',
           'constants',
+          'secrets',
           'parameters',
           'moment',
           '_',
@@ -90,6 +122,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+        state?.secrets || {},
         state?.parameters,
         moment,
         _,
@@ -98,10 +131,8 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       );
     } catch (err) {
       error = err;
-      // console.log('eval_error', err);
     }
   }
-
   if (withError) return [result, error];
   return result;
 }
@@ -227,10 +258,10 @@ export function resolveReferences(
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], null, customObjects);
+          object = resolveReferences(dynamicVariables[0], state, null, customObjects, false, false);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, null, customObjects);
+            const value = resolveReferences(dynamicVariable, state, null, customObjects, false, false);
             if (typeof value !== 'function') {
               object = object.replace(dynamicVariable, value);
             }

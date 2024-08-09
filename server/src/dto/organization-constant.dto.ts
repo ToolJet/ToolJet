@@ -1,6 +1,7 @@
-import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
+import { OrganizationConstantType } from 'src/entities/organization_constants.entity';
 
 export class CreateOrganizationConstantDto {
   @IsString()
@@ -9,7 +10,7 @@ export class CreateOrganizationConstantDto {
   @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
     message: 'Constant name must start with a letter or underscore and contain only letters, numbers, and underscores',
   })
-  @MaxLength(32, { message: 'Constant name must be less than 32 characters' })
+  @MaxLength(50, { message: 'Constant name must be less than 50 characters' })
   @MinLength(1, { message: 'Constant name must be at least 1 character' })
   constant_name: string;
 
@@ -22,6 +23,10 @@ export class CreateOrganizationConstantDto {
   @MinLength(1, { message: 'Constant value must be at least 1 character' })
   @MaxLength(10000, { message: 'Constant value must be less than 10000 characters' })
   value: string;
+
+  @IsEnum(OrganizationConstantType, { message: 'Type must be either Global or Secret' })
+  @IsNotEmpty()
+  type: OrganizationConstantType;
 }
 
 export class UpdateOrganizationConstantDto {

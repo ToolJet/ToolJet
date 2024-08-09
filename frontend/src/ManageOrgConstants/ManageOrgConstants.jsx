@@ -13,6 +13,8 @@ import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { BreadCrumbContext } from '@/App';
+import './ConstantFormStyle.scss';
+import { Constants } from '@/_helpers/utils';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -30,7 +32,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const [mode, setMode] = useState(MODES.NULL);
 
-  const perPage = 7;
+  const perPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [currentTableData, setTableData] = useState([]);
@@ -39,6 +41,25 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  const [activeTab, setActiveTab] = useState(Constants.Global);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [globalCount, setGlobalCount] = useState(0);
+  const [secretCount, setSecretCount] = useState(0);
+
+  const handleTabChange = (tab) => {
+    setCurrentPage(1);
+    updateTableData(constants, activeTabEnvironment?.name, 0, perPage, true, tab, searchTerm);
+    setActiveTab(tab);
+  };
+
+  const handleSearchChange = (e) => {
+    const searchTerm = e?.target?.value.toLowerCase();
+    setSearchTerm(searchTerm);
+
+    // Re-filter the constants based on the current search term and active tab
+    updateTableData(constants, activeTabEnvironment?.name, 0, perPage, true, activeTab, searchTerm);
+  };
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
@@ -70,51 +91,61 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     setCurrentPage(1);
 
     const envName = activeTabEnvironment ? activeTabEnvironment.name : environment.name;
-    updateTableData(allConstants, envName, 0, perPage, true);
+    updateTableData(allConstants, envName, 0, perPage, true, activeTab, searchTerm);
   };
 
-  const updateTableData = (orgContants, envName, start, end, activeTabChanged = false) => {
-    const constantsForEnvironment = orgContants
+  const updateTableData = (orgConstants, envName, start, end, activeTabChanged = false, tab = null, search = '') => {
+    if (!Array.isArray(orgConstants)) {
+      return;
+    }
+    const filteredConstants = orgConstants
       .filter((constant) => {
         const envConstant = constant?.values.find((value) => value.environmentName === envName);
 
+        // Filter based on the active tab: 'Global' or 'Secret'
+        if (tab === Constants.Global) {
+          return envConstant && envConstant.value !== '' && constant.type === Constants.Global;
+        } else if (tab === Constants.Secret) {
+          return envConstant && envConstant.value !== '' && constant.type === Constants.Secret;
+        }
         return envConstant && envConstant.value !== '';
       })
-      .map((constant) => {
-        return {
-          id: constant.id,
-          name: constant.name,
-          value: findValueForEnvironment(constant.values, envName),
-        };
-      });
+      .filter((constant) => {
+        // Filter based on the search term
+        return constant.name.toLowerCase().includes(search.toLowerCase());
+      })
+      .map((constant) => ({
+        id: constant.id,
+        name: constant.name,
+        type: constant.type,
+        value: findValueForEnvironment(constant.values, envName),
+      }));
 
     if (activeTabChanged) {
-      computeTotalPages(constantsForEnvironment.length);
+      computeTotalPages(filteredConstants.length || 1);
     }
-
-    const envConstantants = constantsForEnvironment.slice(start, end);
-
-    setTableData(envConstantants);
+    const paginatedConstants = filteredConstants ? filteredConstants.slice(start, end) : filteredConstants;
+    setTableData(paginatedConstants);
   };
 
   const goToNextPage = () => {
     setCurrentPage(currentPage + 1);
 
-    const start = (currentPage + 1 - 1) * perPage;
+    const start = currentPage * perPage;
     const end = start + perPage;
 
     const envName = activeTabEnvironment.name;
-    updateTableData(constants, envName, start, end);
+    updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
   const goToPreviousPage = () => {
     setCurrentPage(currentPage - 1);
 
-    const start = (currentPage - 1 - 1) * perPage;
+    const start = (currentPage - 2) * perPage;
     const end = start + perPage;
 
     const envName = activeTabEnvironment.name;
-    updateTableData(constants, envName, start, end);
+    updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
   const canAnyGroupPerformAction = (action, permissions) => {
@@ -182,6 +213,13 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
     setConstants(orgConstants?.constants);
 
+    // Calculate counts for Global and Secret constants
+    const globalCount = orgConstants.constants.filter((constant) => constant.type === Constants.Global).length;
+    const secretCount = orgConstants.constants.filter((constant) => constant.type === Constants.Secret).length;
+
+    setGlobalCount(globalCount);
+    setSecretCount(secretCount);
+
     let orgEnvironments = await fetchEnvironments();
     setEnvironments(orgEnvironments?.environments);
     const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.is_default === true);
@@ -189,6 +227,11 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
     setIsLoading(false);
     setSelectedConstant(null);
+    const start = (currentPage - 1 - 1) * perPage;
+    const end = start + perPage;
+
+    const envName = activeTabEnvironment.name;
+    updateTableData(orgConstants, envName, start, end, activeTab, searchTerm);
   };
 
   const checkIfConstantNameExists = (name, environementId) => {
@@ -206,13 +249,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const createOrUpdate = (variable, shouldUpdate = false) => {
     const currentEnv = activeTabEnvironment;
 
-    const constantExistsInDiffEnv = checkIfConstantNameExists(variable.name);
-    const shouldUpdateConstant = mode === 'edit' && shouldUpdate ? true : constantExistsInDiffEnv;
+    const shouldUpdateConstant = mode === 'edit' && shouldUpdate ? true : false;
 
     if (shouldUpdateConstant) {
-      const variableId = constantExistsInDiffEnv
-        ? constants.find((constant) => constant.name === variable.name).id
-        : variable.id;
+      const variableId = variable.id;
 
       return orgEnvironmentConstantService
         .update(variableId, variable.value, currentEnv['id'])
@@ -220,22 +260,22 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
         })
-        .catch(({ error }) => {
+        .catch((error) => {
           setErrors(error);
-          toast.error(error);
+          toast.error(error || 'Constant could not be updated');
         })
         .finally(() => fetchConstantsAndEnvironments());
     }
 
     return orgEnvironmentConstantService
-      .create(variable.name, variable.value, [currentEnv['id']])
+      .create(variable.name, variable.value, variable.type, [currentEnv['id']])
       .then(() => {
         toast.success('Constant has been created');
         onCancelBtnClicked();
       })
       .catch(({ error }) => {
         setErrors(error);
-        toast.error('Constant could not be created');
+        toast.error(error || 'Constant could not be created');
       })
       .finally(() => fetchConstantsAndEnvironments());
   };
@@ -288,7 +328,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     </span>
   );
   return (
-    <div className="wrapper org-constant-page org-variables-page animation-fade">
+    <div className="constant-wrapper org-constant-page org-variables-page animation-fade">
       <ConfirmDialog
         show={showConstantDeleteConfirmation}
         message={confirmMessage}
@@ -311,14 +351,71 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           />
         </Drawer>
       )}
-
-      <div className="page-wrapper">
+      <div className="align-items-center d-flex justify-content-between" style={{ marginBottom: '10px' }}>
+        <div className="tj-text-sm font-weight-500" data-cy="env-name">
+          {capitalize(activeTabEnvironment?.name)} ({globalCount + secretCount})
+        </div>
+        <div className="workspace-setting-buttons-wrap">
+          {canCreateVariable() && (
+            <ButtonSolid
+              data-cy="add-new-constant-button"
+              variant="primary"
+              onClick={() => {
+                setMode(() => MODES.CREATE);
+                setIsManageVarDrawerOpen(() => true);
+              }}
+              className="add-new-constant-button"
+              customStyles={{ minWidth: '200px', height: '32px' }}
+              disabled={isManageVarDrawerOpen}
+            >
+              + Create new constant
+            </ButtonSolid>
+          )}
+        </div>
+      </div>
+      <div className="constant-page-wrapper">
         <div className="container-xl">
           <div>
-            <div className="page-header workspace-constant-header">
-              <div className="tj-text-sm font-weight-500" data-cy="constants-count-title">
-                {constants.length} constants
+            <div className="workspace-constant-header">
+              <div className="tabs-and-search">
+                <div className="tabs">
+                  <button
+                    className={`tab ${activeTab === Constants.Global ? 'active' : ''}`}
+                    onClick={() => handleTabChange(Constants.Global)}
+                  >
+                    Global constants
+                    <span className={`tab-count ${activeTab === Constants.Global ? 'active' : ''}`}>
+                      ({globalCount})
+                    </span>
+                  </button>
+                  <button
+                    className={`tab ${activeTab === Constants.Secret ? 'active' : ''}`}
+                    onClick={() => handleTabChange(Constants.Secret)}
+                  >
+                    Secrets
+                    <span className={`tab-count ${activeTab === Constants.Secret ? 'active' : ''}`}>
+                      ({secretCount})
+                    </span>
+                  </button>
+                </div>
+
+                <div className="search-bar">
+                  <input
+                    type="text"
+                    placeholder={activeTab === Constants.Global ? 'Search global constants' : 'Search secrets'}
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="search-input"
+                  />
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="workspace-variable-container-wrap mt-2">
+          <div className="container-xl" style={{ width: '880px', padding: '0px' }}>
+            <div className="workspace-constant-table-card">
               <div className="mt-3">
                 <Alert svg="tj-info">
                   <div
@@ -330,9 +427,19 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     }}
                   >
                     <div className="text-muted" data-cy="workspace-constant-helper-text">
-                      To resolve a Workspace constant use{' '}
-                      <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
+                      {activeTab === Constants.Global ? (
+                        <>
+                          To resolve a global workspace constant use{' '}
+                          <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
+                        </>
+                      ) : (
+                        <>
+                          To resolve a secret workspace constant use{' '}
+                          <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{secrets.access_token}}'}</strong>
+                        </>
+                      )}
                     </div>
+
                     <div>
                       <Button
                         // Todo: Update link to documentation: workspace constants
@@ -350,21 +457,14 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                           fontWeight: 500,
                         }}
                       >
-                        <Button.Content title={'Read Documentation'} iconSrc="assets/images/icons/student.svg" />
+                        <Button.Content title={'Read documentation'} iconSrc="assets/images/icons/student.svg" />
                       </Button>
                     </div>
                   </div>
                 </Alert>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="workspace-variable-container-wrap mt-2">
-          <div className="container-xl">
-            <div className="workspace-constant-table-card">
               <div className="manage-sso-container h-100">
-                <div className="d-flex manage-sso-wrapper-card h-100">
+                <div className="d-flex manage-constant-wrapper-card">
                   <ManageOrgConstantsComponent.EnvironmentsTabs
                     allEnvironments={environments}
                     currentEnvironment={activeTabEnvironment}
@@ -372,30 +472,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     isLoading={isLoading}
                     allConstants={constants}
                   />
-                  {constants.length > 0 ? (
-                    <div className="w-100 workspace-constant-card-body">
-                      <div className="align-items-center d-flex p-3 justify-content-between">
-                        <div className="tj-text-sm font-weight-500" data-cy="env-name">
-                          {capitalize(activeTabEnvironment?.name)}
-                        </div>
-                        <div className="workspace-setting-buttons-wrap">
-                          {canCreateVariable() && (
-                            <ButtonSolid
-                              data-cy="add-new-constant-button"
-                              vaiant="primary"
-                              onClick={() => {
-                                setMode(MODES.CREATE);
-                                setIsManageVarDrawerOpen(true);
-                              }}
-                              className="add-new-constant-button"
-                              customStyles={{ minWidth: '200px', height: '32px' }}
-                              disabled={isManageVarDrawerOpen}
-                            >
-                              Create new constant
-                            </ButtonSolid>
-                          )}
-                        </div>
-                      </div>
+                  {(activeTab === Constants.Global && globalCount > 0) ||
+                  (activeTab === Constants.Secret && secretCount > 0) ? (
+                    <div className="w-100">
                       <ConstantTable
                         constants={currentTableData}
                         onEditBtnClicked={onEditBtnClicked}

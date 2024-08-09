@@ -32,10 +32,10 @@ const ConstantTable = ({
   };
 
   return (
-    <div className="container-xl">
+    <div>
       <div className="card constant-table-card" style={{ border: 'none' }}>
         <div
-          className="fixedHeader table-responsive constant-table-wrapper px-2"
+          className="fixedHeader table-responsive px-2"
           ref={tableRef}
           style={{ maxHeight: tableRef.current && calculateOffset() }}
         >
@@ -44,7 +44,24 @@ const ConstantTable = ({
               <tr>
                 <th data-cy="workspace-variable-table-name-header">Name</th>
                 <th data-cy="workspace-variable-table-value-header">Value</th>
-                {canUpdateDeleteConstant && <th className="w-1"></th>}
+                {canUpdateDeleteConstant && (
+                  <th className="w-1" style={{ paddingRight: '16px' }}>
+                    {' '}
+                    <small
+                      className="text-green d-flex align-items-center justify-content-end"
+                      data-cy="encrypted-label"
+                    >
+                      <img
+                        className="encrypted-icon me-1"
+                        src="assets/images/icons/padlock.svg"
+                        alt="Encrypted"
+                        width="12"
+                        height="12"
+                      />
+                      Encrypted
+                    </small>
+                  </th>
+                )}
               </tr>
             </thead>
             {isLoading ? (

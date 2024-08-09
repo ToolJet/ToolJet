@@ -4,12 +4,14 @@ import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 import _, { isEmpty } from 'lodash';
-import { handleCircularStructureToJSON, hasCircularDependency } from '@/_helpers/utils';
+import { handleCircularStructureToJSON, hasCircularDependency, verifyConstant } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
 import { JsonViewer } from '@textea/json-viewer';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
 const sanitizeLargeDataset = (data, callback) => {
@@ -111,6 +113,19 @@ export const PreviewBox = ({
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
+  let isGlobalConstant = currentValue && currentValue.includes('{{constants.');
+  let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
+  let invalidConstants = null;
+  let undefinedError = null;
+  if (isGlobalConstant || isSecretConstant) {
+    const secrets = useDataQueriesStore.getState().secrets;
+    const globals = useCurrentStateStore.getState().constants;
+
+    invalidConstants = verifyConstant(currentValue, globals, secrets);
+  }
+  if (invalidConstants?.length) {
+    undefinedError = { type: 'Invalid constants' };
+  }
 
   const ifCoersionErrorHasCircularDependency = (value) => {
     if (hasCircularDependency(value)) {
@@ -157,7 +172,10 @@ export const PreviewBox = ({
       const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${_error}`;
       setError({ message: err, value: resolvedValue, type: 'Invalid' });
     } else {
-      const jsErrorType = _error?.includes('ReferenceError')
+      const isSecretError = _error?.includes('ReferenceError: secrets is not defined');
+      const jsErrorType = isSecretError
+        ? 'Error'
+        : _error?.includes('ReferenceError')
         ? 'ReferenceError'
         : _error?.includes('TypeError')
         ? 'TypeError'
@@ -168,9 +186,13 @@ export const PreviewBox = ({
       const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
       setError({
-        message: _error,
-        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue, reservedKeywordReplacer) : resolvedValue,
-        type: jsErrorType,
+        message: isSecretError ? 'secrets cannot be used in apps' : _error,
+        value: isSecretError
+          ? 'Undefined'
+          : jsErrorType === 'Invalid'
+          ? JSON.stringify(errValue, reservedKeywordReplacer)
+          : resolvedValue,
+        type: isSecretError ? 'Error' : jsErrorType,
       });
       setCoersionData(null);
     }
@@ -180,13 +202,14 @@ export const PreviewBox = ({
   return (
     <>
       <PreviewBox.RenderResolvedValue
-        error={error}
+        error={error || undefinedError}
         currentValue={currentValue}
         previewType={previewType}
         resolvedValue={content}
         coersionData={coersionData}
         withValidation={!isEmpty(validationSchema)}
         isWorkspaceVariable={isWorkspaceVariable}
+        isSecretConstant={isSecretConstant || false}
         isLargeDataset={largeDataset}
       />
       <CodeHinter.PopupIcon
@@ -205,6 +228,7 @@ const RenderResolvedValue = ({
   coersionData,
   withValidation,
   isWorkspaceVariable,
+  isSecretConstant = false,
   isLargeDataset,
 }) => {
   const computeCoersionPreview = (resolvedValue, coersionData) => {
@@ -229,7 +253,11 @@ const RenderResolvedValue = ({
       }`
     : previewType;
 
-  const previewContent = !withValidation ? resolvedValue : computeCoersionPreview(resolvedValue, coersionData);
+  const previewContent = isSecretConstant
+    ? 'Values of secret constants are hidden'
+    : !withValidation
+    ? resolvedValue
+    : computeCoersionPreview(resolvedValue, coersionData);
 
   const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 

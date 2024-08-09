@@ -305,21 +305,23 @@ export class DataSourcesService {
     const parsedOptions = JSON.parse(JSON.stringify(options));
 
     // need to match if currentOption is a contant, {{constants.psql_db}
-    const constantMatcher = /{{constants\..+?}}/g;
+    const constantMatcher = /{{constants|secrets\..+?}}/g;
 
     for (const key of Object.keys(parsedOptions)) {
-      const currentOption = parsedOptions[key]?.['value'];
-      const variablesMatcher = /(%%.+?%%)/g;
-      const variableMatched = variablesMatcher.exec(currentOption);
+      let currentOption = parsedOptions[key]?.['value'];
 
-      if (variableMatched) {
-        const resolved = await this.resolveVariable(currentOption, organization_id);
-        parsedOptions[key]['value'] = resolved;
+      if (Array.isArray(currentOption)) {
+        // Resolve each element in the array
+        currentOption = await Promise.all(
+          currentOption.map((element) => this.resolveKeyValuePair(element, organization_id, environment_id))
+        );
+      } else {
+        // Resolve single value
+        currentOption = await this.resolveValue(currentOption, organization_id, environment_id);
       }
-      if (constantMatcher.test(currentOption)) {
-        const resolved = await this.resolveConstants(currentOption, organization_id, environment_id);
-        parsedOptions[key]['value'] = resolved;
-      }
+
+      // Update the parsedOptions with the resolved value(s)
+      parsedOptions[key]['value'] = currentOption;
     }
 
     try {
@@ -527,9 +529,12 @@ export class DataSourcesService {
   }
 
   async resolveConstants(str: string, organization_id: string, environmentId: string) {
+    if (typeof str !== 'string') {
+      return str;
+    }
     const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
     let result = tempStr;
-    if (new RegExp('^constants.').test(tempStr)) {
+    if (new RegExp('^constants.').test(tempStr) || new RegExp('^secrets.').test(tempStr)) {
       const splitArray = tempStr.split('.');
       const constantName = splitArray[splitArray.length - 1];
 
@@ -583,5 +588,32 @@ export class DataSourcesService {
       }
     }
     return result;
+  }
+
+  async resolveKeyValuePair(arr, organization_id, environment_id) {
+    const resolvedArray = await Promise.all(
+      arr.map((item) => this.resolveValue(item, organization_id, environment_id))
+    );
+
+    return resolvedArray;
+  }
+
+  async resolveValue(value, organization_id, environment_id) {
+    const variablesMatcher = /(%%.+?%%)/g;
+    const constantMatcher = /{{constants|secrets\..+?}}/g;
+
+    if (typeof value === 'string') {
+      const variableMatched = variablesMatcher.exec(value);
+
+      if (variableMatched) {
+        return await this.resolveVariable(value, organization_id);
+      }
+      if (constantMatcher.test(value)) {
+        return await this.resolveConstants(value, organization_id, environment_id);
+      }
+    }
+
+    // Return the value as is if no match is found or if it's not a string
+    return value;
   }
 }

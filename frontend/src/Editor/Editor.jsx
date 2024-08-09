@@ -47,7 +47,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, isValidUUID } from '@/_helpers/utils';
+import { getWorkspaceId, isValidUUID, Constants } from '@/_helpers/utils';
 import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
@@ -400,19 +400,25 @@ const EditorComponent = (props) => {
     });
   };
 
-  const fetchOrgEnvironmentConstants = () => {
-    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-    orgEnvironmentConstantService.getAll().then(({ constants }) => {
-      const orgConstants = {};
-      constants.map((constant) => {
+  const fetchOrgEnvironmentConstants = async () => {
+    try {
+      //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+      const { constants } = await orgEnvironmentConstantService.getAll(false, Constants.Global);
+      const globalConstants = {};
+
+      constants.forEach((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = constantValue;
+        globalConstants[constant.name] = constantValue;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
-        constants: orgConstants,
+        constants: globalConstants,
       });
-    });
+    } catch (error) {
+      toast.error('Failed to fetch organization environment constants', {
+        position: 'top-center',
+      });
+    }
   };
 
   const initComponentVersioning = () => {

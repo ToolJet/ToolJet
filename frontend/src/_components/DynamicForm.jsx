@@ -18,6 +18,7 @@ import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatab
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
+import { Constants } from '@/_helpers/utils';
 
 const DynamicForm = ({
   schema,
@@ -53,9 +54,16 @@ const DynamicForm = ({
   React.useEffect(() => {
     if (isGDS) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
-        const constants = {};
-        data.constants.map((constant) => {
-          constants[constant.name] = constant.value;
+        const constants = {
+          globals: {},
+          secrets: {},
+        };
+        data.constants.forEach((constant) => {
+          if (constant.type === Constants.Secret) {
+            constants.secrets[constant.name] = constant.value;
+          } else {
+            constants.globals[constant.name] = constant.value;
+          }
         });
 
         setCurrentOrgEnvironmentConstants(constants);
@@ -202,7 +210,8 @@ const DynamicForm = ({
         return {
           type,
           placeholder: useEncrypted ? '**************' : description,
-          className: `form-control${handleToggle(controller)}`,
+          className: `form-control${handleToggle(controller)} mb-0`,
+          style: { marginBottom: '0px !important' },
           value: options?.[key]?.value || '',
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
