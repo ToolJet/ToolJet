@@ -88,11 +88,7 @@ function setSecurityHeaders(app, configService) {
         'frame-src': ['*'],
       },
     },
-    frameguard:
-      configService.get('DISABLE_APP_EMBED') !== 'true' ||
-      configService.get('ENABLE_PRIVATE_APP_EMBED') === 'true'
-        ? false
-        : { action: 'deny' },
+    frameguard: configService.get('DISABLE_APP_EMBED') !== 'true' ? false : { action: 'deny' },
     hidePoweredBy: true,
     referrerPolicy: {
       policy: 'no-referrer',
