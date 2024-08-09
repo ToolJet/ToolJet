@@ -169,6 +169,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
         ...Object.values(customObjects),
         null
       );
+      result = typeof result === 'function' ? undefined : result;
     } catch (err) {
       error = err.toString();
     }

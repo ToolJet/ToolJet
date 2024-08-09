@@ -433,7 +433,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
           displaySize={false}
           maxDisplayLength={50}
           // defaultInspectDepth={isLargeDataset ? 1 : 2}
-          displayObjectSize={false}
           enableClipboard={false}
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}
