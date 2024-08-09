@@ -374,7 +374,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         </div>
       </div>
       <div className="constant-page-wrapper">
-        <div className="container-xl">
+        <div className="container-xl" style={{ width: '880px' }}>
           <div>
             <div className="workspace-constant-header">
               <div className="tabs-and-search">
@@ -414,7 +414,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         </div>
 
         <div className="workspace-variable-container-wrap mt-2">
-          <div className="container-xl">
+          <div className="container-xl" style={{ width: '880px', padding: '0px' }}>
             <div className="workspace-constant-table-card">
               <div className="mt-3">
                 <Alert svg="tj-info">
@@ -464,7 +464,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                 </Alert>
               </div>
               <div className="manage-sso-container h-100">
-                <div className="d-flex manage-sso-wrapper-card h-100">
+                <div className="d-flex manage-constant-wrapper-card">
                   <ManageOrgConstantsComponent.EnvironmentsTabs
                     allEnvironments={environments}
                     currentEnvironment={activeTabEnvironment}
