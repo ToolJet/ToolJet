@@ -17,7 +17,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 ## Deploying ToolJet application
 1. Create a new Google Cloud Run Service:
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
   <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup.png" alt="Google Cloud Run New Setup" />
 </div>
 
@@ -27,7 +27,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
     <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
   </div>
 
-4. Under containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
+3. Under containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
@@ -46,7 +46,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
   </div>
 
-5. Under environmental variable please add the below ToolJet application variables. You can also refer env variable [**here**](/docs/setup/env-vars). 
+4. Under environmental variable please add the below ToolJet application variables. You can also refer env variable [**here**](/docs/setup/env-vars). 
 
   Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
@@ -59,7 +59,7 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
 :::
 
 
-6. Please go to the connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up.
+5. Please go to the connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" />
