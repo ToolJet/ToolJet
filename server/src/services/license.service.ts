@@ -13,10 +13,14 @@ import { OrganizationsLicense } from 'src/entities/organization_license.entity';
 import { OrganizationLicenseService } from './organization_license.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
+const hubspot = require('@hubspot/api-client');
 
 @Injectable()
 export class LicenseService {
-  constructor(private configService: ConfigService, private organizationLicenseService: OrganizationLicenseService) {}
+  private hubspotClient: any;
+  constructor(private configService: ConfigService, private organizationLicenseService: OrganizationLicenseService) {
+    this.hubspotClient = new hubspot.Client({ accessToken: process.env.HUBSPOT_CRM_ACCESS_TOKEN });
+  }
 
   async getLicenseTerms(type?: LICENSE_FIELD | LICENSE_FIELD[], organizationId?: string): Promise<any> {
     let organizationLicense;
@@ -332,79 +336,187 @@ export class LicenseService {
   }
 
   async createCRMUser(user: CRMData): Promise<boolean> {
-    if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') return true;
+    this.#createHubSpotCRMUser(user);
 
-    try {
-      await got(`${freshDeskBaseUrl}contacts`, {
-        method: 'post',
-        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-        json: {
-          contact: {
-            email: user.email,
-            first_name: user.firstName,
-            last_name: user.lastName,
-            custom_field: {
-              job_title: user.role,
-              ...(user.isTrialOpted && { cf_has_started_on_prem_trial: 1 }),
+    if (process.env.DISABLE_FRESH_DESK_CRM !== 'true') {
+      if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') return true;
+
+      try {
+        await got(`${freshDeskBaseUrl}contacts`, {
+          method: 'post',
+          headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+          json: {
+            contact: {
+              email: user.email,
+              first_name: user.firstName,
+              last_name: user.lastName,
+              custom_field: {
+                job_title: user.role,
+                ...(user.isTrialOpted && { cf_has_started_on_prem_trial: 1 }),
+              },
             },
           },
-        },
-      });
-    } catch (error) {
-      const errors = JSON.parse(error.response?.body || '{}').errors;
-      const freshDeskContactAlreadyExists = (email, errorMessage) => errorMessage?.includes(`${email} already exists`);
+        });
+      } catch (error) {
+        const errors = JSON.parse(error.response?.body || '{}').errors;
+        const freshDeskContactAlreadyExists = (email, errorMessage) =>
+          errorMessage?.includes(`${email} already exists`);
 
-      if (errors?.code === 400 && freshDeskContactAlreadyExists(user.email, errors?.message?.[0])) {
-        console.log(`Contact ${user.email} already exists. Updating custom fields.`);
-        this.updateCRM(user);
-      } else {
-        console.error('error while connection to freshDeskBaseUrl : createCRMUser', error);
+        if (errors?.code === 400 && freshDeskContactAlreadyExists(user.email, errors?.message?.[0])) {
+          console.log(`Contact ${user.email} already exists. Updating custom fields.`);
+          this.updateCRM(user, true);
+        } else {
+          console.error('error while connection to freshDeskBaseUrl : createCRMUser', error);
+        }
       }
     }
-
     return true;
   }
 
-  async updateCRM(user: CRMData): Promise<boolean> {
-    if (process.env.NODE_ENV === 'test') return true;
-
-    try {
-      const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
-        method: 'get',
-        headers: {
-          Authorization: `Token token=${process.env.FWAPIKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const contacts = JSON.parse(response.body)['contacts']['contacts'];
-
-      if (!contacts?.length) {
-        return;
-      }
-
-      await got(`${freshDeskBaseUrl}contacts/${contacts[0].id}`, {
-        method: 'put',
-        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-        json: {
-          contact: {
-            email: user.email,
-            first_name: user.firstName,
-            last_name: user.lastName,
-            custom_field: {
-              job_title: user.role,
-              ...(user.isTrialOpted && { cf_has_started_on_prem_trial: 1 }),
-              ...(user.isCloudTrialOpted && { cf_has_started_cloud_trial: 1 }),
-              ...(user.isCloudTrialOpted && { cf_cloud_trial_start_on: new Date().toISOString() }),
-              ...(user.paymentTry && { cf_tried_self_pay_on: new Date().toISOString() }),
-            },
-          },
-        },
-      });
-    } catch (error) {
-      console.error('error while connection to freshDeskBaseUrl : updateCRM', error);
+  async updateCRM(user: CRMData, isSkipHubSpot?: boolean): Promise<boolean> {
+    if (!isSkipHubSpot) {
+      this.#createHubSpotCRMUser(user);
     }
 
+    if (process.env.DISABLE_FRESH_DESK_CRM !== 'true') {
+      if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') return true;
+
+      try {
+        const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
+          method: 'get',
+          headers: {
+            Authorization: `Token token=${process.env.FWAPIKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const contacts = JSON.parse(response.body)['contacts']['contacts'];
+
+        if (!contacts?.length) {
+          return;
+        }
+
+        await got(`${freshDeskBaseUrl}contacts/${contacts[0].id}`, {
+          method: 'put',
+          headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+          json: {
+            contact: {
+              email: user.email,
+              first_name: user.firstName,
+              last_name: user.lastName,
+              custom_field: {
+                job_title: user.role,
+                ...(user.isTrialOpted && { cf_has_started_on_prem_trial: 1 }),
+                ...(user.isCloudTrialOpted && { cf_has_started_cloud_trial: 1 }),
+                ...(user.isCloudTrialOpted && { cf_cloud_trial_start_on: new Date().toISOString() }),
+                ...(user.paymentTry && { cf_tried_self_pay_on: new Date().toISOString() }),
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.error('error while connection to freshDeskBaseUrl : updateCRM', error);
+      }
+    }
     return true;
+  }
+
+  async #createHubSpotCRMUser(user: CRMData): Promise<boolean> {
+    try {
+      if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') return true;
+
+      const objectSearchRequest = {
+        filterGroups: [
+          {
+            filters: [
+              {
+                propertyName: 'email',
+                operator: 'EQ',
+                value: user.email,
+              },
+            ],
+          },
+        ],
+        limit: 1,
+      };
+
+      this.#searchAndUpsertContact(objectSearchRequest, user);
+    } catch (error) {
+      console.error('Error while updating user details on CRM :createHubSpotCRMUser', error);
+    }
+  }
+
+  #searchAndUpsertContact(objectSearchRequest, user: CRMData) {
+    this.hubspotClient.crm.contacts.searchApi
+      .doSearch(objectSearchRequest)
+      .then((data) => {
+        // if contact exists - update self_hosted field of contact
+        if (data?.total === 1) {
+          const timestamp = new Date().toISOString().split('T')[0];
+          const propertiesToUpdate = {
+            ...(user.firstName ? { firstname: user.firstName } : {}),
+            ...(user.lastName ? { lastname: user.lastName } : {}),
+            ...(user.isTrialOpted
+              ? { self_hosted: 1, started_self_hosted_trial: 1, started_self_hosted_trial_on: timestamp }
+              : {}),
+            ...(user.isCloudTrialOpted
+              ? { signed_up_on_cloud: 1, started_cloud_trial: 1, started_cloud_trial_on: timestamp }
+              : {}),
+            ...(user.isInvited ? { was_invited_to_cloud: 1 } : {}),
+          };
+
+          const contactId = data?.results[0].id;
+          this.#updateContact(contactId, propertiesToUpdate);
+        } else {
+          // else - create new contact with 1 as the value for self_hosted
+          this.#createContact(user);
+        }
+      })
+      .catch((error) => {
+        console.error(error, 'Error while updating user details on CRM');
+      });
+  }
+
+  async #updateContact(contactId, propertiesToUpdate) {
+    try {
+      // Update the contact with the specified properties
+      const updateResponse = await this.hubspotClient.crm.contacts.basicApi.update(contactId, {
+        properties: propertiesToUpdate,
+      });
+      console.log('Contact updated successfully on CRM:', updateResponse?.body);
+    } catch (error) {
+      console.error('Error updating contact on CRM:', error);
+    }
+  }
+
+  async #createContact(user: CRMData) {
+    try {
+      // Define the contact properties
+      const timestamp = new Date().toISOString().split('T')[0];
+      const properties = {
+        firstname: user.firstName,
+        lastname: user.lastName,
+        email: user.email,
+        ...(!(user.isTrialOpted || user.isCloudTrialOpted)
+          ? { signed_up_on_cloud: 1, signed_up_on_cloud_on: timestamp }
+          : {}),
+        ...(user.isTrialOpted
+          ? { self_hosted: 1, started_self_hosted_trial: 1, started_self_hosted_trial_on: timestamp }
+          : {}),
+        ...(user.isCloudTrialOpted
+          ? { signed_up_on_cloud: 1, started_cloud_trial: 1, started_cloud_trial_on: timestamp }
+          : {}),
+        ...(user.isInvited ? { was_invited_to_cloud: 1 } : {}),
+      };
+
+      // Create the contact
+      const createResponse = await this.hubspotClient.crm.contacts.basicApi.create({
+        properties: properties,
+      });
+
+      console.log('Contact created successfully on CRM:', createResponse?.body);
+    } catch (error) {
+      console.error('Error creating contact on CRM:', error);
+    }
   }
 }

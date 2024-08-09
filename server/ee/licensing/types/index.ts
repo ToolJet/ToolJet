@@ -60,4 +60,5 @@ export interface CRMData {
   isTrialOpted?: boolean;
   isCloudTrialOpted?: boolean;
   paymentTry?: boolean;
+  isInvited?: boolean;
 }

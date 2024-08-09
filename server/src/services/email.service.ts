@@ -53,7 +53,7 @@ export class EmailService {
     this.defaultWhiteLabelState = this.checkDefaultWhiteLabelState();
   }
 
-  private async sendEmail(to: string, subject: string, templateData: any) {
+  private async sendEmail(to: string | string[], subject: string, templateData: any) {
     try {
       if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
       const message = {
@@ -315,25 +315,37 @@ export class EmailService {
   }
 
   sendSubscriptionStartInfoToToolJet(paymentObj) {
-    return this.sendEmail(this.FROM_EMAIL, 'Subscription started', {
-      bodyContent: `<div><div>${JSON.stringify(paymentObj)}</div><a href='https://dashboard.stripe.com/subscriptions/${
-        paymentObj?.subscription
-      }'>Subscription Link</a></div>`,
-      footerText: '',
-      whiteLabelText: this.WHITE_LABEL_TEXT,
-      whiteLabelLogo: this.WHITE_LABEL_LOGO,
-    });
+    return this.sendEmail(
+      [this.FROM_EMAIL, 'adish@tooljet.com', 'midhun.gs@tooljet.com'],
+      '[Important] Selfhost Subscription started',
+      {
+        bodyContent: `<div><div>${JSON.stringify(
+          paymentObj
+        )}</div><a href='https://dashboard.stripe.com/subscriptions/${
+          paymentObj?.subscription
+        }'>Subscription Link</a></div>`,
+        footerText: '',
+        whiteLabelText: this.WHITE_LABEL_TEXT,
+        whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      }
+    );
   }
 
   sendPaymentFailedInfoToToolJet(paymentObj) {
-    return this.sendEmail(this.FROM_EMAIL, 'Subscription payment failed', {
-      bodyContent: `<div><div>${JSON.stringify(paymentObj)}</div><a href='https://dashboard.stripe.com/subscriptions/${
-        paymentObj?.subscription
-      }'>Subscription Link</a></div>`,
-      footerText: '',
-      whiteLabelText: this.WHITE_LABEL_TEXT,
-      whiteLabelLogo: this.WHITE_LABEL_LOGO,
-    });
+    return this.sendEmail(
+      [this.FROM_EMAIL, 'adish@tooljet.com', 'midhun.gs@tooljet.com'],
+      'Selfhost Subscription payment failed',
+      {
+        bodyContent: `<div><div>${JSON.stringify(
+          paymentObj
+        )}</div><a href='https://dashboard.stripe.com/subscriptions/${
+          paymentObj?.subscription
+        }'>Subscription Link</a></div>`,
+        footerText: '',
+        whiteLabelText: this.WHITE_LABEL_TEXT,
+        whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      }
+    );
   }
 
   async retrieveWhiteLabelSettings(organizationId?: string) {
