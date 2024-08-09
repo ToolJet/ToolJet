@@ -17,7 +17,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 ## Deploying ToolJet application
 1. Create a new Google Cloud Run Service:
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
   <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup.png" alt="Google Cloud Run New Setup" />
 </div>
 
