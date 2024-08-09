@@ -129,9 +129,11 @@ const resolveWorkspaceVariables = (query) => {
 function resolveCode(code, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
-
   // dont resolve if code starts with "queries." and ends with "run()"
   if (code.startsWith('queries.') && code.endsWith('run()')) {
+    error = `Cannot resolve function call ${code}`;
+    // dont resolve if code is Table's CSA selectRow() function since its breaking the app
+  } else if (code.startsWith('components.') && code.endsWith('selectRow()')) {
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
@@ -172,7 +174,6 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
       error = err.toString();
     }
   }
-
   if (withError) return [result, error];
   return result;
 }
