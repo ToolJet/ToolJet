@@ -110,16 +110,6 @@ const imports = [
   StaticFileServerModule
 ];
 
-if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
-  imports.unshift(
-    ServeStaticModule.forRoot({
-      // Have to remove trailing slash of SUB_PATH.
-      serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
-      rootPath: join(__dirname, '../../../', 'frontend/build'),
-    })
-  );
-}
-
 if (process.env.APM_VENDOR == 'sentry') {
   imports.unshift(
     SentryModule.forRoot({
