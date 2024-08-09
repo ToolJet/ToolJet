@@ -347,8 +347,9 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-                }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
           </div>
         )}
@@ -356,8 +357,9 @@ const DynamicEditorBridge = (props) => {
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div
-                className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
-                  }`}
+                className={`col-auto pt-0 fx-common fx-button-container ${
+                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
+                }`}
               >
                 <FxButton
                   active={codeShow}
