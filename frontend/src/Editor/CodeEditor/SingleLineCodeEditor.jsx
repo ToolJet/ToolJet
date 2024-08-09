@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState, useMemo } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +34,14 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const customVariables = variablesExposedForPreview?.[componentId] ?? {};
+
+  // This is to remove the component's CSA as a suggestion from the appHints
+  const _suggestions = useMemo(() => {
+    return {
+      ...suggestions,
+      appHints: suggestions.appHints.filter((suggestion) => suggestion.type !== 'Function'),
+    };
+  }, [suggestions]);
 
   useEffect(() => {
     if (typeof initialValue !== 'string') return;
@@ -98,7 +106,7 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
             <SingleLineCodeEditor.Editor
               currentValue={currentValue}
               setCurrentValue={setCurrentValue}
-              hints={suggestions}
+              hints={_suggestions}
               isFocused={isFocused}
               setFocus={setIsFocused}
               validationType={validation?.schema?.type}
@@ -339,9 +347,8 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
-                darkMode && 'color-whitish-darkmode'
-              }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
+                }`}
             />
           </div>
         )}
@@ -349,9 +356,8 @@ const DynamicEditorBridge = (props) => {
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {paramLabel !== 'Type' && isFxNotRequired === undefined && (
               <div
-                className={`col-auto pt-0 fx-common fx-button-container ${
-                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
-                }`}
+                className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
+                  }`}
               >
                 <FxButton
                   active={codeShow}
