@@ -11,6 +11,7 @@ import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
+import * as helmet from 'helmet';
 
 const fs = require('fs');
 
@@ -39,6 +40,72 @@ function replaceSubpathPlaceHoldersInStaticAssets() {
   }
 }
 
+function setSecurityHeaders(app, configService) {
+  const tooljetHost = configService.get('TOOLJET_HOST');
+  const host = new URL(tooljetHost);
+  const domain = host.hostname;
+
+  app.enableCors({
+    origin: configService.get('ENABLE_CORS') === 'true' || tooljetHost,
+    credentials: true,
+  });
+
+  app.use(helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        upgradeInsecureRequests: null,
+        'img-src': ['*', 'data:', 'blob:'],
+        'script-src': [
+          'maps.googleapis.com',
+          'storage.googleapis.com',
+          'apis.google.com',
+          'accounts.google.com',
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          'blob:',
+          'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
+          'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
+          'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
+          'cdn.skypack.dev',
+          'cdn.jsdelivr.net',
+          'https://esm.sh',
+          'www.googletagmanager.com',
+        ],
+        'default-src': [
+          'maps.googleapis.com',
+          'storage.googleapis.com',
+          'apis.google.com',
+          'accounts.google.com',
+          '*.sentry.io',
+          "'self'",
+          'blob:',
+          'www.googletagmanager.com',
+        ],
+        'connect-src': ['ws://' + domain, "'self'", '*'],
+        'frame-ancestors': ['*'],
+        'frame-src': ['*'],
+      },
+    },
+    frameguard:
+      configService.get('DISABLE_APP_EMBED') !== 'true' ||
+      configService.get('ENABLE_PRIVATE_APP_EMBED') === 'true'
+        ? false
+        : { action: 'deny' },
+    hidePoweredBy: true,
+    referrerPolicy: {
+      policy: 'no-referrer',
+    },
+  }));
+
+  app.use((req, res, next) => {
+    res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    return next();
+  });
+}
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
@@ -64,19 +131,16 @@ async function bootstrap() {
   app.setGlobalPrefix(UrlPrefix + 'api', {
     exclude: pathsToExclude,
   });
-  app.enableCors({
-    origin: process.env.ENABLE_CORS === 'true' || process.env.TOOLJET_HOST,
-    credentials: true,
-  });
   app.use(compression());
   app.use(cookieParser());
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
-  app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: VERSION_NEUTRAL,
   });
+
+  setSecurityHeaders(app, configService);
 
   const listen_addr = process.env.LISTEN_ADDR || '::';
   const port = parseInt(process.env.PORT) || 3000;

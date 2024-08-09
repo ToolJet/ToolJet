@@ -45,10 +45,8 @@ import { ImportExportResourcesModule } from './modules/import_export_resources/i
 import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
 import { PermissionsModule } from '@module/permissions/permissions.module';
 import { GetConnection } from './helpers/getconnection';
-import { APP_INTERCEPTOR } from '@nestjs/core/constants';
-import { HelmetInterceptor } from './interceptors/helmet.interceptor';
-import { CustomHeadersInterceptor } from './interceptors/custom-headers.interceptors';
 import { InstanceSettingsModule } from '@instance-settings/module';
+import { StaticFileServerModule } from '@module/static_file_server/static_file_server.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -109,6 +107,7 @@ const imports = [
   CopilotModule,
   OrganizationConstantModule,
   TooljetDbModule,
+  StaticFileServerModule
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
@@ -146,14 +145,6 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
     EmailService,
     SeedsService,
     GetConnection,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: HelmetInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CustomHeadersInterceptor,
-    },
   ],
 })
 export class AppModule implements OnModuleInit {
