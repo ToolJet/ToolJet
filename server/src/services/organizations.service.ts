@@ -706,125 +706,130 @@ export class OrganizationsService {
     const groupPermissions = (await this.groupPermissionService.getAllGroup(currentUser.organizationId))
       .groupPermissions;
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.name);
-    csv
-      .parseString(fileStream.toString(), {
-        headers: ['first_name', 'last_name', 'email', 'user_role', 'groups'],
-        renameHeaders: true,
-        ignoreEmpty: true,
-      })
-      .transform((row: UserCsvRow, next) => {
-        const groupNames = this.createGroupsList(row?.groups);
-        invalidGroups = [...invalidGroups, ...groupNames.filter((group) => !existingGroups.includes(group))];
-        const groups = groupPermissions.filter((group) => groupNames.includes(group.name)).map((group) => group.id);
-        return next(null, {
-          ...row,
-          groups: groups,
-          user_role: this.convertUserRolesCasing(row?.user_role),
+    try {
+      csv
+        .parseString(fileStream.toString(), {
+          headers: ['first_name', 'last_name', 'email', 'user_role', 'groups'],
+          renameHeaders: true,
+          ignoreEmpty: true,
+        })
+        .transform((row: UserCsvRow, next) => {
+          const groupNames = this.createGroupsList(row?.groups);
+          invalidGroups = [...invalidGroups, ...groupNames.filter((group) => !existingGroups.includes(group))];
+          const groups = groupPermissions.filter((group) => groupNames.includes(group.name)).map((group) => group.id);
+          return next(null, {
+            ...row,
+            groups: groups,
+            user_role: this.convertUserRolesCasing(row?.user_role),
+          });
+        })
+        .validate(async (data: UserCsvRow, next) => {
+          await dbTransactionWrap(async (manager: EntityManager) => {
+            //Check for existing users
+            let isInvalidRole = false;
+
+            const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
+
+            if (user?.status === USER_STATUS.ARCHIVED) {
+              archivedUsers.push(data?.email);
+            } else if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+              existingUsers.push(data?.email);
+            } else {
+              const user = {
+                first_name: data.first_name,
+                last_name: data.last_name,
+                email: data.email,
+                role: data.user_role,
+                groups: data?.groups,
+              };
+              users.push(user);
+            }
+
+            //Check for invalid groups
+
+            if (!Object.values(USER_ROLE).includes(data?.user_role as USER_ROLE)) {
+              invalidRoles.push(data?.user_role);
+              isInvalidRole = true;
+            }
+
+            data.first_name = data.first_name?.trim();
+            data.last_name = data.last_name?.trim();
+
+            const isValidName = data.first_name !== '' || data.last_name !== '';
+            return next(null, isValidName && emailPattern.test(data.email) && !isInvalidRole);
+          }, manager);
+        })
+        .on('data', function () {})
+        .on('data-invalid', (row, rowNumber) => {
+          const invalidField = Object.keys(row).filter((key) => {
+            if (Array.isArray(row[key])) {
+              return row[key].length === 0;
+            }
+            return !row[key] || row[key] === '';
+          });
+          invalidRows.push(rowNumber);
+          invalidFields.add(invalidField);
+        })
+        .on('end', async (rowCount: number) => {
+          try {
+            if (rowCount > MAX_ROW_COUNT) {
+              throw new BadRequestException('Row count cannot be greater than 500');
+            }
+
+            if (invalidRows.length) {
+              const invalidFieldsArray = invalidFields.entries().next().value[1];
+              const errorMsg = `Missing ${[invalidFieldsArray.join(',')]} information in ${
+                invalidRows.length
+              } row(s);. No users were uploaded, please update and try again.`;
+              throw new BadRequestException(errorMsg);
+            }
+
+            if (invalidGroups.length) {
+              throw new BadRequestException(
+                `${invalidGroups.length} group${isPlural(invalidGroups)} doesn't exist. No users were uploaded`
+              );
+            }
+
+            if (invalidRoles.length > 0) {
+              throw new BadRequestException('Invalid role present for the users');
+            }
+
+            if (archivedUsers.length) {
+              throw new BadRequestException(
+                `User${isPlural(archivedUsers)} with email ${archivedUsers.join(
+                  ', '
+                )} is archived. No users were uploaded`
+              );
+            }
+
+            if (existingUsers.length) {
+              throw new BadRequestException(
+                `${existingUsers.length} users with same email already exist. No users were uploaded `
+              );
+            }
+
+            if (users.length === 0) {
+              throw new BadRequestException('No users were uploaded');
+            }
+
+            if (users.length > 250) {
+              throw new BadRequestException(`You can only invite 250 users at a time`);
+            }
+
+            await this.inviteUserswrapper(users, currentUser);
+            res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
+          } catch (error) {
+            const { status, response } = error;
+            res.status(status).send(response);
+          }
+        })
+        .on('error', (error) => {
+          throw error.message;
         });
-      })
-      .validate(async (data: UserCsvRow, next) => {
-        await dbTransactionWrap(async (manager: EntityManager) => {
-          //Check for existing users
-          let isInvalidRole = false;
-
-          const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
-
-          if (user?.status === USER_STATUS.ARCHIVED) {
-            archivedUsers.push(data?.email);
-          } else if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
-            existingUsers.push(data?.email);
-          } else {
-            const user = {
-              first_name: data.first_name,
-              last_name: data.last_name,
-              email: data.email,
-              role: data.user_role,
-              groups: data?.groups,
-            };
-            users.push(user);
-          }
-
-          //Check for invalid groups
-
-          if (!Object.values(USER_ROLE).includes(data?.user_role as USER_ROLE)) {
-            invalidRoles.push(data?.user_role);
-            isInvalidRole = true;
-          }
-
-          data.first_name = data.first_name?.trim();
-          data.last_name = data.last_name?.trim();
-
-          const isValidName = data.first_name !== '' || data.last_name !== '';
-          return next(null, isValidName && emailPattern.test(data.email) && !isInvalidRole);
-        }, manager);
-      })
-      .on('data', function () {})
-      .on('data-invalid', (row, rowNumber) => {
-        const invalidField = Object.keys(row).filter((key) => {
-          if (Array.isArray(row[key])) {
-            return row[key].length === 0;
-          }
-          return !row[key] || row[key] === '';
-        });
-        invalidRows.push(rowNumber);
-        invalidFields.add(invalidField);
-      })
-      .on('end', async (rowCount: number) => {
-        try {
-          if (rowCount > MAX_ROW_COUNT) {
-            throw new BadRequestException('Row count cannot be greater than 500');
-          }
-
-          if (invalidRows.length) {
-            const invalidFieldsArray = invalidFields.entries().next().value[1];
-            const errorMsg = `Missing ${[invalidFieldsArray.join(',')]} information in ${
-              invalidRows.length
-            } row(s);. No users were uploaded, please update and try again.`;
-            throw new BadRequestException(errorMsg);
-          }
-
-          if (invalidGroups.length) {
-            throw new BadRequestException(
-              `${invalidGroups.length} group${isPlural(invalidGroups)} doesn't exist. No users were uploaded`
-            );
-          }
-
-          if (invalidRoles.length > 0) {
-            throw new BadRequestException('Invalid role present for the users');
-          }
-
-          if (archivedUsers.length) {
-            throw new BadRequestException(
-              `User${isPlural(archivedUsers)} with email ${archivedUsers.join(
-                ', '
-              )} is archived. No users were uploaded`
-            );
-          }
-
-          if (existingUsers.length) {
-            throw new BadRequestException(
-              `${existingUsers.length} users with same email already exist. No users were uploaded `
-            );
-          }
-
-          if (users.length === 0) {
-            throw new BadRequestException('No users were uploaded');
-          }
-
-          if (users.length > 250) {
-            throw new BadRequestException(`You can only invite 250 users at a time`);
-          }
-
-          await this.inviteUserswrapper(users, currentUser);
-          res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
-        } catch (error) {
-          const { status, response } = error;
-          res.status(status).send(response);
-        }
-      })
-      .on('error', (error) => {
-        throw error.message;
-      });
+    } catch (error) {
+      console.error('Error happened while reading CSV file');
+      throw new BadRequestException('Issue with CSV file format');
+    }
   }
 
   async checkWorkspaceUniqueness(name: string, slug: string) {
