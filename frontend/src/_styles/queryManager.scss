@@ -102,6 +102,14 @@ $border-radius: 4px;
   border-width: 1px 0px 0px 0px;
   background-color: var(--base);
 
+  #query-panel-drag-handle{
+    background-color: var(--slate5);
+    height: 3px;
+    &:hover {
+      cursor: row-resize;
+    }
+  }
+
   .table-responsive {
     scrollbar-width: none;
   }
@@ -1694,4 +1702,7 @@ $border-radius: 4px;
 
 .copilot-codehinter-wrap {
   margin-left: 32px !important;
+}
+.query-panel-resize .moveable-control {
+  display: none !important;
 }

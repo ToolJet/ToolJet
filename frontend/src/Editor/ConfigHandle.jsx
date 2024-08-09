@@ -16,15 +16,13 @@ export const ConfigHandle = function ConfigHandle({
   isVersionReleased,
   showHandle,
 }) {
-  const shouldShowHandle = useEditorStore((state) => state.hoveredComponent === id) || showHandle;
-
   return (
     <div
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
-        visibility: shouldShowHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
+        visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
         left: '-1px',
       }}
     >
