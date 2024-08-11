@@ -33,16 +33,15 @@ export default class Gemini implements QueryService {
     if (!portkey) {
       throw new QueryError('Connection test failed', 'Could not connect to Portkey', {});
     }
-    const queryOptions: TextCompletionQueryOptions = {
+    const queryOptions: ChatCompletionQueryOptions = {
       operation: Operation.Completion,
       model: DEFAULT_COMPLETION_MODEL,
-      prompt: 'H',
+      messages: JSON.parse('[{"role": "user", "content": "Hello"}]'),
       max_tokens: 10,
     }
     let result = {};
-    result = await getCompletion(portkey, queryOptions);
+    result = await getChatCompletion(portkey, queryOptions);
     if (result['error']) {
-      console.log(result);
       return {
         status: 'failed',
         message: result['error'],
@@ -62,7 +61,6 @@ export default class Gemini implements QueryService {
       provider: PROVIDER_GOOGLE,
       Authorization: apiKey
     };
-    console.log(creds);
     return new PortKeyAi.Portkey(creds);
   }
 }

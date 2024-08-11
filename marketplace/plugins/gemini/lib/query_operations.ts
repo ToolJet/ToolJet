@@ -14,10 +14,8 @@ export async function getCompletion(
         max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 256,
         stop_sequences: typeof stop_sequences === 'string' ? stop_sequences.split(',') : [],
     }
-    console.log(queryOptions);
     try {
         const data = await portkey.completions.create(queryOptions);
-        console.log(data);
         return data;
     } catch (error) {
         return {
@@ -32,7 +30,6 @@ export async function getChatCompletion(
     options: ChatCompletionQueryOptions
 ): Promise<Object | { error: string; statusCode: number }> {
     const { model, messages, max_tokens, temperature, stop_sequences } = options;
-    console.log(messages);
     try {
         const data = await portkey.chat.completions.create({
             model: typeof model === 'string' ? model : DEFAULT_CHAT_MODEL,
