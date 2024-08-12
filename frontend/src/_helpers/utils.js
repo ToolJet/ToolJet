@@ -53,11 +53,13 @@ export function resolve(data, state) {
 function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
-
   if (code === '_' || code.includes('this._')) {
     error = `Cannot resolve circular reference ${code}`;
   } else if (code.startsWith('queries.') && code.endsWith('run()')) {
     //! dont resolve if code starts with "queries." and ends with "run()"
+    error = `Cannot resolve function call ${code}`;
+    // dont resolve if code is Table's CSA selectRow() function since its breaking the app
+  } else if (code.startsWith('components.') && code.endsWith('selectRow()')) {
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
@@ -103,6 +105,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   if (withError) return [result, error];
   return result;
 }
+
 export function resolveString(str, state, customObjects, reservedKeyword, withError, forPreviewBox) {
   let resolvedStr = str;
 
