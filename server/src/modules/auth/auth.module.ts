@@ -34,7 +34,7 @@ import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
-import { InstanceSettingsService } from '@instance-settings/service';
+import { InstanceSettingsModule } from '@instance-settings/module';
 
 @Module({
   imports: [
@@ -63,6 +63,7 @@ import { InstanceSettingsService } from '@instance-settings/service';
       inject: [ConfigService],
     }),
     TooljetDbModule,
+    InstanceSettingsModule,
   ],
   providers: [
     AuthService,
@@ -83,7 +84,6 @@ import { InstanceSettingsService } from '@instance-settings/service';
     PluginsHelper,
     SessionService,
     SessionScheduler,
-    InstanceSettingsService,
   ],
   controllers: [OauthController],
   exports: [AuthService, SessionService],
