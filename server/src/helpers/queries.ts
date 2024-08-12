@@ -1,4 +1,4 @@
-import { UserAppsPermissions } from '@module/permissions/interface/permissions-ability.interface';
+ timport { UserAppsPermissions } from '@module/permissions/interface/permissions-ability.interface';
 import { AppBase } from 'src/entities/app_base.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { User } from 'src/entities/user.entity';
@@ -92,6 +92,9 @@ export function viewableAppsQueryUsingPermissions(
   if (select) {
     viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));
   }
+
+  viewableAppsQb.orderBy('viewable_apps.createdAt', 'DESC');
+
   const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
   if (isAllEditable) return viewableAppsQb;
   if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
