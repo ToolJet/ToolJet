@@ -19,8 +19,12 @@
     }
 
     .list-group {
-        overflow-y: auto;
+        overflow-y: hidden;
         height: calc(100% - 40px);
+
+        &:hover {
+            overflow-y: auto;
+        }
     }
 
     .datasources-list {
@@ -177,8 +181,12 @@
 }
 
 .datasource-list-container {
-    overflow-y: auto;
+    overflow-y: hidden;
     max-height: calc(100vh - 64px);
+
+    &:hover {
+        overflow-y: auto;
+    }
 
     .datasource-list {
         width: 976px;

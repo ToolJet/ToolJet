@@ -46,7 +46,7 @@
 }
 
 ::-webkit-scrollbar{
-  display: none;
+  visibility: hidden;
 }
 
 .drawer-container.in.open {

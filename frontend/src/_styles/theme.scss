@@ -9436,8 +9436,12 @@ tbody {
 .manage-groups-body {
   padding: 24px;
   font-size: 12px;
-  overflow-y: auto;
+  overflow-y: hidden;
   height: calc(100vh - 300px);
+
+  &:hover {
+    overflow-y: auto;
+  }
 
 }
 
@@ -10701,7 +10705,11 @@ tbody {
   margin-top: 24px;
   padding: 0px 20px 20px 20px;
   height: calc(100vh - 180px);
-  overflow: auto;
+  overflow: hidden;
+
+  &:hover {
+    overflow-y: auto;
+  }
 
   span {
     letter-spacing: -0.02em;
@@ -10785,7 +10793,7 @@ tbody {
 
 .tj-user-table-wrapper {
   height: calc(100vh - 270px); //52+64+40+32+20+62
-  overflow-y: auto;
+  overflow-y: hidden;
   background: var(--base);
   border-right: 1px solid var(--slate7);
   border-bottom: 1px solid var(--slate7);
@@ -10793,6 +10801,10 @@ tbody {
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+
+  &:hover {
+    overflow-y: scroll;
+  }
 
 }
 
