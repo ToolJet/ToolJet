@@ -25,7 +25,6 @@ import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
-import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 
@@ -857,8 +856,12 @@ class HomePageComponent extends React.Component {
                 {isLoading && !appSearchKey && <HeaderSkeleton />}
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
-                    <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
-                    <div className="liner"></div>
+                    {!(isLoading && !appSearchKey) && (
+                      <>
+                        <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
+                        <div className="liner"></div>
+                      </>
+                    )}
                     <div className="filter-container">
                       <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
                       <div className="d-flex align-items-center">
