@@ -42,9 +42,9 @@ This operation generates text completions based on a given prompt.
 #### Parameters:
 
 - **Prompt**: The input text to generate completions for.
-- **Model**: The AI model to use (default: 'davinci-002').
-- **Max Tokens**: Maximum number of tokens to generate (default: 256).
-- **Temperature**: Controls randomness (0-1, default: 1).
+- **Model**: The AI model to use.
+- **Max Tokens**: Maximum number of tokens to generate.
+- **Temperature**: Controls randomness.
 - **Stop Sequences**: Sequences where the API will stop generating further tokens.
 - **Metadata**: Additional metadata for the request.
 - **Other Parameters**: Any other parameters to include in the request.
@@ -56,12 +56,46 @@ This operation generates chat completions based on a series of messages.
 #### Parameters:
 
 - **Messages**: An array of message objects representing the conversation.
-- **Model**: The AI model to use (default: 'gpt-3.5-turbo').
-- **Max Tokens**: Maximum number of tokens to generate (default: 256).
-- **Temperature**: Controls randomness (0-1, default: 1).
+- **Model**: The AI model to use.
+- **Max Tokens**: Maximum number of tokens to generate.
+- **Temperature**: Controls randomness.
 - **Stop Sequence**: Sequences where the API will stop generating further tokens.
 - **Metadata**: Additional metadata for the request.
 - **Other Parameters**: Any other parameters to include in the request.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/chat.png" alt="Chat Operation for Portkey" />
+</div>
+
+  <details>
+  <summary>**Response Example**</summary>
+```json
+{
+  "id": "chatcmpl-9vNIlfllXOPEmroKFajK2nlJHzhXA",
+  "object": "chat.completion",
+  "created": 1723461295,
+  "model": "gpt-3.5-turbo-0125",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The capital of France is Paris.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 24,
+    "completion_tokens": 7,
+    "total_tokens": 31
+  },
+  "system_fingerprint": null
+}
+```
+</details>
 
 ### Prompt Completion
 
