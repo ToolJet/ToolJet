@@ -49,6 +49,35 @@ This operation generates text completions based on a given prompt.
 - **Metadata**: Additional metadata for the request.
 - **Other Parameters**: Any other parameters to include in the request.
 
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/completion.png" alt="Completion Operation for Portkey" />
+</div>
+
+    <details>
+    <summary>**Response Example**</summary>
+    ```json
+{
+  "id": "cmpl-9vNUfM8OP0SwSqXcnPwkqzR7ep8Sy",
+  "object": "text_completion",
+  "created": 1723462033,
+  "model": "gpt-3.5-turbo-instruct",
+  "choices": [
+    {
+      "text": "nn"Experience the perfect brew at Bean There."",
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 13,
+    "completion_tokens": 10,
+    "total_tokens": 23
+  }
+}
+    ```
+    </details>
+
 ### Chat
 
 This operation generates chat completions based on a series of messages.
