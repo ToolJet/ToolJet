@@ -3,7 +3,11 @@ id: marketplace-plugin-portkey
 title: Portkey
 ---
 
-ToolJet can integrate with Portkey to access AI services including text completion, chat completion, prompt completion, and embedding creation. This integration allows ToolJet to leverage Portkey's AI capabilities for various tasks.
+ToolJet can integrate with Portkey to access AI services such as text completion, chat completion, prompt completion, and embedding creation. This integration enables ToolJet to leverage Portkey's LMOps platform to develop, launch, maintain, and iterate on generative AI features.
+
+<div style={{textAlign: 'center', paddingBottom: '24px'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/overview.png" alt="Portkey Dashboard Overview" />
+</div>
 
 :::note
 Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
@@ -13,10 +17,10 @@ Before following this guide, it is assumed that you have already completed the p
 
 To connect to Portkey, the following credentials are required:
 
-- **API Key**: Your Portkey API Key. You can obtain this from your Portkey account.
-- **Default Virtual Key** (Optional): Your default Portkey Virtual Key.
+- **API Key**: Your Portkey API Key. Refer to the **[Portkey API Authentication Documentation](https://docs.portkey.ai/docs/api-reference/authentication#obtaining-your-api-key)** for instructions on obtaining your API Key.
+- **Default Virtual Key** (Optional): Your default Portkey Virtual Key. Visit the **[Portkey Virtual Keys Documentation](https://docs.portkey.ai/docs/product/ai-gateway-streamline-llm-integrations/virtual-keys#creating-virtual-keys)** to learn how to create and retrieve your Virtual Key.
 - **Config** (Optional): Your default Portkey configuration.
-- **Gateway URL** (Optional): Your default Portkey Gateway URL.
+- **Gateway URL** (Optional): Your default Portkey Gateway URL. See the **[Portkey API Authentication Documentation](https://docs.portkey.ai/docs/api-reference/authentication#obtaining-your-api-key)** for details on how to obtain your Gateway URL.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/marketplace/plugins/portkey/configuration.png" alt="Configuring Portkey in ToolJet" />
