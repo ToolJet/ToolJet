@@ -1,4 +1,4 @@
- timport { UserAppsPermissions } from '@module/permissions/interface/permissions-ability.interface';
+import { UserAppsPermissions } from '@module/permissions/interface/permissions-ability.interface';
 import { AppBase } from 'src/entities/app_base.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { User } from 'src/entities/user.entity';
