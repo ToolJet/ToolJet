@@ -53,9 +53,9 @@ export const SearchBox = forwardRef(
 
     return (
       <div className={`search-box-wrapper ${customClass}`}>
-        <div className="input-icon">
+        <div className="input-icon px-2">
           {!isFocused && (
-            <span className="input-icon-addon">
+            <span className="input-icon-addon ">
               <SolidIcon name="search" width="14" />
             </span>
           )}
