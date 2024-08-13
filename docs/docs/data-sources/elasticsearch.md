@@ -62,7 +62,7 @@ ToolJet supports the following Elasticsearch operations:
 This operation executes a search query and returns matching search hits. For more details, see the Elasticsearch search guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)**.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search.png" alt="Elastic search" />
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search-v2.png" alt="Elastic search" />
 </div>
 
 #### Parameters:
@@ -74,7 +74,7 @@ This operation executes a search query and returns matching search hits. For mor
 This operation adds a JSON document to the specified index or data stream. For more details, see the Elasticsearch index guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index.png" alt="Elastic index"/>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index-v2.png" alt="Elastic index"/>
 </div>
 
 #### Parameters:
@@ -86,7 +86,7 @@ This operation adds a JSON document to the specified index or data stream. For m
 This operation retrieves the specified JSON document from the index. For more details, see the Elasticsearch get guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)**.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get.png"  alt="Elastic get"/>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get-v2.png"  alt="Elastic get"/>
 </div>
 
 #### Parameters:
@@ -98,7 +98,7 @@ This operation retrieves the specified JSON document from the index. For more de
 This operation updates a document using the specified script. For more details, see the Elasticsearch update guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)**.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update.png" alt="Elastic update" />
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update-v2.png" alt="Elastic update" />
 </div>
 
 #### Parameters:
@@ -197,6 +197,92 @@ This operation provides a compact, column-aligned view of indices in a cluster. 
     <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/cat-indices.png" alt="Elastic cat indices" />
 </div>
 
+  <details>
+  <summary>**Response Example**</summary>
+```json
+{
+  "body": [
+    {
+      "health": "yellow",
+      "status": "open",
+      "index": "1",
+      "uuid": "JQOzqxK7Rdar7ROOlqXwkA",
+      "pri": "1",
+      "rep": "1",
+      "docs.count": "2",
+      "docs.deleted": "0",
+      "store.size": "9.2kb",
+      "pri.store.size": "9.2kb"
+    },
+    {
+      "health": "yellow",
+      "status": "open",
+      "index": "recipes",
+      "uuid": "eNGdAsG4TMWvs9f0eLERlQ",
+      "pri": "1",
+      "rep": "1",
+      "docs.count": "20",
+      "docs.deleted": "0",
+      "store.size": "30kb",
+      "pri.store.size": "30kb"
+    },
+    {
+      "health": "yellow",
+      "status": "open",
+      "index": "read_me",
+      "uuid": "EbE4V-5RRE2y-_P4z_auVQ",
+      "pri": "1",
+      "rep": "1",
+      "docs.count": "1",
+      "docs.deleted": "0",
+      "store.size": "5.1kb",
+      "pri.store.size": "5.1kb"
+    }
+  ],
+  "statusCode": 200,
+  "headers": {
+    "x-elastic-product": "Elasticsearch",
+    "content-type": "application/json",
+    "content-length": "558"
+  },
+  "meta": {
+    "context": null,
+    "request": {
+      "params": {
+        "method": "GET",
+        "path": "/_cat/indices",
+        "body": null,
+        "querystring": "format=json",
+        "headers": {
+          "user-agent": "opensearch-js/1.2.0 (linux 6.5.0-1021-aws-x64; Node.js v18.18.2)"
+        },
+        "timeout": 30000
+      },
+      "options": {},
+      "id": 1
+    },
+    "name": "opensearch-js",
+    "connection": {
+      "url": "http://xx.2xx.183.199:9200/",
+      "id": "http://xx.2xx.183.199:9200/",
+      "headers": {},
+      "deadCount": 0,
+      "resurrectTimeout": 0,
+      "_openRequests": 0,
+      "status": "alive",
+      "roles": {
+        "master": true,
+        "data": true,
+        "ingest": true
+      }
+    },
+    "attempts": 0,
+    "aborted": false
+  }
+}
+```
+</details>
+
 ### Get Cluster Health
 
 This operation retrieves the status of the cluster’s health. For more details, see the Elasticsearch cluster health guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-health.html)**.
@@ -204,3 +290,68 @@ This operation retrieves the status of the cluster’s health. For more details,
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/cluster-health.png" alt="Elastic cluster health" />
 </div>
+
+  <details>
+  <summary>**Response Example**</summary>
+```json
+{
+  "body": {
+    "cluster_name": "docker-cluster",
+    "status": "yellow",
+    "timed_out": false,
+    "number_of_nodes": 1,
+    "number_of_data_nodes": 1,
+    "active_primary_shards": 10,
+    "active_shards": 10,
+    "relocating_shards": 0,
+    "initializing_shards": 0,
+    "unassigned_shards": 3,
+    "delayed_unassigned_shards": 0,
+    "number_of_pending_tasks": 0,
+    "number_of_in_flight_fetch": 0,
+    "task_max_waiting_in_queue_millis": 0,
+    "active_shards_percent_as_number": 76.92307692307693
+  },
+  "statusCode": 200,
+  "headers": {
+    "x-elastic-product": "Elasticsearch",
+    "content-type": "application/json",
+    "content-length": "405"
+  },
+  "meta": {
+    "context": null,
+    "request": {
+      "params": {
+        "method": "GET",
+        "path": "/_cluster/health",
+        "body": null,
+        "querystring": "",
+        "headers": {
+          "user-agent": "opensearch-js/1.2.0 (linux 6.5.0-1021-aws-x64; Node.js v18.18.2)"
+        },
+        "timeout": 30000
+      },
+      "options": {},
+      "id": 1
+    },
+    "name": "opensearch-js",
+    "connection": {
+      "url": "http://xx.2xx.183.199:9200/",
+      "id": "http://xx.2xx.183.199:9200/",
+      "headers": {},
+      "deadCount": 0,
+      "resurrectTimeout": 0,
+      "_openRequests": 0,
+      "status": "alive",
+      "roles": {
+        "master": true,
+        "data": true,
+        "ingest": true
+      }
+    },
+    "attempts": 0,
+    "aborted": false
+  }
+}
+```
+</details>
