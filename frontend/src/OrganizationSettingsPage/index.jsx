@@ -18,12 +18,10 @@ export function OrganizationSettings(props) {
   const [conditionObj, setConditionObj] = useState({ admin: authenticationService.currentSessionValue?.admin });
 
   const checkConditions = (conditions, conditionsObj) => {
-    for (const condition of conditions) {
-      if (condition in conditionsObj && conditionsObj[condition] === false) {
-        return false;
-      }
+    if (!conditions || conditions.length === 0) {
+      return true;
     }
-    return true;
+    return conditions.every((condition) => conditionsObj?.[condition] === true);
   };
 
   //Filtered Links from the workspace settings links array
