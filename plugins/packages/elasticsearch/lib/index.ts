@@ -26,7 +26,7 @@ export default class ElasticsearchService implements QueryService {
     try {
       switch (operation) {
         case 'search':
-          result = await search(client, queryOptions.index, queryOptions.query);
+          result = await search(client, queryOptions.index, queryOptions.query, queryOptions.scroll);
           break;
         case 'index_document':
           result = await indexDocument(client, queryOptions.index, queryOptions.body);

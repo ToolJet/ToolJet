@@ -1,8 +1,14 @@
-export async function search(client, index: string, query: string): Promise<object> {
-  const result = await client.search({
+export async function search(client, index: string, query: string, scroll?: string): Promise<object> {
+  const searchParams: any = {
     index,
     body: JSON.parse(query),
-  });
+  };
+
+  if (scroll) {
+    searchParams.scroll = scroll;
+  }
+
+  const result = await client.search(searchParams);
 
   return result;
 }

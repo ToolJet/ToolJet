@@ -88,6 +88,17 @@
         "description": "Enter query",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      },
+      "scroll": {
+        "label": "Scroll",
+        "key": "scroll",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scroll value (e.g., '1m' for 1 minute)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1m"
       }
     },
     "index_document": {
