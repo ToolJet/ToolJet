@@ -174,7 +174,7 @@ This operation retrieves multiple documents in a single request. For more detail
 This operation retrieves large numbers of results from a single search request. For more details, see the Elasticsearch scroll guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#scroll-search-results)**.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/scroll.png" alt="Elastic scroll" />
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/scroll-search.png" alt="Elastic scroll" />
 </div>
 
 #### Parameters:
