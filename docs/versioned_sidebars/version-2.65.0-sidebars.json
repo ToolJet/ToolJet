@@ -50,6 +50,7 @@
         "setup/kubernetes",
         "setup/kubernetes-gke",
         "setup/kubernetes-aks",
+        "setup/kubernetes-eks",
         "setup/azure-container",
         "setup/google-cloud-run",
         "setup/client",
@@ -370,7 +371,8 @@
             "org-management/licensing/tooljet-cloud",
             "org-management/licensing/self-hosted"
           ]
-        }
+        },
+        "org-management/smtp-configuration"
       ]
     },
     {
