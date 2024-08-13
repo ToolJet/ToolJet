@@ -9001,6 +9001,22 @@ tbody {
   .tj-user-table-wrapper{
     padding-right: 4px;
    }
+   &:hover{
+     .tj-user-table-wrapper{
+       padding-right: 0px;
+     }
+     ::-webkit-scrollbar{
+       display: block;
+       width: 4px;
+     }
+     ::-webkit-scrollbar-track{
+       background: var(--base);
+     }
+     ::-webkit-scrollbar-thumb{
+       background: var(--slate7);
+       border-radius: 6px;
+     }
+   }
 }
 
 .workspace-settings-filters {
