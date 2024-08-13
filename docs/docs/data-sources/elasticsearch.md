@@ -1,80 +1,206 @@
 ---
-id: elasticsearch
+id: elasticsearch  
 title: Elasticsearch
 ---
 
 # Elasticsearch
-ToolJet can connect to your Elasticsearch cluster to read and write data.
 
-## Connection 
-Please make sure the host/IP of the Elasticsearch cluster is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist our IP**.
+ToolJet allows you to connect to your Elasticsearch cluster to perform data read/write operations and execute various queries.
 
-To establish a connection with the ElasticSearch data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+## Connection
 
-ToolJet requires the following to connect to your Elasticsearch cluster: 
+To connect to an Elasticsearch data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
+
+For self-hosted ToolJet, ensure that the Elasticsearch cluster's host/IP is accessible from your VPC. If using ToolJet Cloud, please make sure to **whitelist our IP**.
+
+To connect to your Elasticsearch cluster, the following details are required:
 - **Host**
 - **Port**
 - **Username**
 - **Password**
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/connect.png" alt="Elastic connect" />
-
-
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/connect-v2.png" alt="Elastic Connect" />
 </div>
 
-Elastic search data source is also providing an option for connecting services with ssl certificates. 
-- You can either use CA / Client certificates option. 
-  
-<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl.png" alt="Elastic ssl" />
-
-
-
-## Querying Elasticsearch 
-
-Click on `+` button of the query manager at the bottom panel of the editor and select the Elasticsearch added in the previous step as the data source. 
-Select the operation that you want to perform on your Elasticsearch cluster and click `Create` to save the query. 
+ToolJet also supports SSL certificate-based connections:
+- You can use either CA or Client certificates.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/query.png" alt="Elastic query" />
-
-
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl-v2.png" alt="Elastic SSL Connect" />
 </div>
 
+## Querying Elasticsearch
+
+1. Click the **+** button in the query manager at the bottom of the editor and select the Elasticsearch data source added earlier.
+2. Choose the operation you want to perform on your Elasticsearch cluster.
+
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
 :::
 
-## Supported operations
+## Supported Operations
 
-#### Search
+ToolJet supports the following Elasticsearch operations:
 
-This operation allows you to execute a search query and get back search hits that match the query. Read the Elasticsearch's `Search` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)**.
+- **[Search](#search)**
+- **[Index a Document](#index-a-document)**
+- **[Get a Document](#get-a-document)**
+- **[Update a Document](#update-a-document)**
+- **[Delete a Document](#delete-a-document)**
+- **[Bulk Operation](#bulk-operation)**
+- **[Count Documents](#count-documents)**
+- **[Check Document Existence](#check-document-existence)**
+- **[Multi Get](#multi-get)**
+- **[Scroll Search](#scroll-search)**
+- **[Clear Scroll](#clear-scroll)**
+- **[Get Cat Indices](#get-cat-indices)**
+- **[Get Cluster Health](#get-cluster-health)**
 
+### Search
 
-<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search.png" alt="Elastic search" />
+This operation executes a search query and returns matching search hits. For more details, see the Elasticsearch search guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)**.
 
-#### Index a document
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search.png" alt="Elastic search" />
+</div>
 
-This operation allows you to add a JSON document to the specified data stream or index. Read the Elasticsearch's `Index` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
+#### Parameters:
+- **Index** - The index to search in.
+- **Query** - The search query.
 
+### Index a Document
 
-<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index.png" alt="Elastic index"/>
+This operation adds a JSON document to the specified index or data stream. For more details, see the Elasticsearch index guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
 
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index.png" alt="Elastic index"/>
+</div>
 
-#### Get a document
+#### Parameters:
+- **Index** - The index to add the document to.
+- **Body** - The document body to be indexed.
 
-This operation allows you to retrieve the specified JSON document from the index. Read the Elasticsearch's `Get` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)**.
+### Get a Document
 
+This operation retrieves the specified JSON document from the index. For more details, see the Elasticsearch get guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)**.
 
-<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get.png"  alt="Elastic get"/>
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get.png"  alt="Elastic get"/>
+</div>
 
+#### Parameters:
+- **Index** - The index to get the document from.
+- **Id** - The ID of the document to retrieve.
 
-#### Update a document
+### Update a Document
 
-This operation allows to update a document using the specified script. Read the Elasticsearch's `Update` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)**.
+This operation updates a document using the specified script. For more details, see the Elasticsearch update guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)**.
 
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update.png" alt="Elastic update" />
+</div>
 
-<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update.png" alt="Elastic update" />
+#### Parameters:
+- **Index** - The index containing the document to update.
+- **Id** - The ID of the document to update.
+- **Body** - The update script or partial document.
+
+### Delete a Document
+
+This operation removes a JSON document from the specified index. For more details, see the Elasticsearch delete guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/delete.png" alt="Elastic delete" />
+</div>
+
+#### Parameters:
+- **Index** - The index containing the document to delete.
+- **Id** - The ID of the document to delete.
+
+### Bulk Operation
+
+This operation performs multiple index/update/delete operations in a single API call. For more details, see the Elasticsearch bulk guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/bulk.png" alt="Elastic bulk" />
+</div>
+
+#### Parameters:
+- **Operations** - The bulk operations to perform.
+
+### Count Documents
+
+This operation returns the number of matches for a search query. For more details, see the Elasticsearch count guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/count.png" alt="Elastic count" />
+</div>
+
+#### Parameters:
+- **Index** - The index to count documents in.
+
+#### Optional Parameters:
+- **Query** - The query to filter documents.
+
+### Check Document Existence
+
+This operation checks if a document exists in an index. For more details, see the Elasticsearch exists guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html#docs-get-api-response-codes)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/exists.png" alt="Elastic exists" />
+</div>
+
+#### Parameters:
+- **Index** - The index to check for document existence.
+- **Id** - The ID of the document to check.
+
+### Multi Get
+
+This operation retrieves multiple documents in a single request. For more details, see the Elasticsearch multi-get guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/mget.png" alt="Elastic multi get" />
+</div>
+
+#### Parameters:
+- **Operations** - The multi-get operations to perform.
+
+### Scroll Search
+
+This operation retrieves large numbers of results from a single search request. For more details, see the Elasticsearch scroll guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#scroll-search-results)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/scroll.png" alt="Elastic scroll" />
+</div>
+
+#### Parameters:
+- **Scroll ID** - The scroll ID for the search.
+- **Scroll** - The scroll time.
+
+### Clear Scroll
+
+This operation clears the search context for a scroll. For more details, see the Elasticsearch clear scroll guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/clear-scroll-api.html)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/clear-scroll.png" alt="Elastic clear scroll" />
+</div>
+
+#### Parameters:
+- **Scroll ID** - The scroll ID to clear.
+
+### Get Cat Indices
+
+This operation provides a compact, column-aligned view of indices in a cluster. For more details, see the Elasticsearch cat indices guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/cat-indices.html)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/cat-indices.png" alt="Elastic cat indices" />
+</div>
+
+### Get Cluster Health
+
+This operation retrieves the status of the cluster’s health. For more details, see the Elasticsearch cluster health guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-health.html)**.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/cluster-health.png" alt="Elastic cluster health" />
+</div>
