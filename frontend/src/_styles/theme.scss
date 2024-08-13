@@ -8998,6 +8998,9 @@ tbody {
 .workspace-settings-table-wrap {
   max-width: 880px;
   margin: 0 auto;
+  .tj-user-table-wrapper{
+    padding-right: 4px;
+   }
 }
 
 .workspace-settings-filters {
