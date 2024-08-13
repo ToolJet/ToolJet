@@ -93,6 +93,6 @@ module.exports = defineConfig({
     codeCoverageTasksRegistered: true,
     video: false,
     videoUploadOnPasses: false,
-    "experimentalStudio": true,
+    experimentalStudio: true,
   },
 });
