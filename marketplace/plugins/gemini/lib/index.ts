@@ -1,8 +1,8 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
-import { SourceOptions, QueryOptions, Operation, TextCompletionQueryOptions, ChatCompletionQueryOptions } from './types';
+import { SourceOptions, QueryOptions, Operation, ChatCompletionQueryOptions } from './types';
 import * as PortKeyAi from 'portkey-ai';
-import { getChatCompletion, getCompletion } from './query_operations';
-import { DEFAULT_COMPLETION_MODEL, PROVIDER_GOOGLE } from './constants';
+import { getChatCompletion } from './query_operations';
+import { DEFAULT_CHAT_MODEL, PROVIDER_GOOGLE } from './constants';
 export default class Gemini implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
@@ -10,9 +10,6 @@ export default class Gemini implements QueryService {
     let result = {};
     try {
       switch (operation) {
-        case Operation.Completion:
-          result = await getCompletion(portkey, queryOptions as TextCompletionQueryOptions);
-          break;
         case Operation.Chat:
           result = await getChatCompletion(portkey, queryOptions as ChatCompletionQueryOptions);
           break;
@@ -34,8 +31,8 @@ export default class Gemini implements QueryService {
       throw new QueryError('Connection test failed', 'Could not connect to Portkey', {});
     }
     const queryOptions: ChatCompletionQueryOptions = {
-      operation: Operation.Completion,
-      model: DEFAULT_COMPLETION_MODEL,
+      operation: Operation.Chat,
+      model: DEFAULT_CHAT_MODEL,
       messages: JSON.parse('[{"role": "user", "content": "Hello"}]'),
       max_tokens: 10,
     }
