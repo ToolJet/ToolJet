@@ -33,9 +33,6 @@
       },
       "client_cert": {
         "encrypted": true
-      },
-      "root_cert": {
-        "encrypted": true
       }
     }
   },
@@ -71,8 +68,8 @@
           "name": "CA certificate"
         },
         {
-          "value": "self_signed",
-          "name": "Self-signed certificate"
+          "value": "client_certificate",
+          "name": "Client certificate"
         },
         {
           "value": "none",
@@ -121,7 +118,7 @@
         "description": "Enter ca certificate"
       }
     },
-    "self_signed": {
+    "client_certificate": {
       "client_key": {
         "label": "Client Key",
         "key": "client_key",
@@ -136,12 +133,12 @@
         "encrypted": true,
         "description": "Enter client certificate"
       },
-      "root_cert": {
-        "label": "Root Cert",
-        "key": "root_cert",
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
         "type": "textarea",
         "encrypted": true,
-        "description": "Enter root certificate"
+        "description": "Enter ca certificate"
       }
     }
   },

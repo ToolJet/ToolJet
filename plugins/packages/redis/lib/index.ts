@@ -45,8 +45,8 @@ export default class RedisQueryService implements QueryService {
       if (sourceOptions.tls_certificate === 'ca_certificate') {
         tls.ca = sourceOptions.ca_cert;
       }
-      if (sourceOptions.tls_certificate === 'self_signed') {
-        tls.ca = sourceOptions.root_cert;
+      if (sourceOptions.tls_certificate === 'client_certificate') {
+        tls.ca = sourceOptions.ca_cert;
         tls.key = sourceOptions.client_key;
         tls.cert = sourceOptions.client_cert;
       }
