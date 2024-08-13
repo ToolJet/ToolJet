@@ -25,7 +25,12 @@ export default class RedisQueryService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
-    await client.ping();
+    try {
+      await client.ping();
+    } catch (err) {
+      client.disconnect();
+      throw new QueryError('Connection could not be established', err.message, {});
+    }
 
     return {
       status: 'ok',
