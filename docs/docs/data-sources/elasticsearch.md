@@ -69,6 +69,9 @@ This operation executes a search query and returns matching search hits. For mor
 - **Index** - The index to search in.
 - **Query** - The search query.
 
+#### Optional Parameters:
+- **Scroll** - The scroll time in minutes.
+
 ### Index a Document
 
 This operation adds a JSON document to the specified index or data stream. For more details, see the Elasticsearch index guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
