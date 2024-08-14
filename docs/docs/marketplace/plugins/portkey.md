@@ -137,6 +137,16 @@ This operation generates completions based on a pre-defined prompt.
 - **Parameters**: Additional parameters for the prompt completion.
 - **Metadata**: Additional metadata for the request.
 
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/prompt-completion.png" alt="Prompt Completion Operation for Portkey" />
+</div>
+
+  <details>
+  <summary>**Response Example**</summary>
+```json
+```
+</details>
+
 ### Create Embedding
 
 This operation creates embeddings for given input text.
@@ -146,6 +156,50 @@ This operation creates embeddings for given input text.
 - **Input**: The input text to create embeddings for.
 - **Model**: The AI model to use for creating embeddings.
 - **Metadata**: Additional metadata for the request.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/embedding.png" alt="Create Embedding Operation for Portkey" />
+</div>
+
+  <details>
+  <summary>**Response Example**</summary>
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [
+        -0.02083237,
+        -0.016892163,
+        -0.0045676464,
+        -0.05084554,
+        -0.025968939,
+        0.029597048,
+        0.029987168,
+        0.02907689,
+        0.0105982395,
+        -0.024356445,
+        -0.00935636,
+        0.0066352785,
+        0.034018397,
+        -0.042002838,
+        0.03856979,
+        -0.014681488,
+        ...,
+        0.024707552
+      ]
+    }
+  ],
+  "model": "text-embedding-3-small",
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 9
+  }
+}
+```
+</details>
 
 For all operations, you can optionally specify:
 - **Config**: Configuration options for the request.
