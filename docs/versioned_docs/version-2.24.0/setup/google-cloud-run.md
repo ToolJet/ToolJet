@@ -16,36 +16,18 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 ## Deploying ToolJet application
 
-1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific tooljet image from docker hub and then tag with your project to push it to cloud registry.
+1. Create a new Google Cloud Run Service:
 
-*Ensure you change `replace-with-your-project-id` in the below command with your project ID.*  
+<div style={{textAlign: 'left'}}>
+  <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup.png" alt="Google Cloud Run New Setup" />
+</div>
 
-```bash
-  gcloud auth configure-docker
-  docker pull tooljet/tooljet:EE-LTS-latest
-  docker tag tooljet/tooljet:EE-LTS-latest gcr.io/replace-with-your-project-id/tooljet/tooljet:EE-LTS-latest
-  docker push gcr.io/replace-with-your-project-id/tooljet/tooljet:EE-LTS-latest
-```
-  Please run the above command by launching GoogleCLI which will help to push the Tooljet application image to Google container registry. 
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/CLI.png" alt="CLI" />
-  </div>
-
-
-2. Create new cloud run service
-
-	Select and add the pushed Tooljet application image as shown below.
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/tooljet-app-service.png" alt="tooljet-app-service" />
-  </div>
-
-3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
+2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
   </div>
+
 
 4. Under containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
 
