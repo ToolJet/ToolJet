@@ -20,7 +20,7 @@ export class PostgrestProxyService {
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
     req.url = await this.replaceTableNamesAtPlaceholder(req.url, organizationId);
-    const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
+    const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('TOOLJET_DB_USER'));
     req.headers = {};
     req.headers['Authorization'] = authToken;
     // https://postgrest.org/en/v12/references/api/preferences.html#prefer-header
@@ -53,7 +53,7 @@ export class PostgrestProxyService {
     body: Record<string, any> = {}
   ) {
     try {
-      const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
+      const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('TOOLJET_DB_USER'));
       const updatedPath = replaceUrlForPostgrest(url);
       let postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + updatedPath;
 
