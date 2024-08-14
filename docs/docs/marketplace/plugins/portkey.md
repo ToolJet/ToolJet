@@ -144,6 +144,30 @@ This operation generates completions based on a pre-defined prompt.
   <details>
   <summary>**Response Example**</summary>
 ```json
+{
+  "id": "chatcmpl-9w6D8jZciWVf1DzkgqNZK14KUvA4d",
+  "object": "chat.completion",
+  "created": 1723633926,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The Industrial Revolution, starting in the late 18th century, transformed production from hand methods to machine-based processes, introducing new manufacturing techniques, steam power, and machine tools. It marked a shift from bio-fuels to coal, with the textile industry leading the way. This period resulted in significant population growth, increased average income, and improved living standards.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 145,
+    "completion_tokens": 71,
+    "total_tokens": 216
+  },
+  "system_fingerprint": "fp_48196bc67a"
+}
 ```
 </details>
 
