@@ -341,6 +341,7 @@ export class OauthService {
             firstName: userDetails.firstName,
             lastName: userDetails.lastName,
             role: userDetails.role,
+            phoneNumber: userDetails.phoneNumber,
           });
           await this.organizationUsersService.create(userDetails, defaultOrganization, true, manager);
           organizationDetails = defaultOrganization;

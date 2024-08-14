@@ -456,6 +456,7 @@ export class LicenseService {
           const propertiesToUpdate = {
             ...(user.firstName ? { firstname: user.firstName } : {}),
             ...(user.lastName ? { lastname: user.lastName } : {}),
+            ...(user.phoneNumber ? { phone: user.phoneNumber } : {}),
             ...(user.isTrialOpted
               ? { self_hosted: 1, started_self_hosted_trial: 1, started_self_hosted_trial_on: timestamp }
               : {}),
@@ -497,6 +498,7 @@ export class LicenseService {
         firstname: user.firstName,
         lastname: user.lastName,
         email: user.email,
+        ...(user.phoneNumber ? { phone: user.phoneNumber } : {}),
         ...(!(user.isTrialOpted || user.isCloudTrialOpted)
           ? { signed_up_on_cloud: 1, signed_up_on_cloud_on: timestamp }
           : {}),
