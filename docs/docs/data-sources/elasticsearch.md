@@ -66,11 +66,24 @@ This operation executes a search query and returns matching search hits. For mor
 </div>
 
 #### Parameters:
-- **Index** - The index to search in.
-- **Query** - The search query.
+- **Index**: The name of the index to search in.
+- **Query**: The search query in JSON format.
+- **Scroll** (Optional): Scroll time.
 
-#### Optional Parameters:
-- **Scroll** - The scroll time in minutes.
+#### Example:
+```yaml
+Index: books
+Query:
+  {
+    "query": {
+      "match": {
+        "title": "The Great Gatsby"
+      }
+    },
+    "size": 20
+  }
+Scroll: 1m # Can be in the format of 1m, 1h, 1d.
+```
 
 ### Index a Document
 
@@ -81,8 +94,20 @@ This operation adds a JSON document to the specified index or data stream. For m
 </div>
 
 #### Parameters:
-- **Index** - The index to add the document to.
-- **Body** - The document body to be indexed.
+- **Index**: The name of the index to add the document to
+- **Body**: The document body in JSON format
+
+#### Example:
+```yaml
+Index: books
+Body:
+  {
+    "title": "1984",
+    "author": "George Orwell",
+    "year": 1949,
+    "genre": "Dystopian Fiction"
+  }
+```
 
 ### Get a Document
 
@@ -93,8 +118,14 @@ This operation retrieves the specified JSON document from the index. For more de
 </div>
 
 #### Parameters:
-- **Index** - The index to get the document from.
-- **Id** - The ID of the document to retrieve.
+- **Index**: The name of the index to get the document from
+- **Id**: The ID of the document to retrieve
+
+#### Example:
+```yaml
+Index: books
+Id: FJXTSZEBsuzUn2y4wZ-W
+```
 
 ### Update a Document
 
@@ -105,9 +136,24 @@ This operation updates a document using the specified script. For more details, 
 </div>
 
 #### Parameters:
-- **Index** - The index containing the document to update.
-- **Id** - The ID of the document to update.
-- **Body** - The update script or partial document.
+- **Index**: The name of the index containing the document
+- **Id**: The ID of the document to update
+- **Body**: The update script or partial document in JSON format
+
+#### Example:
+```yaml
+Index: books
+Id: FJXTSZEBsuzUn2y4wZ-W
+Body:
+{
+  "doc": {
+    "title": "1984",
+    "author": "George Orwell",
+    "year": 1949,
+    "genre": "Fiction"
+  }
+}
+```
 
 ### Delete a Document
 
@@ -118,8 +164,14 @@ This operation removes a JSON document from the specified index. For more detail
 </div>
 
 #### Parameters:
-- **Index** - The index containing the document to delete.
-- **Id** - The ID of the document to delete.
+- **Index**: The name of the index containing the document
+- **Id**: The ID of the document to delete
+
+#### Example:
+```yaml
+Index: books
+Id: FJXTSZEBsuzUn2y4wZ-W
+```
 
 ### Bulk Operation
 
@@ -130,7 +182,30 @@ This operation performs multiple index/update/delete operations in a single API 
 </div>
 
 #### Parameters:
-- **Operations** - The bulk operations to perform.
+- **Operations**: The bulk operations to perform in JSON format
+
+#### Example:
+```yaml
+Operations:
+[
+  {
+    "index": { "_index": "books", "_id": "book124" },
+    "document": {
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "year": 1960
+    }
+  },
+  {
+    "index": { "_index": "books", "_id": "book125" },
+    "document": {
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "year": 1813
+    }
+  }
+]
+```
 
 ### Count Documents
 
@@ -141,10 +216,23 @@ This operation returns the number of matches for a search query. For more detail
 </div>
 
 #### Parameters:
-- **Index** - The index to count documents in.
+- **Index**: The name of the index to count documents in
+- **Query** (Optional): The query to filter documents in JSON format
 
-#### Optional Parameters:
-- **Query** - The query to filter documents.
+#### Example:
+```yaml
+Index: "logs"
+Query:
+  {
+    "query": {
+      "range": {
+        "timestamp": {
+          "gte": "2023-01-01"
+        }
+      }
+    }
+  }
+```
 
 ### Check Document Existence
 
@@ -155,8 +243,14 @@ This operation checks if a document exists in an index. For more details, see th
 </div>
 
 #### Parameters:
-- **Index** - The index to check for document existence.
-- **Id** - The ID of the document to check.
+- **Index**: The name of the index to check for document existence
+- **Id**: The ID of the document to check
+
+#### Example:
+```yaml
+Index: "articles"
+Id: "article_42"
+```
 
 ### Multi Get
 
@@ -167,7 +261,19 @@ This operation retrieves multiple documents in a single request. For more detail
 </div>
 
 #### Parameters:
-- **Operations** - The multi-get operations to perform.
+- **Operations**: The multi-get operations to perform in JSON format
+
+#### Example:
+```yaml
+Operations:
+  {
+    "docs": [
+      { "_index": "users", "_id": "1" },
+      { "_index": "users", "_id": "2" },
+      { "_index": "orders", "_id": "order_1001" }
+    ]
+  }
+```
 
 ### Scroll Search
 
@@ -178,8 +284,14 @@ This operation retrieves large numbers of results from a single search request. 
 </div>
 
 #### Parameters:
-- **Scroll ID** - The scroll ID for the search.
-- **Scroll** - The scroll time.
+- **Scroll ID**: The scroll ID for the search
+- **Scroll**: The scroll time
+
+#### Example:
+```yaml
+Scroll ID: "DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw=="
+Scroll: "1m"
+```
 
 ### Clear Scroll
 
@@ -190,7 +302,12 @@ This operation clears the search context for a scroll. For more details, see the
 </div>
 
 #### Parameters:
-- **Scroll ID** - The scroll ID to clear.
+- **Scroll ID**: The scroll ID to clear
+
+#### Example:
+```yaml
+Scroll ID: "DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw=="
+```
 
 ### Get Cat Indices
 
