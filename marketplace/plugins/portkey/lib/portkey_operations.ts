@@ -53,13 +53,13 @@ export async function getPromptCompletion(
     portkey: PortkeyAi.Portkey,
     options: PromptCompletionQueryOptions
 ): Promise<Record<string, any> | { error: string; statusCode: number }> {
-    const { promptId, variables, parameters, metadata } = options;
+    const { promptId, variables } = options;
 
     try {
         const data = await portkey.prompts.completions.create({
             promptID: promptId,
             variables: typeof variables === 'string' ? JSON.parse(variables) : variables || null,
-            ...JSON.parse(typeof options.parameters === 'string' ? options.parameters : '{}'),
+            ...JSON.parse(typeof options.prompt_parameters === 'string' ? options.prompt_parameters : '{}'),
             ...JSON.parse(typeof options.metadata === 'string' ? options.metadata : '{}'),
         }, JSON.parse(typeof options.metadata === 'string' ? options.metadata : '{}'));
         return data;

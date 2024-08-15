@@ -47,9 +47,9 @@ export interface TextCompletionQueryOptions extends CompletionQueryBase {
 export interface PromptCompletionQueryOptions extends CredentialsBase {
   operation: Operation;
   promptId: string;
-  variables?: Record<string, any>;
-  parameters?: Record<string, any>;
-  metadata?: Record<string, any>;
+  variables?: string | null;
+  prompt_parameters?: string | null;
+  metadata?: string | null;
 }
 
 export interface EmbeddingQueryOptions extends CredentialsBase {

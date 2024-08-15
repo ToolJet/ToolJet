@@ -124,7 +124,7 @@
         "key": "messages",
         "type": "codehinter",
         "description": "Enter messages",
-        "placeholder": "[{\"role\": \"user\", \"content\": \"Hello\"}, {\"role\": \"assistant\", \"content\": \"Hi\"]",
+        "placeholder": "[{\"role\": \"user\", \"content\": \"Hello\"}, {\"role\": \"assistant\", \"content\": \"Hi\"]}",
         "height": "150px"
       },
       "max_tokens": {
@@ -232,12 +232,12 @@
       },
       "parameters": {
         "label": "Parameters",
-        "key": "parameters",
+        "key": "prompt_parameters",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter parameters",
-        "width": "320px",
         "height": "120px",
+        "width": "320px",
         "className": "codehinter-plugins"
       },
       "config": {
