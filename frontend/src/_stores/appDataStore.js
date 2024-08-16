@@ -147,7 +147,29 @@ export const useAppDataStore = create(
 
               updatedEvents.push(response);
 
-              set(() => ({ events: updatedEvents }));
+              updatedEvents.forEach((e, index) => {
+                const toUpdate = [response].find((r) => r.id === e.id);
+                if (toUpdate) {
+                  updatedEvents[index] = toUpdate;
+                }
+              });
+
+              const entityReferencesInEvents = findAllEntityReferences(updatedEvents, [])?.filter(
+                (entity) => entity && isValidUUID(entity)
+              );
+
+              const manager = useResolveStore.getState().referenceMapper;
+              let newEvents = JSON.parse(JSON.stringify(updatedEvents));
+
+              entityReferencesInEvents.forEach((entity) => {
+                const entityrefExists = manager.has(entity);
+
+                if (entityrefExists) {
+                  const value = manager.get(entity);
+                  newEvents = dfs(newEvents, entity, value);
+                }
+              });
+              set(() => ({ events: newEvents }));
             })
             .catch((err) => {
               get().actions.setIsSaving(false);
