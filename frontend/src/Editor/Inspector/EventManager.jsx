@@ -54,7 +54,6 @@ export const EventManager = ({
     appId,
     events: allAppEvents,
     eventsUpdatedLoader,
-    eventsCreatedLoader,
     actionsUpdatedLoader,
     eventToDeleteLoaderIndex,
     setEventToDeleteLoaderIndex,
@@ -62,7 +61,6 @@ export const EventManager = ({
     appId: state.appId,
     events: state.events,
     eventsUpdatedLoader: state.eventsUpdatedLoader,
-    eventsCreatedLoader: state.eventsCreatedLoader,
     actionsUpdatedLoader: state.actionsUpdatedLoader,
     eventToDeleteLoaderIndex: state.eventToDeleteLoaderIndex,
     setEventToDeleteLoaderIndex: state.actions.setEventToDeleteLoaderIndex,
@@ -355,7 +353,7 @@ export const EventManager = ({
 
   function addHandler() {
     setLoadingStates((prev) => ({ ...prev, [sourceId]: true }));
-    let newEvents = [...events];
+    let newEvents = events;
     const eventIndex = newEvents.length;
     createAppVersionEventHandlers({
       event: {
