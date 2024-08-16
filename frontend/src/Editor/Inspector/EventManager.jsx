@@ -83,7 +83,7 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
-  const [loadingStates, setLoadingStates] = useState({});
+  const [isEventHandlerLoading, setIsEventHandlerLoading] = useState({});
 
   const { t } = useTranslation();
 
@@ -352,7 +352,7 @@ export const EventManager = ({
   }
 
   function addHandler() {
-    setLoadingStates((prev) => ({ ...prev, [sourceId]: true }));
+    setIsEventHandlerLoading((prev) => ({ ...prev, [sourceId]: true }));
     let newEvents = events;
     const eventIndex = newEvents.length;
     createAppVersionEventHandlers({
@@ -371,7 +371,7 @@ export const EventManager = ({
         handleYmapEventUpdates();
       })
       .finally(() => {
-        setLoadingStates((prev) => ({ ...prev, [sourceId]: false }));
+        setIsEventHandlerLoading((prev) => ({ ...prev, [sourceId]: false }));
       });
   }
 
@@ -1052,7 +1052,7 @@ export const EventManager = ({
         onClick={addHandler}
         dataCy="add-event-handler"
         className="mt-0"
-        isLoading={loadingStates[sourceId]}
+        isLoading={isEventHandlerLoading[sourceId]}
       >
         {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
