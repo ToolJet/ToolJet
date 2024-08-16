@@ -85,6 +85,7 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const [loadingStates, setLoadingStates] = useState({});
 
   const { t } = useTranslation();
 
@@ -353,7 +354,8 @@ export const EventManager = ({
   }
 
   function addHandler() {
-    let newEvents = events;
+    setLoadingStates((prev) => ({ ...prev, [sourceId]: true }));
+    let newEvents = [...events];
     const eventIndex = newEvents.length;
     createAppVersionEventHandlers({
       event: {
@@ -366,9 +368,13 @@ export const EventManager = ({
       eventType: eventSourceType,
       attachedTo: sourceId,
       index: eventIndex,
-    });
-
-    handleYmapEventUpdates();
+    })
+      .then(() => {
+        handleYmapEventUpdates();
+      })
+      .finally(() => {
+        setLoadingStates((prev) => ({ ...prev, [sourceId]: false }));
+      });
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -414,7 +420,7 @@ export const EventManager = ({
           }}
         >
           <div className="row">
-            <div className="col-3 p-2">
+            <div className="p-2 col-3">
               <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
             </div>
             <div className="col-9" data-cy="event-selection">
@@ -431,8 +437,8 @@ export const EventManager = ({
               />
             </div>
           </div>
-          <div className="row mt-3">
-            <div className="col-3 p-2">
+          <div className="mt-3 row">
+            <div className="p-2 col-3">
               <span data-cy="action-label">{t('editor.inspector.eventManager.action', 'Action')}</span>
             </div>
             <div className="col-9 popover-action-select-search" data-cy="action-selection">
@@ -450,8 +456,8 @@ export const EventManager = ({
             </div>
           </div>
 
-          <div className="row mt-3">
-            <div className="col-3 p-2" data-cy="alert-type-label">
+          <div className="mt-3 row">
+            <div className="p-2 col-3" data-cy="alert-type-label">
               {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
             </div>
             <div className="col-9" data-cy="alert-message-type">
@@ -474,7 +480,7 @@ export const EventManager = ({
             {event.actionId === 'show-alert' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2" data-cy="message-label">
+                  <div className="p-2 col-3" data-cy="message-label">
                     {t('editor.inspector.eventManager.message', 'Message')}
                   </div>
                   <div className="col-9" data-cy="alert-message-input-field">
@@ -488,8 +494,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2" data-cy="alert-type-label">
+                <div className="mt-3 row">
+                  <div className="p-2 col-3" data-cy="alert-type-label">
                     {t('editor.inspector.eventManager.alertType', 'Alert Type')}
                   </div>
                   <div className="col-9" data-cy="alert-message-type">
@@ -511,7 +517,7 @@ export const EventManager = ({
 
             {event.actionId === 'open-webpage' && (
               <div className="p-1">
-                <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
+                <label className="mt-1 form-label">{t('editor.inspector.eventManager.url', 'URL')}</label>
                 <CodeHinter
                   type="basic"
                   initialValue={event.url}
@@ -534,7 +540,7 @@ export const EventManager = ({
 
             {event.actionId === 'show-modal' && (
               <div className="row">
-                <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
+                <div className="p-2 col-3">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
                 <div className="col-9">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
@@ -555,7 +561,7 @@ export const EventManager = ({
 
             {event.actionId === 'close-modal' && (
               <div className="row">
-                <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
+                <div className="p-2 col-3">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
                 <div className="col-9">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
@@ -576,7 +582,7 @@ export const EventManager = ({
 
             {event.actionId === 'copy-to-clipboard' && (
               <div className="p-1">
-                <label className="form-label mt-1">{t('editor.inspector.eventManager.text', 'Text')}</label>
+                <label className="mt-1 form-label">{t('editor.inspector.eventManager.text', 'Text')}</label>
                 <CodeHinter
                   type="basic"
                   initialValue={event.contentToCopy}
@@ -590,7 +596,7 @@ export const EventManager = ({
             {event.actionId === 'run-query' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.query', 'Query')}</div>
                   <div className="col-9" data-cy="query-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
@@ -630,7 +636,7 @@ export const EventManager = ({
             {event.actionId === 'set-localstorage-value' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -641,8 +647,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
+                <div className="mt-3 row">
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -658,7 +664,7 @@ export const EventManager = ({
             {event.actionId === 'generate-file' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.type', 'Type')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.type', 'Type')}</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
@@ -679,8 +685,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.fileName', 'File name')}</div>
+                <div className="mt-3 row">
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.fileName', 'File name')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -690,8 +696,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.data', 'Data')}</div>
+                <div className="mt-3 row">
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.data', 'Data')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -706,7 +712,7 @@ export const EventManager = ({
             {event.actionId === 'set-table-page' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.table', 'Table')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.table', 'Table')}</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
@@ -723,8 +729,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.pageIndex', 'Page index')}</div>
+                <div className="mt-3 row">
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.pageIndex', 'Page index')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -740,7 +746,7 @@ export const EventManager = ({
             {event.actionId === 'set-custom-variable' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -752,8 +758,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
+                <div className="mt-3 row">
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -769,7 +775,7 @@ export const EventManager = ({
             {event.actionId === 'unset-custom-variable' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -784,7 +790,7 @@ export const EventManager = ({
             {event.actionId === 'set-page-variable' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -795,8 +801,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
+                <div className="mt-3 row">
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -812,7 +818,7 @@ export const EventManager = ({
             {event.actionId === 'unset-page-variable' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="p-2 col-3">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       type="basic"
@@ -837,7 +843,7 @@ export const EventManager = ({
             {event.actionId === 'control-component' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-1" data-cy="action-options-component-field-label">
+                  <div className="p-1 col-3" data-cy="action-options-component-field-label">
                     {t('editor.inspector.eventManager.component', 'Component')}
                   </div>
                   <div className="col-9" data-cy="action-options-component-selection-field">
@@ -856,8 +862,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-2">
-                  <div className="col-3 p-1" data-cy="action-options-action-field-label">
+                <div className="mt-2 row">
+                  <div className="p-1 col-3" data-cy="action-options-action-field-label">
                     {t('editor.inspector.eventManager.action', 'Action')}
                   </div>
                   <div className="col-9" data-cy="action-options-action-selection-field">
@@ -879,8 +885,8 @@ export const EventManager = ({
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
                   (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => (
-                    <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
+                    <div className="mt-2 row" key={param.handle}>
+                      <div className="p-1 col-3" data-cy={`action-options-${param?.displayName}-field-label`}>
                         {param?.displayName}
                       </div>
                       {param.type === 'select' ? (
@@ -925,8 +931,8 @@ export const EventManager = ({
                   ))}
               </>
             )}
-            <div className="row mt-3">
-              <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
+            <div className="mt-3 row">
+              <div className="p-2 col-3">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
               <div className="col-9">
                 <CodeHinter
                   type="basic"
@@ -1044,7 +1050,12 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0" isLoading={eventsCreatedLoader}>
+      <AddNewButton
+        onClick={addHandler}
+        dataCy="add-event-handler"
+        className="mt-0"
+        isLoading={loadingStates[sourceId]}
+      >
         {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
     );
