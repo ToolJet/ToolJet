@@ -1,6 +1,7 @@
 import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import Redis from 'ioredis';
 import { SourceOptions, QueryOptions } from './types';
+import { ConnectionOptions } from 'tls';
 
 export default class RedisQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -24,7 +25,12 @@ export default class RedisQueryService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
-    await client.ping();
+    try {
+      await client.ping();
+    } catch (err) {
+      client.disconnect();
+      throw new QueryError('Connection could not be established', err.message, {});
+    }
 
     return {
       status: 'ok',
@@ -36,8 +42,26 @@ export default class RedisQueryService implements QueryService {
     const host = sourceOptions.host;
     const password = sourceOptions.password;
     const port = sourceOptions.port;
+    let tls: ConnectionOptions = undefined;
 
-    const client = new Redis(port, host, { maxRetriesPerRequest: 1, username, password });
-    return client;
+    if (sourceOptions.tls_enabled) {
+      tls = {};
+      tls.rejectUnauthorized = (sourceOptions.tls_certificate ?? 'none') != 'none';
+      if (sourceOptions.tls_certificate === 'ca_certificate') {
+        tls.ca = sourceOptions.ca_cert;
+      }
+      if (sourceOptions.tls_certificate === 'client_certificate') {
+        tls.ca = sourceOptions.ca_cert;
+        tls.key = sourceOptions.client_key;
+        tls.cert = sourceOptions.client_cert;
+      }
+    }
+
+    return new Redis(port, host, {
+      maxRetriesPerRequest: 1,
+      username,
+      password,
+      tls: tls,
+    });
   }
 }
