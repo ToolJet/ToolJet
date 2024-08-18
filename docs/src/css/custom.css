@@ -349,13 +349,9 @@ img {
     box-shadow: none;
   }
 
-  [data-theme='dark'] .table-of-contents{
+  [data-theme='dark'] .table-of-contents {
     background-color: #272729;
-    color:#272729;
-    border-bottom: 1px solid #1b1b1d; /* Change the top border color */
-    border-left: none; /* Optional: No border on left */
-    border-right: none; /* Optional: No border on right */
-    border-bottom: none;
+    color: #272729;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
   }
