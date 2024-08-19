@@ -21,6 +21,18 @@ To establish a connection with the Redis global datasource, you have two options
 - **Port**: The port number used by the Redis server (default is 6379)
 - **Username**: The username used for authentication 
 - **Password**: The password used for authentication
+- **TLS**: Toggle to enable/disable TLS connection
+- **TLS Certificate**: Choose the type of TLS certificate (None, CA certificate, or Client certificate)
+
+Depending on the TLS certificate option selected, you may need to provide additional information:
+
+- For **CA certificate**:
+  - **CA Cert**: The CA certificate for TLS connection
+
+- For **Client certificate**:
+  - **CA Cert**: The CA certificate for TLS connection
+  - **Client Key**: The client key for TLS connection
+  - **Client Cert**: The client certificate for TLS connection
 
 :::info
 Click on **Test connection** button to verify if the credentials are correct and that the Redis is accessible to ToolJet server. Click on **Save** button to save the data source.
