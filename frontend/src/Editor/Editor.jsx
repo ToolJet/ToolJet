@@ -1751,7 +1751,6 @@ const EditorComponent = (props) => {
     }
 
     await clearAllQueuedTasks();
-    useResolveStore.getState().actions.resetStore();
     useEditorStore.getState().actions.setPageProgress(true);
     useCurrentStateStore.getState().actions.setEditorReady(false);
     // This are fetched from store to handle runQueriesOnAppLoad
