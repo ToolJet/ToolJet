@@ -5,6 +5,7 @@ We love your input! We want to make contributing to this project as easy and tra
 - Discussing the current state of the code
 - Submitting a fix
 - Proposing new features
+- 
 
 ## Setup 
 
