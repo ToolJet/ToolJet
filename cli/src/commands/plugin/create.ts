@@ -48,13 +48,12 @@ export default class Create extends Command {
     }
 
     const pluginsPath = 'marketplace';
-    const docsPath = 'docs';
     const defaultTemplates = path.join(pluginsPath, '_templates');
 
-    if (!(fs.existsSync(pluginsPath) && fs.existsSync(docsPath) && fs.existsSync(defaultTemplates))) {
+    if (!(fs.existsSync(pluginsPath) && fs.existsSync(defaultTemplates))) {
       this.log(
         '\x1b[41m%s\x1b[0m',
-        `Error : ${pluginsPath}, docs or ${pluginsPath}/_templates directory missing, make sure that you are running this command in Tooljet directory`
+        `Error : ${pluginsPath} or ${pluginsPath}/_templates directory missing, make sure that you are running this command in Tooljet directory`
       );
       process.exit(1);
     }

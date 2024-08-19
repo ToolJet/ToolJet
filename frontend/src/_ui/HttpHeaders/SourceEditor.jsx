@@ -17,16 +17,6 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
           <span>There are no key value pairs added</span>
         </div>
       )}
-
-      {options?.length > 0 && (
-        <div>
-          <div style={{ display: 'flex' }}>
-            <div style={{ width: '300px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>KEY</div>
-            <div style={{ width: '316px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>VALUE</div>
-          </div>
-        </div>
-      )}
-
       {options.map((option, index) => (
         <div className="d-flex align-items-top row-container query-manager-border-color mb-2" key={index}>
           <Input
