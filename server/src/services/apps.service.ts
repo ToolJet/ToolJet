@@ -542,9 +542,9 @@ export class AppsService {
 
     let homePageId = prevHomePagePage;
 
-    let newComponents = [];
+    const newComponents = [];
     const newComponentLayouts = [];
-    let oldComponentToNewComponentMapping = {};
+    const oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
@@ -703,8 +703,6 @@ export class AppsService {
 
       await manager.save(newComponents);
       await manager.save(newComponentLayouts);
-      newComponents = [];
-      oldComponentToNewComponentMapping = {};
     }
 
     await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
