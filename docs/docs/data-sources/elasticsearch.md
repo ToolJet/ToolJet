@@ -221,13 +221,13 @@ This operation returns the number of matches for a search query. For more detail
 
 #### Example:
 ```yaml
-Index: "logs"
+Index: books
 Query:
   {
     "query": {
       "range": {
         "timestamp": {
-          "gte": "2023-01-01"
+          "gte": 1901
         }
       }
     }
@@ -248,8 +248,8 @@ This operation checks if a document exists in an index. For more details, see th
 
 #### Example:
 ```yaml
-Index: "articles"
-Id: "article_42"
+Index: books
+Id: FJXTSZEBsuzUn2y4wZ-W
 ```
 
 ### Multi Get
@@ -268,9 +268,8 @@ This operation retrieves multiple documents in a single request. For more detail
 Operations:
   {
     "docs": [
-      { "_index": "users", "_id": "1" },
-      { "_index": "users", "_id": "2" },
-      { "_index": "orders", "_id": "order_1001" }
+      { "_index": "books", "_id": "book124" },
+      { "_index": "books", "_id": "book125" },
     ]
   }
 ```
@@ -289,8 +288,8 @@ This operation retrieves large numbers of results from a single search request. 
 
 #### Example:
 ```yaml
-Scroll ID: "DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw=="
-Scroll: "1m"
+Scroll ID: DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw
+Scroll: 60m
 ```
 
 ### Clear Scroll
@@ -306,7 +305,7 @@ This operation clears the search context for a scroll. For more details, see the
 
 #### Example:
 ```yaml
-Scroll ID: "DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw=="
+Scroll ID: DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw
 ```
 
 ### Get Cat Indices
