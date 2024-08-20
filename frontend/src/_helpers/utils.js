@@ -167,7 +167,7 @@ export function resolveReferences(
 
   const state = _state ?? useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
 
-  if (_state.parameters) {
+  if (_state?.parameters) {
     state.parameters = { ..._state.parameters };
   }
 
