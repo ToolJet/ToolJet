@@ -111,6 +111,23 @@ export default function generateColumnsData({
       };
     }
     const width = columnSize || defaultColumn.width;
+
+    // This is done to ensure that if row dependent properties are not used, the default value is used and performance is not affected
+    const rowDependentMap = {
+      cellBackgroundColor: isValueRowDependent(column.cellBackgroundColor),
+      textColor: isValueRowDependent(column.textColor),
+      minValue: isValueRowDependent(column.minValue),
+      maxValue: isValueRowDependent(column.maxValue),
+      minLength: isValueRowDependent(column.minLength),
+      maxLength: isValueRowDependent(column.maxLength),
+      regex: isValueRowDependent(column.regex),
+      customRule: isValueRowDependent(column.customRule),
+      isEditable: isValueRowDependent(column.isEditable),
+      minDate: isValueRowDependent(column.minDate),
+      maxDate: isValueRowDependent(column.maxDate),
+      borderRadius: isValueRowDependent(column.borderRadius),
+    };
+
     return {
       id: column.id,
       Header: resolveReferences(column.name, currentState) ?? '',
@@ -156,30 +173,43 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
         cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
+        column = { ...column };
 
-        cell.column.cellBackgroundColor = isValueRowDependent(column.cellBackgroundColor)
-          ? resolveReferences(column.cellBackgroundColor, currentState, '', { cellValue, rowData })
+        column.cellBackgroundColor = rowDependentMap.cellBackgroundColor
+          ? resolveReferences(cell.column.cellBackgroundColor, currentState, '', { cellValue, rowData })
           : column.cellBackgroundColor;
 
-        column.minLength = isValueRowDependent(column.minLength)
-          ? resolveReferences(column.minLength, currentState, 0, { cellValue, rowData })
+        column.minLength = rowDependentMap.minLength
+          ? resolveReferences(cell.column.minLength, currentState, 0, { cellValue, rowData })
           : column.minLength;
 
-        column.maxLength = isValueRowDependent(column.maxLength)
-          ? resolveReferences(column.maxLength, currentState, undefined, { cellValue, rowData })
+        column.maxLength = rowDependentMap.maxLength
+          ? resolveReferences(cell.column.maxLength, currentState, '', { cellValue, rowData })
           : column.maxLength;
 
-        column.regex = isValueRowDependent(column.regex)
-          ? resolveReferences(column.regex, currentState, '', { cellValue, rowData })
+        column.regex = rowDependentMap.regex
+          ? resolveReferences(cell.column.regex, currentState, '', { cellValue, rowData })
           : column.regex;
 
-        column.columnVisibility = isValueRowDependent(column.columnVisibility)
-          ? resolveReferences(column.columnVisibility, currentState, true, { cellValue, rowData })
-          : column.columnVisibility;
-
-        column.isEditable = isValueRowDependent(column.isEditable)
-          ? resolveReferences(column.isEditable, currentState, false, { cellValue, rowData })
+        column.isEditable = rowDependentMap.isEditable
+          ? resolveReferences(cell.column.isEditable, currentState, false, { cellValue, rowData })
           : column.isEditable;
+
+        column.customRule = rowDependentMap.customRule
+          ? resolveReferences(cell.column.customRule, currentState, '', { cellValue, rowData })
+          : column.customRule;
+
+        column.minDate = rowDependentMap.minDate
+          ? resolveReferences(cell.column.minDate, currentState, '', { cellValue, rowData })
+          : column.minDate;
+
+        column.maxDate = rowDependentMap.maxDate
+          ? resolveReferences(cell.column.maxDate, currentState, '', { cellValue, rowData })
+          : column.maxDate;
+
+        column.borderRadius = rowDependentMap.borderRadius
+          ? resolveReferences(cell.column.borderRadius, currentState, 0, { cellValue, rowData })
+          : column.borderRadius;
 
         switch (columnType) {
           case 'string':
