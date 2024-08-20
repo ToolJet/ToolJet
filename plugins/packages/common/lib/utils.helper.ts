@@ -82,8 +82,7 @@ export const sanitizeHeaders = (
   queryOptions: any,
   hasDataSource = true
 ): { [k: string]: string } => {
-  const cleanHeaders = (headers) =>
-    headers.filter(([_, v]) => !isEmpty(v)).map(([k, v]) => [k.trim().toLowerCase(), v]);
+  const cleanHeaders = (headers) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
 
   const _queryHeaders = cleanHeaders(queryOptions.headers || []);
   const queryHeaders = Object.fromEntries(_queryHeaders);
