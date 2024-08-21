@@ -15,4 +15,3 @@ dist
 *.tabl.json
 *.swp
 *.snk
-node_modules/@nrwl/nx-darwin-arm64/
