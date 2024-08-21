@@ -314,6 +314,7 @@ class LoginPageComponent extends React.Component {
                             {isLoading ? (
                               <div className="spinner-center">
                                 <Spinner />
+                                <span className="loading-text">Logging in...</span>
                               </div>
                             ) : (
                               <>
@@ -323,7 +324,7 @@ class LoginPageComponent extends React.Component {
                                   fill={
                                     isLoading || !this.state?.email || !this.state?.password
                                       ? this.darkMode
-                                        ? '#656565'
+                                        ? '#68aee3'
                                         : ' #D1D5DB'
                                       : '#fff'
                                   }
