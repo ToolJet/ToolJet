@@ -3,15 +3,15 @@ import {
   DEFAULT_GRANULAR_PERMISSIONS_NAME,
   DEFAULT_RESOURCE_PERMISSIONS,
   ResourceType,
-} from '@module/user_resource_permissions/constants/granular-permissions.constant';
+} from '@modules/user_resource_permissions/constants/granular-permissions.constant';
 import {
   USER_ROLE,
   DEFAULT_GROUP_PERMISSIONS_MIGRATIONS,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import {
   CreateResourcePermissionObject,
   ResourcePermissionMetaData,
-} from '@module/user_resource_permissions/interface/granular-permissions.interface';
+} from '@modules/user_resource_permissions/interface/granular-permissions.interface';
 import { AppsGroupPermissions } from 'src/entities/apps_group_permissions.entity';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';

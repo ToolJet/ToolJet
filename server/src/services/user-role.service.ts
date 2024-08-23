@@ -6,7 +6,7 @@ import {
   USER_ROLE,
   ERROR_HANDLER,
   DEFAULT_GROUP_PERMISSIONS,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { GroupUsers } from 'src/entities/group_users.entity';
@@ -15,11 +15,11 @@ import {
   DEFAULT_GRANULAR_PERMISSIONS_NAME,
   DEFAULT_RESOURCE_PERMISSIONS,
   ResourceType,
-} from '@module/user_resource_permissions/constants/granular-permissions.constant';
-import { CreateResourcePermissionObject } from '@module/user_resource_permissions/interface/granular-permissions.interface';
+} from '@modules/user_resource_permissions/constants/granular-permissions.constant';
+import { CreateResourcePermissionObject } from '@modules/user_resource_permissions/interface/granular-permissions.interface';
 import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
-import { AddUserRoleObject } from '@module/user_resource_permissions/interface/group-permissions.interface';
-import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
+import { AddUserRoleObject } from '@modules/user_resource_permissions/interface/group-permissions.interface';
+import { GroupPermissionsUtilityService } from '@modules/user_resource_permissions/services/group-permissions.utility.service';
 import { App } from 'src/entities/app.entity';
 import { USER_STATUS } from '@helpers/user_lifecycle';
 

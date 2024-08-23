@@ -5,12 +5,12 @@ import {
   ERROR_HANDLER,
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import {
   addableUsersToGroupQuery,
   getRoleUsersListQuery,
   getUserRoleQuery,
-} from '@module/user_resource_permissions/utility/group-permissions.utility';
+} from '@modules/user_resource_permissions/utility/group-permissions.utility';
 import { EntityManager } from 'typeorm';
 import { getMaxCopyNumber } from '@helpers/utils.helper';
 import { dbTransactionWrap } from '@helpers/database.helper';

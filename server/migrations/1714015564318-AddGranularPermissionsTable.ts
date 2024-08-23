@@ -1,4 +1,4 @@
-import { DATA_BASE_CONSTRAINTS } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { DATA_BASE_CONSTRAINTS } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddGranularPermissionsTable1714015564318 implements MigrationInterface {

@@ -1,7 +1,7 @@
 import {
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';

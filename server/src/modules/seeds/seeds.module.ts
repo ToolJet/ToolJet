@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SeedsService } from '../../services/seeds.service';
-import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   imports: [UserResourcePermissionsModule],

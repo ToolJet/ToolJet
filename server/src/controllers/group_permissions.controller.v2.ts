@@ -6,19 +6,19 @@ import {
   UpdateGroupPermissionDto,
 } from '@dto/group_permissions.dto';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { JwtAuthGuard } from '@module/auth/jwt-auth.guard';
-import { AppAbility } from '@module/casl/casl-ability.factory';
-import { CheckPolicies } from '@module/casl/check_policies.decorator';
-import { PoliciesGuard } from '@module/casl/policies.guard';
-import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
+import { JwtAuthGuard } from '@modules/auth/jwt-auth.guard';
+import { AppAbility } from '@modules/casl/casl-ability.factory';
+import { CheckPolicies } from '@modules/casl/check_policies.decorator';
+import { PoliciesGuard } from '@modules/casl/policies.guard';
+import { GroupPermissionsUtilityService } from '@modules/user_resource_permissions/services/group-permissions.utility.service';
 import {
   validateGranularPermissionCreateOperation,
   validateGranularPermissionUpdateOperation,
-} from '@module/user_resource_permissions/utility/granular-permissios.utility';
+} from '@modules/user_resource_permissions/utility/granular-permissios.utility';
 import {
   validateCreateGroupOperation,
   validateDeleteGroupUserOperation,
-} from '@module/user_resource_permissions/utility/group-permissions.utility';
+} from '@modules/user_resource_permissions/utility/group-permissions.utility';
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { GranularPermissionsService } from '@services/granular_permissions.service';
 import { GroupPermissionsServiceV2 } from '@services/group_permissions.service.v2';

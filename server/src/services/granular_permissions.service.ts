@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, MethodNotAllowedException } from '@nestjs/common';
-import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
+import { ResourceType } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
 import {
   GranularResourcePermissions,
   CreateResourcePermissionObject,
@@ -7,27 +7,27 @@ import {
   UpdateResourceGroupPermissionsObject,
   CreateGranularPermissionObject,
   ResourcePermissionMetaData,
-} from '@module/user_resource_permissions/interface/granular-permissions.interface';
+} from '@modules/user_resource_permissions/interface/granular-permissions.interface';
 import { EntityManager } from 'typeorm';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { AppsGroupPermissions } from 'src/entities/apps_group_permissions.entity';
 import {
   GranularPermissionQuerySearchParam,
   UpdateGranularPermissionObject,
-} from '@module/user_resource_permissions/interface/granular-permissions.interface';
+} from '@modules/user_resource_permissions/interface/granular-permissions.interface';
 import { catchDbException } from '@helpers/utils.helper';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import {
   DATA_BASE_CONSTRAINTS,
   USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
-import { ERROR_HANDLER } from '@module/user_resource_permissions/constants/granular-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { ERROR_HANDLER } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
 import {
   getAllGranularPermissionQuery,
   getGranularPermissionQuery,
   validateAppResourcePermissionUpdateOperation,
-} from '@module/user_resource_permissions/utility/granular-permissios.utility';
-import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
+} from '@modules/user_resource_permissions/utility/granular-permissios.utility';
+import { GroupPermissionsUtilityService } from '@modules/user_resource_permissions/services/group-permissions.utility.service';
 import { GroupApps } from 'src/entities/group_apps.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
 

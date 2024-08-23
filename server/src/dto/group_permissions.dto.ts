@@ -1,4 +1,4 @@
-import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { Transform } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsEnum, IsArray } from 'class-validator';
 

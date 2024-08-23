@@ -32,7 +32,7 @@ import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
-import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
 import { InstanceSettingsModule } from '@instance-settings/module';
 
 @Module({

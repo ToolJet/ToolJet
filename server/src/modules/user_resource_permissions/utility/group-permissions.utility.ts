@@ -4,7 +4,7 @@ import { User } from 'src/entities/user.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { BadRequestException, MethodNotAllowedException } from '@nestjs/common';
 import { CreateGroupPermissionDto, UpdateGroupPermissionDto } from '@dto/group_permissions.dto';
-import { ERROR_HANDLER } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { ERROR_HANDLER } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import { GetGroupUsersObject } from '../interface/group-permissions.interface';
 import { USER_STATUS } from '@helpers/user_lifecycle';

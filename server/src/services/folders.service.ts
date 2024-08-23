@@ -12,7 +12,7 @@ import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { AbilityService } from './permissions-ability.service';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EntityManager, Repository, UpdateResult } from 'typeorm';
-import { UserAppsPermissions } from '@module/permissions/interface/permissions-ability.interface';
+import { UserAppsPermissions } from '@modules/permissions/interface/permissions-ability.interface';
 
 @Injectable()
 export class FoldersService {

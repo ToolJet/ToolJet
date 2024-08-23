@@ -49,7 +49,7 @@ import * as requestIp from 'request-ip';
 import {
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { AppAuthenticationDto, AppSignupDto } from '@dto/app-authentication.dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';

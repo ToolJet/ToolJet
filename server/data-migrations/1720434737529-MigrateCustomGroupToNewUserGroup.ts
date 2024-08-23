@@ -2,15 +2,15 @@ import { CreateGranularPermissionDto } from '@dto/granular-permissions.dto';
 import {
   DEFAULT_GRANULAR_PERMISSIONS_NAME,
   ResourceType,
-} from '@module/user_resource_permissions/constants/granular-permissions.constant';
+} from '@modules/user_resource_permissions/constants/granular-permissions.constant';
 import {
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import {
   CreateResourcePermissionObject,
   ResourcePermissionMetaData,
-} from '@module/user_resource_permissions/interface/granular-permissions.interface';
+} from '@modules/user_resource_permissions/interface/granular-permissions.interface';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppsGroupPermissions } from 'src/entities/apps_group_permissions.entity';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
