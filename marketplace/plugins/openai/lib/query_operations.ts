@@ -9,7 +9,7 @@ export async function getCompletion(
 
   try {
     const { data } = await openai.createCompletion({
-      model: model || 'gpt-3.5-turbo-instruct', // Use the selected model or default to 'gpt-4.0'
+      model: model || 'gpt-3.5-turbo-instruct', // Use the selected model or default to 'gpt-3.5-turbo-instruct'
       prompt: prompt,
       temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
       max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
