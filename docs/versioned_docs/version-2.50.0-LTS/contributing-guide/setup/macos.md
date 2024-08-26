@@ -67,7 +67,7 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
 
     1.5 Fork the repository:
 
-   Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the 'Fork' button to create a copy of the repository under your own GitHub account.
+    Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
 
     1.6 Clone your forked repository:
 

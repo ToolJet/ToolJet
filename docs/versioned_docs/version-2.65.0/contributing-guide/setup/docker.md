@@ -29,7 +29,7 @@ Make sure to run it within the WSL2 terminal.
 
 1. Fork the repository:
 
-   Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the 'Fork' button to create a copy of the repository under your own GitHub account.
+   Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
 
 2. Clone your forked repository:
 
