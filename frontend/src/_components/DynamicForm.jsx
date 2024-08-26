@@ -12,6 +12,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
+import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
@@ -160,6 +161,8 @@ const DynamicForm = ({
         return ConditionFilter;
       case 'sorts':
         return CondtionSort;
+      case 'react-component-api-endpoint':
+        return ApiEndpointInput;
       default:
         return <div>Type is invalid</div>;
     }
@@ -191,6 +194,7 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
+    specUrl = '',
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -382,6 +386,13 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           placeholders,
         };
+      case 'react-component-api-endpoint':
+        return {
+          specUrl: specUrl,
+          optionsChanged,
+          options,
+          darkMode,
+        };
       default:
         return {};
     }
@@ -424,7 +435,7 @@ const DynamicForm = ({
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className, key: propertyKey } = obj[key];
           const Element = getElement(type);
-          const isSpecificComponent = ['tooljetdb-operations'].includes(type);
+          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
 
           return (
             <div
