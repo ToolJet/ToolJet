@@ -13,7 +13,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import { useAppDataActions, useAppDataStore, useIsSaving } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppDataStore, useIsActionSaving } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
@@ -70,10 +70,15 @@ export const EventManager = ({
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
 
-  const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler, updateState } =
-    useAppDataActions();
+  const {
+    updateAppVersionEventHandlers,
+    createAppVersionEventHandlers,
+    deleteAppVersionEventHandler,
+    updateState,
+    setIsActionSaving,
+  } = useAppDataActions();
 
-  const isSaving = useIsSaving();
+  const isActionSaving = useIsActionSaving();
 
   const currentEvents = allAppEvents?.filter((event) => {
     if (customEventRefs) {
@@ -307,6 +312,8 @@ export const EventManager = ({
   }
 
   function handlerChanged(index, param, value) {
+    setIsActionSaving(true);
+
     let newEvents = deepClone(events);
 
     let updatedEvent = newEvents[index];
@@ -448,8 +455,8 @@ export const EventManager = ({
                 styles={styles}
                 useMenuPortal={false}
                 useCustomStyles={true}
-                isDisabled={isSaving}
-                isLoading={isSaving}
+                isDisabled={isActionSaving}
+                isLoading={isActionSaving}
               />
             </div>
           </div>

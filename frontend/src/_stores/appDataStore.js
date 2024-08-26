@@ -29,6 +29,7 @@ const initialState = {
   appDefinitionDiff: null,
   appDiffOptions: {},
   isSaving: false,
+  isActionSaving: false,
   appId: null,
   areOthersOnSameVersionAndPage: false,
   appVersionPreviewLink: null,
@@ -101,6 +102,7 @@ export const useAppDataStore = create(
           );
 
           get().actions.setIsSaving(false);
+          get().actions.setIsActionSaving(false);
           set({ eventsUpdatedLoader: false, actionsUpdatedLoader: false });
           const updatedEvents = get().events;
 
@@ -184,6 +186,10 @@ export const useAppDataStore = create(
           set(() => ({ events: response }));
         },
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
+        setIsActionSaving: (isActionSaving) =>
+          set(() => ({
+            isActionSaving,
+          })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
         setComponents: (components) => set(() => ({ components })),
@@ -250,6 +256,7 @@ useAppDataStore.subscribe(
 
 export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion, shallow);
 export const useIsSaving = () => useAppDataStore((state) => state.isSaving, shallow);
+export const useIsActionSaving = () => useAppDataStore((state) => state.isActionSaving, shallow);
 export const useUpdateEditingVersion = () => useAppDataStore((state) => state.actions, shallow);
 export const useCurrentUser = () => useAppDataStore((state) => state.currentUser, shallow);
 export const useAppInfo = () => useAppDataStore((state) => state);
