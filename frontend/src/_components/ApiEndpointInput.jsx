@@ -7,6 +7,7 @@ import { ToolTip } from '@/_components';
 import { CodeHinter } from '../Editor/CodeBuilder/CodeHinter';
 import 'codemirror/theme/duotone-light.css';
 import { withTranslation } from 'react-i18next';
+import { isEmpty } from 'lodash';
 
 const operationColorMapping = {
   get: 'azure',
@@ -82,36 +83,32 @@ const ApiEndpointInput = (props) => {
   };
 
   const computeOperationSelectionOptions = () => {
-    const pathGroups = [];
     const paths = specJson?.paths;
-    if (paths) {
-      for (const path of Object.keys(paths)) {
-        for (const operation of Object.keys(paths[path])) {
-          const pathGroupCategory = path.split('/')[2];
-          const categoryIndex = pathGroups.findIndex((obj) => obj.label === pathGroupCategory);
-          if (categoryIndex >= 0) {
-            pathGroups[categoryIndex]['options'].push({
-              value: `${operation}${path}`,
-              label: `${path}`,
-              name: path,
-              operation: operation,
-            });
-          } else {
-            pathGroups.push({
-              label: pathGroupCategory,
-              options: [
-                {
-                  value: `${operation}${path}`,
-                  label: `${path}`,
-                  name: path,
-                  operation: operation,
-                },
-              ],
-            });
-          }
+    if (isEmpty(paths)) return [];
+
+    const pathGroups = Object.keys(paths).reduce((acc, path) => {
+      const operations = Object.keys(paths[path]);
+      const category = path.split('/')[2];
+      operations.forEach((operation) => {
+        const option = {
+          value: `${operation}${path}`,
+          label: `${path}`,
+          name: path,
+          operation: operation,
+        };
+        const existingCategory = acc.find((obj) => obj.label === category);
+        if (existingCategory) {
+          existingCategory.options.push(option);
+        } else {
+          acc.push({
+            label: category,
+            options: [option],
+          });
         }
-      }
-    }
+      });
+      return acc;
+    }, []);
+
     return pathGroups;
   };
 
@@ -206,10 +203,10 @@ const ApiEndpointInput = (props) => {
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
-                                initialValue={options.params.path[param.name]}
+                                initialValue={options?.params?.path[param.name] ?? ''}
                                 mode="text"
                                 placeholder={'Value'}
-                                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                                theme={props.darkMode ? 'monokai' : 'duotone-light'}
                                 lineNumbers={false}
                                 onChange={(value) => changeParam('path', param.name, value)}
                                 height={'32px'}
