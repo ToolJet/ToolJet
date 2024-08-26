@@ -688,8 +688,11 @@ export default function generateColumnsData({
             );
           }
           case 'link': {
-            const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}');
-            const displayText = resolveReferences(column?.displayText ?? '{{}}', '', { cellValue, rowData });
+            const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}', currentState);
+            const displayText = resolveReferences(column?.displayText ?? '{{}}', currentState, '', {
+              cellValue,
+              rowData,
+            });
             column = {
               ...column,
               linkColor: column?.linkColor ?? '#1B1F24',
