@@ -124,15 +124,10 @@ module.exports = {
           includeCurrentVersion: false,
           lastVersion: '2.50.0-LTS',
           versions: {
-            '2.61.0': {
-              banner: 'none'
-            },
-            '2.62.0': {
-              banner: 'none'
-            },
             '2.65.0': {
+              label: '2.65.0-Pre Release 🚧', 
               banner: 'none'
-            }
+            },
           }
         },
         theme: {
