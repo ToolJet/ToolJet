@@ -1,1346 +1,499 @@
-import { BadRequestException, Injectable, NotFoundException, Optional, ConflictException } from '@nestjs/common';
-import {
-  EntityManager,
-  In,
-  ObjectLiteral,
-  QueryFailedError,
-  SelectQueryBuilder,
-  Table,
-  TableColumn,
-  TableForeignKey,
-} from 'typeorm';
-import { InjectEntityManager } from '@nestjs/typeorm';
-import { InternalTable } from 'src/entities/internal_table.entity';
-import { isString, isEmpty, camelCase } from 'lodash';
-import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
-import { v4 as uuidv4 } from 'uuid';
-import { QueryError } from '@tooljet/plugins/packages/common';
-
-export type TableColumnSchema = {
-  column_name: string;
-  data_type: SupportedDataTypes;
-  column_default: string | null;
-  character_maximum_length: number | null;
-  numeric_precision: number | null;
-  is_nullable: 'YES' | 'NO';
-  constraint_type: string | null;
-  keytype: string | null;
-};
-
-export type ForeignKeyDetails = {
-  column_names: Array<string>;
-  referenced_table_name: string;
-  referenced_column_names: Array<string>;
-  on_delete: string;
-  on_update: string;
-};
-
-export type SupportedDataTypes =
-  | 'character varying'
-  | 'integer'
-  | 'bigint'
-  | 'serial'
-  | 'double precision'
-  | 'boolean'
-  | 'timestamp with time zone';
-
-enum AggregateFunctions {
-  sum = 'SUM',
-  count = 'COUNT',
-}
-
-// Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
-declare module 'typeorm' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface SelectQueryBuilder<Entity> {
-    rightJoin(entityOrProperty: string, alias: string, condition?: string, parameters?: ObjectLiteral): this;
-    fullOuterJoin(entityOrProperty: string, alias: string, condition?: string, parameters?: ObjectLiteral): this;
-  }
-}
-
-SelectQueryBuilder.prototype.rightJoin = function (entityOrProperty, alias, condition, parameters) {
-  this.join('RIGHT', entityOrProperty, alias, condition, parameters);
-  return this;
-};
-
-SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, condition, parameters) {
-  this.join('FULL OUTER', entityOrProperty, alias, condition, parameters);
-  return this;
-};
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../entities/user.entity';
+import { FilesService } from '../services/files.service';
+import { App } from 'src/entities/app.entity';
+import { createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { BadRequestException } from '@nestjs/common';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { CreateFileDto } from '@dto/create-file.dto';
+import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { Organization } from 'src/entities/organization.entity';
+const uuid = require('uuid');
+const bcrypt = require('bcrypt');
 
 @Injectable()
-export class TooljetDbService {
+export class UsersService {
   constructor(
-    private readonly manager: EntityManager,
-    // TODO: remove optional decorator when
-    // ENABLE_TOOLJET_DB flag is deprecated
-    @Optional()
-    @InjectEntityManager('tooljetDb')
-    private readonly tooljetDbManager: EntityManager
+    private readonly filesService: FilesService,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+    @InjectRepository(App)
+    private appsRepository: Repository<App>,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>
   ) {}
 
-  async perform(
-    organizationId: string,
-    action: string,
-    params = {},
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
-    const actionHandler = this.getActionHandler(action);
-    if (!actionHandler) {
-      throw new BadRequestException('Action not defined');
-    }
-    return await actionHandler.call(this, organizationId, params, connectionManagers);
+  async getCount(): Promise<number> {
+    return this.usersRepository.count();
   }
 
-  private getActionHandler(action: string): ((organizationId: string, params: any) => Promise<any>) | undefined {
-    const actionHandlers: Partial<Record<TooljetDbActions, (organizationId: string, params: any) => Promise<any>>> = {
-      view_tables: this.viewTables,
-      view_table: this.viewTable,
-      create_table: this.createTable,
-      drop_table: this.dropTable,
-      add_column: this.addColumn,
-      drop_column: this.dropColumn,
-      edit_table: this.editTable,
-      join_tables: this.joinTable,
-      edit_column: this.editColumn,
-      create_foreign_key: this.createForeignKey,
-      update_foreign_key: this.updateForeignKey,
-      delete_foreign_key: this.deleteForeignKey,
-    };
-    return actionHandlers[action];
-  }
-
-  private async viewTable(
-    organizationId: string,
-    params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[]; configurations: any }> {
-    const { table_name: tableName, id: id } = params;
-    const { appManager, tjdbManager } = connectionManagers;
-
-    const internalTable = await appManager.findOne(InternalTable, {
-      where: {
-        organizationId,
-        ...(tableName && { tableName }),
-        ...(id && { id }),
-      },
-    });
-
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-
-    let foreign_keys = await tjdbManager.query(`
-      select
-        pgc.confrelid::regclass as referenced_table_name, 
-        pgc.conname as constraint_name,
-        ARRAY(SELECT attname FROM pg_attribute WHERE attrelid = pgc.conrelid AND attnum = any(pgc.conkey)) AS column_names,
-        ARRAY(select attname from pg_attribute where attrelid = pgc.confrelid and attnum = any(pgc.confkey)) as referenced_column_names,
-        case pgc.confupdtype 
-              WHEN 'a' THEN 'NO ACTION'
-              WHEN 'r' THEN 'RESTRICT'
-              WHEN 'c' THEN 'CASCADE'
-              WHEN 'n' THEN 'SET NULL'
-              WHEN 'd' THEN 'SET DEFAULT'
-              ELSE NULL
-        end as on_update,
-        case pgc.confdeltype 
-          when 'a' then 'NO ACTION'
-          when 'r' then 'RESTRICT'
-          when 'c' then 'CASCADE'
-          when 'n' then 'SET NULL'
-          when 'd' then 'SET DEFAULT'
-        end as on_delete
-      from pg_constraint as pgc 
-      where pgc.conrelid = '${internalTable.id}'::regclass and pgc.contype = 'f'
-    `);
-
-    // Transforming the Query response
-    const referenced_table_list = [];
-    foreign_keys = foreign_keys.map((foreign_key_detail) => {
-      const { referenced_table_name, column_names, referenced_column_names } = foreign_key_detail;
-      referenced_table_list.push(referenced_table_name.slice(1, -1));
-      return {
-        ...foreign_key_detail,
-        referenced_table_name: referenced_table_name.slice(1, -1),
-        column_names: column_names.slice(1, -1).split(','),
-        referenced_column_names: referenced_column_names.slice(1, -1).split(','),
-      };
-    });
-
-    const referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-      referenced_table_list,
-      organizationId,
-      'TABLEID',
-      appManager
-    );
-
-    foreign_keys = foreign_keys.map((foreign_key_detail) => {
-      return {
-        ...foreign_key_detail,
-        referenced_table_id: foreign_key_detail.referenced_table_name,
-        referenced_table_name: referenced_tables_info[foreign_key_detail.referenced_table_name],
-      };
-    });
-
-    const columns = await tjdbManager.query(`
-    SELECT c.COLUMN_NAME,
-        c.DATA_TYPE,
-        CASE
-            WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
-            ELSE c.Column_default
-        END AS Column_default,
-        c.character_maximum_length,
-        c.numeric_precision,
-        JSON_BUILD_OBJECT(
-            'is_not_null',
-            CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
-            'is_primary_key',
-            CASE WHEN pk.is_primary = true THEN true ELSE false END,
-            'is_unique',
-            CASE WHEN uk.is_unique = true THEN true ELSE false END
-        ) AS constraints_type,
-        CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
-    FROM INFORMATION_SCHEMA.COLUMNS c
-    LEFT JOIN (
-          SELECT
-            ku.TABLE_CATALOG,
-            ku.TABLE_SCHEMA,
-            ku.TABLE_NAME,
-            ku.COLUMN_NAME,
-            tc.CONSTRAINT_TYPE,
-            CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN true else false END AS is_primary
-        FROM
-            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-          where tc.constraint_type = 'PRIMARY KEY'
-    ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
-        AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
-        AND c.TABLE_NAME = pk.TABLE_NAME
-        AND c.COLUMN_NAME = pk.COLUMN_NAME
-    LEFT JOIN (
-          SELECT
-            ku.TABLE_CATALOG,
-            ku.TABLE_SCHEMA,
-            ku.TABLE_NAME,
-            ku.COLUMN_NAME,
-            tc.CONSTRAINT_TYPE,
-            CASE WHEN tc.constraint_type = 'UNIQUE' THEN true else false END AS is_unique
-        FROM
-            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-          where tc.constraint_type = 'UNIQUE'
-    ) as uk ON c.TABLE_CATALOG = uk.TABLE_CATALOG
-        AND c.TABLE_SCHEMA = uk.TABLE_SCHEMA
-        AND c.TABLE_NAME = uk.TABLE_NAME
-        AND c.COLUMN_NAME = uk.COLUMN_NAME
-    WHERE c.TABLE_NAME = '${internalTable.id}'
-    ORDER BY
-        c.TABLE_SCHEMA,
-        c.TABLE_NAME,
-        c.ORDINAL_POSITION;
-    `);
-
-    return {
-      foreign_keys,
-      columns,
-      configurations: internalTable.configurations,
-    };
-  }
-
-  private async viewTables(organizationId: string) {
-    return await this.manager.find(InternalTable, {
-      where: { organizationId },
-      select: ['id', 'tableName'],
-      order: { tableName: 'ASC' },
+  async getAppOrganizationDetails(app: App): Promise<Organization> {
+    return this.organizationsRepository.findOneOrFail({
+      select: ['id', 'slug'],
+      where: { id: app.organizationId },
     });
   }
 
-  private addQuotesIfString(value) {
-    if (isString(value)) return `'${value}'`;
-    return value;
+  async findOne(where = {}): Promise<User> {
+    return this.usersRepository.findOne({ where });
   }
 
-  private addQuotesIfMissing(value) {
-    if (!!value && !value.includes("'")) return `'${value}'`;
-    return value;
-  }
-
-  private async createTable(
-    organizationId: string,
-    params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
-    const primaryKeyColumnList = params.columns
-      .filter((column) => column.constraints_type.is_primary_key)
-      .map((column) => column.column_name);
-
-    if (isEmpty(primaryKeyColumnList)) throw new BadRequestException('Primary key is mandatory');
-
-    const { table_name: tableName, foreign_keys = [] } = params;
-    const { appManager, tjdbManager } = connectionManagers;
-    const tableWithSameName = await appManager.findOne(InternalTable, {
-      tableName,
-      organizationId,
-    });
-
-    if (!isEmpty(tableWithSameName)) throw new ConflictException(`Table with with name "${tableName}" already exists`);
-
-    let referenced_tables_info = {};
-    if (foreign_keys.length) {
-      const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
-      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-        referenced_table_list,
-        organizationId,
-        'TABLENAME',
-        appManager
-      );
-    }
-
-    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
-      foreign_keys,
-      organizationId,
-      connectionManagers
-    );
-
-    if (isFKfromCompositePK)
-      throw new ConflictException(
-        'Foreign key cannot be created as the referenced column is in the composite primary key.'
-      );
-
-    const queryRunner = appManager?.queryRunner || appManager.connection.createQueryRunner();
-    const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
-
-    try {
-      const columnNames = {};
-      const columnConfigrations = {};
-      for (const column of params.columns) {
-        const columnUuid = uuidv4();
-        columnNames[column.column_name] = columnUuid;
-        columnConfigrations[columnUuid] = column?.configurations || {};
+  async findByEmail(
+    email: string,
+    organizationId?: string,
+    status?: string | Array<string>,
+    manager?: EntityManager
+  ): Promise<User> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!organizationId) {
+        return manager.findOne(User, {
+          where: { email },
+          relations: ['organization'],
+        });
+      } else {
+        const statusList = status
+          ? typeof status === 'object'
+            ? status
+            : [status]
+          : [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ARCHIVED];
+        return await manager
+          .createQueryBuilder(User, 'users')
+          .innerJoinAndSelect(
+            'users.organizationUsers',
+            'organization_users',
+            'organization_users.organizationId = :organizationId',
+            { organizationId }
+          )
+          .where('organization_users.status IN(:...statusList)', {
+            statusList,
+          })
+          .andWhere('users.email = :email', { email })
+          .getOne();
       }
-
-      const configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigrations,
-        },
-      };
-
-      const internalTable = queryRunner.manager.create(InternalTable, {
-        tableName,
-        organizationId,
-        configurations,
-      });
-
-      await queryRunner.manager.save(internalTable);
-
-      await tjdbQueryRunner.createTable(
-        new Table({
-          name: internalTable.id,
-          columns: this.prepareColumnListForCreateTable(params.columns),
-          ...(foreign_keys.length && {
-            foreignKeys: this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info),
-          }),
-        })
-      );
-      await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
-      await queryRunner.commitTransaction();
-      await tjdbQueryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-
-      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
-      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
-      return { id: internalTable.id, table_name: tableName };
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      await tjdbQueryRunner.rollbackTransaction();
-      await queryRunner.release();
-      await tjdbQueryRunner.release();
-      const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-        ([tableName, tableId]): { id: string; tableName: string } => {
-          return {
-            id: tableId as string,
-            tableName: tableName,
-          };
-        }
-      );
-
-      throw new TooljetDatabaseError(
-        err.message,
-        {
-          origin: 'create_table',
-          internalTables: [...referencedColumnInfoForError],
-        },
-        err
-      );
-    }
+    }, manager);
   }
 
-  private async dropTable(organizationId: string, params) {
-    const { table_name: tableName } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
+  async findByPasswordResetToken(token: string): Promise<User> {
+    return this.usersRepository.findOne({
+      where: { forgotPasswordToken: token },
     });
-
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-
-    const queryRunner = this.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      await queryRunner.manager.delete(InternalTable, { id: internalTable.id });
-
-      const query = `DROP TABLE "${internalTable.id}"`;
-      // if tooljetdb query fails in this connection, we must rollback internal table
-      // created in the other connection
-      await this.tooljetDbManager.query(query);
-
-      await queryRunner.commitTransaction();
-      return true;
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw new TooljetDatabaseError(
-        err.message,
-        {
-          origin: 'drop_table',
-          internalTables: [internalTable],
-        },
-        err
-      );
-    } finally {
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await queryRunner.release();
-    }
   }
 
-  private async editTable(organizationId: string, params) {
-    const { table_name: tableName, columns } = params;
+  async create(
+    userParams: Partial<User>,
+    organizationId: string,
+    groups?: string[],
+    existingUser?: User,
+    isInvite?: boolean,
+    defaultOrganizationId?: string,
+    manager?: EntityManager
+  ): Promise<User> {
+    const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
+    let user: User;
 
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!existingUser) {
+        user = manager.create(User, {
+          email,
+          firstName,
+          lastName,
+          password,
+          phoneNumber,
+          source,
+          status,
+          invitationToken: isInvite ? uuid.v4() : null,
+          defaultOrganizationId: defaultOrganizationId || organizationId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(user);
+      } else {
+        user = existingUser;
+      }
+      await this.attachUserGroup(groups, organizationId, user.id, manager);
+    }, manager);
 
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+    return user;
+  }
 
-    const queryRunner = this.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
-    await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
-
-    try {
-      const updatedPrimaryKeys = [];
-      const columnstoBeUpdated = [];
-      const columnsToBeInserted = [];
-      const columnsToBeDeleted = [];
-      const columnConfigurationMap = {};
-
-      columns.forEach((column) => {
-        const { new_column = {} } = column;
-        columnConfigurationMap[new_column.column_name] = new_column?.configurations || {};
-      });
-
-      columns.forEach((column) => {
-        const { old_column = {}, new_column = {} } = column;
-
-        // Filter Primary Key column
-        if (!isEmpty(new_column) && new_column?.constraints_type.is_primary_key) {
-          updatedPrimaryKeys.push(
-            new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-            })
-          );
-        }
-
-        // Columns to be deleted
-        if (!isEmpty(old_column) && isEmpty(new_column)) {
-          if (old_column.column_name) columnsToBeDeleted.push(old_column.column_name);
-        }
-
-        // New columns to be inserted
-        if (isEmpty(old_column) && !isEmpty(new_column)) {
-          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
-          columnsToBeInserted.push(
-            new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            })
-          );
-
-          // To Sync with Other States - Adding it to the Update Array as well
-          columnstoBeUpdated.push({
-            oldColumn: new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            }),
-            newColumn: new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            }),
-          });
-        }
-
-        // Columns to be updated
-        if (!isEmpty(old_column) && !isEmpty(new_column)) {
-          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
-          columnstoBeUpdated.push({
-            oldColumn: new TableColumn({
-              name: old_column.column_name,
-              type: old_column.data_type,
-              ...(old_column?.column_default &&
-                old_column.data_type !== 'serial' && {
-                  default:
-                    old_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(old_column.column_default)
-                      : old_column.column_default,
-                }),
-              isNullable: !old_column?.constraints_type.is_not_null,
-              isUnique: old_column?.constraints_type.is_unique,
-              isPrimary: old_column?.constraints_type.is_primary_key || false,
-            }),
-            newColumn: new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            }),
-          });
-        }
-      });
-
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
-
-      columnstoBeUpdated.forEach((column) => {
-        const newColumn = column.newColumn;
-        const oldColumn = column.oldColumn;
-        const columnUuid = columnNames[oldColumn.name];
-        if (columnUuid) {
-          columnNames[newColumn.name] = columnUuid;
-          if (newColumn.type !== oldColumn.type) {
-            columnConfigurations[columnUuid] = {};
-          }
-          columnConfigurations[columnUuid] = {
-            ...columnConfigurations[columnUuid],
-            ...columnConfigurationMap[newColumn.name],
-          };
-          if (oldColumn.name !== newColumn.name) {
-            delete columnNames[oldColumn.name];
-          }
-        }
-      });
-
-      columnsToBeDeleted.forEach((column) => {
-        const columnUuid = columnNames[column];
-        delete columnNames[column];
-        delete columnConfigurations[columnUuid];
-      });
-
-      columnsToBeInserted.forEach((column) => {
-        const columnUuid = uuidv4();
-        columnNames[column.name] = columnUuid;
-        columnConfigurations[columnUuid] = columnConfigurationMap[column.name];
-      });
-
-      const configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
-
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
-
-      if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
-
-      if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(internalTable.id, columnsToBeDeleted);
-      if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(internalTable.id, columnsToBeInserted);
-      if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(internalTable.id, columnstoBeUpdated);
-
-      if (params.new_table_name) {
-        const { new_table_name } = params;
-        const newInternalTable = await queryRunner.manager.findOne(InternalTable, {
-          where: { organizationId, tableName: new_table_name },
+  async attachUserGroup(groups, organizationId, userId, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      for (const group of groups) {
+        const orgGroupPermission = await manager.findOne(GroupPermission, {
+          where: {
+            organizationId: organizationId,
+            group: group,
+          },
         });
 
-        if (newInternalTable) throw new BadRequestException('Table name already exists: ' + new_table_name);
-        await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: new_table_name });
+        if (!orgGroupPermission) {
+          throw new BadRequestException(`${group} group does not exist for current organization`);
+        }
+        const userGroupPermission = manager.create(UserGroupPermission, {
+          groupPermissionId: orgGroupPermission.id,
+          userId: userId,
+        });
+        await manager.save(userGroupPermission);
       }
-
-      await tjdbQueryRunner.commitTransaction();
-      await queryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await tjdbQueryRunner.release();
-      await queryRunner.release();
-    } catch (error) {
-      await tjdbQueryRunner.rollbackTransaction();
-      await queryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
-      await queryRunner.release();
-
-      throw new TooljetDatabaseError(error.message, { origin: 'edit_table', internalTables: [internalTable] }, error);
-    }
+    }, manager);
   }
 
-  private async addColumn(organizationId: string, params) {
-    const { table_name: tableName, column, foreign_keys } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
+  async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
+    const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups, source } = params;
 
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+    const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
-    let referenced_tables_info = {};
-    if (foreign_keys.length) {
-      const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
-      referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-        referenced_table_list,
-        organizationId,
-        'TABLENAME'
-      );
-    }
-
-    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
-      foreign_keys,
-      organizationId
-    );
-
-    if (isFKfromCompositePK)
-      throw new ConflictException(
-        'Foreign key cannot be created as the referenced column is in the composite primary key.'
-      );
-
-    const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
-    await tjdbQueryRunnner.connect();
-    await tjdbQueryRunnner.startTransaction();
-
-    const queryRunner = this.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
-      const columnUuid = uuidv4();
-      columnNames[column['column_name']] = columnUuid;
-      columnConfigurations[columnUuid] = column?.configurations || {};
-      const configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
-
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
-
-      await tjdbQueryRunnner.addColumn(
-        internalTable.id,
-        new TableColumn({
-          name: column['column_name'],
-          type: column['data_type'],
-          ...(column['column_default'] && {
-            default:
-              column['data_type'] === 'character varying'
-                ? this.addQuotesIfString(column['column_default'])
-                : column['column_default'],
-          }),
-          isNullable: !column?.constraints_type.is_not_null || false,
-          isUnique: column?.constraints_type.is_unique || false,
-          ...(column?.constraints_type.is_primary_key && { isPrimary: true }),
-        })
-      );
-
-      if (foreign_keys.length) {
-        const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
-          (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
-        );
-        await tjdbQueryRunnner.createForeignKeys(internalTable.id, foreignKeys);
-      }
-
-      await queryRunner.commitTransaction();
-      await tjdbQueryRunnner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await queryRunner.release();
-      await tjdbQueryRunnner.release();
-    } catch (err) {
-      await tjdbQueryRunnner.rollbackTransaction();
-      await tjdbQueryRunnner.release();
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-        ([tableName, tableId]): { id: string; tableName: string } => {
-          return {
-            id: tableId as string,
-            tableName: tableName,
-          };
-        }
-      );
-
-      throw new TooljetDatabaseError(
-        err.message,
-        { origin: 'add_column', internalTables: [internalTable, ...referencedColumnInfoForError] },
-        err
-      );
-    }
-  }
-
-  private async dropColumn(organizationId: string, params) {
-    const { table_name: tableName, column } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
-
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-
-    // const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN "${column['column_name']}"`;
-    const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
-    await tjdbQueryRunnner.connect();
-    const queryRunner = this.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
-      const columnUuid = columnNames[column['column_name']];
-      delete columnNames[column['column_name']];
-      delete columnConfigurations[columnUuid];
-      const configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
-      const result = await tjdbQueryRunnner.dropColumn(internalTable.id, column['column_name']);
-      await queryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await queryRunner.release();
-      return result;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      throw new TooljetDatabaseError(error.message, { origin: 'drop_column', internalTables: [internalTable] }, error);
-    } finally {
-      await tjdbQueryRunnner.release();
-    }
-  }
-
-  private async joinTable(organizationId: string, params: Record<string, unknown>) {
-    const { joinQueryJson } = params;
-    if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
-
-    // Gathering tables used, from Join coditions
-    const tableSet = new Set();
-    const joinOptions = joinQueryJson?.['joins'];
-    (joinOptions || []).forEach((join) => {
-      const { table, conditions } = join;
-      tableSet.add(table);
-      conditions?.conditionsList?.forEach((condition) => {
-        const { leftField, rightField } = condition;
-        if (leftField?.table) {
-          tableSet.add(leftField?.table);
-        }
-        if (rightField?.table) {
-          tableSet.add(rightField?.table);
-        }
-      });
-    });
-
-    const tables = [...tableSet].map((tableId: string) => ({
-      name: tableId,
-      type: 'Table',
-    }));
-
-    if (!tables?.length) throw new BadRequestException('Tables are not chosen');
-
-    const tableIdList: Array<string> = tables
-      .filter((table) => table.type === 'Table')
-      .map((filteredTable) => filteredTable.name);
-
-    const internalTables = await this.findOrFailInternalTableFromTableId(tableIdList, organizationId);
-    const internalTableIdToNameMap = tableIdList.reduce((acc, tableId) => {
-      return {
-        ...acc,
-        [tableId]: internalTables.find((table) => table.id === tableId).tableName,
-      };
-    }, {});
-
-    try {
-      const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap);
-      return await queryBuilder.getRawMany();
-    } catch (error) {
-      const errorObj = new QueryFailedError(error, [], new PostgrestError(error));
-      const tjdbErrorObj = new TooljetDatabaseError(
-        error.message,
-        {
-          origin: 'join_tables',
-          internalTables: internalTables,
-        },
-        errorObj
-      );
-      const alteredErrorMessage = tjdbErrorObj.toString();
-      throw new QueryError(alteredErrorMessage, alteredErrorMessage, {});
-    }
-  }
-
-  private buildJoinQuery(queryJson, internalTableIdToNameMap): SelectQueryBuilder<any> {
-    const queryBuilder: SelectQueryBuilder<any> = this.tooljetDbManager.createQueryBuilder();
-
-    // Mandatory attributes
-    if (isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates))
-      throw new BadRequestException('The Select and Aggregate statement is not present.');
-    if (isEmpty(queryJson.from)) throw new BadRequestException('From table is not selected.');
-
-    // Building `SELECT` statement with aliased column names
-    if (!isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates)) {
-      queryJson.fields.forEach((field) => {
-        const fieldName = `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
-        const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
-        queryBuilder.addSelect(fieldName, fieldAlias);
-      });
-    }
-
-    // Building `AGGREGATE` statement :
-    if (!isEmpty(queryJson.aggregates)) {
-      Object.entries(queryJson.aggregates).forEach(([_key, aggregateParams]) => {
-        const { aggFx, column, table_id: tableId } = aggregateParams as any;
-        if (isEmpty(column) || isEmpty(aggFx))
-          throw new Error('There are empty values in certain aggregate conditions.');
-
-        const allowedAggFunctions = ['sum', 'count'];
-        if (!allowedAggFunctions.includes(aggFx)) {
-          throw new BadRequestException('Invalid aggregate function');
-        }
-
-        queryBuilder.addSelect(
-          `${AggregateFunctions[aggFx]}("${internalTableIdToNameMap[tableId]}"."${column}")`,
-          `${internalTableIdToNameMap[tableId]}_${column}_${aggFx}`
-        );
-      });
-    }
-
-    // Building `GROUP_BY` statement :
-    if (!isEmpty(queryJson.group_by)) {
-      Object.entries(queryJson.group_by).forEach(([groupByTableId, groupByColumList]: [string, Array<string>]) => {
-        if (!isEmpty(groupByColumList)) {
-          groupByColumList.forEach((groupByColum) => {
-            // The 'SELECT' statement needs to have 'GROUP_BY' columns added.
-            queryBuilder.addSelect(
-              `"${internalTableIdToNameMap[groupByTableId]}"."${groupByColum}"`,
-              `${internalTableIdToNameMap[groupByTableId]}_${groupByColum}`
-            );
-
-            // Building `GROUP_BY` statement
-            queryBuilder.addGroupBy(`"${internalTableIdToNameMap[groupByTableId]}"."${groupByColum}"`);
-          });
-        }
-      });
-    }
-
-    // from table
-    queryBuilder.from(queryJson.from.name, internalTableIdToNameMap[queryJson.from.name]);
-
-    // join tables with conditions
-    queryJson.joins.forEach((join) => {
-      const joinAlias = internalTableIdToNameMap[join.table];
-      const conditions = this.constructFilterConditions(join.conditions, internalTableIdToNameMap);
-
-      const joinFunction = queryBuilder[camelCase(join.joinType) + 'Join'];
-      joinFunction.call(queryBuilder, join.table, joinAlias, conditions.query, conditions.params);
-    });
-
-    // conditions
-    if (queryJson.conditions) {
-      const conditions = this.constructFilterConditions(queryJson.conditions, internalTableIdToNameMap);
-      queryBuilder.where(conditions.query, conditions.params);
-    }
-
-    // order by
-    if (queryJson.order_by) {
-      queryJson.order_by.forEach((order) => {
-        const orderByColumn = `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"`;
-        queryBuilder.addOrderBy(orderByColumn, order.direction as 'ASC' | 'DESC');
-      });
-    }
-    // limit and offset
-    if (queryJson.limit) queryBuilder.limit(parseInt(queryJson.limit, 10));
-    if (queryJson.offset) queryBuilder.offset(parseInt(queryJson.offset, 10));
-
-    return queryBuilder;
-  }
-
-  private constructFilterConditions(conditions, internalTableIdToNameMap) {
-    let conditionString = '';
-    const conditionParams = {};
-
-    const maybeParameterizeValue = (operator, paramName, value) => {
-      switch (operator) {
-        case 'IS':
-          if (value !== 'NULL' && value !== 'NOT NULL') {
-            throw new BadRequestException('Invalid value for IS operator. Allowed values are NULL or NOT NULL.');
-          }
-          return value;
-        case 'IN':
-          if (!Array.isArray(value)) {
-            throw new BadRequestException('Invalid value for IN operator. Expected an array.');
-          }
-          return `(:...${paramName})`;
-        default:
-          return `:${paramName}`;
-      }
+    const updatableParams = {
+      forgotPasswordToken,
+      firstName,
+      lastName,
+      password: hashedPassword,
+      source,
     };
 
-    conditions.conditionsList.forEach((condition, index) => {
-      const paramName = `${condition.leftField.columnName}_${index}`;
+    // removing keys with undefined values
+    cleanObject(updatableParams);
 
-      const leftField =
-        condition.leftField.type == 'Column'
-          ? `"${internalTableIdToNameMap[condition.leftField.table]}"."${condition.leftField.columnName}"`
-          : `${condition.leftField.columnName}`;
-
-      const rightField =
-        condition.rightField.type == 'Column'
-          ? `"${internalTableIdToNameMap[condition.rightField.table]}"."${condition.rightField.columnName}"`
-          : maybeParameterizeValue(condition.operator, paramName, condition.rightField.value);
-
-      conditionString += `${leftField} ${condition.operator} ${rightField}`;
-
-      conditionParams[paramName] = condition.rightField.value;
-
-      if (index < conditions.conditionsList.length - 1) {
-        conditionString += ` ${conditions.operator} `;
-      }
-    });
-
-    return { query: `(${conditionString})`, params: conditionParams };
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(User, userId, updatableParams);
+      const user = await manager.findOne(User, { where: { id: userId } });
+      await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
+      await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
+      return user;
+    }, manager);
   }
 
-  private async findOrFailInternalTableFromTableId(requestedTableIdList: Array<string>, organizationId: string) {
-    const internalTables = await this.manager.find(InternalTable, {
-      where: {
-        organizationId,
-        id: In(requestedTableIdList),
-      },
-    });
-
-    const obtainedTableNames = internalTables.map((t) => t.id);
-    const tableNamesNotInOrg = requestedTableIdList.filter((tableId) => !obtainedTableNames.includes(tableId));
-
-    if (isEmpty(tableNamesNotInOrg)) return internalTables;
-
-    throw new NotFoundException('Some tables are not found');
+  async updateUser(userId: string, updatableParams: Partial<User>, manager?: EntityManager) {
+    if (updatableParams.password) {
+      updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
+    }
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(User, userId, updatableParams);
+    }, manager);
   }
 
-  private async editColumn(organizationId: string, params) {
-    const { table_name: tableName, column, foreign_key_id_to_delete } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
+  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
+    const orgId = organizationId || user.defaultOrganizationId;
+    if (addGroups) {
+      const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId);
 
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+      for (const group of addGroups) {
+        const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
 
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
-    await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
-    const queryRunner = this.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
-      const columnUuid = columnNames[column.column_name];
-      columnConfigurations[columnUuid] = { ...columnConfigurations[columnUuid], ...(column?.configurations || {}) };
-      if (column?.new_column_name) {
-        columnNames[column.new_column_name] = columnUuid;
-        delete columnNames[column.column_name];
+        if (!orgGroupPermission) {
+          throw new BadRequestException(`${group} group does not exist for current organization`);
+        }
+        await dbTransactionWrap(async (manager: EntityManager) => {
+          const userGroupPermission = manager.create(UserGroupPermission, {
+            groupPermissionId: orgGroupPermission.id,
+            userId: user.id,
+          });
+          await manager.save(userGroupPermission);
+        }, manager);
       }
-
-      const configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
-
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
-
-      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id_to_delete);
-      await tjdbQueryRunner.changeColumn(
-        internalTable.id,
-        column.column_name,
-        new TableColumn({
-          name: column.column_name,
-          type: column['data_type'],
-          ...(column['column_default'] && {
-            default:
-              column['data_type'] === 'character varying'
-                ? this.addQuotesIfString(column['column_default'])
-                : column['column_default'],
-          }),
-          isNullable: !column?.constraints_type.is_not_null || false,
-          isUnique: column?.constraints_type.is_unique || false,
-          isPrimary: column?.constraints_type.is_primary_key || false,
-        })
-      );
-
-      if (column?.column_name && column?.new_column_name) {
-        await tjdbQueryRunner.renameColumn(internalTable.id, column?.column_name, column?.new_column_name);
-      }
-
-      await tjdbQueryRunner.commitTransaction();
-      await queryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await tjdbQueryRunner.release();
-      await queryRunner.release();
-    } catch (error) {
-      await tjdbQueryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      throw new TooljetDatabaseError(error.message, { origin: 'edit_column', internalTables: [internalTable] }, error);
     }
   }
 
-  private prepareColumnListForCreateTable(columns) {
-    const columnList = columns.map((column) => {
-      const { column_name, constraints_type = {} } = column;
-      const is_primary_key_column = constraints_type?.is_primary_key || false;
-
-      const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
-        const { data_type, column_default = undefined } = column;
-        const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
-        const isCharacterVarying = () => data_type === 'character varying';
-        const isTimestampWithTimeZone = () => data_type === 'timestamp with time zone';
-
-        if (isSerial()) return { data_type: 'serial', column_default: undefined };
-        if (isCharacterVarying()) return { data_type, column_default: this.addQuotesIfString(column_default) };
-        if (isTimestampWithTimeZone()) return { data_type, column_default: this.addQuotesIfMissing(column_default) };
-
-        return { data_type, column_default };
-      };
-
-      const { data_type, column_default } = prepareDataTypeAndDefault(column);
-
-      return {
-        name: column_name,
-        type: data_type,
-        default: column_default,
-        isNullable: constraints_type?.is_not_null ? false : true,
-        isUnique: constraints_type?.is_unique && !is_primary_key_column ? true : false,
-      };
-    });
-    return columnList;
-  }
-
-  private prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info) {
-    if (!foreign_keys.length) return [];
-    const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
-      const {
-        column_names,
-        referenced_table_name,
-        referenced_column_names,
-        on_delete = '',
-        on_update = '',
-      } = foreignKeyDetail;
-
-      return {
-        columnNames: column_names,
-        referencedTableName: referenced_tables_info[referenced_table_name],
-        referencedColumnNames: referenced_column_names,
-        ...(on_delete && { onDelete: on_delete }),
-        ...(on_update && { onUpdate: on_update }),
-      };
-    });
-    return foreignKeyList;
-  }
-
-  // Method to check : Tables mentioned in Foreignkey is valid or not ( based on 'type' of input logic differs)
-  private async fetchAndCheckIfValidForeignKeyTables(
-    referenced_table_list,
-    organisation_id,
-    type: 'TABLEID' | 'TABLENAME',
-    manager: EntityManager = this.manager
+  async removeUserGroupPermissionsIfExists(
+    manager: EntityManager,
+    user: User,
+    removeGroups: string[],
+    organizationId?: string
   ) {
-    const valid_referenced_table_details = await manager.find(InternalTable, {
-      where: {
-        organizationId: organisation_id,
-        ...(type === 'TABLENAME' && { tableName: In(referenced_table_list) }),
-        ...(type === 'TABLEID' && { id: In(referenced_table_list) }),
-      },
-      select: ['tableName', 'id'],
-    });
+    const orgId = organizationId || user.defaultOrganizationId;
+    if (removeGroups) {
+      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups, orgId);
+      if (removeGroups.includes('all_users')) {
+        throw new BadRequestException('Cannot remove user from default group.');
+      }
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        const groupPermissions = await manager.find(GroupPermission, {
+          group: In(removeGroups),
+          organizationId: orgId,
+        });
+        const groupIdsToMaybeRemove = groupPermissions.map((permission) => permission.id);
 
-    const referenced_tables_info = {};
-    const validReferencedTableSet = new Set(
-      valid_referenced_table_details.map((referenced_table_detail) => {
-        if (type === 'TABLEID') {
-          referenced_tables_info[referenced_table_detail.id] = referenced_table_detail.tableName;
-          return referenced_table_detail.id;
-        }
-        referenced_tables_info[referenced_table_detail.tableName] = referenced_table_detail.id;
-        return referenced_table_detail.tableName;
+        await manager.delete(UserGroupPermission, {
+          groupPermissionId: In(groupIdsToMaybeRemove),
+          userId: user.id,
+        });
+      }, manager);
+    }
+  }
+
+  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin'], organizationId: string) {
+    const removingAdmin = removeGroups.includes('admin');
+    if (!removingAdmin) return;
+
+    const result = await createQueryBuilder(User, 'users')
+      .innerJoin('users.groupPermissions', 'group_permissions')
+      .innerJoin('users.organizationUsers', 'organization_users')
+      .where('organization_users.user_id != :userId', { userId: user.id })
+      .andWhere('organization_users.status = :status', { status: WORKSPACE_USER_STATUS.ACTIVE })
+      .andWhere('group_permissions.group = :group', { group: 'admin' })
+      .andWhere('group_permissions.organization_id = :organizationId', {
+        organizationId,
       })
-    );
+      .getCount();
 
-    const invalid_tables = [];
-    const is_all_tables_exist = referenced_table_list.every((referenced_table) => {
-      if (validReferencedTableSet.has(referenced_table)) return true;
-      invalid_tables.push(referenced_table);
-      return false;
-    });
-
-    if (!is_all_tables_exist) {
-      const errorMessage =
-        type === 'TABLEID'
-          ? 'Some tables used in Foreign key was not found'
-          : `Tables: ${invalid_tables.join(',')} - used for Foreign key reference was not found`;
-      throw new BadRequestException(errorMessage);
-    }
-    return referenced_tables_info;
+    if (result == 0) throw new BadRequestException('Atleast one active admin is required.');
   }
 
-  private async createForeignKey(
-    organizationId: string,
-    params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
-    const { table_name, foreign_keys } = params;
-    const { appManager, tjdbManager } = connectionManagers;
-    if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
-    const internalTable = await appManager.findOne(InternalTable, {
-      where: { organizationId: organizationId, tableName: table_name },
-    });
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+  async hasGroup(user: User, group: string, organizationId?: string, manager?: EntityManager): Promise<boolean> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const result = await manager
+        .createQueryBuilder(GroupPermission, 'group_permissions')
+        .innerJoin('group_permissions.userGroupPermission', 'user_group_permissions')
+        .where('group_permissions.organization_id = :organizationId', {
+          organizationId: organizationId || user.organizationId,
+        })
+        .andWhere('group_permissions.group = :group ', { group })
+        .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
+        .getCount();
 
-    let referenced_tables_info = {};
-    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
-    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-      referenced_table_list,
-      organizationId,
-      'TABLENAME',
-      appManager
-    );
+      return result > 0;
+    }, manager);
+  }
 
-    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
-      foreign_keys,
-      organizationId,
-      connectionManagers
-    );
+  async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
+    switch (entityName) {
+      case 'App':
+        return await this.canUserPerformActionOnApp(user, action, resourceId);
 
-    if (isFKfromCompositePK)
-      throw new ConflictException(
-        'Foreign key cannot be created as the referenced column is in the composite primary key.'
-      );
+      case 'User':
+      case 'Plugin':
+      case 'GlobalDataSource':
+        return await this.hasGroup(user, 'admin');
 
-    const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
-    await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
-    try {
-      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
-        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
-      );
-      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
-      await tjdbQueryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
-      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
+      case 'Thread':
+      case 'Comment':
+        return await this.canUserPerformActionOnApp(user, 'update', resourceId);
 
-      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
-    } catch (err) {
-      await tjdbQueryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
+      case 'Folder':
+        return await this.canUserPerformActionOnFolder(user, action);
 
-      const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-        ([tableName, tableId]): { id: string; tableName: string } => {
-          return {
-            id: tableId as string,
-            tableName: tableName,
-          };
-        }
-      );
+      case 'OrgEnvironmentVariable':
+        return await this.canUserPerformActionOnEnvironmentVariable(user, action);
 
-      throw new TooljetDatabaseError(
-        err.message,
-        {
-          origin: 'create_foreign_key',
-          internalTables: [internalTable, ...referencedColumnInfoForError],
-        },
-        err
-      );
+      case 'OrganizationConstant':
+        return await this.canUserPerformActionOnOrgEnvironmentConstants(user, action);
+
+      default:
+        return false;
     }
   }
 
-  private async updateForeignKey(organizationId: string, params) {
-    const { table_name, foreign_key_id, foreign_keys } = params;
-    if (!foreign_key_id) throw new BadRequestException('Foreign key id is mandatory');
-    if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
+  async canUserPerformActionOnApp(user: User, action: string, appId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
 
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId: organizationId, tableName: table_name },
-    });
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
-
-    let referenced_tables_info = {};
-    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
-    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-      referenced_table_list,
-      organizationId,
-      'TABLENAME'
-    );
-
-    const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
-      foreign_keys,
-      organizationId
-    );
-
-    if (isFKfromCompositePK)
-      throw new ConflictException(
-        'Foreign key cannot be created as the referenced column is in the composite primary key.'
-      );
-
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
-    await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
-
-    try {
-      await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
-
-      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
-        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
-      );
-      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
-
-      await tjdbQueryRunner.commitTransaction();
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await tjdbQueryRunner.release();
-      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
-    } catch (err) {
-      await tjdbQueryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
-      const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-        ([tableName, tableId]): { id: string; tableName: string } => {
-          return {
-            id: tableId as string,
-            tableName: tableName,
-          };
-        }
-      );
-
-      throw new TooljetDatabaseError(
-        err.message,
-        {
-          origin: 'update_foreign_key',
-          internalTables: [internalTable, ...referencedColumnInfoForError],
-        },
-        err
-      );
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('appCreate', await this.groupPermissions(user));
+        break;
+      case 'read':
+      case 'update':
+        permissionGrant =
+          this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, appId)) ||
+          (await this.isUserOwnerOfApp(user, appId));
+        break;
+      case 'delete':
+        permissionGrant =
+          this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
+          this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
+          (await this.isUserOwnerOfApp(user, appId));
+        break;
+      default:
+        permissionGrant = false;
+        break;
     }
+
+    return permissionGrant;
   }
 
-  private async deleteForeignKey(organizationId: string, params) {
-    const { table_name, foreign_key_id } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId: organizationId, tableName: table_name },
+  async canUserPerformActionOnFolder(user: User, action: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('folderCreate', await this.groupPermissions(user));
+        break;
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction('folderUpdate', await this.groupPermissions(user));
+        break;
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction('folderDelete', await this.groupPermissions(user));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnEnvironmentVariable(user: User, action: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableCreate',
+          await this.groupPermissions(user)
+        );
+        break;
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableUpdate',
+          await this.groupPermissions(user)
+        );
+        break;
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableDelete',
+          await this.groupPermissions(user)
+        );
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnOrgEnvironmentConstants(user: User, action: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentConstantCreate',
+          await this.groupPermissions(user)
+        );
+        break;
+
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentConstantDelete',
+          await this.groupPermissions(user)
+        );
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async isUserOwnerOfApp(user: User, appId: string): Promise<boolean> {
+    const app: App = await this.appsRepository.findOne({
+      where: {
+        id: appId,
+        userId: user.id,
+      },
     });
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+    return !!app && app.organizationId === user.organizationId;
+  }
+
+  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
+    let app: App;
     try {
-      const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
-      await tjdbQueryRunner.connect();
-      await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      return { statusCode: 200, message: 'Foreign key relation deleted successfully!' };
+      app = await this.appsRepository.findOneOrFail(slug);
     } catch (error) {
-      throw new TooljetDatabaseError(
-        error.message,
-        {
-          origin: 'delete_foreign_key',
-          internalTables: [internalTable],
-        },
-        error
-      );
+      app = await this.appsRepository.findOne({
+        slug,
+      });
     }
+
+    return { organizationId: app?.organizationId, isPublic: app?.isPublic };
   }
 
-  private async checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
-    foreignKeys,
-    organizationId,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ) {
-    if (!foreignKeys.length) return;
-    let isFKfromCompositePK = false;
-    for (const foreignKeyDetails of foreignKeys) {
-      const { referenced_table_name = '', referenced_column_names = [] } = foreignKeyDetails;
-      const referencedTableMetaData = await this.viewTable(
-        organizationId,
-        { table_name: referenced_table_name },
-        connectionManagers
-      );
-      const { columns = [] } = referencedTableMetaData;
-      const pkColumnList = [];
+  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const user = await manager.findOne(User, userId);
+      const currentAvatarId = user.avatarId;
+      const createFileDto = new CreateFileDto();
+      createFileDto.filename = filename;
+      createFileDto.data = imageBuffer;
+      const avatar = await this.filesService.create(createFileDto, manager);
 
-      if (columns.length) {
-        columns.forEach((column: any) => {
-          const { constraints_type = {} } = column;
-          if (constraints_type?.is_primary_key) pkColumnList.push(column.column_name);
-        });
-      }
+      await manager.update(User, userId, {
+        avatarId: avatar.id,
+      });
 
-      if (
-        pkColumnList.length > 1 &&
-        referenced_column_names.some((referencedColumnName) => pkColumnList.includes(referencedColumnName))
-      ) {
-        isFKfromCompositePK = true;
+      if (currentAvatarId) {
+        await this.filesService.remove(currentAvatarId, manager);
       }
+      return avatar;
+    });
+  }
+
+  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
+    return permissions.some((p) => p[action]);
+  }
+
+  async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
+      const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+
+      return await manager.findByIds(GroupPermission, groupIds);
+    }, manager);
+  }
+
+  async groupPermissionsForOrganization(organizationId: string) {
+    const groupPermissionRepository = getRepository(GroupPermission);
+
+    return await groupPermissionRepository.find({ organizationId });
+  }
+
+  async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
+    const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+
+    if (!groupIds || groupIds.length === 0) {
+      return [];
     }
-    return isFKfromCompositePK;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const query = manager
+        .createQueryBuilder(AppGroupPermission, 'app_group_permissions')
+        .innerJoin(
+          'app_group_permissions.groupPermission',
+          'group_permissions',
+          'group_permissions.organization_id = :organizationId',
+          {
+            organizationId: user.organizationId,
+          }
+        )
+        .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
+
+      if (appId) {
+        query.andWhere('app_group_permissions.appId = :appId', { appId });
+      }
+      return await query.getMany();
+    }, manager);
+  }
+
+  async userGroupPermissions(
+    user: User,
+    organizationId?: string,
+    manager?: EntityManager
+  ): Promise<UserGroupPermission[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager
+        .createQueryBuilder(UserGroupPermission, 'user_group_permissions')
+        .innerJoin('user_group_permissions.groupPermission', 'group_permissions')
+        .where('group_permissions.organization_id = :organizationId', {
+          organizationId: organizationId || user.organizationId,
+        })
+        .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
+        .getMany();
+    }, manager);
   }
 }

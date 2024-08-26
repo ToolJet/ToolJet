@@ -2,6 +2,50 @@ import { QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { capitalize } from 'lodash';
 
+export const TJDB = {
+  character_varying: 'character varying' as const,
+  integer: 'integer' as const,
+  bigint: 'bigint' as const,
+  serial: 'serial' as const,
+  double_precision: 'double precision' as const,
+  boolean: 'boolean' as const,
+};
+
+export type TooljetDatabaseDataTypes = (typeof TJDB)[keyof typeof TJDB];
+
+export type TooljetDatabaseColumn = {
+  column_name: string;
+  data_type: TooljetDatabaseDataTypes;
+  column_default: string | null;
+  character_maximum_length: number | null;
+  numeric_precision: number | null;
+  constraints_type: {
+    is_not_null: boolean;
+    is_primary_key: boolean;
+    is_unique: boolean;
+  };
+  keytype: string | null;
+};
+
+export type TooljetDatabaseForeignKey = {
+  column_names: string[];
+  referenced_table_name: string;
+  referenced_column_names: string[];
+  on_update: string;
+  on_delete: string;
+  constraint_name: string;
+  referenced_table_id: string;
+};
+
+export type TooljetDatabaseTable = {
+  id: string;
+  table_name: string;
+  schema: {
+    columns: TooljetDatabaseColumn[];
+    foreign_keys: TooljetDatabaseForeignKey[];
+  };
+};
+
 enum PostgresErrorCode {
   UniqueViolation = '23505',
   CheckViolation = '23514',

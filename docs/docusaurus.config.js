@@ -34,7 +34,7 @@ module.exports = {
     },
     navbar: {
       logo: {
-        href: '/docs',
+        href: '/docs/',
         alt: 'ToolJet Logo',
         src: 'img/Logomark.svg',
         srcDark: `img/Logomark_white.svg`,
@@ -122,7 +122,18 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.43.0',
+          lastVersion: '2.50.0-LTS',
+          versions: {
+            '2.61.0': {
+              banner: 'none'
+            },
+            '2.62.0': {
+              banner: 'none'
+            },
+            '2.65.0': {
+              banner: 'none'
+            }
+          }
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -135,7 +146,7 @@ module.exports = {
         },
         googleTagManager: isProd
           ? {
-            containerId: process.env.GTM,
+            containerId: process.env.GTM || 'development',
           }
           : undefined,
       },
@@ -143,6 +154,17 @@ module.exports = {
   ],
   plugins: [
     devServerPlugin,
-    'plugin-image-zoom'
+    'plugin-image-zoom',
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            to: '/docs/',
+            from: '/',
+          },
+        ],
+      },
+    ],
   ],
 };
