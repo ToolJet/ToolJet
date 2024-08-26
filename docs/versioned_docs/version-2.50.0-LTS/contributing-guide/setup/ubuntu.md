@@ -55,7 +55,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     After forking, clone the forked repository to your local machine using the URL of your forked repo.
 
     ```bash
-    git clone https://github.com/<your-username>/tooljet.git
+    git clone https://github.com/<your-username>/ToolJet.git
     ```
     
 3. Set up environment variables

@@ -36,7 +36,7 @@ Make sure to run it within the WSL2 terminal.
    After forking, clone the forked repository to your local machine using the URL of your forked repo.
 
 ```bash
-git clone https://github.com/<your-username>/tooljet.git
+git clone https://github.com/<your-username>/ToolJet.git
 ```
 
 3. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
