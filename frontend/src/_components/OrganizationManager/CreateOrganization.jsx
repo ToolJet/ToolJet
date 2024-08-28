@@ -134,10 +134,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     await handleInputChange(value, 'slug');
   }, 300);
   const delayedNameChange = _.debounce(async (value) => {
-    console.log('check slug set', isSlugSet.current);
-    if (!isSlugSet.current) {
-      delayedSlugChange(value);
-    }
     setWorkspaceNameProgress(true);
     await handleInputChange(value, 'name');
   }, 300);
