@@ -339,3 +339,20 @@ img {
     /* Fixes #3856 */
   }
 }
+
+@media (max-width: 1000px) {
+  /* Styles for screens smaller than 1000px */
+  [data-theme='dark'] .clean-btn{
+    background-color: #272729;
+    color: #fff;
+    border-radius: 4px;
+    box-shadow: none;
+  }
+
+  [data-theme='dark'] .table-of-contents {
+    background-color: #272729;
+    color: #272729;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+  }
+}
