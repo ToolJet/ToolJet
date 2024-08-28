@@ -19,6 +19,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { t } = useTranslation();
   const isSlugSet = useRef(false); // Flag to track if slug has been initially set
+  const sluginput = useRef('');
 
   const createOrganization = () => {
     let emptyError = false;
@@ -56,6 +57,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
+    console.log('input field is changed', value, field);
     if (field === 'slug') {
       setSlug({
         ...slug,
@@ -132,13 +134,28 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     await handleInputChange(value, 'slug');
   }, 300);
   const delayedNameChange = _.debounce(async (value) => {
+    console.log('check slug set', isSlugSet.current);
+    if (!isSlugSet.current) {
+      delayedSlugChange(value);
+    }
     setWorkspaceNameProgress(true);
     await handleInputChange(value, 'name');
   }, 300);
   useEffect(() => {
+    console.log(
+      'slugset',
+      isSlugSet.current,
+      'Name',
+      name.value,
+      'slug progress',
+      slugProgress,
+      'workspacename',
+      workspaceNameProgress
+    );
     if (!isSlugSet.current && name.value && !slugProgress && !workspaceNameProgress) {
+      console.log('create default value');
       const defaultValue =
-        name.value
+        name?.value
           .replace(/\s+/g, '')
           .toLowerCase()
           .replace(/[^a-z0-9-\s]/g, '') || '';
@@ -147,6 +164,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       const checkWorkspaceUniqueness = async () => {
         try {
           await organizationService.checkWorkspaceUniqueness(null, defaultValue);
+          sluginput.current.value = defaultValue;
         } catch (errResponse) {
           let error = {
             status: false,
@@ -160,9 +178,10 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       setSlugProgress(false);
     }
     if (slugProgress && !isSlugSet.current) {
+      // this is to denote that the user has tried editing the slug -- so now slug and name are independent of each other
       isSlugSet.current = true;
     }
-  }, [name.value, slugProgress, workspaceNameProgress, isSlugSet]);
+  }, [name.value, slug.value, slugProgress, workspaceNameProgress, isSlugSet]);
 
   const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
 
@@ -194,6 +213,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 <label className="label tj-input-error" data-cy="workspace-error-label">
                   {name?.error || ''}
                 </label>
+              ) : name.value && !workspaceNameProgress ? (
+                <label className="label label-success" data-cy="slug-sucess-label">{`Workspace name accepted!`}</label>
               ) : (
                 <label className="label label-info" data-cy="workspace-name-info-label">
                   Name must be unique and max 50 characters
@@ -209,8 +230,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'}`}
                 placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
                 disabled={isCreating}
+                ref={sluginput}
                 maxLength={50}
-                defaultValue={slug.value || ''}
                 onChange={async (e) => {
                   e.persist();
                   await delayedSlugChange(e.target.value);
