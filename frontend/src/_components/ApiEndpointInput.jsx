@@ -42,23 +42,28 @@ const ApiEndpointInput = (props) => {
   };
 
   const changeParam = (paramType, paramName, value) => {
-    const newOptions = {
-      ...options,
-      params: {
-        ...options.params,
-        [paramType]: {
-          ...options.params[paramType],
-          [paramName]: value,
+    if (value === '') {
+      removeParam(paramType, paramName);
+      return;
+    } else {
+      const newOptions = {
+        ...options,
+        params: {
+          ...options.params,
+          [paramType]: {
+            ...options.params[paramType],
+            [paramName]: value,
+          },
         },
-      },
-    };
-    setOptions(newOptions);
-    props.optionsChanged(newOptions);
+      };
+      setOptions(newOptions);
+      props.optionsChanged(newOptions);
+    }
   };
 
   const removeParam = (paramType, paramName) => {
     const newOptions = JSON.parse(JSON.stringify(options));
-    newOptions['params'][paramType][paramName] = undefined;
+    delete newOptions['params'][paramType][paramName];
     setOptions(newOptions);
     props.optionsChanged(newOptions);
   };
@@ -179,15 +184,15 @@ const ApiEndpointInput = (props) => {
                             <div className="col-auto d-flex field field-width-179 align-items-center">
                               {param?.description ? (
                                 <ToolTip message={param.description}>
-                                  <u className="cursor-help">
+                                  <div className="cursor-help">
                                     <input
                                       type="text"
                                       value={param.name}
-                                      className="form-control"
+                                      className="form-control form-control-underline"
                                       placeholder="key"
                                       disabled
                                     />
-                                  </u>
+                                  </div>
                                 </ToolTip>
                               ) : (
                                 <input
@@ -201,7 +206,7 @@ const ApiEndpointInput = (props) => {
                               {param.required && <span className="text-danger fw-bold ">*</span>}
                               <div className="p-2 text-muted ">{param.schema?.type?.substring(0, 3).toUpperCase()}</div>
                             </div>
-                            <div className="col field overflow-hidden">
+                            <div className="col field overflow-hidden code-hinter-borderless">
                               <CodeHinter
                                 initialValue={options?.params?.path[param.name] ?? ''}
                                 mode="text"
@@ -212,26 +217,29 @@ const ApiEndpointInput = (props) => {
                                 height={'32px'}
                               />
                             </div>
-                            <span
-                              className="col-auto field-width-28 d-flex"
-                              role="button"
-                              onClick={() => removeParam('path', param.name)}
-                            >
-                              <svg
-                                width="100%"
-                                height="100%"
-                                viewBox="0 0 12 13"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  clipRule="evenodd"
-                                  d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
-                                  fill="#11181C"
-                                />
-                              </svg>
-                            </span>
+                            {options['params']['path'][param.name] !== undefined &&
+                              options['params']['path'][param.name] !== '' && (
+                                <span
+                                  className="code-hinter-clear-btn"
+                                  role="button"
+                                  onClick={() => removeParam('path', param.name)}
+                                >
+                                  <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      fill-rule="evenodd"
+                                      clip-rule="evenodd"
+                                      d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
+                                      fill="#ACB2B9"
+                                    />
+                                  </svg>
+                                </span>
+                              )}
                           </div>
                         </div>
                       ))}
@@ -255,15 +263,15 @@ const ApiEndpointInput = (props) => {
                             <div className="col-auto d-flex field field-width-179 align-items-center">
                               {param?.description ? (
                                 <ToolTip message={param.description}>
-                                  <u className="cursor-help">
+                                  <div className="cursor-help">
                                     <input
                                       type="text"
                                       value={param.name}
-                                      className="form-control"
+                                      className="form-control form-control-underline"
                                       placeholder="key"
                                       disabled
                                     />
-                                  </u>
+                                  </div>
                                 </ToolTip>
                               ) : (
                                 <input
@@ -285,7 +293,7 @@ const ApiEndpointInput = (props) => {
                                   : param?.schema?.type?.substring(0, 3).toUpperCase()}
                               </div>
                             </div>
-                            <div className="col field overflow-hidden">
+                            <div className="col field overflow-hidden code-hinter-borderless">
                               <CodeHinter
                                 initialValue={options.params?.query[param.name] ?? ''}
                                 mode="text"
@@ -296,26 +304,29 @@ const ApiEndpointInput = (props) => {
                                 height={'32px'}
                               />
                             </div>
-                            <span
-                              className="col-auto field-width-28 d-flex"
-                              role="button"
-                              onClick={() => removeParam('query', param.name)}
-                            >
-                              <svg
-                                width="100%"
-                                height="100%"
-                                viewBox="0 0 12 13"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  clipRule="evenodd"
-                                  d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
-                                  fill="#11181C"
-                                />
-                              </svg>
-                            </span>
+                            {options['params']['query'][param.name] !== undefined &&
+                              options['params']['query'][param.name] !== '' && (
+                                <span
+                                  className="code-hinter-clear-btn"
+                                  role="button"
+                                  onClick={() => removeParam('query', param.name)}
+                                >
+                                  <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      fill-rule="evenodd"
+                                      clip-rule="evenodd"
+                                      d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
+                                      fill="#ACB2B9"
+                                    />
+                                  </svg>
+                                </span>
+                              )}
                           </div>
                         </div>
                       ))}
@@ -362,15 +373,15 @@ const ApiEndpointInput = (props) => {
                                   ].schema.properties[param]['description']
                                 )}
                               >
-                                <u className="cursor-help">
+                                <div className="cursor-help">
                                   <input
                                     type="text"
                                     value={param}
-                                    className="form-control"
+                                    className="form-control form-control-underline"
                                     placeholder="key"
                                     disabled
                                   />
-                                </u>
+                                </div>
                               </ToolTip>
                             ) : (
                               <input type="text" value={param} className="form-control" placeholder="key" disabled />
@@ -384,8 +395,7 @@ const ApiEndpointInput = (props) => {
                                 .toUpperCase()}
                             </div>
                           </div>
-
-                          <div className="col field overflow-hidden">
+                          <div className="col field overflow-hidden code-hinter-borderless">
                             <CodeHinter
                               initialValue={options.params?.request[param] ?? ''}
                               mode="text"
@@ -396,26 +406,29 @@ const ApiEndpointInput = (props) => {
                               height={'32px'}
                             />
                           </div>
-                          <span
-                            className="col-auto field-width-28 d-flex"
-                            role="button"
-                            onClick={() => removeParam('request', param)}
-                          >
-                            <svg
-                              width="100%"
-                              height="100%"
-                              viewBox="0 0 12 13"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
-                                fill="#11181C"
-                              />
-                            </svg>
-                          </span>
+                          {options['params']['request'][param] !== undefined &&
+                            options['params']['request'][param] !== '' && (
+                              <span
+                                className="code-hinter-clear-btn"
+                                role="button"
+                                onClick={() => removeParam('request', param)}
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    fill-rule="evenodd"
+                                    clip-rule="evenodd"
+                                    d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
+                                    fill="#ACB2B9"
+                                  />
+                                </svg>
+                              </span>
+                            )}
                         </div>
                       </div>
                     ))}
