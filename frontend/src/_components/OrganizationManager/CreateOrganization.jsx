@@ -57,7 +57,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
-    console.log('input field is changed', value, field);
     if (field === 'slug') {
       setSlug({
         ...slug,
@@ -138,18 +137,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     await handleInputChange(value, 'name');
   }, 300);
   useEffect(() => {
-    console.log(
-      'slugset',
-      isSlugSet.current,
-      'Name',
-      name.value,
-      'slug progress',
-      slugProgress,
-      'workspacename',
-      workspaceNameProgress
-    );
     if (!isSlugSet.current && name.value && !slugProgress && !workspaceNameProgress) {
-      console.log('create default value');
       const defaultValue =
         name?.value
           .replace(/\s+/g, '')
