@@ -176,45 +176,11 @@ export default function generateColumnsData({
         cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
         column = { ...column };
 
-        column.cellBackgroundColor = rowDependentMap.cellBackgroundColor
-          ? resolveReferences(cell.column.cellBackgroundColor, currentState, '', { cellValue, rowData })
-          : column.cellBackgroundColor;
-
-        column.textColor = rowDependentMap.textColor
-          ? resolveReferences(cell.column.textColor, currentState, '', { cellValue, rowData })
-          : column.textColor;
-
-        column.minLength = rowDependentMap.minLength
-          ? resolveReferences(cell.column.minLength, currentState, 0, { cellValue, rowData })
-          : column.minLength;
-
-        column.maxLength = rowDependentMap.maxLength
-          ? resolveReferences(cell.column.maxLength, currentState, '', { cellValue, rowData })
-          : column.maxLength;
-
-        column.regex = rowDependentMap.regex
-          ? resolveReferences(cell.column.regex, currentState, '', { cellValue, rowData })
-          : column.regex;
-
-        column.isEditable = rowDependentMap.isEditable
-          ? resolveReferences(cell.column.isEditable, currentState, false, { cellValue, rowData })
-          : column.isEditable;
-
-        column.customRule = rowDependentMap.customRule
-          ? resolveReferences(cell.column.customRule, currentState, '', { cellValue, rowData })
-          : column.customRule;
-
-        column.minDate = rowDependentMap.minDate
-          ? resolveReferences(cell.column.minDate, currentState, '', { cellValue, rowData })
-          : column.minDate;
-
-        column.maxDate = rowDependentMap.maxDate
-          ? resolveReferences(cell.column.maxDate, currentState, '', { cellValue, rowData })
-          : column.maxDate;
-
-        column.borderRadius = rowDependentMap.borderRadius
-          ? resolveReferences(cell.column.borderRadius, currentState, 0, { cellValue, rowData })
-          : column.borderRadius;
+        Object.keys(rowDependentMap).map((key) => {
+          column[key] = rowDependentMap[key]
+            ? resolveReferences(cell.column?.[key], currentState, '', { cellValue, rowData })
+            : column[key];
+        });
 
         switch (columnType) {
           case 'string':
