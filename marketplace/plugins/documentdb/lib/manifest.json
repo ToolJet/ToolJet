@@ -12,61 +12,211 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
-  },
-  "defaults": {},
-  "properties": {
-    "connection_type": {
-      "label": "",
-      "key": "connection_type",
-      "type": "dropdown-component-flip",
-      "description": "Single select dropdown for connection_type",
-      "list": [
-        {
-          "name": "Manual connection",
-          "value": "manual"
-        },
-        {
-          "name": "Connect using connection string",
-          "value": "string"
-        }
-      ]
-    },
-    "manual": {
+    "options": {
       "host": {
-        "label": "Host",
-        "key": "host",
-        "type": "text",
-        "description": "Enter host"
+        "type": "string"
       },
       "port": {
-        "label": "Port",
-        "key": "port",
-        "type": "text",
-        "description": "Enter port"
+        "type": "string"
       },
       "username": {
-        "label": "Username",
-        "key": "username",
-        "type": "text",
-        "description": "Enter username"
+        "type": "string"
       },
       "password": {
-        "label": "Password",
-        "key": "password",
-        "type": "password",
-        "description": "Enter password"
-      }
-    },
-    "string": {
+        "type": "string",
+        "encrypted": true
+      },
+      "connection_type": {
+        "type": "options"
+      },
       "connection_string": {
-        "label": "Connection string",
-        "key": "connection_string",
-        "type": "text",
-        "encrypted": true,
-        "description": "mongodb://tooljet:<password>@docdb.cfki0io0krwn.ap-south-1.docdb.amazonaws.com/?tls=true&retryWrites=false"
+        "type": "string",
+        "encrypted": true
+      },
+      "sshHost": {
+        "type": "string"
+      },
+      "sshPort": {
+        "type": "string"
+      },
+      "sshUser": {
+        "type": "string"
+      },
+      "sshKey": {
+        "encrypted": true
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "location": {
+        "type": "string"
       }
     }
   },
-  "required": []
+  "defaults": {
+    "database": {
+      "value": ""
+    },
+    "host": {
+      "value": ""
+    },
+    "port": {
+      "value": 27017
+    },
+    "sshHost": {
+      "value": ""
+    },
+    "sshPort": {
+      "value": 22
+    },
+    "sshUser": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "connection_type": {
+      "value": "manual"
+    },
+    "connection_string": {
+      "value": ""
+    },
+    "location":{
+      "value": ""
+    }
+  },
+  "properties": {
+    "ssl_certificate": {
+      "label": "SSL Certificate",
+      "key": "ssl_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields": {
+        "connection_type": {
+            "label": "Connection type",
+            "key": "connection_type",
+            "type": "dropdown-component-flip",
+            "description": "Single select dropdown for connection_type",
+            "list": [
+              {
+                "name": "Manual connection",
+                "value": "manual"
+              },
+              {
+                "name": "Connection string",
+                "value": "string"
+              }
+            ]
+          },
+          "manual": {
+            "host": {
+              "label": "Host",
+              "key": "host",
+              "type": "text",
+              "description": "Enter host"
+            },
+            "port": {
+              "label": "Port",
+              "key": "port",
+              "type": "text",
+              "description": "Enter port"
+            },
+            "username": {
+              "label": "Username",
+              "key": "username",
+              "type": "text",
+              "description": "Enter username"
+            },
+            "password": {
+              "label": "Password",
+              "key": "password",
+              "type": "password",
+              "description": "Enter password"
+            },
+            "sshHost": {
+              "label": "SSH host",
+              "key": "sshHost",
+              "type": "text",
+              "description": "Enter SSH host"
+            },
+            "sshPort": {
+              "label": "SSH port",
+              "key": "sshPort",
+              "type": "text",
+              "description": "Enter SSH port"
+            },
+            "sshUser": {
+              "label": "SSH user",
+              "key": "sshUser",
+              "type": "text",
+              "description": "Enter SSH user"
+            },
+            "sshKey": {
+              "label": "SSH key",
+              "key": "sshKey",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter SSH key"
+            }
+          },
+          "string": {
+            "connection_string": {
+              "label": "Connection string",
+              "key": "connection_string",
+              "type": "text",
+              "encrypted": true,
+              "description": "mongodb://tooljet:<password>@docdb.cfki0io0krwn.ap-south-1.docdb.amazonaws.com/?tls=true&retryWrites=false"
+            },
+            "sshHost": {
+              "label": "SSH host",
+              "key": "sshHost",
+              "type": "text",
+              "description": "Enter SSH host"
+            },
+            "sshPort": {
+              "label": "SSH port",
+              "key": "sshPort",
+              "type": "text",
+              "description": "Enter SSH port"
+            },
+            "sshUser": {
+              "label": "SSH user",
+              "key": "sshUser",
+              "type": "text",
+              "description": "Enter SSH user"
+            },
+            "sshKey": {
+              "label": "SSH key",
+              "key": "sshKey",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter SSH key"
+            }
+        }
+      }
+    },
+    "ca_certificate": {
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
+    },
+    "required": []
+  }
 }
