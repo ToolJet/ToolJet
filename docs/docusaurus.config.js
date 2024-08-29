@@ -2,7 +2,6 @@ const devServerPlugin = require('./src/plugins/devServer/index.js');
 
 const isProd = process.env.NODE_ENV === 'production';
 
-
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'ToolJet',
@@ -43,19 +42,8 @@ module.exports = {
       },
       items: [
         {
-          type: 'dropdown',
-          label: '2.50.0-LTS',
+          type: 'docsVersionDropdown',
           position: 'right',
-          items: [
-            {
-              label: '2.65.0-Pre Release 🚧  ↗',
-              href: 'https://docs.tooljet.com/docs/2.65.0/',
-            },
-            {
-              label: '1.x.x  ↗',
-              href: 'https://docs.tooljet.com/docs/1.x.x/',
-            },
-          ],
         },
         {
           type: 'search',
@@ -136,10 +124,15 @@ module.exports = {
           includeCurrentVersion: false,
           lastVersion: '2.50.0-LTS',
           versions: {
-            '2.65.0': {
-              label: '2.65.0-Pre Release 🚧',
+            '2.61.0': {
               banner: 'none'
             },
+            '2.62.0': {
+              banner: 'none'
+            },
+            '2.65.0': {
+              banner: 'none'
+            }
           }
         },
         theme: {
