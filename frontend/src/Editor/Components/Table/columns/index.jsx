@@ -43,7 +43,6 @@ export default function generateColumnsData({
 
   return columnProperties.map((column) => {
     if (!column) return;
-    let isRowDependent = false;
     const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
 
     const columnType = column?.columnType;
@@ -68,15 +67,33 @@ export default function generateColumnsData({
       }
     }
 
+    // This is done to ensure that if row dependent properties are not used, the default value is used and performance is not affected
+    const rowDependentMap = {
+      cellBackgroundColor: isValueRowDependent(column.cellBackgroundColor),
+      textColor: isValueRowDependent(column.textColor),
+      minValue: isValueRowDependent(column.minValue),
+      maxValue: isValueRowDependent(column.maxValue),
+      minLength: isValueRowDependent(column.minLength),
+      maxLength: isValueRowDependent(column.maxLength),
+      regex: isValueRowDependent(column.regex),
+      customRule: isValueRowDependent(column.customRule),
+      isEditable: isValueRowDependent(column.isEditable),
+      minDate: isValueRowDependent(column.minDate),
+      maxDate: isValueRowDependent(column.maxDate),
+      borderRadius: isValueRowDependent(column.borderRadius),
+      multiselect: false,
+    };
+
     let useDynamicOptions = false;
     if (columnType === 'select' || columnType === 'newMultiSelect') {
       columnOptions.selectOptions = [];
       useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
       if (useDynamicOptions) {
-        isRowDependent = isValueRowDependent(column?.dynamicOptions);
+        rowDependentMap['multiselect'] = isValueRowDependent(column?.dynamicOptions);
         const dynamicOptions = resolveReferences(column?.dynamicOptions || [], currentState);
         columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
       } else {
+        rowDependentMap['multiselect'] = isValueRowDependent(JSON.stringify(column?.options));
         const options = column?.options ?? [];
         columnOptions.selectOptions =
           options?.map((option) => ({
@@ -111,22 +128,6 @@ export default function generateColumnsData({
       };
     }
     const width = columnSize || defaultColumn.width;
-
-    // This is done to ensure that if row dependent properties are not used, the default value is used and performance is not affected
-    const rowDependentMap = {
-      cellBackgroundColor: isValueRowDependent(column.cellBackgroundColor),
-      textColor: isValueRowDependent(column.textColor),
-      minValue: isValueRowDependent(column.minValue),
-      maxValue: isValueRowDependent(column.maxValue),
-      minLength: isValueRowDependent(column.minLength),
-      maxLength: isValueRowDependent(column.maxLength),
-      regex: isValueRowDependent(column.regex),
-      customRule: isValueRowDependent(column.customRule),
-      isEditable: isValueRowDependent(column.isEditable),
-      minDate: isValueRowDependent(column.minDate),
-      maxDate: isValueRowDependent(column.maxDate),
-      borderRadius: isValueRowDependent(column.borderRadius),
-    };
 
     return {
       id: column.id,
@@ -178,6 +179,10 @@ export default function generateColumnsData({
         column.cellBackgroundColor = rowDependentMap.cellBackgroundColor
           ? resolveReferences(cell.column.cellBackgroundColor, currentState, '', { cellValue, rowData })
           : column.cellBackgroundColor;
+
+        column.textColor = rowDependentMap.textColor
+          ? resolveReferences(cell.column.textColor, currentState, '', { cellValue, rowData })
+          : column.textColor;
 
         column.minLength = rowDependentMap.minLength
           ? resolveReferences(cell.column.minLength, currentState, 0, { cellValue, rowData })
@@ -515,13 +520,21 @@ export default function generateColumnsData({
 
             const { isValid, validationError } = validationData;
             let rowOptions = [];
-            if ((columnType === 'select' || columnType === 'newMultiSelect') && isRowDependent) {
+            if ((columnType === 'select' || columnType === 'newMultiSelect') && rowDependentMap['multiselect']) {
               if (useDynamicOptions) {
                 const dynamicOptions = resolveReferences(column?.dynamicOptions || [], currentState, [], {
                   rowData,
                   cellValue,
                 });
                 rowOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+              } else {
+                const options = column?.options ?? [];
+
+                rowOptions =
+                  options?.map((option) => ({
+                    label: resolveReferences(option.label, currentState, [], { rowData, cellValue }),
+                    value: resolveReferences(option.value, currentState, [], { rowData, cellValue }),
+                  })) ?? [];
               }
             }
 
