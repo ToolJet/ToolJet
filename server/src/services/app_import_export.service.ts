@@ -793,13 +793,14 @@ export class AppImportExportService {
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
 
           if (isParentTabOrCalendar) {
-            const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
           } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
-            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-modal`;
@@ -1893,13 +1894,13 @@ function transformComponentData(
     );
 
     if (isParentTabOrCalendar) {
-      const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-${childTabId}`;
     } else if (isChildOfKanbanModal(component, allComponents, parentId, true)) {
-      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-modal`;
@@ -1948,7 +1949,7 @@ const isChildOfTabsOrCalendar = (
   isNormalizedAppDefinitionSchema: boolean
 ) => {
   if (componentParentId) {
-    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+    const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
 
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -1972,7 +1973,7 @@ const isChildOfKanbanModal = (
 ) => {
   if (!componentParentId || !componentParentId.includes('modal')) return false;
 
-  const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+  const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
 
   const parentComponent = allComponents.find((comp) => comp.id === parentId);
 

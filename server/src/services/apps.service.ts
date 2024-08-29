@@ -549,7 +549,7 @@ export class AppsService {
 
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
       if (componentParentId) {
-        const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+        const parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
 
         const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -617,8 +617,8 @@ export class AppsService {
         const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
 
         if (isParentTabOrCalendar) {
-          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const childTabId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2];
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
@@ -684,13 +684,13 @@ export class AppsService {
         const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
 
         if (isParentTabOrCalendar) {
-          const childTabId = component?.parent?.split('-')[component?.parent?.split('-').length - 1];
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const childTabId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2];
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
         } else if (isChildOfKanbanModal(component.parent, page.components)) {
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-modal`;

@@ -196,7 +196,7 @@ export class PageService {
 
       const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
         if (componentParentId) {
-          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
 
           const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -214,8 +214,8 @@ export class PageService {
         const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
 
         if (isParentTabOrCalendar) {
-          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const childTabId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2];
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = componentsIdMap[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
