@@ -218,6 +218,7 @@ const sidebars = {
         'how-to/use-url-params-on-load',
         'how-to/use-custom-parameters',
         'how-to/setup-rsyslog',
+        'how-to/conditionally-display-components',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
