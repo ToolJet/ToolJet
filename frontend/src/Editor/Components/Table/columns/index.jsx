@@ -767,11 +767,6 @@ export default function generateColumnsData({
               rowData,
             });
 
-            column = {
-              ...column,
-              linkColor: linkColor ?? '#1B1F24',
-              underlineColor: column?.underlineColor ?? '#4368E3',
-            };
             return (
               <div className="h-100 d-flex align-items-center">
                 <Link
