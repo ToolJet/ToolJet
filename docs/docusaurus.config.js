@@ -1,4 +1,12 @@
 const devServerPlugin = require('./src/plugins/devServer/index.js');
+import versionsArchived from './versionsArchived.json';
+
+const baseArchivedURL = "https://docs.tooljet.com/docs/";
+
+const archivedVersionsDropdownItems = versionsArchived.map(version => ({
+  version,
+  url: `${baseArchivedURL}${version}`
+}));
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -44,6 +52,31 @@ module.exports = {
         {
           type: 'docsVersionDropdown',
           position: 'right',
+          dropdownItemsAfter: [
+            {
+              type: 'html',
+              value: '<hr class="dropdown-separator">',
+            },
+            {
+              type: 'html',
+              className: 'dropdown-archived-versions',
+              value: '<b>Archived versions</b>',
+            },
+            ...archivedVersionsDropdownItems.map(
+              ({ version, url }) => ({
+                label: `${version}\u00A0\u00A0\u00A0↗`,
+                href: url,
+              })
+            ),
+            {
+              type: 'html',
+              value: '<hr class="dropdown-separator">',
+            },
+            {
+              to: '/versions',
+              label: 'All versions',
+            },
+          ],
         },
         {
           type: 'search',
@@ -122,18 +155,7 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.50.0-LTS',
-          versions: {
-            '2.61.0': {
-              banner: 'none'
-            },
-            '2.62.0': {
-              banner: 'none'
-            },
-            '2.65.0': {
-              banner: 'none'
-            }
-          }
+          lastVersion: '2.50.0-LTS'
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
