@@ -341,6 +341,9 @@ button {
   transition: transform 0.3s;
   display: inherit !important;
   opacity: 0.7;
+  border: none;
+  outline: none;
+  background-color: transparent;
 }
 
 .accordion-item-trigger:not(.collapsed) {
