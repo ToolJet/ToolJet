@@ -1,0 +1,111 @@
+.textarea-input {
+    margin-bottom: 1rem;
+
+    &__label {
+        display: block;
+        margin-bottom: 2px;
+        font-family: "IBM Plex Sans";
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 18px;
+        color: #333;
+    }
+
+    &__required {
+        color: #D72D39;
+    }
+
+    &__field-wrapper {
+        position: relative;
+    }
+
+    &__field {
+        width: 100%;
+        padding: 7px 6px;
+        font-family: "IBM Plex Sans";
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+        color: var(--Text-default, #1B1F24);
+        background-clip: padding-box;
+        border-radius: var(--Border-radius, 8px);
+        border: 1px solid var(--Border-default, #CCD1D5);
+        background: var(--Background-surface-layer-01, #FFF);
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        resize: vertical;
+
+        &::placeholder {
+            color: #6c757d;
+            opacity: 1;
+        }
+
+        &:focus {
+            color: #495057;
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+    }
+
+    &__hint {
+        margin: 2px 0 0;
+        font-family: "IBM Plex Sans";
+        font-size: 11px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--text-placeholder, #6A727C);
+    }
+
+    // &--error {
+    //     .textarea-input__field {
+    //         border-color: #D72D39;
+    //     }
+    // }
+
+    &__error {
+        display: block;
+        font-size: 10px;
+        margin-top: -3px;
+        height: 14px;
+    }
+
+    &.disabled {
+        opacity: 0.65 !important;
+
+        .textarea-input__field {
+            background-color: #e9ecef;
+            pointer-events: none;
+            border-radius: var(--Border-radius, 8px);
+        }
+    }
+}
+
+.dark-theme {
+    .textarea-input {
+        &__field {
+            border: 1px solid var(--Border-default, #3C434B);
+            background: var(--Background-surface-layer-01, #1E2226);
+            color: var(--text-default, #FFF);
+        }
+
+        &__label {
+            color: var(--text-default)
+        }
+
+        &.disabled {
+            .textarea-input {
+                &__field {
+                    background: var(--Controls-switch-tag, #121518);
+                }
+
+                &__label {
+                    color: var(--Text-disabled, #545B64);
+                }
+            }
+        }
+    }
+}

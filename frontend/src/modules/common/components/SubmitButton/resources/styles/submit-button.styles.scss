@@ -1,0 +1,33 @@
+.submit-button {
+    height: 32px;
+    width: fit-content;
+    min-width: 87px;
+    border-radius: var(--4, 8px);
+    margin: 10px 8px;
+    padding: 6px 8px;
+
+    .button-text {
+        color: var(--Text-on-color, #FFF);
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 18px;
+    }
+}
+
+.tj-base-btn:disabled {
+    background-color: var(--Disabled, #C2CFFD) !important;
+    opacity: 0.8;
+
+    svg>path {
+        fill: #FFF !important;
+    }
+}
+
+.dark-theme {
+    .tj-base-btn:disabled {
+        background: var(--slate6) !important;
+        color: var(--slate9) !important;
+        cursor: auto !important;
+    }
+}

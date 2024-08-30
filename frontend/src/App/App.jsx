@@ -40,6 +40,7 @@ import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { ManageGroupPermissionsV2 } from '@/ManageGroupPermissionsV2/ManageGroupPermissionsV2';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
+import { onboarding, auth } from '@/modules';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -165,65 +166,10 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
-              <Route
-                path="/login/:organizationId"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <LoginPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/login"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <LoginPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              {onboarding(this.props)}
+              {auth(this.props)}
               <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
               <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
-              <Route
-                path="/signup/:organizationId"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <SignupPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/signup"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <SignupPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
-              <Route
-                path="/invitations/:token/workspaces/:organizationToken"
-                element={
-                  <OrganizationInviteRoute {...this.props}>
-                    <VerificationSuccessInfoScreen />
-                  </OrganizationInviteRoute>
-                }
-              />
-              <Route
-                path="/organization-invitations/:token"
-                element={
-                  <OrganizationInviteRoute {...this.props} isOrgazanizationOnlyInvite={true}>
-                    <OrganizationInvitationPage {...this.props} darkMode={darkMode} />
-                  </OrganizationInviteRoute>
-                }
-              />
               <Route
                 exact
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"

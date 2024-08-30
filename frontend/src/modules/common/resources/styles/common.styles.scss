@@ -1,0 +1,27 @@
+.form-header {
+    font-size: 32px;
+    font-weight: 500;
+    margin-top: 32px;
+    color: var(--text-default, #1B1F24);
+}
+
+.onboarding-form-width {
+    width: 308px;
+}
+
+.free-space {
+    display: block;
+    height: 24px;
+}
+
+.info-screen {
+    .onboarding-form-wrapper {
+        margin-top: 0px;
+    }
+}
+
+.dark-theme {
+    .separator-signup .separator h2 span {
+        background-color: #1E2226;
+    }
+}
