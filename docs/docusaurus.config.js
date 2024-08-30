@@ -73,7 +73,7 @@ module.exports = {
               value: '<hr class="dropdown-separator">',
             },
             {
-              to: '/versions',
+              to: '/docs/versions',
               label: 'All versions',
             },
           ],
