@@ -219,6 +219,7 @@ const sidebars = {
         'how-to/pass-query-params-in-custom-components',
         'how-to/use-custom-parameters',
         'how-to/setup-rsyslog',
+        'how-to/conditionally-display-components',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
